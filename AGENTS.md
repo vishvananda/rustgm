@@ -36,9 +36,10 @@ path; its adopted direction is summarized below.
   Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`: cached
   unoptimized builds without debug symbols, exact affected regressions, full
   formatting, content-cached architecture audit and strict Clippy for selected
-  targets (including the CLI for integration/text selections). Private selections
-  lint and link the unit-test harness in one Cargo build using `clippy-driver`;
-  do not repeat that compilation with a separate `cargo test --lib`. Unknown/empty
+  targets (including the CLI for integration/text selections). Every selection
+  is linted and linked in one Cargo build with `clippy-driver` as the compiler,
+  so an edit is compiled once; do not repeat that compilation with a separate
+  `cargo clippy`, `cargo test` or `cargo test --lib`. Unknown/empty
   selections and timeouts fail. Do not run a
   release build, all-target compilation, full private inventory, broad native
   sweep or performance matrix for each edit/new binary. Do not duplicate Clippy

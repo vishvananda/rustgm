@@ -119,32 +119,30 @@ def execute(root, args, steps):
         raise ValueError("run make setup-audit once before fastcheck")
     steps.run("architecture", [python, "scripts/rust_audit.py", "--root", ".",
                                 "--cache", "obj/fast-audit.json"])
-    targets = []
-    for group in groups:
-        targets += ["--lib"] if group == "lib" else ["--test", group]
     common = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
-    if set(groups) != {"lib"} or args.pa:
-        steps.run("clippy", ["cargo", "clippy", *common, *targets, "--bin", "rustgm", "--", "-D", "warnings"],
-                  compiles=True)
+    # Clippy is the compiler: each Cargo build lints strictly and links in the
+    # same pass, so an edit is compiled once. Cargo owns the complete build
+    # graph; a separate cargo clippy would check the library a second time as
+    # metadata only, which cannot link.
+    driver = shutil.which("clippy-driver")
+    if driver is None:
+        raise ValueError("fastcheck requires the installed clippy-driver")
+    lint = {"RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"}
+    # Cargo renders the diagnostics; its JSON on stdout names the executables.
+    link = ["--no-run", "--message-format=json-render-diagnostics"]
     binaries = {}
     if "lib" in groups:
-        # Compile cfg(test) with strict Clippy and link in that same pass. Cargo
-        # owns the complete build graph: cargo clippy would check dependencies
-        # as metadata only, which cannot link their actual library code.
-        driver = shutil.which("clippy-driver")
-        if driver is None:
-            raise ValueError("private checks require the installed clippy-driver")
-        linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", "--no-run", "--message-format=json"],
-                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"),
-                                      "RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"},
+        linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", *link],
+                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"), **lint},
                            compiles=True)
         binaries.update(artifacts(linked, {"lib": groups["lib"]}))
         steps.receipt["private_harness_producer"] = "clippy-private"
     remaining = {name: cases for name, cases in groups.items() if name != "lib"}
     if remaining:
+        # An integration target builds the library, itself and the CLI it runs.
         build_targets = [flag for name in remaining for flag in ("--test", name)]
-        built = steps.run("build", ["cargo", "test", *common, *build_targets,
-                                   "--no-run", "--message-format=json"], compiles=True)
+        built = steps.run("clippy-public", ["cargo", "test", *common, *build_targets, *link],
+                          overrides=lint, compiles=True)
         binaries.update(artifacts(built, remaining))
     selected = {}
     flags = ["--ignored"] if args.ignored else []
@@ -172,7 +170,8 @@ def execute(root, args, steps):
                 root, apply=True, since=started, paths=args.prune_under)})
             steps.save()
     if args.pa:
-        steps.run("build-cli", ["cargo", "build", *common, "--bin", "rustgm"], compiles=True)
+        # The same lint build: already complete after an integration selection.
+        steps.run("build-cli", ["cargo", "build", *common, "--bin", "rustgm"], overrides=lint, compiles=True)
         for stage in dict.fromkeys(args.pa):
             steps.run(stage, [sys.executable, "scripts/course.py", stage,
                               "--app", root / "obj/rust/dev-fast/rustgm"])

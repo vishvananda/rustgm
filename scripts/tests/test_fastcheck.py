@@ -221,9 +221,9 @@ class LinkedPrivateHarness(unittest.TestCase):
                   "profile": {"test": True}, "executable": str(binary), "fresh": False}
         return record, binary
 
-    def test_private_only_links_once_and_mixed_selection_builds_only_remaining_target(self):
-        for mixed in (False, True):
-            with self.subTest(mixed=mixed), tempfile.TemporaryDirectory() as directory:
+    def test_each_selection_is_linted_and_linked_by_one_compile(self):
+        for mixed, text in ((False, False), (True, False), (False, True), (True, True)):
+            with self.subTest(mixed=mixed, text=text), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 record, binary = self.fixture(root)
                 audit = root / "obj/audit-venv/bin/python"
@@ -235,19 +235,31 @@ class LinkedPrivateHarness(unittest.TestCase):
 
                 def run(name, command, **_):
                     commands.append((name, command))
+                    if command[:2] != ["cargo", "fmt"] and command[0] == "cargo":
+                        # Clippy is the compiler of every Cargo build, which is never killed.
+                        self.assertIn(command[1], ("test", "build"))
+                        self.assertEqual(_["overrides"]["RUSTC_WORKSPACE_WRAPPER"], "test-clippy-driver")
+                        self.assertEqual(_["overrides"]["CLIPPY_ARGS"], "-Dwarnings")
+                        self.assertNotIn("RUSTFLAGS", _["overrides"])
+                        self.assertTrue(_["compiles"])
                     if name == "clippy-private":
                         self.assertEqual(command[:2], ["cargo", "test"])
                         self.assertIn("--lib", command)
                         self.assertIn("--no-run", command)
-                        self.assertEqual(_["overrides"]["RUSTC_WORKSPACE_WRAPPER"], "test-clippy-driver")
-                        self.assertEqual(_["overrides"]["CLIPPY_ARGS"], "-Dwarnings")
-                        self.assertNotIn("RUSTFLAGS", _["overrides"])
+                        self.assertTrue(_["overrides"]["CARGO_TARGET_DIR"].endswith("obj/rust/private-lint"))
                         return json.dumps(record)
-                    if name == "build":
+                    if name == "clippy-public":
+                        self.assertEqual(command[:2], ["cargo", "test"])
                         self.assertNotIn("--lib", command)
+                        self.assertIn("--no-run", command)
+                        self.assertIn("--message-format=json-render-diagnostics", command)
+                        self.assertNotIn("CARGO_TARGET_DIR", _["overrides"])
                         return json.dumps({"reason": "compiler-artifact", "executable": str(binary),
                                            "profile": {"test": True},
                                            "target": {"kind": ["test"], "name": "suite_frontend"}})
+                    if name == "build-cli":
+                        self.assertEqual(command[:2], ["cargo", "build"])
+                        self.assertEqual(command[-2:], ["--bin", "rustgm"])
                     if name.endswith("-inventory"):
                         return "sample::case: test\n" if name == "lib-inventory" else "lexer::valid: test\n"
                     if name in ("lib", "suite_frontend"):
@@ -256,10 +268,47 @@ class LinkedPrivateHarness(unittest.TestCase):
 
                 steps.run.side_effect = run
                 args = Namespace(suites=["lexer::valid"] if mixed else [], lib_case=["sample::case"],
-                                 ignored=False, prune_under=[], pa=[])
+                                 ignored=False, prune_under=[], pa=["pa1"] if text else [])
                 with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
                         mock.patch.object(fastcheck_run.shutil, "which", return_value="test-clippy-driver"), \
                         mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
                     fastcheck_run.execute(root, args, steps)
-                self.assertEqual(sum(name == "build" for name, _ in commands), int(mixed))
+                compiles = [name for name, command in commands if command[0] == "cargo" and name != "format"]
+                self.assertEqual(compiles, ["clippy-private"] + ["clippy-public"] * mixed + ["build-cli"] * text)
                 self.assertEqual(steps.receipt["private_harness_producer"], "clippy-private")
+
+    def test_public_selection_needs_no_separate_clippy_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, binary = self.fixture(root)
+            audit = root / "obj/audit-venv/bin/python"
+            audit.parent.mkdir(parents=True)
+            audit.touch()
+            commands = []
+            steps = mock.Mock()
+            steps.receipt = {}
+
+            def run(name, command, **_):
+                if name != "format":
+                    commands.append(command[:2])
+                if name == "clippy-public":
+                    return json.dumps({"reason": "compiler-artifact", "executable": str(binary),
+                                       "profile": {"test": True},
+                                       "target": {"kind": ["test"], "name": "suite_frontend"}})
+                if name == "suite_frontend-inventory":
+                    return "lexer::valid: test\n"
+                return "test result: ok. 1 passed; 0 failed; 0 ignored;\n" if name == "suite_frontend" else ""
+
+            steps.run.side_effect = run
+            args = Namespace(suites=["lexer"], lib_case=[], ignored=False, prune_under=[], pa=[])
+            with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
+                    mock.patch.object(fastcheck_run.shutil, "which", return_value="test-clippy-driver"), \
+                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                fastcheck_run.execute(root, args, steps)
+            # One Cargo invocation compiles the edit; nothing checks it a second time.
+            self.assertEqual([command for command in commands if command[0] == "cargo"], [["cargo", "test"]])
+            with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
+                    mock.patch.object(fastcheck_run.shutil, "which", return_value=None), \
+                    mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                with self.assertRaisesRegex(ValueError, "clippy-driver"):
+                    fastcheck_run.execute(root, args, steps)

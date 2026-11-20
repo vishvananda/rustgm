@@ -308,13 +308,15 @@ reuses unchanged per-file syntax results, then reruns global duplicate,
 filename-stem and ownership checks over the complete current file set. Audit
 implementation, parser versions and role-table changes invalidate that cache.
 Strict Clippy covers selected test targets and their library; integration/text
-selections also check the CLI. It is not
-followed by a redundant `cargo check`. Only selected test binaries are compiled.
-Private selections compile the library harness once with `cargo test --lib
---no-run`, setting `RUSTC_WORKSPACE_WRAPPER` to the installed `clippy-driver`
-and `CLIPPY_ARGS=-Dwarnings`. This checks `cfg(test)` with strict Clippy and
-links the executable in the same compilation. Cargo builds actual dependency
-libraries and reports the exact test executable; the runner does not infer an
+selections also check the CLI. Every selection is compiled once: `cargo test
+--no-run` runs with `RUSTC_WORKSPACE_WRAPPER` set to the installed
+`clippy-driver` and `CLIPPY_ARGS=-Dwarnings`, which lints strictly and links
+the executables in the same compilation. There is no separate `cargo clippy`
+pass and no redundant `cargo check`. Only selected test binaries are compiled.
+Private selections compile the library harness the same way with `cargo test
+--lib --no-run`, which checks `cfg(test)` with strict Clippy. Cargo builds
+actual dependency libraries, renders the diagnostics and reports the exact
+test executable; the runner does not infer an
 executable from check-mode metadata or search old cache outputs. The
 [pinned Clippy driver](https://github.com/rust-lang/rust-clippy/blob/rust-1.98.0/src/driver.rs)
 tracks its arguments for Cargo cache invalidation. Cargo
@@ -322,7 +324,7 @@ tracks its arguments for Cargo cache invalidation. Cargo
 preserve normal host compiler flags. A separate `cargo clippy --lib` excludes private
 tests, while Cargo's `--tests` would select unrelated integration targets.
 The harness has a stable build cache under `obj/rust/private-lint` so it cannot
-evict ordinary Clippy results. Idle retirement also bounds this cache while
+evict the integration build's results. Idle retirement also bounds this cache while
 preserving each crate's newest warm session and explicit pins.
 A cold worktree's first compile is not stopped at the budget; gates and test
 execution keep the same budget.
