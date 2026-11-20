@@ -46,6 +46,15 @@ impl Set {
             }
         }
     }
+    /// The first successor still has the post-block words and occupied index.
+    /// Each successor starts without its predecessor's expiration evidence.
+    pub fn restore_edge(&mut self, outgoing: &[State], first: bool) {
+        if first {
+            self.valid_at = None;
+        } else {
+            self.copy_from(outgoing);
+        }
+    }
     pub fn retain(&mut self, index: usize, mask: u64) {
         let word = &mut self.words[index];
         word.live &= mask;
@@ -74,7 +83,7 @@ impl Set {
 
 #[cfg(test)]
 mod tests {
-    use super::{Set, State};
+    use super::{Point, Set, State};
     #[test]
     fn pruning_and_regeneration_keep_activation_and_occupied_words_in_sync() {
         let mut state = Set::new(66);
@@ -106,5 +115,33 @@ mod tests {
         );
         state.retain(65, 0);
         assert!(state.iter().next().is_none());
+    }
+
+    #[test]
+    fn edges_invalidate_adjacency_and_keep_the_original_branch_state() {
+        let mut state = Set::new(3);
+        state.generate(0, true);
+        state.generate(65, true);
+        state.activate(65);
+        let outgoing = state.words().to_vec();
+        let occupied = |state: &Set| {
+            state
+                .iter()
+                .map(|(word, value)| (word, value.live, value.active))
+                .collect::<Vec<_>>()
+        };
+        state.valid_at = Some(Point(63));
+        state.restore_edge(&outgoing, true);
+        assert_eq!(state.valid_at, None);
+        assert_eq!(occupied(&state), [(0, 1, 0), (1, 2, 2)]);
+
+        state.retain(0, 0);
+        state.retain(1, 0);
+        state.generate(130, true);
+        state.activate(130);
+        state.valid_at = Some(Point(81));
+        state.restore_edge(&outgoing, false);
+        assert_eq!(state.valid_at, None);
+        assert_eq!(occupied(&state), [(0, 1, 0), (1, 2, 2)]);
     }
 }

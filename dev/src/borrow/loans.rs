@@ -541,13 +541,15 @@ impl Flow<'_> {
                 self.charge(words).map_err(error)?;
                 outgoing.copy_from_slice(state.words());
             }
+            let mut first_edge = true;
             for next in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
                 if self.destruction.is_some() {
                     self.charge(words.saturating_mul(3)).map_err(error)?;
-                    state.copy_from(&outgoing);
+                    state.restore_edge(&outgoing, first_edge);
+                    first_edge = false;
                     self.cleanup_edge::<false>(block, next, &mut state, false)?;
                 }
                 let next = next.0 as usize;
@@ -580,13 +582,15 @@ impl Flow<'_> {
                 self.charge(words).map_err(error)?;
                 outgoing.copy_from_slice(state.words());
             }
+            let mut first_edge = true;
             for target in successors(self.body.blocks[block].terminator)
                 .into_iter()
                 .flatten()
             {
                 if self.destruction.is_some() {
                     self.charge(words.saturating_mul(3)).map_err(error)?;
-                    state.copy_from(&outgoing);
+                    state.restore_edge(&outgoing, first_edge);
+                    first_edge = false;
                     self.cleanup_edge::<RECORD>(block, target, &mut state, true)?;
                     continue;
                 }
