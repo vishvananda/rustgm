@@ -1047,6 +1047,19 @@ wider transport row`. Its initializer reads `Self::SIG_TOTAL_BITS`
 through the original supertrait. The raw replay diagnostic is in
 `lemire-default-control-v3/rustgm-only-v4/provider.stderr`.
 
+The first symbolic operand candidate carries the actual trait declaration
+and full canonical argument list in the v14 original body. The focused
+generic supertrait control returns `17` from a fresh consumer implementation
+and `29` from an explicit override. It also round-trips the provider bytes.
+All four exact tests, formatting, architecture and strict Clippy pass in
+`obj/qualification/fast/1795168833785100104/`. The unchanged reduced Core
+provider emits 12,929 bytes of v14 metadata. Its fresh client emits LowIR,
+links using the object backend and matches pinned Rust on `10 22 27 91`.
+The result is under `lemire-default-control-v3/rustgm-native-v1/result.json`
+with SHA-256 `5c85075d0a5e4d20d0e3fa7fe69b4928ec9ac4e9d529772bf4ee6447fa4ea0f4`.
+Explicit trait obligations for reconstructed open reads and strict
+publication on the full original Core graph remain pending.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a

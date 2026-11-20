@@ -37,14 +37,18 @@ for a local override. `89fd654d0` publishes and re-proves const `Sub` under
 its actual language role. A fresh client returns `2` from the transported
 `f64` subtraction and both prior controls pass. The frozen reduced Core
 provider now reaches original-value encoding and requires the open
-supertrait constant row. The row and a fresh-client reproof are in focused
-validation.
+supertrait constant row. The first row candidate passes four focused
+integration checks, formatting, architecture and strict Clippy. The frozen
+reduced Core provider now publishes 12,929 bytes of metadata. Its fresh
+native client matches pinned Rust on `10 22 27 91`. The next check
+adds an explicit trait obligation for each reconstructed open read
+before replaying the full original Core graph.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
 The performance worker survived the restart. Its worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/local-annotation-census-20261120` at `f5e3fbdcf`. The first
+`lane/singleton-lifetime-arguments-20261120` at `8fbf96d4a`. The first
 local-annotation census identifies 631,869 inert visits out of 970,361
 active visits (65.12%). The frozen graph and 12 focused controls preserve
 output bytes, and the focused outcomes agree with pinned Rust. The
@@ -52,11 +56,14 @@ producer shadow matches the original traversal order and predicts all
 31 tested traversal failure sites. References written during the pass
 create 7,547 events at later positions. All 64 events missed by the
 publication hooks are Core pattern endpoints. The compact representation
-would still use at least 9.54 MB of payload for this pass. The worker
-closed the experiment and is measuring eligible work in canonical type
-interning. The flat `Kind` index shadow matches 1,468,549 lookups and
-uses 3 MiB less logical index capacity. The worker is qualifying a
-separate change that removes singleton lifetime argument allocations.
+would still use at least 9.54 MB of payload for this pass. The flat `Kind`
+index shadow matches 1,468,549 lookups and uses 3 MiB less logical index
+capacity. The worker is measuring a separate change that removes singleton
+lifetime argument allocations. Exact parity passed on the frozen 746-input
+graph, 21 focused outcomes, four fresh staged outcomes and 12 real budget
+controls. DHAT counts 2,060 fewer blocks at the target allocation site
+on the 256-call singleton control. The zero and three-lifetime controls
+preserve their allocation counts.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
