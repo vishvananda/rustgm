@@ -181,7 +181,7 @@ fn concrete_destruction_retains_actual_ownership_cycles_and_exhaustion() -> Resu
     }
     let root = graph(&mut types, 8, 4)?;
     let mut query = NeedsDrop::concrete_sparse([]);
-    query.steps = 999_999;
+    query.steps = super::WORK_LIMIT - 1;
     for _ in 0..2 {
         assert_eq!(
             query.demand(&types, &definitions, root),

@@ -91,7 +91,7 @@ impl NeedsDrop {
         ]);
         let steps = count
             .checked_add(1)
-            .filter(|n| *n <= 1_000_000)
+            .filter(|n| *n <= super::WORK_LIMIT)
             .ok_or("destruction query work budget exceeded")?;
         if bytes > limit {
             return Err("destruction query storage budget exceeded");
@@ -181,7 +181,7 @@ impl NeedsDrop {
         let charge = |work: usize, bytes: usize| {
             let next_steps = steps.get().saturating_add(work);
             steps.set(next_steps);
-            if next_steps > 1_000_000 {
+            if next_steps > super::WORK_LIMIT {
                 return Err("destruction query work budget exceeded");
             }
             let next_paid = paid

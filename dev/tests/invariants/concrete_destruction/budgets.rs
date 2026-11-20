@@ -235,7 +235,7 @@ fn bounded_pending_head_and_work_failures_never_become_false() -> Result<(), &'s
     assert_eq!(pending.steps, consumed + 1);
     let mut ready = NeedsDrop::concrete_bounded([].into_iter(), LIMIT)?;
     assert!(!ready.demand_concrete_bounded(&types, &definitions, ty, LIMIT)?);
-    ready.steps = 999_999;
+    ready.steps = super::super::WORK_LIMIT - 1;
     assert_eq!(
         ready.demand_concrete_bounded(&types, &definitions, TypeId::UNIT, LIMIT),
         Err("destruction query work budget exceeded")

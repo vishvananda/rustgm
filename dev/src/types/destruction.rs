@@ -7,6 +7,10 @@ use super::{ItemId, Kind, Store, TypeId, aggregate::Definitions};
 use crate::support::hash::{HashMap, HashSet};
 use std::sync::Arc;
 
+/// A coarse runaway guard: one query serves every destruction requirement of a
+/// whole-graph session, more than the 1,000,000 steps one crate was bounded by.
+const WORK_LIMIT: usize = 1 << 30;
+
 /// A const eligibility request purpose, never an initialization or proof fact.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum Eligibility {
@@ -219,7 +223,7 @@ impl NeedsDrop {
         if BOUNDED {
             self.steps = next;
         }
-        if next > 1_000_000 {
+        if next > WORK_LIMIT {
             return Err("destruction query work budget exceeded");
         }
         self.steps = next;
