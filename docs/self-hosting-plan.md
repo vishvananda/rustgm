@@ -1142,6 +1142,15 @@ with SHA-256 `7db496f29e724daaed7aa6e20d66f97a496c913f86cca81871cf0ab970cab127`.
 Both are under `obj/parallel/strict-compiler-unit-graph/` in the
 frontier worktree.
 
+The optimized incremental observation compiler at `6506a856a` uses
+the same reduced host optimization pipeline as the preceding full
+trial. The unchanged full strict Core target hits its 225-second limit
+without emitting a diagnostic or accepted artifact. The pinned binary
+SHA-256 is `ad8ce4cac1051b5739e084a0ffdf1c9c1c211f7565f370878791148e6b54b4c5`.
+The target receipt is `core-open-constants-observe-v2/target-units/receipt.json`
+with SHA-256 `92a488b534bc01de2595a97435e1673abe9280cfdb62b252c0050d3238136503`.
+Full Core publication and the strict dependent stages remain pending.
+
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
 client again matches pinned Rust on `10 22 27 91`. The replay pins
