@@ -277,6 +277,9 @@ fn reservation_source_witnesses_are_current_and_failed_queries_retain_work() -> 
     {
         *polarity = Polarity::Positive;
     }
+    // The registry sealed this polarity when it published the header, so an
+    // owner record changed in place afterwards is the self-check's to find.
+    let _checking = crate::support::sealed::SelfCheck::hold();
     assert!(
         analysis
             .facts

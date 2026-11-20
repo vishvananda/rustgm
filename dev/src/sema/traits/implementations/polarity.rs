@@ -80,7 +80,10 @@ impl Implementations {
         value: Implementation,
     ) -> Result<(), &'static str> {
         let status = Self::imported_status(store, associated, owner, &value)?;
-        self.prepare_with_status(store, identity, value, status)
+        let definition = value.owner;
+        self.prepare_with_status(store, identity, value, status)?;
+        self.seal_polarity(definition);
+        Ok(())
     }
 
     pub(in crate::sema) fn prepare_imported_charged(
@@ -95,9 +98,22 @@ impl Implementations {
         charge(1, 0)?;
         let status = Self::imported_status(store, associated, owner, &value)?;
         let first = self.pairs.len();
+        let definition = value.owner;
         let retained =
             self.prepare_with_observer::<true>(store, identity, value, status, charge)?;
+        self.seal_polarity(definition);
         Ok((retained, first..self.pairs.len()))
+    }
+    /// The three publishing routes check a header against its owner record
+    /// exactly as `polarity` does; their entry is sealed with that result.
+    fn seal_polarity(&mut self, definition: DefId) {
+        if let Some(entry) = self
+            .owners
+            .get(&definition)
+            .and_then(|&index| self.entries.get_mut(index))
+        {
+            entry.agreed = true;
+        }
     }
 
     fn imported_status(
@@ -207,7 +223,10 @@ impl Implementations {
             return Err("source implementation changed its retained owner");
         }
         check_effect(value.predicate, constant)?;
-        self.prepare_with_status(store, identity, value, Status::header(polarity))
+        let definition = value.owner;
+        self.prepare_with_status(store, identity, value, Status::header(polarity))?;
+        self.seal_polarity(definition);
+        Ok(())
     }
 
     pub(in crate::sema) fn prepare_factory(
@@ -227,11 +246,16 @@ impl Implementations {
         // Existing registered factories carry ordinary contracts only. A source
         // const owner cannot be reconstructed from a source-free schema.
         check_effect(value.predicate, false)?;
-        self.prepare_with_status(store, identity.into(), value, Status::PositiveHeader)
+        let definition = value.owner;
+        self.prepare_with_status(store, identity.into(), value, Status::PositiveHeader)?;
+        self.seal_polarity(definition);
+        Ok(())
     }
 
-    /// Recheck source polarity even on extraction and cache publication. Missing
-    /// source owners are legal only for the explicit positive factory entry.
+    /// A published header's polarity is a sealed field. The owner record is
+    /// compared again only for an entry no publishing route checked, or as
+    /// the self-check. Missing source owners are legal only for the explicit
+    /// positive factory entry.
     pub(in crate::sema) fn polarity(
         &self,
         store: &Store,
@@ -243,6 +267,9 @@ impl Implementations {
             .get(&definition)
             .and_then(|&index| self.entries.get(index))
             .ok_or("missing implementation polarity record")?;
+        if entry.agreed && !crate::support::sealed::self_check() {
+            return Ok(entry.status.polarity());
+        }
         if let Some(owner) = associated
             .owner(definition)
             .and_then(|id| associated.get(id))

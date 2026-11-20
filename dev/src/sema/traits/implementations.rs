@@ -73,6 +73,9 @@ pub struct Implementation {
 struct Entry {
     value: Implementation,
     status: Status,
+    /// The publishing route derived this polarity from the actual owner
+    /// record, so a later read is a plain field. It shares `status`'s word.
+    agreed: bool,
     checked_constants: HashMap<DefId, DefId>,
 }
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
@@ -649,6 +652,7 @@ impl Implementations {
         self.entries.push(Entry {
             value,
             status,
+            agreed: false,
             checked_constants: HashMap::default(),
         });
         self.candidate_lists = None;
