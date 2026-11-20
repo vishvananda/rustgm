@@ -5,10 +5,12 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const ROLES: RequiredRoles = RequiredRoles {
     conversions: true,
     callables: false,
+    declaration_policies: false,
 };
 const ORDINARY: RequiredRoles = RequiredRoles {
     conversions: false,
     callables: false,
+    declaration_policies: false,
 };
 
 fn prepared(name: &str) -> Result<(Report, Declarations)> {
@@ -120,14 +122,14 @@ fn private_alias_closure_keeps_actual_canonical_uses_and_rejects_missing_facts()
     assert!(stage.definitions[alias].is_none());
     assert_eq!(facts.definitions[alias], Some(ty));
     facts.definitions[alias] = None;
-    assert!(stage.private_alias(&report, &facts, definition).is_err());
+    assert!(stage.closed_alias(&report, &facts, definition).is_err());
     facts.definitions[alias] = Some(TypeId::UNIT);
-    assert!(stage.private_alias(&report, &facts, definition).is_err());
+    assert!(stage.closed_alias(&report, &facts, definition).is_err());
     facts.definitions[alias] = Some(ty);
-    stage.private_alias(&report, &facts, definition)?;
+    stage.closed_alias(&report, &facts, definition)?;
     stage.steps = crate::support::crates::MAX_COMPONENTS;
-    assert!(stage.private_alias(&report, &facts, definition).is_err());
-    assert!(stage.private_alias(&report, &facts, definition).is_err());
+    assert!(stage.closed_alias(&report, &facts, definition).is_err());
+    assert!(stage.closed_alias(&report, &facts, definition).is_err());
     assert!(stage.definitions[alias].is_none());
     Ok(())
 }
