@@ -259,8 +259,12 @@ The former empty `object-interop-tests` Cargo feature is removed. Default and
 frontend build merely to select native tests. No test body or ignore marker is
 changed, and an unavailable native dependency still fails an explicit native run.
 
-Development checks have a five-minute wall-clock budget from resource admission,
-including build, lint, audit and execution. Use the fast workflow for ordinary
+Development checks have a five-minute wall-clock budget for the static gates and
+test execution, counted from resource admission. Compile steps (Clippy and
+builds) are never stopped at that budget, because a killed rustc discards its
+incremental session: they finish and persist their caches under a separate
+ceiling for all compile steps together (`--compile-seconds`, 30 minutes by
+default) that exists only to catch a hung compiler. Use the fast workflow for ordinary
 edits and coherent development pushes:
 
 ```sh
@@ -292,9 +296,9 @@ another lease. It queues for a shared-controller slot for at most
 the wait is not charged to the budget. Its default
 absolute output cap is 16 GiB, including retained caches and pins; use
 `--max-output-gib N` only with justified headroom for the actual worktree.
-An exhausted admission wait and deadline exhaustion fail the run. Do not increase the
-five-minute deadline or silently omit tests to turn a timeout into success.
-Partition unrelated target groups or investigate a slow build instead.
+An exhausted admission wait, feedback budget or compile ceiling fails the run.
+Do not increase the five-minute budget or silently omit tests to turn a timeout
+into success. Partition unrelated target groups instead.
 
 The `dev-fast` Cargo profile keeps assertions and overflow checks, disables
 optimization and debug symbols, and enables bounded incremental caches under
@@ -320,8 +324,8 @@ tests, while Cargo's `--tests` would select unrelated integration targets.
 The harness has a stable build cache under `obj/rust/private-lint` so it cannot
 evict ordinary Clippy results. Idle retirement also bounds this cache while
 preserving each crate's newest warm session and explicit pins.
-Bootstrap cold worktrees one target group at a time; combine related groups
-after their caches are warm. Keep each command within the same deadline.
+A cold worktree's first compile is not stopped at the budget; gates and test
+execution keep the same budget.
 Private tests use complete names, integration suites retain exact outer-module
 boundaries, and every selected name/count must actually execute. A new binary
 no longer requires executing its complete private inventory.
@@ -341,8 +345,9 @@ Each run saves raw output, step times, source-content fingerprints, binary
 hashes and exact inventories under `obj/qualification/fast/`. A timeout is a
 failed check with retained evidence, and owned compiler/test processes are
 stopped. Source changes during the run invalidate its result. Keep source
-unchanged until the command finishes. The launcher reserves time for process
-cleanup within the deadline; it can stop earlier than 300 seconds.
+unchanged until the command finishes. The worker keeps both clocks and its
+receipt records what each step was charged to; the launcher stops a worker
+only as a backstop beyond the budget plus the compile ceiling.
 
 Original-core discovery may declare an explicit finite `source_contract_limits`
 object in both its manifest profile and producer binding, with `work`,

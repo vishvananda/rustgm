@@ -36,19 +36,36 @@ class Steps:
         self.folder = args.evidence_root
         cleanup_roots(root, [self.folder, *args.prune_under])
         self.folder.mkdir(parents=True, exist_ok=False)
-        self.receipt = {"profile": "dev-fast", "state": "running", "steps": []}
+        # Two clocks: gates and tests spend the feedback budget, while compile
+        # steps share a ceiling whose only purpose is to catch a hung compiler.
+        self.started = time.monotonic()
+        self.deadline = self.started + args.seconds
+        self.compile_left = args.compile_seconds
+        self.receipt = {"profile": "dev-fast", "state": "running", "steps": [],
+                        "budget": {"feedback_seconds": args.seconds,
+                                   "compile_ceiling_seconds": args.compile_seconds}}
         self.environment = {**os.environ, **package_environment(root), "CARGO_INCREMENTAL": "1",
                             "CARGO_TARGET_DIR": str(root / "obj/rust"),
                             "CARGO_BUILD_JOBS": "2", "RUST_TEST_THREADS": "2"}
 
     def save(self):
+        compiled = self.args.compile_seconds - self.compile_left
+        self.receipt["budget"].update(
+            compile_used=compiled, feedback_used=time.monotonic() - self.started - compiled)
         (self.folder / "receipt.json").write_text(json.dumps(self.receipt, indent=2) + "\n")
 
-    def run(self, name, command, *, cwd=None, overrides=None):
-        remaining = self.args.deadline - time.monotonic()
+    def run(self, name, command, *, cwd=None, overrides=None, compiles=False):
+        """Run one step against the clock that owns it.
+
+        A killed rustc discards its incremental session, so a compile is never
+        stopped at the feedback budget: it finishes, persists its cache and moves
+        the budget's deadline by exactly the time it took.
+        """
+        kind = "compile ceiling" if compiles else "development feedback budget"
+        remaining = self.compile_left if compiles else self.deadline - time.monotonic()
         if remaining <= 0:
-            raise TimeoutError("development validation budget exhausted")
-        print(f"START {name} ({remaining:.0f}s remaining)", flush=True)
+            raise TimeoutError(f"{name}: {kind} exhausted")
+        print(f"START {name} ({remaining:.0f}s of the {kind} remaining)", flush=True)
         started = time.monotonic()
         with (self.folder / f"{name}.stdout").open("w") as output, (
                 self.folder / f"{name}.stderr").open("w") as errors:
@@ -60,8 +77,12 @@ class Steps:
             except subprocess.TimeoutExpired:
                 status = 124
         elapsed = time.monotonic() - started
+        if compiles:
+            self.compile_left -= elapsed
+            self.deadline += elapsed
         self.receipt["steps"].append({"name": name, "command": list(map(str, command)),
                                       "seconds": elapsed, "status": status,
+                                      "charged": "compile" if compiles else "feedback",
                                       "environment": overrides or {}})
         self.save()
         print(f"END {name}: {elapsed:.2f}s, status {status}", flush=True)
@@ -69,7 +90,7 @@ class Steps:
         if status:
             print((stdout + (self.folder / f"{name}.stderr").read_text())[-10000:], flush=True)
             if status == 124:
-                raise TimeoutError(f"{name}: development validation budget exhausted")
+                raise TimeoutError(f"{name}: {kind} exhausted" + ("; the compiler looks hung" if compiles else ""))
             raise ValueError(f"{name} failed with status {status}")
         return stdout
 
@@ -96,7 +117,8 @@ def execute(root, args, steps):
         targets += ["--lib"] if group == "lib" else ["--test", group]
     common = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
     if set(groups) != {"lib"} or args.pa:
-        steps.run("clippy", ["cargo", "clippy", *common, *targets, "--bin", "rustgm", "--", "-D", "warnings"])
+        steps.run("clippy", ["cargo", "clippy", *common, *targets, "--bin", "rustgm", "--", "-D", "warnings"],
+                  compiles=True)
     binaries = {}
     if "lib" in groups:
         # Compile cfg(test) with strict Clippy and link in that same pass. Cargo
@@ -107,14 +129,15 @@ def execute(root, args, steps):
             raise ValueError("private checks require the installed clippy-driver")
         linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", "--no-run", "--message-format=json"],
                            overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"),
-                                      "RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"})
+                                      "RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"},
+                           compiles=True)
         binaries.update(artifacts(linked, {"lib": groups["lib"]}))
         steps.receipt["private_harness_producer"] = "clippy-private"
     remaining = {name: cases for name, cases in groups.items() if name != "lib"}
     if remaining:
         build_targets = [flag for name in remaining for flag in ("--test", name)]
         built = steps.run("build", ["cargo", "test", *common, *build_targets,
-                                   "--no-run", "--message-format=json"])
+                                   "--no-run", "--message-format=json"], compiles=True)
         binaries.update(artifacts(built, remaining))
     selected = {}
     flags = ["--ignored"] if args.ignored else []
@@ -142,7 +165,7 @@ def execute(root, args, steps):
                 root, apply=True, since=started, paths=args.prune_under)})
             steps.save()
     if args.pa:
-        steps.run("build-cli", ["cargo", "build", *common, "--bin", "rustgm"])
+        steps.run("build-cli", ["cargo", "build", *common, "--bin", "rustgm"], compiles=True)
         for stage in dict.fromkeys(args.pa):
             steps.run(stage, [sys.executable, "scripts/course.py", stage,
                               "--app", root / "obj/rust/dev-fast/rustgm"])
@@ -165,4 +188,6 @@ def check(root, args):
             raise
         finally:
             steps.save()
+            print("Fastcheck clocks: {feedback_used:.0f}s of the {feedback_seconds:.0f}s feedback budget, "
+                  "{compile_used:.0f}s compiling".format(**steps.receipt["budget"]), flush=True)
             print(f"Fastcheck evidence: {steps.folder}", flush=True)

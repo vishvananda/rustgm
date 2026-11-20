@@ -33,12 +33,70 @@ class FastcheckBudget(unittest.TestCase):
             (root / "dev").mkdir()
             (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
             args = Namespace(evidence_root=root / "obj/check", prune_under=[],
-                             deadline=time.monotonic() + 0.2)
+                             seconds=0.2, compile_seconds=60)
             steps = Steps(root, args)
-            with self.assertRaises(TimeoutError):
+            with self.assertRaisesRegex(TimeoutError, "hang: development feedback budget exhausted"):
                 steps.run("hang", [sys.executable, "-c", "import time; time.sleep(30)"])
             self.assertEqual(steps.receipt["steps"][0]["status"], 124)
             self.assertTrue((root / "obj/check/receipt.json").is_file())
+
+    def scripted(self, root, script, **limits):
+        """Run named steps of scripted durations against a virtual clock."""
+        now = [1000.0]
+        allowed = []
+
+        def run(command, *, timeout, **_):
+            allowed.append(round(timeout))
+            seconds = float(command[0])
+            now[0] += min(seconds, timeout)
+            if seconds > timeout:
+                raise subprocess.TimeoutExpired(command, timeout)
+            return mock.Mock(returncode=0)
+
+        (root / "dev").mkdir()
+        (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
+        args = Namespace(evidence_root=root / "obj/check", prune_under=[],
+                         **{"seconds": 300, "compile_seconds": 1800, **limits})
+        failure = None
+        with mock.patch.object(fastcheck_run.time, "monotonic", lambda: now[0]), \
+                mock.patch.object(fastcheck_run.subprocess, "run", side_effect=run), \
+                mock.patch("builtins.print"):
+            steps = Steps(root, args)
+            try:
+                for name, seconds, compiles in script:
+                    steps.run(name, [seconds], compiles=compiles)
+            except TimeoutError as error:
+                failure = str(error)
+            steps.save()
+        return allowed, failure, json.loads((root / "obj/check/receipt.json").read_text())
+
+    def test_compiles_finish_outside_the_feedback_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            allowed, failure, receipt = self.scripted(Path(directory), [
+                ("format", 40, False), ("build", 900, True), ("suite", 200, False),
+                ("build-cli", 100, True), ("pa1", 70, False)])
+        # A fifteen-minute compile neither fails nor shortens the gates and tests.
+        self.assertEqual(allowed, [300, 1800, 260, 900, 60])
+        self.assertEqual(failure, "pa1: development feedback budget exhausted")
+        self.assertEqual([(row["charged"], row["status"]) for row in receipt["steps"]],
+                         [("feedback", 0), ("compile", 0), ("feedback", 0), ("compile", 0), ("feedback", 124)])
+        self.assertEqual(receipt["budget"], {"feedback_seconds": 300, "compile_ceiling_seconds": 1800,
+                                             "feedback_used": 300.0, "compile_used": 1000.0})
+
+    def test_exhausted_feedback_budget_starts_no_further_gate_or_test(self):
+        with tempfile.TemporaryDirectory() as directory:
+            allowed, failure, _ = self.scripted(Path(directory), [
+                ("format", 300, False), ("build", 5, True), ("suite", 1, False)])
+        self.assertEqual(allowed, [300, 1800])
+        self.assertEqual(failure, "suite: development feedback budget exhausted")
+
+    def test_compile_ceiling_only_stops_a_hung_compiler(self):
+        with tempfile.TemporaryDirectory() as directory:
+            allowed, failure, receipt = self.scripted(Path(directory), [
+                ("clippy", 1000, True), ("build", 5000, True)])
+        self.assertEqual(allowed, [1800, 800])
+        self.assertEqual(failure, "build: compile ceiling exhausted; the compiler looks hung")
+        self.assertEqual(receipt["steps"][-1]["status"], 124)
 
     def test_output_scope_must_stay_inside_obj(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -84,17 +142,18 @@ class FastcheckAdmission(unittest.TestCase):
 
             process = mock.Mock()
             process.wait.side_effect = wait
-            args = Namespace(**{"seconds": 300, "wait_seconds": 3600, **limits})
+            args = Namespace(**{"seconds": 300, "compile_seconds": 1800, "wait_seconds": 3600, **limits})
             with mock.patch.object(fastcheck, "terminate") as stop, mock.patch("builtins.print"):
                 result = fastcheck.watch(process, marker, args, 0.0, clock=lambda: now[0])
             return result, stop.call_count, now[0]
 
-    def test_queue_is_not_charged_and_the_budget_runs_from_admission(self):
-        # Fifteen queued minutes, then 200 seconds of admitted work, is a pass.
-        self.assertEqual(self.watch(900, 1100), ((0, 900.0), 0, 1100.0))
+    def test_queue_is_not_charged_and_a_long_compile_is_not_stopped(self):
+        # Fifteen queued minutes, then a worker that compiles for half an hour, is a pass.
+        self.assertEqual(self.watch(900, 2900), ((0, 900.0), 0, 2900.0))
 
-    def test_admitted_work_beyond_the_budget_is_stopped(self):
-        self.assertEqual(self.watch(900, None), ((124, 900.0), 1, 1200.0))
+    def test_only_a_worker_beyond_budget_and_ceiling_is_stopped(self):
+        self.assertEqual(self.watch(900, None), ((124, 900.0), 1, 3200.0))
+        self.assertEqual(self.watch(900, None, seconds=100, compile_seconds=60), ((124, 900.0), 1, 1200.0))
 
     def test_admission_wait_is_bounded(self):
         self.assertEqual(self.watch(None, None, wait_seconds=600), ((124, None), 1, 900.0))
@@ -104,22 +163,25 @@ class FastcheckAdmission(unittest.TestCase):
             args = fastcheck.parser().parse_args(["lexer", "--wait-seconds", wait])
             with self.subTest(wait=wait), self.assertRaisesRegex(ValueError, "admission wait"):
                 fastcheck.launch(args, time.monotonic())
+        for ceiling in ("59", "3601"):
+            args = fastcheck.parser().parse_args(["lexer", "--compile-seconds", ceiling])
+            with self.subTest(ceiling=ceiling), self.assertRaisesRegex(ValueError, "compile ceiling"):
+                fastcheck.launch(args, time.monotonic())
 
-    def test_worker_marks_admission_and_starts_its_own_budget(self):
+    def test_worker_marks_admission_and_keeps_its_own_clocks(self):
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory) / "run"
             seen = {}
 
             def check(_root, args):
-                seen.update(deadline=args.deadline, marked=fastcheck.admission_marker(folder).is_file())
+                seen.update(limits=(args.seconds, args.compile_seconds),
+                            marked=fastcheck.admission_marker(folder).is_file())
                 return 0
 
             argv = ["fastcheck.py", "lexer", "--seconds", "100", "--worker", "--evidence-root", str(folder)]
             with mock.patch.object(sys, "argv", argv), mock.patch.object(fastcheck_run, "check", side_effect=check):
-                before = time.monotonic()
                 self.assertEqual(fastcheck.main(), 0)
-            self.assertTrue(seen["marked"])
-            self.assertAlmostEqual(seen["deadline"], before + 75, delta=5)
+            self.assertEqual(seen, {"marked": True, "limits": (100.0, 1800)})
 
 
 class LinkedPrivateHarness(unittest.TestCase):

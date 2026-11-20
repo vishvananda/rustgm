@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run focused development validation within a five-minute budget after admission."""
+"""Run focused development validation: five minutes for gates and tests; compiles finish."""
 import argparse
 import json
 import os
@@ -15,6 +15,8 @@ from storage_incremental import retire
 ROOT = Path(__file__).resolve().parents[1]
 # The controller bounds the queue itself; this only covers its admission accounting.
 ADMISSION_GRACE = 300
+# The worker enforces its own budget and ceiling; its final accounting follows them.
+TEARDOWN_GRACE = 120
 
 
 def parser():
@@ -26,7 +28,10 @@ def parser():
     result.add_argument("--ignored", action="store_true", help="select ignored/native tests explicitly")
     result.add_argument("--prune-under", action="append", default=[], help="native output root inside obj")
     result.add_argument("--seconds", type=float, default=300,
-                        help="budget from admission, at most 300 seconds")
+                        help="feedback budget for static gates and test execution, at most 300 seconds")
+    result.add_argument("--compile-seconds", type=float, default=1800,
+                        help="hard ceiling for all compile steps together, which only catches a hung "
+                             "compiler; at most 3600 seconds and not charged to the budget")
     result.add_argument("--wait-seconds", type=float, default=3600,
                         help="longest queue for a resource slot, at most 3600 seconds; not charged to the budget")
     result.add_argument("--max-output-gib", type=float, help="absolute cap including retained output")
@@ -53,7 +58,10 @@ def terminate(process):
 
 
 def watch(process, marker, args, started, clock=time.monotonic):
-    """Queueing is not validation time: the budget runs from the worker's admission."""
+    """Queueing is not validation time, and the admitted worker keeps its own clocks.
+
+    Stopping it here is only a backstop: a compile is never killed at the budget.
+    """
     admitted = None
     announced = False
     while True:
@@ -78,8 +86,9 @@ def watch(process, marker, args, started, clock=time.monotonic):
                       flush=True)
                 terminate(process)
                 return 124, admitted
-        elif now - admitted >= args.seconds - 22:
-            print("Fastcheck FAILED: wall-clock budget exhausted; stopping owned processes.", flush=True)
+        elif now - admitted >= args.seconds + args.compile_seconds + TEARDOWN_GRACE:
+            print("Fastcheck FAILED: worker outlived its budget and compile ceiling; "
+                  "stopping owned processes.", flush=True)
             terminate(process)
             return 124, admitted
 
@@ -87,6 +96,8 @@ def watch(process, marker, args, started, clock=time.monotonic):
 def launch(args, started):
     if not 20 <= args.seconds <= 300:
         raise ValueError("budget must be between 20 and 300 seconds")
+    if not 60 <= args.compile_seconds <= 3600:
+        raise ValueError("compile ceiling must be between 60 and 3600 seconds")
     if not 0 <= args.wait_seconds <= 3600:
         raise ValueError("admission wait must be between zero and 3600 seconds")
     retired = retire(ROOT)
@@ -131,7 +142,6 @@ def main():
             if args.evidence_root is None:
                 raise ValueError("internal worker requires an evidence root")
             admission_marker(args.evidence_root).touch()
-            args.deadline = started + args.seconds - 25
             from fastcheck_run import check
             return check(ROOT, args)
         return launch(args, started)
