@@ -875,9 +875,20 @@ a new RustGM process and rejects a private name, an incompatible
 value and an applied type argument. The exact strict Clippy, format,
 architecture and functional gate passed in 97.33 seconds. Evidence is
 under `obj/qualification/fast/1795144369638357771/` and
-`obj/parallel/v14-type-aliases/dev-fast-foundation/` in the frontier
-checkout. The strict original-source replay is pending on this
-checkpoint.
+`obj/parallel/v14-type-aliases/dev-fast-foundation/` in the frontier checkout.
+
+On the same 309 inputs the optimized strict replay passes `Digit32`
+and reaches the declaration-kind gate at `DecimalSeq::MAX_DIGITS` after
+26.97 seconds. The exact compiler trace identifies DefId 574 and
+the pinned `decimal_seq.rs` owner. The replay records zero bring-up
+entries and emits no strict artifacts. A reduced provider preserves
+`pub const MAX_DIGITS: usize = 768` and uses the value in an array
+field's length. Pinned Rust accepts the provider and consumer and
+rejects the private read and wrong result type. RustGM reproduces
+the provider export failure. The receipts are under
+`obj/parallel/strict-core/closed-type-aliases/` and
+`obj/parallel/v14-nominal-constants/baseline/` in the frontier
+checkout.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
