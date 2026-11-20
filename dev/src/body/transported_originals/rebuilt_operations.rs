@@ -149,8 +149,8 @@ fn value_kind(
         s::ValueKind::Reify(value) if view.rows().descriptor().profile().body_nodes() => {
             Rvalue::Reify(ValueId(value))
         }
-        s::ValueKind::Constant(declaration) if view.rows().descriptor().profile().body_nodes() => {
-            constant_read(view, declaration, &mut work.steps)?
+        s::ValueKind::Constant(_) | s::ValueKind::AssociatedConstant { .. } => {
+            constant_operand(view, value.kind, &mut work.steps)?
         }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
         s::ValueKind::ScalarCast(_) => {
@@ -433,12 +433,14 @@ fn owned(
 pub(super) fn allocation(
     record: &s::Original,
     work: &mut ImportedOriginals,
-) -> Result<usize, &'static str> {
+) -> Result<(usize, usize), &'static str> {
     use crate::body::{ir, scopes, storage};
-    Ok(regional_records::allocation(record)
+    work.charge(record.values.len())?;
+    let (scalars, associated) = value_counts(record);
+    let bytes = regional_records::allocation(record)
         .saturating_add(encoded_assembly::allocation(record))
         .saturating_add(
-            encoded_literals::count(record, work)?
+            scalars
                 .saturating_mul(size_of::<crate::sema::model::Scalar>())
                 .saturating_add(
                     record
@@ -505,7 +507,19 @@ pub(super) fn allocation(
                                 + size_of::<scopes::Id>(),
                         ),
                 ),
-        ))
+        );
+    Ok((bytes, associated))
+}
+
+fn value_counts(record: &s::Original) -> (usize, usize) {
+    record
+        .values
+        .iter()
+        .fold((0, 0), |(scalars, associated), value| match value.kind {
+            s::ValueKind::Scalar(_) => (scalars + 1, associated),
+            s::ValueKind::AssociatedConstant { .. } => (scalars, associated + 1),
+            _ => (scalars, associated),
+        })
 }
 
 pub(super) fn validate(
@@ -836,8 +850,36 @@ fn same_value(
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?
         }
+        (
+            Rvalue::AssociatedConstant(actual),
+            s::ValueKind::AssociatedConstant {
+                declaration,
+                arguments,
+            },
+        ) => actual == view.associated_operand(declaration, arguments, steps)?,
         (actual, raw) => same_binary(view, actual, raw)?,
     })
+}
+
+fn constant_operand(
+    view: &SourceOriginal<'_>,
+    kind: s::ValueKind,
+    steps: &mut usize,
+) -> Result<Rvalue, &'static str> {
+    match kind {
+        s::ValueKind::Constant(declaration) if view.rows().descriptor().profile().body_nodes() => {
+            constant_read(view, declaration, steps)
+        }
+        s::ValueKind::AssociatedConstant {
+            declaration,
+            arguments,
+        } => Ok(Rvalue::AssociatedConstant(view.associated_operand(
+            declaration,
+            arguments,
+            steps,
+        )?)),
+        _ => Err("source value operation requires its wider actual reconstruction profile"),
+    }
 }
 
 fn constant_read(

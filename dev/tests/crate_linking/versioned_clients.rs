@@ -760,6 +760,169 @@ pub extern "C" fn selected() -> u8 { <Foreign as base::Value<u8>>::DEFAULT }
     Ok(())
 }
 
+#[test]
+fn cli_version_fourteen_replays_symbolic_supertrait_constants() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-symbolic-constants/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let provider_lowir = folder.join("provider.lowir");
+    std::fs::write(
+        &provider,
+        macro_role_foundation(root)?
+            + r"
+pub trait Part<T> {
+    const PART: u8;
+}
+pub trait Total<T>: Part<T> {
+    const TOTAL: u8 = { let value = Self::PART; value };
+}
+pub fn selected<T: Total<u8>>() -> u8 { T::TOTAL }
+",
+    )?;
+    super::artifacts::checked(
+        "symbolic-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &provider_lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let packet = std::fs::read(&metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&packet)?)?,
+        packet
+    );
+    let client = folder.join("client.rs");
+    let client_lowir = folder.join("client.lowir");
+    std::fs::write(
+        &client,
+        r#"
+#![feature(no_core)]
+#![no_core]
+extern crate base;
+struct First;
+impl base::Part<u8> for First { const PART: u8 = 17; }
+impl base::Total<u8> for First {}
+struct Second;
+impl base::Part<u8> for Second { const PART: u8 = 23; }
+impl base::Total<u8> for Second { const TOTAL: u8 = 29; }
+#[unsafe(no_mangle)]
+pub extern "C" fn first() -> u8 { <First as base::Total<u8>>::TOTAL }
+#[unsafe(no_mangle)]
+pub extern "C" fn second() -> u8 { <Second as base::Total<u8>>::TOTAL }
+"#,
+    )?;
+    super::artifacts::checked(
+        "symbolic-client",
+        &folder,
+        source_client(&client, &metadata, &client_lowir).arg("--crate-type=lib"),
+    )?;
+    let output = std::fs::read_to_string(client_lowir)?;
+    assert!(
+        output.contains("return u8 17") && output.contains("return u8 29"),
+        "{output}"
+    );
+    rejects_missing_constant_premise(root, &folder)?;
+    Ok(())
+}
+
+fn rejects_missing_constant_premise(root: &Path, folder: &Path) -> Result {
+    use rustgm::support::crates::{self, owner_catalog::BodyKind};
+    const ASSOCIATED_READ: [u8; 3] = [18, 2, 5];
+    const ARGUMENT_RANGE: u8 = 9;
+    let provider = folder.join("premise-provider.rs");
+    let metadata = folder.join("premise-provider.rgcrate");
+    let lowir = folder.join("premise-provider.lowir");
+    std::fs::write(
+        &provider,
+        macro_role_foundation(root)?
+            + r"
+pub trait Part<T> { const PART: u8; }
+pub trait Unrelated<T> { const UNRELATED: u8 = 13; }
+pub fn symbolic_premise_value<T: Part<u8>>() -> u8 { T::PART }
+",
+    )?;
+    super::artifacts::checked(
+        "premise-provider",
+        folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let source = folder.join("unused.rs");
+    std::fs::write(
+        &source,
+        "#![feature(no_core)]\n#![no_core]\nextern crate base;\n",
+    )?;
+    super::artifacts::checked(
+        "premise-client",
+        folder,
+        source_client(&source, &metadata, &folder.join("premise-client.lowir"))
+            .arg("--crate-type=lib"),
+    )?;
+    let mut packet = std::fs::read(metadata)?;
+    let decoded = crates::decode(&packet)?;
+    let owners = decoded
+        .generic_payload()
+        .ok_or("symbolic payload")?
+        .owners();
+    let mut defaults = owners
+        .rows()
+        .iter()
+        .filter(|row| row.kind == BodyKind::Constant);
+    let other = defaults
+        .next()
+        .ok_or("alternate constant initializer")?
+        .declaration
+        .0;
+    assert!(
+        defaults.next().is_none(),
+        "sole default constant is Unrelated::UNRELATED"
+    );
+    // Preserve the result type and argument range. The alternate member has
+    // the same declaration shape and arity, with a different trait obligation.
+    let mut matches = packet
+        .windows(8)
+        .enumerate()
+        .filter(|(_, row)| row.starts_with(&ASSOCIATED_READ) && row[7] == ARGUMENT_RANGE);
+    let (offset, _) = matches.next().ok_or("encoded symbolic operand")?;
+    assert!(matches.next().is_none(), "symbolic operand must be unique");
+    let member = offset + ASSOCIATED_READ.len();
+    packet[member..member + 4].copy_from_slice(&other.to_le_bytes());
+    assert_eq!(crates::encode(&crates::decode(&packet)?)?, packet);
+
+    let metadata = folder.join("missing-premise.rgcrate");
+    let lowir = folder.join("unused.lowir");
+    std::fs::write(&metadata, packet)?;
+    let output = source_client(&source, &metadata, &lowir)
+        .arg("--crate-type=lib")
+        .output()?;
+    std::fs::write(folder.join("missing-premise.stderr"), &output.stderr)?;
+    let error = String::from_utf8(output.stderr)?;
+    assert_eq!(output.status.code(), Some(1), "{error}");
+    assert!(
+        error.contains("body trait requirement is not proved"),
+        "{error}"
+    );
+    Ok(())
+}
+
 fn required_range_headers(metadata: &Path) -> Result {
     use rustgm::support::crates::{self, generics::source::Profile};
     let bytes = std::fs::read(metadata)?;

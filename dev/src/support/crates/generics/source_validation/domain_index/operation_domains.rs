@@ -108,6 +108,12 @@ impl DomainIndex<'_, '_> {
                 value.text_type(&rows.types, &rows.regions)?;
             }
             s::ValueKind::Constant(constant) => self.constant(constant, value.ty, work)?,
+            s::ValueKind::AssociatedConstant {
+                declaration,
+                arguments,
+            } => {
+                self.associated_constant(context, declaration, arguments, work)?;
+            }
             s::ValueKind::Read(s::Place::Temporary(value)) => {
                 prefix_value(original, value, index, work)?;
             }
@@ -263,6 +269,62 @@ impl DomainIndex<'_, '_> {
             | (Some(s::Type::F128), Some(s::Type::F128)) => Ok(()),
             _ => Err("source constant read changed its declaration's type"),
         }
+    }
+
+    fn associated_constant(
+        &self,
+        context: Context,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !self.declaration_policies {
+            return Err(
+                "source associated constant reads require the version-fourteen declaration profile",
+            );
+        }
+        let rows = self.headers.rows();
+        let Some(HeaderRef::Constant(_)) = self.headers.header(declaration, work)? else {
+            return Err("source associated constant read has no actual constant declaration");
+        };
+        let parent = rows.declarations[declaration.0 as usize]
+            .definition
+            .parent
+            .ok_or("source associated constant read has no actual member owner")?;
+        if !matches!(
+            self.headers.header(parent, work)?,
+            Some(HeaderRef::Trait(_))
+        ) {
+            return Err("source associated constant read has no actual trait owner");
+        }
+        let arguments = arguments.slice(&rows.arguments)?;
+        if arguments.len() != self.headers.scopes().complete_slots(declaration, work)? as usize {
+            return Err("source associated constant read changed its full argument arity");
+        }
+        work.charge(arguments.len())?;
+        for &argument in arguments {
+            match argument {
+                s::Argument::Type(ty) => self.types.root(self.headers, context, ty, work)?,
+                s::Argument::Region(region) => {
+                    Types::region(self.headers, &self.binders, context, region, work)?;
+                }
+                s::Argument::Const(term) => match rows.consts().get(term.0 as usize) {
+                    Some(&s::ConstTerm::Value(value)) => {
+                        self.types.root(self.headers, context, value.ty, work)?;
+                        s::const_value(&rows.types, value)?;
+                    }
+                    Some(&s::ConstTerm::Parameter(slot))
+                        if matches!(
+                            rows.slots.get(slot.0 as usize).map(|row| row.kind),
+                            Some(s::ParameterKind::Const { .. })
+                        ) && self.headers.scopes().contains(context.owner, slot, work)? => {}
+                    _ => {
+                        return Err("source associated constant read has a foreign const argument");
+                    }
+                },
+            }
+        }
+        Ok(())
     }
     /// A variant operand names a validated variant row of this artifact.
     fn variant(

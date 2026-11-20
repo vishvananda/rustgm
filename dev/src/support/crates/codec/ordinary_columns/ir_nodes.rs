@@ -124,7 +124,9 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 16] = [0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 23, 24, 27, 28, 29, 30];
+const VALUE_FORMS: [u8; 17] = [
+    0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 23, 24, 27, 28, 29, 30,
+];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
     crate::support::call_traits::CallTrait::FnOnce,
@@ -285,6 +287,17 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         s::ValueKind::Constant(declaration) => {
             node_write(out, 17, &[Operand::Declaration(declaration.0)])
         }
+        s::ValueKind::AssociatedConstant {
+            declaration,
+            arguments,
+        } => node_write(
+            out,
+            18,
+            &[
+                Operand::Declaration(declaration.0),
+                Operand::Range(arguments),
+            ],
+        ),
         s::ValueKind::Reify(value) => node_write(out, 23, &[Operand::Value(value)]),
         // The instruction ordinal names the original's assembly column row.
         s::ValueKind::Assembly {
@@ -403,6 +416,19 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         (17, &[Operand::Declaration(declaration)]) => {
             s::ValueKind::Constant(DeclarationRef(declaration))
         }
+        (18, &[Operand::Declaration(declaration), Operand::Range(arguments)])
+            if read.profile.declaration_policies() =>
+        {
+            s::ValueKind::AssociatedConstant {
+                declaration: DeclarationRef(declaration),
+                arguments,
+            }
+        }
+        (18, _) if !read.profile.declaration_policies() => {
+            return Err(
+                "source associated constant reads require the version-fourteen declaration profile",
+            );
+        }
         (23, &[Operand::Value(value)]) => s::ValueKind::Reify(value),
         (0, &[Operand::Flag(instruction), Operand::Range(arguments)]) => s::ValueKind::Assembly {
             instruction,
@@ -420,6 +446,22 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         ) => binary(left, right, operator, form, read.profile)?,
         (28, &[Operand::Value(value), Operand::Flag(0)]) => s::ValueKind::ScalarCast(value),
         (28, &[Operand::Value(value), Operand::Flag(1)]) => s::ValueKind::EnumCast(value),
+        (29 | 30, operands) => callable_value(node.code, operands)?,
+        (code, _) => {
+            return Err(rejected(
+                &VALUES,
+                &VALUE_FORMS,
+                code,
+                "body IR value node has malformed operands",
+                "unknown body IR value form",
+            ));
+        }
+    };
+    Ok(s::Value { ty, kind })
+}
+
+fn callable_value(code: u8, operands: &[Operand]) -> Result<s::ValueKind, &'static str> {
+    Ok(match (code, operands) {
         (
             29,
             &[
@@ -462,17 +504,8 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
                 .get(safety as usize)
                 .ok_or("unknown source call safety context")?,
         },
-        (code, _) => {
-            return Err(rejected(
-                &VALUES,
-                &VALUE_FORMS,
-                code,
-                "body IR value node has malformed operands",
-                "unknown body IR value form",
-            ));
-        }
-    };
-    Ok(s::Value { ty, kind })
+        _ => return Err("body IR value node has malformed operands"),
+    })
 }
 fn code<T: Copy + PartialEq>(table: &[T], form: T) -> Result<u32, &'static str> {
     table

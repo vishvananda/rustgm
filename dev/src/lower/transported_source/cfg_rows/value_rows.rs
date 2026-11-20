@@ -31,7 +31,7 @@ pub(super) fn emit(
             | ir::Rvalue::Invoke { .. }
             | ir::Rvalue::Call { .. }
             | ir::Rvalue::Reify(_) => callable(stage, facts, (body, index, context), value)?,
-            _ => item(stage, facts, body, raw, value)?,
+            _ => item(stage, facts, body, context, raw, value)?,
         };
         let ty = stage.ty(facts, value.ty, context)?;
         if requests_formation(stage, facts, value.ty, kind) {
@@ -126,6 +126,7 @@ fn item(
     stage: &mut Stage,
     facts: &Declarations,
     body: &Body,
+    context: Context,
     raw: &mut s::Original,
     value: ir::Value,
 ) -> Result<s::ValueKind, &'static str> {
@@ -149,6 +150,15 @@ fn item(
                     .is_some() =>
         {
             stage.constant_read(instance.definition)
+        }
+        ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
+            if facts.associated.trait_owner(instance.definition).is_none() {
+                return Err("source associated constant requires its actual trait owner");
+            }
+            Ok(s::ValueKind::AssociatedConstant {
+                declaration: stage.declaration(instance.definition)?,
+                arguments: stage.arguments(facts, instance.arguments, context)?,
+            })
         }
         _ => Err(WIDER),
     }

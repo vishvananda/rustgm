@@ -12,7 +12,12 @@ use crate::{
     support::crates::generics::{self as g, source as s},
     types::{RegionId, TypeId, arguments::Argument},
 };
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{Ref, RefCell},
+    rc::Rc,
+};
+#[path = "ingested_constant_operands.rs"]
+mod constant_operands;
 
 pub(super) struct Lazy {
     reader: MemoReader,
@@ -22,6 +27,7 @@ pub(super) struct Lazy {
 struct Writer {
     cursor: Cursor,
     records: Box<OrdinaryRecords>,
+    constants: constant_operands::Operands,
 }
 impl Lazy {
     #[cfg(test)]
@@ -88,35 +94,17 @@ impl Lazy {
                 .saturating_add(original.calls.len())
                 .saturating_add(1),
         )?;
-        // A Call's or Invoke's result type does not include its separate signature.
-        // Reconstruct only this actual original's complete operation frontier.
-        for root in original
-            .locals
-            .iter()
-            .map(|local| local.ty)
-            .chain(original.values.iter().flat_map(|value| {
-                std::iter::once(value.ty).chain(match value.kind {
-                    s::ValueKind::Call { signature, .. }
-                    | s::ValueKind::PointerCall { signature, .. }
-                    | s::ValueKind::Invoke { signature, .. } => Some(signature),
-                    _ => None,
-                })
-            }))
-            .chain(original.projections.iter().map(|projection| projection.ty))
-            .chain(original.calls.iter().map(|call| call.signature))
-            .chain(std::iter::once(original.result))
-        {
-            if matches!(
-                writer
-                    .cursor
-                    .demand(&mut port, &mut facts.types, root, work)?,
-                Demand::Blocked(_)
-            ) {
-                return Err(error(
-                    "ordinary original requires its actual typed recipe dependency",
-                ));
-            }
-        }
+        let Writer {
+            cursor, constants, ..
+        } = &mut *writer;
+        let operands = operation_types(
+            original,
+            constants,
+            &mut port,
+            cursor,
+            &mut facts.types,
+            work,
+        )?;
         let super::Applications::Lazy { memo, reader } = &graph.applications else {
             return Err(error(
                 "ordinary original lost its actual lazy application owner",
@@ -124,14 +112,8 @@ impl Lazy {
         };
         let view = graph.recipe_view();
         let mut applications = memo.writer(reader, &view, &facts.types, work)?;
-        ordinary_requests(
-            raw,
-            port,
-            &mut writer.cursor,
-            &mut applications,
-            &mut facts.types,
-            work,
-        )?;
+        ordinary_requests(raw, port, cursor, &mut applications, &mut facts.types, work)?;
+        constants.finish(raw, operands, cursor, facts, work)?;
         Ok(domain)
     }
     pub(super) fn body(
@@ -276,17 +258,15 @@ impl Lazy {
                 "ordinary header requires its actual declared recipe dependency",
             )),
         })?;
-        let view = RecipeView::retained_parts(
-            context.imported.dependencies(),
-            context.provider_index,
-            context.catalog,
-            root,
-        );
-        let reader = cursor.reader(&view, &facts.types, work)?;
+        let reader = cursor.reader(port.recipe_view(), &facts.types, work)?;
         Ok(Self {
             reader,
             maps,
-            writer: RefCell::new(Writer { cursor, records }),
+            writer: RefCell::new(Writer {
+                cursor,
+                records,
+                constants: constant_operands::Operands::default(),
+            }),
         })
     }
     pub(super) fn ty(&self, reference: g::TypeRef) -> Result<TypeId, Error> {
@@ -295,6 +275,26 @@ impl Lazy {
             .map_err(|_| error("reentrant ordinary type memo lookup"))?
             .cursor
             .child(reference)
+    }
+    pub(super) fn constant_arguments(
+        &self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+        arguments: g::Range,
+    ) -> Result<crate::types::GenericArgs, Error> {
+        self.writer
+            .try_borrow()
+            .map_err(|_| error("reentrant associated constant argument lookup"))?
+            .constants
+            .arguments(body, arguments)
+    }
+    pub(super) fn constant_goals(
+        &self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+    ) -> Result<Ref<'_, [crate::types::parameters::predicates::Predicate]>, Error> {
+        self.writer
+            .try_borrow()
+            .map(|writer| Ref::map(writer, |writer| writer.constants.goals(body)))
+            .map_err(|_| error("reentrant associated constant goal lookup"))
     }
     pub(super) fn slot(&self, reference: s::SlotRef) -> Result<Argument, Error> {
         self.maps
@@ -308,6 +308,68 @@ impl Lazy {
             .map_err(error)?
             .ok_or_else(|| error("ordinary region requires its actual owning body domain"))
     }
+}
+fn operation_types(
+    original: &s::Original,
+    constants: &mut constant_operands::Operands,
+    port: &mut Recorded<'_, '_, '_>,
+    cursor: &mut Cursor,
+    store: &mut crate::types::Store,
+    work: &mut ReservationWork,
+) -> Result<constant_operands::Uses, Error> {
+    let mut operands = constant_operands::Uses::default();
+    for local in &original.locals {
+        require_type(cursor, port, store, local.ty, work)?;
+    }
+    for value in &original.values {
+        require_type(cursor, port, store, value.ty, work)?;
+        match value.kind {
+            s::ValueKind::Call { signature, .. }
+            | s::ValueKind::PointerCall { signature, .. }
+            | s::ValueKind::Invoke { signature, .. } => {
+                require_type(cursor, port, store, signature, work)?;
+            }
+            s::ValueKind::AssociatedConstant {
+                declaration,
+                arguments,
+            } => {
+                let operand = constants.prepare(
+                    original.body,
+                    (declaration, arguments, value.ty),
+                    port,
+                    cursor,
+                    store,
+                    work,
+                )?;
+                operands.push(operand, work)?;
+            }
+            _ => {}
+        }
+    }
+    for root in original
+        .projections
+        .iter()
+        .map(|projection| projection.ty)
+        .chain(original.calls.iter().map(|call| call.signature))
+        .chain(std::iter::once(original.result))
+    {
+        require_type(cursor, port, store, root, work)?;
+    }
+    Ok(operands)
+}
+fn require_type(
+    cursor: &mut Cursor,
+    port: &mut Recorded<'_, '_, '_>,
+    store: &mut crate::types::Store,
+    root: g::TypeRef,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    if matches!(cursor.demand(port, store, root, work)?, Demand::Blocked(_)) {
+        return Err(error(
+            "ordinary original requires its actual typed recipe dependency",
+        ));
+    }
+    Ok(())
 }
 pub(super) fn begin(budget: &Headers) -> ReservationWork {
     ReservationWork {

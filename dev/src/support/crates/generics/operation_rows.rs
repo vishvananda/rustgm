@@ -129,6 +129,13 @@ pub enum ValueKind {
     /// Version thirteen: a read of a constant declaration of this artifact.
     /// Its header row holds the only copy of the value.
     Constant(DeclarationRef),
+    /// Version fourteen: a symbolic associated constant request. The
+    /// declaration and complete applied arguments survive dispatch in the
+    /// consumer. No selected implementation or evaluated value is recorded.
+    AssociatedConstant {
+        declaration: DeclarationRef,
+        arguments: Range,
+    },
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Division

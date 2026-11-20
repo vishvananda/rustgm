@@ -15,11 +15,12 @@ use crate::{
         TypeId,
         parameters::{
             clauses::Clause,
+            environment::Environment,
             predicates::{Bound, Predicate},
         },
     },
 };
-use std::sync::Arc;
+use std::{cell::Ref, sync::Arc};
 
 struct Expected<'a, 'b> {
     view: &'a SourceOriginal<'b>,
@@ -27,6 +28,7 @@ struct Expected<'a, 'b> {
     declared: Inputs<'a>,
     sized: Bound,
     root: ProofSite,
+    associated: Option<Ref<'a, [Predicate]>>,
     /// The declared-result coercion, present only when the types differ.
     result: Option<Obligation>,
 }
@@ -47,6 +49,7 @@ impl<'a, 'b> Expected<'a, 'b> {
             )?,
             sized: view.sizing_requirement(facts, steps)?,
             root,
+            associated: view.associated_goals(steps)?,
             result: declared_result(view, root, steps)?,
         })
     }
@@ -145,11 +148,14 @@ impl<'a, 'b> Expected<'a, 'b> {
             .builtins
             .as_ref()
             .map_or(&[][..], |builtins| builtins.predicates.as_slice());
+        let associated = self.associated.as_deref().unwrap_or_default();
+        let ports = self.ports();
+        let sized = record.parameters.len().saturating_add(ports);
         let count = builtin
             .len()
             .saturating_add(self.declared.len())
-            .saturating_add(record.parameters.len())
-            .saturating_add(self.ports());
+            .saturating_add(sized)
+            .saturating_add(associated.len());
         (0..count)
             .map(move |mut index| {
                 *steps = steps.saturating_add(1);
@@ -177,6 +183,9 @@ impl<'a, 'b> Expected<'a, 'b> {
                         .map(|predicate| (input.source, predicate)));
                 }
                 index -= self.declared.len();
+                if index >= sized {
+                    return Ok(Some((self.root, associated[index - sized])));
+                }
                 let ty = if index < record.parameters.len() {
                     let reference = record.parameters[index];
                     // A const formal has no sizing goal.
@@ -203,6 +212,25 @@ impl<'a, 'b> Expected<'a, 'b> {
                 )))
             })
             .filter_map(Result::transpose)
+    }
+
+    fn builtin_environment(&self) -> Result<Option<&Arc<Environment>>, &'static str> {
+        let record = self.view.inputs();
+        match record
+            .builtins
+            .as_ref()
+            .map(|builtins| builtins.environment)
+        {
+            None | Some(s::EnvironmentOrigin::Absent) => {
+                if self.associated.as_deref().is_none_or(<[_]>::is_empty) {
+                    Ok(None)
+                } else {
+                    self.view.environment().map(Some)
+                }
+            }
+            Some(origin) if origin == record.environment => self.view.environment().map(Some),
+            _ => Err("source original builtin environment changed its actual provenance"),
+        }
     }
 }
 
@@ -247,11 +275,7 @@ pub(super) fn build(
         .enumerate()
         .map(|(index, record)| normalization(view, index, record, &mut work.steps))
         .collect::<Result<_, _>>()?;
-    let environment = match record.builtins.as_ref().map(|b| b.environment) {
-        None | Some(s::EnvironmentOrigin::Absent) => None,
-        Some(origin) if origin == record.environment => Some(Arc::clone(view.environment()?)),
-        _ => return Err("source original builtin environment changed its actual provenance"),
-    };
+    let environment = expected.builtin_environment()?.cloned();
     let source_copy = record
         .builtins
         .as_ref()
@@ -590,11 +614,12 @@ fn validate_builtins(
     } else if builtin.defining().is_some() {
         return Err("ordinary source original cannot import defining cleanup requests");
     }
-    let environment = record.builtins.as_ref().map(|b| b.environment);
-    match (environment, builtin.environment.as_ref()) {
-        (None | Some(s::EnvironmentOrigin::Absent), None) => {}
-        (Some(origin), Some(actual))
-            if origin == record.environment && Arc::ptr_eq(actual, view.environment()?) => {}
+    match (
+        expected.builtin_environment()?,
+        builtin.environment.as_ref(),
+    ) {
+        (None, None) => {}
+        (Some(expected), Some(actual)) if Arc::ptr_eq(actual, expected) => {}
         _ => return Err("source original borrowed a different record environment origin"),
     }
     let mut predicates = expected.predicates(steps);

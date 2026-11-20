@@ -160,6 +160,9 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         s::ValueKind::Constant(_) => {
             "source constant read requires the version-thirteen body IR profile"
         }
+        s::ValueKind::AssociatedConstant { .. } => {
+            "source associated constant reads require the version-fourteen declaration profile"
+        }
         _ => return None,
     })
 }

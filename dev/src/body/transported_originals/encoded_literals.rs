@@ -9,23 +9,18 @@ use crate::{
     support::crates::generics::source as s,
 };
 
-pub(super) fn count(
-    raw: &s::Original,
-    work: &mut ImportedOriginals,
-) -> Result<usize, &'static str> {
-    work.charge(raw.values.len())?;
-    Ok(raw
-        .values
-        .iter()
-        .filter(|v| matches!(v.kind, s::ValueKind::Scalar(_)))
-        .count())
-}
 pub(super) fn allocate(
     raw: &s::Original,
     body: &mut Body,
     work: &mut ImportedOriginals,
 ) -> Result<(), &'static str> {
-    body.scalars = Vec::with_capacity(count(raw, work)?);
+    work.charge(raw.values.len())?;
+    let scalars = raw
+        .values
+        .iter()
+        .filter(|value| matches!(value.kind, s::ValueKind::Scalar(_)))
+        .count();
+    body.scalars = Vec::with_capacity(scalars);
     Ok(())
 }
 fn value(view: &SourceOriginal<'_>, row: s::Value) -> Result<Scalar, &'static str> {

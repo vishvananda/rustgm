@@ -693,6 +693,7 @@ fn originals(
                             | ValueKind::PointerCall { .. }
                             | ValueKind::Assembly { .. }
                             | ValueKind::Constant(_)
+                            | ValueKind::AssociatedConstant { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

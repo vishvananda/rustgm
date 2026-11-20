@@ -339,6 +339,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::Constant(_) => {
             Err("source constant read requires the version-thirteen body IR profile")
         }
+        s::ValueKind::AssociatedConstant { .. } => {
+            Err("source associated constant reads require the version-fourteen declaration profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

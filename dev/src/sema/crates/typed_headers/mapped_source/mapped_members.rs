@@ -3,8 +3,9 @@ use super::{Original, s};
 use crate::{
     sema::members::{FieldId, Name, Origin, Selection, VariantId},
     support::crates::{generics::TypeRef, owner_catalog::DeclarationRef},
-    types::Kind,
+    types::{Kind, parameters::predicates::Predicate},
 };
+use std::cell::Ref;
 impl Original<'_> {
     pub(crate) fn nominal_variant(
         &self,
@@ -121,6 +122,44 @@ impl Original<'_> {
             return Err("source constant read lacks its actual constant header");
         }
         self.declaration(declaration, steps)
+    }
+    pub(crate) fn associated_operand(
+        &self,
+        declaration: DeclarationRef,
+        arguments: crate::support::crates::generics::Range,
+        steps: &mut usize,
+    ) -> Result<crate::sema::values::Instance, &'static str> {
+        super::charge(steps)?;
+        let super::Mapping::Ordinary { graph, .. } = &self.mapping else {
+            return Err("source associated constant requires its actual ordinary domain");
+        };
+        let super::super::Canonical::Lazy(lazy) = &graph.canonical else {
+            return Err("source associated constant requires its actual lazy recipes");
+        };
+        Ok(crate::sema::values::Instance {
+            definition: self.constant(declaration, steps)?,
+            arguments: lazy
+                .constant_arguments(self.raw().body, arguments)
+                .map_err(|_| "source associated constant lost its actual canonical arguments")?,
+        })
+    }
+    pub(crate) fn associated_goals(
+        &self,
+        steps: &mut usize,
+    ) -> Result<Option<Ref<'_, [Predicate]>>, &'static str> {
+        if !self.rows().descriptor().profile().declaration_policies() {
+            return Ok(None);
+        }
+        let super::Mapping::Ordinary { graph, .. } = &self.mapping else {
+            return Ok(None);
+        };
+        let super::super::Canonical::Lazy(lazy) = &graph.canonical else {
+            return Ok(None);
+        };
+        super::charge(steps)?;
+        lazy.constant_goals(self.raw().body)
+            .map(Some)
+            .map_err(|_| "source associated constant lost its actual pending trait goals")
     }
     pub(crate) fn static_storage(
         &self,

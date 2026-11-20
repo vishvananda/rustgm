@@ -325,9 +325,11 @@ pub(super) fn allocation<'a>(
                         .map_or(0, |copy| copy.goals.len().saturating_add(1)),
                 );
         }
+        let (operation_bytes, associated) = rebuilt_operations::allocation(raw, work)?;
+        count = count.saturating_add(associated);
         visits = visits.saturating_add(count.saturating_mul(32));
         bytes = bytes
-            .saturating_add(rebuilt_operations::allocation(raw, work)?.saturating_mul(4))
+            .saturating_add(operation_bytes.saturating_mul(4))
             .saturating_add(count.saturating_mul(
                 8 * (size_of::<crate::body::regions::Obligation>()
                     + size_of::<crate::body::regions::Proof>()
