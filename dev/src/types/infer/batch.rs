@@ -18,20 +18,28 @@ impl Context {
         inputs: &[(Argument, Argument)],
     ) -> Result<(), Error> {
         self.account_work(inputs.len())?;
-        let pairs: Vec<_> = inputs
-            .iter()
-            .filter_map(|&(left, right)| {
-                if let (Argument::Type(a), Argument::Type(b)) = (left, right) {
-                    Some((a, b))
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let single;
+        let collected;
+        let pairs: &[_] = if let [(Argument::Type(left), Argument::Type(right))] = inputs {
+            single = (*left, *right);
+            std::slice::from_ref(&single)
+        } else {
+            collected = inputs
+                .iter()
+                .filter_map(|&(left, right)| {
+                    if let (Argument::Type(a), Argument::Type(b)) = (left, right) {
+                        Some((a, b))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+            &collected
+        };
         // A single variable binds to an unexpanded canonical leaf in constant
         // work. Composite patterns still need the shared cycle check: canonical
         // roots can contain cached children expanded by earlier constraints.
-        if let [(left, right)] = pairs.as_slice() {
+        if let [(left, right)] = pairs {
             let left = self.root(*left)?;
             let right = self.root(*right)?;
             if matches!(
@@ -44,8 +52,8 @@ impl Context {
                 return self.equate_mixed_inputs(store, inputs, true);
             }
         }
-        let anchored = self.anchored_inputs(store, &pairs)?;
-        if !anchored && self.input_callables(store, &pairs)? {
+        let anchored = self.anchored_inputs(store, pairs)?;
+        if !anchored && self.input_callables(store, pairs)? {
             return self.equate_mixed_inputs(store, inputs, true);
         }
         self.pairs.clear();
@@ -58,7 +66,7 @@ impl Context {
         if anchored {
             Ok(())
         } else {
-            self.acyclic_inputs(store, &pairs)
+            self.acyclic_inputs(store, pairs)
         }
     }
 

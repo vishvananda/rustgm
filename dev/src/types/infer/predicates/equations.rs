@@ -104,10 +104,13 @@ impl Context {
         }
         self.account_work(1 + actual.len())?;
         if matches!(relation, Relation::Scoped) {
-            let inputs: Vec<_> =
-                std::iter::once((Argument::Type(left.subject), Argument::Type(right.subject)))
-                    .chain(actual.iter().copied().zip(expected.iter().copied()))
-                    .collect();
+            let subject = (Argument::Type(left.subject), Argument::Type(right.subject));
+            if actual.is_empty() {
+                return self.equate_input_pairs(store, std::slice::from_ref(&subject));
+            }
+            let inputs: Vec<_> = std::iter::once(subject)
+                .chain(actual.iter().copied().zip(expected.iter().copied()))
+                .collect();
             return self.equate_input_pairs(store, &inputs);
         }
         // A successful root pair remains equal under compatible later equations.

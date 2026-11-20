@@ -4,7 +4,10 @@ use rustgm::types::{
     ItemId, Kind, Primitive, RegionId, Store, TypeId,
     arguments::{Argument, ConstKind, Constant},
     infer::{self, Context, Domain, Instantiation},
-    parameters::{Parameter, ParameterId, ParameterKind, predicates::Predicate},
+    parameters::{
+        Parameter, ParameterId, ParameterKind,
+        predicates::{Bound, Predicate},
+    },
 };
 
 fn parameter(store: &mut Store, owner: u32) -> Result<(ParameterId, TypeId), &'static str> {
@@ -248,5 +251,62 @@ fn complete_header_equations_share_type_and_const_roots() -> Result<(), Box<dyn 
             assert_eq!(result, Err(infer::Error::Mismatch));
         }
     }
+    Ok(())
+}
+
+#[test]
+fn singleton_candidate_preserves_both_charges_before_invalid_root()
+-> Result<(), Box<dyn std::error::Error>> {
+    const LIMIT: usize = 1_000_000;
+    let mut store = Store::default();
+    let template = Predicate {
+        ty: TypeId::primitive(Primitive::U8),
+        bound: Bound::Trait(super::application(&mut store, 200, &[])?),
+    };
+    let mut context = Context::default();
+    let valid = instantiate(&mut context, &mut store, template, &[])?;
+    let invalid =
+        valid.map_arguments(|_| Ok(infer::arguments::Argument::Type(infer::TermId(u32::MAX))))?;
+    for (allowance, expected, steps) in [
+        (0, infer::Error::Budget, LIMIT + 1),
+        (1, infer::Error::Budget, LIMIT + 1),
+        (2, infer::Error::InvalidIdentity, LIMIT),
+    ] {
+        context.steps = LIMIT - allowance;
+        assert_eq!(
+            context
+                .equate_candidate_header(&store, &invalid, &valid, false)
+                .err(),
+            Some(expected)
+        );
+        assert_eq!(context.steps, steps);
+        assert!(context.region_equalities.is_empty());
+    }
+    Ok(())
+}
+
+#[test]
+fn singleton_candidate_keeps_bound_lifetime_equations_scoped()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let bound = Bound::Trait(super::application(&mut store, 200, &[])?);
+    let original = reference(&mut store, 0, 0)?;
+    let renamed = reference(&mut store, 0, 1)?;
+    let left = function(&mut store, 1, &[original], original)?;
+    let right = function(&mut store, 2, &[renamed], renamed)?;
+    let mut context = Context::default();
+    let left = instantiate(&mut context, &mut store, Predicate { ty: left, bound }, &[])?;
+    let right = instantiate(
+        &mut context,
+        &mut store,
+        Predicate { ty: right, bound },
+        &[],
+    )?;
+    assert!(
+        context
+            .equate_candidate_header(&store, &left, &right, false)?
+            .is_empty()
+    );
+    assert!(context.region_equalities.is_empty());
     Ok(())
 }
