@@ -1118,12 +1118,29 @@ registry maps it to `core/src/num/niche_types.rs`. The guarded reduction
 uses a single closed nominal inherent owner and varies the constant's
 declared result. The scalar result publishes 38,009 metadata bytes.
 The nominal result reaches the same rejection before emitting metadata.
-Pinned Rust accepts both sources. Original nominal inherent constant
-transport is pending. The trace, source registry and reduction receipt
-are under
+Pinned Rust accepts both sources. The trace, source registry and
+reduction receipt are under
 `obj/parallel/strict-compiler-unit-graph/{core-associated-constant-diagnosis-v1,core-source-id-v2,core-nominal-zero-reduction-v1}/`
 in the frontier worktree. The reduction receipt's SHA-256 is
 `f35b61544be17cfb09380ecd1300cd44b060d9921eff5a16e1bad5bafec99f0f`.
+
+`6506a856a` carries a closed inherent constant's nominal result through
+its checked initializer. A tuple constructor call retains its actual
+call site, payload and closed-const effect. The unchanged nominal
+reduction publishes 38,408 metadata bytes. The scalar reduction
+preserves its original 38,009 bytes exactly. All three focused cases
+pass. A fresh client returns 37 from its direct read and from the
+imported const function, while a mistyped read fails and v13 rejects
+publication. The independent pinned Rust control checks both 37
+results and rejects the mistyped read. The code is on local `main`
+at `81bd3b799`. The frontier's focused receipt is under
+`obj/qualification/fast/1795184872360694632/`. The frozen replay is
+`core-nominal-zero-reduction-v2/result.json` with SHA-256
+`f21b59f0ee9971834ead46335716735e1cf0af20fb0ad05ada5785a3362bca9f`.
+The pinned Rust receipt is `nominal-constant-rustc-oracle-v1/result.json`
+with SHA-256 `7db496f29e724daaed7aa6e20d66f97a496c913f86cca81871cf0ab970cab127`.
+Both are under `obj/parallel/strict-compiler-unit-graph/` in the
+frontier worktree.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
