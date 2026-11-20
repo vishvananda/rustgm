@@ -1628,6 +1628,22 @@ and 31.311 seconds. The elapsed-time effect awaits a stable reversed pair.
 The report and immutable pins are under
 `obj/parallel/comparison-marker-receipt/` in the performance checkout.
 
+`12a2c0cac` uses stack slices for the singleton trait equations. The original
+core and Unicode graph sees 389,950 single-pair candidate headers out of
+780,760. Across the measured entry paths, the observed widths and allocation
+sizes account for an estimated 806,162 temporary allocations and 19.53 MB.
+The source-backed allocation control confirms a drop of 1,946 blocks, and
+the ordinary and width-32 controls keep the same allocation counts. Six
+focused tests preserve relation order, budget failures and bound lifetimes.
+
+The immutable pair retires 0.192% fewer instructions, 0.196% fewer loads and
+0.190% fewer stores on the frozen graph. All graph and native outputs and
+all 70 smaller samples match. The widest controls use up to 0.013% more
+instructions, and the ordinary control stays within A/A spread. Wall time
+and user-cycle effects remain within the baseline variation. The report and
+raw profiles are under `obj/parallel/scoped-singleton-equation/` in the
+performance checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
