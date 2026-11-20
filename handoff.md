@@ -2,31 +2,36 @@
 
 ## Resume point — 2026-11-20
 
-`52c8f87e3` records the current integration checkpoint. The existing
-frontier worktree, `/mnt/vizier/rustgm-scratch/rustgm-pa26-work`, is on
-`lane/strict-trait-constant-defaults-20261120`. Its division commit
-`8d80e4f99` is integrated as `76751780c`. Focused validation covered
-primitive v14 division transport, an imported floating compile-time
-quotient and the prior v13 rejection behavior. The native floating and
-signed controls agree with pinned Rust, including zero and overflow aborts.
+`aeab57f68` records the lifetime census and `0caa1751d` the latest strict
+unit-graph replay. The combined graph has authenticated inputs for all
+22 planned target commands. The strict optimized compiler reaches
+`core` publication after 36.80 seconds without emitting an accepted
+artifact. Its first failure is the provided
+`Lemire::MAX_EXPONENT_FAST_PATH` constant.
+[Strict graph evidence](docs/self-hosting-plan.md#L1154)
 
-The strict original `core` replay stops at the provided
-`Lemire::MAX_EXPONENT_FAST_PATH` constant. The real initializer has one
-block, one local and nine typed values. It requests an associated constant
-from its supertrait using the consumer's `Self`. The remaining transport
-has to preserve the original initializer, its owner substitutions and that
-open request through fresh consumption. Stage 1 and Stage 2 are pending.
-[Strict Core evidence](docs/self-hosting-plan.md#L945)
+The self-hosting worktree is
+`/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
+`lane/strict-trait-constant-defaults-20261120`. The required-constant
+checkpoint `7a5329550` is on `main`. A fresh RustGM client imports
+`Table<T>::ROW`, returns `19` and `513` for its two implementations and
+rejects a missing or mistyped override. Four focused integration tests
+passed. Private codec execution remains pending. The provided initializer
+still needs original-body transport, owner substitution and an open request
+against the actual supertrait. Stage 1 and Stage 2 are pending.
+[Strict Core evidence](docs/self-hosting-plan.md#L953)
 
-The performance worker survived the restart in
+The performance worker survived the restart. Its worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/dispatch-invoke-presence-20261120`. Its isolated candidate
-`9d6a6f10f` skips an invocation scan when the preceding dispatch walk
-sees no `Invoke`. Four focused checks passed. The worker is building
-the immutable `f5e3fbdcf` and `9d6a6f10f` pair for output comparison and
-exclusive counter measurement. The wider child-proof replay remains an
-experiment, while the early source guard `049db339d` is already on `main`.
-[Performance evidence](docs/self-hosting-plan.md#L1927)
+`lane/ordered-liveness-seeds-20261120` at `72264239b`. The optimized
+candidate matches `f5e3fbdcf` on the frozen graph, 17 focused outcomes
+and all six typed loan-ledger controls. Exclusive counters are pending.
+The private harness reached its build deadline. The separate
+child-proof lane is parked. Its early source guard `049db339d` is on
+`main`, and the broader bounded replay remains on its experiment
+branches. Evidence is under `obj/parallel/v5-nontrait-schedule/` in
+the performance worktree.
+[Performance evidence](docs/self-hosting-plan.md#L2015)
 
 ## Historical bring-up checkpoint — 2026-11-19
 

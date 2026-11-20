@@ -961,6 +961,21 @@ is under `obj/parallel/strict-core/static-arrays-observe/lemire-ir/inspect-v2/`.
 and its context. The ordinary and compiler-operation ownership, forged-wire
 and division controls pass in `obj/qualification/fast/1795156227224835594/`.
 
+`7a5329550` publishes and imports an ordinary required trait constant in
+v14. The producer retains the actual value-namespace member and its
+inherited declaration scope. A fresh client uses the same imported
+`Table<T>::ROW` with `u8` and `u16` implementations, yielding `19` and
+`513` in LowIR. It rejects a missing constant and a mismatched type.
+The required-constant packet encodes identically after decoding. The
+v13 rejection, existing named-value, Range and division controls retain
+their expected outcomes. The four exact integration tests, formatting,
+architecture and selected strict Clippy pass. Pinned Rust independently
+produces `19 513` and rejects the two negative controls. The private
+codec checks and strict original Core replay remain pending. Evidence is
+under `obj/qualification/fast/1795160908867247551/` and
+`obj/parallel/v14-associated-constants/required-rustc-v1/` in the frontier
+checkout. The provided initializer remains the next transport requirement.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
