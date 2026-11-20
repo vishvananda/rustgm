@@ -2039,6 +2039,23 @@ seeds while preserving charged work and failure order. The counter and
 preflight receipts are under `obj/parallel/v5-nontrait-schedule/` in the
 performance checkout.
 
+`4757cac6d` leaves ordinary seed order intact and charges an ordered
+suffix for opaque parameter regions that the same identity table already
+contributed as full extents. The census identifies 855,947 eligible seed
+records, equivalent to 6.85 MB of cumulative mapped staging. Malformed
+points retain the original path. The optimized candidate matches all 18
+CLI comparisons and nine typed loan ledgers, including the first error.
+An independent debit control matches 276,717 budget states.
+
+All 36 counter observations preserve output hashes. The original graph
+retires 0.102% fewer instructions, 0.112% fewer loads and 0.072% fewer
+stores in the exclusive comparison. The two elapsed pairs are 9.12%
+and 13.29% slower, and the same baseline executable ranges from
+29.18 to 41.65 seconds across the paired runs. The change remains isolated
+pending investigation of the elapsed regression. The optimized pair
+and measurements are under
+`obj/parallel/v5-nontrait-schedule/full-suffix/` in the performance checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms

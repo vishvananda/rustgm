@@ -16,9 +16,12 @@ The self-hosting worktree is
 checkpoint `7a5329550` is on `main`. A fresh RustGM client imports
 `Table<T>::ROW`, returns `19` and `513` for its two implementations and
 rejects a missing or mistyped override. Four focused integration tests
-passed. Private codec execution remains pending. The provided initializer
-still needs original-body transport, owner substitution and an open request
-against the actual supertrait. Stage 1 and Stage 2 are pending.
+passed. `4520c8716` repairs the private decoder call. The private
+harness reached its build deadline before execution. The frontier
+worktree is testing publication of the provided initializer under its
+actual declaration, including lexical locals and canonical numbering.
+Owner substitution and the open supertrait request remain pending.
+Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L953)
 
 The performance worker survived the restart. Its worktree is
@@ -27,7 +30,11 @@ The performance worker survived the restart. Its worktree is
 candidate matches `f5e3fbdcf` on the frozen graph, 17 focused outcomes
 and all six typed loan-ledger controls. Paired counters show 0.253% more
 retired instructions on the original graph, so the candidate stays
-isolated. The worker is tracing the seeds already covered by full extents.
+isolated. A new candidate `4757cac6d` handles the covered parameter-seed
+suffix. Its optimized comparison matches the graph and nine typed loan
+ledgers. It retires 0.102% fewer instructions on the original graph, with
+slower elapsed time in both pairs. The worker is checking the timing
+conditions. Both candidates stay isolated.
 The private harness reached its build deadline. Bounded child-proof
 reuse `9143861f0` and its early source guard `049db339d` are both on
 `main`. The separate trait-header experiments are parked. Lifetime
