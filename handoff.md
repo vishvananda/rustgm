@@ -12,6 +12,10 @@ Pointee role family at `fab9da160`. The reduced Thin provider emits 4,591
 metadata bytes. A fresh client emits `return u8 7` through the actual
 imported alias and rejects the slice-pointer call. Four exact checks
 pass, including the fresh Pointee consumer and the local Thin regression.
+The frozen VTable reductions reproduce the strict gate with the exact
+external block, including when it sits behind a generic thin pointer.
+The ordinary control publishes and the by-value control fails sizing
+under both compilers.
 Stage 1 and Stage 2 remain pending.
 
 Local `main` carries the generic alias fix at `6555e3dba`. The exact
@@ -121,10 +125,11 @@ retires 0.253% more original-graph instructions. The second retires 0.102%
 fewer instructions and takes longer in both elapsed-time pairs. Bounded
 child-proof reuse `9143861f0` and its early source guard `049db339d` are
 on `main`. The separate trait-header experiments are parked.
-The active performance worker is checking repeated const-panic marker
-classification against the existing header-validation producer. The
-archived profile contains 132 matching stacks out of 26,865. The worker
-also confirmed read-only access to the pinned `v5literal` reference.
+The isolated const-panic marker candidate `0a8667768` retires 0.0213%
+fewer instructions on the frozen graph, with identical output and
+ledgers. The 1.28% reduction in the checked-absence control does not
+produce a verified whole-graph wall-time win. The worker is continuing
+attribution using the pinned `v5literal` reference.
 [Performance evidence](docs/self-hosting-plan.md#local-annotation-traversal)
 
 ## Historical bring-up checkpoint — 2026-11-19

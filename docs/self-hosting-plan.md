@@ -1271,6 +1271,18 @@ The trace is `core-direct-trait-alias-kind-v1/gdb.stdout` with SHA-256
 Both are in the frontier worktree's strict graph directory. Full Core
 publication and the strict dependent stages remain pending.
 
+The frozen VTable reduction preserves the original external block's
+bytes, with a second provider that uses the foreign type behind a
+generic thin pointer. Pinned Rust accepts both. Strict RustGM reaches
+the same declaration-kind gate in both providers. The ordinary nominal
+control publishes 4,972 bytes. Both compilers reject the by-value
+control, and RustGM reports that function parameters and results must
+be sized. The receipt is `core-vtable-reduction-v1/result.json` with
+SHA-256 `8bfa9dd6c435f0d9e794b2914f0115a410638a688f12ac167a0db17b9b89baf3`.
+Foreign type transport needs the actual declaration identity and
+canonical opaque type in fresh consumers. The existing local pointer
+formation and value-layout rules already distinguish those uses.
+
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
 client again matches pinned Rust on `10 22 27 91`. The replay pins
@@ -2461,6 +2473,28 @@ The map-only change is deferred. Evidence is under
 `obj/parallel/call-binding-census/result.md` in the performance
 worktree with SHA-256
 `f9344b26ba1fe5cf462f4a7f90592aa723ed80074ebc744bf5d4639a494fd51e`.
+
+### Const-panic marker classification
+
+The archived profile attributes 132 of 26,865 stacks to marker queries.
+The immutable count-only replay observes at least 68,859 authenticated
+queries and 677,906 repeated effect-row visits. The existing header
+validation computes the same marker facts. Candidate `0a8667768`
+retains that result and preserves source authentication, owner
+invalidation and the original work debits.
+
+The optimized A/A and ABBA comparison preserves all 24 outputs and
+diagnostics. On the frozen 746-input graph it retires 0.0213% fewer
+instructions, or 19.1 million instructions. The checked-absence
+control retires 1.28% fewer instructions. Both full-graph wall pairs
+take longer, inside the 14.32% A/A range. The candidate stays isolated.
+The standard private harness reached its compile deadline. The
+separate typed export passes all five selected private bodies.
+The optimized preflight preserves semantic and lowering ledgers.
+The paired receipt is
+`obj/parallel/const-panic-marker-publication/paired-abba/receipt.json`
+in the performance worktree with SHA-256
+`9d1c035dbde6360e3e3c734c8080ee565d5ba76adb5483626e7e40d7809dac21`.
 
 ### Inference finalization
 
