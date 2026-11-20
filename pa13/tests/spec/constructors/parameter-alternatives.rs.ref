@@ -43,55 +43,46 @@ function @rg.17(%p0 : ptr, %p1 : u8) -> void {
 }
 function @rg.20(%p0 : ptr) -> u8 {
   slot $s0 : obj<16x8>
-  slot $s1 : u32
-  slot $s2 : u8
+  slot $s1 : u8
   block ^b0:
     %t0 = addr $s0
     copyobj 16x8 %p0, %t0
-    store u32 0, $s1
     %t1 = load i64 $s0
     %t2 = cmp eq i64 %t1, 0
-    branch %t2, ^b5, ^b3
+    branch %t2, ^b4, ^b3
   block ^b3:
     %t3 = load i64 $s0
     %t4 = cmp eq i64 %t3, 1
-    branch %t4, ^b7, ^b2
+    branch %t4, ^b5, ^b2
   block ^b2:
     unreachable
-  block ^b7:
+  block ^b5:
     %t5 = addr $s0
     %t6 = index u8 %t5, 8
-    jump ^b6
-  block ^b6:
-    store u32 1, $s1
     jump ^b1
-  block ^b5:
+  block ^b4:
     %t7 = addr $s0
     %t8 = index u8 %t7, 8
-    jump ^b4
-  block ^b4:
-    store u32 0, $s1
     jump ^b1
   block ^b1:
-    %t9 = load u32 $s1
-    %t10 = cmp eq u32 %t9, 0
-    %t11 = convert trunc i1 i64 %t10
-    branch %t11, ^b9, ^b10
-  block ^b10:
-    %t12 = addr $s0
-    %t13 = index u8 %t12, 8
-    %t14 = load u8 %t13
-    store u8 %t14, $s2
-    jump ^b8
-  block ^b9:
-    %t15 = addr $s0
-    %t16 = index u8 %t15, 8
-    %t17 = load u8 %t16
-    store u8 %t17, $s2
-    jump ^b8
+    %t9 = load i64 $s0
+    %t10 = cmp eq i64 %t9, 0
+    branch %t10, ^b7, ^b8
   block ^b8:
-    %t18 = load u8 $s2
-    return u8 %t18
+    %t11 = addr $s0
+    %t12 = index u8 %t11, 8
+    %t13 = load u8 %t12
+    store u8 %t13, $s1
+    jump ^b6
+  block ^b7:
+    %t14 = addr $s0
+    %t15 = index u8 %t14, 8
+    %t16 = load u8 %t15
+    store u8 %t16, $s1
+    jump ^b6
+  block ^b6:
+    %t17 = load u8 $s1
+    return u8 %t17
 }
 function @rg.19(%p0 : ptr, %p1 : u8) -> void {
   slot $s0 : u8

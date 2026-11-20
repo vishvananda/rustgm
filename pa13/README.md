@@ -221,9 +221,11 @@ Diagnostics use `.len` for a length constraint and `[-N]` for an end offset.
 
 Decisions retain ordered alternatives, read the scrutinee only when the
 decision or capture requires it, and capture values after a successful decision.
-Composite or-patterns save selected alternative identities in body locals;
-subsequent capture branches preserve the selected places without duplicating
-products of alternatives. Capture projections are formed in their own branches,
+Composite or-patterns save selected alternative identities in body locals.
+Outside guarded arms, alternatives with distinct variant tags instead re-test
+the unchanged discriminant, which keeps the selected variant's owned fields
+initialized. Subsequent capture branches preserve the selected places without
+duplicating products of alternatives. Capture projections are formed in their own branches,
 so they do not depend on values defined only along an earlier decision path.
 The ordinary let/parameter path uses these decisions when an irrefutable pattern
 combines refutable alternatives. A declaration without an initializer only
