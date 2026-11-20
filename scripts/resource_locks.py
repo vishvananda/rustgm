@@ -82,6 +82,98 @@ def holders(rows):
     return ", ".join(names) or "a finishing job"
 
 
+# A waiter refreshes its ticket while it polls. One silent this long (a stopped
+# process) stops holding the queue for the waiters behind it.
+QUEUE_STALL = 60
+HEARTBEAT = 5
+
+
+class Ticket:
+    """A first-come-first-served place in the heavy-job slot queue.
+
+    Only the oldest live ticket may claim a slot, and it leaves the queue in the
+    same admission critical section, so the next waiter is at the head at once.
+    A ticket is live while its waiter holds its flock: a killed waiter never
+    blocks the queue. Waiters running older scripts take no ticket; they may
+    still claim a free slot first, but nothing here can block them.
+    """
+
+    def __init__(self, directory, root, kind):
+        self.directory = directory
+        self.folder = directory / "queue"
+        self.folder.mkdir(parents=True, exist_ok=True)
+        self.handle = None
+        self.beaten = time.monotonic()
+        with admission(directory):
+            # Creation and locking are one admission section, so no scan sees an
+            # unlocked new ticket. Numbers only need to exceed every queued one.
+            number = 1 + max((int(path.name.partition("-")[0]) for path in self.folder.glob("*.ticket")
+                              if path.name.partition("-")[0].isdigit()), default=0)
+            self.path = self.folder / f"{number:012d}-{uuid.uuid4().hex}.ticket"
+            self.handle = self.path.open("x+")
+            fcntl.flock(self.handle, fcntl.LOCK_EX)
+            json.dump({"root": str(root), "kind": kind, "pid": os.getpid(), "queued": time.time()},
+                      self.handle)
+            self.handle.flush()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        if self.handle is not None:
+            with admission(self.directory):
+                self.leave()
+
+    def ahead(self):
+        """Live, recently refreshed tickets queued earlier. Hold the admission lock."""
+        now = time.time()
+        rows = []
+        for path in sorted(self.folder.glob("*.ticket")):
+            if path.name >= self.path.name:
+                break
+            try:
+                with path.open("r+") as handle:
+                    if try_lock(handle, fcntl.LOCK_EX):
+                        path.unlink(missing_ok=True)  # its waiter exited without leaving
+                        continue
+                if now - path.stat().st_mtime < QUEUE_STALL:
+                    rows.append(path)
+            except FileNotFoundError:
+                continue
+        return rows
+
+    def leave(self):
+        """Hold the admission lock: unlink while still locked, so no scan sees a dead ticket."""
+        if self.handle is not None:
+            self.path.unlink(missing_ok=True)
+            self.handle.close()
+            self.handle = None
+
+    def beat(self, now):
+        if now - self.beaten >= HEARTBEAT:
+            self.beaten = now
+            try:
+                os.utime(self.path)
+            except OSError:
+                pass
+
+
+def queued(directory):
+    """The live queue in order, for status output."""
+    rows = []
+    with admission(directory):
+        for path in sorted((directory / "queue").glob("*.ticket")):
+            try:
+                with path.open("r+") as handle:
+                    if try_lock(handle, fcntl.LOCK_EX):
+                        continue
+                    row = json.loads(handle.read() or "{}")
+                rows.append({**row, "stale": time.time() - path.stat().st_mtime >= QUEUE_STALL})
+            except (FileNotFoundError, json.JSONDecodeError):
+                continue
+    return rows
+
+
 def peer_budget(row, policy):
     configured = output_budget(policy)
     budget = row.get("budget_bytes")
@@ -124,17 +216,20 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
         if kind != "exclusive":
             fcntl.flock(turn, fcntl.LOCK_UN)
         slots = [opened(f"slot-{index}.lock") for index in range(policy["jobs"])]
+        place = stack.enter_context(Ticket(directory, root, kind))
         index = None
         announced = 0
         while index is None:
             # Publication is part of claiming the slot: a concurrent snapshot
             # cannot observe a newly held lock with its previous owner's cap.
             with admission(directory):
-                for ordinal, handle in enumerate(slots):
+                ahead = place.ahead()
+                for ordinal, handle in enumerate(() if ahead else slots):
                     if try_lock(handle, fcntl.LOCK_EX):
                         index = ordinal
                         break
                 if index is not None:
+                    place.leave()
                     record = {"pid": os.getpid(), "token": uuid.uuid4().hex, "root": str(root),
                               "kind": kind, "slot": index, "started": time.time(),
                               "schema": policy["schema"], "state": "acquired",
@@ -149,9 +244,11 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
                 now = time.monotonic()
                 if now >= deadline:
                     raise ValueError("timed out waiting for a heavy-job slot")
+                place.beat(now)
                 if now - announced >= 30:
+                    turn = f"{len(ahead)} queued ahead" if ahead else "next in the queue"
                     print("resources: waiting for a heavy-job slot held by "
-                          + holders(active_records(directory, policy["jobs"])), flush=True)
+                          + holders(active_records(directory, policy["jobs"])) + f"; {turn}", flush=True)
                     announced = now
                 time.sleep(0.2)
         # Keep leases held by the launched process if its supervisor is killed.

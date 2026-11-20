@@ -16,7 +16,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from resource_locks import active_records, holders, inherited, lease, try_lock
+from resource_locks import (QUEUE_STALL, Ticket, active_records, admission, holders, inherited, lease, queued,
+                            try_lock)
 from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate, width
 from resource_runner import run, sample_scope, scope_cgroup, scope_command, scope_notes, supervise
 from resources import set_jobs
@@ -90,6 +91,79 @@ class ResourceTests(unittest.TestCase):
                              r'waiting for a heavy-job slot held by first for \d+s, second for \d+s')
         self.assertEqual(holders([{'slot': 0, 'state': 'acquiring'}]), 'an acquiring job')
         self.assertEqual(holders([]), 'a finishing job')
+
+    def test_queue_tickets_order_waiters_and_never_wait_on_dead_or_stopped_ones(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            with Ticket(directory, Path('/a'), 'ordinary') as first, \
+                    Ticket(directory, Path('/b'), 'ordinary') as second, \
+                    Ticket(directory, Path('/c'), 'ordinary') as third:
+                with admission(directory):
+                    self.assertEqual(first.ahead(), [])
+                    self.assertEqual(third.ahead(), [first.path, second.path])
+                self.assertEqual([row['root'] for row in queued(directory)], ['/a', '/b', '/c'])
+                # A waiter that was killed released its flock without leaving.
+                first.handle.close()
+                first.handle = None
+                old = time.time() - QUEUE_STALL - 1
+                os.utime(second.path, (old, old))
+                with admission(directory):
+                    self.assertEqual(third.ahead(), [])
+                self.assertFalse(first.path.exists())
+                self.assertTrue(second.path.exists())
+                with Ticket(directory, Path('/d'), 'ordinary') as fourth:
+                    self.assertGreater(fourth.path.name, third.path.name)
+            self.assertEqual(list((directory / 'queue').glob('*.ticket')), [])
+
+    def test_free_slot_goes_to_the_head_of_the_queue_only(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            with Ticket(directory, Path('/early'), 'ordinary'):
+                with self.assertRaisesRegex(ValueError, 'timed out'):
+                    with lease(directory, Path('/late'), DEFAULTS, 'ordinary', wait=0.5):
+                        self.fail('claimed a slot out of turn')
+                self.assertEqual(active_records(directory, 2), [])
+            with lease(directory, Path('/late'), DEFAULTS, 'ordinary', wait=0):
+                self.assertEqual(len(active_records(directory, 2)), 1)
+                self.assertEqual(queued(directory), [])
+
+    def test_waiters_are_admitted_in_arrival_order(self):
+        context = multiprocessing.get_context('spawn')
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            holders_ = [lease(directory, Path(root), DEFAULTS, 'ordinary', wait=0) for root in ['/h1', '/h2']]
+            for held in holders_:
+                held.__enter__()
+            queue = context.Queue()
+            release = context.Event()
+            waiters = []
+            try:
+                for count, root in enumerate(['/w1', '/w2', '/w3'], 1):
+                    waiter = context.Process(target=contender, args=(folder, root, 'ordinary', queue, release))
+                    waiter.start()
+                    waiters.append(waiter)
+                    deadline = time.monotonic() + 5
+                    while len(queued(directory)) < count:
+                        self.assertLess(time.monotonic(), deadline)
+                        time.sleep(.01)
+                holders_.pop().__exit__(None, None, None)
+                self.assertEqual(queue.get(timeout=5), '/w1')
+                holders_.pop().__exit__(None, None, None)
+                self.assertEqual(queue.get(timeout=5), '/w2')
+                self.assertEqual([row['root'] for row in queued(directory)], ['/w3'])
+                release.set()
+                self.assertEqual(queue.get(timeout=5), '/w3')
+                for waiter in waiters:
+                    waiter.join(5)
+                    self.assertEqual(waiter.exitcode, 0)
+            finally:
+                for held in holders_:
+                    held.__exit__(None, None, None)
+                release.set()
+                for waiter in waiters:
+                    if waiter.is_alive():
+                        waiter.terminate()
+                    waiter.join(5)
 
     def test_three_slots_keep_worktree_and_exclusive_limits(self):
         policy = {**DEFAULTS, 'jobs': 3}

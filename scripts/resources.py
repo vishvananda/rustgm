@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from resource_locks import active_records, lease
+from resource_locks import active_records, lease, queued
 from resource_policy import DEFAULTS, atomic_json, common_directory, discover, output_roots, validate
 from resource_runner import run
 
@@ -107,8 +107,8 @@ def main():
                 print("Shared controller is not configured")
                 return 1
             directory, policy = found
-            print(json.dumps({"policy": policy,
-                              "active": active_records(directory, policy["jobs"])}, indent=2))
+            print(json.dumps({"policy": policy, "active": active_records(directory, policy["jobs"]),
+                              "queued": queued(directory)}, indent=2))
         else:
             command = args.command[1:] if args.command[:1] == ["--"] else args.command
             if not command or not 0 <= args.wait_seconds <= 3600:

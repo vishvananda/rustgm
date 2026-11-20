@@ -1460,6 +1460,11 @@ never the requesting job's smaller cap. Claiming a slot and publishing its first
 record are serialized with active-record snapshots by a short admission lock;
 no job waits for a slot while holding that lock. Kernel slot locks still decide
 availability, so stale records for unlocked slots do not reserve space.
+Waiters queue first come, first served: each holds an flock on a numbered
+ticket under the controller's `queue/`, and only the oldest live ticket may
+claim a free slot. A killed waiter's ticket is unlocked and dropped; one not
+refreshed for a minute stops holding the queue. Waiters running scripts from
+before the queue take no ticket and may still claim first.
 
 Initial, incremental and final scans use the same cap. Initial refusals retain
 failed receipts without launching a command. Live overshoots stop the entire
