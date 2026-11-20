@@ -781,6 +781,17 @@ accepts both reduced providers, and RustGM emits strict artifacts for the one
 without the alias. The replay and controls are under
 `obj/parallel/strict-core/range-declarations/` in the frontier checkout.
 
+`8718740ad` publishes the private self alias as a scoped binding to the
+provider's actual root. A fresh client calls the public function that uses
+the alias internally, and a lookup through the private alias receives the
+privacy diagnostic. Independent metadata compilation with pinned Rust agrees.
+Two RustGM publications produce identical LowIR and metadata, and the
+namespace round trip preserves the original root and privacy. Version
+thirteen reaches the original declaration-kind fence. The alias, range and
+deprecation checks pass in one focused batch. Evidence is under
+`obj/parallel/v14-root-self-alias/independent-metadata/` and
+`obj/qualification/fast/1795130911238788050/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
@@ -856,8 +867,11 @@ Three additional controls use the unchanged original `core`, `alloc` and
 bound and both projected bounds produce LowIR. The projected calls pass
 with explicit and inferred element types. The first explicit run reaches
 its 75-second limit, and the retry finishes in 45.61 seconds. The inferred
-run finishes in 45.67 seconds. The next reduction uses the actual
-`core::iter::Extend` trait from the library. Evidence is under
+run finishes in 45.67 seconds. An empty implementation of the original
+`core::iter::Extend<A::Item>` reproduces the normalization error at the array
+argument. Pinned Rust accepts that source. RustGM reaches the error after
+35.48 seconds with an empty skip list. The implementation body can be reduced
+to `let _ = iter`. Evidence is under
 `obj/parallel/m4-arrayvec-extend/original-iterator-controls/`.
 
 Normalization and identifier
@@ -1412,6 +1426,17 @@ frontier checkout.
    trial frame copies and predicate graph imports. Evidence is under
    `obj/parallel/source-child-headroom/` in the performance checkout.
 
+   The shadow counts come from neutral memoizing roots on that core and
+   Unicode graph. A further 2,225 descents reach the explicit-argument gate.
+   Admitting those to a shadow still requires exact argument identities and
+   the remaining query, allocation, alternative and proof checks. Root reuse
+   across caller premises also requires re-proving their influence on the
+   selected candidate. The candidate-header relation itself builds a mixed
+   argument pair vector and a type-only pair vector. `begin_trial` calls
+   `relate_predicates` directly in 588 of 26,865 sampled chains. The next
+   experiment counts relation widths and allocations, then tests a stack
+   singleton with the existing ordered checks and debts.
+
 Source automatic-trait classification now compares canonical provider IDs in
 the compact language-role cells. A selected role still checks its declaration
 and ordinary application. The imported catalog retains its ordered origin
@@ -1571,6 +1596,17 @@ seconds in ABBA and from 29.575 to 31.610 seconds in BAAB. User cycles increase
 in both orders. Separate calibration windows run the same baseline in 29.4
 to 49.2 seconds. The candidate remains isolated. Evidence is under
 `obj/parallel/comparison-owner-receipts/` in the performance checkout.
+
+The isolated `a99d67a12` candidate reuses just one adjacent marker witness
+within the comparison request. It saves 1.207 billion retired instructions
+on the frozen `core` and `unicode-ident` graph, a 1.316% reduction. The
+focused control replays, original LowIR and native scalar sweeps match.
+The exact typed driver preserves the first budget failure and charged work
+after the standard private harness reaches its build deadline. In ABBA the
+baseline runs take 49.988 and 31.865 seconds while the candidate takes 43.005
+and 31.311 seconds. The elapsed-time effect awaits a stable reversed pair.
+The report and immutable pins are under
+`obj/parallel/comparison-marker-receipt/` in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
