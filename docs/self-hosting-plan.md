@@ -1818,9 +1818,21 @@ new tracking hits and displaces 770 existing comptime hits while adding
 240. That saves 62,421 net physical scans, covering 3,957,568 witness
 steps. The compiler must still pay its original work ledger. Every observed
 replay debit preview succeeds. The separate tracking table and one-slot
-request receipt predict fewer hits. Production implementation and
-calibrated measurements are pending. The graph and focused receipts are
-in `obj/parallel/caller-tracking-witness/` in the performance checkout.
+request receipt predict fewer hits.
+
+`f5e3fbdcf` applies that receipt reuse to direct, selected and unresolved
+override tracking from the same source body checker. The exact adjacent
+optimized pair preserves the original 31,992,265 lint read steps and
+1,878,898 bytes charged during body checking. Both native caller-location
+controls and all 66 measured outputs match. The paired original graph
+retires 1.258% fewer instructions, 1.566% fewer load operations and 1.688%
+fewer store operations. Same-binary instruction spread is 0.0085%.
+The sampled wall and cycle changes are within baseline variation. The
+ordinary scalar control uses about 0.05–0.07% fewer instructions.
+Seven private test bodies pass through a disposable typed export. Linking
+the standard private harness exceeded the development guard. The
+qualification, graph and focused receipts are in
+`obj/parallel/caller-tracking-witness/` in the performance checkout.
 
 A review of the v5literal C++ compiler translation at `a59264bd` identifies
 two designs to test on RustGM. Its class partial-specialization lookup
