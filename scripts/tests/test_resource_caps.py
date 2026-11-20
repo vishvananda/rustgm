@@ -345,8 +345,9 @@ class OutputCapTests(unittest.TestCase):
                 self.assertEqual(run(root, ['unused'], {}, wait=0), 0)
                 space.assert_called_once_with(root, policy, 50 * GIB)
                 environment = launch.call_args.args[2]
+                # Tests use the scope's eight CPUs; memory bounds general build jobs.
                 self.assertEqual(environment['CARGO_BUILD_JOBS'], '2')
-                self.assertEqual(environment['RUST_TEST_THREADS'], '2')
+                self.assertEqual(environment['RUST_TEST_THREADS'], '8')
                 self.assertEqual(environment['RUSTGM_TEST_JOBS'], '2')
                 self.assertEqual(launch.call_args.args[5]['budget_bytes'], 50 * GIB)
 

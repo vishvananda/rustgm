@@ -1,19 +1,64 @@
 """Run one leased process tree with kernel CPU/RAM limits and disk monitoring."""
 import os
+from pathlib import Path
 import signal
 import subprocess
 import sys
 import time
 
 from resource_locks import active_records, inherited, inherited_budget, lease, peer_budget
-from resource_policy import (OutputLimitError, UsageScan, atomic_json, check_usage, discover, free_space,
-                             output_budget, output_roots, usage)
+from resource_policy import (BUILD_JOBS, GIB, OutputLimitError, UsageScan, atomic_json, check_usage, discover,
+                             free_space, output_budget, output_roots, usage, width)
 
 
 def scope_command(command, unit, policy):
     return ["systemd-run", "--user", "--scope", "--quiet", "--collect", f"--unit={unit}",
             "-p", f"CPUQuota={policy['cpu_percent']}%", "-p", f"MemoryMax={policy['memory_gib']}G",
             "-p", "MemorySwapMax=0", "-p", f"TasksMax={policy['tasks']}", *command]
+
+
+def scope_cgroup(pid, unit):
+    """systemd-run moves itself into the scope shortly before it runs the command."""
+    try:
+        group = Path(f"/proc/{pid}/cgroup").read_text().strip().rpartition("::")[2]
+    except OSError:
+        return None
+    return Path("/sys/fs/cgroup") / group.lstrip("/") if group.endswith("/" + unit) else None
+
+
+def sample_scope(folder, record):
+    """Keep the scope's memory and task high-water marks in the receipt; this never limits.
+
+    memory.peak counts reclaimable page cache. The sampled anonymous peak is
+    what must fit under MemoryMax. An OOM kill or a refused task shows that
+    MemoryMax or TasksMax bound.
+    """
+    try:
+        def table(name):
+            return dict(line.split() for line in (folder / name).read_text().splitlines())
+        marks = {"memory_peak_bytes": int((folder / "memory.peak").read_text()),
+                 "memory_anon_peak_bytes": int(table("memory.stat")["anon"]),
+                 "memory_oom_kills": int(table("memory.events")["oom_kill"]),
+                 "tasks_peak": int((folder / "pids.peak").read_text()),
+                 "tasks_refused": int(table("pids.events")["max"])}
+    except (OSError, ValueError, KeyError):
+        return
+    for key, value in marks.items():
+        record[key] = max(value, record.get(key, 0))
+
+
+def scope_notes(record, policy):
+    """A bound cap otherwise looks like an unexplained compiler signal or spawn error."""
+    notes = []
+    if record.get("memory_oom_kills"):
+        notes.append(f"{record['memory_oom_kills']} process(es) were OOM-killed at the "
+                     f"{policy['memory_gib']} GiB memory cap")
+    elif record.get("memory_anon_peak_bytes", 0) >= 0.85 * policy["memory_gib"] * GIB:
+        notes.append(f"anonymous memory peaked at {record['memory_anon_peak_bytes'] / GIB:.1f} of the "
+                     f"{policy['memory_gib']} GiB memory cap")
+    if record.get("tasks_refused"):
+        notes.append(f"{record['tasks_refused']} task(s) were refused at the {policy['tasks']}-task cap")
+    return notes
 
 
 def stop(process, unit):
@@ -93,10 +138,14 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
         record.update(state="running", launcher=process.pid)
         atomic_json(path, record)
         next_scan = 0
+        cgroup = None
         while process.poll() is None:
             if stopped:
                 raise ValueError(f"resource supervisor interrupted by signal {stopped[0]}")
             free_space(root, policy)
+            cgroup = cgroup or scope_cgroup(process.pid, unit)
+            if cgroup is not None:
+                sample_scope(cgroup, record)
             now = time.monotonic()
             if scanner is None and now >= next_scan:
                 scanner = UsageScan(output_roots(root, entry))
@@ -143,8 +192,8 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
             signal.signal(sig, handler)
         if not accounted:
             finished(root, record, path, result, reason)
-    if reason:
-        print(f"resources: {reason}", file=sys.stderr, flush=True)
+    for note in ([reason] if reason else []) + scope_notes(record, policy):
+        print(f"resources: {note}", file=sys.stderr, flush=True)
     return result if result >= 0 else 128 - result
 
 
@@ -161,8 +210,11 @@ def run(root, command, environment=None, *, kind="ordinary", wait=3600, max_outp
     entry = policy["worktrees"].get(str(root))
     if entry is None:
         raise ValueError("worktree is not registered with the shared resource controller")
-    environment.update(CARGO_BUILD_JOBS="2", RUST_TEST_THREADS="2", CARGO_INCREMENTAL="0",
-                       RUSTGM_TEST_JOBS="2", CARGO_TARGET_DIR=str(root / "obj/rust"))
+    # Tests use every granted CPU. Build jobs are bounded by memory, not CPUs;
+    # fastcheck sets its own wider count for its one-unit-at-a-time compiles.
+    environment.update(CARGO_BUILD_JOBS=width(policy, BUILD_JOBS), RUST_TEST_THREADS=width(policy),
+                       CARGO_INCREMENTAL="0", RUSTGM_TEST_JOBS="2",
+                       CARGO_TARGET_DIR=str(root / "obj/rust"))
     outer = inherited(directory, root, environment, kind, policy["jobs"], policy=policy)
     if outer:
         inherited_budget(outer, policy, budget if max_output_gib is not None else None)

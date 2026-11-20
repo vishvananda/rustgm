@@ -17,8 +17,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from resource_locks import active_records, holders, inherited, lease, try_lock
-from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate
-from resource_runner import run, scope_command, supervise
+from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate, width
+from resource_runner import run, sample_scope, scope_cgroup, scope_command, scope_notes, supervise
 from resources import set_jobs
 
 
@@ -206,6 +206,43 @@ class ResourceTests(unittest.TestCase):
         self.assertEqual(actual[-3:], command)
         for value in ['CPUQuota=800%', 'MemoryMax=12G', 'MemorySwapMax=0', 'TasksMax=256']:
             self.assertIn(value, actual)
+
+    def test_width_follows_the_cpu_grant_up_to_the_reviewed_limit(self):
+        self.assertEqual(width(DEFAULTS), '8')
+        self.assertEqual(width(DEFAULTS, 2), '2')
+        self.assertEqual(width({**DEFAULTS, 'cpu_percent': 100}, 2), '1')
+        self.assertEqual(width({**DEFAULTS, 'cpu_percent': 300}), '3')
+        self.assertEqual(width({**DEFAULTS, 'cpu_percent': 50}), '1')
+        for cpus, expected in [(88, '8'), (4, '4'), (None, '1')]:
+            with self.subTest(cpus=cpus), patch('resource_policy.os.cpu_count', return_value=cpus):
+                self.assertEqual(width(), expected)
+
+    def test_receipt_keeps_scope_memory_and_task_high_water_marks(self):
+        with tempfile.TemporaryDirectory() as folder:
+            scope = Path(folder)
+            record = {}
+            sample_scope(scope, record)
+            self.assertEqual(record, {})
+            for peak, anonymous, kills, tasks in [(900, 500, 0, 40), (1200, 300, 1, 90), (1200, 700, 1, 90)]:
+                (scope / 'memory.peak').write_text(f'{peak}\n')
+                (scope / 'memory.stat').write_text(f'anon {anonymous}\nfile 400\n')
+                (scope / 'memory.events').write_text(f'low 0\nmax 3\noom 1\noom_kill {kills}\n')
+                (scope / 'pids.peak').write_text(f'{tasks}\n')
+                (scope / 'pids.events').write_text('max 2\n')
+                sample_scope(scope, record)
+            self.assertEqual(record, {'memory_peak_bytes': 1200, 'memory_anon_peak_bytes': 700,
+                                      'memory_oom_kills': 1, 'tasks_peak': 90, 'tasks_refused': 2})
+        # A bound cap is named; ordinary use stays silent.
+        self.assertEqual(scope_notes({'memory_anon_peak_bytes': 8 * GIB, 'tasks_peak': 40}, DEFAULTS), [])
+        self.assertEqual(scope_notes({'memory_anon_peak_bytes': 11 * GIB}, DEFAULTS),
+                         ['anonymous memory peaked at 11.0 of the 12 GiB memory cap'])
+        self.assertEqual(scope_notes({'memory_oom_kills': 2, 'memory_anon_peak_bytes': 12 * GIB,
+                                      'tasks_refused': 3}, DEFAULTS),
+                         ['2 process(es) were OOM-killed at the 12 GiB memory cap',
+                          '3 task(s) were refused at the 256-task cap'])
+        # A process is sampled only once it has entered its own scope.
+        self.assertIsNone(scope_cgroup(os.getpid(), 'rustgm-job-absent.scope'))
+        self.assertIsNone(scope_cgroup(999_999_999, 'rustgm-job-absent.scope'))
 
     def test_low_space_refuses_launch_and_releases_slot(self):
         with tempfile.TemporaryDirectory() as folder:

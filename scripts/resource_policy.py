@@ -10,6 +10,12 @@ import subprocess
 GIB = 1024 ** 3
 DEFAULTS = {"schema": 1, "jobs": 2, "reserve_gib": 150, "worker_gib": 50,
             "cpu_percent": 800, "memory_gib": 12, "tasks": 256, "worktrees": {}}
+# Reviewed Cargo job and libtest thread counts inside one job's CPU and memory
+# scope. Fastcheck compiles one large unit at a time and uses every granted CPU.
+# Other guarded builds may compile the library and its unit-test harness
+# together, which peaks near MemoryMax even with two jobs; eight reach the cap.
+WIDTH = 8
+BUILD_JOBS = 2
 
 
 def common_directory(root):
@@ -41,6 +47,12 @@ def validate(policy):
         raise ValueError("resource limits exceed the reviewed parallel policy")
     if not isinstance(policy.get("worktrees"), dict):
         raise ValueError("missing registered worktrees")
+
+
+def width(policy=None, limit=WIDTH):
+    """Build jobs and test threads use the CPUs a job is granted, up to a reviewed limit."""
+    granted = policy["cpu_percent"] // 100 if policy else os.cpu_count() or 1
+    return str(max(1, min(limit, granted)))
 
 
 def output_budget(policy, maximum=None):

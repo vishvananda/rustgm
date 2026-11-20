@@ -60,6 +60,7 @@ class FastcheckBudget(unittest.TestCase):
         failure = None
         with mock.patch.object(fastcheck_run.time, "monotonic", lambda: now[0]), \
                 mock.patch.object(fastcheck_run.subprocess, "run", side_effect=run), \
+                mock.patch.object(fastcheck_run, "controller", return_value=None), \
                 mock.patch("builtins.print"):
             steps = Steps(root, args)
             try:
@@ -97,6 +98,26 @@ class FastcheckBudget(unittest.TestCase):
         self.assertEqual(allowed, [1800, 800])
         self.assertEqual(failure, "build: compile ceiling exhausted; the compiler looks hung")
         self.assertEqual(receipt["steps"][-1]["status"], 124)
+
+    def test_build_jobs_and_test_threads_use_the_granted_cpus(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "dev").mkdir()
+            (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
+            cases = [((root, {"cpu_percent": 800}), 88, "8"), ((root, {"cpu_percent": 400}), 88, "4"),
+                     (None, 4, "4"), (None, 88, "8")]
+            for index, (found, cpus, expected) in enumerate(cases):
+                args = Namespace(evidence_root=root / f"obj/check-{index}", prune_under=[],
+                                 seconds=300, compile_seconds=1800)
+                with self.subTest(found=found, cpus=cpus), \
+                        mock.patch.object(fastcheck_run, "controller", return_value=found), \
+                        mock.patch("resource_policy.os.cpu_count", return_value=cpus), \
+                        mock.patch.dict("os.environ", {"RUSTGM_RESOURCE_TOKEN": "nonce", "CARGO_BUILD_JOBS": "2"}):
+                    steps = Steps(root, args)
+                    self.assertEqual((steps.environment["CARGO_BUILD_JOBS"], steps.environment["RUST_TEST_THREADS"]),
+                                     (expected, expected))
+                    self.assertEqual(steps.receipt["width"], int(expected))
+                    self.assertEqual(steps.receipt["resource_receipt"], "obj/parallel/resources/nonce.json")
 
     def test_output_scope_must_stay_inside_obj(self):
         with tempfile.TemporaryDirectory() as directory:

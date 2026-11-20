@@ -11,6 +11,7 @@ import time
 
 from maintainer_batch import artifacts, inventory, package_environment, selection
 from maintainer_suites import discover
+from resource_policy import discover as controller, width
 from storage import check_space, cleanup_roots, exclusive, minimum_reserve, prune
 
 
@@ -44,9 +45,15 @@ class Steps:
         self.receipt = {"profile": "dev-fast", "state": "running", "steps": [],
                         "budget": {"feedback_seconds": args.seconds,
                                    "compile_ceiling_seconds": args.compile_seconds}}
+        jobs = width((controller(root) or (None, None))[1])
+        self.receipt["width"] = int(jobs)
+        token = os.environ.get("RUSTGM_RESOURCE_TOKEN")
+        if token:
+            # The controller's receipt holds this run's memory high-water marks.
+            self.receipt["resource_receipt"] = f"obj/parallel/resources/{token}.json"
         self.environment = {**os.environ, **package_environment(root), "CARGO_INCREMENTAL": "1",
                             "CARGO_TARGET_DIR": str(root / "obj/rust"),
-                            "CARGO_BUILD_JOBS": "2", "RUST_TEST_THREADS": "2"}
+                            "CARGO_BUILD_JOBS": jobs, "RUST_TEST_THREADS": jobs}
 
     def save(self):
         compiled = self.args.compile_seconds - self.compile_left

@@ -1338,8 +1338,11 @@ Initial reviewed limits:
 - Each process tree has a systemd user scope: CPU quota 800% (eight CPU cores),
   MemoryMax 12 GiB, no swap and at most 256 tasks. Missing systemd limits fail
   the command; there is no unrestricted fallback in a configured repository.
-- Cargo build jobs and Rust test threads are two. Course/native Python runners
-  inherit a default of two jobs. Do not raise these settings in worker commands.
+- Rust test threads are eight, the scope's CPU grant, and so are fastcheck's
+  Cargo build jobs. Other guarded commands keep two Cargo build jobs: a full
+  test build compiles the library and its unit-test harness together and
+  already peaks near MemoryMax. Course/native Python runners inherit a default
+  of two jobs. Do not raise these settings in worker commands.
 - Keep 150 GiB free on the filesystem. Admission additionally reserves unused
   worker allowance, conservatively accounting for active peers. A live disk
   monitor checks free space every 0.5 seconds and terminates the job's entire
