@@ -543,7 +543,9 @@ impl<M: Storage> Worklist<M> {
                     store.intern_arguments(&mapped).map_err(error)?,
                 )
             }
-            s::Type::Scalar(_) | s::Type::Str | s::Type::Never => return leaf(row),
+            s::Type::Scalar(_) | s::Type::F16 | s::Type::F128 | s::Type::Str | s::Type::Never => {
+                return leaf(row);
+            }
             s::Type::Parameter(slot) => {
                 return match port.slot(store, slot, budget)? {
                     Argument::Type(ty) => Ok(Demand::Ready(ty)),
@@ -752,6 +754,7 @@ fn next(
     cursor: usize,
     rows: s::ValidatedView<'_>,
 ) -> Result<Option<g::TypeRef>, Error> {
+    use s::Type::{F16, F128, Never, Parameter, Str};
     Ok(match row {
         s::Type::OpaqueFuture(reference) => {
             let row = rows
@@ -796,7 +799,7 @@ fn next(
                 });
             std::iter::once(row.subject).chain(args).nth(cursor)
         }
-        s::Type::Scalar(_) | s::Type::Str | s::Type::Never | s::Type::Parameter(_) => None,
+        s::Type::Scalar(_) | F16 | F128 | Never | Parameter(_) | Str => None,
         s::Type::Nominal { arguments, .. } => arguments
             .slice(&rows.arguments)
             .map_err(error)?
@@ -983,6 +986,8 @@ fn array<'rows, B: Budget, P: Port<'rows, B>>(
 fn leaf(row: s::Type) -> Result<Demand<TypeId>, Error> {
     Ok(Demand::Ready(match row {
         s::Type::Scalar(scalar) => super::super::scalar(scalar),
+        s::Type::F16 => TypeId::primitive(crate::types::Primitive::F16),
+        s::Type::F128 => TypeId::primitive(crate::types::Primitive::F128),
         s::Type::Str => TypeId::primitive(crate::types::Primitive::Str),
         s::Type::Never => TypeId::NEVER,
         _ => return Err(error("source type row is not a closed leaf")),

@@ -12,6 +12,7 @@ impl Builder<'_, '_> {
         node: usize,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        use s::Type::{F16, F128, Never, Parameter, Str};
         let rows = self.headers.rows();
         if node < self.result.type_count {
             match rows.types[node] {
@@ -90,7 +91,7 @@ impl Builder<'_, '_> {
                         "source application signature recipes require a complete wider profile",
                     );
                 }
-                s::Type::Scalar(_) | s::Type::Str | s::Type::Never | s::Type::Parameter(_) => {}
+                s::Type::Scalar(_) | F16 | F128 | Never | Parameter(_) | Str => {}
             }
         } else {
             let offset = node - self.result.type_count;
@@ -154,6 +155,12 @@ impl Builder<'_, '_> {
             s::Type::Projection(reference) => self.projection_summary(reference, work)?,
             s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
             s::Type::Scalar(_) | s::Type::Str | s::Type::Never => Summary::default(),
+            s::Type::F16 | s::Type::F128 => {
+                if !self.profile.declaration_policies() {
+                    return Err("source float type requires the version-fourteen profile");
+                }
+                Summary::default()
+            }
             s::Type::Nominal {
                 declaration,
                 arguments,

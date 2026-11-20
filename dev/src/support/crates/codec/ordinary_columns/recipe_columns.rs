@@ -67,6 +67,8 @@ pub(super) fn types_write(
 fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
     match *row {
         // Scalar has a permanent repr(u8) shared by all existing wire profiles.
+        s::Type::F16 => out.u8(17),
+        s::Type::F128 => out.u8(18),
         s::Type::Projection(reference) => {
             out.u8(7)?;
             id(out, reference.0)
@@ -185,6 +187,8 @@ pub(super) fn type_read(
             pointee: g::TypeRef(read.id()?),
         },
         13 if read.profile.body_nodes() => s::Type::Slice(g::TypeRef(read.id()?)),
+        17 if read.profile.declaration_policies() => s::Type::F16,
+        18 if read.profile.declaration_policies() => s::Type::F128,
         0 => s::Type::Scalar(read.reader.scalar()?),
         1 => s::Type::Parameter(s::SlotRef(read.id()?)),
         6 if read.profile.nominals() => s::Type::Nominal {

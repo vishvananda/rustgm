@@ -213,6 +213,9 @@ pub enum Type {
         arguments: Range,
     },
     Scalar(Scalar),
+    /// Version fourteen source types, separate from the ordinary scalar ABI.
+    F16,
+    F128,
     Parameter(SlotRef),
     Reference {
         mutable: bool,

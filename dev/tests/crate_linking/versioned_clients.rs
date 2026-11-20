@@ -562,6 +562,75 @@ pub fn observed() -> u8 {{ local::values::seven() }}
 }
 
 #[test]
+fn cli_version_fourteen_preserves_f16_and_f128_type_identity() -> Result {
+    use rustgm::support::crates::{self, generics::source::Profile};
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-float-types/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let foundation = macro_role_foundation(root)?;
+    std::fs::write(
+        &provider,
+        format!(
+            "#![feature(f16,f128)]\n{foundation}\npub struct FloatParts {{ pub half: f16, pub quad: f128 }}\n"
+        ),
+    )?;
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    super::artifacts::checked(
+        "provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    let packet = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&packet)?, bytes);
+    let descriptor = packet.source_descriptor().ok_or("source descriptor")?;
+    assert_eq!(
+        descriptor.profile(),
+        Profile::Source2024ModuleBodyOperations
+    );
+    for (name, ty, status) in [("allowed", "f128", 0), ("wrong-type", "f64", 1)] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!(
+                "#![feature(no_core,f16,f128)]#![no_core]\nfn half(v: &base::FloatParts) -> &f16 {{ &v.half }}\nfn quad(v: &base::FloatParts) -> &{ty} {{ &v.quad }}\n"
+            ),
+        )?;
+        let output = source_client(&client, &metadata, &folder.join(format!("{name}.lowir")))
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(status), "{name}: {stderr}");
+        if status == 1 {
+            assert!(stderr.contains("incompatible types"), "{stderr}");
+        }
+    }
+    let legacy = folder.join("legacy.rgcrate");
+    let output = source_export("module-bodies-v13", &provider, &legacy, &lowir, true)
+        .arg("--cap-lints=allow")
+        .output()?;
+    let stderr = String::from_utf8(output.stderr)?;
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("source scalar type is outside the supported profile"));
+    assert!(!legacy.exists());
+    Ok(())
+}
+
+#[test]
 fn cli_version_fourteen_transports_exact_reflection_nominal_roles() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

@@ -81,16 +81,15 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         headers: &'index HeaderIndex<'rows>,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
-        Self::new_mode(headers, work, false, false)
+        Self::new_profile(headers, s::Profile::Source2024FunctionContracts, work)
     }
-    /// `bodies` is version thirteen, whose snapshot bodies may branch when
-    /// every snapshot use follows its evaluation in the same block.
-    pub(super) fn new_mode(
+    pub(super) fn new_profile(
         headers: &'index HeaderIndex<'rows>,
+        profile: s::Profile,
         work: &mut Work,
-        conversions: bool,
-        bodies: bool,
     ) -> Result<Self, &'static str> {
+        let conversions = profile.conversion_roles();
+        let bodies = profile.body_nodes();
         let first = work.steps;
         let roots = work.roots;
         let functions = headers.rows().function_applications.len();
@@ -98,7 +97,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         let applications = functions.saturating_add(traits);
         work.charge(applications)?;
         let binders = BinderIndex::new(headers, work, bodies)?;
-        let mut types = Types::new(headers, &binders, work)?;
+        let mut types = Types::new(headers, &binders, profile, work)?;
         let overhead =
             size_of::<Self>().saturating_sub(size_of::<BinderIndex<'_>>() + size_of::<Types>());
         types.bytes = types

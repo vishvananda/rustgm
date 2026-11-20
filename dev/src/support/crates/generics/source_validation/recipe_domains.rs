@@ -37,6 +37,7 @@ pub(super) struct Types {
 struct Builder<'a, 'rows> {
     headers: &'a HeaderIndex<'rows>,
     binders: &'a BinderIndex<'rows>,
+    profile: s::Profile,
     result: Types,
     colours: Vec<u8>,
     pending: Vec<(usize, bool)>,
@@ -45,6 +46,7 @@ impl Types {
     pub(super) fn new(
         headers: &HeaderIndex<'_>,
         binders: &BinderIndex<'_>,
+        profile: s::Profile,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
         let rows = headers.rows();
@@ -73,6 +75,7 @@ impl Types {
         let mut builder = Builder {
             headers,
             binders,
+            profile,
             result: Self {
                 summaries: vec![Summary::default(); count],
                 type_count: rows.types.len(),

@@ -262,6 +262,12 @@ impl Stage {
             }
             Kind::Primitive(crate::types::Primitive::Str) if self.body_nodes() => s::Type::Str,
             Kind::Never if self.body_nodes() => s::Type::Never,
+            Kind::Primitive(crate::types::Primitive::F16) if self.declaration_policies() => {
+                s::Type::F16
+            }
+            Kind::Primitive(crate::types::Primitive::F128) if self.declaration_policies() => {
+                s::Type::F128
+            }
             Kind::Primitive(_) | Kind::Tuple(_)
                 if key.ty == TypeId::UNIT || matches!(kind, Kind::Primitive(_)) =>
             {
