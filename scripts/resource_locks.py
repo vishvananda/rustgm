@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import threading
 import time
 import uuid
 
@@ -86,6 +87,8 @@ def holders(rows):
 # process) stops holding the queue for the waiters behind it.
 QUEUE_STALL = 60
 HEARTBEAT = 5
+# While a waiter queues, it repeats its idle work (accounting) at most this often.
+IDLE_INTERVAL = 60
 
 
 class Ticket:
@@ -192,7 +195,9 @@ def peer_budget(row, policy):
 
 
 @contextmanager
-def lease(directory, root, policy, kind, wait=3600, *, budget=None):
+def lease(directory, root, policy, kind, wait=3600, *, budget=None, idle=None):
+    """Queue for a slot and hold it. While waiting, run idle() in a thread at most once per
+    IDLE_INTERVAL; it finishes before the lease is granted, so it never overlaps the job."""
     directory.mkdir(parents=True, exist_ok=True)
     configured = output_budget(policy)
     budget = configured if budget is None else budget
@@ -219,6 +224,7 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
         place = stack.enter_context(Ticket(directory, root, kind))
         index = None
         announced = 0
+        helper, next_idle = None, 0.0
         while index is None:
             # Publication is part of claiming the slot: a concurrent snapshot
             # cannot observe a newly held lock with its previous owner's cap.
@@ -245,12 +251,18 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
                 if now >= deadline:
                     raise ValueError("timed out waiting for a heavy-job slot")
                 place.beat(now)
+                if idle is not None and now >= next_idle and (helper is None or not helper.is_alive()):
+                    helper = threading.Thread(target=idle, daemon=True)
+                    helper.start()
+                    next_idle = now + IDLE_INTERVAL
                 if now - announced >= 30:
                     turn = f"{len(ahead)} queued ahead" if ahead else "next in the queue"
                     print("resources: waiting for a heavy-job slot held by "
                           + holders(active_records(directory, policy["jobs"])) + f"; {turn}", flush=True)
                     announced = now
                 time.sleep(0.2)
+        if helper is not None:
+            helper.join()
         # Keep leases held by the launched process if its supervisor is killed.
         held = [worker, gate, slots[index]] + ([turn] if kind == "exclusive" else [])
         # Kernel locks, rather than stale JSON or PID reuse, own availability.

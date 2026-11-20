@@ -9,6 +9,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import threading
 import tempfile
 import time
 import unittest
@@ -18,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from resource_locks import (QUEUE_STALL, Ticket, active_records, admission, holders, inherited, lease, queued,
                             try_lock)
+import resource_locks
 import resource_policy
 from resource_policy import DEFAULTS, GIB, UsageCache, UsageScan, atomic_json, output_roots, validate, width
 from resource_runner import run, sample_scope, scope_cgroup, scope_command, scope_notes, supervise
@@ -214,6 +216,31 @@ class ResourceTests(unittest.TestCase):
             with lease(directory, Path('/late'), DEFAULTS, 'ordinary', wait=0):
                 self.assertEqual(len(active_records(directory, 2)), 1)
                 self.assertEqual(queued(directory), [])
+
+    def test_waiting_runs_idle_work_that_finishes_before_the_lease(self):
+        with tempfile.TemporaryDirectory() as folder, ExitStack() as stack:
+            directory = Path(folder)
+            first = lease(directory, Path('/h1'), DEFAULTS, 'ordinary', wait=0)
+            first.__enter__()
+            stack.enter_context(lease(directory, Path('/h2'), DEFAULTS, 'ordinary', wait=0))
+            calls, finished = [], []
+
+            def idle():
+                calls.append(time.monotonic())
+                time.sleep(.2)
+                finished.append(True)
+
+            threading.Timer(.5, lambda: first.__exit__(None, None, None)).start()
+            with patch.object(resource_locks, 'IDLE_INTERVAL', .05):
+                with lease(directory, Path('/waiter'), DEFAULTS, 'ordinary', wait=5, idle=idle):
+                    # Idle work never overlaps the job, and never runs twice at once.
+                    self.assertEqual(len(finished), len(calls))
+            self.assertGreaterEqual(len(calls), 2)
+            # A free slot is claimed at once, without idle work.
+            before = len(calls)
+            with lease(directory, Path('/prompt'), DEFAULTS, 'ordinary', wait=0, idle=idle):
+                pass
+            self.assertEqual(len(calls), before)
 
     def test_waiters_are_admitted_in_arrival_order(self):
         context = multiprocessing.get_context('spawn')

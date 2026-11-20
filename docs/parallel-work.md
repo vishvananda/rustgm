@@ -1471,9 +1471,11 @@ of a directory whose entries have been quiet for two minutes while its inode
 and mtime are unchanged (`obj/accounting/usage.json`); creating, removing or
 renaming an entry always changes that mtime. A listing expires after 30 to 60
 minutes. The next live scan during a job lists every expired directory again,
-and each admission or final scan lists at most 2,000 of them. A file grown in
-place in a quiet directory is counted at that refresh, while free space is
-measured exactly on every check. Initial refusals retain
+and each admission or final scan lists at most 2,000 of them. A queued waiter
+repeats the cached scan at most once a minute, so the scan after admission reads
+warm metadata; that scan still decides admission. A file grown in place in a
+quiet directory is counted at that refresh, while free space is measured
+exactly on every check. Initial refusals retain
 failed receipts without launching a command. Live overshoots stop the entire
 systemd scope, and short commands still undergo final accounting. Receipts and
 lease records retain `budget_bytes` separately from configured `worker_gib`,

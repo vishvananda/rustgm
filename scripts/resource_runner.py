@@ -199,6 +199,20 @@ def supervise(command, root, environment, policy, entry, record, path, descripto
     return result if result >= 0 else 128 - result
 
 
+def warm(root, entry):
+    """While queued, refresh this worktree's accounting listings and keep their inodes cached.
+
+    The scan after admission then reuses them instead of reading cold metadata
+    from disk; it still decides admission. Failures here are left to that scan.
+    """
+    try:
+        scan = UsageScan(output_roots(root, entry), UsageCache(root))
+        while not scan.done:
+            scan.step()
+    except (OSError, ValueError):
+        pass
+
+
 def run(root, command, environment=None, *, kind="ordinary", wait=3600, max_output_gib=None):
     environment = dict(os.environ if environment is None else environment)
     found = discover(root)
@@ -221,7 +235,8 @@ def run(root, command, environment=None, *, kind="ordinary", wait=3600, max_outp
     if outer:
         inherited_budget(outer, policy, budget if max_output_gib is not None else None)
         return subprocess.run(command, cwd=root, env=environment, check=False).returncode
-    with lease(directory, root, policy, kind, wait, budget=budget) as (record, path, descriptors):
+    with lease(directory, root, policy, kind, wait, budget=budget,
+               idle=lambda: warm(root, entry)) as (record, path, descriptors):
         record["command"] = command
         try:
             if discover(root) != (directory, policy):
