@@ -850,6 +850,15 @@ the half-to-quad assignment with E0308. Evidence is under
 `obj/parallel/v14-primitive-constants/wide-exact-independent/` and
 `obj/qualification/fast/1795141065976588995/` in the frontier checkout.
 
+The optimized strict replay with `2851f1e33` and `672467557` advances to
+`named, associated or generic alias transport requires its wider profile`
+after 25.12 seconds on the unchanged 309 inputs. The actual refusing
+declaration is `pub type Digit32 = u32` in the pinned
+`core/src/num/imp/bignum.rs`. It has a closed canonical target and a public
+name. The replay records zero bring-up entries and emits no artifacts.
+The receipt and exact declaration trace are under
+`obj/parallel/strict-core/wide-constants/` in the frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
