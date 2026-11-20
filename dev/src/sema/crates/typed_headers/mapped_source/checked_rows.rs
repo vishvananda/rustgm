@@ -213,22 +213,8 @@ impl MemberRows<'_> {
             Self::Implementation(links) => {
                 for link in *links {
                     *steps = steps.saturating_add(1);
-                    if let Some(member) = link.trait_member {
-                        if member.artifact != rows.policy.provider {
-                            return Err("imported member requires its actual external trait owner");
-                        }
-                        let definition = catalog.definition_at(provider, member.declaration)?;
-                        let id = catalog.declaration(definition)?;
-                        let kind = if matches!(
-                            rows.header(member.declaration)?,
-                            Some(s::HeaderRef::AssociatedType(_))
-                        ) {
-                            DefKind::TypeAlias
-                        } else {
-                            DefKind::Function
-                        };
-                        catalog.validate_declaration(id, definition, kind)?;
-                    }
+                    let expected =
+                        require_trait_member(catalog, provider, rows, link.trait_member)?;
                     if let Some(raw) = link.implementation {
                         require_member(
                             catalog,
@@ -238,23 +224,8 @@ impl MemberRows<'_> {
                             raw,
                             actual.next().copied(),
                         )?;
-                    } else {
-                        // The checked membership ledger already established the
-                        // complete actual default/body link. Authenticate the
-                        // current catalog counterpart without inventing a DefId.
-                        let member = link
-                            .trait_member
-                            .ok_or("imported inherited member lost its actual trait declaration")?;
-                        let Some(s::HeaderRef::Function(index)) =
-                            rows.header(member.declaration)?
-                        else {
-                            return Err("imported inherited member has no actual callable header");
-                        };
-                        if rows.functions[index as usize].body == s::FunctionBody::Absent {
-                            return Err(
-                                "imported required member omitted its actual implementation",
-                            );
-                        }
+                    } else if expected.is_none_or(|member| !member.has_default()) {
+                        return Err("imported required member omitted its actual implementation");
                     }
                 }
             }
@@ -265,6 +236,23 @@ impl MemberRows<'_> {
         Ok(())
     }
 }
+fn require_trait_member(
+    catalog: &Catalog,
+    provider: &crate::support::crates::CrateIdentity,
+    rows: s::ValidatedView<'_>,
+    member: Option<s::DeclarationAddress>,
+) -> Result<Option<super::versioned_members::TraitMember>, &'static str> {
+    let Some(member) = member else {
+        return Ok(None);
+    };
+    if member.artifact != rows.policy.provider {
+        return Err("imported member requires its actual external trait owner");
+    }
+    let kind = super::versioned_members::TraitMember::read(rows, member.declaration)?;
+    kind.definition(catalog, provider, member.declaration)?;
+    Ok(Some(kind))
+}
+
 fn require_member(
     catalog: &Catalog,
     provider: &crate::support::crates::CrateIdentity,

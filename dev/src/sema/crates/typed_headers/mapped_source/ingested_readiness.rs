@@ -14,12 +14,13 @@ pub(in crate::sema) enum Readiness {
     RegionBinding,
 }
 impl Graph {
-    pub(in crate::sema::crates::typed_headers) fn trait_constant(
+    pub(in crate::sema::crates::typed_headers) fn associated_constant(
         &self,
         catalog: &Catalog,
         facts: &Declarations,
         definition: DefId,
-    ) -> Result<Option<s::ConstantBody>, &'static str> {
+    ) -> Result<Option<(DefId, s::ConstantBody)>, &'static str> {
+        use crate::sema::associated::OwnerKind;
         self.require_store(&facts.types)?;
         let descriptor = self.descriptor(catalog)?;
         if !descriptor.profile().declaration_policies() {
@@ -40,20 +41,36 @@ impl Graph {
             .definition
             .parent
             .ok_or("source associated constant has no parent")?;
-        let Some(s::HeaderRef::Trait(_)) = rows.header(parent)? else {
-            return Ok(None);
-        };
+        let body = rows.constants()[index as usize].body;
         let owner = catalog.definition_at(provider, parent)?;
-        if facts.associated.trait_owner(definition) != Some(owner) {
-            return Err("source associated constant changed its installed trait owner");
+        let actual = facts
+            .associated
+            .owner(definition)
+            .and_then(|id| facts.associated.get(id))
+            .copied()
+            .ok_or("source constant lost its actual associated owner")?;
+        match (rows.header(parent)?, actual.kind) {
+            (Some(s::HeaderRef::Trait(_)), OwnerKind::Trait { definition, .. })
+                if definition == owner && !matches!(body, s::ConstantBody::Evaluated(_)) => {}
+            (Some(s::HeaderRef::Implementation(index)), OwnerKind::ImportedImpl(_))
+                if actual.self_definition == owner
+                    && rows.implementations[index as usize]
+                        .trait_application
+                        .is_some()
+                    && matches!(body, s::ConstantBody::Original(_)) => {}
+            (_, OwnerKind::ImportedInherent(_)) => return Ok(None),
+            _ => {
+                return Err("source associated constant changed its installed trait or impl owner");
+            }
         }
+        self.owner(actual)?;
         let cell = facts
             .definitions
             .get(definition.0 as usize)
             .copied()
             .flatten();
         self.constant_ready(rows, row, cell)?;
-        Ok(Some(rows.constants()[index as usize].body))
+        Ok(Some((owner, body)))
     }
 
     pub(in crate::sema::crates::typed_headers) fn readiness(

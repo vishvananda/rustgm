@@ -24,7 +24,7 @@ impl Checker<'_> {
         &self,
         definition: DefId,
         predicate: Predicate,
-        methods: Option<&crate::sema::crates::PrimitiveMethods>,
+        member_plan: Option<&crate::sema::crates::ImportedMemberPlan>,
     ) -> Result<std::sync::Arc<crate::types::parameters::environment::Environment>, Error> {
         let owner = self
             .facts
@@ -54,9 +54,8 @@ impl Checker<'_> {
         if effect != Constness::Ordinary {
             self.require_imported_const_division(trait_definition, effect)?;
         }
-        if let Some(methods) = methods {
-            methods
-                .require(&self.facts, definition, predicate)
+        if let Some(plan) = member_plan {
+            plan.require(&self.facts, definition, predicate)
                 .map_err(Error::unlocated)?;
         } else if !self
             .facts
@@ -135,22 +134,23 @@ impl Checker<'_> {
         Ok(())
     }
 
-    fn check_imported_primitive_methods(
+    fn check_imported_members(
         &mut self,
         owner: DefId,
         predicate: Predicate,
-        plan: &crate::sema::crates::PrimitiveMethods,
+        plan: &crate::sema::crates::ImportedMemberPlan,
     ) -> Result<(), Error> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
-        self.check_imported_results(owner, plan.types())?;
+        let members = &plan.members;
+        self.check_imported_results(owner, &members.types)?;
         let definitions = crate::sema::traits::conformance::Definitions::new(
             &self.facts,
             predicate,
-            plan.types(),
+            &members.types,
         )
         .map_err(Error::unlocated)?;
-        for &(expected, actual) in plan.links() {
+        for &(expected, actual) in &members.methods {
             let actual = actual.ok_or_else(|| {
                 Error::unlocated("v4 defaults require their wider conformance profile")
             })?;
@@ -178,7 +178,7 @@ impl Checker<'_> {
             )
             .map_err(Error::unlocated)?;
         }
-        Ok(())
+        self.check_imported_constant_links(owner, predicate, &members.constants, &definitions)
     }
     /// Re-prove every imported declared-result definition in the impl's own
     /// rebuilt environment: well formed, region-free and meeting each direct
@@ -344,24 +344,26 @@ impl Checker<'_> {
                 .complete(definition, Vec::new(), Vec::new(), Vec::new())
                 .map_err(Error::unlocated);
         }
-        let methods =
-            crate::sema::crates::primitive_method_plan(&mut self.facts, definition, predicate)?;
+        let plan =
+            crate::sema::crates::imported_member_plan(&mut self.facts, definition, predicate)?;
         let environment =
-            self.imported_receiver_environment(definition, predicate, methods.as_ref())?;
-        if let Some(methods) = &methods {
-            self.check_imported_primitive_methods(definition, predicate, methods)?;
+            self.imported_receiver_environment(definition, predicate, plan.as_ref())?;
+        if let Some(plan) = &plan {
+            self.check_imported_members(definition, predicate, plan)?;
         }
         self.validate_imported_requirements(definition, predicate, environment)?;
-        let types_and_links = methods.map_or_else(
-            || (Vec::new(), Vec::new()),
-            |plan| (plan.types().to_vec(), plan.into_links()),
-        );
+        let members = plan.map(|plan| plan.members).unwrap_or_default();
         self.facts
             .generics
             .implementations
             .as_mut()
             .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
-            .complete(definition, types_and_links.1, types_and_links.0, Vec::new())
+            .complete(
+                definition,
+                members.methods,
+                members.types,
+                members.constants,
+            )
             .map_err(Error::unlocated)
     }
 

@@ -1,4 +1,4 @@
-//! A v4 method plan authenticates actual installed rows before fresh conformance.
+//! Authenticate the installed trait member links before re-proving conformance.
 use super::{Graph, s};
 use crate::{
     resolve::{
@@ -9,19 +9,27 @@ use crate::{
         associated::{Inventory, Owner},
         model::Declarations,
     },
+    support::crates::{CrateIdentity, owner_catalog::DeclarationRef},
     types::{Store, arena::Identity, parameters::predicates::Predicate},
 };
 use std::rc::Rc;
-pub(in crate::sema) struct PrimitiveMethods {
+type OptionalLink = (DefId, Option<DefId>);
+
+#[derive(Default)]
+pub(in crate::sema) struct ImplMembers {
+    pub methods: Vec<OptionalLink>,
+    pub types: Vec<(DefId, DefId)>,
+    pub constants: Vec<OptionalLink>,
+}
+
+pub(in crate::sema) struct ImportedMemberPlan {
     arena: Identity,
     catalog: Rc<Catalog>,
     owner: DefId,
     predicate: Predicate,
-    links: Vec<(DefId, Option<DefId>)>,
-    /// Version-thirteen (trait declaration, impl definition) result links.
-    types: Vec<(DefId, DefId)>,
+    pub members: ImplMembers,
 }
-impl PrimitiveMethods {
+impl ImportedMemberPlan {
     pub(in crate::sema) fn require(
         &self,
         facts: &Declarations,
@@ -37,29 +45,71 @@ impl PrimitiveMethods {
                 .and_then(|linkage| linkage.origin_catalog())
                 .is_none_or(|catalog| !std::ptr::eq(catalog, self.catalog.as_ref()))
         {
-            return Err("primitive method conformance plan changed its actual arena/catalog/impl");
+            return Err("imported member plan changed its actual arena/catalog/impl");
         }
         Ok(())
     }
-    pub(in crate::sema) fn links(&self) -> &[(DefId, Option<DefId>)] {
-        &self.links
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum TraitMember {
+    Method(s::FunctionBody),
+    Type,
+    Constant(s::ConstantBody),
+}
+impl TraitMember {
+    pub(super) fn read(
+        rows: s::ValidatedView<'_>,
+        declaration: DeclarationRef,
+    ) -> Result<Self, &'static str> {
+        match rows.header(declaration)? {
+            Some(s::HeaderRef::Function(index)) => {
+                Ok(Self::Method(rows.functions[index as usize].body))
+            }
+            Some(s::HeaderRef::AssociatedType(_)) => Ok(Self::Type),
+            Some(s::HeaderRef::Constant(index))
+                if rows.descriptor().profile().declaration_policies() =>
+            {
+                Ok(Self::Constant(rows.constants()[index as usize].body))
+            }
+            _ => Err("imported link has no actual trait member header"),
+        }
     }
-    pub(in crate::sema) fn types(&self) -> &[(DefId, DefId)] {
-        &self.types
+    pub(super) const fn kind(self) -> DefKind {
+        match self {
+            Self::Method(_) => DefKind::Function,
+            Self::Type => DefKind::TypeAlias,
+            Self::Constant(_) => DefKind::Const,
+        }
     }
-    pub(in crate::sema) fn into_links(self) -> Vec<(DefId, Option<DefId>)> {
-        self.links
+    pub(super) const fn has_default(self) -> bool {
+        matches!(
+            self,
+            Self::Method(s::FunctionBody::Original(_) | s::FunctionBody::CompilerOperation(_))
+                | Self::Constant(s::ConstantBody::Original(_))
+        )
+    }
+    pub(super) fn definition(
+        self,
+        catalog: &Catalog,
+        provider: &CrateIdentity,
+        row: DeclarationRef,
+    ) -> Result<DefId, &'static str> {
+        let definition = catalog.definition_at(provider, row)?;
+        let id = catalog.declaration(definition)?;
+        catalog.validate_declaration(id, definition, self.kind())?;
+        Ok(definition)
     }
 }
 impl Graph {
-    pub(in crate::sema::crates::typed_headers) fn primitive_methods(
+    pub(in crate::sema::crates::typed_headers) fn implementation_member_plan(
         &self,
         store: &Store,
         associated: &Inventory,
         owner: Owner,
         predicate: Predicate,
         budget: &mut super::super::Headers,
-    ) -> Result<Option<PrimitiveMethods>, super::super::Error> {
+    ) -> Result<Option<ImportedMemberPlan>, super::super::Error> {
         use super::super::error;
         self.require_store(store).map_err(error)?;
         self.owner(owner).map_err(error)?;
@@ -95,60 +145,62 @@ impl Graph {
         let result = self.associated_row(store, owner, schema, members, &mut steps);
         budget.charge(steps)?;
         result.map_err(error)?;
-        let links = raw.members.slice(&rows.member_links).map_err(error)?;
+        let members = self.remap_member_links(rows, descriptor.identity(), raw.members, budget)?;
+        Ok(Some(ImportedMemberPlan {
+            arena: self.store.clone(),
+            catalog: Rc::clone(&self.origins),
+            owner: owner.self_definition,
+            predicate,
+            members,
+        }))
+    }
+
+    fn remap_member_links(
+        &self,
+        rows: s::ValidatedView<'_>,
+        provider: &CrateIdentity,
+        range: crate::support::crates::generics::Range,
+        budget: &mut super::super::Headers,
+    ) -> Result<ImplMembers, super::super::Error> {
+        use super::super::error;
+        let links = range.slice(&rows.member_links).map_err(error)?;
         budget.reserve(
             links
                 .len()
-                .saturating_mul(4 * size_of::<(DefId, Option<DefId>)>())
-                .saturating_add(size_of::<PrimitiveMethods>()),
+                .saturating_mul(4 * size_of::<OptionalLink>())
+                .saturating_add(size_of::<ImportedMemberPlan>()),
         )?;
-        let mut methods = Vec::with_capacity(links.len());
-        let mut types = Vec::new();
+        let mut members = ImplMembers::default();
         for link in links {
             budget.charge(3)?;
             let member = link
                 .trait_member
                 .filter(|member| member.artifact == s::ArtifactRef(0))
                 .ok_or_else(|| error("v4 method requires its genuine trait member"))?;
-            let result = matches!(
-                rows.header(member.declaration).map_err(error)?,
-                Some(s::HeaderRef::AssociatedType(_))
-            );
-            let actual = link.implementation.ok_or_else(|| {
-                error("v4 default method requires its wider body/conformance profile")
-            })?;
-            let member = self
-                .origins
-                .definition_at(descriptor.identity(), member.declaration)
+            let kind = TraitMember::read(rows, member.declaration).map_err(error)?;
+            let member = kind
+                .definition(&self.origins, provider, member.declaration)
                 .map_err(error)?;
-            let actual = self
-                .origins
-                .definition_at(descriptor.identity(), actual)
+            let actual = link
+                .implementation
+                .map(|row| kind.definition(&self.origins, provider, row))
+                .transpose()
                 .map_err(error)?;
-            let kind = if result {
-                DefKind::TypeAlias
-            } else {
-                DefKind::Function
-            };
-            for definition in [member, actual] {
-                let id = self.origins.declaration(definition).map_err(error)?;
-                self.origins
-                    .validate_declaration(id, definition, kind)
-                    .map_err(error)?;
-            }
-            if result {
-                types.push((member, actual));
-            } else {
-                methods.push((member, Some(actual)));
+            match (kind, actual) {
+                (TraitMember::Constant(_), actual) if actual.is_some() || kind.has_default() => {
+                    members.constants.push((member, actual));
+                }
+                (TraitMember::Type, Some(actual)) => members.types.push((member, actual)),
+                (TraitMember::Method(_), Some(actual)) => {
+                    members.methods.push((member, Some(actual)));
+                }
+                _ => {
+                    return Err(error(
+                        "v4 default method requires its wider body/conformance profile",
+                    ));
+                }
             }
         }
-        Ok(Some(PrimitiveMethods {
-            arena: self.store.clone(),
-            catalog: Rc::clone(&self.origins),
-            owner: owner.self_definition,
-            predicate,
-            links: methods,
-            types,
-        }))
+        Ok(members)
     }
 }

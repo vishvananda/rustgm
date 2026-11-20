@@ -19,7 +19,7 @@ mod origin_ports;
 pub(in crate::sema::crates::typed_headers) use origin_ports::require_function;
 mod owner_members;
 mod versioned_members;
-pub(in crate::sema) use versioned_members::PrimitiveMethods;
+pub(in crate::sema) use versioned_members::ImportedMemberPlan;
 mod role_headers;
 pub(in crate::sema::crates::typed_headers) use role_headers::installed as installed_trait_header;
 mod scheme_inputs;

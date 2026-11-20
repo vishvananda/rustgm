@@ -674,11 +674,11 @@ fn import_legacy(imported: &Imported, facts: &mut Declarations) -> Result<(), Er
     Ok(())
 }
 
-pub(in crate::sema) fn primitive_method_plan(
+pub(in crate::sema) fn imported_member_plan(
     facts: &mut Declarations,
     definition: DefId,
     predicate: crate::types::parameters::predicates::Predicate,
-) -> Result<Option<mapped_source::PrimitiveMethods>, Error> {
+) -> Result<Option<mapped_source::ImportedMemberPlan>, Error> {
     let owner = facts
         .associated
         .owner(definition)
@@ -694,6 +694,6 @@ pub(in crate::sema) fn primitive_method_plan(
         .as_mut()
         .and_then(|linkage| linkage.originals.as_deref_mut())
         .ok_or_else(|| error("v4 conformance lacks its actual header budget"))?;
-    graph.primitive_methods(&facts.types, &facts.associated, owner, predicate, headers)
+    graph.implementation_member_plan(&facts.types, &facts.associated, owner, predicate, headers)
 }
-pub(in crate::sema) use mapped_source::PrimitiveMethods;
+pub(in crate::sema) use mapped_source::ImportedMemberPlan;

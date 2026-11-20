@@ -32,7 +32,7 @@ pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSour
 #[cfg(test)]
 pub(crate) use typed_headers::provided_layouts;
 pub(in crate::sema) use typed_headers::{
-    PrimitiveMethods, SelectedConsumer, primitive_method_plan,
+    ImportedMemberPlan, SelectedConsumer, imported_member_plan,
 };
 pub(super) use typed_headers::{
     charge_source_header_query, charge_source_headers,

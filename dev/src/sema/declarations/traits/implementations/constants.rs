@@ -15,7 +15,7 @@ use crate::{
 /// Normalized shape and formation debts are retained until nominal facts exist.
 pub(super) struct Contract {
     definition: DefId,
-    source: NodeKey,
+    source: Option<NodeKey>,
     types: [TypeId; 2],
     evidence: Obligations,
 }
@@ -186,7 +186,7 @@ impl Checker<'_> {
             }
             contract
         } else {
-            self.constant_contract(owner, source, pair, substitution, definitions)?
+            self.constant_contract(owner, Some(source), pair, substitution, definitions)?
         };
         self.prove_constant_contract(owner, contract)
     }
@@ -194,7 +194,7 @@ impl Checker<'_> {
     pub(super) fn constant_contract(
         &mut self,
         owner: DefId,
-        source: NodeKey,
+        source: Option<NodeKey>,
         pair: (DefId, DefId),
         substitution: &mut crate::types::substitute::Bound,
         definitions: &Definitions,
@@ -202,12 +202,15 @@ impl Checker<'_> {
         let (expected, definition) = pair;
         let key = self.report.resolution.definitions[definition.0 as usize]
             .node
-            .unwrap_or(source);
+            .or(source);
         let expected = self.facts.definitions[expected.0 as usize]
-            .ok_or_else(|| self.error(key, "missing trait constant type"))?;
-        let mut actual = self.facts.definitions[definition.0 as usize]
-            .ok_or_else(|| self.error(key, "missing implementation constant type"))?;
-        if !self.facts.associated.families.is_empty() {
+            .ok_or_else(|| self.implementation_error(key, "missing trait constant type"))?;
+        let mut actual = self.facts.definitions[definition.0 as usize].ok_or_else(|| {
+            self.implementation_error(key, "missing implementation constant type")
+        })?;
+        if !self.facts.associated.families.is_empty()
+            && let Some(key) = key
+        {
             let ItemKind::Const { ty: annotation, .. } = self.item(key)?.kind else {
                 return Err(self.error(key, "missing implementation constant annotation"));
             };
@@ -224,25 +227,25 @@ impl Checker<'_> {
         }
         let expected = substitution
             .apply(&mut self.facts.types, expected)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.implementation_error(key, e))?;
         let mut types = [expected, actual];
         let mut evidence = Obligations::new(1);
         let environment = self.facts.generics.environments.get(&owner).cloned();
         definitions
             .values(&mut self.facts, environment, &mut evidence, &mut types)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.implementation_error(key, e))?;
         let [expected, actual] = types;
         if expected != actual {
             let mut shape = Context::default();
             let a = shape
                 .known(&self.facts.types, actual)
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.implementation_error(key, e.to_string()))?;
             let b = shape
                 .known(&self.facts.types, expected)
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.implementation_error(key, e.to_string()))?;
             shape
                 .equate_shape(&self.facts.types, a, b)
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.implementation_error(key, e.to_string()))?;
         }
         Ok(Contract {
             definition,
@@ -271,19 +274,50 @@ impl Checker<'_> {
         );
         let mut constraints = self
             .trait_region_environment(owner, &mut queries)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.implementation_error(key, e))?;
         evidence
             .require(&mut constraints, &mut queries)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.implementation_error(key, e))?;
         constraints
             .coerce(actual, expected, false, 0)
-            .map_err(|e| self.error(key, e.to_string()))?;
+            .map_err(|e| self.implementation_error(key, e.to_string()))?;
         constraints.solve().map_err(|e| {
-            self.error(
+            self.implementation_error(
                 key,
                 format!("implementation constant type does not satisfy trait: {e}"),
             )
         })?;
+        Ok(())
+    }
+
+    pub(super) fn check_imported_constant_links(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        links: &[(DefId, Option<DefId>)],
+        definitions: &Definitions,
+    ) -> Result<(), Error> {
+        let mut substitution = None;
+        for &(member, actual) in links {
+            if let Some(actual) = actual {
+                if substitution.is_none() {
+                    substitution = Some(
+                        crate::sema::traits::results::substitution(&self.facts, predicate)
+                            .map_err(Error::unlocated)?,
+                    );
+                }
+                let folder = substitution
+                    .as_mut()
+                    .ok_or_else(|| Error::unlocated("imported constant lost its substitution"))?;
+                let contract =
+                    self.constant_contract(owner, None, (member, actual), folder, definitions)?;
+                self.prove_constant_contract(owner, contract)?;
+            } else if !self.constant_has_default(member)? {
+                return Err(Error::unlocated(
+                    "imported impl omitted a required constant",
+                ));
+            }
+        }
         Ok(())
     }
 }

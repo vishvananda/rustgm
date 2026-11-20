@@ -113,7 +113,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(key, e))?;
             let contract = self.constant_contract(
                 request.owner,
-                key,
+                Some(key),
                 (request.declaration, actual),
                 &mut substitution,
                 &definitions,

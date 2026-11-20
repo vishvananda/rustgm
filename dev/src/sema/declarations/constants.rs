@@ -3,6 +3,7 @@ use super::{Checker, DefId, Error, ItemKind, NodeKey, regions};
 use crate::{
     resolve::model::DefKind,
     sema::{associated::OwnerKind, values::Instance},
+    support::crates::generics::source::ConstantBody,
     syntax::item::Visibility,
     types::GenericArgs,
 };
@@ -82,8 +83,8 @@ impl Checker<'_> {
                 if self.imported_inherent_constant(id)? || self.imported_range_bound(id)? {
                     continue;
                 }
-                if let Some(body) = self.imported_trait_constant(id)? {
-                    self.validate_imported_constant(id, body)?;
+                if let Some((owner, body)) = self.imported_associated_constant(id)? {
+                    self.validate_imported_constant(id, owner, body)?;
                     continue;
                 }
                 return Err(Error::at(
@@ -121,24 +122,20 @@ impl Checker<'_> {
                 ItemKind::Const { value: Some(_), .. }
             ));
         }
-        self.imported_trait_constant(definition)?
-            .map(|body| {
-                matches!(
-                    body,
-                    crate::support::crates::generics::source::ConstantBody::Original(_)
-                )
-            })
+        self.imported_associated_constant(definition)?
+            .filter(|(owner, _)| self.facts.associated.trait_owner(definition) == Some(*owner))
+            .map(|(_, body)| matches!(body, ConstantBody::Original(_)))
             .ok_or_else(|| Error::unlocated("missing trait constant source"))
     }
 
-    fn imported_trait_constant(
+    fn imported_associated_constant(
         &self,
         definition: DefId,
-    ) -> Result<Option<crate::support::crates::generics::source::ConstantBody>, Error> {
+    ) -> Result<Option<(DefId, ConstantBody)>, Error> {
         self.facts
             .crates
             .as_deref()
-            .map(|linkage| linkage.source_trait_constant(&self.facts, definition))
+            .map(|linkage| linkage.source_associated_constant(&self.facts, definition))
             .transpose()
             .map(Option::flatten)
             .map_err(Error::unlocated)
@@ -147,28 +144,15 @@ impl Checker<'_> {
     fn validate_imported_constant(
         &mut self,
         id: DefId,
-        body: crate::support::crates::generics::source::ConstantBody,
+        owner: DefId,
+        body: ConstantBody,
     ) -> Result<(), Error> {
-        use crate::support::crates::generics::source::ConstantBody;
-        if body != ConstantBody::Required {
-            return Err(Error::unlocated(
-                "source provided constant requires its actual checked initializer",
-            ));
-        }
-        let owner = self
-            .facts
-            .associated
-            .trait_owner(id)
-            .ok_or_else(|| Error::unlocated("source constant has no actual trait owner"))?;
         let ty = self.facts.definitions[id.0 as usize]
             .ok_or_else(|| Error::unlocated("source constant has no type"))?;
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(id, environment);
-        if !proof
-            .check(&mut self.facts, ty)
-            .map_err(Error::unlocated)?
-            .well_formed
-        {
+        let shape = proof.check(&mut self.facts, ty).map_err(Error::unlocated)?;
+        if !shape.well_formed || (matches!(body, ConstantBody::Original(_)) && !shape.sized) {
             return Err(Error::unlocated(
                 "associated constant declaration type must be well-formed",
             ));
