@@ -78,20 +78,7 @@ fn operator(
             direct_variant: false,
             ..
         } if stage.body_nodes() => variant_operation(stage, value.kind),
-        ir::Rvalue::Binary {
-            operands,
-            operator,
-            left,
-            right,
-        } if stage.body_nodes() => binary(
-            facts,
-            body,
-            index,
-            value.ty,
-            operands,
-            operator,
-            [left, right],
-        ),
+        ir::Rvalue::Binary { .. } if stage.body_nodes() => binary(stage, facts, body, index, value),
         ir::Rvalue::Binary { .. } => {
             Err("source Binary operations require the version-thirteen body IR profile")
         }
@@ -381,18 +368,24 @@ fn function(
     ))
 }
 
-/// Only closed primitive comparisons and bitwise operations have a row form;
-/// checked arithmetic and shifts stay refused until their consumer proof exists.
+/// Use the ordinary checked operator over the two actual preceding primitives.
 fn binary(
+    stage: &Stage,
     facts: &Declarations,
     body: &Body,
     before: usize,
-    result: crate::types::TypeId,
-    operands: ir::BinaryOperands,
-    operator: crate::lex::token::Punctuation,
-    [left, right]: [ir::ValueId; 2],
+    value: ir::Value,
 ) -> Result<s::ValueKind, &'static str> {
     use crate::lex::token::Punctuation as P;
+    let ir::Rvalue::Binary {
+        operands,
+        operator,
+        left,
+        right,
+    } = value.kind
+    else {
+        return Err("source binary request changed its actual operation");
+    };
     let operator = match operator {
         P::EqualEqual => s::BinaryOperator::Equal,
         P::BangEqual => s::BinaryOperator::NotEqual,
@@ -406,6 +399,7 @@ fn binary(
         P::Plus => s::BinaryOperator::Add,
         P::Minus => s::BinaryOperator::Sub,
         P::Star => s::BinaryOperator::Mul,
+        P::Slash if stage.declaration_policies() => s::BinaryOperator::Div,
         _ => return Err("source checked division or shift requires a wider transport row"),
     };
     let mut operand = None;
@@ -423,7 +417,7 @@ fn binary(
             return Err("source binary operation changed its shared operand type");
         }
     }
-    crate::sema::crates::export_scalar(facts, result)
+    crate::sema::crates::export_scalar(facts, value.ty)
         .map_err(|_| "source binary result requires a closed primitive type")?;
     let operands = match operands {
         ir::BinaryOperands::NotRequired => s::OperandForm::NotRequired,

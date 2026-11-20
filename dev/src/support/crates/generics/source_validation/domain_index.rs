@@ -75,6 +75,7 @@ pub struct DomainIndex<'index, 'rows> {
     used_traits: Vec<bool>,
     /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
     bodies: bool,
+    declaration_policies: bool,
 }
 impl<'index, 'rows> DomainIndex<'index, 'rows> {
     pub(super) fn new(
@@ -119,6 +120,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             used_functions: vec![false; functions],
             used_traits: vec![false; traits],
             bodies,
+            declaration_policies: profile.declaration_policies(),
         };
         index.header_roots(work)?;
         index.originals(work, conversions, bodies)?;

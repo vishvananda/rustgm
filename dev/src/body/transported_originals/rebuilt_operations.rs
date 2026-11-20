@@ -358,6 +358,7 @@ fn binary(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'sta
         s::BinaryOperator::Add => P::Plus,
         s::BinaryOperator::Sub => P::Minus,
         s::BinaryOperator::Mul => P::Star,
+        s::BinaryOperator::Div => P::Slash,
     };
     let operands = match operands {
         s::OperandForm::NotRequired => Form::NotRequired,

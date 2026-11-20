@@ -117,7 +117,15 @@ impl DomainIndex<'_, '_> {
                 prefix_value(original, operand, index, work)?;
                 value.scalar_cast_types(original, &self.headers.rows().types)?;
             }
-            s::ValueKind::Binary { left, right, .. } => {
+            s::ValueKind::Binary {
+                operator,
+                left,
+                right,
+                ..
+            } => {
+                if operator == s::BinaryOperator::Div && !self.declaration_policies {
+                    return Err("source checked division or shift requires a wider transport row");
+                }
                 prefix_value(original, left, index, work)?;
                 prefix_value(original, right, index, work)?;
                 value.binary_types(original, &self.headers.rows().types)?;

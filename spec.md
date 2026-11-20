@@ -7022,8 +7022,12 @@ role only after re-authenticating its header, member and signature, and rejects
 every other imported role by name. A defaulted type slot (tag 2) is admitted
 only on a trait-owned slot whose default is that trait's `Self`. Binary flags
 9-11 are checked Add, Sub and Mul: the consumer re-proves typing and lowers its
-own overflow guard to the shared abort exit. No overflow decision is
-transported, and flags 12-15 stay rejected by name. A direct function-item
+own overflow guard to the shared abort exit. Version fourteen also admits
+flag 12 for integer, `f32` and `f64` division with exactly matching operand
+and result types. Integer division reuses the ordinary zero and signed overflow checks.
+Floating division retains the primitive floating result. The wire carries
+the operator and lexical operand form. Earlier profiles reject flag 12,
+and flags 13-15 stay rejected by name. A direct function-item
 formation is the owning request port of its application, and every
 well-formedness root is demanded. Profiles without these rows keep their exact
 bytes.

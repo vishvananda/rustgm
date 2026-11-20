@@ -168,6 +168,87 @@ fn forged_role_rows_and_older_wires_reject_in_fresh_consumers() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn division_round_trips_and_preserves_checked_consumers() -> Result {
+    let packet = Packet::new(GROUP, SPEC, "primitive-division", "division")?;
+    let fixture = std::fs::read_to_string(packet.fixture("output"))?;
+    let (foundation, _) = fixture
+        .split_once("// Authored boundary control")
+        .ok_or("division role foundation is missing")?;
+    let source = packet.folder.join("provider.rs");
+    let body = r#"
+#[lang = "sub"]
+pub trait Sub<Rhs = Self> { type Output; fn sub(self, rhs: Rhs) -> Self::Output; }
+impl Sub for f64 { type Output = f64; fn sub(self, rhs: f64) -> f64 { self - rhs } }
+#[lang = "div"]
+pub const trait Div<Rhs = Self> { type Output; fn div(self, rhs: Rhs) -> Self::Output; }
+const impl Div for f64 { type Output = f64; fn div(self, rhs: f64) -> f64 { self / rhs } }
+const impl Div for i64 { type Output = i64; fn div(self, rhs: i64) -> i64 { self / rhs } }
+pub fn mantissa<T>(bits: u32) -> i64 {
+    let log2_5 = 3.32192809488736234787031942948939018_f64 - 1.0;
+    (bits as f64 / log2_5) as i64
+}
+pub fn checked<T>(numerator: i64, denominator: i64) -> i64 { numerator / denominator }
+pub const fn quotient<T>(numerator: u32, denominator: f64) -> i64 {
+    (numerator as f64 / denominator) as i64
+}
+"#;
+    std::fs::write(
+        &source,
+        format!("#![feature(const_trait_impl)]\n{foundation}{body}"),
+    )?;
+    let legacy = packet.folder.join("legacy.rgcrate");
+    packet.rejected(
+        "legacy",
+        packet
+            .export(PROFILE, &source, &legacy)
+            .arg("--cap-lints=allow"),
+        "source Div contract transport is not implemented",
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &source, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    assert_eq!(binary_nodes(&bytes, 12).len(), 5);
+    let client = packet.folder.join("client.rs");
+    std::fs::write(
+        &client,
+        r#"
+#![feature(no_core)]
+#![no_core]
+extern crate base;
+const IMPORTED: i64 = base::quotient::<u8>(55, 2.5);
+#[unsafe(no_mangle)]
+pub extern "C" fn mantissa(bits: u32) -> i64 { base::mantissa::<u8>(bits) }
+#[unsafe(no_mangle)]
+pub extern "C" fn checked(numerator: i64, denominator: i64) -> i64 {
+    base::checked::<u32>(numerator, denominator)
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn from_const() -> i64 { IMPORTED }
+"#,
+    )?;
+    super::artifacts::checked(
+        "client",
+        &packet.folder,
+        packet
+            .consumer(&client, "client", &packet.metadata, &packet.owner())
+            .arg("--cap-lints=allow"),
+    )?;
+    let text = std::fs::read_to_string(packet.folder.join("client.lowir"))?;
+    assert!(text.contains(" = binary div f64 "), "{text}");
+    assert!(text.contains(" = binary div i64 "), "{text}");
+    assert!(text.contains("call void @abort()"), "{text}");
+    assert!(text.contains("return i64 22"), "{text}");
+    Ok(())
+}
+
 #[test]
 fn checked_rows_and_fresh_consumers_grow_linearly_with_operators() -> Result {
     let packet = Packet::new(GROUP, SPEC, "scaling", "steps")?;

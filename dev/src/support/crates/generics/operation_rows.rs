@@ -131,8 +131,8 @@ pub enum ValueKind {
     Constant(DeclarationRef),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
-/// consumer instance lowers its own overflow guard and abort exit. Div, Rem and
-/// the shifts own stable wire codes but no row form until their proof exists.
+/// consumer instance lowers its own overflow guard and abort exit. Division
+/// also rebuilds the ordinary zero and signed overflow checks for integers.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinaryOperator {
     Equal,
@@ -147,18 +147,25 @@ pub enum BinaryOperator {
     Add,
     Sub,
     Mul,
+    Div,
 }
 impl BinaryOperator {
     #[must_use]
     pub const fn comparison(self) -> bool {
         !matches!(
             self,
-            Self::BitAnd | Self::BitOr | Self::BitXor | Self::Add | Self::Sub | Self::Mul
+            Self::BitAnd
+                | Self::BitOr
+                | Self::BitXor
+                | Self::Add
+                | Self::Sub
+                | Self::Mul
+                | Self::Div
         )
     }
     #[must_use]
     pub const fn arithmetic(self) -> bool {
-        matches!(self, Self::Add | Self::Sub | Self::Mul)
+        matches!(self, Self::Add | Self::Sub | Self::Mul | Self::Div)
     }
 }
 /// Retained lexical operand form; data for promotion, never execution permission.

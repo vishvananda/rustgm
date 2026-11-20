@@ -97,8 +97,8 @@ const PROJECTIONS: [&str; 13] = [
     "encoded ProjectionKind::FutureField is not reconstructable by this consumer",
 ];
 
-/// Stable `Rvalue::Binary` operator flags; this consumer rebuilds 0 through 11.
-const OPERATORS: [s::BinaryOperator; 12] = [
+/// Stable `Rvalue::Binary` operator flags. Division requires v14.
+const OPERATORS: [s::BinaryOperator; 13] = [
     s::BinaryOperator::Equal,
     s::BinaryOperator::NotEqual,
     s::BinaryOperator::Less,
@@ -111,8 +111,9 @@ const OPERATORS: [s::BinaryOperator; 12] = [
     s::BinaryOperator::Add,
     s::BinaryOperator::Sub,
     s::BinaryOperator::Mul,
+    s::BinaryOperator::Div,
 ];
-/// Allocated checked operators 12-15 without a row form: Div, Rem, Shl, Shr.
+/// Last allocated flags reserve Rem, Shl and Shr.
 const CHECKED_OPERATORS: u32 = 16;
 const FORMS: [s::OperandForm; 5] = [
     s::OperandForm::NotRequired,
@@ -416,7 +417,7 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
                 Operand::Flag(operator),
                 Operand::Flag(form),
             ],
-        ) => binary(left, right, operator, form)?,
+        ) => binary(left, right, operator, form, read.profile)?,
         (28, &[Operand::Value(value), Operand::Flag(0)]) => s::ValueKind::ScalarCast(value),
         (28, &[Operand::Value(value), Operand::Flag(1)]) => s::ValueKind::EnumCast(value),
         (
@@ -480,21 +481,29 @@ fn code<T: Copy + PartialEq>(table: &[T], form: T) -> Result<u32, &'static str> 
         .and_then(|index| u32::try_from(index).ok())
         .ok_or("body IR form has no stable code")
 }
-fn binary(left: u32, right: u32, operator: u32, form: u32) -> Result<s::ValueKind, &'static str> {
+fn binary(
+    left: u32,
+    right: u32,
+    operator: u32,
+    form: u32,
+    profile: s::Profile,
+) -> Result<s::ValueKind, &'static str> {
     let Some(&operands) = FORMS.get(form as usize) else {
         return Err("body IR binary node has an unknown operand form");
     };
     match OPERATORS.get(operator as usize) {
-        Some(&operator) => Ok(s::ValueKind::Binary {
-            operator,
-            operands,
-            left,
-            right,
-        }),
-        None if operator < CHECKED_OPERATORS => Err(
+        Some(&operator) if operator != s::BinaryOperator::Div || profile.declaration_policies() => {
+            Ok(s::ValueKind::Binary {
+                operator,
+                operands,
+                left,
+                right,
+            })
+        }
+        _ if operator < CHECKED_OPERATORS => Err(
             "encoded checked division or shift Rvalue::Binary is not reconstructable by this consumer",
         ),
-        None => Err("body IR binary node has an unknown operator"),
+        _ => Err("body IR binary node has an unknown operator"),
     }
 }
 pub(super) fn statement_write(out: &mut Writer, row: &s::Statement) -> Result<(), &'static str> {
