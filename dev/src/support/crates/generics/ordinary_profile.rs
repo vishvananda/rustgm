@@ -1,6 +1,6 @@
 //! The first source packet admits semantic forms, never fixture names or counts.
 use super::super::{
-    Action, EnvironmentOrigin, FunctionBody, InputKind, Place, TraitFlags, ValueKind,
+    Action, EnvironmentOrigin, FunctionBody, InputKind, Place, Profile, TraitFlags, ValueKind,
 };
 use super::super::{HeaderIndex, SourceRows, interval_roles};
 #[path = "rust_call_roles.rs"]
@@ -188,7 +188,7 @@ fn validate_with(
         }
         if header.constant
             && !reservation
-            && !roles.const_division_impl(rows, headers, header, work)?
+            && !roles.const_binary_impl(rows, headers, header, work)?
             || (!header.polarity.is_positive() || header.unsafe_)
                 && !(roles.languages && header.trait_application.is_some())
         {
@@ -314,7 +314,7 @@ fn trait_headers(
             );
         }
         let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
-        let division = roles.division == Some(header.declaration);
+        let binary = roles.binary_operators.contains(&Some(header.declaration));
         let range = roles
             .range
             .is_some_and(|family| family.owner == header.declaration);
@@ -324,7 +324,7 @@ fn trait_headers(
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion && !division && !range
+            || flags & TraitFlags::CONST != 0 && !conversion && !binary && !range
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -442,7 +442,7 @@ fn trait_const_method(
         return Ok(true);
     }
     Ok(
-        roles.const_division_impl(rows, headers, implementation, work)?
+        roles.const_binary_impl(rows, headers, implementation, work)?
             && conversions::method(rows, headers, header, false, Constness::Const, work)?,
     )
 }
@@ -869,7 +869,8 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
-    division: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        Profile::CONST_BINARY_ROLES.len()],
     range: Option<interval_roles::Family>,
     callables: callable_roles::Roles,
     /// Version thirteen: exact empty auto declarations, unsafe traits and
@@ -880,20 +881,20 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
-    fn const_division_impl(
+    fn const_binary_impl(
         &self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
         implementation: &super::super::ImplHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        let (Some(division), Some(application)) = (self.division, implementation.trait_application)
-        else {
+        let Some(application) = implementation.trait_application else {
             return Ok(false);
         };
         if !implementation.constant
             || implementation.unsafe_
             || !implementation.polarity.is_positive()
+            || self.binary_operators.iter().all(Option::is_none)
         {
             return Ok(false);
         }
@@ -901,13 +902,19 @@ impl Bindings {
         let declaration = rows
             .trait_applications
             .get(application.0 as usize)
-            .ok_or("source const division impl lost its actual trait application")?
+            .ok_or("source const operator impl lost its actual trait application")?
             .declaration;
-        if declaration.artifact.0 != 0 || declaration.declaration != division {
+        if declaration.artifact.0 != 0
+            || !self
+                .binary_operators
+                .contains(&Some(declaration.declaration))
+        {
             return Ok(false);
         }
-        let Some(super::super::HeaderRef::Trait(index)) = headers.header(division, work)? else {
-            return Err("source const division impl lost its actual trait header");
+        let Some(super::super::HeaderRef::Trait(index)) =
+            headers.header(declaration.declaration, work)?
+        else {
+            return Err("source const operator impl lost its actual trait header");
         };
         Ok(rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
     }
@@ -925,15 +932,15 @@ impl Bindings {
         {
             return Ok(true);
         }
-        let division = self
-            .division
-            .filter(|&owner| function.parent == Some(owner));
+        let binary = function
+            .parent
+            .filter(|&owner| self.binary_operators.contains(&Some(owner)));
         conversions::required_member(
             rows,
             headers,
             function,
-            division.or(self.conversion),
-            division.is_some(),
+            binary.or(self.conversion),
+            binary.is_some(),
             work,
         )
     }
@@ -1108,9 +1115,11 @@ pub(super) fn bindings(
         ))
         .then_some(declarations[LangItem::From.index()])
         .flatten(),
-        division: (profile == BindingProfile::BodyOperations)
-            .then_some(declarations[LangItem::Div.index()])
-            .flatten(),
+        binary_operators: if profile == BindingProfile::BodyOperations {
+            Profile::CONST_BINARY_ROLES.map(|role| declarations[role.index()])
+        } else {
+            [None; Profile::CONST_BINARY_ROLES.len()]
+        },
         sizing,
         destruct: if matches!(
             profile,

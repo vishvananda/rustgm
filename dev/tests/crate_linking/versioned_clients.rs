@@ -397,6 +397,69 @@ fn main() {}
 }
 
 #[test]
+fn cli_version_fourteen_uses_exact_subtraction_impl_effect() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-subtraction-transport/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    std::fs::write(
+        &provider,
+        macro_role_foundation(root)?
+            + r#"
+#[lang = "sub"]
+pub const trait Sub<Rhs = Self> {
+    type Output;
+    fn sub(self, rhs: Rhs) -> Self::Output;
+}
+const impl Sub for f64 {
+    type Output = f64;
+    fn sub(self, other: f64) -> f64 { self - other }
+}
+"#,
+    )?;
+    super::artifacts::checked(
+        "subtraction-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let client = folder.join("client.rs");
+    let lowir = folder.join("client.lowir");
+    std::fs::write(
+        &client,
+        r#"
+#![feature(no_core, const_trait_impl)]
+#![no_core]
+extern crate base;
+const VALUE: i64 = <f64 as base::Sub>::sub(5.0, 3.0) as i64;
+#[unsafe(no_mangle)]
+pub extern "C" fn observed() -> i64 { VALUE }
+"#,
+    )?;
+    super::artifacts::checked(
+        "subtraction-client",
+        &folder,
+        source_client(&client, &metadata, &lowir).arg("--crate-type=lib"),
+    )?;
+    let output = std::fs::read_to_string(lowir)?;
+    assert!(output.contains("return i64 2"), "{output}");
+    Ok(())
+}
+
+#[test]
 fn cli_version_fourteen_transports_required_range_declarations() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

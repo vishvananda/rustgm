@@ -52,7 +52,7 @@ impl Checker<'_> {
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
         if effect != Constness::Ordinary {
-            self.require_imported_const_division(trait_definition, effect)?;
+            self.require_imported_const_binary(trait_definition, effect)?;
         }
         if let Some(plan) = member_plan {
             plan.require(&self.facts, definition, predicate)
@@ -75,21 +75,22 @@ impl Checker<'_> {
             })
     }
 
-    fn require_imported_const_division(
+    fn require_imported_const_binary(
         &self,
         definition: DefId,
         effect: Constness,
     ) -> Result<(), Error> {
-        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+        if self.facts.source_bindings.is_none() {
             return Err(Error::unlocated(
                 "imported const impl lacks its actual role catalog",
             ));
-        };
-        let role = catalog.role(LangItem::Div).map_err(Error::unlocated)?;
-        let Some(role) = role.filter(|role| {
+        }
+        let role = self
+            .facts
+            .imported_binary_role(definition)
+            .map_err(Error::unlocated)?;
+        let Some(role) = role.filter(|_| {
             effect == Constness::Const
-                && role.definition == definition
-                && role.origin.source().is_none()
                 && self.facts.associated.constant_trait(definition) == Some(true)
         }) else {
             return Err(Error::unlocated(

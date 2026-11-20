@@ -505,9 +505,10 @@ fn effective_impl_constness(
         .as_deref()
         .ok_or("source effective const method lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let Some(division) = catalog.language(LangItem::Div) else {
+    let roles = s::Profile::CONST_BINARY_ROLES.map(|role| catalog.language(role));
+    if roles.iter().all(Option::is_none) {
         return Ok(false);
-    };
+    }
     let implementations = facts
         .generics
         .implementations
@@ -525,7 +526,12 @@ fn effective_impl_constness(
         && facts
             .types
             .trait_application(application)
-            .is_some_and(|application| application.item.0 == division.definition.0))
+            .is_some_and(|application| {
+                roles
+                    .into_iter()
+                    .flatten()
+                    .any(|role| role.definition.0 == application.item.0)
+            }))
 }
 
 /// A required const-trait declaration is conditional, never a const body or an
@@ -559,14 +565,16 @@ fn required_trait_member(
     catalog.require_provider_report(report)?;
     let mut selected = if roles.declaration_policies {
         // The role walk already authenticated this exact operator header.
-        catalog
-            .language(LangItem::Div)
-            .filter(|role| role.definition == definition)
+        s::Profile::CONST_BINARY_ROLES.into_iter().find_map(|role| {
+            catalog
+                .language(role)
+                .filter(|role| role.definition == definition)
+        })
     } else {
         None
     };
     if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
-        return Err("source non-const Div method requires its actual policy transport");
+        return Err("source non-const binary operator method requires its actual policy transport");
     }
     if roles.declaration_policies
         && let Some((parent, [_, _, subtract])) =

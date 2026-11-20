@@ -3,6 +3,11 @@ use super::{Profile, SourceRows, ValidatedRows, Work};
 use crate::support::crates::{CrateIdentity, generics::source as s};
 
 impl Profile {
+    pub(crate) const CONST_BINARY_ROLES: [crate::support::bindings::LangItem; 2] = [
+        crate::support::bindings::LangItem::Sub,
+        crate::support::bindings::LangItem::Div,
+    ];
+
     /// Version fourteen carries declaration policy independently of language roles.
     pub(crate) const fn declaration_policies(self) -> bool {
         matches!(self, Self::Source2024ModuleBodyOperations)

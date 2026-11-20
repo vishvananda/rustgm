@@ -62,7 +62,7 @@ pub(super) fn required_member(
             Constness::Ordinary
         };
         if function.constness != expected {
-            return Err("source division method changed its actual required effect");
+            return Err("source binary operator method changed its actual required effect");
         }
     }
     Ok(constant && function.constness == Constness::Conditional)

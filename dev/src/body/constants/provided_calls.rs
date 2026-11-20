@@ -788,8 +788,7 @@ fn source_member(
     // const override. This validates only the defining request. Ordinary
     // dispatch must select the actual impl and prove its body before Code;
     // direct root entry still cannot execute a trait default without a caller.
-    if (header.declaration.source().is_none()
-        && facts.imported_division_trait(definition)?.is_none())
+    if (header.declaration.source().is_none() && facts.imported_binary_trait(definition)?.is_none())
         || facts
             .associated
             .trait_owner(definition)

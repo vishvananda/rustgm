@@ -111,7 +111,7 @@ pub(in crate::sema::crates::typed_headers) fn inherent_captures(
 
 pub(super) fn transported_const_impl(descriptor: s::Descriptor<'_>, owner: &s::ImplHeader) -> bool {
     // The version-fourteen validator admits a positive const bit only on its
-    // actual division role. The validated rows carry that restriction here.
+    // actual binary operator role. The validated rows carry that restriction here.
     descriptor.profile().declaration_policies()
         && owner.constant
         && (owner.polarity == crate::sema::associated::ImplPolarity::Reservation

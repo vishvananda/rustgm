@@ -177,27 +177,41 @@ impl Declarations {
         Ok(implicit.into())
     }
 
-    /// Version fourteen transports the actual required division declaration.
-    /// Its identity and absent original establish no executable permission.
-    pub(crate) fn imported_division_trait(
+    pub(in crate::sema) fn imported_binary_role(
         &self,
         definition: DefId,
-    ) -> Result<Option<DefId>, &'static str> {
+    ) -> Result<Option<super::compiler_items::Role>, &'static str> {
+        use crate::support::crates::generics::source::Profile;
         let Some(catalog) = self.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let Some(role) = catalog.role(crate::support::bindings::LangItem::Div)? else {
+        for kind in Profile::CONST_BINARY_ROLES {
+            if let Some(role) = catalog.role(kind)?
+                && role.definition == definition
+                && role.origin.source().is_none()
+            {
+                return Ok(Some(role));
+            }
+        }
+        Ok(None)
+    }
+
+    /// The actual imported required binary member retains only its declaration.
+    pub(crate) fn imported_binary_trait(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<DefId>, &'static str> {
+        let Some(owner) = self.associated.trait_owner(definition) else {
             return Ok(None);
         };
-        if role.origin.source().is_some()
-            || self.associated.trait_owner(definition) != Some(role.definition)
+        if self.imported_binary_role(owner)?.is_none()
             || self
                 .declaration_header(definition)?
                 .is_none_or(|header| header.declaration.source().is_some() || header.body.is_some())
         {
             return Ok(None);
         }
-        Ok(Some(role.definition))
+        Ok(Some(owner))
     }
 
     fn imported_member_self_site(
@@ -205,7 +219,7 @@ impl Declarations {
         definition: DefId,
         trait_definition: DefId,
     ) -> Result<ProofSite, &'static str> {
-        if self.imported_division_trait(definition)? != Some(trait_definition) {
+        if self.imported_binary_trait(definition)? != Some(trait_definition) {
             return Err(
                 "imported const-member defining requests require their authenticated source-profile counterpart",
             );
