@@ -1,285 +1,115 @@
-# RustGM self-hosting handoff
+# RustGM handoff
 
-## Resume point — 2026-11-20
+## Pause boundary · 2026-11-20
 
-The combined graph has authenticated inputs for all 22 planned target
-commands. The opt-level 1 observer at `6c9972cd8` clears the opaque
-foreign `VTable` declaration and stops in strict Core after 37.92 seconds.
-The guarded trace identifies `ChangeOutputType<T, V>` at
-`core/src/ops/try_trait.rs:389`. This crate-private alias has two type
-formals and a nested associated projection. The strict graph has yet to
-publish Core.
-Local `main` carries the Thin alias transport at `cbf1224b0` and the
-Pointee role family at `fab9da160`. The reduced Thin provider emits 4,591
-metadata bytes. A fresh client emits `return u8 7` through the actual
-imported alias and rejects the slice-pointer call. Four exact checks
-pass, including the fresh Pointee consumer and the local Thin regression.
-The VTable checkpoint at `1c0022201` publishes the exact declaration and
-the generic thin-pointer reduction. The ordinary control and rejected
-by-value diagnostic remain byte-identical. A fresh consumer verifies
-pointer metadata, foreign identity and the owned-use rejection.
-Stage 1 and Stage 2 remain pending.
+The strict build of original Rust Core reaches the metadata export of
+`ChangeOutputType<T, V>` in `core/src/ops/try_trait.rs:389`. The last
+integrated compiler checkpoint is `1c0022201` on local `main`, with the
+strict replay recorded at `7851ebfd9`. The two-projection alias change is
+preserved in the frontier worktree and as a patch. The next original Core
+replay follows the focused alias check. Earlier handoffs and their receipts
+are in `git show 7851ebfd9:handoff.md`.
+[Self-hosting plan](docs/self-hosting-plan.md) · [Saved alias patch](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/strict-compiler-unit-graph/change-output-type-pause.patch)
 
-Local `main` carries the generic alias fix at `6555e3dba`. The exact
-`NotAllOnes<T>` reduction publishes 4,688 metadata bytes. A fresh client
-substitutes the actual argument and proves the projection only when
-demanded. The closed control preserves its earlier metadata bytes.
-Three focused tests and the frozen controls pass. The strict executor
-has no accepted Core artifact yet.
-[Strict graph evidence](docs/self-hosting-plan.md)
-
-The self-hosting worktree is
-`/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
-`lane/strict-trait-constant-defaults-20261120`. The required-constant
-checkpoint `7a5329550` is on `main`. A fresh RustGM client imports
-`Table<T>::ROW`, returns `19` and `513` for its two implementations and
-rejects a missing or mistyped override. Four focused integration tests
-passed. `4520c8716` repairs the private decoder call. The private
-harness reached its build deadline before execution. Frontier commit
-`d7a9ddcc8` publishes and byte-round-trips an actual default and
-override with five passing focused tests. `7839da8d0` keeps the default
-under its trait owner and passes four focused checks. `dc9017c11`
-re-proves imported constant links using the actual declaration kind
-and canonical constant contract. Two focused checks pass. A fresh
-RustGM client with the same provider reached the old function-only
-original-body preflight. `5bb85597e` reconstructs and checks
-the initializer under the constant's actual owner. A fresh import-only
-client emits `return u8 4`, and a local override emits `return u8 21`.
-The inherited default reaches evaluation and fails with `selected constant
-has no initializer`. The division control exposed a synthesized-constructor
-check ordered after function-header lookup. The fix and expanded consumer
-regression pass all three focused checks. `c3311cc45` executes imported
-constant originals through the checked interpreter. Fresh clients emit
-`8` for the inherited default, `9` for the provider's override and `21`
-for a local override. `89fd654d0` publishes and re-proves const `Sub` under
-its actual language role. A fresh client returns `2` from the transported
-`f64` subtraction and both prior controls pass. The frozen reduced Core
-provider now reaches original-value encoding and requires the open
-supertrait constant row. The first row candidate passes four focused
-integration checks, formatting, architecture and strict Clippy. The frozen
-reduced Core provider now publishes 12,929 bytes of metadata. Its fresh
-native client matches pinned Rust on `10 22 27 91`. `75e9fa917`
-re-proves each reconstructed open trait read. The focused consumer
-accepts the actual bound and rejects a packet whose same-typed operand
-requires an unrelated trait, even when the source function is unused.
-The seven trait-constant commits are on local `main` through
-`d4f8759f6`. The compiler, tests and scripts match the qualified
-frontier checkout byte for byte. The final proof-aware compiler
-replays the frozen reduced Core metadata, emits byte-identical client
-LowIR and matches pinned Rust's native output.
-The authenticated original Core unit timed out after 180 seconds on
-the unoptimized dev-fast binary, before publishing any output. The
-unoptimized 215-second replay also expired. The completed observation
-build uses opt-level 1 with local LTO and LLVM's default pass pipeline
-disabled. It reached the new publication diagnostic on the unchanged
-Core input.
-Stage 1 and Stage 2 are pending.
-[Strict Core evidence](docs/self-hosting-plan.md#L979)
-
-Frontier cleanup retired seven superseded executables with 0.86 GiB of
-unshared blocks. The performance worktree retired eight with 1.36 GiB of
-accounted blocks. Both retained the current compiler pins, warm dev-fast
-caches and cleanup receipts. Free space later recovered above the
-150 GiB reserve. The PA45 comparator checks each executable against
-the native-link receipt for its exact strict target build. Fourteen
-focused comparator and linker tests pass, including stale and missing
-link records and a different linker pin.
-
-The performance worktree is
-`/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/lifetime-inspection-tables-20261120` at `e781afa746`.
-The singleton candidate remains pinned at `8fbf96d4a`. The first
-local-annotation census identifies 631,869 inert visits out of 970,361
-active visits (65.12%). The frozen graph and 12 focused controls preserve
-output bytes, and the focused outcomes agree with pinned Rust. The
-producer shadow matches the original traversal order and predicts all
-31 tested traversal failure sites. References written during the pass
-create 7,547 events at later positions. All 64 events missed by the
-publication hooks are Core pattern endpoints. The compact representation
-would still use at least 9.54 MB of payload for this pass. The flat `Kind`
-index shadow matches 1,468,549 lookups and uses 3 MiB less logical index
-capacity. The worker is measuring a separate change that removes singleton
-lifetime argument allocations. Exact parity passed on the frozen 746-input
-graph, 21 focused outcomes, four fresh staged outcomes and 12 real budget
-controls. DHAT counts 2,060 fewer blocks at the target allocation site
-on the 256-call singleton control, and that control retires 0.733% fewer
-instructions. The zero and three-lifetime controls preserve allocation
-counts. The paired whole-graph instruction difference falls inside A/A
-noise, and the two elapsed pairs disagree. The candidate stays isolated.
-The subsequent generic-call census finds 55,367 repeated small-map
-preparations and zero reusable completed substitutions on the frozen
-graph. The worker deferred that change. The lifetime-inspection copy
-elimination is on local `main` through `52c394788`. Four focused tests
-and eight independent output and diagnostic comparisons passed. The
-full graph reached its 235-second development-binary timeout before
-emitting LowIR. Whole-graph candidate parity and timing are pending.
-The first cleanup edge's redundant loan-state restore is removed on
-local `main` at `562af2fd6`. The frozen baseline has 45,460 first
-restores and 441,888 copied payload bytes at that site. The change
-preserves the work debit and expiration transition. Five ownership
-tests, ten CLI comparisons and eleven typed loan-ledger comparisons
-pass. Full private validation, candidate graph parity and timing are
-pending. The two direct loan-state tests pass in a reduced harness
-using the original source modules.
-
-Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
-retires 0.253% more original-graph instructions. The second retires 0.102%
-fewer instructions and takes longer in both elapsed-time pairs. Bounded
-child-proof reuse `9143861f0` and its early source guard `049db339d` are
-on `main`. The separate trait-header experiments are parked.
-The isolated const-panic marker candidate `0a8667768` retires 0.0213%
-fewer instructions on the frozen graph, with identical output and
-ledgers. The 1.28% reduction in the checked-absence control does not
-produce a verified whole-graph wall-time win. The worker is continuing
-attribution using the pinned `v5literal` reference.
-[Performance evidence](docs/self-hosting-plan.md#local-annotation-traversal)
-
-## Historical bring-up checkpoint — 2026-11-19
-
-The compiler checkpoint on `main` is
-`314833ada04e6a859ae5a26598d2a35c0ab2af48`. The original Rust 1.98.0
-`core + alloc` graph emits LowIR, a bring-up metadata stamp and a native
-link manifest with **zero skip rows**. ThinBox's inline constant and Vec's
-`from_iter` inline constant were the final two skips. The original Linux
-`std` graph also uses an empty skip list. It stops in `quota_v2` during
-lifetime checking, before emitting LowIR. Stage 1 is pending.
-[Self-hosting plan](docs/self-hosting-plan.md) · [PA45 contract](pa45/README.md)
-
-## Verified progress and remaining milestones
-
-| Milestone | Evidence and remaining work |
+| Worktree | State at the boundary |
 | --- | --- |
-| M1 · original `core` | Atomics, slices, integers and intrinsic operations matched the native oracle in all three runs on zero-skip checkpoints. All 18 consumers passed on an older 12-skip profile. Complete the current zero-skip retest for the remaining cases. |
-| M2 · original `alloc` | The graph emitted 667,928 bytes of LowIR, a 55-byte bring-up stamp and a 52-byte link manifest. All three are byte-identical across the three latest checkpoints. Vec and String matched their native oracles in three runs each with zero skips. Box-to-dyn reaches a missing concrete callable or checked template in `Box::call_once`. B-tree `descend` retains an unmapped lifetime. Rc and Arc fail call syntax through `Deref` to `dyn Fn`. |
-| M3 · original `std` | The pinned Linux guest graph reaches `std:sys/thread/unix.rs`, `quota_v2`. Build the abort-profile rlib and run the native println, fs, env and HashMap consumer after the source graph emits. |
-| M4 · RustGM dependencies | Build the locked `unicode-ident`, `tinyvec` and `unicode-normalization` sources. |
-| M5 · stage 1 | Use the pinned rustc-built stage 0 and CPPGM to build the unmodified RustGM CLI and library. Run every committed PA1–PA24 text oracle against stage 1 through `RUSTGM_TEST_APP`. |
-| M6 · stage 2 | Rebuild the same graph using stage 1. Compare each crate's LowIR and metadata and the linked compiler byte for byte against stage 1. |
-| M7 · strict build | Build both stages in strict mode with zero bring-up records and zero trapping stubs across the libraries, dependencies and compiler. |
+| `/home/vishvananda/rustgm` | Local integration branch `main`. This handoff is the only change since `7851ebfd9`. |
+| `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | `lane/strict-trait-constant-defaults-20261120` at `6c9972cd8`, with the unintegrated alias change. |
+| `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | `lane/const-panic-marker-publication-20261120` at `0a8667768`, the isolated marker candidate. The performance worker was stopped. The earlier trait-header worker was absent after the restart and its experiments remain parked. |
 
-The successful `core + alloc` replay still records 54 unproven obligations
-and 20 waivers. The failing `std` replay records 79 unproven obligations and
-8 waivers before it stops. The observed `core + alloc` LowIR SHA-256 is
-`a9864c51434c40abd255ae27a8af8729b50cfc84fec07d78422af1c729907910`.
+## Self-hosting
 
-Three integrated checkpoints moved the original `std` frontier from
-`rustc-demangle` into `std`. `127a1b6e4` preserves the parent place's lifetime
-aliases in closure capture storage. `05e86ea45` excludes a closure's private
-inherited slots from returned opaque captures while preserving the proof of
-its stored borrows. `314833ada` collects deferred nested byte-pattern work in
-one shared batch and clears the `quota` failure. All three passed focused
-gates. A separate opaque-lifetime control still needs implicit shortening
-from `'b: 'a` when the opaque result captures only `'a`. The explicit typed
-shortening works.
+- The strict executor has authenticated inputs for 22 planned target
+  commands. The opt-level 1 observer on the unchanged Rust 1.98.0 Core
+  sources at `88d9e12ae178fab0fb5cc050a94da85685d449ea` cleared foreign
+  `VTable` and reached the alias gate in 37.92 seconds. Core did not
+  publish an accepted strict artifact. Strict alloc, std and the compiler
+  dependencies still follow. Stage 1, its PA1–PA24 run, the byte-identical
+  Stage 2 rebuild and PA45 remain open. [Strict Core replay](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/strict-compiler-unit-graph/core-vtable-optimized-v1/target-units/receipt.json)
+- Local `main` contains the Pointee language-role family, Thin trait alias
+  transport, one-formal projected module alias transport and opaque foreign
+  type transport. Fresh clients passed the relevant metadata round trips.
+  The foreign type regression also verifies thin-pointer metadata, declaration
+  identity and rejection by value. [VTable focused receipt](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/qualification/fast/1795193543534400841/receipt.json)
+- The prior shared bring-up graph compiled and ran the original Core,
+  locked `unicode-ident` and a native `no_std` scalar sweep. It recorded
+  zero skips, 49 unproven obligations and eight waivers. Separate bring-up
+  runs emitted Core plus alloc, and Vec and String matched their native
+  oracles. Those runs use the bring-up profile. [Historical receipts and remaining consumers](docs/self-hosting-plan.md)
 
-## Current compiler blocker
+### Resume the alias checkpoint
 
-The unchanged original `quota_v2(group_path: PathBuf) -> usize` declares no
-lifetime parameters. Its declaration begins at byte 32345. The failure is
-`invalid lifetime constraint identity` at byte 32387, the start of its body.
-A guarded debugger trace shows the error arises while applying an ordinary
-equality in the original body's borrow-region proof.
+The frozen reduction contains the crate-private alias, a public equivalent,
+a closed alias control, a valid concrete use and a missing implementation.
+Pinned rustc accepts the valid cases and rejects the missing implementation.
+The trace shows two ordered root normalization requirements, first
+`T::Residual` and then `<T::Residual as Residual<V>>::TryType`. The existing
+packet reconstructs one root. The draft adds a sparse v14 metadata trailer
+for the ordered roots, keeps the compact path for older packets and retains
+the actual alias visibility. It also adds a fresh consumer check for a
+successful projection, a missing trait proof and an inaccessible alias.
+[Reduction](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/strict-compiler-unit-graph/core-change-output-alias-reduction-v1/result.json) · [Proof trace](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/strict-compiler-unit-graph/core-change-output-alias-proof-observation-v1/gdb.stdout)
 
-The diagnostic replay traced that equality to
-`sema::bodies::field_storage::Batch::publish`. A projected field presented to
-storage normalization already carries a bound lifetime at depth 0, slot 0.
-Normalization opens it as fresh region 84 and publishes the equality between
-the two in the body's root scope. The root binder has width zero. The two
-other observed applications of the same projection carry existing body
-regions 45 and 46. Their equalities preserve those identities.
+The pause check passed assignment metadata validation, formatting, the
+architecture audit and strict Clippy. The dev-fast build reached the
+five-minute validation deadline before any of the three selected tests
+could run. Resume by rerunning the same focused gate from the frontier
+worktree. The receipt records the exact command, three test selectors,
+stages and timeout. The compiler patch remains uncommitted.
+[Focused check receipt](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/qualification/fast/1795194953336135589/receipt.json)
 
-The failing storage root is `TypeId(360402)` with nominal owner `ItemId(52206)`
-in this replay. Its raw field is `TypeId(36676)`, a projection with member
-`ItemId(8765)` and the single lifetime argument `RegionId(2147483648)`.
-Those IDs are local to this input graph. Trace that root back through
-`storage_roots` and field instantiation to the source occurrence. Determine
-whether the caller passed a provisional signature type as storage or the
-instantiation lost the caller's lifetime. Repair the producer and preserve the
-binder check. A preliminary pattern-family reducer reaches a different
-outlives diagnostic. An independently qualified reduction for the exact
-failure remains open.
-[Storage roots and proof publication](dev/src/sema/bodies/field_storage.rs) ·
-[Field dependency traversal](dev/src/sema/stored_fields/dependencies.rs) ·
-[Region proof](dev/src/borrow/regions/check.rs)
+After the focused check, replay the frozen alias cases and compare the
+closed control's metadata bytes and the missing-proof diagnostic. Then
+commit the qualified change in the frontier worktree, pin an updated
+optimized observer and use
+`obj/parallel/strict-compiler-unit-graph/replay_core_step.py` in the
+frontier worktree on the same unchanged strict Core input. The previous
+strict replay used the observer pin in `core-vtable-optimized-v1/` under that graph
+directory. The earlier shared bring-up replay can still use
+`--bringup-guest NAME[@EDITION]=ROOT.rs` per dependency in order, with
+each guest keeping its own crate identity, visibility and extern prelude.
+[Validation and resource rules](docs/parallel-work.md) · [Test selection](TESTING_AND_REFERENCES.md)
 
-The diagnostic patches were restored after the replays. Their diffs, raw
-stderr and commands are preserved under `obj/`. Use an independent pinned
-Rustc positive and a genuine lifetime-escape control for the exact repair.
-Run focused RustGM checks, then replay original `core + alloc` and Linux
-`std` with the same empty skip list. Continue from the next concrete failure
-or from the emitted artifacts.
+## Performance
 
-## Performance audit
+The saved optimized shared bring-up comparison is **42.775 s RustGM vs
+37.014 s rustc**, a **15.6% RustGM slowdown** by median. The paired blocks
+varied and the build scopes differ. RustGM used the joint source graph
+with the waivers above. Rustc also freshly built `compiler_builtins` and its
+build script. On three smaller native controls, RustGM was 1.81–2.01×
+faster than pinned rustc and 4–7% slower than the rebuilt October RustGM
+compiler. The early 4× workload is unavailable for exact replay. The 37.92 s
+strict failure above is a frontier observation. [Paired comparison](/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/nostd-compile-time/paired/receipt.json) · [Attribution and controls](/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/performance-gap/report.md)
 
-Both workers completed their source audits against `707b5b9d`. The frontend
-worker also traced the historical macro budget symptom. No optimization
-patches or timing runs came from these audits.
-
-| Area | Finding and first measurement |
-| --- | --- |
-| Macro matcher scratch | Three generation-tagged vectors shrink and regrow between arms. A wide arm that fails on its first token can clear its unused states on every short invocation, outside the current matcher step count. Retain the initialized length and vary wide-arm size and invocation count independently. [Matcher](dev/src/expand/macros/matcher.rs#L194) |
-| Textual macro names | Distinct cold names rescan the same lexical scope links and retain each visited lookup pair. Measure visits and retained rows as both scope depth and distinct names grow. Preserve shadowing, hygiene and pending expansion output. [Textual lookup](dev/src/expand/textual.rs#L158) |
-| Derive literal grants | Each qualifying literal revalidates the derive receipt's full generated origin interval. Count interval visits per receipt and retain the exact per-use token and feature checks when reusing a verified receipt. [Literal grants](dev/src/resolve/expansion/derive_lists/literal_grants.rs#L132) · [Origin validation](dev/src/resolve/expansion/derive_lists/vocabulary.rs#L31) |
-| Trait coherence | Open impls sharing an outer constructor queue all pairs even when distinct nested rigid constructors rule out overlap. A historical core census recorded 20,986 rigid rejections out of 22,895 pairs. Count candidates before instantiation and retain wildcard cases when testing a nested index. [Pair registration](dev/src/sema/traits/implementations.rs#L484) · [Core census](docs/core-census-plan.md#L733) |
-| Borrow dataflow | Dense live-value, cleanup and loan bitsets scale with tracked entities times CFG blocks. Sequential short-lived borrows can keep the active set sparse while both dimensions grow. Measure touched words and component resets with sparse and dense controls. [Value liveness](dev/src/borrow/liveness.rs#L347) · [Loan propagation](dev/src/borrow/loans.rs#L504) |
-| Body outlives proofs | The cache stores exact source and target pairs. Successive targets along one chain can repeat the same traversal. Use the declaration verification scaling case as a model and preserve first-failure order. [Region graph](dev/src/types/region_graph.rs#L338) · [Scaling control](dev/tests/invariants/input_contracts/answers.rs#L67) |
-
-The audit also identified repeated formatting provenance and header lookups,
-logarithmic charging for a single immediate expansion-parent read, nested
-configuration subtree rescans and repeated file-module ancestor scans.
-The retained audit note records the source sites and proposed work counters.
-
-On `05e86ea45`, the old explicit macro work cap of 14,500,624 produced
-23 macro-ledger diagnostics. A second replay with the same compiler,
-inputs, empty skip list and storage caps cleared all 23 by using the existing
-finite source-proportional work allowance. The 1 GiB attempted storage cap
-and 64 MiB retained storage cap stayed in force. That replay reached the
-earlier `quota` body blocker. Keep the source-proportional allowance for the
-current frontier. Performance changes need bounded-work controls, immutable
-binaries, frozen inputs, A/A calibration and paired ABBA runs with output
-equality. [Repository validation rules](AGENTS.md)
-
-## Evidence and resume procedure
-
-Run builds and probes in
-`/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
-`lane/frontier-20261115`. Use `/home/vishvananda/rustgm` for integration.
-Evidence paths in this table are under the frontier worktree's
-`obj/parallel/` unless a path starts with `obj/qualification/`.
-
-| Path | Contents |
-| --- | --- |
-| `resume-20261118-patterns/compiler/pin.json` | Immutable optimized observation compiler for `314833ada`, SHA-256 `4026873ead8ef8a079fd38d4beced870b26c48d6bb6e485cd316faae3ce91ab9`. |
-| `resume-20261118-patterns/{alloc-empty,std-alloc-empty}/receipt.json` | Successful original core plus alloc artifacts and failing original Linux std replay. The same directories hold the exact commands, environment, skip files and artifact digests. |
-| `resume-20261119-quota-projected-field/observation/{receipt.json,stderr,inputs.json}` | Latest storage trace and exact local type identities. The diagnostic patch is `region-identity.patch` in its parent directory. |
-| `resume-20261119-quota-producer-site/observation/stderr` | Producer backtrace through field-storage proof publication. |
-| `resume-20261118-quota-lifetimes/identity-stack/{stdout,stderr}` | Guarded debugger stack at the invalid region lookup. |
-| `resume-20261118-captures/performance-audit-707b5b9d.txt` | Both performance audits and the macro budget follow-up. |
-| `resume-20261118-opaque/{std-alloc-empty,work-budget/replay}/receipt.json` | Macro work-cap comparison on the same binary and graph. |
-| `resume-20261118{,-saturation,-cstr-cast}/` | Original library receipts, reductions and native per-case evidence, including the last two removed skips and remaining alloc consumers. |
-| `obj/qualification/fast/{1795040551872768887,1795041966611535046,1795042991123269179}/receipt.json` | Focused passing gates for capture storage, opaque captures and nested deferred patterns. |
-
-Replay from the saved commands and environment in a fresh directory. The
-original sources are pinned to Rust commit
-`88d9e12ae178fab0fb5cc050a94da85685d449ea`. The saved `std` command records
-the frozen guest roots and their editions. `--bringup-guest NAME[@EDITION]=ROOT.rs`
-is repeatable in dependency order in a `--source-core` bring-up session.
-Guests have their own crate roots, visibility and extern preludes. The
-`NAME:PATH` keys identify their source files in skip lists and diagnostics.
-For native bring-up consumers, `scripts/bringup_linked.py --guest` adds the
-consumer after its dependency guests. The stamp emitted by this profile
-carries bring-up evidence. The self-hosting milestones still require usable
-crate transport and strict artifacts.
-
-Use the existing three worktrees and shared controller. Check free space
-before each build, validation batch or probe. Preserve the 150 GiB disk
-reserve and 24 GiB frontier output cap. Wait for the resource wrapper's
-terminal result before editing sources or starting another heavy command.
-Use `make fastcheck` with exact selectors for development. The optimized
-`observe` binary supports whole-graph observations. Use the owning handouts'
-qualification procedure for release and performance evidence.
-[Parallel work and resource rules](docs/parallel-work.md) ·
-[Tests and references](TESTING_AND_REFERENCES.md)
-
-The previous handoff with historical commands and earlier checkpoints is
-available through `git show 314833ada:handoff.md`.
+- **Where time goes.** Body semantics accounts for 57.8% of sampled
+  RustGM cycles on the frozen graph, declarations 16.1%, and demanded
+  instance preparation and proof 10.5%. Trait selection appears in 46.0%
+  of body-phase samples, inference in 28.9%, and substitution or interning
+  in 15.6%. Those call-chain shares overlap. Macro matching appears in
+  about 0.23% of all samples. Destruction-state resizing takes 15.7% of
+  instance-preparation samples. The sample profile attributes RustGM's
+  work. The measured RustGM–rustc gap still has no per-feature allocation.
+  [Profile](docs/self-hosting-plan.md#performance-work-from-the-agent-audits)
+- **What landed.** Bounded child-proof reuse and its early source guard
+  are on `main` at `9143861f0` and `049db339d`. Separate trait-header
+  experiments are parked. Inference work, including the first-root visit
+  reuse at `8ee6cea47`, and body-phase reuse of validated caller-tracking
+  witnesses at `f5e3fbdcf` are also on `main`. The isolated const-panic
+  marker candidate `0a8667768` retired 0.0213% fewer graph instructions
+  and 1.28% fewer in the focused checked-absence control. The wall-time
+  effect is unresolved within A/A spread. [Marker A/A and ABBA results](/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/const-panic-marker-publication/result.md)
+- **Next performance experiment.** A capped replay of 746 frozen inputs
+  matched archived output and found 46,584 repeated CFG owner validations
+  across 5,505 owners, reading 1,579,269 attribute witnesses and 190,498
+  tree rows. After the package shell moves from semantic analysis into
+  lowering, the same immutable producer and source units account for
+  42,027 reads and 94.5% of the observed validation work. The next step
+  is to split those reads by template, concrete and late execution
+  builders, then test carrying a borrowed declaration proof through the
+  observed lowering path. Preserve the current owner checks and logical
+  debits, including the first failed debit when an aggregate preview
+  refuses the query. The read-only reference is
+  `~/work/private/v5literal/checkout` at `a59264bd`. No candidate or
+  speed claim exists for this census. Use frozen inputs, immutable
+  binaries, A/A calibration, paired ABBA and exact output comparisons.
+  [Owner census and budget controls](/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/prepared-owner-audit/observations.md)
