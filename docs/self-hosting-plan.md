@@ -1845,6 +1845,22 @@ before the first condition or budget failure. The original graph places
 trial construction in 2,005 of 26,865 sample chains and header
 instantiation in 1,580. The counts overlap.
 
+On exact `f5e3fbdcf`, the shadow classified 204,141 of 810,102 trials
+that passed the current index. All 204,141 reached an actual header
+mismatch under legacy execution. The original 746-input graph and 15
+focused pairs preserved status, diagnostics and output bytes. Nested
+`Self` accounted for 174,278 of the mismatches. At least 87,676 of those
+had zero allocated regions and zero parent debits, of which at least
+35,612 also had canonical frames. A pinned debugger control straddled
+the first query-debit cutoff by one step. The legacy and shadow paths
+both changed from a confirmed mismatch to the original budget failure
+at that boundary. These observations establish an upper bound on
+candidate reuse. A production implementation needs a repeat census and
+must preserve identity, original work charges and reservation order.
+The raw receipts are `graph-v2/receipt.json`,
+`focused-v2/receipt.json` and `first-charge-v3/receipt.json` under
+`obj/parallel/v5-rigid-discriminant/` in the performance checkout.
+
 The reference also records typed dependency events during analysis and
 retains their first-use order. RustGM could retain an ordered operation
 index when it builds a body and use that index for dispatch and dependency
