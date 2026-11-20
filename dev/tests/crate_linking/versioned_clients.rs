@@ -634,6 +634,43 @@ pub fn after() -> u8 { 12 }
         [BodyRef(0), BodyRef(1), BodyRef(2), BodyRef(3), BodyRef(4)]
     );
     assert_eq!(bodies.ordinary_input_count(), 5);
+    for (name, source, expected) in [
+        (
+            "import-only",
+            r#"#[unsafe(no_mangle)] pub extern "C" fn imported() -> u8 { 4 }"#,
+            "return u8 4",
+        ),
+        (
+            "local-override",
+            r#"
+struct Foreign;
+impl base::Value<u8> for Foreign {
+    const DEFAULT: u8 = { let own = 21; own };
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn selected() -> u8 { <Foreign as base::Value<u8>>::DEFAULT }
+"#,
+            "return u8 21",
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        let output = folder.join(format!("{name}.lowir"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]\n#![no_core]\nextern crate base;\n{source}"),
+        )?;
+        super::artifacts::checked(
+            name,
+            &folder,
+            source_client(&client, &metadata, &output)
+                .args(["--crate-type=lib", "--cap-lints=allow"]),
+        )?;
+        let written = std::fs::read_to_string(output)?;
+        assert!(
+            written.lines().any(|line| line.trim() == expected),
+            "{written}"
+        );
+    }
     Ok(())
 }
 

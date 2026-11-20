@@ -502,16 +502,20 @@ impl Source {
         {
             return Ok(());
         }
-        let (definition, signature) = Self::body_owner(facts, body)?;
         // Version thirteen: a variant constructor is compiler-synthesized, not
         // an authored original; every consumer synthesizes its own from the
         // re-authenticated enum or struct header.
-        if signature.is_some()
-            && self.stage.body_nodes()
+        if self.stage.body_nodes()
+            && let Owner::Function {
+                definition,
+                execution: None,
+                ..
+            } = body.owner
             && self.synthesized_variant(facts, definition)?
         {
             return Ok(());
         }
+        let (definition, signature) = Self::body_owner(facts, body)?;
         let context = self.stage.original_context(definition)?;
         if body.instance.is_some()
             || body.key() != input.key

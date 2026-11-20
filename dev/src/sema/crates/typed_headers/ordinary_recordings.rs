@@ -7,13 +7,19 @@ use crate::{
         package::Error,
     },
     sema::{crates::typed_headers::Header, model::Declarations},
-    support::crates::generics::source as s,
+    support::{
+        crates::{generics::source as s, owner_catalog::BodyRef},
+        hash::HashMap,
+        retained,
+    },
     types::ItemId,
 };
+use numbering_records::{InitializerHeader, RecordedDomain};
 use std::sync::Arc;
 
 pub(in crate::sema::crates::typed_headers) struct OrdinaryRecords {
     prepared: Prepared,
+    initializers: HashMap<BodyRef, Arc<RecordedDomain>>,
 }
 pub(in crate::sema::crates::typed_headers) struct OrdinaryDomain {
     record: Arc<numbering_records::RecordedDomain>,
@@ -31,8 +37,68 @@ impl OrdinaryRecords {
         view: &RecipeView<'_>,
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
+        work.reserve(size_of::<Self>().saturating_sub(size_of::<Prepared>()))?;
         Ok(Self {
             prepared: Prepared::new(view, work)?,
+            initializers: HashMap::default(),
+        })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn prepare_initializer(
+        &mut self,
+        view: &RecipeView<'_>,
+        facts: &Declarations,
+        expected: InitializerHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        work.charge(1)?;
+        let stage =
+            numbering_records::DomainStage::initializer(view, &facts.types, expected, work)?;
+        if let Some(record) = self.initializers.get(&expected.raw) {
+            record.require(&stage, &facts.types, work)?;
+            return Ok(OrdinaryDomain {
+                record: Arc::clone(record),
+            });
+        }
+        let (_, formals) = facts
+            .generics
+            .callable_parameters(&facts.types, expected.definition)
+            .map_err(error)?;
+        original_formals(view, facts, expected.raw, &formals, work)?;
+        let before = retained::map(&self.initializers);
+        let growth = retained::Growth::map::<BodyRef, Arc<RecordedDomain>>(
+            self.initializers.len(),
+            self.initializers.capacity(),
+            1,
+        );
+        work.charge(growth.work)?;
+        work.reserve(growth.bytes)?;
+        let record = Arc::new(stage.record(view, work)?);
+        self.initializers.insert(expected.raw, Arc::clone(&record));
+        work.retained = work
+            .retained
+            .saturating_sub(growth.bytes)
+            .saturating_add(retained::map(&self.initializers).saturating_sub(before));
+        Ok(OrdinaryDomain { record })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn initializer(
+        &self,
+        view: &RecipeView<'_>,
+        facts: &Declarations,
+        expected: InitializerHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        work.charge(1)?;
+        let record = self
+            .initializers
+            .get(&expected.raw)
+            .ok_or_else(|| error("ordinary initializer requires its actual numbering domain"))?;
+        let stage =
+            numbering_records::DomainStage::initializer(view, &facts.types, expected, work)?;
+        record.require(&stage, &facts.types, work)?;
+        Ok(OrdinaryDomain {
+            record: Arc::clone(record),
         })
     }
     pub(in crate::sema::crates::typed_headers) fn prepare(
@@ -290,7 +356,10 @@ impl OrdinaryDomain {
     pub(in crate::sema::crates::typed_headers) fn raw(
         &self,
     ) -> Result<crate::support::crates::owner_catalog::BodyRef, Error> {
-        match self.record.expected().header.body {
+        let Some(expected) = self.record.expected_function() else {
+            return Ok(self.record.raw());
+        };
+        match expected.header.body {
             s::FunctionBody::Original(body) => Ok(body),
             s::FunctionBody::CompilerOperation(_) => Err(error(
                 "compiler-operation execution requires genuine future state ownership",
@@ -333,11 +402,15 @@ impl OrdinaryDomain {
     pub(in crate::sema::crates::typed_headers) fn body(
         &self,
     ) -> Result<crate::resolve::body_origin::ImportedBodyId, Error> {
-        self.record
-            .expected()
-            .pair
-            .body
-            .ok_or_else(|| error("ordinary domain lost its actual body"))
+        self.record.expected_function().map_or_else(
+            || Ok(self.record.body()),
+            |expected| {
+                expected
+                    .pair
+                    .body
+                    .ok_or_else(|| error("ordinary domain lost its actual body"))
+            },
+        )
     }
     pub(in crate::sema::crates::typed_headers) fn require(
         &self,
@@ -347,28 +420,24 @@ impl OrdinaryDomain {
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
         work.charge(3)?;
-        if callables
-            .registration(self.record.expected().item)
-            .is_none_or(|(template, parameters)| {
-                let expected = self.record.expected();
-                !registered_callable(
-                    store,
-                    view,
-                    expected.header,
-                    expected.pair.callable,
-                    template,
-                ) || parameters.len() != expected.formals
-            })
+        if let Some(expected) = self.record.expected_function()
+            && callables
+                .registration(expected.item)
+                .is_none_or(|(template, parameters)| {
+                    !registered_callable(
+                        store,
+                        view,
+                        expected.header,
+                        expected.pair.callable,
+                        template,
+                    ) || parameters.len() != expected.formals
+                })
         {
             return Err(error(
                 "ordinary domain changed its actual callable registration",
             ));
         }
-        self.record.require(
-            &numbering_records::DomainStage::new(view, store, self.record.expected(), work)?,
-            store,
-            work,
-        )
+        self.record.require_current(view, store, work)
     }
     pub(in crate::sema::crates::typed_headers) fn variable(
         &self,
@@ -377,8 +446,8 @@ impl OrdinaryDomain {
         slot: u32,
         work: &mut ReservationWork,
     ) -> Result<crate::types::RegionId, Error> {
-        self.record
-            .region(view, store, self.record.expected(), slot, work)
+        self.record.require_current(view, store, work)?;
+        self.record.slot(slot, work)
     }
     pub(in crate::sema::crates::typed_headers) fn region(
         &self,
@@ -403,11 +472,7 @@ impl OrdinaryDomain {
         input: &s::NormalizationInput,
         work: &mut ReservationWork,
     ) -> Result<std::ops::Range<u32>, Error> {
-        self.record.require(
-            &numbering_records::DomainStage::new(view, store, self.record.expected(), work)?,
-            store,
-            work,
-        )?;
+        self.record.require_current(view, store, work)?;
         self.record.normalization_interval(view, index, input, work)
     }
 }

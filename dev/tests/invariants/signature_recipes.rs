@@ -511,7 +511,7 @@ fn imported_pointer(
     let mut steps = 0;
     let view = crate::sema::crates::source_original(facts, definition, &mut steps)?
         .ok_or("actual imported original view")?;
-    assert_eq!(view.signature(), header.signature);
+    assert_eq!(view.signature(), Some(header.signature));
     assert_eq!(Some(view.source()?), header.body);
     assert!(steps > 0);
     let parameters = facts

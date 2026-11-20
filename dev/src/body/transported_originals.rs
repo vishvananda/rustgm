@@ -89,12 +89,19 @@ impl ImportedOriginals {
         self.retain(row)
     }
     fn retain(&mut self, row: Original) -> Result<(), &'static str> {
-        let crate::body::ir::Owner::Function { definition, .. } = row.template.body.owner else {
-            return Err("imported original lost its function owner");
+        use crate::body::ir::Owner;
+        let (Owner::Function { definition, .. }
+        | Owner::Initializer {
+            definition,
+            kind: crate::sema::model::InitializerKind::Const,
+        }) = row.template.body.owner
+        else {
+            return Err("imported original lost its defining declaration owner");
         };
-        if self.index.insert(definition, self.rows.len()).is_some() {
+        let std::collections::hash_map::Entry::Vacant(slot) = self.index.entry(definition) else {
             return Err("duplicate imported executable original");
-        }
+        };
+        slot.insert(self.rows.len());
         self.payload = self
             .payload
             .saturating_add(row.template.body.allocation_bytes())
@@ -201,8 +208,10 @@ pub(crate) fn validate_source_parts(
     contract: &Contract,
     steps: &mut usize,
 ) -> Result<bool, &'static str> {
-    let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
-        return Err("source original requires its actual imported function owner");
+    use crate::body::ir::Owner;
+    let (Owner::Function { definition, .. } | Owner::Initializer { definition, .. }) = body.owner
+    else {
+        return Err("source original requires its actual imported declaration owner");
     };
     if !crate::sema::crates::is_source_original(facts, definition, steps)? {
         return Ok(false);

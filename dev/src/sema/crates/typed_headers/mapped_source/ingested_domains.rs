@@ -7,7 +7,7 @@ use crate::{
     },
     sema::crates::typed_headers::{
         recipe_cursor::{Availability, Cursor, Demand, Maps, MemoReader, Port, Recorded, Reserved},
-        unpaid_provided::{OrdinaryDomain, OrdinaryRecords, ordinary_requests},
+        unpaid_provided::{InitializerHeader, OrdinaryDomain, OrdinaryRecords, ordinary_requests},
     },
     support::crates::generics::{self as g, source as s},
     types::{RegionId, TypeId, arguments::Argument},
@@ -38,16 +38,11 @@ impl Lazy {
         graph: &super::Graph,
         facts: &mut Declarations,
         definition: crate::resolve::model::DefId,
+        initializer: Option<InitializerHeader>,
         work: &mut ReservationWork,
     ) -> Result<OrdinaryDomain, Error> {
         graph.require_store(&facts.types).map_err(error)?;
         let view = graph.recipe_view();
-        let header = facts
-            .crates
-            .as_deref()
-            .and_then(|linkage| linkage.originals.as_deref())
-            .and_then(|headers| headers.get(definition))
-            .ok_or_else(|| error("ordinary original lost its current installed header"))?;
         let mut writer = self
             .writer
             .try_borrow_mut()
@@ -55,9 +50,21 @@ impl Lazy {
         writer
             .cursor
             .require_reader(&self.reader, &view, &facts.types, work)?;
-        let domain = writer
-            .records
-            .prepare(&view, facts, definition, header, work)?;
+        let domain = if let Some(initializer) = initializer {
+            writer
+                .records
+                .prepare_initializer(&view, facts, initializer, work)?
+        } else {
+            let header = facts
+                .crates
+                .as_deref()
+                .and_then(|linkage| linkage.originals.as_deref())
+                .and_then(|headers| headers.get(definition))
+                .ok_or_else(|| error("ordinary original lost its current installed header"))?;
+            writer
+                .records
+                .prepare(&view, facts, definition, header, work)?
+        };
         if domain.environment().is_some() {
             return Ok(domain);
         }
@@ -145,6 +152,24 @@ impl Lazy {
             .cursor
             .require_reader(&self.reader, &view, &facts.types, work)?;
         writer.records.get(&view, facts, definition, header, work)
+    }
+    pub(super) fn initializer_body(
+        &self,
+        graph: &super::Graph,
+        facts: &Declarations,
+        initializer: InitializerHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        graph.require_store(&facts.types).map_err(error)?;
+        let view = graph.recipe_view();
+        let writer = self
+            .writer
+            .try_borrow()
+            .map_err(|_| error("reentrant ordinary initializer lookup"))?;
+        writer
+            .cursor
+            .require_reader(&self.reader, &view, &facts.types, work)?;
+        writer.records.initializer(&view, facts, initializer, work)
     }
     pub(super) fn prepare(
         context: &Context<'_>,

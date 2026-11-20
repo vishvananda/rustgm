@@ -118,6 +118,16 @@ impl<'a> Index<'a> {
                 continue;
             }
             for link in header.members.slice(&rows.member_links)? {
+                if rows.descriptor().profile().declaration_policies()
+                    && let Some(expected) = link.trait_member
+                    && expected.artifact == s::ArtifactRef(0)
+                    && matches!(
+                        rows.header(expected.declaration)?,
+                        Some(s::HeaderRef::Constant(_))
+                    )
+                {
+                    continue;
+                }
                 let (Some(actual), Some(expected)) = (link.implementation, link.trait_member)
                 else {
                     return Err("v4 selected methods require actual override/member links");

@@ -113,8 +113,7 @@ fn require_original(
     view.require_store(&facts.types)?;
     if body.source != view.source()?
         || view.raw().values.len() != body.values.len()
-        || !matches!(body.owner, crate::body::ir::Owner::Function { definition, signature, execution: None }
-            if definition == view.definition() && signature == view.signature())
+        || body.owner != super::super::rebuilt_operations::owner(view)
     {
         return Err(
             "applied source selection changed its actual original body, owner or signature",

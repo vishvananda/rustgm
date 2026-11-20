@@ -261,7 +261,7 @@ pub(super) fn build(
     let mut contract = Contract {
         key: body.key(),
         source: body.source,
-        signature: Some(view.signature()),
+        signature: view.signature(),
         universals: view.universals(),
         assumptions,
         parameters,
@@ -276,7 +276,7 @@ pub(super) fn build(
         output: None,
         require_result_formation: false,
     };
-    if view.const_context() {
+    if view.const_context() && view.signature().is_some() {
         let required = crate::body::defining_cleanups::mark_imported_required(
             facts,
             view.definition(),
@@ -297,10 +297,12 @@ fn declared_result(
     steps: &mut usize,
 ) -> Result<Option<Obligation>, &'static str> {
     let rows = view.rows();
-    let Some(s::HeaderRef::Function(index)) = rows.header(view.raw().declaration)? else {
-        return Err("source original lost its actual function header");
+    let result = match rows.header(view.raw().declaration)? {
+        Some(s::HeaderRef::Function(index)) => rows.functions[index as usize].original.result,
+        Some(s::HeaderRef::Constant(index)) => rows.constants()[index as usize].ty,
+        _ => return Err("source original lost its actual defining header"),
     };
-    let declared = view.ty(rows.functions[index as usize].original.result, steps)?;
+    let declared = view.ty(result, steps)?;
     let actual = view.ty(view.raw().result, steps)?;
     Ok((declared != actual).then_some(Obligation {
         source: root,
@@ -510,7 +512,7 @@ pub(super) fn validate(
     let parameters = view.type_parameters(&facts.types, steps)?;
     if contract.key != body.key()
         || contract.source != view.source()?
-        || contract.signature != Some(view.signature())
+        || contract.signature != view.signature()
         || contract.universals != view.universals()
         || contract.output.is_some()
         || contract.require_result_formation
@@ -578,7 +580,7 @@ fn validate_builtins(
     if !builtin.is_unprepared_imported() {
         return Err("source original cannot import prepared permission");
     }
-    if view.const_context() {
+    if view.const_context() && view.signature().is_some() {
         crate::body::defining_cleanups::validate_imported_required(
             facts,
             view.definition(),

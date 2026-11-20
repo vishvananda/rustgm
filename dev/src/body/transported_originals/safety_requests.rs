@@ -17,18 +17,22 @@ pub(super) fn check(
         return Ok(());
     }
     work.charge(1)?;
-    let defining_header = facts
-        .function_header(view.definition())?
-        .ok_or("source call safety lost its actual installed caller header")?;
-    if defining_header.signature != view.signature() || defining_header.body != Some(body.source) {
-        return Err("source call safety changed its actual defining body/header");
-    }
-    let Some(Kind::Function {
-        unsafe_: caller_unsafe,
-        ..
-    }) = facts.types.kind(defining_header.signature)
-    else {
-        return Err("source call safety caller signature is not a function");
+    let caller_unsafe = if let Some(signature) = view.signature() {
+        let defining_header = facts
+            .function_header(view.definition())?
+            .ok_or("source call safety lost its actual installed caller header")?;
+        if defining_header.signature != signature || defining_header.body != Some(body.source) {
+            return Err("source call safety changed its actual defining body/header");
+        }
+        let Some(Kind::Function { unsafe_, .. }) = facts.types.kind(signature) else {
+            return Err("source call safety caller signature is not a function");
+        };
+        unsafe_
+    } else {
+        if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
+            return Err("source call safety changed its actual initializer body");
+        }
+        false
     };
     for request in &view.raw().calls {
         work.charge(1)?;

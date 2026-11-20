@@ -45,7 +45,8 @@ pub(super) fn append(
             originals.steps,
             body_bound,
         )?;
-        if rows.descriptor().profile() == s::Profile::Source2024ModuleConversions {
+        let profile = rows.descriptor().profile();
+        if profile == s::Profile::Source2024ModuleConversions || profile.declaration_policies() {
             let current = facts
                 .crates
                 .as_deref()
@@ -262,14 +263,24 @@ pub(super) fn allocation<'a>(
             .get(rows.original_index(raw.body)?)
             .filter(|input| input.body == raw.body)
             .ok_or("source original preflight omitted its actual raw input owner")?;
-        let Some(s::HeaderRef::Function(index)) = rows.header(raw.declaration)? else {
-            return Err("source original preflight omitted its actual function header");
+        let clauses = match rows.header(raw.declaration)? {
+            Some(s::HeaderRef::Function(index)) => {
+                let inputs = rows.functions[index as usize].inputs;
+                (inputs.end - inputs.start) as usize
+            }
+            Some(s::HeaderRef::Constant(index))
+                if rows.descriptor().profile().declaration_policies()
+                    && rows.constants()[index as usize].body
+                        == s::ConstantBody::Original(raw.body)
+                    && raw.context == s::CallContext::ClosedConst =>
+            {
+                0
+            }
+            _ => return Err("source original preflight omitted its actual defining header"),
         };
-        let header = &rows.functions[index as usize];
         if raw.context == s::CallContext::ConstDefinition && !input.parameters.is_empty() {
             bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
         }
-        let clauses = (header.inputs.end - header.inputs.start) as usize;
         bytes = bytes.saturating_add(super::versioned_calls::allocation(
             raw.values.len(),
             rows.descriptor().profile().conversion_roles(),

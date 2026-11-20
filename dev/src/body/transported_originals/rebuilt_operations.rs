@@ -47,11 +47,7 @@ pub(super) fn build(
             .saturating_add(1),
     )?;
     let mut body = Body::original(
-        Owner::Function {
-            definition: view.definition(),
-            signature: view.signature(),
-            execution: None,
-        },
+        owner(view),
         view.source()?,
         view.ty(record.result, &mut work.steps)?,
     );
@@ -105,6 +101,20 @@ pub(super) fn build(
     )?;
     owned(view, &mut body, work)?;
     Ok(body)
+}
+pub(super) fn owner(view: &SourceOriginal<'_>) -> Owner {
+    let definition = view.definition();
+    match view.signature() {
+        Some(signature) => Owner::Function {
+            definition,
+            signature,
+            execution: None,
+        },
+        None => Owner::Initializer {
+            definition,
+            kind: crate::sema::model::InitializerKind::Const,
+        },
+    }
 }
 /// One value row's rebuilt operation; the row's types were re-proved by the
 /// consumer's own validation.
@@ -508,7 +518,7 @@ pub(super) fn validate(
     if body.source != view.source()?
         || body.const_context != view.const_context()
         || body.instance.is_some()
-        || !matches!(body.owner, Owner::Function { definition, signature, execution: None } if definition == view.definition() && signature == view.signature())
+        || body.owner != owner(view)
         || body.result != view.ty(record.result, steps)?
         || body.locals.len() != record.locals.len()
         || body.values.len() != record.values.len()

@@ -1,5 +1,5 @@
 //! Numbering owns exact allocations; v9 may retain its constructed defining Arc.
-use super::{Progress, Ready, Session};
+use super::{Progress, Ready, Session, SignaturePair};
 use crate::{
     resolve::{
         body_origin::{ImportedBodyId, ImportedDeclarationId, ProofSite},
@@ -17,7 +17,7 @@ use crate::{
         },
         retained::{self, Growth},
     },
-    types::{Kind, RegionId, Store, arena::Identity},
+    types::{ItemId, Kind, RegionId, Store, TypeId, arena::Identity},
 };
 use std::sync::Arc;
 
@@ -33,8 +33,34 @@ struct Seal {
     root: ImportedDeclarationId,
     body: ImportedBodyId,
     raw: BodyRef,
-    expected: Ready,
+    expected: NumberedDeclaration,
     arena: Identity,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema::crates::typed_headers) struct InitializerHeader {
+    pub definition: crate::resolve::model::DefId,
+    pub declaration: ImportedDeclarationId,
+    pub row: DeclarationRef,
+    pub raw: BodyRef,
+    pub body: ImportedBodyId,
+    pub result: TypeId,
+    pub binder: g::BinderRef,
+    pub universals: u32,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NumberedDeclaration {
+    Function(RecordedFunction),
+    Initializer(InitializerHeader),
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) struct RecordedFunction {
+    pub(super) pair: SignaturePair,
+    pub(super) header: s::FunctionHeader,
+    pub(super) item: ItemId,
+    pub(super) formals: usize,
+    scope: (usize, s::ParameterScope),
 }
 pub(super) struct DomainStage {
     seal: Seal,
@@ -65,11 +91,38 @@ impl DomainStage {
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
         work.charge(12)?;
+        if store.kind(expected.pair.original) != Some(expected.original)
+            || store.kind(expected.pair.callable) != Some(expected.callable)
+        {
+            return Err(error(
+                "recorded domain changed its actual callable or scope",
+            ));
+        }
+        Self::function(
+            view,
+            store,
+            RecordedFunction {
+                pair: expected.pair,
+                header: expected.header,
+                item: expected.item,
+                formals: expected.formals,
+                scope: expected.scope,
+            },
+            expected.original,
+            work,
+        )
+    }
+
+    fn function(
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: RecordedFunction,
+        original_kind: Kind,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
         let rows = view.rows()?;
         if rows.functions.get(expected.pair.function_row as usize) != Some(&expected.header)
             || rows.scopes.get(expected.scope.0) != Some(&expected.scope.1)
-            || store.kind(expected.pair.original) != Some(expected.original)
-            || store.kind(expected.pair.callable) != Some(expected.callable)
             || view.declaration(expected.header.declaration, work)? != expected.pair.declaration
         {
             return Err(error(
@@ -83,6 +136,78 @@ impl DomainStage {
         if expected.pair.body != Some(body) {
             return Err(error("recorded domain changed its actual Catalog body"));
         }
+        let Kind::Function { bound_regions, .. } = original_kind else {
+            return Err(error(
+                "recorded domain lost its canonical function signature",
+            ));
+        };
+        if bound_regions != expected.header.regions.total {
+            return Err(error(
+                "recorded domain changed its complete original/binder/allocation identity",
+            ));
+        }
+        Self::numbered(
+            view,
+            store,
+            body,
+            raw,
+            NumberedDeclaration::Function(expected),
+        )
+    }
+
+    pub(super) fn initializer(
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: InitializerHeader,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(12)?;
+        let rows = view.rows()?;
+        let Some(s::HeaderRef::Constant(index)) = rows.header(expected.row).map_err(error)? else {
+            return Err(error(
+                "recorded initializer lost its actual constant header",
+            ));
+        };
+        if rows.constants()[index as usize].body != s::ConstantBody::Original(expected.raw)
+            || view.declaration(expected.row, work)? != expected.declaration
+            || view.body(expected.raw, work)? != expected.body
+            || store.kind(expected.result).is_none()
+        {
+            return Err(error(
+                "recorded initializer changed its actual declaration or body",
+            ));
+        }
+        Self::numbered(
+            view,
+            store,
+            expected.body,
+            expected.raw,
+            NumberedDeclaration::Initializer(expected),
+        )
+    }
+
+    fn numbered(
+        view: &RecipeView<'_>,
+        store: &Store,
+        body: ImportedBodyId,
+        raw: BodyRef,
+        expected: NumberedDeclaration,
+    ) -> Result<Self, Error> {
+        let rows = view.rows()?;
+        let (declaration, binder, kind, universals) = match expected {
+            NumberedDeclaration::Function(expected) => (
+                expected.header.declaration,
+                expected.header.original.binder,
+                s::BinderKind::OriginalFunction,
+                expected.header.regions.total,
+            ),
+            NumberedDeclaration::Initializer(expected) => (
+                expected.row,
+                expected.binder,
+                s::BinderKind::DeclarationHeader,
+                expected.universals,
+            ),
+        };
         let original = rows
             .originals
             .get(rows.original_index(raw).map_err(error)?)
@@ -97,23 +222,17 @@ impl DomainStage {
             .ok_or_else(|| error("recorded domain lost its actual numbering unit"))?;
         let frame = rows
             .binders
-            .get(expected.header.original.binder.0 as usize)
+            .get(binder.0 as usize)
             .ok_or_else(|| error("recorded domain lost its actual original binder"))?;
-        let Kind::Function { bound_regions, .. } = expected.original else {
-            return Err(error(
-                "recorded domain lost its canonical function signature",
-            ));
-        };
         if original.body != raw
-            || original.declaration != expected.header.declaration
+            || original.declaration != declaration
             || input.body != raw
-            || input.frame != expected.header.original.binder
-            || frame.owner != expected.header.declaration
-            || frame.kind != s::BinderKind::OriginalFunction
-            || frame.count != bound_regions
+            || input.frame != binder
+            || frame.owner != declaration
+            || frame.kind != kind
             || unit.body != raw
             || unit.universals != frame.count
-            || unit.universals != expected.header.regions.total
+            || unit.universals != universals
             || unit.allocation_order.len() != original.variables.len()
             || unit
                 .aliases
@@ -133,14 +252,14 @@ impl DomainStage {
                 root: view.root(),
                 body,
                 raw,
-                expected: *expected,
+                expected,
                 arena,
             },
             variables: original.variables.len(),
             aliases: unit.aliases.as_ref().map(Vec::len),
         })
     }
-    fn record(
+    pub(super) fn record(
         self,
         view: &RecipeView<'_>,
         work: &mut ReservationWork,
@@ -280,10 +399,42 @@ fn metadata<T>(
     result.map_err(error)
 }
 impl RecordedDomain {
-    pub(super) fn expected(&self) -> &Ready {
-        &self.seal.expected
+    pub(super) fn expected_function(&self) -> Option<&RecordedFunction> {
+        match &self.seal.expected {
+            NumberedDeclaration::Function(ready) => Some(ready),
+            NumberedDeclaration::Initializer(_) => None,
+        }
     }
-    fn retained_bytes(&self) -> usize {
+    pub(super) const fn raw(&self) -> BodyRef {
+        self.seal.raw
+    }
+    pub(super) const fn body(&self) -> ImportedBodyId {
+        self.seal.body
+    }
+    pub(super) fn require_current(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        let stage = match &self.seal.expected {
+            NumberedDeclaration::Function(ready) => {
+                work.charge(12)?;
+                let original = store
+                    .kind(ready.pair.original)
+                    .ok_or_else(|| error("recorded domain lost its actual original signature"))?;
+                if store.kind(ready.pair.callable).is_none() {
+                    return Err(error("recorded domain lost its actual callable signature"));
+                }
+                DomainStage::function(view, store, *ready, original, work)?
+            }
+            NumberedDeclaration::Initializer(ready) => {
+                DomainStage::initializer(view, store, *ready, work)?
+            }
+        };
+        self.require(&stage, store, work)
+    }
+    pub(super) fn retained_bytes(&self) -> usize {
         size_of::<Self>()
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(retained::vector(&self.log.ordered))
@@ -420,6 +571,9 @@ impl RecordedDomain {
     ) -> Result<RegionId, Error> {
         let stage = DomainStage::new(view, store, expected, work)?;
         self.require(&stage, store, work)?;
+        self.slot(slot, work)
+    }
+    pub(super) fn slot(&self, slot: u32, work: &mut ReservationWork) -> Result<RegionId, Error> {
         work.charge(1)?;
         self.log
             .by_slot

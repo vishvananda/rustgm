@@ -120,7 +120,7 @@ fn imported(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Environm
             .ok_or("imported feature dispatch requires its actual source original")?;
         if !original.rows().descriptor().profile().feature_predicates()
             || original.definition() != definition
-            || original.signature() != signature
+            || original.signature() != Some(signature)
             || original.source()? != body.source
             || header.body != Some(body.source)
             || original.universals() != 0

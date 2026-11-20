@@ -75,7 +75,7 @@ impl Original<'_> {
                 view,
             },
             catalog,
-            header,
+            header: super::OriginalHeader::Function(header),
             definition,
             body: actual,
             rows,

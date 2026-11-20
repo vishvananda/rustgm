@@ -56,13 +56,25 @@ pub(crate) fn prepare(
             .and_then(|linkage| linkage.originals.as_deref())
             .ok_or_else(|| error("ordinary original lost its current headers"))?;
         let mut steps = work.steps;
-        let ready = graph.function_ready(&graph.origins, facts, headers, definition, &mut steps);
+        let ready = if headers.get(definition).is_some() {
+            graph
+                .function_ready(&graph.origins, facts, headers, definition, &mut steps)
+                .map(|()| None)
+        } else {
+            graph
+                .initializer_header(&graph.origins, facts, definition, &mut steps)
+                .and_then(|initializer| {
+                    initializer
+                        .map(Some)
+                        .ok_or("ordinary original lost its actual declaration header")
+                })
+        };
         work.charge(steps.saturating_sub(work.steps))?;
-        ready.map_err(error)?;
+        let initializer = ready.map_err(error)?;
         let Canonical::Lazy(lazy) = &graph.canonical else {
             return Err(error("ordinary original lost its lazy owner"));
         };
-        let domain = lazy.prepare_body(&graph, facts, definition, &mut work)?;
+        let domain = lazy.prepare_body(&graph, facts, definition, initializer, &mut work)?;
         let environment = environment(
             &graph,
             facts,
@@ -72,7 +84,7 @@ pub(crate) fn prepare(
             &mut allocation,
         )?;
         domain.publish_environment(&environment, &mut work)?;
-        Ok(environment)
+        Ok((initializer, environment))
     })();
     let headers = facts
         .crates
@@ -90,12 +102,14 @@ pub(crate) fn prepare(
             .saturating_sub(base),
     );
     headers.observed.include(allocation);
-    let environment = result?;
-    headers
-        .entries
-        .get_mut(&definition)
-        .ok_or_else(|| error("ordinary original lost its exact publication header"))?
-        .environment = Some(environment);
+    let (initializer, environment) = result?;
+    if initializer.is_none() {
+        headers
+            .entries
+            .get_mut(&definition)
+            .ok_or_else(|| error("ordinary original lost its exact publication header"))?
+            .environment = Some(environment);
+    }
     Ok(())
 }
 fn authenticate(
@@ -153,12 +167,10 @@ fn environment(
         .crates
         .as_deref()
         .and_then(|linkage| linkage.originals.as_deref())
-        .and_then(|headers| headers.get(definition))
-        .ok_or_else(|| error("ordinary environment lost its actual current header"))?;
+        .and_then(|headers| headers.get(definition));
     if let Some(actual) = domain.environment() {
         if header
-            .environment
-            .as_ref()
+            .and_then(|header| header.environment.as_ref())
             .is_some_and(|header| !Arc::ptr_eq(header, actual))
         {
             return Err(error(
@@ -182,11 +194,12 @@ fn environment(
                 .environments
                 .get(&definition)
                 .ok_or_else(|| error("ordinary environment lost its declaration construction"))?;
-            if header
-                .environment
-                .as_ref()
-                .is_none_or(|header| !Arc::ptr_eq(header, actual))
-            {
+            if header.is_some_and(|header| {
+                header
+                    .environment
+                    .as_ref()
+                    .is_none_or(|header| !Arc::ptr_eq(header, actual))
+            }) {
                 return Err(error(
                     "ordinary declaration environment changed its actual Arc",
                 ));
@@ -194,7 +207,7 @@ fn environment(
             Ok(Arc::clone(actual))
         }
         s::EnvironmentOrigin::Contract => {
-            if header.environment.is_some() {
+            if header.is_some_and(|header| header.environment.is_some()) {
                 return Err(error(
                     "ordinary Contract acquired an unconstructed environment",
                 ));

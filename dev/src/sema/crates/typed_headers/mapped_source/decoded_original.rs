@@ -16,6 +16,8 @@ use std::sync::Arc;
 
 #[path = "callee_stability.rs"]
 mod constant_policies;
+#[path = "decoded_initializer.rs"]
+mod initializer;
 #[path = "mapped_members.rs"]
 mod nominal_members;
 #[path = "admitted_original.rs"]
@@ -28,11 +30,15 @@ pub(crate) struct Original<'a> {
     mapping: Mapping<'a>,
     members: &'a crate::sema::members::Members,
     catalog: &'a Catalog,
-    header: &'a super::super::Header,
+    header: OriginalHeader<'a>,
     definition: DefId,
     body: ImportedBodyId,
     rows: s::ValidatedView<'a>,
     row: u32,
+}
+enum OriginalHeader<'a> {
+    Function(&'a super::super::Header),
+    Initializer(super::super::unpaid_provided::InitializerHeader),
 }
 impl Graph {
     pub(in crate::sema::crates::typed_headers) fn owns_original(
@@ -44,9 +50,21 @@ impl Graph {
         charge(steps)?;
         let descriptor = self.descriptor(catalog)?;
         let declaration = catalog.declaration(definition)?;
-        catalog.validate_declaration(declaration, definition, DefKind::Function)?;
-        let (owner, _, _) = catalog.declaration_coordinate(declaration)?;
-        Ok(owner == descriptor.identity())
+        let (owner, row, _) = catalog.declaration_coordinate(declaration)?;
+        if owner != descriptor.identity() {
+            return Ok(false);
+        }
+        let rows = descriptor.rows();
+        if let Some(s::HeaderRef::Constant(index)) = rows.header(row)? {
+            catalog.validate_declaration(declaration, definition, DefKind::Const)?;
+            Ok(matches!(
+                rows.constants()[index as usize].body,
+                s::ConstantBody::Original(_)
+            ))
+        } else {
+            catalog.validate_declaration(declaration, definition, DefKind::Function)?;
+            Ok(true)
+        }
     }
     pub(in crate::sema::crates::typed_headers) fn source_original<'a>(
         &'a self,
@@ -56,6 +74,13 @@ impl Graph {
         definition: DefId,
         steps: &mut usize,
     ) -> Result<Option<Original<'a>>, &'static str> {
+        if headers.get(definition).is_none()
+            && let Some(initializer) = self.initializer_header(catalog, facts, definition, steps)?
+        {
+            return self
+                .source_initializer(catalog, facts, headers, initializer, steps)
+                .map(Some);
+        }
         self.function_ready(catalog, facts, headers, definition, steps)?;
         let header = headers
             .get(definition)
@@ -125,7 +150,7 @@ impl Graph {
                 domain,
             },
             catalog,
-            header,
+            header: OriginalHeader::Function(header),
             definition,
             body,
             rows,
@@ -189,10 +214,16 @@ impl Original<'_> {
     }
     /// Defining checking mode only; current body proof and execution remain separate.
     pub(crate) const fn const_context(&self) -> bool {
-        self.header.constant
+        match self.header {
+            OriginalHeader::Function(header) => header.constant,
+            OriginalHeader::Initializer(_) => true,
+        }
     }
     pub(crate) const fn universals(&self) -> u32 {
-        self.header.universals
+        match self.header {
+            OriginalHeader::Function(header) => header.universals,
+            OriginalHeader::Initializer(header) => header.universals,
+        }
     }
     pub(crate) fn rows(&self) -> s::ValidatedView<'_> {
         self.rows
@@ -206,8 +237,11 @@ impl Original<'_> {
     pub(crate) const fn definition(&self) -> DefId {
         self.definition
     }
-    pub(crate) const fn signature(&self) -> TypeId {
-        self.header.signature
+    pub(crate) const fn signature(&self) -> Option<TypeId> {
+        match self.header {
+            OriginalHeader::Function(header) => Some(header.signature),
+            OriginalHeader::Initializer(_) => None,
+        }
     }
     pub(crate) fn source(&self) -> Result<BodyOrigin, &'static str> {
         self.catalog.origin(self.body)
@@ -215,13 +249,14 @@ impl Original<'_> {
     pub(crate) fn environment(
         &self,
     ) -> Result<&Arc<crate::types::parameters::environment::Environment>, &'static str> {
-        if let Mapping::Selected { body, .. } = &self.mapping {
-            return Ok(body.environment());
-        }
-        self.header
-            .environment
-            .as_ref()
-            .ok_or("source original requires its actual pending defining environment")
+        let actual = match (&self.mapping, &self.header) {
+            (Mapping::Selected { body, .. }, _) => Some(body.environment()),
+            (Mapping::Ordinary { domain, .. }, OriginalHeader::Initializer(_)) => {
+                domain.as_ref().and_then(|domain| domain.environment())
+            }
+            (_, OriginalHeader::Function(header)) => header.environment.as_ref(),
+        };
+        actual.ok_or("source original requires its actual pending defining environment")
     }
     pub(crate) fn ty(&self, reference: TypeRef, steps: &mut usize) -> Result<TypeId, &'static str> {
         charge(steps)?;
