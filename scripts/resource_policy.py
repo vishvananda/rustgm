@@ -128,9 +128,12 @@ def free_space(root, policy, reserved=0):
 
 # A directory whose own entry and files have all been quiet for SETTLE seconds
 # keeps its listing while its inode and mtime are unchanged, for 30 to 60
-# minutes (REFRESH, staggered per directory), and is then listed again.
+# minutes (REFRESH, staggered per directory), and is then listed again: by the
+# next live scan during a job, and by at most REFRESH_LIMIT directories in each
+# admission or final scan, which are on a job's critical path.
 SETTLE = 120
 REFRESH = 3600
+REFRESH_LIMIT = 2000
 USAGE_CACHE = "obj/accounting/usage.json"
 
 
@@ -143,8 +146,10 @@ class UsageCache:
     directory's listing is refreshed. Free space is always measured exactly.
     """
 
-    def __init__(self, root, rows=None):
+    def __init__(self, root, rows=None, *, refresh_limit=None):
         self.path = root / USAGE_CACHE
+        # Expired listings this scan may list again; None lists every one.
+        self.refresh_left = refresh_limit
         if rows is None:
             try:
                 document = json.loads(self.path.read_text())
@@ -156,12 +161,17 @@ class UsageCache:
 
     def reusable(self, key, info, now):
         row = self.rows.get(key)
-        if (isinstance(row, list) and len(row) == 6 and row[:2] == [info.st_ino, info.st_mtime_ns]
-                and row[4] is True and isinstance(row[5], (int, float)) and now < row[5]
+        if not (isinstance(row, list) and len(row) == 6 and row[:2] == [info.st_ino, info.st_mtime_ns]
+                and row[4] is True and isinstance(row[5], (int, float))
                 and isinstance(row[2], int) and isinstance(row[3], list)):
-            self.seen[key] = row
-            return row[2], row[3]
-        return None
+            return None
+        if now >= row[5]:
+            if self.refresh_left is None or self.refresh_left > 0:
+                if self.refresh_left is not None:
+                    self.refresh_left -= 1
+                return None
+        self.seen[key] = row
+        return row[2], row[3]
 
     def listed(self, key, info, files, folders, newest, now):
         spread = 0.5 + (zlib.crc32(key.encode()) % 1000) / 2000
@@ -193,7 +203,8 @@ class UsageScan:
     """
     def __init__(self, roots, cache=None):
         self.roots = list(roots)
-        self.pending = [(path, None) for path in self.roots]
+        # Plain strings: pathlib objects cost more than the stat calls on large trees.
+        self.pending = [(str(path), None) for path in self.roots]
         self.cache = cache
         self.total = 0
         # Directory listings plus stats: the scan's work, for receipts and bounds.
@@ -232,12 +243,12 @@ class UsageScan:
                 files += found.st_blocks * 512
                 newest = max(newest, found.st_mtime, found.st_ctime)
         if self.cache is not None:
-            self.cache.listed(str(folder), info, files, folders, newest, now)
+            self.cache.listed(folder, info, files, folders, newest, now)
         return files, folders, operations
 
     def visit(self, folder, info):
         try:
-            info = info or folder.lstat()
+            info = info or os.lstat(folder)
         except FileNotFoundError:
             return 1
         if stat.S_ISLNK(info.st_mode):
@@ -245,23 +256,24 @@ class UsageScan:
         if not stat.S_ISDIR(info.st_mode):
             return 1
         now = time.time()
-        cached = self.cache.reusable(str(folder), info, now) if self.cache is not None else None
+        cached = self.cache.reusable(folder, info, now) if self.cache is not None else None
         try:
             if cached:
                 files, folders, operations = (*cached, 1)
             else:
                 # Check again just before listing, so a directory replaced by a link is never followed.
-                info = folder.lstat()
+                info = os.lstat(folder)
                 if stat.S_ISLNK(info.st_mode):
                     raise ValueError("resource output became a symlink")
                 files, folders, operations = self.listing(folder, info, now)
         except FileNotFoundError:
             return 1
         self.total += files
+        prefix = folder + os.sep
         for name in folders:
-            path = folder / name
+            path = prefix + name
             try:
-                found = path.lstat()
+                found = os.lstat(path)
             except FileNotFoundError:
                 continue
             operations += 1
@@ -272,8 +284,10 @@ class UsageScan:
 
 
 def usage(root, entry, policy, budget=None, cache=None):
+    """A blocking scan before or after a job: it lists a bounded number of expired directories."""
     budget = output_budget(policy) if budget is None else budget
-    scan = UsageScan(output_roots(root, entry), UsageCache(root) if cache is None else cache)
+    cache = UsageCache(root, refresh_limit=REFRESH_LIMIT) if cache is None else cache
+    scan = UsageScan(output_roots(root, entry), cache)
     try:
         while not scan.done:
             scan.step()

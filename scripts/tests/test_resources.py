@@ -116,6 +116,27 @@ class ResourceTests(unittest.TestCase):
             self.assertIn('/elsewhere', saved)
             self.assertNotIn(str(root / 'obj/out/gone'), saved)
 
+    def test_blocking_scans_list_a_bounded_number_of_expired_directories(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for index in range(6):
+                (root / f'obj/out/run-{index}').mkdir(parents=True)
+                (root / f'obj/out/run-{index}/file').write_bytes(b'x' * 8192)
+            self.scanned(root, UsageCache(root), later=600)
+            for index in range(6):
+                with (root / f'obj/out/run-{index}/file').open('ab') as stream:
+                    stream.write(b'z' * 1048576)
+            exact = self.scanned(root, None)[0]
+            expired = 600 + resource_policy.REFRESH
+            # Two expired listings per blocking scan: the growth is counted in steps, never lost.
+            totals = [self.scanned(root, UsageCache(root, refresh_limit=2), later=expired)[0] for _ in range(4)]
+            self.assertEqual(totals[-1], exact)
+            self.assertLess(totals[0], totals[1])
+            self.assertLess(totals[1], totals[2])
+            # A live scan lists every expired directory at once.
+            self.scanned(root, UsageCache(root), later=600)
+            self.assertEqual(self.scanned(root, UsageCache(root), later=expired)[0], exact)
+
     def test_cached_accounting_never_follows_a_replaced_directory(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
