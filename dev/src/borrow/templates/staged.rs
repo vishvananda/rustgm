@@ -86,6 +86,8 @@ impl<'a> Batch<'a> {
             crate::body::drops::MemberQuery,
         ) -> Result<crate::body::drops::MemberPosition, &'static str>,
     ) -> Result<(), Error> {
+        // Bring-up reports every body this proof rejects, then still fails.
+        let mut deferred = None;
         while let Some(template) = self.template(self.cursor) {
             let region = self
                 .state
@@ -94,17 +96,32 @@ impl<'a> Batch<'a> {
                 .get(self.cursor)
                 .ok_or_else(|| error("staged ordinary proof lost its region result"))?;
             loans::templates::validate(template).map_err(error)?;
-            self.state.loans.push(self.verifier.body(
+            match self.verifier.body(
                 environment,
                 &template.body,
                 &template.destruction,
                 &template.environment,
                 region,
                 &position,
-            )?);
-            self.cursor += 1;
+            ) {
+                Ok(analysis) => {
+                    self.state.loans.push(analysis);
+                    self.cursor += 1;
+                }
+                Err(failure)
+                    if crate::body::bringup::defer_site(
+                        crate::support::bringup::Stage::Borrows,
+                        failure.node,
+                        &failure.message,
+                    ) =>
+                {
+                    self.skip();
+                    deferred = Some(failure);
+                }
+                Err(failure) => return Err(failure),
+            }
         }
-        Ok(())
+        deferred.map_or(Ok(()), Err)
     }
     /// The body the next row proves, if any remains.
     pub(crate) fn pending(&self) -> Option<&'a crate::body::ir::Body> {

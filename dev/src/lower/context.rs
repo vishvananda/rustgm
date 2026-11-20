@@ -480,6 +480,8 @@ impl<'a> Context<'a> {
                     message,
                 })?;
         let (mut next, mut next_data, mut next_drop, mut next_table) = (0, 0, 0, 0);
+        // Bring-up reports every body that does not lower, then still fails.
+        let mut deferred = None;
         while next < self.queue.len()
             || next_data < self.data.pending.len()
             || next_drop < self.drop_queue.len()
@@ -553,7 +555,14 @@ impl<'a> Context<'a> {
                 node: Some(body.source.into()),
                 message,
             })?;
-            let lowered = lowered?;
+            let lowered = match lowered {
+                Ok(lowered) => lowered,
+                Err(failure) => {
+                    deferred = Some(set_aside(failure, body.source.into())?);
+                    next += 1;
+                    continue;
+                }
+            };
             self.output
                 .define(symbol, lowered)
                 .map_err(|message| Error {
@@ -563,7 +572,7 @@ impl<'a> Context<'a> {
             // An owned body and plan are released here; only its header remains.
             next += 1;
         }
-        Ok(())
+        deferred.map_or(Ok(()), Err)
     }
     /// Whether a static is `#[thread_local]`.
     pub(super) fn thread_local_static(&self, id: DefId) -> bool {
@@ -1160,4 +1169,23 @@ pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static
         }
         _ => return Err("aggregate values require layout lowering"),
     })
+}
+
+/// Set aside a body that does not lower, at its own site, so that a bring-up
+/// compilation reports every such body; the failure is returned to stop
+/// emission outside the bring-up profile or when it names no source site.
+fn set_aside(failure: Error, body: crate::body::ir::ProofSite) -> Result<Error, Error> {
+    let node = failure.node.or(Some(body));
+    if crate::body::bringup::defer_site(
+        crate::support::bringup::Stage::Lowering,
+        node,
+        failure.message,
+    ) {
+        Ok(Error {
+            node,
+            message: failure.message,
+        })
+    } else {
+        Err(failure)
+    }
 }

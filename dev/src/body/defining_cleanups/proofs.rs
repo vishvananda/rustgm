@@ -18,7 +18,13 @@ pub(crate) fn select(
     physical_cleanup: bool,
 ) -> Result<(), String> {
     let mut work = Work::new(1_000_000);
-    if !original_owner(body.owner) && crate::body::bringup::unproven(body.source, NESTED) {
+    if !original_owner(body.owner)
+        && crate::body::bringup::unproven(
+            crate::support::bringup::Stage::Destruction,
+            body.source,
+            NESTED,
+        )
+    {
         // Bring-up leaves a nested body's cleanups without their const proof.
         return Ok(());
     }
@@ -65,7 +71,13 @@ pub(crate) fn select(
         contract.universals,
         first,
         &goals,
-        |absent| crate::body::bringup::unproven(body.source, absent),
+        |absent| {
+            crate::body::bringup::unproven(
+                crate::support::bringup::Stage::Destruction,
+                body.source,
+                absent,
+            )
+        },
     )?;
     for &(ty, purpose) in &selected.values {
         prepared

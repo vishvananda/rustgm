@@ -18,7 +18,7 @@ COMPILER = """#!/usr/bin/env python3
 import sys
 listed = open(sys.argv[sys.argv.index("--bringup-skip-list") + 1]).read()
 if "a.rs\\t7\\t" not in listed:
-    sys.stderr.write("bringup-blocker\\ta.rs\\t7\\tbroken\\town cause\\n")
+    sys.stderr.write("bringup-blocker\\ta.rs\\t7\\tbroken\\town cause\\tborrows\\n")
     sys.stderr.write("ERROR: file 3: 9: last cause\\n")
     sys.exit(1)
 sys.stderr.write("bringup-waived\\tsome fence\\n")
@@ -37,13 +37,15 @@ class Census(unittest.TestCase):
     def test_marked_lines_are_read_and_other_text_is_ignored(self):
         stderr = ("note\nbringup-waived\tfence one\n"
                   "bringup-unproven\tb.rs\t4\tkept\tsome proof failed\n"
-                  "bringup-blocker\ta.rs\t7\tbroken\town cause\n"
+                  "bringup-blocker\ta.rs\t7\tbroken\town cause\tlowering\n"
+                  "bringup-blocker\ta.rs\t9\tolder\tno stage\n"
                   "bringup-blocker\ta.rs\tx\tmalformed\n"
                   "bringup-unattributed\tno owner\nERROR: file 3: 9: last cause\n")
         self.assertEqual(census.waived(stderr), ["fence one"])
         self.assertEqual(census.unproven(stderr), ["b.rs\t4\tkept\tsome proof failed"])
         self.assertEqual(census.diagnose(stderr),
-                         ([("a.rs", 7, "broken", "own cause")], ["no owner"],
+                         ([("a.rs", 7, "broken", "own cause", "lowering"),
+                           ("a.rs", 9, "older", "no stage", None)], ["no owner"],
                           "file 3: 9: last cause"))
         self.assertEqual(census.cause("file 3: 9: last cause"), "last cause")
         self.assertEqual(census.cause(None), "no error line")
@@ -65,7 +67,8 @@ class Census(unittest.TestCase):
             folder = Path(folder)
             status, printed, out = self.run_census(folder, COMPILER)
             self.assertEqual(status, 0)
-            self.assertEqual((folder / "skip.tsv").read_text(), "a.rs\t7\tbroken\town cause\n")
+            self.assertEqual((folder / "skip.tsv").read_text(),
+                             "a.rs\t7\tbroken\town cause\tborrows\n")
             self.assertEqual((out / "waived.tsv").read_text(), "some fence\n")
             self.assertEqual((out / "unproven.tsv").read_text(),
                              "b.rs\t4\tkept\tsome proof failed\n")

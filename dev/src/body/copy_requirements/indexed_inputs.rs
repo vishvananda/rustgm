@@ -110,7 +110,11 @@ fn originals_using<'a, 'b, 'c>(
             .ok_or("source Copy original contract has no exact body")?;
         match prepare(facts, body, contract) {
             Err(error)
-                if crate::body::bringup::defer_site(Some(body.source.root_site()), &error) =>
+                if crate::body::bringup::defer_site(
+                    crate::support::bringup::Stage::Copies,
+                    Some(body.source.root_site()),
+                    &error,
+                ) =>
             {
                 deferred.get_or_insert(error);
             }

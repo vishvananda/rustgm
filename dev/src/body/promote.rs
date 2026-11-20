@@ -72,7 +72,7 @@ pub fn analyze(
         return Ok(());
     }
     let mut evaluator = Evaluator::new(report, facts);
-    let mut deferral = super::bringup::Deferral::default();
+    let mut deferral = super::bringup::Deferral::new(crate::support::bringup::Stage::Promotion);
     for (index, body) in program.bodies.iter_mut().enumerate() {
         if body.promotions.is_some() {
             continue;
@@ -108,7 +108,7 @@ pub(crate) fn analyze_templates_reusing(
         return Ok(());
     }
     let mut evaluator = scratch.evaluator(report, facts);
-    let mut deferral = super::bringup::Deferral::default();
+    let mut deferral = super::bringup::Deferral::new(crate::support::bringup::Stage::Promotion);
     for template in &mut templates.bodies {
         let analyzed = analyze_body(
             report,

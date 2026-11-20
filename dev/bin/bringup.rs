@@ -67,7 +67,9 @@ pub(super) fn configure(
 
 /// Name every function that owns a failure, for the driver that maintains the
 /// list, and every failure that no list entry can remove. Without `facts`,
-/// a failure belongs to a function item that the resolver declared.
+/// a failure belongs to a function item that the resolver declared. The last
+/// field names the stage that recorded the failure, or `stopped` for the one
+/// that stopped the compilation without being recorded.
 pub(super) fn attribute(
     report: &Report,
     facts: Option<&Declarations>,
@@ -78,11 +80,12 @@ pub(super) fn attribute(
     for blocker in &attribution.blockers {
         writeln!(
             stderr,
-            "bringup-blocker\t{}\t{}\t{}\t{}",
+            "bringup-blocker\t{}\t{}\t{}\t{}\t{}",
             blocker.path,
             blocker.offset,
             blocker.name,
-            line(&blocker.message)
+            line(&blocker.message),
+            stage(blocker)
         )?;
     }
     for message in &attribution.unattributed {
@@ -91,17 +94,18 @@ pub(super) fn attribute(
     Ok(())
 }
 /// Name every function that keeps its body although a soundness proof of it
-/// failed.
+/// failed, and the stage whose proof it is.
 pub(super) fn unproven(report: &Report, facts: &Declarations) -> io::Result<()> {
     let mut stderr = io::stderr().lock();
     for body in rustgm::body::bringup::unproven_bodies(report, facts) {
         writeln!(
             stderr,
-            "bringup-unproven\t{}\t{}\t{}\t{}",
+            "bringup-unproven\t{}\t{}\t{}\t{}\t{}",
             body.path,
             body.offset,
             body.name,
-            line(&body.message)
+            line(&body.message),
+            stage(&body)
         )?;
     }
     Ok(())
@@ -113,6 +117,11 @@ pub(super) fn waivers() -> io::Result<()> {
         writeln!(stderr, "bringup-waived\t{}", line(&fence))?;
     }
     Ok(())
+}
+fn stage(blocker: &rustgm::body::bringup::Blocker) -> &'static str {
+    blocker
+        .stage
+        .map_or("stopped", rustgm::support::bringup::Stage::name)
 }
 /// A message as one tab-free field.
 fn line(message: &str) -> String {

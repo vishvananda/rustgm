@@ -216,7 +216,11 @@ impl Flow<'_> {
                 };
                 if incompatible
                     && self.places.conflicts(loan.place, place, depth)?
-                    && !crate::body::bringup::unproven(self.body.source, CONFLICT)
+                    && !crate::body::bringup::unproven(
+                        crate::support::bringup::Stage::Borrows,
+                        self.body.source,
+                        CONFLICT,
+                    )
                 {
                     return Err(CONFLICT);
                 }
@@ -665,7 +669,11 @@ pub(crate) fn require_no_const_cleanup(
 ) -> Result<(), Error> {
     if body.const_context
         && plan.cleanups().any(|cleanup| cleanup.access)
-        && !crate::body::bringup::unproven(body.source, DESTRUCTORS)
+        && !crate::body::bringup::unproven(
+            crate::support::bringup::Stage::Borrows,
+            body.source,
+            DESTRUCTORS,
+        )
     {
         return Err(Error {
             node: body.source.into(),
@@ -698,7 +706,11 @@ pub(crate) fn check_schedule(
                 .builtins
                 .as_deref()
                 .is_none_or(|requirements| requirements.defining().is_none()))
-        && !crate::body::bringup::unproven(body.source, DESTRUCTORS)
+        && !crate::body::bringup::unproven(
+            crate::support::bringup::Stage::Borrows,
+            body.source,
+            DESTRUCTORS,
+        )
     {
         return Err(error(DESTRUCTORS));
     }

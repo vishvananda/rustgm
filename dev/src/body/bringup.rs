@@ -11,7 +11,7 @@ use crate::{
         unit::{FileId, NodeKey},
     },
     sema::model::{Declarations, Function},
-    support::bringup::{Position, Stubs, selected},
+    support::bringup::{Position, Stage, Stubs, selected},
     syntax::{
         ast::{Kind, NodeId},
         item::ItemKind,
@@ -140,6 +140,9 @@ pub struct Blocker {
     pub name: String,
     /// The first failure met inside this function.
     pub message: String,
+    /// The stage that recorded the failure; none for a failure that stopped
+    /// the compilation without being recorded.
+    pub stage: Option<Stage>,
 }
 /// Every failure of one compilation: those owned by a function that a stub can
 /// replace, and the messages of those that no skip-list entry can remove.
@@ -151,9 +154,11 @@ pub struct Attribution {
 
 /// Lets a stage continue past one body's located failure in the bring-up
 /// profile, so that a single compilation reports every body the stage rejects.
-#[derive(Default)]
-pub(crate) struct Deferral(Option<Error>);
+pub(crate) struct Deferral(Stage, Option<Error>);
 impl Deferral {
+    pub(crate) const fn new(stage: Stage) -> Self {
+        Self(stage, None)
+    }
     /// The body's result, or nothing once its failure has been set aside.
     /// Outside the bring-up profile, and for unlocated failures, the failure
     /// is returned at once.
@@ -162,10 +167,15 @@ impl Deferral {
             Ok(value) => Ok(Some(value)),
             Err(error) => {
                 let located = error.origin.is_some_and(|(file, at)| {
-                    crate::support::bringup::defer(file.0, Position::Byte(at), &error.message)
+                    crate::support::bringup::defer(
+                        self.0,
+                        file.0,
+                        Position::Byte(at),
+                        &error.message,
+                    )
                 });
                 if located {
-                    self.0 = Some(error);
+                    self.1 = Some(error);
                     Ok(None)
                 } else {
                     Err(error)
@@ -184,8 +194,8 @@ impl Deferral {
     ) -> Result<Option<T>, Error> {
         match result {
             Ok(value) => Ok(Some(value)),
-            Err(error) if defer_site(Some(body.root_site()), &error.message) => {
-                self.0 = Some(report.body_error(body.root_site(), error.message.clone()));
+            Err(error) if defer_site(self.0, Some(body.root_site()), &error.message) => {
+                self.1 = Some(report.body_error(body.root_site(), error.message.clone()));
                 Ok(None)
             }
             Err(error) => Err(error),
@@ -193,29 +203,29 @@ impl Deferral {
     }
     /// Fail the stage with the last failure it set aside, if any.
     pub(crate) fn finish(self) -> Result<(), Error> {
-        self.0.map_or(Ok(()), Err)
+        self.1.map_or(Ok(()), Err)
     }
 }
 /// Set aside a failure of a stage that names syntax nodes rather than source
 /// positions. The stage must still fail with such a failure when it ends.
-pub(crate) fn defer_site(site: Option<ProofSite>, message: &str) -> bool {
+pub(crate) fn defer_site(stage: Stage, site: Option<ProofSite>, message: &str) -> bool {
     let Some(ProofSite::Source(key)) = site else {
         return false;
     };
-    crate::support::bringup::defer(key.file.0, Position::Node(key.node.get()), message)
+    crate::support::bringup::defer(stage, key.file.0, Position::Node(key.node.get()), message)
 }
 
 /// Pass over a failed soundness proof of this body, keeping its code. The
 /// proof must have no result that a later stage reads.
-pub(crate) fn unproven(body: BodyOrigin, message: &str) -> bool {
-    unproven_site(Some(body.root_site()), message)
+pub(crate) fn unproven(stage: Stage, body: BodyOrigin, message: &str) -> bool {
+    unproven_site(stage, Some(body.root_site()), message)
 }
 /// Like `unproven`, for a stage that names the proof's own syntax node.
-pub(crate) fn unproven_site(site: Option<ProofSite>, message: &str) -> bool {
+pub(crate) fn unproven_site(stage: Stage, site: Option<ProofSite>, message: &str) -> bool {
     let Some(ProofSite::Source(key)) = site else {
         return false;
     };
-    crate::support::bringup::unproven(key.file.0, Position::Node(key.node.get()), message)
+    crate::support::bringup::unproven(stage, key.file.0, Position::Node(key.node.get()), message)
 }
 
 /// The innermost function item with a body that contains a source position.
@@ -288,23 +298,32 @@ pub fn blockers(report: &Report, facts: Option<&Declarations>, error: &Error) ->
     let mut failures = Vec::new();
     for failure in crate::support::bringup::deferred() {
         match offset(report, &failure) {
-            Some(at) => failures.push((FileId(failure.file), at, failure.message, failure.owner)),
+            Some(at) => failures.push((
+                FileId(failure.file),
+                at,
+                failure.message,
+                failure.owner,
+                Some(failure.stage),
+            )),
             None => attribution.unattributed.push(failure.message),
         }
     }
+    // A stage that recorded failures ends with one of them, located or not.
     match error.origin {
         Some((file, at)) => {
             if !failures.iter().any(|seen| seen.0 == file && seen.1 == at) {
-                failures.push((file, at, error.message.clone(), None));
+                failures.push((file, at, error.message.clone(), None, None));
             }
         }
+        None if failures.iter().any(|seen| seen.2 == error.message) => {}
         None => attribution.unattributed.push(error.message.clone()),
     }
-    for (file, at, message, owner) in failures {
-        let blocker = match owner {
+    for (file, at, message, owner, stage) in failures {
+        let mut blocker = match owner {
             Some(owner) => owned(report, owner, message),
             None => blocker(report, facts, file, at, message),
         };
+        blocker.stage = stage;
         if !attribution
             .blockers
             .iter()
@@ -338,6 +357,7 @@ fn owned(report: &Report, owner: crate::support::bringup::Owner, message: String
         offset,
         name: name.to_owned(),
         message,
+        stage: None,
     }
 }
 /// The byte offset of a failure set aside, if its position still exists.
@@ -379,6 +399,7 @@ fn blocker(
         offset,
         name: name.to_owned(),
         message,
+        stage: None,
     }
 }
 /// The functions that keep their bodies although a soundness proof of them
@@ -390,13 +411,14 @@ pub fn unproven_bodies(report: &Report, facts: &Declarations) -> Vec<Blocker> {
         let Some(at) = offset(report, &failure) else {
             continue;
         };
-        let body = blocker(
+        let mut body = blocker(
             report,
             Some(facts),
             FileId(failure.file),
             at,
             failure.message,
         );
+        body.stage = Some(failure.stage);
         if !bodies.iter().any(|seen| {
             seen.offset == body.offset && seen.path == body.path && seen.message == body.message
         }) {

@@ -525,6 +525,8 @@ fn materialize(
         visited: HashSet::default(),
         budget,
         cleanup: body::instantiate::Cleanup::new(facts),
+        failed: HashSet::default(),
+        deferral: crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Instances),
     };
     while let Some(action) = traversal.work.pop() {
         if let Work::Enter(instance, _, _) = &action
@@ -542,6 +544,7 @@ fn materialize(
         stepped?;
         paid.map_err(|e| diagnostic(report, None, e.into()))?;
     }
+    traversal.deferral.finish()?;
     #[cfg(test)]
     record_demand(traversal.budget.bytes, 0);
     facts.carry_demand(first, traversal.budget.bytes);
@@ -591,6 +594,9 @@ struct Traversal<'a> {
     visited: HashSet<usize>,
     budget: Budget,
     cleanup: body::instantiate::Cleanup,
+    /// Bring-up: instances whose specialization failed, demanded no further.
+    failed: HashSet<Instance>,
+    deferral: crate::body::bringup::Deferral,
 }
 impl Traversal<'_> {
     fn append_adapter(
@@ -872,12 +878,13 @@ impl Traversal<'_> {
         let Some((template, input)) = selected.template else {
             return selected.concrete(&mut self.visited).map_err(error);
         };
-        if self.instances.contains_key(&instance) {
+        if self.instances.contains_key(&instance) || self.failed.contains(&instance) {
             return Ok(None);
         }
         self.budget
             .enter(selected.family, &template.body, input)
             .map_err(error)?;
+        let origin = template.body.source;
         let request = Specialization {
             template,
             input,
@@ -885,14 +892,21 @@ impl Traversal<'_> {
             source,
             caller,
         };
-        let index = specialize(
+        let specialized = specialize(
             report,
             facts,
             templates,
             (&mut self.program, &mut self.budget.bytes),
             &mut self.cleanup,
             request,
-        )?;
+        );
+        // Bring-up records the template whose instance failed; its family
+        // leaves the stack and no later demand specializes it again.
+        let Some(index) = self.deferral.admit_for(report, origin, specialized)? else {
+            self.failed.insert(instance);
+            self.budget.leave(report, selected.family)?;
+            return Ok(None);
+        };
         self.instances.insert(instance, index);
         self.budget
             .push_work(facts, &mut self.work, Work::Leave(selected.family))
@@ -1227,16 +1241,13 @@ pub(super) fn prepare_ordinary<C: Collect>(
         originals.selection,
     )?;
     let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.key, c)).collect();
-    for body in &mut program.bodies {
-        let input = inputs.get_mut(&body.key()).ok_or_else(|| {
-            diagnostic(
-                report,
-                Some(body.source.into()),
-                "missing ordinary dispatch contract".into(),
-            )
-        })?;
-        resolve_ordinary(report, facts, body, input, &mut originals.preparation)?;
-    }
+    resolve_ordinary(
+        report,
+        facts,
+        &mut program.bodies,
+        &mut inputs,
+        &mut originals.preparation,
+    )?;
     body::promote::analyze(report, facts, &mut program)?;
     let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)
         .map_err(|e| diagnostic(report, None, e.into()))?;
@@ -1275,7 +1286,8 @@ pub(super) fn prepare_ordinary<C: Collect>(
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     let mut ordinary = Ordinary::default();
     // The bring-up profile reports every ordinary body this stage rejects.
-    let mut deferral = crate::body::bringup::Deferral::default();
+    let mut deferral =
+        crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Ordinary);
     // Prove in program order while releasing the moved-from body records.
     bodies
         .reverse(facts)
@@ -1341,7 +1353,30 @@ fn checked_callable(facts: &Declarations, templates: &Checked<'_>, owner: DefId)
         })
 }
 
+/// Resolve the dispatch of every ordinary body. The bring-up profile reports
+/// every body whose dispatch fails before the stage fails.
 fn resolve_ordinary(
+    report: &Report,
+    facts: &mut Declarations,
+    bodies: &mut [Body],
+    inputs: &mut HashMap<BodyKey, Contract>,
+    preparation: &mut Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), Error> {
+    let mut deferral =
+        crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Dispatch);
+    for body in bodies {
+        let input = inputs.get_mut(&body.key()).ok_or_else(|| {
+            diagnostic(
+                report,
+                Some(body.source.into()),
+                "missing ordinary dispatch contract".into(),
+            )
+        })?;
+        deferral.admit(resolve_body(report, facts, body, input, preparation))?;
+    }
+    deferral.finish()
+}
+fn resolve_body(
     report: &Report,
     facts: &mut Declarations,
     body: &mut Body,

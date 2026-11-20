@@ -121,7 +121,7 @@ pub(crate) fn concrete_selected(
         outlives: Vec::new(),
         body_regions: Vec::new(),
     };
-    let mut deferral = super::bringup::Deferral::default();
+    let mut deferral = super::bringup::Deferral::new(crate::support::bringup::Stage::Cfg);
     for function in &facts.functions {
         if !selection.includes(facts, function.definition)
             || function.body.is_none()

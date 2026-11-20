@@ -989,21 +989,21 @@ fn census(name: &str, guests: &[(&str, &str)]) -> Result<(Vec<Vec<String>>, Path
 #[test]
 fn guest_bodies_that_do_not_type_are_named_and_stubbed() -> Result {
     let (rounds, _, lowir) = census("mistyped", &[("app", MISTYPED_APP)])?;
-    let row = |item: &str, name: &str, message: &str| -> Result<String> {
+    let row = |item: &str, name: &str, message: &str, stage: &str| -> Result<String> {
         let offset = MISTYPED_APP
             .find(item)
             .ok_or_else(|| format!("the program has no `{item}`"))?;
-        Ok(format!("app:app.rs\t{offset}\t{name}\t{message}"))
+        Ok(format!("app:app.rs\t{offset}\t{name}\t{message}\t{stage}"))
     };
     let opaque = "opaque storage requires a checked defining type";
     assert_eq!(
         rounds,
         [
             vec![
-                row("fn mistyped", "mistyped", "incompatible types")?,
-                row("fn hidden", "hidden", "incompatible types")?,
+                row("fn mistyped", "mistyped", "incompatible types", "typing")?,
+                row("fn hidden", "hidden", "incompatible types", "typing")?,
             ],
-            vec![row("fn holds", "holds", opaque)?],
+            vec![row("fn holds", "holds", opaque, "lowering")?],
         ]
     );
     // `main` and `caller` keep their bodies; the two reached stubs trap.

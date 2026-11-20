@@ -40,6 +40,8 @@ impl Declarations {
         let (mut pending, roots) = self.collect_opaque_applications(preparation)?;
         let mut path = Vec::new();
         let mut active = HashSet::default();
+        // Bring-up reports every root whose storage fails, then still fails.
+        let mut deferred = None;
         for &root in &roots {
             if !pending.contains_key(&root) {
                 continue;
@@ -62,7 +64,15 @@ impl Declarations {
                 active.clear();
                 Ok(())
             })();
-            result.map_err(|message| self.opaque_storage_failure(root, message))?;
+            if let Err(message) = result {
+                let failure = self.opaque_storage_failure(root, message);
+                if !self.defer_storage_failure(failure) {
+                    return Err(failure);
+                }
+                path.clear();
+                active.clear();
+                deferred.get_or_insert(failure);
+            }
         }
         for root in roots {
             let result = (|| {
@@ -80,9 +90,32 @@ impl Declarations {
                 result?;
                 Ok(())
             })();
-            result.map_err(|message| self.opaque_storage_failure(root, message))?;
+            if let Err(message) = result {
+                let failure = self.opaque_storage_failure(root, message);
+                if !self.defer_storage_failure(failure) {
+                    return Err(failure);
+                }
+                deferred.get_or_insert(failure);
+            }
         }
-        Ok(())
+        deferred.map_or(Ok(()), Err)
+    }
+    /// Set a failed root aside at the function that defines its hidden type.
+    /// Refused outside the bring-up profile and for a root without one.
+    fn defer_storage_failure(&self, failure: StorageFailure) -> bool {
+        let Some(function) = failure
+            .owner
+            .and_then(|owner| self.function_indices.get(&owner))
+            .and_then(|&index| self.functions.get(index))
+        else {
+            return false;
+        };
+        crate::support::bringup::defer(
+            crate::support::bringup::Stage::Opaques,
+            function.node.file.0,
+            crate::support::bringup::Position::Node(function.node.node.get()),
+            failure.message,
+        )
     }
     fn collect_opaque_applications(
         &mut self,

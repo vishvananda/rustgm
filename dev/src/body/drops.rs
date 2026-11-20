@@ -80,13 +80,29 @@ pub(crate) fn collect(
         );
     }
     let query = query.ok_or((origin.into(), "missing destruction query"))?;
-    let bodies = program
-        .bodies
-        .iter()
-        .map(|body| {
-            requirements(facts, body, query).map_err(|message| (body.source.into(), message))
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+    let mut bodies = Vec::with_capacity(program.bodies.len());
+    let mut deferred = None;
+    for body in &program.bodies {
+        let site = body.source.into();
+        match requirements(facts, body, query) {
+            Ok(found) => bodies.push(found),
+            // The bring-up profile reports every body whose drop requirements
+            // fail; the stage still fails with the last of them.
+            Err(message)
+                if crate::body::bringup::defer_site(
+                    crate::support::bringup::Stage::Destruction,
+                    Some(site),
+                    message,
+                ) =>
+            {
+                deferred = Some((site, message));
+            }
+            Err(message) => return Err((site, message)),
+        }
+    }
+    if let Some(failure) = deferred {
+        return Err(failure);
+    }
     Ok(Some(Pending {
         source: origin,
         methods,

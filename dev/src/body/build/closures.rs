@@ -14,6 +14,8 @@ pub(super) fn concrete(
     template: &impl Fn(crate::resolve::model::DefId) -> bool,
     selection: crate::body::Selection,
 ) -> Result<(), Error> {
+    // The bring-up profile reports every closure body this stage rejects.
+    let mut deferral = crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Cfg);
     for closure in facts.closures.all() {
         if closure.owner.is_some_and(|owner| {
             !selection.includes(facts, owner)
@@ -23,11 +25,14 @@ pub(super) fn concrete(
         }) {
             continue;
         }
-        program
-            .bodies
-            .push(body(report, facts, scratch, closure, query.as_deref_mut())?);
+        let built = deferral.admit(body(report, facts, scratch, closure, query.as_deref_mut()))?;
+        if built.is_none() {
+            // The failed construction left the shared scratch inside its body.
+            *scratch = Scratch::new(facts);
+        }
+        program.bodies.extend(built);
     }
-    Ok(())
+    deferral.finish()
 }
 
 /// Source closure bodies share one constructor across symbolic and concrete proof.

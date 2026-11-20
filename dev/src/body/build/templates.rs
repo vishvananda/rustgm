@@ -487,7 +487,7 @@ impl Prepared {
         selection: crate::body::Selection,
     ) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
-        let mut deferral = crate::body::bringup::Deferral::default();
+        let mut deferral = crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Cfg);
         for function in &facts.functions {
             if matches!(selection, crate::body::Selection::CompilerOperations)
                 && crate::sema::compiler_items::async_operation_recipe(

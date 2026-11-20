@@ -134,6 +134,59 @@ pub fn waived() -> Vec<String> {
 /// Located failures that a stage set aside to let its other bodies report.
 static DEFERRED: Mutex<Vec<Deferred>> = Mutex::new(Vec::new());
 
+/// The pipeline stage that set a failure aside. Every stage after typing
+/// records each body it rejects and goes on with the next one; the stage
+/// still fails when it ends, so a later stage first runs in the next
+/// compilation, once the recorded functions are stubs.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Stage {
+    Typing,
+    /// Construction of control-flow graphs.
+    Cfg,
+    /// Constant demands of a body's graph.
+    Constants,
+    Promotion,
+    /// Copy requirements of template bodies.
+    Copies,
+    /// Region and lifetime proofs.
+    Lifetimes,
+    /// Ownership, initialization and loan proofs of template bodies.
+    Borrows,
+    /// Const cleanup qualification, drop requirements and destruction proofs.
+    Destruction,
+    /// Storage of opaque types.
+    Opaques,
+    /// Method and operator dispatch of the ordinary bodies.
+    Dispatch,
+    /// Proofs of the ordinary (nongeneric) bodies that lowering consumes.
+    Ordinary,
+    /// Specialization of demanded generic instances.
+    Instances,
+    /// Emission of `LowIR` functions.
+    Lowering,
+}
+impl Stage {
+    /// The stage's name in bring-up records.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Typing => "typing",
+            Self::Cfg => "cfg",
+            Self::Constants => "constants",
+            Self::Promotion => "promotion",
+            Self::Copies => "copies",
+            Self::Lifetimes => "lifetimes",
+            Self::Borrows => "borrows",
+            Self::Destruction => "destruction",
+            Self::Opaques => "opaques",
+            Self::Dispatch => "dispatch",
+            Self::Ordinary => "ordinary",
+            Self::Instances => "instances",
+            Self::Lowering => "lowering",
+        }
+    }
+}
+
 /// Where a failure set aside was raised, within its source file.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Position {
@@ -142,9 +195,10 @@ pub enum Position {
     /// A syntax node index, for stages that do not see source text.
     Node(u32),
 }
-/// One failure set aside: its source file index, position and message.
+/// One failure set aside: its stage, source file index, position and message.
 #[derive(Clone, Debug)]
 pub struct Deferred {
+    pub stage: Stage,
     pub file: u32,
     pub position: Position,
     pub message: String,
@@ -160,20 +214,26 @@ pub struct Owner {
     pub node: u32,
     pub definition: u32,
 }
-/// Set a located failure aside. Refused outside the bring-up profile, where
-/// every failure stops its stage at once.
+/// Set a located failure of `stage` aside. Refused outside the bring-up
+/// profile, where every failure stops its stage at once.
 #[must_use]
-pub fn defer(file: u32, position: Position, message: &str) -> bool {
-    push_deferred(file, position, message, None)
+pub fn defer(stage: Stage, file: u32, position: Position, message: &str) -> bool {
+    push_deferred(stage, file, position, message, None)
 }
 /// Set aside a failure that belongs to the function `owner` wherever it was
 /// raised: a body that failed to type keeps its checked signature and becomes
 /// a trapping stub. Refused outside the bring-up profile.
 #[must_use]
 pub fn defer_owned(file: u32, position: Position, message: &str, owner: Owner) -> bool {
-    push_deferred(file, position, message, Some(owner))
+    push_deferred(Stage::Typing, file, position, message, Some(owner))
 }
-fn push_deferred(file: u32, position: Position, message: &str, owner: Option<Owner>) -> bool {
+fn push_deferred(
+    stage: Stage,
+    file: u32,
+    position: Position,
+    message: &str,
+    owner: Option<Owner>,
+) -> bool {
     if selected().is_none() {
         return false;
     }
@@ -181,6 +241,7 @@ fn push_deferred(file: u32, position: Position, message: &str, owner: Option<Own
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
         .push(Deferred {
+            stage,
             file,
             position,
             message: message.to_owned(),
@@ -202,7 +263,7 @@ static UNPROVEN: Mutex<Vec<Deferred>> = Mutex::new(Vec::new());
 /// rustc already accepted. The body keeps its code and the driver reports the
 /// proof as missing. Refused outside the bring-up profile, where it stops the
 /// stage.
-pub fn unproven(file: u32, position: Position, message: &str) -> bool {
+pub fn unproven(stage: Stage, file: u32, position: Position, message: &str) -> bool {
     if selected().is_none() {
         return false;
     }
@@ -212,6 +273,7 @@ pub fn unproven(file: u32, position: Position, message: &str) -> bool {
         .any(|seen| seen.file == file && seen.position == position && seen.message == message)
     {
         unproven.push(Deferred {
+            stage,
             file,
             position,
             message: message.to_owned(),

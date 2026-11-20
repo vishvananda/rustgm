@@ -252,9 +252,10 @@ fn census(folder: &Path, source: &str) -> Result<(Vec<Vec<String>>, String)> {
             .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
         {
             let fields = row.split('\t').collect::<Vec<_>>();
-            let &[path, offset, name, message] = fields.as_slice() else {
+            let &[path, offset, name, message, stage] = fields.as_slice() else {
                 return Err(format!("malformed blocker row: {row}").into());
             };
+            assert!(!stage.is_empty(), "{row}");
             assert_eq!(path, "main.rs");
             let item = source.get(offset.parse::<usize>()?..).unwrap_or_default();
             assert!(
@@ -454,9 +455,9 @@ fn failed_soundness_proofs_keep_their_bodies_and_are_named() -> Result {
         .filter_map(|line| line.strip_prefix("bringup-unproven\t"))
         .collect::<Vec<_>>();
     rows.sort_unstable();
-    let row = |start: &str, name: &str, message: &str| -> Result<String> {
+    let row = |start: &str, name: &str, message: &str, stage: &str| -> Result<String> {
         let offset = UNPROVEN.find(start).ok_or("fixture lost a function")?;
-        Ok(format!("main.rs\t{offset}\t{name}\t{message}"))
+        Ok(format!("main.rs\t{offset}\t{name}\t{message}\t{stage}"))
     };
     assert_eq!(
         rows,
@@ -464,17 +465,20 @@ fn failed_soundness_proofs_keep_their_bodies_and_are_named() -> Result {
             row(
                 "fn conflicted",
                 "conflicted",
-                "access conflicts with a live reference loan"
+                "access conflicts with a live reference loan",
+                "borrows"
             )?,
             row(
                 "const fn discarded",
                 "discarded",
-                "constant evaluation cannot run destructors"
+                "constant evaluation cannot run destructors",
+                "borrows"
             )?,
             row(
                 "fn shortened",
                 "shortened",
-                "required lifetime does not outlive its target"
+                "required lifetime does not outlive its target",
+                "lifetimes"
             )?,
         ]
     );
@@ -964,7 +968,7 @@ fn zeroing_runs_in_constants_and_stays_fenced_when_strict() -> Result {
         .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
         .collect::<Vec<_>>();
     assert!(
-        matches!(rows.as_slice(), [row] if row.contains("\trefused\t") && row.ends_with(unimplemented)),
+        matches!(rows.as_slice(), [row] if row.contains("\trefused\t") && row.contains(&format!("\t{unimplemented}\t"))),
         "{stderr}"
     );
     Ok(())
@@ -1238,8 +1242,8 @@ fn type_names_run_in_constants_and_stay_fenced_when_strict() -> Result {
     };
     assert!(
         row.contains("\tname_of\t")
-            && row.ends_with(
-                "type name of a function, closure, object, opaque or foreign type is not implemented"
+            && row.contains(
+                "\ttype name of a function, closure, object, opaque or foreign type is not implemented\t"
             ),
         "{row}"
     );
@@ -1299,7 +1303,7 @@ fn generic_closure_entries_prepare_their_signature_roots() -> Result {
             [row] => assert!(
                 unproven
                     && row.contains("\tfirst\t")
-                    && row.ends_with("required lifetime does not outlive its target"),
+                    && row.ends_with("required lifetime does not outlive its target\tlifetimes"),
                 "{case}: {row}"
             ),
             _ => return Err(format!("{case}: more than one unproven body: {stderr}").into()),
@@ -1386,7 +1390,9 @@ fn struct_updates_move_fields_at_their_instance_types() -> Result {
     assert_eq!(rejected.status.code(), Some(1), "{stderr}");
     match rows(&stderr, "bringup-blocker\t").as_slice() {
         [row] => assert!(
-            row.ends_with("\tupdate\tlocal may be uninitialized or moved at this read"),
+            row.ends_with(
+                "\tupdate\tlocal may be uninitialized or moved at this read\tdestruction"
+            ),
             "{row}"
         ),
         _ => return Err(format!("rejected: one blocker expected: {stderr}").into()),
@@ -1423,7 +1429,7 @@ fn coercion_targets_have_normalized_field_storage() -> Result {
     one_unproven_body(
         COERCION_TARGETS,
         "rejected",
-        "\tlengthen\trequired lifetime does not outlive its target",
+        "\tlengthen\trequired lifetime does not outlive its target\tlifetimes",
     )?;
     lower_completely(COERCION_TARGETS, &["constructor", "adapter"])
 }
@@ -1475,7 +1481,7 @@ fn replacements_request_their_destination_qualification() -> Result {
     one_unproven_body(
         REPLACEMENTS,
         "rejected",
-        "\treplace\tactive cleanup requires const Destruct in its actual defining environment",
+        "\treplace\tactive cleanup requires const Destruct in its actual defining environment\tdestruction",
     )?;
     lower_completely(REPLACEMENTS, &["field", "reference", "variant", "generic"])
 }
@@ -1498,7 +1504,7 @@ fn captures_stop_at_overloaded_dereferences() -> Result {
         one_unproven_body(
             CAPTURE_DEREFERENCES,
             case,
-            "\treplace\taccess conflicts with a live reference loan",
+            "\treplace\taccess conflicts with a live reference loan\tborrows",
         )?;
     }
     Ok(())
@@ -1553,7 +1559,7 @@ fn empty_callable_binders_preserve_formation_requirements() -> Result {
     assert_eq!(debts.len(), 2, "{stderr}");
     for requirement in ["Destruct", "Drop"] {
         let suffix = format!(
-            "\tdiscard\tactive cleanup requires const {requirement} in its actual defining environment"
+            "\tdiscard\tactive cleanup requires const {requirement} in its actual defining environment\tdestruction"
         );
         assert!(debts.iter().any(|row| row.ends_with(&suffix)), "{stderr}");
     }

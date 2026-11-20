@@ -9,7 +9,8 @@ The loop stops when the crate compiles, when no failure names a new function
 or at the iteration limit.
 
 The skip list is the census of the artifact pipeline: one row per function that
-does not yet compile, with the message that stopped it. ``waived.tsv`` names the
+does not yet compile, with the message that stopped it and the stage that
+recorded it (``stopped`` when no stage recorded it). ``waived.tsv`` names the
 crate-level publication fences that the last compilation passed over, and
 ``unproven.tsv`` the functions that kept their bodies although a borrow,
 lifetime or const-cleanup proof of them failed. None of these is a
@@ -58,7 +59,8 @@ def diagnose(stderr):
             fields = line.split("\t")
             if len(fields) >= 4 and fields[2].isdigit():
                 blockers.append((fields[1], int(fields[2]), fields[3],
-                                 fields[4] if len(fields) > 4 else None))
+                                 fields[4] if len(fields) > 4 else None,
+                                 fields[5] if len(fields) > 5 else None))
         elif line.startswith("bringup-unattributed\t"):
             unattributed.append(line.split("\t", 1)[1])
         elif line.startswith("ERROR: "):
@@ -121,14 +123,15 @@ def main():
         blockers, unattributed, message = diagnose(result.stderr)
         added = []
         with options.skip_list.open("a") as listed:
-            for path, offset, name, own in blockers:
+            for path, offset, name, own, stage in blockers:
                 if (path, offset) in keys:
                     continue
                 keys.add((path, offset))
                 text = cause(own or message)
-                listed.write(f"{path}\t{offset}\t{name}\t{text}\n")
+                listed.write(f"{path}\t{offset}\t{name}\t{text}"
+                             + (f"\t{stage}" if stage else "") + "\n")
                 added.append({"iteration": iteration, "path": path, "offset": offset,
-                              "name": name, "message": text})
+                              "name": name, "message": text, "stage": stage})
         records.extend(added)
         print(f"{iteration}\t{seconds}s\t+{len(added)}\tlisted {len(keys)}"
               f"\tunattributed {len(unattributed)}\t{cause(message)}", flush=True)
@@ -150,7 +153,7 @@ def main():
         print(f"last failure: {stop['message']}")
         for text in stop["unattributed"]:
             print(f"unattributed: {text}")
-        for path, offset, name, text in stop["repeated"]:
+        for path, offset, name, text, *_ in stop["repeated"]:
             print(f"repeated: {path}:{offset} {name}: {text}")
     return 0 if outcome == "compiled" else 1
 

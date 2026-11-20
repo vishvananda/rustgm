@@ -81,7 +81,13 @@ pub(super) fn evaluate<'a>(
             .iter()
             .filter(|body| demand.demanded_by(body))
             .map(|body| body.source.root_site())
-            .filter(|&site| crate::body::bringup::defer_site(Some(site), &error.message));
+            .filter(|&site| {
+                crate::body::bringup::defer_site(
+                    crate::support::bringup::Stage::Constants,
+                    Some(site),
+                    &error.message,
+                )
+            });
         let Some(first) = users.next() else {
             return Err(error);
         };

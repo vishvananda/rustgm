@@ -257,7 +257,13 @@ pub(crate) fn templates<'a>(
             Ok(true) => {}
             Ok(false) => break,
             // Bring-up reports every body this stage rejects, then still fails.
-            Err(failure) if body::bringup::defer_site(failure.node, &failure.message) => {
+            Err(failure)
+                if body::bringup::defer_site(
+                    crate::support::bringup::Stage::Destruction,
+                    failure.node,
+                    &failure.message,
+                ) =>
+            {
                 batch.skip();
                 deferred = Some(failure);
             }

@@ -234,7 +234,13 @@ pub(super) fn prove<'a>(
             Ok(body) => body,
             // Bring-up reports every body this proof rejects; parents of a
             // rejected body stay unvisited and the proof still fails below.
-            Err(failure) if crate::body::bringup::defer_site(failure.source, &failure.message) => {
+            Err(failure)
+                if crate::body::bringup::defer_site(
+                    crate::support::bringup::Stage::Lifetimes,
+                    failure.source,
+                    &failure.message,
+                ) =>
+            {
                 deferred = Some(failure);
                 continue;
             }

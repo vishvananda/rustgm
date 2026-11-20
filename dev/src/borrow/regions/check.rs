@@ -295,7 +295,11 @@ pub(super) fn body(
             }) if omitted.len() < 64
                 && !omitted.contains(&index)
                 && UNPROVEN.contains(&error.message.as_str())
-                && crate::body::bringup::unproven_site(error.source, &error.message) =>
+                && crate::body::bringup::unproven_site(
+                    crate::support::bringup::Stage::Lifetimes,
+                    error.source,
+                    &error.message,
+                ) =>
             {
                 omitted.push(index);
             }
