@@ -313,7 +313,7 @@ impl Source {
             | super::instances::SourcePublication::ModuleBodies
             | super::instances::SourcePublication::ModuleBodyOperations => {
                 if profile == super::instances::SourcePublication::ModuleBodyOperations {
-                    crate::sema::crates::authored_export::prepare_primitive_constants(
+                    crate::sema::crates::authored_export::prepare_inherent_constants(
                         report, facts, identity,
                     )?;
                 }

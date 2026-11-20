@@ -5,6 +5,23 @@
 use super::{ArtifactRef, DefinitionKind, ImplHeader, Profile, SourceRows, Type};
 use crate::support::crates::generics::Work;
 
+impl ImplHeader {
+    pub(crate) fn closed_inherent_constant_owner(&self, types: &[Type]) -> bool {
+        self.trait_application.is_none()
+            && !self.constant
+            && !self.unsafe_
+            && self.polarity.is_positive()
+            && self.scope == self.self_definition
+            && self.region_captures == 0
+            && self.region_bounds.start == self.region_bounds.end
+            && self.inputs.start == self.inputs.end
+            && self.declared_inputs == 0
+            && (self.core_primitive_inherent
+                || matches!(types.get(self.self_type.0 as usize), Some(Type::Nominal { declaration, arguments })
+                    if declaration.artifact == ArtifactRef(0) && arguments.start == arguments.end))
+    }
+}
+
 pub(super) fn require_profile(
     rows: &SourceRows,
     profile: Profile,
@@ -20,15 +37,7 @@ pub(super) fn require_profile(
                 _ => false,
             };
             if !profile.declaration_policies()
-                || implementation.trait_application.is_some()
-                || implementation.constant
-                || implementation.unsafe_
-                || !implementation.polarity.is_positive()
-                || implementation.scope != implementation.self_definition
-                || implementation.region_captures != 0
-                || implementation.region_bounds.start != implementation.region_bounds.end
-                || implementation.inputs.start != implementation.inputs.end
-                || implementation.declared_inputs != 0
+                || !implementation.closed_inherent_constant_owner(&rows.types)
                 || !primitive
             {
                 return Err(

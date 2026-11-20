@@ -428,3 +428,77 @@ fn constant_clients_execute_natively() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn version_fourteen_transports_closed_nominal_inherent_constants() -> Result {
+    let packet = Packet::new("v14-nominal-constants", SPEC, "frontend", "decimal")?;
+    let provider = packet.folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        r#"#![feature(no_core,lang_items)]
+#![no_core]
+#[lang="pointee_sized"] pub trait PointeeSized {}
+#[lang="meta_sized"] pub trait MetaSized:PointeeSized {}
+#[lang="sized"] pub trait Sized:MetaSized {}
+pub mod conversion {
+    pub struct DecimalSeq { pub digits: [u8; Self::MAX_DIGITS] }
+    impl DecimalSeq {
+        pub const MAX_DIGITS: usize = 768;
+        const PRIVATE_MAX: usize = 19;
+    }
+    pub const fn maximum() -> usize { DecimalSeq::MAX_DIGITS }
+}
+"#,
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &provider, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, source, diagnostic) in [
+        (
+            "allowed",
+            "const DIRECT: usize = base::conversion::DecimalSeq::MAX_DIGITS;\nconst CALL: usize = base::conversion::maximum();\npub fn direct() -> usize { DIRECT }\npub fn call() -> usize { CALL }",
+            None,
+        ),
+        (
+            "private",
+            "const PRIVATE: usize = base::conversion::DecimalSeq::PRIVATE_MAX;",
+            Some("private"),
+        ),
+        (
+            "wrong",
+            "const WRONG: u16 = base::conversion::DecimalSeq::MAX_DIGITS;",
+            Some("incompatible types"),
+        ),
+    ] {
+        let client = packet.folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\nextern crate base;\n{source}\n"),
+        )?;
+        let mut command = packet.consumer(&client, name, &packet.metadata, &packet.owner());
+        command.arg("--cap-lints=allow");
+        if let Some(diagnostic) = diagnostic {
+            packet.rejected(name, &mut command, diagnostic)?;
+        } else {
+            super::artifacts::checked(name, &packet.folder, &mut command)?;
+            let lowir = std::fs::read_to_string(packet.folder.join(format!("{name}.lowir")))?;
+            assert_eq!(lowir.matches("return i64 768").count(), 2, "{lowir}");
+        }
+    }
+    let legacy = packet.folder.join("legacy.rgcrate");
+    packet.rejected(
+        "legacy",
+        packet
+            .export(PROFILE, &provider, &legacy)
+            .arg("--cap-lints=allow"),
+        ASSOCIATED,
+    )?;
+    assert!(unwritten(&legacy)?);
+    Ok(())
+}

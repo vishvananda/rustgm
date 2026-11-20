@@ -13,23 +13,28 @@ use crate::{
     types::{GenericArgs, Kind, Primitive, TypeId},
 };
 
-pub(super) fn core_primitive_owner(report: &Report, facts: &Declarations, owner: DefId) -> bool {
-    report.package.coherence_is_core()
-        && facts.associated.schema(owner).is_some_and(|schema| {
-            matches!(facts.types.kind(schema.self_type), Some(Kind::Primitive(tag)) if tag != Primitive::Str)
-                && schema.captures == 0
-                && schema.bounds.is_empty()
-                && !facts.generics.has_parameters(owner)
-        })
-        && crate::sema::declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), owner)
-            .is_ok_and(|inputs| inputs.len() == 0)
+fn closed_inherent_self(facts: &Declarations, owner: DefId) -> Option<TypeId> {
+    let schema = facts.associated.schema(owner)?;
+    (schema.captures == 0
+        && schema.bounds.is_empty()
+        && !facts.generics.has_parameters(owner)
+        && crate::sema::declaration_inputs::own_view(
+            &facts.generics,
+            facts.crates.as_deref(),
+            owner,
+        )
+        .is_ok_and(|inputs| inputs.len() == 0))
+    .then_some(schema.self_type)
 }
 
-fn primitive_constant(
-    report: &Report,
-    facts: &Declarations,
-    definition: DefId,
-) -> Option<Instance> {
+pub(super) fn core_primitive_owner(report: &Report, facts: &Declarations, owner: DefId) -> bool {
+    report.package.coherence_is_core()
+        && closed_inherent_self(facts, owner).is_some_and(|ty| {
+            matches!(facts.types.kind(ty), Some(Kind::Primitive(tag)) if tag != Primitive::Str)
+        })
+}
+
+fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -> Option<Instance> {
     let declaration = report.resolution.definitions.get(definition.0 as usize)?;
     if declaration.kind != DefKind::Const {
         return None;
@@ -44,9 +49,23 @@ fn primitive_constant(
             polarity: ImplPolarity::Positive,
             ..
         }
-    ) || !core_primitive_owner(report, facts, owner.self_definition)
-    {
+    ) {
         return None;
+    }
+    let self_type = closed_inherent_self(facts, owner.self_definition)?;
+    match facts.types.kind(self_type) {
+        Some(Kind::Primitive(tag))
+            if tag != Primitive::Str && report.package.coherence_is_core() => {}
+        Some(Kind::Adt(item, GenericArgs::EMPTY))
+            if report
+                .resolution
+                .definitions
+                .get(item.0 as usize)
+                .is_some_and(|definition| {
+                    definition.node.is_some()
+                        && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
+                }) => {}
+        _ => return None,
     }
     let initializer = facts
         .initializers
@@ -70,13 +89,14 @@ fn primitive_constant(
     })
 }
 
-/// Evaluate every eligible primitive member, including ones no original reads.
-pub(crate) fn prepare_primitive_constants(
+/// Evaluate each eligible closed inherent constant, including unused members.
+pub(crate) fn prepare_inherent_constants(
     report: &Report,
     facts: &mut Declarations,
     identity: &crate::support::crates::CrateIdentity,
 ) -> Result<(), Error> {
-    if !report.package.coherence_is_core() {
+    let count = facts.initializers.len();
+    if count == 0 {
         return Ok(());
     }
     super::require_provider_identity(report, identity).map_err(Error::unlocated)?;
@@ -86,12 +106,11 @@ pub(crate) fn prepare_primitive_constants(
         .ok_or_else(|| Error::unlocated("source export has no actual role catalog"))?
         .require_provider_report(report)
         .map_err(Error::unlocated)?;
-    let count = facts.initializers.len();
     crate::sema::header_attributes::reserve_source_contracts(facts, count, 0)?;
     let mut values = Evaluator::new(report, facts);
     for index in 0..count {
         let definition = values.facts().initializers[index].definition;
-        if let Some(instance) = primitive_constant(report, values.facts(), definition) {
+        if let Some(instance) = inherent_constant(report, values.facts(), definition) {
             values.associated(instance)?;
         }
     }
@@ -99,7 +118,7 @@ pub(crate) fn prepare_primitive_constants(
 }
 
 impl Stage {
-    pub(super) fn primitive_constant(
+    pub(super) fn inherent_constant(
         &self,
         report: &Report,
         facts: &Declarations,
@@ -108,7 +127,7 @@ impl Stage {
         if !self.declaration_policies() {
             return None;
         }
-        primitive_constant(report, facts, definition)
+        inherent_constant(report, facts, definition)
     }
     pub(super) fn range_required_constant(&self, facts: &Declarations, definition: DefId) -> bool {
         self.declaration_policies()
@@ -234,7 +253,7 @@ impl Stage {
             }
             let codec = value_type(facts, ty, self.declaration_policies())?;
             let reader = Reader::new(facts);
-            let value = if let Some(instance) = self.primitive_constant(report, facts, id) {
+            let value = if let Some(instance) = self.inherent_constant(report, facts, id) {
                 reader.associated(instance)
             } else {
                 reader.definition(id)

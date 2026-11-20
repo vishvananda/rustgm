@@ -11,7 +11,7 @@ mod collected_provider;
 mod contract_rows;
 mod deprecation_rows;
 mod evaluated_constants;
-pub(crate) use evaluated_constants::prepare_primitive_constants;
+pub(crate) use evaluated_constants::prepare_inherent_constants;
 mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
@@ -682,7 +682,7 @@ impl Stage {
                         Ok(None)
                     } else if facts.associated.owner(id).is_some()
                         && !self.range_required_constant(facts, id)
-                        && self.primitive_constant(report, facts, id).is_none()
+                        && self.inherent_constant(report, facts, id).is_none()
                     {
                         Err("source associated constants require their wider profile")
                     } else {

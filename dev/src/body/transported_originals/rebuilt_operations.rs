@@ -829,7 +829,7 @@ fn constant_read(
             .get(declaration.0 as usize)
             .and_then(|row| row.definition.parent)
         && let Some(s::HeaderRef::Implementation(index)) = rows.header(parent)?
-        && rows.implementations[index as usize].core_primitive_inherent
+        && rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types)
     {
         return Ok(Rvalue::AssociatedConstant(crate::sema::values::Instance {
             definition,

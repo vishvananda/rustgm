@@ -118,7 +118,7 @@ pub(super) fn validate(
             }
             continue;
         }
-        value_owner(rows, headers, row, work)?;
+        value_owner(rows, headers, row, profile, work)?;
         let value = match header.value {
             None => return Err("source free constant requires its value"),
             Some(ConstTerm::Parameter(_)) => {
@@ -142,11 +142,12 @@ pub(super) fn validate(
     Ok(())
 }
 
-/// An evaluated associated member belongs to its closed primitive provider owner.
+/// An evaluated member belongs to its own closed inherent implementation.
 fn value_owner(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     row: &Declaration,
+    profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(1)?;
@@ -160,17 +161,20 @@ fn value_owner(
         .map(|parent| parent.definition.kind)
     {
         Some(DefinitionKind::Module | DefinitionKind::Function) => return Ok(()),
-        Some(DefinitionKind::SelfType) => {
+        Some(DefinitionKind::SelfType) if profile.declaration_policies() => {
             if let Some(HeaderRef::Implementation(index)) = headers.header(owner, work)?
                 && rows
                     .implementations
                     .get(index as usize)
-                    .is_some_and(|implementation| implementation.core_primitive_inherent)
+                    .is_some_and(|implementation| {
+                        implementation.closed_inherent_constant_owner(&rows.types)
+                    })
+                && headers.scopes().complete_slots(owner, work)? == 0
             {
                 return Ok(());
             }
         }
-        Some(DefinitionKind::Trait) => {}
+        Some(DefinitionKind::Trait | DefinitionKind::SelfType) => {}
         _ => return Err("source constant header lost its free owner"),
     }
     Err("source associated constants require their wider profile")

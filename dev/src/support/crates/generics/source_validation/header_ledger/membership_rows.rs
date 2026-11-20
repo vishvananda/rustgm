@@ -23,13 +23,13 @@ pub(super) fn validate(
         definitions: 0,
     };
     ledger.traits(work)?;
-    let mut primitive_inherent = false;
+    let mut inherent = false;
     for (index, implementation) in rows.implementations.iter().enumerate() {
         ledger.implementation(index, implementation, work)?;
-        primitive_inherent |= implementation.core_primitive_inherent;
+        inherent |= implementation.trait_application.is_none();
     }
     ledger.finish(work)?;
-    if primitive_inherent {
+    if inherent && !rows.constants().is_empty() {
         ledger.inherent_constants(work)?;
     }
     Ok(())
@@ -211,9 +211,9 @@ impl<'a> Members<'a> {
             return self.definition(implementation, stamp, link.implementation, work);
         }
         if let Some(member) = link.implementation {
-            if implementation.core_primitive_inherent
-                && let Some(HeaderRef::Constant(index)) =
-                    self.headers.get(member.0 as usize).copied().flatten()
+            if let Some(HeaderRef::Constant(index)) =
+                self.headers.get(member.0 as usize).copied().flatten()
+                && implementation.closed_inherent_constant_owner(&self.rows.types)
             {
                 declaration(self.rows, member, DefinitionKind::Constant, work)?;
                 let row = &self.rows.declarations[member.0 as usize];
@@ -225,9 +225,7 @@ impl<'a> Members<'a> {
                         .is_none_or(|header| header.value.is_none())
                     || std::mem::replace(&mut self.stamps[member.0 as usize], stamp) != 0
                 {
-                    return Err(
-                        "source primitive constant lost its actual inherent owner or value",
-                    );
+                    return Err("source constant lost its actual inherent owner or value");
                 }
                 return Ok(());
             }
@@ -307,9 +305,11 @@ impl<'a> Members<'a> {
                 && let Some(owner) = row.definition.parent
                 && let Some(HeaderRef::Implementation(index)) =
                     self.headers.get(owner.0 as usize).copied().flatten()
-                && self.rows.implementations[index as usize].core_primitive_inherent
+                && self.rows.implementations[index as usize]
+                    .trait_application
+                    .is_none()
             {
-                return Err("source primitive constant has no actual inherent member link");
+                return Err("source constant has no actual inherent member link");
             }
         }
         Ok(())

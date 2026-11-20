@@ -270,10 +270,10 @@ impl Checker<'_> {
             .kind(schema.self_type)
             .map(Head::canonical)
             .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self type"))?;
-        // The installed owner packet has already re-proved primitive authority.
+        // Header installation authenticated the owner and each member link.
         let primitive = matches!(head, Head::Primitive(_));
         let kind = self.report.resolution.definitions[member.0 as usize].kind;
-        if kind != DefKind::Function && !(primitive && kind == DefKind::Const) {
+        if !matches!(kind, DefKind::Function | DefKind::Const) {
             return Err(Error::unlocated(
                 "imported inherent associated constants and types require a wider profile",
             ));

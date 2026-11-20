@@ -291,7 +291,7 @@ fn require_member(
                     .get(index as usize)
                     .is_some_and(|row| row.value.is_none())
                     || matches!(rows.header(owner)?, Some(s::HeaderRef::Implementation(index))
-                        if rows.implementations[index as usize].core_primitive_inherent)
+                        if rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types))
             }
             _ => false,
         };
