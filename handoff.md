@@ -3,18 +3,16 @@
 ## Resume point — 2026-11-20
 
 The combined graph has authenticated inputs for all 22 planned target
-commands. The normal opt-level 1 observer at `fe83259f7` clears the generic
-alias gate and reaches the next declaration-kind check in 42.10 seconds.
-The guarded trace identifies the original `Thin` trait alias in
-`core/src/ptr/metadata.rs:85`. Frozen reductions distinguish its declaration
-transport from the separate Pointee language-role transport check. Pinned
-Rust accepts both original reductions and their ordinary controls.
-Local `main` at `fab9da160` closes the separate Pointee role checkpoint.
-A fresh client imports the 4,289-byte provider artifact, proves scalar
-and slice metadata and rejects a mismatched scalar result. The local
-Thin regression also passes. The original Thin declaration remains
-the strict Core publication gate. Its transport needs the actual
-lexical Self and declaration clauses.
+commands. The normal opt-level 1 observer at `9a48cfd08` clears the
+original Thin declaration and stops in strict Core after 41.38 seconds.
+The guarded trace identifies the opaque foreign `VTable` declaration in
+`core/src/ptr/metadata.rs:169`. The strict graph has yet to publish Core.
+Local `main` carries the Thin alias transport at `cbf1224b0` and the
+Pointee role family at `fab9da160`. The reduced Thin provider emits 4,591
+metadata bytes. A fresh client emits `return u8 7` through the actual
+imported alias and rejects the slice-pointer call. Four exact checks
+pass, including the fresh Pointee consumer and the local Thin regression.
+Stage 1 and Stage 2 remain pending.
 
 Local `main` carries the generic alias fix at `6555e3dba`. The exact
 `NotAllOnes<T>` reduction publishes 4,688 metadata bytes. A fresh client

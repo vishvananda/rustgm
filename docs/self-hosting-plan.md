@@ -1247,8 +1247,28 @@ replay receipt is `core-thin-role-transport-v1/result.json` in the
 strict graph directory with SHA-256
 `a99fb2afa8f710ee52fb94d6e1d9fc4c01fcd496b9127909a03e5e8f2f7375c2`.
 
-Direct trait-alias transport needs the actual lexical Self and canonical
-input clauses under a separate alias declaration kind. Full Core
+Local `main` at `cbf1224b0` carries direct trait aliases under their
+own declaration kind, with a distinct lexical Self and the canonical
+ordinary trait and projection-equality clauses. The reduced Thin
+provider publishes 4,591 bytes and round-trips exactly. A fresh
+client emits `return u8 7` after a concrete thin-pointer call and
+rejects the corresponding slice-pointer call. Four exact tests,
+formatting, architecture and strict Clippy pass. The focused receipt
+is `obj/qualification/fast/1795192176171029252/receipt.json` with SHA-256
+`e61a1f6ba58fdd1a65ff389d3dbc8f54927f0ea176c4562e190eaf5eef666963`.
+
+The normal opt-level 1 observer at `9a48cfd08` replays the unchanged
+strict Core target in 41.38 seconds and reaches the same generic
+declaration-kind diagnostic. The guarded trace now identifies DefId
+1690, kind 22, the opaque foreign `VTable` declaration at line 169 of
+`core/src/ptr/metadata.rs`. The preceding Thin declaration clears its
+former gate. The immutable compiler SHA-256 is
+`c3eb2da941e94b4ae6c1a62a2930305c36fd6d509db0f54967726bd3ebf5d98e`.
+The strict receipt is `core-direct-trait-aliases-optimized-v1/target-units/receipt.json`
+with SHA-256 `0713737d52a4087cbf4d34bdfcc90d1a4fc006751a15c706c77c2cce20ca015d`.
+The trace is `core-direct-trait-alias-kind-v1/gdb.stdout` with SHA-256
+`dcf80d1b9615162ef47b8be5a8c524a52a3787211a7294cfb232ce5bdb93e9f2`.
+Both are in the frontier worktree's strict graph directory. Full Core
 publication and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
