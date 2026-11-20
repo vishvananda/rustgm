@@ -1057,8 +1057,26 @@ provider emits 12,929 bytes of v14 metadata. Its fresh client emits LowIR,
 links using the object backend and matches pinned Rust on `10 22 27 91`.
 The result is under `lemire-default-control-v3/rustgm-native-v1/result.json`
 with SHA-256 `5c85075d0a5e4d20d0e3fa7fe69b4928ec9ac4e9d529772bf4ee6447fa4ea0f4`.
-Explicit trait obligations for reconstructed open reads and strict
-publication on the full original Core graph remain pending.
+`75e9fa917` derives the open read's trait obligation from its actual
+owning declaration and reapplies its transported arguments. A consumer
+accepts the original test packet even when the body is unused. A packet
+with the same argument range and result type but an unrelated constant
+owner still round-trips structurally and is rejected during body proof
+with `body trait requirement is not proved`. The inherited-default,
+const subtraction and division controls passed on the same compiler
+source. The focused receipts are
+`obj/qualification/fast/{1795169936582256425,1795178346706127965}/`
+in the frontier worktree.
+
+The authenticated Core unit replay uses the same source inventory,
+crate identity, flags and environment as the frozen compiler graph.
+The unoptimized development binary reached its 180-second limit
+without publishing any output. The executor records a timeout,
+with no compiler diagnostic. Its receipt is under
+`obj/parallel/strict-compiler-unit-graph/core-open-constants-v1/target-units/`
+with SHA-256
+`f8c935a5212d2f0badcc9cd87da2c6332221ddbc56a104ac5835a312bb5af299`.
+The next replay uses an optimized observation binary.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a

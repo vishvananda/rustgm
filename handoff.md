@@ -40,9 +40,13 @@ provider now reaches original-value encoding and requires the open
 supertrait constant row. The first row candidate passes four focused
 integration checks, formatting, architecture and strict Clippy. The frozen
 reduced Core provider now publishes 12,929 bytes of metadata. Its fresh
-native client matches pinned Rust on `10 22 27 91`. The next check
-adds an explicit trait obligation for each reconstructed open read
-before replaying the full original Core graph.
+native client matches pinned Rust on `10 22 27 91`. `75e9fa917`
+re-proves each reconstructed open trait read. The focused consumer
+accepts the actual bound and rejects a packet whose same-typed operand
+requires an unrelated trait, even when the source function is unused.
+The authenticated original Core unit timed out after 180 seconds on
+the unoptimized dev-fast binary, before publishing any output. The
+optimized observation replay is pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
@@ -65,8 +69,11 @@ controls. DHAT counts 2,060 fewer blocks at the target allocation site
 on the 256-call singleton control, and that control retires 0.733% fewer
 instructions. The zero and three-lifetime controls preserve allocation
 counts. The paired whole-graph instruction difference falls inside A/A
-noise, and the two elapsed pairs disagree. The candidate stays isolated
-while the worker selects the next non-trait semantic-analysis hotspot.
+noise, and the two elapsed pairs disagree. The candidate stays isolated.
+The subsequent generic-call census finds 55,367 repeated small-map
+preparations and zero reusable completed substitutions on the frozen
+graph. The worker deferred that change and is investigating copies of
+lifetime inspection arrays in the verified lowering path.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
