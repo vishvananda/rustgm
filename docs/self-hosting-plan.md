@@ -910,6 +910,24 @@ bring-up entries and emits no strict artifacts. The receipt and
 trace are under `obj/parallel/strict-core/closed-nominal-constants/`
 in the frontier checkout.
 
+`b25c216b5` transports checked immutable process-wide statics with closed
+scalar, tuple and fixed-array values. An imported generic body names the
+provider's allocation by its canonical declaration. The reduced
+`POWER_OF_FIVE_128` case preserves its private module restriction and exact
+array width. Two independently linked native programs, built with RustGM
+and pinned rustc, each verify one address across two generic specializations
+and read the same four scalar values. The focused regression passes the
+metadata round trip, privacy and type controls and the version 13 fence.
+The qualification receipt is `obj/qualification/fast/1795152957489392666/`.
+The two native receipts are under `obj/parallel/v14-static-arrays/` in the
+frontier checkout. This qualification covers the reduced source and uses
+the development compiler.
+
+The same development compiler reached its 230-second limit on the
+unchanged 309 original Core inputs with no diagnostic or artifact.
+The timeout receipt is under `obj/parallel/strict-core/static-arrays-dev-fast/`.
+The optimized replay on the integrated revision is pending.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
