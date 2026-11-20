@@ -792,6 +792,17 @@ deprecation checks pass in one focused batch. Evidence is under
 `obj/parallel/v14-root-self-alias/independent-metadata/` and
 `obj/qualification/fast/1795130911238788050/` in the frontier checkout.
 
+The optimized `8718740ad` replay of the same 309 inputs clears the alias
+gate and stops at `source associated constants require their wider profile`
+after 43.84 seconds. It records zero bring-up entries and produces no
+artifacts. The checked declaration inventory names `f128::RADIX` in the
+pinned `core/src/num/f128.rs` as the first blocked member. `RADIX`, `BITS`,
+`MANTISSA_DIGITS` and `DIGITS` carry `u32` values. Their common inherent owner
+already needs the `f128` type tag, and `EPSILON` adds a value of that type.
+The existing constant payload has 128 bits. The strict receipt and typed
+inventory are under `obj/parallel/strict-core/root-self-alias/` in the
+frontier checkout.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
@@ -871,7 +882,10 @@ run finishes in 45.67 seconds. An empty implementation of the original
 `core::iter::Extend<A::Item>` reproduces the normalization error at the array
 argument. Pinned Rust accepts that source. RustGM reaches the error after
 35.48 seconds with an empty skip list. The implementation body can be reduced
-to `let _ = iter`. Evidence is under
+to `let _ = iter`. The same original library graph accepts an `Extend<u32>`
+implementation with inferred array elements. It also accepts the projected
+`Extend<A::Item>` call when the iterator type is explicitly `[u32; 3]`. Both
+controls produce LowIR. Evidence is under
 `obj/parallel/m4-arrayvec-extend/original-iterator-controls/`.
 
 Normalization and identifier
@@ -929,14 +943,20 @@ prelude and execute the imported startup specialization for its actual
 [Executor](../scripts/target_units.py) · [Prelude](../dev/src/resolve/standard_imports.rs) ·
 [Startup](../dev/src/sema/entry/startup.rs)
 
-The executor now requires LowIR and a native-link manifest for every unit
-and metadata for library units. Add a terminal metadata record carrying the
-binary identity and its authenticated dependencies. Both dependency inputs
-must reject that record. Link the
-binary LowIR and its library closure in the frozen order, then pass the
-verified native objects and ordered library directives to the pinned linker.
-Add focused controls for a missing output, binary metadata supplied as a
-dependency, and a perturbed link order.
+`3ef6b79e9` requires LowIR, metadata and a native-link manifest for every
+unit. The terminal record carries the binary's identity, defining edition
+and typed dependency inventory. Its publisher waits for LowIR serialization
+and flush. Both dependency inputs reject the terminal format. The target
+graph repeats with byte-identical artifacts, and the encoded provided-body
+consumer emits the new terminal and link records with the same LowIR.
+Three focused CLI checks, 29 script tests and all six target-graph outcomes
+pass. Evidence is under
+`obj/parallel/compiler-execution-freeze/terminal-artifact-validation/`.
+
+The next link step needs the binary LowIR and its exact library closure in
+frozen order, together with the verified native objects and ordered library
+directives. The actual compiler link and the perturbed-order control await
+those inputs.
 [Artifact options](../dev/bin/crates.rs) · [Native manifest](../dev/bin/link_manifest.rs) ·
 [Backend linker](../scripts/backend.py)
 
