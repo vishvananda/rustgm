@@ -307,14 +307,15 @@ impl Options {
         Ok(())
     }
     /// Guest crates need a source core to depend on and an expanding view.
+    /// An analysis-only census may observe a guest session: it records every
+    /// crate's declarations and bodies and still never passes a build.
     fn validate_guests(&self, mode: &str) -> Result<(), String> {
         if !self.guests.is_empty()
             && (self.source_core.is_none()
                 || self.dependency_count() != 0
-                || self.census.is_some()
                 || mode == "--emit-names")
         {
-            return Err("--bringup-guest requires --source-core and a view that expands the crate, without external crates or a census".into());
+            return Err("--bringup-guest requires --source-core and a view that expands the crate, without external crates".into());
         }
         Ok(())
     }
