@@ -21,12 +21,19 @@ parts, and all three are required:
    `RUSTGM_TEST_APP`. No oracle is regenerated or relaxed for this.
 2. **Stage 2 reproduces stage 1.** For the same inputs and configuration, every
    output of stage 2 is byte-identical to the corresponding output of stage 1:
-   the LowIR and metadata of each crate in the graph, and the linked compiler.
+   the LowIR of the whole-graph build and the linked compiler.
 3. **Strict mode, zero bring-up records.** Both stages are built in strict
    mode. The build of original core, alloc, std, the compiler's dependency
-   crates and the compiler itself reports zero bring-up records and emits no
-   trapping stub. An unqualified bring-up artifact never satisfies this
-   assignment.
+   crates and the compiler itself reports zero bring-up records, zero unproven
+   obligations and zero waivers, and emits no trapping stub. An unqualified
+   bring-up artifact never satisfies this assignment.
+
+Amended 2026-11-20: each stage is one strict whole-graph build. The compiler
+binary is the application, and core, alloc, std, the dependency crates and the
+compiler library join the same session from source, each resolved as a crate of
+its own. Separately compiled artifacts with exported metadata are not part of
+this assignment; they stay with PA29 and PA32–PA36. Until 2026-11-20 this
+handout also compared the metadata of each crate.
 
 The input graph is the real one: original pinned core, alloc and std in the
 abort profile, the compiler's actual dependency crates (unicode-ident, tinyvec
@@ -78,10 +85,13 @@ python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
 ```
 
 The comparison checks the frozen graph, strict receipts, compiler diagnostics
-and stage 2 compiler pin. It reads each unit's LowIR and metadata and then the
-linked compiler byte for byte. It uses the native-link receipt beside each
-compiler to verify the binary target, frozen link tools and exact target
-build. Each binary crate needs its own metadata artifact for this check.
+and stage 2 compiler pin. It reads the LowIR and then the linked compiler byte
+for byte. It uses the native-link receipt beside each compiler to verify the
+binary target, frozen link tools and exact target build.
+
+The linker and comparator above were written for per-unit target directories
+with metadata. Adapting both to the whole-graph build, and admitting source
+crates in a strict session, is part of this assignment's buildout.
 
 ## Tests to develop with the reference
 

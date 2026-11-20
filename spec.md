@@ -7944,6 +7944,22 @@ candidates, not unrelated declarations. Lowering should be linear in emitted
 IR; fixed points must make monotonic progress in a bounded lattice/worklist.
 Any broader bound needs a documented semantic reason and adversarial tests.
 
+Three rules adopted 2026-11-20 with the
+[acceleration plan](docs/acceleration-plan.md) take precedence over older text
+in this document:
+
+- **Answer once.** A semantic question with the same canonical inputs is
+  solved once and its answer reused. Work budgets are coarse guards against
+  runaway input, charged per phase or per query family. A reused answer need
+  not replay the debits or the first budget failure of the search that produced
+  it. Observable output, including diagnostics and their order, must not depend
+  on whether an answer came from a cache.
+- **Validate once.** A table is validated when it is sealed or published.
+  Later reads use its fields directly. Revalidation on read is a self-check
+  mode, off by default.
+- **Do not allocate to speculate.** A trial runs in place and is undone on
+  failure. It does not copy the state it speculates over.
+
 The [frontend performance series](https://github.com/vishvananda/rustgm/compare/907dcd0c...d43ca889)
 is the implementation precedent for subsequent work. Prefer removing repeated
 work and reducing retained representation before tuning individual instructions:
@@ -7959,11 +7975,14 @@ work and reducing retained representation before tuning individual instructions:
   retains its body identity; equal numeric IDs in unrelated units are not equal
   lifetimes. Nested bodies sharing an inference graph share a unit, while exact
   owner indexes avoid scanning a unit's unrelated allocation suffixes.
-- Compile reusable signature shapes once. Share only substitution-invariant
-  storage and CFG analysis across instances with the same template and promotion
-  structure. Keep ownership, initialization, destruction, region and loan checks
-  under each complete instance's own inputs and proof scope. Debug revalidation
-  checks the structural sharing premise; public validation remains available.
+- Compile reusable signature shapes once. Share substitution-invariant storage
+  and CFG analysis across instances with the same template and promotion
+  structure. Prove ownership, initialization, region and loan checks once per
+  generic template under its declared bounds, as rustc does. Each instance
+  resolves its dispatch, evaluates its constants and elaborates the drops that
+  depend on its concrete types. Debug revalidation checks the structural sharing
+  premise; public validation remains available. (Amended 2026-11-20; the earlier
+  rule kept these checks under each complete instance's own inputs.)
 - Borrow an already prepared source/import environment for repeated queries;
   do not clone its complete universal table or rebuild premise indexes per use.
   Bind each view to its actual graph and complete instance, retaining fresh proof
@@ -8007,8 +8026,9 @@ Telemetry observes work already being done: bytes/tokens, retained token bytes,
 allocations or arena high water, solver goals, retries, region edges, demanded
 instances and phase time. Disabled instrumentation must not change semantics.
 Track throughput and peak RSS at several input scales. Compare frozen binaries
-with identical inputs, A/A calibration and paired ABBA blocks; retain all raw
-samples and verify output equality. Wall-time noise alone is not a regression.
+on identical inputs by user instructions and work counters, and verify output
+equality. Use A/A calibration and paired ABBA wall-time blocks at milestones,
+retaining all raw samples. Wall-time noise alone is not a regression.
 
 ## Safe Rust and audits
 

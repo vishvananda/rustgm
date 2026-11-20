@@ -1,9 +1,12 @@
 # RustGM assignment roadmap
 
-The [self-hosting plan](docs/self-hosting-plan.md), adopted 2026-11-15, is the
-current execution path: a whole-pipeline census, an unqualified bring-up
-profile, demand-ranked fixes and three lanes. PA45 self-hosting is now the
-required capstone. Assignment statuses below are unchanged.
+The [acceleration plan](docs/acceleration-plan.md), adopted 2026-11-20, is the
+current execution path: a faster validation loop, algorithmic frontend
+performance work taken from the CPPGM port, and self-hosting through a strict
+whole-graph build. It supersedes the execution order of the
+[self-hosting plan](docs/self-hosting-plan.md), whose milestone ladder stands.
+PA45 self-hosting is the required capstone. Assignment statuses below are
+unchanged.
 
 The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
 prepares exact solved protocol results before readonly drop queries.17 source

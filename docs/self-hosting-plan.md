@@ -1,6 +1,10 @@
 # Self-hosting and assignment close-out plan
 
-Adopted 2026-11-15 by the user. This is the current execution path. It
+Superseded in part on 2026-11-20: the [acceleration plan](acceleration-plan.md)
+now sets the execution order, the process rules and the PA45 definition. This
+document remains the record of the milestone ladder and of earlier evidence.
+
+Adopted 2026-11-15 by the user. It
 supersedes the execution order and process in the
 [core census plan](core-census-plan.md) and the single-worker, strict-only loop
 in the 2026-11-15 handoff. Source pins, Rust semantics, the frozen CPPGM backend

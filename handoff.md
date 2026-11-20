@@ -1,5 +1,15 @@
 # RustGM handoff
 
+## Direction · 2026-11-20
+
+The [acceleration plan](docs/acceleration-plan.md) was adopted after the pause
+below and sets the order of work. Strict metadata-transport fixes are parked,
+including the alias change described under "Resume the alias checkpoint";
+its patch stays saved. The frontier worktree instead takes a census of the
+compiler's own source in the joint graph and a keep-going census of strict
+export. A loop lane shortens validation and a performance lane starts the
+algorithmic work. The controller admits two heavy jobs.
+
 ## Pause boundary · 2026-11-20
 
 The strict build of original Rust Core reaches the metadata export of

@@ -2,6 +2,8 @@
 
 RustGM owns both the full maintainer frontend and its assignments. Read
 `spec.md`, `ROADMAP.md`, the owning handout and `TESTING_AND_REFERENCES.md`.
+The [acceleration plan](docs/acceleration-plan.md) is the current execution
+path; its adopted direction is summarized below.
 
 - Compiler code belongs in `dev/src/`; CLI, environment and process boundaries
   belong in `dev/bin/` or `scripts/`. Use idiomatic Rust names and safe code.
@@ -63,6 +65,39 @@ reasons; blanket allowances and mechanical file splitting are prohibited.
 The syntax-aware audit additionally checks file/function size, nesting, unsafe
 code (accepted only in that FFI file, each block justified), duplicated blocks,
 phase dependencies and misplaced environment access.
+
+## Direction adopted 2026-11-20
+
+Where an older rule in this file or another document conflicts with the points
+below, these points win. Tool descriptions elsewhere in this file describe the
+tools as they behave today; they change together with the tools.
+
+- Performance work removes repeated queries, copies and revalidation before it
+  tunes instructions or the host build. Measure user instructions and work
+  counters on frozen inputs with byte-identical output. Paired wall-time runs
+  are for milestones. Compare with rustc under identical workload settings.
+  A change below 1% of instructions on the core graph that removes no class of
+  repeated work is not worth a checkpoint.
+- Work budgets are coarse runaway guards. A cache hit need not replay the
+  debits or the first budget failure of the search it replaces. New tests
+  assert outputs and scaling bounds, never exact work counts. When a justified
+  change moves an existing exact-count assertion, redeclare it as an upper
+  bound at the old value.
+- Sealed tables are trusted. Validate a table once when it is sealed or
+  published, then read its fields. Revalidation on read belongs to a
+  self-check mode.
+- Ownership, initialization, region and loan proofs run once per generic
+  template. Instances resolve dispatch and elaborate drops.
+- New tests are fixtures run against a prebuilt compiler. Add a Rust harness
+  test only when it needs in-process access. Harness suites and the private
+  unit binary run at checkpoints and integration, not on every edit.
+- Do not add strict metadata-transport fixes until the export census sizes
+  that work. PA45 is a strict whole-graph build; see its handout.
+- One qualification per batch by cause. Receipts stay under `obj/`: do not
+  narrate them in documents and do not make record-only commits. The handoff
+  and roadmap change at milestones.
+- The controller admits two heavy jobs at a time so that RustGM does not
+  dominate a shared host. Queue for a slot; do not raise the job count.
 
 ## Generated storage
 
