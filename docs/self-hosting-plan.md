@@ -1177,7 +1177,30 @@ scope and must defer the projection proof until the actual use. The
 existing closed alias keeps its unscoped recipe. The reduction and fresh
 Rust outcomes are in `core-niche-alias-reduction-v3/result.json` with
 SHA-256 `1a86cb646619e25b110df0facf3338bd8da2bc884991e86ade70000874549afd`.
-Full Core publication and the strict dependent stages remain pending.
+
+`fe83259f7` gives the v14 alias its actual lexical and generic scope and
+rebuilds a deferred obligation when the completed target recipe is
+the projection root. Its consumer also demands the associated
+declaration and implementation result recipes before installing their
+cells. A guarded debugger trace identified the missing implementation
+result at the cell installer, with SHA-256
+`ccebfe511b071e9f63b848bb0dcb82c419cf0b5cb5c6cd30de487c8b2d38497a`
+under `obj/parallel/v14-generic-aliases/import-root-diagnosis/`.
+
+The three focused tests pass with formatting, architecture and strict
+Clippy. A fresh client returns 37 through the imported aliases and
+checks the generic nominal target. An unused local alias can retain
+the missing `bool` implementation, while a signature using it fails.
+The frozen controls publish 4,639 bytes for the identity alias and
+4,688 bytes for the projected alias. The closed control preserves
+all 4,562 original metadata bytes. The unused client control keeps
+its alias local when passing through the scalar library export.
+The frozen receipt is `core-niche-alias-candidate-v1/result.json` in the
+frontier strict graph directory with SHA-256
+`867ae804ba3e56ba8a1b0edd4521d4a619aa94ddb45bf4623a832aa9a395a696`.
+The focused receipt is under `obj/qualification/fast/1795187599390974288/`.
+The source is on local `main` through `6555e3dba`. Full Core
+publication and the strict dependent stages remain pending.
 
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
