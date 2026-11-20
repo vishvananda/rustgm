@@ -4,6 +4,45 @@ use rustgm::types::{
 };
 
 #[test]
+fn finalizing_ready_roots_preserves_aliases_postorder_and_work()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut store = Store::default();
+    let byte = TypeId::primitive(Primitive::U8);
+    let mut context = Context::default();
+    let known = context.known(&store, byte)?;
+    let alias = context.variable(Domain::Any)?;
+    context.equate(&store, alias, known)?;
+    context.construct(Constructor::Tuple, &[alias, known])?;
+    context.variable(Domain::Integer)?;
+    context.variable(Domain::Float)?;
+    let before = context.steps;
+
+    let solved = context.finish(&mut store)?;
+    let fields = store.intern_list(&[byte, byte])?;
+    let pair = store.intern(Kind::Tuple(fields))?;
+    assert_eq!(
+        solved.types,
+        [
+            byte,
+            byte,
+            pair,
+            TypeId::primitive(Primitive::I32),
+            TypeId::primitive(Primitive::F64),
+        ]
+    );
+    // Five original terms, two child visits and one composite exit.
+    assert_eq!(solved.steps, before + 8);
+
+    for (before, error) in [(1_000_000, Error::Budget), (999_999, Error::Unresolved)] {
+        let mut context = Context::default();
+        context.variable(Domain::Any)?;
+        context.account_work(before - context.steps)?;
+        assert!(matches!(context.finish(&mut store), Err(found) if found == error));
+    }
+    Ok(())
+}
+
+#[test]
 fn empty_instantiation_preserves_rigid_shared_graphs_and_later_substitution()
 -> Result<(), Box<dyn std::error::Error>> {
     use rustgm::types::{

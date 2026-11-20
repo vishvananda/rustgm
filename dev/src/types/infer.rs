@@ -995,31 +995,32 @@ impl Context {
         let mut work = Vec::new();
         let mut children = Vec::new();
         for ordinal in 0..self.terms.len() {
-            let id = TermId(u32::try_from(ordinal).map_err(|_| Error::Overflow)?);
-            work.push((id, false));
-            while let Some((id, exiting)) = work.pop() {
-                self.step()?;
-                let id = self.root(id)?;
-                if resolved[id.0 as usize].is_some() {
-                    continue;
-                }
-                let term = self.terms[id.0 as usize];
-                if exiting {
-                    children.clear();
-                    for index in term.start..term.end {
-                        let child = self.root(self.edges[index as usize])?;
-                        children.push(resolved[child.0 as usize].ok_or(Error::InvalidIdentity)?);
-                    }
-                    let Value::Construct(kind) = term.value else {
-                        return Err(Error::InvalidIdentity);
-                    };
-                    let canonical = self.canonical(store, kind, &children)?;
-                    resolved[id.0 as usize] = Some(canonical);
-                    state[id.0 as usize] = 2;
-                } else {
-                    match term.value {
-                        Value::Known(ty) => resolved[id.0 as usize] = Some(ty),
-                        Value::Variable(domain) => {
+            let original = TermId(u32::try_from(ordinal).map_err(|_| Error::Overflow)?);
+            self.step()?;
+            let root = self.root(original)?;
+            let mut id = root;
+            let mut exiting = false;
+            loop {
+                if resolved[id.0 as usize].is_none() {
+                    let term = self.terms[id.0 as usize];
+                    match (exiting, term.value) {
+                        (true, value) => {
+                            children.clear();
+                            for index in term.start..term.end {
+                                let child = self.root(self.edges[index as usize])?;
+                                children.push(
+                                    resolved[child.0 as usize].ok_or(Error::InvalidIdentity)?,
+                                );
+                            }
+                            let Value::Construct(kind) = value else {
+                                return Err(Error::InvalidIdentity);
+                            };
+                            let canonical = self.canonical(store, kind, &children)?;
+                            resolved[id.0 as usize] = Some(canonical);
+                            state[id.0 as usize] = 2;
+                        }
+                        (false, Value::Known(ty)) => resolved[id.0 as usize] = Some(ty),
+                        (false, Value::Variable(domain)) => {
                             resolved[id.0 as usize] = Some(match domain {
                                 Domain::Integer => TypeId::primitive(Primitive::I32),
                                 Domain::Float => TypeId::primitive(Primitive::F64),
@@ -1028,10 +1029,10 @@ impl Context {
                         }
                         // A materialized canonical subtree keeps its identity;
                         // rebuilding it would only re-find the same type.
-                        Value::Construct(_) if let Some(ty) = self.settled_type(id) => {
+                        (false, Value::Construct(_)) if let Some(ty) = self.settled_type(id) => {
                             resolved[id.0 as usize] = Some(ty);
                         }
-                        Value::Construct(_) => {
+                        (false, Value::Construct(_)) => {
                             if state[id.0 as usize] == 1 {
                                 return Err(Error::Occurs);
                             }
@@ -1046,8 +1047,15 @@ impl Context {
                         }
                     }
                 }
+                let Some((next, exit)) = work.pop() else {
+                    break;
+                };
+                self.step()?;
+                id = self.root(next)?;
+                exiting = exit;
             }
-            let root = self.root(id)?;
+            // The first visit compressed this ordinal. Canonicalization does
+            // not link type roots, so the same root supplies its final type.
             resolved[ordinal] = resolved[root.0 as usize];
         }
         let types: Vec<_> = resolved
