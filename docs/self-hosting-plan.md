@@ -1101,6 +1101,30 @@ the available call chains do not resolve those samples to compiler
 phases. The raw sample and leaf report are under
 `obj/parallel/strict-compiler-unit-graph/core-tail-diagnosis-v1/`.
 
+The opt-level 1 observation build completed in 3 minutes 50 seconds
+with local LTO and LLVM's default pass pipeline disabled. The host
+compiler uses two frontend threads. Its executable SHA-256 is
+`6a500fa4b89f013998e381c6353d52c3b2c996f905977f33d9c3fda2a2955741`.
+The unchanged authenticated strict Core unit reaches
+`source associated constants require their wider profile` after
+208.81 seconds and publishes no accepted artifact. The strict receipt
+is under `obj/parallel/strict-compiler-unit-graph/core-open-constants-observe-v1/target-units/`
+with SHA-256 `ec63a76a0f112bfb2e9009468620c0f1167a981e3de66d6485fc32f879f2a8ca`.
+
+An independent replay breaks at the exact diagnostic branch in
+`Stage::exported_kind` for declaration 961 named `ZERO`. The recorded
+source key's file component is 45. The same compiler's resolved file
+registry maps it to `core/src/num/niche_types.rs`. The guarded reduction
+uses a single closed nominal inherent owner and varies the constant's
+declared result. The scalar result publishes 38,009 metadata bytes.
+The nominal result reaches the same rejection before emitting metadata.
+Pinned Rust accepts both sources. Original nominal inherent constant
+transport is pending. The trace, source registry and reduction receipt
+are under
+`obj/parallel/strict-compiler-unit-graph/{core-associated-constant-diagnosis-v1,core-source-id-v2,core-nominal-zero-reduction-v1}/`
+in the frontier worktree. The reduction receipt's SHA-256 is
+`f35b61544be17cfb09380ecd1300cd44b060d9921eff5a16e1bad5bafec99f0f`.
+
 The reproof binary imports the existing frozen 12,929-byte reduced Core
 provider, preserving the client LowIR bytes. The CPPGM-linked fresh
 client again matches pinned Rust on `10 22 27 91`. The replay pins
@@ -2315,6 +2339,24 @@ The original counter receipt is under
 `obj/parallel/lifetime-inspection-arrays/count-v2/receipt.json` in the
 performance worktree with SHA-256
 `6d41b4689aa89983082c6eb9e2f47820c909ef34808aaa78d325413797a1d836`.
+
+### First cleanup edge loan-state restore
+
+The pinned original 746-input graph visits 45,460 first edge restores
+that duplicate the state present at the end of the block. Those
+restores copy 27,618 sixteen-byte words, or 441,888 payload bytes. The
+new path invalidates expiration evidence and reuses the current state
+on that first edge. Snapshots and later restores retain the existing
+state copy. The measured first edges retain their 82,854 logical work
+steps. The original graph matches the stored outputs during the census.
+`562af2fd6` is on local `main` after five focused ownership tests,
+strict Clippy, ten CLI comparisons and eleven typed loan-ledger
+comparisons pass. A reduced harness executes both direct state tests
+from the actual source modules. The full private gate timed out before
+linking. Whole-graph candidate parity and elapsed timing are pending.
+The report is `obj/parallel/loan-first-edge-census/result.md` in the
+performance worktree with SHA-256
+`86b38f6125b31d63343c6fe9eeebd16470996f87ad8ae97f0cf21b70f01d2634`.
 
 ### Macro expansion and ledger work
 

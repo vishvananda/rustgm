@@ -2,13 +2,17 @@
 
 ## Resume point — 2026-11-20
 
-`aeab57f68` records the lifetime census and `0caa1751d` the latest strict
-unit-graph replay. The combined graph has authenticated inputs for all
-22 planned target commands. The strict optimized compiler reaches
-`core` publication after 36.80 seconds without emitting an accepted
-artifact. Its first failure is the provided
-`Lemire::MAX_EXPONENT_FAST_PATH` constant.
-[Strict graph evidence](docs/self-hosting-plan.md#L1176)
+The combined graph has authenticated inputs for all 22 planned target
+commands. With the current observation compiler at `75e9fa917`, the
+unchanged strict `core` unit rejects with `source associated constants
+require their wider profile` after 208.8 seconds. The executor has no
+accepted artifact. A trace ties the new rejection to `Stage::exported_kind`
+and declaration 961 named `ZERO` in `core/src/num/niche_types.rs`.
+The reduction publishes a scalar result on a closed inherent
+implementation and rejects a nominal result on the same owner. Pinned
+Rust accepts both controls. The prior strict graph checkpoint reached
+`Lemire::MAX_EXPONENT_FAST_PATH`.
+[Strict graph evidence](docs/self-hosting-plan.md)
 
 The self-hosting worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` on
@@ -51,9 +55,10 @@ replays the frozen reduced Core metadata, emits byte-identical client
 LowIR and matches pinned Rust's native output.
 The authenticated original Core unit timed out after 180 seconds on
 the unoptimized dev-fast binary, before publishing any output. The
-optimized build expired at the five-minute limit before producing a
-replacement executable. The unoptimized 215-second replay also
-expired before publication.
+unoptimized 215-second replay also expired. The completed observation
+build uses opt-level 1 with local LTO and LLVM's default pass pipeline
+disabled. It reached the new publication diagnostic on the unchanged
+Core input.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
@@ -94,6 +99,14 @@ elimination is on local `main` through `52c394788`. Four focused tests
 and eight independent output and diagnostic comparisons passed. The
 full graph reached its 235-second development-binary timeout before
 emitting LowIR. Whole-graph candidate parity and timing are pending.
+The first cleanup edge's redundant loan-state restore is removed on
+local `main` at `562af2fd6`. The frozen baseline has 45,460 first
+restores and 441,888 copied payload bytes at that site. The change
+preserves the work debit and expiration transition. Five ownership
+tests, ten CLI comparisons and eleven typed loan-ledger comparisons
+pass. Full private validation, candidate graph parity and timing are
+pending. The two direct loan-state tests pass in a reduced harness
+using the original source modules.
 
 Lifetime candidates `72264239b` and `4757cac6d` stay isolated. The first
 retires 0.253% more original-graph instructions. The second retires 0.102%
