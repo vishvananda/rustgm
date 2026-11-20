@@ -1735,6 +1735,34 @@ The report is in `obj/parallel/canonical-argument-span/` in the performance
 checkout and the integration receipt is in
 `obj/qualification/fast/1795141587723920143/` in the frontier checkout.
 
+`9c643b901` stores the common single explicit inferred trait argument in
+the existing 24-byte predicate. The workers' adjacent immutable comparison
+preserves 96 ordered implementation proof DAGs, eleven CLI input outcomes
+and all six measured original-graph outputs. The source-backed control
+allocates 7,825 fewer blocks, including 4,992 at matched trial and header
+sites. The full graph uses 0.365% fewer retired instructions, 0.615% fewer
+load uops and 0.560% fewer store uops. The focused width-17 control uses
+about 0.41% more retired instructions. The ordinary scalar control uses
+about 0.08% fewer instructions and about 7% more sampled cycles in both
+orders. Whole-graph elapsed and cycle results remain inconclusive. One
+candidate run received 35.807 seconds of task clock across 96.913 seconds
+elapsed, and the same baseline changed from 30.599 to 40.957 seconds with
+sibling occupancy. No updated RustGM-to-rustc elapsed ratio is available.
+The report is in `obj/parallel/inline-single-inferred-argument/` in the
+performance checkout and the isolated fast gate is
+`obj/qualification/fast/1795141696010580141/`.
+
+The same performance checkout is now testing a count-only non-trait
+hypothesis. In the 26,865-sample original-core profile, 6,222 body samples
+lack a visible trait-related stack frame. The two lint-provenance leaf
+symbols have 151 body samples with a caller-site tracking ancestor and
+195 with a checked-tracking ancestor. These ancestor counts overlap. The
+observer counts successful sealed owner-witness rereads and any displaced
+comptime receipts before a production reuse decision. The observed
+settled-type resolution chain outside visible trait ancestry accounts for
+0.42% of the whole profile across declarations and bodies. Declaration
+walks and demand preparation remain separate attribution targets.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
