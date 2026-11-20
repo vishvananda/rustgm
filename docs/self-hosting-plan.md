@@ -1239,6 +1239,14 @@ formatting, architecture and strict Clippy. The focused receipt is
 frontier worktree with SHA-256
 `c988898d9d01d139ce0b4be50fbceb60c5df9f880cced6deec186bd64d374ce3`.
 
+The replay on all four unchanged frozen providers now publishes 4,296
+bytes for the role-only provider. The ordinary 3,918-byte packet remains
+byte-identical. Both the verbatim Core `Thin` declaration and the
+ordinary trait alias still reach the declaration-kind check. The
+replay receipt is `core-thin-role-transport-v1/result.json` in the
+strict graph directory with SHA-256
+`a99fb2afa8f710ee52fb94d6e1d9fc4c01fcd496b9127909a03e5e8f2f7375c2`.
+
 Direct trait-alias transport needs the actual lexical Self and canonical
 input clauses under a separate alias declaration kind. Full Core
 publication and the strict dependent stages remain pending.
