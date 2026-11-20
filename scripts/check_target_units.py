@@ -9,6 +9,7 @@ process starts.
 import argparse
 import json
 from pathlib import Path
+import subprocess
 import sys
 import time
 
@@ -79,12 +80,32 @@ def observed(receipt):
             **({'dropped': dropped} if dropped else {})}
 
 
+def executable_metadata(rustgm, folder, steps, receipt):
+    provider, client = steps
+    artifact = Path(receipt['completed'][-1]['outputs']['metadata']['path'])
+    owner = f'{provider.crate_name}@{provider.disambiguator}'
+    identity = f'{client.crate_name}@{client.disambiguator}'
+    expected = ('rustgm-executable-metadata-v1\n'
+                f'crate {identity}\nedition 2024\ndependency {owner}\nextern one {owner}\n')
+    result = {'fields': artifact.read_bytes() == expected.encode()}
+    rejections = (('extern', '--extern', f'one={artifact}'),
+                  ('transitive', '--dependency-metadata', str(artifact)))
+    for name, option, argument in rejections:
+        command = [str(rustgm), '--emit-lowir', '--edition=2024', option, argument,
+                   '-o', str(folder / f'{name}.lowir'), str(FIXTURES / 'pass-construct.rs')]
+        completed = subprocess.run(command, capture_output=True, check=False, timeout=20)
+        (folder / f'{name}.stderr').write_bytes(completed.stderr)
+        result[name] = (completed.returncode == 1
+                        and b'executable metadata cannot serve as a dependency' in completed.stderr)
+    return result
+
+
 def run(rustgm, out):
     rustgm = rustgm.resolve(strict=True)
     sha = digest(rustgm)
     out.mkdir(parents=True)
     (out / 'declaration.json').write_text(json.dumps({'rustgm_sha256': sha, 'cases': CASES}, indent=2) + '\n')
-    results, hashes = {}, {}
+    results, hashes, executable = {}, {}, {}
     for name, case in CASES.items():
         for attempt in ('first', 'repeat') if name == 'library-and-binary' else ('first',):
             plan, packages, data = graph(case)
@@ -95,11 +116,14 @@ def run(rustgm, out):
                                             'receipt_sha256': digest(folder / 'receipt.json')}
             hashes[f'{name}/{attempt}'] = [{key: value['sha256'] for key, value in row['outputs'].items()}
                                            for row in receipt['completed']]
+            if name == 'library-and-binary' and attempt == 'first' and receipt['state'] == 'complete':
+                executable = executable_metadata(rustgm, folder, steps, receipt)
     reproducible = hashes['library-and-binary/first'] == hashes['library-and-binary/repeat']
-    passed = reproducible and all(row['observed'] == row['expected'] for row in results.values())
+    passed = (reproducible and len(executable) == 3 and all(executable.values())
+              and all(row['observed'] == row['expected'] for row in results.values()))
     summary = {'state': 'passed' if passed else 'failed', 'reproducible_outputs': reproducible,
                'rustgm': {'path': str(rustgm), 'sha256': sha}, 'unchanged_rustgm': digest(rustgm) == sha,
-               'results': results, 'output_sha256': hashes}
+               'results': results, 'output_sha256': hashes, 'executable_metadata': executable}
     summary['state'] = summary['state'] if summary['unchanged_rustgm'] else 'failed'
     (out / 'result.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps(summary, indent=2))
@@ -114,7 +138,7 @@ def main():
     args = parser.parse_args()
     try:
         return run(args.rustgm, args.out.absolute())
-    except (OSError, ValueError, KeyError) as error:
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f'target unit check: infrastructure failure: {error}', file=sys.stderr)
         return 2
 

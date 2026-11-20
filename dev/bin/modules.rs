@@ -91,13 +91,15 @@ pub fn run(
             })
         })
     {
-        if crates.is_library() || crates.metadata.is_some() {
+        if crates.is_library() {
             return Err("provided-contracts-v1 currently requires an executable consumer".into());
         }
         return rustgm::lower::instances::with_provided_client(
-            resolve::crates::ConsumerRequest::new(root, &mut Files, config, &context), |_, facts, program| {
+            resolve::crates::ConsumerRequest::new(root, &mut Files, config, &context), |report, facts, program| {
                 emit_warnings(facts)?;
-                crate::emission::emit(program, count, out)
+                let links = crate::link_manifest::prepare(report, facts, crates.native_links.as_deref())?;
+                crate::link_manifest::write(&links, crates.native_links.as_deref())?;
+                crate::emission::emit(program, count, out, crates.executable_metadata(report)?)
             },
         ).map_err(|error| semantic_error(&error))?;
     }
@@ -563,21 +565,18 @@ fn emit_lowir(
     let native_links =
         crate::link_manifest::prepare(&report, &facts, crates.native_links.as_deref())
             .map_err(|message| failure_message(&facts, message))?;
-    if let Some(path) = &crates.metadata {
-        let interface = interface
-            .as_ref()
-            .ok_or_else(|| failure_message(&facts, "metadata requires library exports".into()))?;
-        fs::write(
-            path,
-            rustgm::support::crates::encode(interface)
-                .map_err(|message| failure_message(&facts, message.to_owned()))?,
-        )
-        .map_err(|error| failure_message(&facts, error.to_string()))?;
+    if let (Some(path), Some(interface)) = (&crates.metadata, interface.as_ref()) {
+        let bytes = rustgm::support::crates::encode(interface)
+            .map_err(|message| failure_message(&facts, message.to_owned()))?;
+        fs::write(path, bytes).map_err(|error| failure_message(&facts, error.to_string()))?;
     }
     crate::link_manifest::write(&native_links, crates.native_links.as_deref())
+        .map_err(|message| failure_message(&facts, message))?;
+    let executable = crates
+        .executable_metadata(&report)
         .map_err(|message| failure_message(&facts, message))?;
     emit_warnings(&facts)?;
     drop(facts);
     drop(report);
-    crate::emission::emit(&lowir, count, out)
+    crate::emission::emit(&lowir, count, out, executable)
 }

@@ -44,7 +44,9 @@ pub struct Unit {
 }
 
 impl Unit {
-    pub(crate) const fn edition(&self) -> crate::support::edition::Edition {
+    /// The defining edition used to configure and parse this source unit.
+    #[must_use]
+    pub const fn edition(&self) -> crate::support::edition::Edition {
         self.edition
     }
 

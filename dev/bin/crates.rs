@@ -6,6 +6,19 @@ use rustgm::support::crates::{
 use rustgm::support::hash::HashMap;
 use std::{fs, io::Read, path::PathBuf, sync::Arc};
 
+const BINARY_METADATA_MAGIC: &str = "rustgm-executable-metadata-v1\n";
+
+pub struct ExecutableMetadata<'a> {
+    path: &'a str,
+    bytes: Vec<u8>,
+}
+impl ExecutableMetadata<'_> {
+    pub fn publish(self, output: &mut impl std::io::Write) -> Result<(), String> {
+        output.flush().map_err(|error| error.to_string())?;
+        fs::write(self.path, self.bytes).map_err(|error| error.to_string())
+    }
+}
+
 #[derive(Default)]
 pub struct Options {
     pub name: Option<String>,
@@ -274,10 +287,13 @@ impl Options {
         if self.is_library() && self.identity()?.is_none() {
             return Err("library output requires --crate-name and --crate-disambiguator".into());
         }
-        if self.metadata.is_some() && (!self.is_library() || count) {
-            return Err(
-                "--metadata-output requires library LowIR output without --count-lowir".into(),
-            );
+        if self.metadata.is_some()
+            && (mode != "--emit-lowir"
+                || count
+                || self.output.is_none()
+                || self.identity()?.is_none())
+        {
+            return Err("--metadata-output requires named library or binary LowIR output without --count-lowir".into());
         }
         if let Some(metadata) = &self.metadata
             && let Some(output) = output
@@ -322,6 +338,70 @@ impl Options {
     pub fn is_library(&self) -> bool {
         self.output == Some(OutputKind::Library)
     }
+    /// Describe the successfully lowered binary unit without publishing an extern interface.
+    pub fn executable_metadata(
+        &self,
+        report: &rustgm::resolve::expansion::Report,
+    ) -> Result<Option<ExecutableMetadata<'_>>, String> {
+        use rustgm::support::edition::Edition;
+        use std::fmt::Write as _;
+        let (Some(path), Some(OutputKind::Binary)) = (self.metadata.as_deref(), self.output) else {
+            return Ok(None);
+        };
+        let identity = self
+            .identity()?
+            .ok_or("binary metadata requires its actual crate identity")?;
+        let edition = report
+            .package
+            .units
+            .first()
+            .ok_or("binary metadata requires its actual source root")?
+            .edition();
+        let edition = match edition {
+            Edition::Rust2015 => 2015,
+            Edition::Rust2018 => 2018,
+            Edition::Rust2021 => 2021,
+            Edition::Rust2024 => 2024,
+        };
+        let mut metadata = String::from(BINARY_METADATA_MAGIC);
+        writeln!(
+            metadata,
+            "crate {}@{}",
+            identity.name(),
+            identity.disambiguator()
+        )
+        .map_err(|error| error.to_string())?;
+        writeln!(metadata, "edition {edition}").map_err(|error| error.to_string())?;
+        if let Some(imported) = report.resolution.crates.as_deref() {
+            let dependencies = imported.dependencies();
+            for artifact in dependencies.artifacts() {
+                let identity = artifact.identity();
+                writeln!(
+                    metadata,
+                    "dependency {}@{}",
+                    identity.name(),
+                    identity.disambiguator()
+                )
+                .map_err(|error| error.to_string())?;
+            }
+            for dependency in dependencies.aliases() {
+                let identity = dependency.identity();
+                writeln!(
+                    metadata,
+                    "extern {} {}@{}",
+                    dependency.alias(),
+                    identity.name(),
+                    identity.disambiguator()
+                )
+                .map_err(|error| error.to_string())?;
+            }
+        }
+        Ok(Some(ExecutableMetadata {
+            path,
+            bytes: metadata.into_bytes(),
+        }))
+    }
+
     pub fn context(&self, artifact: bool) -> Result<rustgm::resolve::bindings::Context, String> {
         let mode = self.bindings_mode()?;
         let artifacts = if !artifact {
@@ -414,6 +494,9 @@ impl Options {
                     return Err("crate artifacts exceed 16 MB input budget".into());
                 }
                 total += bytes.len();
+                if bytes.starts_with(BINARY_METADATA_MAGIC.as_bytes()) {
+                    return Err("executable metadata cannot serve as a dependency".into());
+                }
                 let artifact = crates::decode(&bytes).map_err(str::to_owned)?;
                 let identity = artifact.identity().clone();
                 paths.insert(path, identity.clone());

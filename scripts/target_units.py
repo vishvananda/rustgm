@@ -298,11 +298,10 @@ class Planner:
         for feature in sorted(unit.features):
             arguments += ['--cfg', 'feature=' + json.dumps(feature)]
         arguments += script_arguments + dependency_arguments
-        if library:
-            metadata = str(unit_folder / f'{name}.rgcrate')
-            outputs.append(('metadata', metadata))
-            arguments += ['--metadata-output', metadata]
-        arguments += ['--native-links-output', native_links, '-o', lowir, str(source)]
+        metadata = str(unit_folder / f'{name}.rgcrate')
+        outputs.append(('metadata', metadata))
+        arguments += ['--metadata-output', metadata, '--native-links-output', native_links,
+                      '-o', lowir, str(source)]
         environment = {**ENVIRONMENT, **dict(package.environment or ()), 'CARGO_CRATE_NAME': name,
                        **script_environment}
         return Step(index, package.identity, name, disambiguator, library, str(source), tuple(arguments),

@@ -401,7 +401,7 @@ class Execution(unittest.TestCase):
         self.assertEqual(app[app.index('--extern') + 1], f'mid={folder}/unit-1/mid.rgcrate')
         self.assertEqual(app[app.index('--dependency-metadata') + 1], f'{folder}/unit-0/base.rgcrate')
         self.assertIn('--crate-type=bin', app)
-        self.assertNotIn('--metadata-output', app)
+        self.assertEqual(app[app.index('--metadata-output') + 1], f'{folder}/unit-3/app.rgcrate')
         self.assertEqual(app[app.index('--native-links-output') + 1], f'{folder}/unit-3/app.native-links.json')
         for finished in receipt['completed']:
             native = finished['outputs']['native_links']
