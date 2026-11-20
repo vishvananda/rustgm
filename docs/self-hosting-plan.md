@@ -2216,6 +2216,24 @@ The report and raw paired receipt are
 `obj/parallel/canonical-store-census/singleton/{result.md,pmu-v2/receipt.json}`
 in that worktree.
 
+### Generic callable inference
+
+The original 746-input graph repeats binding preparation for 55,367
+of 72,075 source-backed generic calls, covering 95,683 offered
+reinsertions. Every graph map fits the existing 16-entry linear
+representation. Of 100,127 later bound visits and 84,567 recorded
+signature completions, zero share the exact term, depth and known
+type. The observer preserves graph output bytes and all 11 focused
+and 12 resource-boundary outcomes. The width-17 control spills in
+the second preparation while the same signature without clauses
+performs no second preparation. The graph provides little coverage
+for reusing completed substitutions or optimizing the spill. Ordered
+validation and its work debit would still run on any reusable map.
+The map-only change is deferred. Evidence is under
+`obj/parallel/call-binding-census/result.md` in the performance
+worktree with SHA-256
+`f9344b26ba1fe5cf462f4a7f90592aa723ed80074ebc744bf5d4639a494fd51e`.
+
 ### Macro expansion and ledger work
 
 The matcher scratch change passed its focused regression and an opt-level 1
