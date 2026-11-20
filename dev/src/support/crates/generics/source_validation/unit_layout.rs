@@ -1,6 +1,10 @@
 //! Raw numbering structure is separate from canonical owner/environment binding.
 use super::{HeaderIndex, HeaderRef, SourceRows, Work};
-use crate::support::crates::{MAX_BYTES, generics::source as s, owner_catalog::BodyRef};
+use crate::support::crates::{
+    MAX_BYTES,
+    generics::{BinderRef, source as s},
+    owner_catalog::BodyRef,
+};
 
 /// Borrowed complete raw units. Later semantic staging must independently bind
 /// their actual catalog, arena, body, signatures and required alias presence.
@@ -54,20 +58,15 @@ pub(super) fn validate<'rows>(
         work.charge(1)?;
         let original = &rows.originals[index];
         let input = &rows.body_inputs[index];
-        let Some(HeaderRef::Function(function)) = headers.header(original.declaration, work)?
-        else {
-            return Err("source numbering unit lacks its actual function header");
-        };
-        let function = &rows.functions[function as usize];
+        let (binder, universals) = original_scheme(headers, original, input, work)?;
         let frame = rows
             .binders
-            .get(function.original.binder.0 as usize)
+            .get(binder.0 as usize)
             .ok_or("source numbering unit lacks its actual original binder")?;
         if headers.original_index(unit.body)? != index
             || unit.body != original.body
-            || function.body != s::FunctionBody::Original(unit.body)
-            || input.frame != function.original.binder
-            || unit.universals != function.regions.total
+            || input.frame != binder
+            || unit.universals != universals
             || frame.count != unit.universals
             || unit.allocation_order.len() != original.variables.len()
             || unit.allocation_order.len() >= 0x7fff_ffff
@@ -91,13 +90,46 @@ pub(super) fn validate<'rows>(
             return Err("source numbering validation exceeds combined storage budget");
         }
         peak = peak.max(next);
-        validate_unit(rows, original, input, unit, function.original.binder, work)?;
+        validate_unit(rows, original, input, unit, binder, work)?;
     }
     Ok(NumberingUnits {
         rows,
         bodies: headers.bodymap(),
         peak,
     })
+}
+
+fn original_scheme(
+    headers: &HeaderIndex<'_>,
+    original: &s::Original,
+    input: &s::BodyInputs,
+    work: &mut Work,
+) -> Result<(BinderRef, u32), &'static str> {
+    let rows = headers.rows();
+    match headers.header(original.declaration, work)? {
+        Some(HeaderRef::Function(index)) => {
+            let function = &rows.functions[index as usize];
+            if function.body != s::FunctionBody::Original(original.body) {
+                return Err("source numbering unit changed its complete body/signature domain");
+            }
+            Ok((function.original.binder, function.regions.total))
+        }
+        Some(HeaderRef::Constant(index))
+            if rows.constants()[index as usize].body
+                == s::ConstantBody::Original(original.body) =>
+        {
+            let frame = rows
+                .binders
+                .get(input.frame.0 as usize)
+                .ok_or("source numbering unit lacks its actual initializer binder")?;
+            if frame.owner != original.declaration || frame.kind != s::BinderKind::DeclarationHeader
+            {
+                return Err("source numbering unit changed its original initializer frame");
+            }
+            Ok((input.frame, frame.count))
+        }
+        _ => Err("source numbering unit lacks its actual function header"),
+    }
 }
 
 fn validate_unit(

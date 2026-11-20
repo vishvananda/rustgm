@@ -155,13 +155,13 @@ impl DomainIndex<'_, '_> {
         match (unsafe_, safety) {
             (false, s::CallSafety::Safe) => Ok(()),
             (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
-                let defining = self.function(original.declaration, work)?;
-                if !self.bodies && (associated || defining.parent.is_some()) {
+                let defining = self.original_header(original.declaration, work)?;
+                if !self.bodies && (associated || defining.parent().is_some()) {
                     return Err(
                         "source unsafe associated Calls require their wider actual profile",
                     );
                 }
-                if safety == s::CallSafety::UnsafeFunction && !defining.callable.unsafe_ {
+                if safety == s::CallSafety::UnsafeFunction && !defining.unsafe_function() {
                     return Err(
                         "source unsafe-function Call changed its actual caller declaration",
                     );

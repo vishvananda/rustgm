@@ -15,6 +15,7 @@ use super::{
     type_domains::{Context, Types},
 };
 use crate::support::crates::generics::{self as g, source as s};
+use crate::support::crates::owner_catalog::DeclarationRef;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct DomainWork {
@@ -57,6 +58,35 @@ impl Target<'_> {
         match self {
             Self::Function(header) => header.parent,
             Self::Constructor { .. } => None,
+        }
+    }
+}
+
+/// An original carries either a callable signature or an initializer's
+/// declared result and inherited environment.
+#[derive(Clone, Copy)]
+enum OriginalHeader<'rows> {
+    Function(&'rows s::FunctionHeader),
+    Constant {
+        result: g::TypeRef,
+        parent: DeclarationRef,
+    },
+}
+
+impl OriginalHeader<'_> {
+    const fn parent(self) -> Option<DeclarationRef> {
+        match self {
+            Self::Function(header) => header.parent,
+            Self::Constant { parent, .. } => Some(parent),
+        }
+    }
+    const fn unsafe_function(self) -> bool {
+        matches!(self, Self::Function(header) if header.callable.unsafe_)
+    }
+    const fn entry(self) -> (g::Range, g::TypeRef) {
+        match self {
+            Self::Function(header) => (header.original.parameters, header.original.result),
+            Self::Constant { result, .. } => (g::Range { start: 0, end: 0 }, result),
         }
     }
 }
@@ -182,6 +212,35 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             .functions
             .get(index as usize)
             .ok_or("source function header is absent")
+    }
+    fn original_header(
+        &self,
+        declaration: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<OriginalHeader<'rows>, &'static str> {
+        let rows = self.headers.rows();
+        match self.headers.header(declaration, work)? {
+            Some(HeaderRef::Function(index)) => Ok(OriginalHeader::Function(
+                rows.functions
+                    .get(index as usize)
+                    .ok_or("source function header is absent")?,
+            )),
+            Some(HeaderRef::Constant(index)) if self.declaration_policies => {
+                let header = &rows.constants()[index as usize];
+                if !matches!(header.body, s::ConstantBody::Original(_)) {
+                    return Err("source constant has no actual initializer body");
+                }
+                let parent = rows.declarations[declaration.0 as usize]
+                    .definition
+                    .parent
+                    .ok_or("source constant initializer has no declaring owner")?;
+                Ok(OriginalHeader::Constant {
+                    result: header.ty,
+                    parent,
+                })
+            }
+            _ => Err("source body/context has no actual function header"),
+        }
     }
     /// A function application's target: its function header, or under
     /// version thirteen a called tuple-variant or tuple-struct constructor.

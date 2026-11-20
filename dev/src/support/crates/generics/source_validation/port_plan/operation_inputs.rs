@@ -90,8 +90,11 @@ impl Builder<'_, '_, '_> {
     }
     fn entry_types(&mut self, original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.domains.headers.rows();
-        let header = self.domains.function(original.declaration, work)?;
-        let parameters = header.original.parameters.slice(&rows.roots)?;
+        let (parameters, result) = self
+            .domains
+            .original_header(original.declaration, work)?
+            .entry();
+        let parameters = parameters.slice(&rows.roots)?;
         for (index, local) in original.locals.iter().enumerate() {
             work.charge(1)?;
             let g::LocalKind::Parameter(formal) = local.kind else {
@@ -140,7 +143,7 @@ impl Builder<'_, '_, '_> {
                 owner: original.declaration,
                 site: 0,
             },
-            header.original.result,
+            result,
             original.result,
             work,
         )

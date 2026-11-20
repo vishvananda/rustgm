@@ -140,8 +140,9 @@ impl Stage {
         index: usize,
     ) -> Result<bool, &'static str> {
         let definition = DefId(u32::try_from(index).map_err(|_| "source scope identity overflow")?);
-        Ok(self.authored_required_constant(report, facts, definition)
-            && !self.range_required_constant(facts, definition))
+        Ok(self.provided_constant(facts, definition)
+            || self.authored_required_constant(report, facts, definition)
+                && !self.range_required_constant(facts, definition))
     }
 
     /// Version thirteen transports a nominal's lifetimes but not its declared

@@ -23,7 +23,7 @@ pub(super) fn validate(
                 .declarations
                 .get(parent)
                 .ok_or("source lexical declaration parent is unknown")?;
-            if !matches!(
+            let ordinary = matches!(
                 actual.definition.kind,
                 DefinitionKind::Module
                     | DefinitionKind::Struct
@@ -31,8 +31,11 @@ pub(super) fn validate(
                     | DefinitionKind::Trait
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
-            ) || row.ordinal != ordinals[parent]
-            {
+            );
+            let initializer_local = actual.definition.kind == DefinitionKind::Constant
+                && row.definition.kind == DefinitionKind::Local
+                && row.local.is_some();
+            if !(ordinary || initializer_local) || row.ordinal != ordinals[parent] {
                 return Err("source lexical child has a foreign kind, gap or duplicate ordinal");
             }
             ordinals[parent] = ordinals[parent]

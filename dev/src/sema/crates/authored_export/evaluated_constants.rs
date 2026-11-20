@@ -1,7 +1,6 @@
-//! Version thirteen: each named constant's header row carries its declared
-//! primitive type and its completed value. No initializer travels; every
-//! consumer re-proves the value's canonical bits for that type.
-use super::{Context, Declarations, DefId, DefKind, Report, Stage, s};
+//! Keep completed values and actual associated declaration originals in the
+//! same declaration-ordered header column.
+use super::{Context, DeclarationRef, Declarations, DefId, DefKind, Report, Stage, s};
 use crate::{
     resolve::package::Error,
     sema::{
@@ -162,6 +161,172 @@ impl Stage {
         })
     }
 
+    pub(super) fn provided_constant(&self, facts: &Declarations, definition: DefId) -> bool {
+        self.declaration_policies()
+            && facts
+                .associated
+                .owner(definition)
+                .and_then(|owner| facts.associated.get(owner))
+                .is_some_and(|owner| {
+                    owner.source.is_some()
+                        && matches!(
+                            owner.kind,
+                            OwnerKind::Trait { .. }
+                                | OwnerKind::Impl {
+                                    trait_type: Some(_),
+                                    ..
+                                }
+                        )
+                })
+            && facts
+                .initializer_index(definition)
+                .and_then(|index| facts.initializers.get(index))
+                .is_some_and(|initializer| {
+                    initializer.definition == definition
+                        && initializer.type_checked()
+                        && matches!(initializer.kind, InitializerKind::Const)
+                })
+    }
+
+    pub(super) fn provided_constants(
+        &mut self,
+        facts: &Declarations,
+    ) -> Result<Vec<DefId>, &'static str> {
+        let mut declarations = Vec::new();
+        if self.declaration_policies() {
+            for initializer in &facts.initializers {
+                self.charge(1)?;
+                if self.provided_constant(facts, initializer.definition) {
+                    self.reserve(4 * size_of::<DefId>())?;
+                    declarations.push(initializer.definition);
+                }
+            }
+            self.charge(
+                declarations
+                    .len()
+                    .saturating_mul(declarations.len().checked_ilog2().unwrap_or(0) as usize + 1),
+            )?;
+            declarations.sort_unstable_by_key(|definition| definition.0);
+        }
+        Ok(declarations)
+    }
+
+    pub(super) fn constant_lexical_owners(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owners: &mut [Option<DefId>],
+    ) -> Result<(), &'static str> {
+        for initializer in &facts.initializers {
+            self.charge(1)?;
+            if !self.provided_constant(facts, initializer.definition) {
+                continue;
+            }
+            let definition = &report.resolution.definitions[initializer.definition.0 as usize];
+            let module = report.resolution.scopes[definition.scope.0 as usize].module;
+            let scope = *report
+                .resolution
+                .node_scopes
+                .get(&(module, initializer.node.node))
+                .ok_or("source constant initializer has no actual lexical scope")?;
+            if owners[scope.0 as usize]
+                .replace(initializer.definition)
+                .is_some()
+            {
+                return Err("source constant initializer has a duplicate lexical owner");
+            }
+        }
+        Ok(())
+    }
+
+    fn constant_frame(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        declaration: DeclarationRef,
+    ) -> Result<Context, &'static str> {
+        let schema = facts
+            .associated
+            .schema(definition)
+            .ok_or("source associated constant lost its completed owner environment")?;
+        self.frame(
+            declaration,
+            None,
+            s::BinderKind::DeclarationHeader,
+            schema.captures,
+        )
+    }
+
+    pub(super) fn reserve_constant_original(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        let declaration = self.declaration(definition)?;
+        let context = self.constant_frame(facts, definition, declaration)?;
+        self.reserve_original(
+            definition,
+            context,
+            crate::support::crates::owner_catalog::BodyKind::Constant,
+        )?;
+        Ok(())
+    }
+
+    pub(crate) fn has_constant_original(
+        &mut self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        if !self.declaration_policies() {
+            return Ok(false);
+        }
+        self.charge(1)?;
+        Ok(self.functions.bodies.get(&definition).is_some_and(|body| {
+            self.rows.body_owners[body.0 as usize].kind
+                == crate::support::crates::owner_catalog::BodyKind::Constant
+        }))
+    }
+
+    fn associated_constant_header(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        declaration: DeclarationRef,
+        range: bool,
+        ty: TypeId,
+    ) -> Result<s::ConstantHeader, &'static str> {
+        let (context, body) = if range {
+            (
+                Context {
+                    owner: declaration,
+                    frame: None,
+                    body: None,
+                },
+                s::ConstantBody::Required,
+            )
+        } else if self.provided_constant(facts, definition) {
+            let context = self.original_context(definition)?;
+            let body = context
+                .body()
+                .ok_or("source constant lost its original body identity")?;
+            (
+                Context {
+                    body: None,
+                    ..context
+                },
+                s::ConstantBody::Original(body),
+            )
+        } else {
+            (
+                self.constant_frame(facts, definition, declaration)?,
+                s::ConstantBody::Required,
+            )
+        };
+        Ok(s::ConstantHeader {
+            ty: self.ty(facts, ty, context)?,
+            body,
+        })
+    }
+
     /// Version thirteen: value code 17 names the exported constant
     /// declaration a body reads. Its value travels once, in that
     /// declaration's header row.
@@ -262,31 +427,13 @@ impl Stage {
                 .flatten()
                 .ok_or("source constant export requires its completed value")?;
             let range = self.range_required_constant(facts, id);
-            if range || self.authored_required_constant(report, facts, id) {
-                let context = if range {
-                    Context {
-                        owner: declaration,
-                        frame: None,
-                        body: None,
-                    }
-                } else {
-                    let schema = facts
-                        .associated
-                        .schema(id)
-                        .ok_or("source required constant lost its completed trait environment")?;
-                    self.frame(
-                        declaration,
-                        None,
-                        s::BinderKind::DeclarationHeader,
-                        schema.captures,
-                    )?
-                };
-                let ty = self.ty(facts, ty, context)?;
+            if range
+                || self.authored_required_constant(report, facts, id)
+                || self.provided_constant(facts, id)
+            {
+                let header = self.associated_constant_header(facts, id, declaration, range, ty)?;
                 self.reserve(size_of::<s::ConstantHeader>())?;
-                self.cold()?.constants.push(s::ConstantHeader {
-                    ty,
-                    body: s::ConstantBody::Required,
-                });
+                self.cold()?.constants.push(header);
                 continue;
             }
             let codec = value_type(facts, ty, self.declaration_policies())?;

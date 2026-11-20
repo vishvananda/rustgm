@@ -55,12 +55,18 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
         identity: &crate::support::crates::CrateIdentity,
+        constants: &[DefId],
     ) -> Result<(), &'static str> {
         let mut count = 0usize;
+        let mut constants = constants.iter().copied().peekable();
         for index in 0..self.definitions.len() {
             self.charge(1)?;
             let definition =
                 DefId(u32::try_from(index).map_err(|_| "source function identity overflow")?);
+            if constants.peek() == Some(&definition) {
+                constants.next();
+                self.reserve_constant_original(facts, definition)?;
+            }
             let Some(&index) = facts.function_indices.get(&definition) else {
                 continue;
             };
@@ -136,6 +142,9 @@ impl Stage {
         }
         if count != facts.functions.len() {
             return Err("source function index omitted an actual declaration header");
+        }
+        if constants.next().is_some() {
+            return Err("source original index omitted an actual constant initializer");
         }
         Ok(())
     }

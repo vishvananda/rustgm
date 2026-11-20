@@ -572,6 +572,71 @@ fn required_constant_artifact(metadata: &Path) -> Result {
     Ok(())
 }
 
+#[test]
+fn cli_version_fourteen_publishes_constant_initializer_original() -> Result {
+    use rustgm::support::crates::{self, owner_catalog::BodyRef};
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-associated-constants/provided-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let metadata = folder.join("provider.rgm");
+    let lowir = folder.join("provider.lowir");
+    std::fs::write(
+        &provider,
+        availability_foundation(root)?
+            + r#"
+#[stable(feature="provided_value",since="1.0.0")]
+pub fn before() -> u8 { 4 }
+#[stable(feature="provided_value",since="1.0.0")]
+pub trait Value<T> {
+    #[stable(feature="provided_value",since="1.0.0")]
+    const DEFAULT: u8 = { let value = 8u8; value };
+}
+struct Defaulted;
+#[stable(feature="provided_value",since="1.0.0")]
+impl Value<u8> for Defaulted {}
+struct Overridden;
+#[stable(feature="provided_value",since="1.0.0")]
+impl Value<u8> for Overridden {
+    const DEFAULT: u8 = { let value = 9u8; value };
+}
+#[stable(feature="provided_value",since="1.0.0")]
+pub fn after() -> u8 { 12 }
+"#,
+    )?;
+    super::artifacts::checked(
+        "provided-constant-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    let packet = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&packet)?, bytes);
+    let bodies = packet
+        .source_descriptor()
+        .ok_or("provided source descriptor")?
+        .compiler_operations()?;
+    // The shared foundation also supplies the generic identity original.
+    assert_eq!(
+        bodies.ordinary_bodies().collect::<Vec<_>>(),
+        [BodyRef(0), BodyRef(1), BodyRef(2), BodyRef(3), BodyRef(4)]
+    );
+    assert_eq!(bodies.ordinary_input_count(), 5);
+    Ok(())
+}
+
 fn required_range_headers(metadata: &Path) -> Result {
     use rustgm::support::crates::{self, generics::source::Profile};
     let bytes = std::fs::read(metadata)?;

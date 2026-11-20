@@ -204,14 +204,7 @@ fn validate_with(
         work.charge(1)?;
         ordinary(&clause.requirement, roles.callables.callable(clause.owner))?;
     }
-    originals(
-        rows,
-        headers,
-        work,
-        features,
-        profile.callables(),
-        profile.conversions(),
-    )?;
+    originals(rows, headers, work, profile, binding, features)?;
     body_inputs(rows, work, profile.conversions(), binding.languages())
 }
 /// Version thirteen: an implementation member's public safety is its trait
@@ -649,14 +642,16 @@ fn originals(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
+    profile: NamespaceProfile,
+    binding: BindingProfile,
     features: bool,
-    callables: bool,
-    regional: bool,
 ) -> Result<(), &'static str> {
+    let regional = profile.conversions();
+    let constant_initializers = binding == BindingProfile::BodyOperations;
     for original in &rows.originals {
         work.charge(1)?;
-        let expected = if callables {
-            callable_traits::original_context(rows, headers, original, work)?
+        let expected = if profile.callables() {
+            callable_traits::original_context(rows, headers, original, work, constant_initializers)?
         } else {
             super::super::CallContext::Runtime
         };

@@ -5,7 +5,7 @@ mod assembly;
 mod calls;
 #[path = "body_ports/cfg_storage.rs"]
 mod storage;
-use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
+use super::{Context, DomainIndex, HeaderRef, OriginalHeader, Types, Work, g, s};
 
 impl DomainIndex<'_, '_> {
     pub(super) fn originals(
@@ -17,18 +17,24 @@ impl DomainIndex<'_, '_> {
         let rows = self.headers.rows();
         for original in &rows.originals {
             let input = &rows.body_inputs[self.headers.original_index(original.body)?];
-            let header = self.function(original.declaration, work)?;
+            let header = self.original_header(original.declaration, work)?;
             let context = Context {
                 owner: original.declaration,
                 frame: Some(input.frame),
                 body: Some(original.body),
             };
-            if input.frame != header.original.binder
-                || original.context != self.call_context(header, work)?
-            {
+            let (frame, call_context) = match header {
+                OriginalHeader::Function(function) => {
+                    (function.original.binder, self.call_context(function, work)?)
+                }
+                OriginalHeader::Constant { .. } => (
+                    self.binders.declaration(original.declaration, work)?,
+                    s::CallContext::ClosedConst,
+                ),
+            };
+            if input.frame != frame || original.context != call_context {
                 return Err("source original changed its exact defining frame or semantic context");
             }
-            let unsafe_ = header.callable.unsafe_;
             self.types
                 .root(self.headers, context, original.result, work)?;
             for local in &original.locals {
@@ -51,7 +57,7 @@ impl DomainIndex<'_, '_> {
             }
             self.calls(context, original, work, conversions)?;
             self.storage_ports(original, work)?;
-            self.assembly(context, original, unsafe_, work)?;
+            self.assembly(context, original, header.unsafe_function(), work)?;
             self.input_ports(context, original, input, work)?;
             if snapshots {
                 self.scratch(super::snapshots::allocation(original), work)?;

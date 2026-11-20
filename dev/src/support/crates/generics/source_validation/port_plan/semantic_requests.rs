@@ -135,7 +135,7 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
     ) -> Result<(), &'static str> {
         let rows = self.domains.headers.rows();
         let input = &rows.body_inputs[self.domains.headers.original_index(original.body)?];
-        let header = self.domains.function(original.declaration, work)?;
+        let header = self.domains.original_header(original.declaration, work)?;
         for (ordinal, &slot) in input.parameters.iter().enumerate() {
             work.charge(1)?;
             let sized = match rows.slots[slot.0 as usize].kind {
@@ -164,11 +164,11 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
                 work,
             )?;
         }
-        self.clauses(original.body, header.inputs, work)?;
-        if let Some(parent) = header.parent {
-            // The admitted header relation is a function's real trait/impl owner,
-            // never lexical function capture. Thus no empty ancestry walk or
-            // flattened inherited environment is needed for this source family.
+        if let super::super::OriginalHeader::Function(function) = header {
+            self.clauses(original.body, function.inputs, work)?;
+        }
+        if let Some(parent) = header.parent() {
+            // The admitted parent is the original's direct trait or impl owner.
             let range = match self.domains.headers.header(parent, work)? {
                 Some(super::super::HeaderRef::Trait(index)) => rows.traits[index as usize].inputs,
                 Some(super::super::HeaderRef::Implementation(index)) => {

@@ -273,6 +273,15 @@ fn guards(stage: &mut Stage, body: &Body, raw: &mut s::Original) -> Result<(), &
     Ok(())
 }
 fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'static str> {
+    if matches!(
+        body.owner,
+        Owner::Initializer {
+            kind: super::InitializerKind::Const,
+            ..
+        }
+    ) {
+        return Ok(s::CallContext::ClosedConst);
+    }
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source call context has no function owner");
     };
@@ -294,10 +303,15 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
 fn validate(stage: &mut Stage, facts: &Declarations, body: &Body) -> Result<(), &'static str> {
     let scalar_values = stage.feature_predicates();
     let guards = stage.body_nodes();
-    let Owner::Function { definition, .. } = body.owner else {
-        return Err("source CFG has no actual function owner");
+    let const_context = match body.owner {
+        Owner::Function { definition, .. } => facts.is_const_function(definition),
+        Owner::Initializer {
+            kind: super::InitializerKind::Const,
+            ..
+        } if stage.declaration_policies() => true,
+        _ => return Err("source CFG has no actual function or constant owner"),
     };
-    if body.const_context != facts.is_const_function(definition) {
+    if body.const_context != const_context {
         return Err("source original changed its actual executable const context");
     }
     if !guards && (!body.guards.is_empty() || !body.guard_places.is_empty()) {

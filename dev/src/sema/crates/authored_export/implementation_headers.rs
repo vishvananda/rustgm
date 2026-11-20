@@ -25,7 +25,9 @@ impl Stage {
             if owner.self_definition != actual.owner || Some(owner.source) != actual.source {
                 return Err("source implementation changed its defining Self or source owner");
             }
-            if !actual.types.is_empty() && !self.body_nodes() || !actual.constants.is_empty() {
+            if !actual.types.is_empty() && !self.body_nodes()
+                || !actual.constants.is_empty() && !self.declaration_policies()
+            {
                 return Err(
                     "source associated type/value implementation transport is not implemented",
                 );
@@ -262,6 +264,7 @@ impl Stage {
         let region_bounds = self.region_bounds(&schema.bounds, context)?;
         let members = self.implementation_members(&actual.methods, trait_application)?;
         self.implementation_results(facts, &actual.types, context, members)?;
+        self.implementation_constants(&actual.constants)?;
         let members = g::Range {
             start: members.start,
             end: u32::try_from(self.rows.member_links.len())
@@ -359,19 +362,45 @@ impl Stage {
                     return Err("selected source method belongs to multiple actual impls");
                 }
             }
-            let trait_member = Some(self.address(member)?);
-            let implementation = implementation
-                .map(|definition| self.declaration(definition))
-                .transpose()?;
-            self.rows.member_links.push(s::MemberLink {
-                trait_member,
-                implementation,
-            });
+            self.implementation_member_link(member, implementation)?;
         }
         Ok(g::Range {
             start,
             end: u32::try_from(self.rows.member_links.len())
                 .map_err(|_| "source impl member table overflow")?,
         })
+    }
+    fn implementation_constants(
+        &mut self,
+        constants: &[(DefId, Option<DefId>)],
+    ) -> Result<(), &'static str> {
+        if constants.is_empty() {
+            return Ok(());
+        }
+        self.reserve(
+            constants
+                .len()
+                .saturating_mul(4 * size_of::<s::MemberLink>()),
+        )?;
+        for &(member, implementation) in constants {
+            self.charge(1)?;
+            self.implementation_member_link(member, implementation)?;
+        }
+        Ok(())
+    }
+    fn implementation_member_link(
+        &mut self,
+        member: DefId,
+        implementation: Option<DefId>,
+    ) -> Result<(), &'static str> {
+        let trait_member = Some(self.address(member)?);
+        let implementation = implementation
+            .map(|definition| self.declaration(definition))
+            .transpose()?;
+        self.rows.member_links.push(s::MemberLink {
+            trait_member,
+            implementation,
+        });
+        Ok(())
     }
 }

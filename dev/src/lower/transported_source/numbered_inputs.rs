@@ -1,5 +1,5 @@
 //! Preserve actual allocation order and actual alias membership independently.
-use super::{Body, Context, Contract, Declarations, DefId, RegionId, Stage, s};
+use super::{Body, Context, Contract, Declarations, DefId, Owner, RegionId, Stage, s};
 use crate::sema::model::BodyRegionOrigin;
 use crate::support::crates::owner_catalog::BodyRef;
 
@@ -36,12 +36,17 @@ pub(super) fn emit(
     if count != variables {
         return Err("source numbering omits actual allocations from the original contract");
     }
-    let header = facts
-        .function_header(definition)?
-        .ok_or("source numbering lost its actual callable header")?;
-    let aliases = header
-        .environment
-        .and_then(|environment| environment.body_aliases());
+    let environment = match body.owner {
+        Owner::Function { .. } => {
+            facts
+                .function_header(definition)?
+                .ok_or("source numbering lost its actual callable header")?
+                .environment
+        }
+        Owner::Initializer { .. } => facts.generics.body_environment(definition),
+        _ => return Err("source numbering lost its actual declaration body"),
+    };
+    let aliases = environment.and_then(|row| row.body_aliases());
     let alias_count = aliases.map_or(0, |aliases| aliases.len());
     stage.charge(count.saturating_add(alias_count))?;
     stage.reserve(

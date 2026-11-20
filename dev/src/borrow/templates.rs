@@ -249,7 +249,7 @@ impl Checked<'_> {
             .get(&item)
             .map(|&index| &self.state.contracts[index])
     }
-    /// Borrow the exact function, contract and full region result sealed together.
+    /// Borrow the exact declaration template, contract and region result sealed together.
     pub(crate) fn function_proof(
         &self,
         item: ItemId,
@@ -260,6 +260,17 @@ impl Checked<'_> {
             &self.state.contracts[index],
             &self.state.regions.bodies[index],
         ))
+    }
+    pub(crate) fn initializer_proof(
+        &self,
+        item: ItemId,
+    ) -> Option<(&Template, &Contract, &regions::Body)> {
+        let proof = self.function_proof(item)?;
+        matches!(
+            proof.0.body.owner,
+            Owner::Initializer { definition, .. } if definition.0 == item.0
+        )
+        .then_some(proof)
     }
     /// Borrow this checked batch's existing owner index. The walk includes
     /// other anonymous originals; its length is the actual accounting bound.

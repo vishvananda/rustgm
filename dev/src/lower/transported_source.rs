@@ -395,7 +395,41 @@ impl Source {
             }
             source.collect_body(facts, &template.body, input)?;
         }
+        source.collect_constant_originals(facts, checked)?;
         Ok(source)
+    }
+
+    fn collect_constant_originals(
+        &mut self,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+    ) -> Result<(), &'static str> {
+        if !self.stage.declaration_policies() {
+            return Ok(());
+        }
+        for index in 0..facts.initializers.len() {
+            let initializer = facts.initializers[index];
+            if !self.stage.has_constant_original(initializer.definition)? {
+                continue;
+            }
+            let (template, input, proof) = checked
+                .initializer_proof(ItemId(initializer.definition.0))
+                .ok_or("source constant initializer has no actual original proof")?;
+            if proof.key != input.key
+                || proof.source != input.source
+                || proof.instance.is_some()
+                || facts
+                    .generics
+                    .body_environment(initializer.definition)
+                    .is_some_and(|environment| {
+                        !std::sync::Arc::ptr_eq(environment, &template.environment)
+                    })
+            {
+                return Err("source constant template has a foreign proof or defining environment");
+            }
+            self.collect_body(facts, &template.body, input)?;
+        }
+        Ok(())
     }
 
     pub(super) fn collect(
@@ -456,7 +490,10 @@ impl Source {
         // These checked initializer bodies travel as values in their data rows.
         if let Owner::Initializer { definition, kind } = body.owner
             && match kind {
-                InitializerKind::Const => self.stage.evaluated_initializer(facts, definition)?,
+                InitializerKind::Const => {
+                    !self.stage.has_constant_original(definition)?
+                        && self.stage.evaluated_initializer(facts, definition)?
+                }
                 InitializerKind::Static { mutable: false } => {
                     self.stage.evaluated_static(definition)?
                 }
@@ -465,32 +502,21 @@ impl Source {
         {
             return Ok(());
         }
-        let Owner::Function {
-            definition,
-            signature,
-            execution: None,
-        } = body.owner
-        else {
-            return Err(
-                "source transport currently requires an original function owner without a relocated execution view",
-            );
-        };
+        let (definition, signature) = Self::body_owner(facts, body)?;
         // Version thirteen: a variant constructor is compiler-synthesized, not
         // an authored original; every consumer synthesizes its own from the
         // re-authenticated enum or struct header.
-        if self.stage.body_nodes() && self.synthesized_variant(facts, definition)? {
+        if signature.is_some()
+            && self.stage.body_nodes()
+            && self.synthesized_variant(facts, definition)?
+        {
             return Ok(());
         }
         let context = self.stage.original_context(definition)?;
-        let header = facts
-            .function_header(definition)?
-            .ok_or("source original declaration header is absent")?;
         if body.instance.is_some()
             || body.key() != input.key
             || body.source != input.source
-            || header.body != Some(body.source)
-            || header.signature != signature
-            || input.signature != Some(signature)
+            || input.signature != signature
             || input.universals != self.stage.universals(context)?
             || input.output.is_some()
             || input.require_result_formation
@@ -538,6 +564,49 @@ impl Source {
             }
         }
         Ok(())
+    }
+
+    fn body_owner(
+        facts: &Declarations,
+        body: &Body,
+    ) -> Result<(DefId, Option<crate::types::TypeId>), &'static str> {
+        match body.owner {
+            Owner::Function {
+                definition,
+                signature,
+                execution: None,
+            } => {
+                let header = facts
+                    .function_header(definition)?
+                    .ok_or("source original declaration header is absent")?;
+                if header.body != Some(body.source) || header.signature != signature {
+                    return Err(
+                        "source original changed its exact body, signature or paired input",
+                    );
+                }
+                Ok((definition, Some(signature)))
+            }
+            Owner::Initializer {
+                definition,
+                kind: InitializerKind::Const,
+            } => {
+                let actual = facts
+                    .initializer_index(definition)
+                    .and_then(|index| facts.initializers.get(index))
+                    .ok_or("source constant original lost its actual initializer")?;
+                if actual.definition != definition
+                    || !actual.type_checked()
+                    || body.source.source() != Some(actual.semantic_source())
+                    || actual.ty != body.result
+                {
+                    return Err(
+                        "source constant original changed its actual body or declared result",
+                    );
+                }
+                Ok((definition, None))
+            }
+            _ => Err("source transport requires an actual function or constant original"),
+        }
     }
 
     fn finish_rows(

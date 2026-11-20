@@ -94,8 +94,8 @@ impl DomainIndex<'_, '_> {
         environment: s::EnvironmentOrigin,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let header = self.function(context.owner, work)?;
-        let default = if let Some(parent) = header.parent {
+        let header = self.original_header(context.owner, work)?;
+        let default = if let Some(parent) = header.parent() {
             match self.headers.header(parent, work)? {
                 Some(HeaderRef::Trait(index))
                     if self.headers.rows().traits[index as usize].flags.bits()

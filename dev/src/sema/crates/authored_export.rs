@@ -532,12 +532,16 @@ impl Stage {
         if stage.compiler_operations || stage.body_nodes() {
             stage.associated_headers(report, facts)?;
         }
-        if stage.body_nodes() {
+        let provided_constants = stage.provided_constants(facts)?;
+        if stage.body_nodes() && provided_constants.is_empty() {
             stage.constant_headers(report, facts)?;
         }
         stage.alias_headers(facts, leaves.aliases)?;
         stage.static_headers(facts, identity, leaves.statics)?;
-        stage.functions(report, facts, identity)?;
+        stage.functions(report, facts, identity, &provided_constants)?;
+        if !provided_constants.is_empty() {
+            stage.constant_headers(report, facts)?;
+        }
         stage.implementations(report, facts)?;
         stage.diagnostic_roles(report)?;
         stage.install_private_symbols(facts, identity)?;
@@ -689,6 +693,7 @@ impl Stage {
                     } else if facts.associated.owner(id).is_some()
                         && !self.range_required_constant(facts, id)
                         && !self.authored_required_constant(report, facts, id)
+                        && !self.provided_constant(facts, id)
                         && self.inherent_constant(report, facts, id).is_none()
                     {
                         Err("source associated constants require their wider profile")
@@ -1063,6 +1068,7 @@ fn scope_owners(
         owners[scope.0 as usize] = Some(function.definition);
     }
     if stage.declaration_policies() {
+        stage.constant_lexical_owners(report, facts, &mut owners)?;
         stage.require_contextual_bindings(report, facts, &mut owners)?;
         authored_traits::require_role_transport(report, facts, true, true, true)?;
     }

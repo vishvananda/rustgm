@@ -192,23 +192,35 @@ fn empty_auto(
     Ok(())
 }
 
-/// Exact defining mode is checked against its canonical function declaration.
+/// Exact defining mode comes from the original's actual declaration header.
 pub(super) fn original_context(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     body: &s::Original,
     work: &mut Work,
+    constant_initializers: bool,
 ) -> Result<s::CallContext, &'static str> {
-    let Some(s::HeaderRef::Function(index)) = headers.header(body.declaration, work)? else {
-        return Err("source original has no actual callable header");
+    let context = match headers.header(body.declaration, work)? {
+        Some(s::HeaderRef::Function(index)) => {
+            if rows.functions[index as usize].constness == Constness::Const {
+                s::CallContext::ConstDefinition
+            } else {
+                s::CallContext::Runtime
+            }
+        }
+        Some(s::HeaderRef::Constant(index))
+            if constant_initializers
+                && rows.constants()[index as usize].body
+                    == s::ConstantBody::Original(body.body) =>
+        {
+            s::CallContext::ClosedConst
+        }
+        _ => return Err("source original has no actual callable header"),
     };
-    let header = rows.functions[index as usize];
-    if header.constness == Constness::Const {
+    if context != s::CallContext::Runtime {
         constant_calls(rows, headers, body, work)?;
-        Ok(s::CallContext::ConstDefinition)
-    } else {
-        Ok(s::CallContext::Runtime)
     }
+    Ok(context)
 }
 
 /// Declared constness is data, never permission to call an ordinary target.

@@ -163,6 +163,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let context = match read.reader.u8()? {
         0 => s::CallContext::Runtime,
         1 if read.profile.unconditional_callables() => s::CallContext::ConstDefinition,
+        2 if read.profile.declaration_policies() => s::CallContext::ClosedConst,
         tag => {
             read.require_provided("source defining context requires a wider source profile")?;
             match tag {
