@@ -942,6 +942,22 @@ diagnostic. Pinned rustc links a distinct consumer and returns
 using the default, and a consumer override. The control is under
 `obj/parallel/strict-core/static-arrays-observe/lemire-default-control-v3/`.
 
+`76751780c` carries primitive division in v14 original bodies. A fresh
+client evaluates an imported floating quotient to `22` at compile time.
+The native controls agree with pinned Rust on floating and signed
+division results and on aborts for zero and signed overflow. The
+existing v13 wire rejection controls pass. The focused qualification
+is under `obj/qualification/fast/1795155629594143261/`, and the native
+evidence is under `obj/parallel/v14-division/` in the frontier checkout.
+
+The reduced Lemire initializer builds as its own typed constant
+template with one block, one local and nine values. The body uses a
+free constant, subtraction, a selected supertrait constant request,
+two casts and division. The trait transport still needs to carry the
+initializer's real declaration and its open associated-value request
+so each consumer can select its own implementation. The template view
+is under `obj/parallel/strict-core/static-arrays-observe/lemire-ir/inspect-v2/`.
+
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
 deprecated macro and accepts a call through an annotated `use` alias of a
