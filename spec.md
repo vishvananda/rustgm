@@ -7177,6 +7177,17 @@ site and closed-const effect. A tuple constructor uses its own nominal
 payload and ordinary safe constructor checks. Closed scalar inherent
 members keep their evaluated-value headers.
 
+Version fourteen carries a public module type alias with one named type
+formal and no default or written bounds. Its lexical scope owns the
+formal, and its target recipe must use that formal without capturing
+another declaration or binder. A provider may retain a deferred
+projection that is exactly the target recipe. The consumer rebuilds
+that obligation and substitutes the actual arguments when the alias is
+demanded. An unused alias can retain an unresolved projection. Associated
+type declarations and implementation results supply their own recipe
+roots for imported declaration cells. Closed module aliases keep their
+unscoped target rows.
+
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
 parented by the enum and published once: a unit or tuple variant as its

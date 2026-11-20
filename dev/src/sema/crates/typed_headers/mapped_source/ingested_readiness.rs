@@ -239,13 +239,27 @@ impl Graph {
         let target = self
             .ty(alias.target)
             .map_err(|_| "source alias target is unmapped")?;
+        let scoped = facts.types.contains_parameters(target) == Some(true);
         if alias.declaration != row
             || cell != Some(target)
             || facts.associated.owner(definition).is_some()
-            || facts.generics.parameters.contains_key(&definition)
+            || facts.generics.parameters.contains_key(&definition) != scoped
             || facts.lifetimes.parameters.contains_key(&definition)
         {
-            return Err("source alias readiness changed its closed target or owner");
+            return Err("source alias readiness changed its target or owner");
+        }
+        if scoped {
+            Self::scope_ready(facts, definition)?;
+            let projected = facts
+                .types
+                .contains_projections(target)
+                .ok_or("source alias target has no installed projection summary")?;
+            if !facts
+                .alias_requirements
+                .source_target(definition, target, projected)
+            {
+                return Err("source alias readiness changed its deferred projection proof");
+            }
         }
         Ok(())
     }

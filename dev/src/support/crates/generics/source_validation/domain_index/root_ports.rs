@@ -5,7 +5,14 @@ impl DomainIndex<'_, '_> {
     fn definition_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for alias in rows.type_aliases() {
-            if !self.types.closed_root(alias.target, work)? {
+            if self
+                .headers
+                .scopes()
+                .scope_row(alias.declaration, work)?
+                .is_some()
+            {
+                self.types.alias_root(self.headers, *alias, work)?;
+            } else if !self.types.closed_root(alias.target, work)? {
                 return Err("source alias target requires a foreign parameter, frame or body");
             }
         }

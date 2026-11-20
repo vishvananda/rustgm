@@ -32,6 +32,7 @@ pub(super) use template_ports::register as register_callable;
 pub(super) struct Stage {
     graph: std::rc::Rc<mapped_source::Graph>,
     scopes: Vec<Scope>,
+    aliases: crate::sema::alias_requirements::Requirements,
 }
 struct Scope {
     definition: DefId,
@@ -44,6 +45,7 @@ struct Scope {
 }
 enum Inputs {
     SelfType,
+    Alias(Option<crate::types::TypeId>),
     Nominal(Arc<[Input]>),
     Associated {
         inputs: Arc<[Input]>,
@@ -60,7 +62,7 @@ enum Inputs {
 impl Inputs {
     fn all(&self) -> &[Input] {
         match self {
-            Self::SelfType | Self::Definition => &[],
+            Self::SelfType | Self::Definition | Self::Alias(_) => &[],
             Self::Trait(prepared) => prepared.all(),
             Self::Associated { inputs, .. }
             | Self::Function(inputs)
@@ -111,6 +113,7 @@ impl Stage {
             budget,
         )?;
         let mut scopes = Vec::with_capacity(rows.scopes.len());
+        let mut aliases = crate::sema::alias_requirements::Requirements::default();
         let mut walk = Walk {
             context,
             graph: &graph,
@@ -120,7 +123,16 @@ impl Stage {
             clauses: Vec::with_capacity(rows.clauses.len()),
         };
         for raw in &rows.scopes {
-            scopes.push(walk.enter(facts, raw, budget)?);
+            let scope = walk.enter(facts, raw, budget)?;
+            if let Inputs::Alias(Some(target)) = scope.inputs {
+                let allocation = aliases.source_projection_allocation();
+                budget.charge(allocation.visits)?;
+                budget.reserve(allocation.bytes)?;
+                aliases
+                    .source_projection(scope.definition, target)
+                    .map_err(error)?;
+            }
+            scopes.push(scope);
         }
         budget.charge(1)?;
         let Walk { remap, .. } = walk;
@@ -135,6 +147,7 @@ impl Stage {
         Ok(Self {
             graph: std::rc::Rc::new(graph),
             scopes,
+            aliases,
         })
     }
 }
@@ -172,6 +185,7 @@ fn finish_inputs(
                 (&mut implementations[index as usize], inputs)
             }
             (None, Inputs::SelfType)
+            | (Some(s::HeaderRef::TypeAlias(_)), Inputs::Alias(_))
             | (Some(s::HeaderRef::Function(_)), Inputs::Function(_))
             | (
                 Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Constant(_)),
@@ -284,6 +298,14 @@ impl Walk<'_, '_> {
                 ) && raw.parent == rows.declarations[raw.owner.0 as usize].definition.parent =>
             {
                 Ok(Inputs::Definition)
+            }
+            Some(s::HeaderRef::TypeAlias(index)) if raw.parent.is_none() => {
+                let target = self.graph.ty(rows.type_aliases()[index as usize].target)?;
+                let projected = facts
+                    .types
+                    .contains_projections(target)
+                    .ok_or_else(|| error("source alias target has no actual projection summary"))?;
+                Ok(Inputs::Alias(projected.then_some(target)))
             }
             None if raw.parent.is_none() => Self::self_type_inputs(rows, raw.owner),
             _ => Err(error(

@@ -25,7 +25,7 @@ pub enum DefinitionKind {
     ValueParameter,
     Local,
     AssociatedType,
-    /// A public, closed v14 module type alias with no binder scope.
+    /// A public v14 module type alias with a transparent target recipe.
     TypeAlias,
     /// Version fourteen: a module-owned static allocation.
     Static,
@@ -162,6 +162,12 @@ impl<'a> ScopeIndex<'a> {
                 work.charge(1)?;
                 if slot.owner != scope.owner || slot.ordinal as usize != ordinal {
                     return Err("source parameter slot has a foreign owner, duplicate or gap");
+                }
+                if definition.kind == DefinitionKind::TypeAlias
+                    && (!matches!(slot.kind, ParameterKind::Type { .. })
+                        || slot.definition.is_none())
+                {
+                    return Err("source alias requires its actual named type formal");
                 }
                 own.check(slot, &rows.types)?;
                 validate_binding(slot, definitions, &mut bindings, work)?;
@@ -387,6 +393,9 @@ fn valid_owner(kind: DefinitionKind, scope: &ParameterScope) -> bool {
         | DefinitionKind::Enum
         | DefinitionKind::AssociatedType => true,
         DefinitionKind::Constant => scope.declared.start == scope.declared.end,
+        DefinitionKind::TypeAlias => {
+            scope.declared.end.checked_sub(scope.declared.start) == Some(1)
+        }
         _ => false,
     }
 }
@@ -398,9 +407,10 @@ fn valid_parent(
     definitions: &[Definition],
 ) -> bool {
     match definition.kind {
-        DefinitionKind::SelfType | DefinitionKind::Struct | DefinitionKind::Enum => {
-            parent.is_none()
-        }
+        DefinitionKind::SelfType
+        | DefinitionKind::Struct
+        | DefinitionKind::Enum
+        | DefinitionKind::TypeAlias => parent.is_none(),
         DefinitionKind::Trait => parent
             .and_then(|parent| definitions.get(parent.0 as usize))
             .is_some_and(|parent| {
@@ -443,7 +453,6 @@ fn valid_parent(
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
         | DefinitionKind::ConstParameter
-        | DefinitionKind::TypeAlias
         | DefinitionKind::Static
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,

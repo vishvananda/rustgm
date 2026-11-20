@@ -68,6 +68,7 @@ fn owners_mode(
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::Function
                         | s::DefinitionKind::AssociatedType
+                        | s::DefinitionKind::TypeAlias
                 ) {
                 let scope = resolver.new_scope(Some(parent), ModuleId(0), true)?;
                 resolver.facts.scopes[scope.0 as usize].associated = matches!(

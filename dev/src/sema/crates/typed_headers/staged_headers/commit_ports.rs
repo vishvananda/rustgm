@@ -114,6 +114,9 @@ impl Stage {
             plan.install(catalog);
         }
         facts.lifetimes.callables = callables;
+        if !self.aliases.is_empty() {
+            facts.alias_requirements = std::mem::take(&mut self.aliases);
+        }
         self.publish(facts, budget, functions, contracts, self_bounds, before);
         Ok(())
     }
@@ -172,6 +175,7 @@ impl Stage {
             || !budget.entries.is_empty()
             || facts.generics.traits.is_some()
             || !facts.lifetimes.callables.is_empty()
+            || !self.aliases.is_empty() && !facts.alias_requirements.is_empty()
         {
             return Err(error(
                 "source canonical installation cannot replace a partial or existing header inventory",

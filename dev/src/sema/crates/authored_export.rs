@@ -644,7 +644,11 @@ impl Stage {
             ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
         ) && definition.kind == DefKind::TypeAlias
         {
-            self.closed_alias(report, facts, id)?;
+            if self.declaration_policies() && scoped_module_alias(facts, definition, id) {
+                self.scoped_alias(report, facts, id)?;
+            } else {
+                self.closed_alias(report, facts, id)?;
+            }
             return Ok(
                 (definition.access == Access::Public).then_some(s::DefinitionKind::TypeAlias)
             );
@@ -861,6 +865,66 @@ impl Stage {
         Ok(())
     }
 
+    fn scoped_alias(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        id: DefId,
+    ) -> Result<(), &'static str> {
+        use crate::{
+            syntax::{ast::Kind as Syntax, item::ItemKind},
+            types::arguments::Argument,
+        };
+        self.charge(10)?;
+        let error = "source alias formals or deferred proofs require their wider profile";
+        let declaration = &report.resolution.definitions[id.0 as usize];
+        let source = declaration.node.ok_or(error)?;
+        let ast = &report.package.unit(source.file).configured.ast;
+        let Syntax::Item(index) = ast.node(source.node).kind else {
+            return Err(error);
+        };
+        let item = &ast.items[index as usize];
+        let [formal] = ast.list(item.generics) else {
+            return Err(error);
+        };
+        let Syntax::Generic(index) = ast.node(*formal).kind else {
+            return Err(error);
+        };
+        let formal = &ast.generics[index as usize];
+        let [parameter] = facts.generics.parameters[&id].as_slice() else {
+            return Err(error);
+        };
+        if !matches!(parameter.argument, Argument::Type(_))
+            || declaration.namespace != Namespace::Type
+            || facts.generics.parents.contains_key(&id)
+            || formal.default.is_some()
+            || !ast.list(formal.bounds).is_empty()
+            || !ast.list(item.where_clause).is_empty()
+            || !matches!(item.kind, ItemKind::TypeAlias { bounds, ty: Some(_) } if ast.list(bounds).is_empty())
+        {
+            return Err(error);
+        }
+        let target = facts.definitions[id.0 as usize].ok_or(error)?;
+        if facts.node(source).and_then(|node| node.ty) != Some(target)
+            || facts.types.needs_region_context(target) != Some(false)
+            || facts.types.contains_parameters(target) != Some(true)
+            || facts
+                .unreduced
+                .definition(id)
+                .is_some_and(|original| original != target)
+        {
+            return Err(error);
+        }
+        let projected = facts.types.contains_projections(target).ok_or(error)?;
+        if !facts
+            .alias_requirements
+            .source_target(id, target, projected)
+        {
+            return Err(error);
+        }
+        Ok(())
+    }
+
     /// A closed transparent alias retains its completed canonical type. Only
     /// v14 also gives its public module name an independent declaration row.
     fn closed_alias(
@@ -999,6 +1063,21 @@ fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>
     }))
 }
 
+fn scoped_module_alias(
+    facts: &Declarations,
+    definition: &crate::resolve::model::Definition,
+    id: DefId,
+) -> bool {
+    definition.kind == DefKind::TypeAlias
+        && definition.access == Access::Public
+        && facts.associated.owner(id).is_none()
+        && facts
+            .generics
+            .parameters
+            .get(&id)
+            .is_some_and(|parameters| !parameters.is_empty())
+}
+
 fn scope_owners(
     report: &Report,
     facts: &Declarations,
@@ -1025,6 +1104,21 @@ fn scope_owners(
     owners[scope.0 as usize] = Some(root);
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
         stage.charge(1)?;
+        if stage.declaration_policies() && definition.kind == DefKind::TypeAlias {
+            let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
+            if scoped_module_alias(facts, definition, alias) {
+                let source = definition
+                    .node
+                    .ok_or("source alias has no actual source owner")?;
+                let module = report.resolution.scopes[definition.scope.0 as usize].module;
+                let scope = *report
+                    .resolution
+                    .node_scopes
+                    .get(&(module, source.node))
+                    .ok_or("source alias has no actual lexical scope")?;
+                owners[scope.0 as usize] = Some(alias);
+            }
+        }
         if let Some(scope) = definition.members
             && definition.kind != DefKind::ExternCrate
         {

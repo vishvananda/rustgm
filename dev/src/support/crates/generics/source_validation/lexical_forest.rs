@@ -35,7 +35,9 @@ pub(super) fn validate(
             let initializer_local = actual.definition.kind == DefinitionKind::Constant
                 && row.definition.kind == DefinitionKind::Local
                 && row.local.is_some();
-            if !(ordinary || initializer_local) || row.ordinal != ordinals[parent] {
+            let alias_formal = actual.definition.kind == DefinitionKind::TypeAlias
+                && row.definition.kind == DefinitionKind::TypeParameter;
+            if !(ordinary || initializer_local || alias_formal) || row.ordinal != ordinals[parent] {
                 return Err("source lexical child has a foreign kind, gap or duplicate ordinal");
             }
             ordinals[parent] = ordinals[parent]

@@ -54,6 +54,28 @@ impl Types {
             work,
         )
     }
+    pub(in super::super) fn alias_root(
+        &self,
+        headers: &HeaderIndex<'_>,
+        alias: s::TypeAliasHeader,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let summary = self.summary(alias.target, work)?;
+        if summary.parameter.is_none() {
+            return Err("source alias recipe does not use its declared type formal");
+        }
+        Self::check(
+            headers,
+            Context {
+                owner: alias.declaration,
+                frame: None,
+                body: None,
+            },
+            summary,
+            work,
+        )
+    }
+
     pub(in super::super) fn closed_root(
         &self,
         ty: g::TypeRef,

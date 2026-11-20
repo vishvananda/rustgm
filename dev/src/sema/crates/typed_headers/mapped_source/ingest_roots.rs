@@ -66,6 +66,14 @@ pub(super) fn prepare(
             s::Requirement::Outlives(_) | s::Requirement::UnstableFeature(_) => {}
         }
     }
+    // Both sets supply independent declaration cells. Their recipes can occur
+    // only in these headers, with no function signature or clause using them.
+    for header in &rows.associated_types {
+        demand(header.projection)?;
+    }
+    for definition in rows.associated_definitions() {
+        demand(definition.value)?;
+    }
     Ok(())
 }
 fn application(

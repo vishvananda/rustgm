@@ -37,7 +37,16 @@ impl Stage {
                         | s::DefinitionKind::Enum
                         | s::DefinitionKind::AssociatedType
                 ) || kind == s::DefinitionKind::Constant
-                    && self.scoped_constant(report, facts, index)?;
+                    && self.scoped_constant(report, facts, index)?
+                    || kind == s::DefinitionKind::TypeAlias
+                        && facts
+                            .generics
+                            .parameters
+                            .get(&DefId(
+                                u32::try_from(index)
+                                    .map_err(|_| "source alias identity overflow")?,
+                            ))
+                            .is_some_and(|parameters| !parameters.is_empty());
             }
         }
         let mut children = vec![Vec::new(); count];

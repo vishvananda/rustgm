@@ -1455,3 +1455,90 @@ pub use nested::Reexported;
     assert!(!legacy.exists());
     Ok(())
 }
+
+#[test]
+fn cli_version_fourteen_reproves_generic_alias_projections_at_use() -> Result {
+    use rustgm::support::crates;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-generic-aliases/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    std::fs::write(
+        &provider,
+        macro_role_foundation(root)?
+            + r"
+pub type Identity<T> = T;
+pub struct Wrapped<T>(pub T);
+pub type WrappedValue<T> = Wrapped<T>;
+pub trait NotAllOnesHelper { type Type; }
+pub type NotAllOnes<T> = <T as NotAllOnesHelper>::Type;
+impl NotAllOnesHelper for u32 { type Type = u16; }
+",
+    )?;
+    super::artifacts::checked(
+        "generic-alias-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, source, expected) in [
+        (
+            "concrete",
+            "pub fn value() -> base::Identity<base::NotAllOnes<u32>> { 37 }",
+            None,
+        ),
+        (
+            "nominal",
+            "fn wrapped(value: &base::WrappedValue<u32>) -> &base::Wrapped<u32> { value }",
+            None,
+        ),
+        ("unused", "type Unused = base::NotAllOnes<bool>;", None),
+        (
+            "demanded",
+            "pub fn demand(_: base::NotAllOnes<bool>) {}",
+            Some("associated type"),
+        ),
+        (
+            "missing-argument",
+            "pub fn demand(_: base::Identity) {}",
+            Some("argument"),
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\n{source}\n"),
+        )?;
+        let target = folder.join(format!("{name}.lowir"));
+        let output = source_client(&client, &metadata, &target)
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        if let Some(diagnostic) = expected {
+            assert_eq!(output.status.code(), Some(1), "{name}: {stderr}");
+            assert!(stderr.contains(diagnostic), "{name}: {stderr}");
+        } else {
+            assert!(output.status.success(), "{name}: {stderr}");
+            if name == "concrete" {
+                let written = std::fs::read_to_string(target)?;
+                assert!(written.contains("return u16 37"), "{written}");
+            }
+        }
+    }
+    Ok(())
+}

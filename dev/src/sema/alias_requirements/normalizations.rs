@@ -43,6 +43,56 @@ impl Expansion {
     }
 }
 impl Requirements {
+    /// A source alias can reconstruct a single deferred root from its type
+    /// recipe when the completed contract has no other proof work.
+    pub(crate) fn source_target(&self, owner: DefId, target: TypeId, projected: bool) -> bool {
+        let contract = self
+            .data
+            .as_ref()
+            .and_then(|data| data.contracts.get(&owner));
+        match (projected, contract) {
+            (false, None) => true,
+            (true, Some(contract)) => {
+                contract.parameters == owner
+                    && contract.sealed
+                    && contract.direct.is_empty()
+                    && contract.dependencies.is_empty()
+                    && contract.sized.is_empty()
+                    && contract.scopes.is_none()
+                    && contract.normalizations == [(ScopeId::ROOT, target)]
+            }
+            _ => false,
+        }
+    }
+
+    pub(crate) const fn is_empty(&self) -> bool {
+        self.data.is_none()
+    }
+
+    pub(crate) fn source_projection_allocation(&self) -> crate::support::retained::Allocation {
+        use crate::support::retained::{Allocation, Growth};
+        let (len, capacity) = self.data.as_ref().map_or((0, 0), |data| {
+            (data.contracts.len(), data.contracts.capacity())
+        });
+        let growth = Growth::map::<DefId, Contract>(len, capacity, 1);
+        Allocation {
+            bytes: growth
+                .bytes
+                .saturating_add(usize::from(self.is_empty()) * size_of::<super::Data>())
+                .saturating_add(4 * size_of::<(ScopeId, TypeId)>()),
+            visits: growth.work.saturating_add(1),
+        }
+    }
+
+    pub(crate) fn source_projection(
+        &mut self,
+        owner: DefId,
+        target: TypeId,
+    ) -> Result<(), &'static str> {
+        self.normalization(owner, owner, target, ScopeId::ROOT)?;
+        self.seal(owner)
+    }
+
     pub(crate) fn sized(
         &mut self,
         owner: DefId,
