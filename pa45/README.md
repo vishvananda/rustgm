@@ -79,8 +79,9 @@ python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
 
 The comparison checks the frozen graph, strict receipts, compiler diagnostics
 and stage 2 compiler pin. It reads each unit's LowIR and metadata and then the
-linked compiler byte for byte. Each binary crate needs its own metadata
-artifact for this check.
+linked compiler byte for byte. It uses the native-link receipt beside each
+compiler to verify the binary target, frozen link tools and exact target
+build. Each binary crate needs its own metadata artifact for this check.
 
 ## Tests to develop with the reference
 

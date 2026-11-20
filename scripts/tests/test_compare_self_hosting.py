@@ -21,6 +21,7 @@ class CompareSelfHosting(unittest.TestCase):
             folder.mkdir(parents=True)
             link.write_bytes(b'linked executable')
             self.build_receipt(folder)
+            self.build_link_receipt(folder, link)
 
     def build_receipt(self, folder):
         steps, completed = [], []
@@ -51,6 +52,16 @@ class CompareSelfHosting(unittest.TestCase):
             'steps': steps, 'completed': completed,
         }
         (folder / 'receipt.json').write_text(json.dumps(receipt))
+
+    def build_link_receipt(self, folder, link):
+        target = folder / 'receipt.json'
+        receipt = {
+            'state': 'complete', 'target_receipt': str(target), 'target_sha256': digest(target),
+            'linked_compiler': self.artifact(link), 'units': [{'unit': 1, 'crate': 'rustgm'}],
+            'tools': {'linker': {'sha256': 'frozen linker'}},
+            'implementation_sha256': {'link_self_hosting.py': 'frozen stage linker'},
+        }
+        (link.parent / 'receipt.json').write_text(json.dumps(receipt))
 
     @staticmethod
     def artifact(path):
@@ -101,6 +112,25 @@ class CompareSelfHosting(unittest.TestCase):
     def test_linking_must_reproduce_the_stage_one_compiler(self):
         self.links[1].write_bytes(b'changed executable')
         with self.assertRaisesRegex(ValueError, 'linked RustGM compiler differs between stages'):
+            compare(*self.folders, *self.links)
+
+    def test_equal_executable_with_stale_target_receipt_is_rejected(self):
+        self.build_link_receipt(self.folders[0], self.links[1])
+        with self.assertRaisesRegex(ValueError, 'requires its completed link receipt'):
+            compare(*self.folders, *self.links)
+
+    def test_equal_executable_without_its_link_receipt_is_rejected(self):
+        copy = self.home / 'copied-compiler'
+        copy.write_bytes(self.links[1].read_bytes())
+        with self.assertRaisesRegex(FileNotFoundError, 'receipt.json'):
+            compare(*self.folders, self.links[0], copy)
+
+    def test_stages_require_the_same_native_link_tools(self):
+        path = self.links[1].parent / 'receipt.json'
+        receipt = json.loads(path.read_bytes())
+        receipt['tools']['linker']['sha256'] = 'different linker'
+        path.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, 'different native-link tools'):
             compare(*self.folders, *self.links)
 
 

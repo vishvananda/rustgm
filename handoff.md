@@ -57,9 +57,19 @@ expired before publication.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
-The performance worker survived the restart. Its worktree is
+Frontier cleanup retired seven superseded executables with 0.86 GiB of
+unshared blocks. The performance worktree retired eight with 1.36 GiB of
+accounted blocks. Both retained the current compiler pins, warm dev-fast
+caches and cleanup receipts. Free space later recovered above the
+150 GiB reserve. The PA45 comparator checks each executable against
+the native-link receipt for its exact strict target build. Fourteen
+focused comparator and linker tests pass, including stale and missing
+link records and a different linker pin.
+
+The performance worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
-`lane/singleton-lifetime-arguments-20261120` at `8fbf96d4a`. The first
+`lane/lifetime-inspection-tables-20261120` at `faf3e88dd`.
+The singleton candidate remains pinned at `8fbf96d4a`. The first
 local-annotation census identifies 631,869 inert visits out of 970,361
 active visits (65.12%). The frozen graph and 12 focused controls preserve
 output bytes, and the focused outcomes agree with pinned Rust. The

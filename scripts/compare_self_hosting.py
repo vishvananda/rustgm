@@ -16,7 +16,8 @@ REQUIRED = {'lowir', 'metadata'}
 
 
 def stage_receipt(folder):
-    receipt = json.loads((folder / 'receipt.json').read_bytes())
+    content = (folder / 'receipt.json').read_bytes()
+    receipt = json.loads(content)
     if (receipt['state'] != 'complete' or receipt['profile'] != 'strict'
             or type(receipt['bringup_records']) is not int or receipt['bringup_records'] != 0
             or receipt['failure'] is not None or receipt['blocked'] or receipt['not_run']):
@@ -28,7 +29,7 @@ def stage_receipt(folder):
             or [(step['unit'], step['crate_name']) for step in steps]
             != [(row['unit'], row['crate']) for row in completed]):
         raise ValueError(f'{folder} has inconsistent planned and completed units')
-    return receipt
+    return receipt, hashlib.sha256(content).hexdigest()
 
 
 def unit_artifacts(folder, step, completed):
@@ -90,12 +91,33 @@ def compiler_arguments(step, paths):
         previous = argument
 
 
+def link_receipt(folder, target_sha256, binary, artifact, steps):
+    """Bind the compared executable to this strict build's completed link."""
+    receipt_path = binary.parent / 'receipt.json'
+    receipt = json.loads(receipt_path.read_bytes())
+    if (receipt['state'] != 'complete' or receipt['target_receipt'] != str(folder / 'receipt.json')
+            or receipt['target_sha256'] != target_sha256):
+        raise ValueError(f'{binary} requires its completed link receipt for {folder}')
+    executable = {'path': str(binary), **artifact}
+    if receipt['linked_compiler'] != executable:
+        raise ValueError(f'{binary} differs from its native-link receipt')
+    units = receipt['units']
+    if not units:
+        raise ValueError(f'{binary} link receipt omits its binary target')
+    selected = units[0]
+    if not any(step['unit'] == selected['unit'] and step['crate_name'] == selected['crate']
+               and step['library'] is False for step in steps):
+        raise ValueError(f'{binary} link receipt omits its binary target')
+    return selected['unit'], receipt['tools'], receipt['implementation_sha256']
+
+
 def compare(stage1, stage2, linked1, linked2):
     stage1, stage2 = (Path(folder).resolve(strict=True) for folder in (stage1, stage2))
-    linked1, linked2 = Path(linked1), Path(linked2)
+    linked1, linked2 = (Path(path).resolve(strict=True) for path in (linked1, linked2))
     if stage1 == stage2:
         raise ValueError('self-hosting comparison requires independently built outputs')
-    first, second = stage_receipt(stage1), stage_receipt(stage2)
+    first, first_sha256 = stage_receipt(stage1)
+    second, second_sha256 = stage_receipt(stage2)
     if first['graph'] != second['graph']:
         raise ValueError('the stages used different frozen build graphs')
     if first['implementation_sha256'] != second['implementation_sha256']:
@@ -129,6 +151,13 @@ def compare(stage1, stage2, linked1, linked2):
     linked = compare_files(linked1, linked2, 'linked RustGM compiler')
     if linked['sha256'] != input_hash:
         raise ValueError('the linked stage 1 compiler changed during comparison')
+    if (first_sha256 != digest(stage1 / 'receipt.json')
+            or second_sha256 != digest(stage2 / 'receipt.json')):
+        raise ValueError('a strict target receipt changed during comparison')
+    original_link = link_receipt(stage1, first_sha256, linked1, linked, first['steps'])
+    rebuilt_link = link_receipt(stage2, second_sha256, linked2, linked, second['steps'])
+    if original_link != rebuilt_link:
+        raise ValueError('the stages linked different binary targets or used different native-link tools')
     return {'units': units, 'linked_compiler': linked, 'bringup_records': 0}
 
 

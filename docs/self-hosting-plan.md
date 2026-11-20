@@ -1310,6 +1310,16 @@ output drift. The real stage comparison awaits the per-crate artifacts and
 both linked compiler builds. [Comparator](../scripts/compare_self_hosting.py) ·
 [Controls](../scripts/tests/test_compare_self_hosting.py)
 
+The comparator verifies each executable's native-link receipt against
+the digest of the exact target receipt it parsed. The staged linker uses
+that same parsed snapshot and digest. The comparison checks the selected
+binary unit and frozen native tools on both sides. It rejects an identical
+executable copy with a missing or stale link receipt and rejects a changed
+linker pin. All 14 scoped comparator and linker tests pass. The guarded
+execution receipt is
+`obj/parallel/resources/00d2942520a84610a5c9e9c2052fb9b0.json`
+in the frontier worktree.
+
 For the first checkpoint, preserve body-region identity through storage
 normalization and exercise the two existing body-region cases from the trace.
 Include `field_outlives::preparation_preserves_the_occurrence_binder_and_shares_large_graphs`

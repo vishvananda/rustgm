@@ -84,8 +84,8 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
     if digest(linker) != linker_sha256:
         raise ValueError('native linker differs from its declared pin')
     target_receipt = folder / 'receipt.json'
-    target_sha256 = digest(target_receipt)
-    units = closure(stage_receipt(folder), selected)
+    target, target_sha256 = stage_receipt(folder)
+    units = closure(target, selected)
     verified = inputs(folder, units)
     libraries = native_links.load(verified[0]['artifacts']['native_links']['path'])
     tools = backend.load_tools(('cppgm',))
