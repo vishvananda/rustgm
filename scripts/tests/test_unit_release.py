@@ -176,6 +176,44 @@ class DraftTables(unittest.TestCase):
                              ("library", {"crate_name": "fixture", "disambiguator": "pa27"}, "object"))
             self.assertNotIn("native", cases["tests/spec/places/reject.rs"])
 
+    def test_hypothesis_tables_keep_only_the_source_and_its_frozen_status(self):
+        table = {"sources": {"accept.rs": "0" * 64},
+                 "cases": [{"file": "accept.rs", "status": 0, "warnings": ["improper_ctypes"]},
+                           {"file": "reject.rs", "status": 1, "errors": ["E0308"]},
+                           {"file": "entry-free.rs", "status": 1}],
+                 "objects": [{"file": "entry-free.rs", "status": 0}]}
+        entry = {"table": "tests/spec/places/hypotheses.json", "shape": "hypotheses", "feature": "pa27.places",
+                 "feature_environment": {"RUSTC_BOOTSTRAP": "1"},
+                 "skip_rows": {"entry-free.rs": "superseded by the objects row"}}
+        later = {**entry, "rows": "objects", "skip_rows": {}}
+        with tempfile.TemporaryDirectory() as name:
+            tree = Tree(name, config={"tables": [entry, later]})
+            tree.source("tests/spec/places/accept.rs", "#![feature(repr_simd)]\nfn main() {}\n")
+            (tree.root / "pa27/tests/spec/places/hypotheses.json").write_text(json.dumps(table))
+            rows, skipped = unit_tables.table_rows(tree.root, "pa27", entry)
+            self.assertEqual(rows, [
+                {"path": "tests/spec/places/accept.rs", "rustc_expected": 0, "sha256": "0" * 64,
+                 "environment": {"RUSTC_BOOTSTRAP": "1"}},
+                {"path": "tests/spec/places/reject.rs", "rustc_expected": 1}])
+            self.assertEqual(skipped, {"entry-free.rs": "superseded by the objects row"})
+            document, _ = unit_tables.inventory(tree.root, "places")
+            cases = {case["path"]: case for case in document["cases"]}
+            self.assertEqual([cases[f"tests/spec/places/{stem}.rs"]["exit_status"]
+                              for stem in ("accept", "reject", "entry-free")], [0, 1, 0])
+            self.assertNotIn("warnings", cases["tests/spec/places/accept.rs"])
+            self.assertNotIn("environment", cases["tests/spec/places/reject.rs"])
+            self.assertEqual(document["unrepresented_rows"],
+                             {"tests/spec/places/hypotheses.json: entry-free.rs": "superseded by the objects row"})
+            self.assertTrue(any("draft table hash" in note for row in document["bindings"]["tests/spec/places/accept.rs"]
+                                for note in row["notes"]))
+            with self.assertRaisesRegex(ValueError, "configured skips name no row"):
+                unit_tables.table_rows(tree.root, "pa27", {**entry, "skip_rows": {"absent.rs": "no such row"}})
+            # Without the reviewed skip, two frozen hypotheses for one source conflict and nothing is declared.
+            tree = Tree(name + "/conflict", config={"tables": [{**entry, "skip_rows": {}}, later]})
+            (tree.root / "pa27/tests/spec/places/hypotheses.json").write_text(json.dumps(table))
+            with self.assertRaisesRegex(ValueError, "conflicting declared outcomes"):
+                unit_tables.inventory(tree.root, "places")
+
     def test_a_directory_is_claimed_only_when_every_source_in_it_is_published(self):
         with tempfile.TemporaryDirectory() as name:
             tree = Tree(name)

@@ -22,6 +22,7 @@ RUST_STATUS_KEYS = ("rustc_expected", "rustc_status", "rustc_hypothesis")
 COPIED_KEYS = ("args", "auxiliary", "library", "source_provider", "warnings", "environment", "crates", "externs")
 CALLS_CHECK = re.compile(r"\bcheck\s*\(")
 DEFINES_CHECK = re.compile(r"\bfn\s+check\b")
+FEATURE_REQUEST = re.compile(r"^\s*#!\[feature\(", re.M)
 
 
 def load_config(root, unit):
@@ -189,12 +190,42 @@ def skipped(config, row):
             or any(part in named for part in config.get("skip_paths_containing", ())))
 
 
+def hypothesis_rows(root, pa, data, rows, entry):
+    """Read a frozen hypothesis list: each row names a `file` beside its table and a pinned-Rust `status`.
+
+    Only the source and its declared status are kept. A row's predicted rustc lints are not
+    course warning codes, and its unstable requests need the oracle's bootstrap environment.
+    """
+    folder = Path(entry["table"]).parent
+    skipped = dict(entry.get("skip_rows", {}))
+    missing = set(skipped) - {row["file"] for row in rows}
+    if missing:
+        raise ValueError(f"{entry['table']}: configured skips name no row: {sorted(missing)}")
+    hashes = data.get("sources", {})
+    kept = []
+    for row in rows:
+        if row["file"] in skipped:
+            continue
+        path = (folder / row["file"]).as_posix()
+        item = {"path": path, "rustc_expected": row["status"]}
+        if row["file"] in hashes:
+            item["sha256"] = hashes[row["file"]]
+        source = root / pa / path
+        if "feature_environment" in entry and source.is_file() and FEATURE_REQUEST.search(source.read_text()):
+            item["environment"] = dict(entry["feature_environment"])
+        kept.append(item)
+    return kept, skipped
+
+
 def table_rows(root, pa, entry):
     """The rows of one configured table, and the rows its configuration skips with a reason."""
     data = json.loads((root / pa / entry["table"]).read_text())
     if "graph" in entry:
         return graph_rows(data, entry)
-    return (data[entry.get("rows", "cases")] if isinstance(data, dict) else data), {}
+    rows = data[entry.get("rows", "cases")] if isinstance(data, dict) else data
+    if entry.get("shape") == "hypotheses":
+        return hypothesis_rows(root, pa, data, rows, entry)
+    return rows, {}
 
 
 def inventory(root, unit):
