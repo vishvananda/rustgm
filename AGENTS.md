@@ -29,7 +29,8 @@ path; its adopted direction is summarized below.
 - Read CPPGM's specification and implementation for performance guidance;
   `docs/cppgm-spec.md` and `shared/CPPGM-NOTICE` record the initial baseline.
   Do not modify the active C++ or v5rust checkouts while working here.
-- The development feedback budget is five minutes, including resource admission.
+- The development feedback budget is five minutes from resource admission.
+  Fastcheck queues for a slot first; the wait is not charged to the budget.
   Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`: cached
   unoptimized builds without debug symbols, exact affected regressions, full
   formatting, content-cached architecture audit and strict Clippy for selected

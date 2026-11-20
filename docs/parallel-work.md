@@ -1490,7 +1490,8 @@ Coordinate full suites and broad performance matrices with the integrator.
 Do not mutate the source while a build or qualification is running.
 
 Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`. It supplies
-the resource guard, fails immediately on unavailable capacity, uses a bounded
+the resource guard, queues for a heavy-job slot without charging the wait to
+its budget, uses a bounded
 incremental `dev-fast` cache and runs strict Clippy for the selected compilation
 modes (including CLI for integration/text selections). Do not duplicate this with `cargo check`, full private inventories or
 all-target builds. Keep each batch below five minutes; partition unrelated

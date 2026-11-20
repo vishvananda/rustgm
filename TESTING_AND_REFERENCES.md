@@ -259,8 +259,8 @@ The former empty `object-interop-tests` Cargo feature is removed. Default and
 frontend build merely to select native tests. No test body or ignore marker is
 changed, and an unavailable native dependency still fails an explicit native run.
 
-Development checks have a five-minute total wall-clock budget, including resource
-admission, build, lint, audit and execution. Use the fast workflow for ordinary
+Development checks have a five-minute wall-clock budget from resource admission,
+including build, lint, audit and execution. Use the fast workflow for ordinary
 edits and coherent development pushes:
 
 ```sh
@@ -287,10 +287,12 @@ Before compiler steps, the runner checks every active assignment's metadata with
 the same validators as the full layout check. Pending generated references are
 allowed here; the full layout check still requires their complete provenance.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
-another lease. Shared-controller admission never waits for a slot. Its default
+another lease. It queues for a shared-controller slot for at most
+`--wait-seconds` (one hour by default) and names the jobs holding the slots;
+the wait is not charged to the budget. Its default
 absolute output cap is 16 GiB, including retained caches and pins; use
 `--max-output-gib N` only with justified headroom for the actual worktree.
-Admission refusal and deadline exhaustion fail the run. Do not increase the
+An exhausted admission wait and deadline exhaustion fail the run. Do not increase the
 five-minute deadline or silently omit tests to turn a timeout into success.
 Partition unrelated target groups or investigate a slow build instead.
 

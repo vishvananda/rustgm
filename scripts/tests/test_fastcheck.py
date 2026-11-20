@@ -2,6 +2,7 @@
 from argparse import Namespace
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import time
@@ -56,9 +57,69 @@ class FastcheckBudget(unittest.TestCase):
             with mock.patch.object(fastcheck, "ROOT", root), \
                     mock.patch.object(fastcheck, "retire", side_effect=lambda _: events.append("retire")), \
                     mock.patch.object(fastcheck, "discover", return_value=None), \
-                    mock.patch.object(fastcheck.subprocess, "Popen", side_effect=lambda *a, **k: (events.append("admit"), process)[1]):
+                    mock.patch.object(fastcheck.subprocess, "Popen", side_effect=lambda *a, **k: (events.append(a[0]), process)[1]):
                 self.assertEqual(fastcheck.launch(args, time.monotonic()), 0)
-            self.assertEqual(events, ["retire", "admit"])
+            self.assertEqual(events[0], "retire")
+            # Admission queues by default instead of refusing a busy controller.
+            self.assertEqual(events[1][2:5], ["run", "--wait-seconds", "3600"])
+            self.assertNotIn("--deadline", events[1])
+            receipt = json.loads(next((root / "obj/qualification/fast").glob("*.launcher.json")).read_text())
+            self.assertEqual((receipt["state"], receipt["queued_seconds"]), ("passed", None))
+
+
+class FastcheckAdmission(unittest.TestCase):
+    def watch(self, admitted_at, finished_at, **limits):
+        """Advance a virtual clock 100 seconds per poll of the launched command."""
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / "run.admitted"
+            now = [0.0]
+
+            def wait(timeout):
+                now[0] += 100
+                if now[0] == admitted_at:
+                    marker.touch()
+                if now[0] == finished_at:
+                    return 0
+                raise subprocess.TimeoutExpired("fastcheck", timeout)
+
+            process = mock.Mock()
+            process.wait.side_effect = wait
+            args = Namespace(**{"seconds": 300, "wait_seconds": 3600, **limits})
+            with mock.patch.object(fastcheck, "terminate") as stop, mock.patch("builtins.print"):
+                result = fastcheck.watch(process, marker, args, 0.0, clock=lambda: now[0])
+            return result, stop.call_count, now[0]
+
+    def test_queue_is_not_charged_and_the_budget_runs_from_admission(self):
+        # Fifteen queued minutes, then 200 seconds of admitted work, is a pass.
+        self.assertEqual(self.watch(900, 1100), ((0, 900.0), 0, 1100.0))
+
+    def test_admitted_work_beyond_the_budget_is_stopped(self):
+        self.assertEqual(self.watch(900, None), ((124, 900.0), 1, 1200.0))
+
+    def test_admission_wait_is_bounded(self):
+        self.assertEqual(self.watch(None, None, wait_seconds=600), ((124, None), 1, 900.0))
+
+    def test_launch_validates_the_admission_wait(self):
+        for wait in ("-1", "3601"):
+            args = fastcheck.parser().parse_args(["lexer", "--wait-seconds", wait])
+            with self.subTest(wait=wait), self.assertRaisesRegex(ValueError, "admission wait"):
+                fastcheck.launch(args, time.monotonic())
+
+    def test_worker_marks_admission_and_starts_its_own_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory) / "run"
+            seen = {}
+
+            def check(_root, args):
+                seen.update(deadline=args.deadline, marked=fastcheck.admission_marker(folder).is_file())
+                return 0
+
+            argv = ["fastcheck.py", "lexer", "--seconds", "100", "--worker", "--evidence-root", str(folder)]
+            with mock.patch.object(sys, "argv", argv), mock.patch.object(fastcheck_run, "check", side_effect=check):
+                before = time.monotonic()
+                self.assertEqual(fastcheck.main(), 0)
+            self.assertTrue(seen["marked"])
+            self.assertAlmostEqual(seen["deadline"], before + 75, delta=5)
 
 
 class LinkedPrivateHarness(unittest.TestCase):

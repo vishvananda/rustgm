@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from resource_locks import active_records, inherited, lease, try_lock
+from resource_locks import active_records, holders, inherited, lease, try_lock
 from resource_policy import DEFAULTS, GIB, UsageScan, atomic_json, output_roots, validate
 from resource_runner import run, scope_command, supervise
 from resources import set_jobs
@@ -75,6 +75,21 @@ class ResourceTests(unittest.TestCase):
                     with lease(directory, Path(root), DEFAULTS, 'ordinary', wait=0):
                         self.fail('exceeded concurrency')
         # ExitStack closes all kernel leases even when a command fails.
+
+    def test_queued_job_names_the_slot_holders(self):
+        with tempfile.TemporaryDirectory() as folder, ExitStack() as stack:
+            directory = Path(folder)
+            for root in ['/first', '/second']:
+                stack.enter_context(lease(directory, Path(root), DEFAULTS, 'ordinary', wait=0))
+            with patch('resource_locks.time.sleep', side_effect=ValueError('test wait ended')), \
+                 patch('sys.stdout', io.StringIO()) as output:
+                with self.assertRaisesRegex(ValueError, 'test wait ended'):
+                    with lease(directory, Path('/third'), DEFAULTS, 'ordinary', wait=5):
+                        self.fail('no slot available')
+            self.assertRegex(output.getvalue(),
+                             r'waiting for a heavy-job slot held by first for \d+s, second for \d+s')
+        self.assertEqual(holders([{'slot': 0, 'state': 'acquiring'}]), 'an acquiring job')
+        self.assertEqual(holders([]), 'a finishing job')
 
     def test_three_slots_keep_worktree_and_exclusive_limits(self):
         policy = {**DEFAULTS, 'jobs': 3}

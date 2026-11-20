@@ -71,6 +71,17 @@ def active_records(directory, slots):
         return _active_records(directory, slots)
 
 
+def holders(rows):
+    """Name the running jobs so a queued command shows what it is waiting for."""
+    now = time.time()
+    names = []
+    for row in rows:
+        started = row.get("started")
+        age = f" for {max(0, now - started):.0f}s" if isinstance(started, (int, float)) else ""
+        names.append(Path(str(row.get("root") or "an acquiring job")).name + age)
+    return ", ".join(names) or "a finishing job"
+
+
 def peer_budget(row, policy):
     configured = output_budget(policy)
     budget = row.get("budget_bytes")
@@ -114,6 +125,7 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
             fcntl.flock(turn, fcntl.LOCK_UN)
         slots = [opened(f"slot-{index}.lock") for index in range(policy["jobs"])]
         index = None
+        announced = 0
         while index is None:
             # Publication is part of claiming the slot: a concurrent snapshot
             # cannot observe a newly held lock with its previous owner's cap.
@@ -134,8 +146,13 @@ def lease(directory, root, policy, kind, wait=3600, *, budget=None):
                     path = directory / f"slot-{index}.json"
                     atomic_json(path, record)
             if index is None:
-                if time.monotonic() >= deadline:
+                now = time.monotonic()
+                if now >= deadline:
                     raise ValueError("timed out waiting for a heavy-job slot")
+                if now - announced >= 30:
+                    print("resources: waiting for a heavy-job slot held by "
+                          + holders(active_records(directory, policy["jobs"])), flush=True)
+                    announced = now
                 time.sleep(0.2)
         # Keep leases held by the launched process if its supervisor is killed.
         held = [worker, gate, slots[index]] + ([turn] if kind == "exclusive" else [])
