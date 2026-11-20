@@ -376,6 +376,47 @@ fn inferred_predicates_resolve_type_and_const_equivalence_classes()
 }
 
 #[test]
+fn mixed_canonical_instantiation_preserves_the_width_charge_and_slot_order()
+-> Result<(), Box<dyn std::error::Error>> {
+    const LIMIT: usize = 1_000_000;
+    let mut store = Store::default();
+    let value = store.intern_constant(Constant {
+        ty: TypeId::primitive(Primitive::Usize),
+        bits: 3,
+    })?;
+    let applied = application(
+        &mut store,
+        200,
+        &[
+            Argument::Lifetime(RegionId::STATIC),
+            Argument::Type(TypeId::primitive(Primitive::U16)),
+            Argument::Const(value),
+        ],
+    )?;
+    let template = Predicate {
+        ty: TypeId::primitive(Primitive::U8),
+        bound: Bound::Trait(applied),
+    };
+    for (available, overrun) in [(0, 1), (1, 3), (3, 1), (4, 1), (5, 1), (6, 1)] {
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        context.steps = LIMIT - available;
+        assert!(matches!(
+            context.instantiate_predicate(&mut store, template, &mut substitution),
+            Err(infer::Error::Budget)
+        ));
+        assert_eq!(context.steps, LIMIT + overrun);
+        assert_eq!(context.root(infer::TermId(1)).is_ok(), available >= 5);
+    }
+    let mut context = Context::default();
+    let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+    let inferred = context.instantiate_predicate(&mut store, template, &mut substitution)?;
+    assert_eq!(context.steps, 7);
+    assert_eq!(context.resolved_predicate(&mut store, &inferred)?, template);
+    Ok(())
+}
+
+#[test]
 fn constants_only_in_obligations_cannot_escape_inference_completion()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut store = Store::default();

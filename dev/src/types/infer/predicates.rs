@@ -257,13 +257,18 @@ impl Context {
         let subject = self.instantiate_with(store, predicate.ty, substitution)?;
         let requirement = if let Some((id, constness)) = predicate.bound.trait_parts() {
             let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
-            let arguments = store
+            let count = store
                 .arguments(application.arguments)
-                .ok_or(Error::InvalidIdentity)?;
-            self.account_work(arguments.len())?;
-            let arguments = arguments.collect::<Vec<_>>();
-            let mut inferred = Vec::with_capacity(arguments.len());
-            for argument in arguments {
+                .ok_or(Error::InvalidIdentity)?
+                .len();
+            self.account_work(count)?;
+            let mut inferred = Vec::with_capacity(count);
+            // The canonical span stays valid as instantiation adds types to Store.
+            for index in 0..count {
+                let argument = store
+                    .arguments(application.arguments)
+                    .and_then(|mut arguments| arguments.nth(index))
+                    .ok_or(Error::InvalidIdentity)?;
                 inferred.push(match argument {
                     CanonicalArgument::Lifetime(region) => Argument::Lifetime(region),
                     CanonicalArgument::Type(ty) => {
