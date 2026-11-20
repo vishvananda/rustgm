@@ -900,7 +900,15 @@ and a v13 publication. The existing primitive-inherent owner control
 also passes. Strict Clippy, formatting, the architecture audit and
 the two selected cases finish in 100.67 seconds. The receipt is under
 `obj/qualification/fast/1795145920873708384/` in the frontier checkout.
-The original-source replay for this checkpoint is pending.
+
+The next optimized strict replay passes `DecimalSeq::MAX_DIGITS`
+and reaches the declaration gate for `POWER_OF_FIVE_128` in 34.97
+seconds on the same 309 source inputs. The agreeing resolver trace
+identifies DefId 618, a module-restricted static array of `(u64, u64)`
+in `core/src/num/imp/dec2flt/table.rs`. The replay records zero
+bring-up entries and emits no strict artifacts. The receipt and
+trace are under `obj/parallel/strict-core/closed-nominal-constants/`
+in the frontier checkout.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
