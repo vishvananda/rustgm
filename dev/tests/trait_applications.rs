@@ -417,6 +417,63 @@ fn mixed_canonical_instantiation_preserves_the_width_charge_and_slot_order()
 }
 
 #[test]
+fn singleton_inferred_arguments_survive_both_input_mappings()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::{support::constness::Constness, types::infer::arguments::Argument as Inferred};
+
+    let mut store = Store::default();
+    let subject = TypeId::primitive(Primitive::U8);
+    let value = store.intern_constant(Constant {
+        ty: TypeId::primitive(Primitive::Usize),
+        bits: 3,
+    })?;
+    for (argument, effect, steps) in [
+        (
+            Argument::Type(TypeId::primitive(Primitive::U16)),
+            Constness::Ordinary,
+            3,
+        ),
+        (Argument::Const(value), Constness::Const, 4),
+        (
+            Argument::Lifetime(RegionId::bound(0, 0)?),
+            Constness::Conditional,
+            2,
+        ),
+    ] {
+        let template = Predicate {
+            ty: subject,
+            bound: Bound::trait_application(application(&mut store, 200, &[argument])?, effect),
+        };
+        let mut context = Context::default();
+        let mut substitution = Instantiation::new(&mut context, &store, &[])?;
+        let inferred = context.instantiate_predicate(&mut store, template, &mut substitution)?;
+        assert_eq!(context.steps, steps);
+        let (item, arguments) = inferred
+            .trait_arguments()
+            .ok_or("missing trait arguments")?;
+        assert_eq!(item, ItemId(200));
+        assert_eq!(arguments.len(), 1);
+        let mut visited = Vec::new();
+        let mapped = inferred.map_arguments(|argument| {
+            visited.push(argument);
+            Ok(argument)
+        })?;
+        assert_eq!(visited, [Inferred::Type(inferred.subject()), arguments[0]]);
+        let mut visited_types = Vec::new();
+        let mapped_types = mapped.map_inputs(|term| {
+            visited_types.push(term);
+            Ok(term)
+        })?;
+        assert_eq!(visited_types, mapped.input_roots().collect::<Vec<_>>());
+        assert_eq!(
+            context.resolved_predicate(&mut store, &mapped_types)?,
+            template
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn constants_only_in_obligations_cannot_escape_inference_completion()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut store = Store::default();

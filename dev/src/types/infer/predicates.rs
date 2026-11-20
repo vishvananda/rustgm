@@ -17,7 +17,15 @@ use crate::types::{
 
 enum Requirement {
     Builtin(Bound),
-    EmptyTrait { item: ItemId, constness: Constness },
+    EmptyTrait {
+        item: ItemId,
+        constness: Constness,
+    },
+    SingleTrait {
+        item: ItemId,
+        constness: Constness,
+        argument: Argument,
+    },
     Trait(Box<Trait>),
     ProjectionEqual(TermId),
 }
@@ -28,14 +36,18 @@ struct Trait {
 }
 impl Requirement {
     fn trait_application(item: ItemId, constness: Constness, arguments: Vec<Argument>) -> Self {
-        if arguments.is_empty() {
-            Self::EmptyTrait { item, constness }
-        } else {
-            Self::Trait(Box::new(Trait {
+        match arguments.as_slice() {
+            [] => Self::EmptyTrait { item, constness },
+            [argument] => Self::SingleTrait {
+                item,
+                constness,
+                argument: *argument,
+            },
+            _ => Self::Trait(Box::new(Trait {
                 constness,
                 item,
                 arguments,
-            }))
+            })),
         }
     }
 }
@@ -107,6 +119,15 @@ impl Predicate {
                 item: *item,
                 constness: *constness,
             },
+            Requirement::SingleTrait {
+                item,
+                constness,
+                argument,
+            } => Requirement::SingleTrait {
+                item: *item,
+                constness: *constness,
+                argument: map(*argument)?,
+            },
             Requirement::ProjectionEqual(result) => {
                 let Argument::Type(result) = map(Argument::Type(*result))? else {
                     return Err(Error::InvalidIdentity);
@@ -149,6 +170,13 @@ impl Predicate {
         mut map: impl FnMut(TermId) -> Result<TermId, Error>,
     ) -> Result<Self, Error> {
         let subject = map(self.subject)?;
+        let mut map_argument = |argument| {
+            Ok(if let Argument::Type(ty) = argument {
+                Argument::Type(map(ty)?)
+            } else {
+                argument
+            })
+        };
         let requirement = match &self.requirement {
             Requirement::Builtin(bound) => Requirement::Builtin(*bound),
             Requirement::ProjectionEqual(_) => return Err(Error::InvalidIdentity),
@@ -156,17 +184,21 @@ impl Predicate {
                 item: *item,
                 constness: *constness,
             },
+            Requirement::SingleTrait {
+                item,
+                constness,
+                argument,
+            } => Requirement::SingleTrait {
+                item: *item,
+                constness: *constness,
+                argument: map_argument(*argument)?,
+            },
             Requirement::Trait(trait_) => {
                 let arguments = trait_
                     .arguments
                     .iter()
-                    .map(|&argument| {
-                        Ok(if let Argument::Type(ty) = argument {
-                            Argument::Type(map(ty)?)
-                        } else {
-                            argument
-                        })
-                    })
+                    .copied()
+                    .map(map_argument)
                     .collect::<Result<_, Error>>()?;
                 Requirement::Trait(Box::new(Trait {
                     constness: trait_.constness,
@@ -205,13 +237,15 @@ impl Predicate {
             Requirement::Builtin(bound) => Some(*bound),
             Requirement::Trait(_)
             | Requirement::EmptyTrait { .. }
+            | Requirement::SingleTrait { .. }
             | Requirement::ProjectionEqual(_) => None,
         }
     }
     #[must_use]
     pub fn constness(&self) -> Option<Constness> {
         match &self.requirement {
-            Requirement::EmptyTrait { constness, .. } => Some(*constness),
+            Requirement::EmptyTrait { constness, .. }
+            | Requirement::SingleTrait { constness, .. } => Some(*constness),
             Requirement::Trait(trait_) => Some(trait_.constness),
             _ => None,
         }
@@ -228,6 +262,11 @@ impl Predicate {
     fn trait_parts(&self) -> Option<(ItemId, Constness, &[Argument])> {
         match &self.requirement {
             Requirement::EmptyTrait { item, constness } => Some((*item, *constness, &[])),
+            Requirement::SingleTrait {
+                item,
+                constness,
+                argument,
+            } => Some((*item, *constness, std::slice::from_ref(argument))),
             Requirement::Trait(trait_) => Some((trait_.item, trait_.constness, &trait_.arguments)),
             Requirement::Builtin(_) | Requirement::ProjectionEqual(_) => None,
         }
@@ -237,9 +276,10 @@ impl Predicate {
     pub const fn projection_result(&self) -> Option<TermId> {
         match self.requirement {
             Requirement::ProjectionEqual(result) => Some(result),
-            Requirement::Builtin(_) | Requirement::Trait(_) | Requirement::EmptyTrait { .. } => {
-                None
-            }
+            Requirement::Builtin(_)
+            | Requirement::Trait(_)
+            | Requirement::EmptyTrait { .. }
+            | Requirement::SingleTrait { .. } => None,
         }
     }
 }
@@ -262,14 +302,13 @@ impl Context {
                 .ok_or(Error::InvalidIdentity)?
                 .len();
             self.account_work(count)?;
-            let mut inferred = Vec::with_capacity(count);
             // The canonical span stays valid as instantiation adds types to Store.
-            for index in 0..count {
+            let mut instantiate_argument = |index| {
                 let argument = store
                     .arguments(application.arguments)
                     .and_then(|mut arguments| arguments.nth(index))
                     .ok_or(Error::InvalidIdentity)?;
-                inferred.push(match argument {
+                Ok::<_, Error>(match argument {
                     CanonicalArgument::Lifetime(region) => Argument::Lifetime(region),
                     CanonicalArgument::Type(ty) => {
                         Argument::Type(self.instantiate_with(store, ty, substitution)?)
@@ -277,9 +316,21 @@ impl Context {
                     CanonicalArgument::Const(id) => {
                         Argument::Const(self.instantiate_const(store, id, substitution)?)
                     }
-                });
+                })
+            };
+            if count == 1 {
+                Requirement::SingleTrait {
+                    item: application.item,
+                    constness,
+                    argument: instantiate_argument(0)?,
+                }
+            } else {
+                let mut inferred = Vec::with_capacity(count);
+                for index in 0..count {
+                    inferred.push(instantiate_argument(index)?);
+                }
+                Requirement::trait_application(application.item, constness, inferred)
             }
-            Requirement::trait_application(application.item, constness, inferred)
         } else if let Bound::ProjectionEqual(result) = predicate.bound {
             Requirement::ProjectionEqual(self.instantiate_with(store, result, substitution)?)
         } else {
@@ -381,7 +432,9 @@ impl Context {
             Requirement::ProjectionEqual(result) => {
                 Bound::ProjectionEqual(type_of(self, store, *result)?)
             }
-            Requirement::Trait(_) | Requirement::EmptyTrait { .. } => {
+            Requirement::Trait(_)
+            | Requirement::EmptyTrait { .. }
+            | Requirement::SingleTrait { .. } => {
                 let (item, constness, inferred) =
                     predicate.trait_parts().ok_or(Error::InvalidIdentity)?;
                 self.account_work(inferred.len())?;
