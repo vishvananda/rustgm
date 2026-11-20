@@ -449,7 +449,10 @@ def build(revision, out):
         subprocess.run(['git', 'archive', commit, 'dev'], cwd=ROOT, stdout=stream, check=True)
     with tarfile.open(archive) as stream:
         stream.extractall(sources, filter='data')
-    target = ROOT / 'obj/parallel/instruction-bench/target'
+    # Cargo names a path package's fingerprint by its workspace-relative path
+    # and trusts source modification times, so a target directory shared
+    # between revisions would report an older commit's archive as built.
+    target = (out / 'target').resolve()
     command = ['cargo', 'build', '--locked', '--offline', '--release', '--bin', 'rustgm',
                '--manifest-path', str(sources / 'dev/Cargo.toml')]
     # Incremental caches and profile overrides would make two builds differ.
@@ -465,6 +468,7 @@ def build(revision, out):
     executable = out / 'rustgm'
     shutil.copyfile(target / 'release/rustgm', executable)
     executable.chmod(0o555)
+    shutil.rmtree(target)
     receipt = {'commit': commit, 'tree': git('rev-parse', f'{commit}^{{tree}}'), 'command': command,
                'profile': 'release', 'jobs': environment.get('CARGO_BUILD_JOBS'),
                'rustc': subprocess.run(['rustc', '-vV'], capture_output=True, text=True, check=True).stdout,
