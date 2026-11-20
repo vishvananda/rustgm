@@ -502,3 +502,70 @@ pub mod conversion {
     assert!(unwritten(&legacy)?);
     Ok(())
 }
+
+#[test]
+fn version_fourteen_rechecks_closed_nominal_constant_originals() -> Result {
+    let packet = Packet::new("v14-nominal-constant-original", SPEC, "frontend", "nominal")?;
+    let provider = packet.folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        prefix(&packet)?
+            + r"
+impl Clone for u32 { fn clone(&self) -> Self { *self } }
+impl Copy for u32 {}
+pub struct Narrow(pub u32);
+impl Narrow { pub const VALUE: Self = Self(37); }
+pub const fn read() -> u32 { Narrow::VALUE.0 }
+",
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &provider, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    let client = packet.folder.join("client.rs");
+    std::fs::write(
+        &client,
+        r"#![feature(no_core)]
+#![no_core]
+extern crate base;
+const DIRECT: u32 = base::Narrow::VALUE.0;
+const CALL: u32 = base::read();
+pub fn direct() -> u32 { DIRECT }
+pub fn call() -> u32 { CALL }
+",
+    )?;
+    super::artifacts::checked(
+        "client",
+        &packet.folder,
+        packet
+            .consumer(&client, "client", &packet.metadata, &packet.owner())
+            .arg("--cap-lints=allow"),
+    )?;
+    let lowir = std::fs::read_to_string(packet.folder.join("client.lowir"))?;
+    assert_eq!(lowir.matches("return u32 37").count(), 2, "{lowir}");
+    let wrong = packet.folder.join("wrong.rs");
+    std::fs::write(
+        &wrong,
+        "#![feature(no_core)]#![no_core]\nextern crate base;\nconst WRONG: u16 = base::Narrow::VALUE.0;",
+    )?;
+    packet.rejected(
+        "wrong",
+        &mut packet.consumer(&wrong, "wrong", &packet.metadata, &packet.owner()),
+        "incompatible types",
+    )?;
+    let legacy = packet.folder.join("legacy.rgcrate");
+    packet.rejected(
+        "legacy",
+        packet
+            .export(PROFILE, &provider, &legacy)
+            .arg("--cap-lints=allow"),
+        ASSOCIATED,
+    )?;
+    assert!(unwritten(&legacy)?);
+    Ok(())
+}

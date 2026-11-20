@@ -142,26 +142,48 @@ fn item(
         }
         ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind),
         ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item),
-        ir::Rvalue::AssociatedConstant(instance)
-            if stage.declaration_policies()
-                && instance.arguments == crate::types::GenericArgs::EMPTY
-                && crate::sema::values::Reader::new(facts)
-                    .associated(instance)
-                    .is_some() =>
-        {
-            stage.constant_read(instance.definition)
-        }
         ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
-            if facts.associated.trait_owner(instance.definition).is_none() {
-                return Err("source associated constant requires its actual trait owner");
-            }
-            Ok(s::ValueKind::AssociatedConstant {
-                declaration: stage.declaration(instance.definition)?,
-                arguments: stage.arguments(facts, instance.arguments, context)?,
-            })
+            associated_constant(stage, facts, instance, context)
         }
         _ => Err(WIDER),
     }
+}
+fn associated_constant(
+    stage: &mut Stage,
+    facts: &Declarations,
+    instance: crate::sema::values::Instance,
+    context: Context,
+) -> Result<s::ValueKind, &'static str> {
+    use crate::sema::associated::OwnerKind;
+    if instance.arguments == crate::types::GenericArgs::EMPTY {
+        let inherent = facts
+            .associated
+            .owner(instance.definition)
+            .and_then(|owner| facts.associated.get(owner))
+            .is_some_and(|owner| {
+                matches!(
+                    owner.kind,
+                    OwnerKind::Impl {
+                        trait_type: None,
+                        ..
+                    }
+                )
+            });
+        if crate::sema::values::Reader::new(facts)
+            .associated(instance)
+            .is_some()
+            || (inherent && stage.has_constant_original(instance.definition)?)
+        {
+            return stage.constant_read(instance.definition);
+        }
+    }
+    if facts.associated.trait_owner(instance.definition).is_none() {
+        return Err("source associated constant requires its actual trait owner");
+    }
+    Ok(s::ValueKind::AssociatedConstant {
+        declaration: stage.declaration(instance.definition)?,
+        arguments: stage.arguments(facts, instance.arguments, context)?,
+    })
 }
 /// Whether a value's consumer proves its formation again, in the original
 /// predicate's short-circuit order.

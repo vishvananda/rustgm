@@ -128,7 +128,7 @@ pub(super) fn validate(
             ConstantBody::Required | ConstantBody::Original(_)
                 if profile.declaration_policies() =>
             {
-                associated_owner(rows, headers, row, header.body, work)?;
+                associated_owner(rows, headers, row, *header, work)?;
                 if headers.scopes().parent(declaration, work)? != row.definition.parent {
                     return Err(
                         "source associated constant changed its inherited declaration scope",
@@ -171,7 +171,7 @@ fn associated_owner(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     row: &Declaration,
-    body: ConstantBody,
+    header: ConstantHeader,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let parent = row
@@ -181,14 +181,21 @@ fn associated_owner(
     match headers.header(parent, work)? {
         Some(HeaderRef::Trait(_)) => Ok(()),
         Some(HeaderRef::Implementation(index))
-            if matches!(body, ConstantBody::Original(_))
-                && rows.implementations[index as usize]
-                    .trait_application
-                    .is_some() =>
+            if matches!(header.body, ConstantBody::Original(_)) =>
         {
-            Ok(())
+            let implementation = &rows.implementations[index as usize];
+            if implementation.trait_application.is_some()
+                || (implementation.closed_inherent_constant_owner(&rows.types)
+                    && matches!(rows.types.get(header.ty.0 as usize),
+                        Some(super::Type::Nominal { arguments, .. }) if arguments.start == arguments.end)
+                    && headers.scopes().complete_slots(parent, work)? == 0)
+            {
+                Ok(())
+            } else {
+                Err("source associated constant changed its actual implementation owner or result")
+            }
         }
-        Some(HeaderRef::Function(_)) | None if body == ConstantBody::Required => {
+        Some(HeaderRef::Function(_)) | None if header.body == ConstantBody::Required => {
             Err("source free constant requires its value")
         }
         _ => Err("source associated constant changed its actual trait or implementation owner"),

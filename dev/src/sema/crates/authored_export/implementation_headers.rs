@@ -154,7 +154,8 @@ impl Stage {
                 .functions
                 .headers
                 .contains_key(&crate::types::ItemId(method.0))
-                || self.inherent_constant(report, facts, method).is_some();
+                || self.inherent_constant(report, facts, method).is_some()
+                || self.has_constant_original(method)?;
             if !admitted {
                 return Err(
                     "source inherent associated constants and types require a wider profile",

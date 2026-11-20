@@ -7166,6 +7166,17 @@ the supplied constant's type. The authenticated Range constants keep
 their existing unscoped role headers. Provided initializers require
 separate checked body transport.
 
+A closed inherent implementation in version fourteen carries a constant
+with a closed nominal result as an original initializer. The member link
+names the actual inherent owner and the header names the initializer.
+The consumer checks the closed owner, the declared result, the original
+body and its const calls before evaluating a selected read with empty
+arguments. Body IR value node 17 may name this original and must retain
+its declared result type. An initializer's direct call retains its actual
+site and closed-const effect. A tuple constructor uses its own nominal
+payload and ordinary safe constructor checks. Closed scalar inherent
+members keep their evaluated-value headers.
+
 Version thirteen also carries enums. Declaration kind 10 is an enum, whose
 nominal header has no record fields, and kind 11 is one of its variants,
 parented by the enum and published once: a unit or tuple variant as its

@@ -218,7 +218,7 @@ pub(super) fn original_context(
         _ => return Err("source original has no actual callable header"),
     };
     if context != s::CallContext::Runtime {
-        constant_calls(rows, headers, body, work)?;
+        constant_calls(rows, headers, body, work, constant_initializers)?;
     }
     Ok(context)
 }
@@ -229,6 +229,7 @@ fn constant_calls(
     headers: &HeaderIndex<'_>,
     body: &s::Original,
     work: &mut Work,
+    constructors: bool,
 ) -> Result<(), &'static str> {
     for request in &body.calls {
         work.charge(3)?;
@@ -239,13 +240,23 @@ fn constant_calls(
         if application.declaration.artifact != s::ArtifactRef(0) {
             return Err("source const call requires its complete defining target artifact");
         }
-        let Some(s::HeaderRef::Function(index)) =
-            headers.header(application.declaration.declaration, work)?
-        else {
-            return Err("source const call target header is absent");
-        };
-        if rows.functions[index as usize].constness != Constness::Const {
-            return Err("source const-definition call requires its actual const target");
+        let declaration = application.declaration.declaration;
+        match headers.header(declaration, work)? {
+            Some(s::HeaderRef::Function(index)) => {
+                if rows.functions[index as usize].constness != Constness::Const {
+                    return Err("source const-definition call requires its actual const target");
+                }
+            }
+            Some(s::HeaderRef::Constructor(_) | s::HeaderRef::Variant(_)) if constructors => {
+                if s::Constructor::of((rows.enums(), &rows.declarations), declaration, |row| {
+                    headers.header(row, work)
+                })?
+                .is_none()
+                {
+                    return Err("source const call target header is absent");
+                }
+            }
+            _ => return Err("source const call target header is absent"),
         }
     }
     Ok(())

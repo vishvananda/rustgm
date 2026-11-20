@@ -33,7 +33,11 @@ pub(super) fn core_primitive_owner(report: &Report, facts: &Declarations, owner:
         })
 }
 
-fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -> Option<Instance> {
+fn closed_inherent_initializer(
+    report: &Report,
+    facts: &Declarations,
+    definition: DefId,
+) -> Option<TypeId> {
     let declaration = report.resolution.definitions.get(definition.0 as usize)?;
     if declaration.kind != DefKind::Const {
         return None;
@@ -78,10 +82,15 @@ fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -
         || !matches!(initializer.kind, InitializerKind::Const)
         || !initializer.type_checked()
         || initializer.ty != ty
-        || value_type(facts, ty, true).is_err()
     {
         return None;
     }
+    Some(ty)
+}
+
+fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -> Option<Instance> {
+    let ty = closed_inherent_initializer(report, facts, definition)?;
+    value_type(facts, ty, true).ok()?;
     Some(Instance {
         definition,
         arguments: GenericArgs::EMPTY,
@@ -161,23 +170,37 @@ impl Stage {
         })
     }
 
-    pub(super) fn provided_constant(&self, facts: &Declarations, definition: DefId) -> bool {
-        self.declaration_policies()
-            && facts
-                .associated
-                .owner(definition)
-                .and_then(|owner| facts.associated.get(owner))
-                .is_some_and(|owner| {
-                    owner.source.is_some()
-                        && matches!(
-                            owner.kind,
-                            OwnerKind::Trait { .. }
-                                | OwnerKind::Impl {
-                                    trait_type: Some(_),
-                                    ..
-                                }
-                        )
-                })
+    pub(super) fn provided_constant(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> bool {
+        if !self.declaration_policies() {
+            return false;
+        }
+        if matches!(
+            closed_inherent_initializer(report, facts, definition)
+                .and_then(|ty| facts.types.kind(ty)),
+            Some(Kind::Adt(_, GenericArgs::EMPTY))
+        ) {
+            return true;
+        }
+        facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| facts.associated.get(owner))
+            .is_some_and(|owner| {
+                owner.source.is_some()
+                    && matches!(
+                        owner.kind,
+                        OwnerKind::Trait { .. }
+                            | OwnerKind::Impl {
+                                trait_type: Some(_),
+                                ..
+                            }
+                    )
+            })
             && facts
                 .initializer_index(definition)
                 .and_then(|index| facts.initializers.get(index))
@@ -190,13 +213,14 @@ impl Stage {
 
     pub(super) fn provided_constants(
         &mut self,
+        report: &Report,
         facts: &Declarations,
     ) -> Result<Vec<DefId>, &'static str> {
         let mut declarations = Vec::new();
         if self.declaration_policies() {
             for initializer in &facts.initializers {
                 self.charge(1)?;
-                if self.provided_constant(facts, initializer.definition) {
+                if self.provided_constant(report, facts, initializer.definition) {
                     self.reserve(4 * size_of::<DefId>())?;
                     declarations.push(initializer.definition);
                 }
@@ -219,7 +243,7 @@ impl Stage {
     ) -> Result<(), &'static str> {
         for initializer in &facts.initializers {
             self.charge(1)?;
-            if !self.provided_constant(facts, initializer.definition) {
+            if !self.provided_constant(report, facts, initializer.definition) {
                 continue;
             }
             let definition = &report.resolution.definitions[initializer.definition.0 as usize];
@@ -303,7 +327,7 @@ impl Stage {
                 },
                 s::ConstantBody::Required,
             )
-        } else if self.provided_constant(facts, definition) {
+        } else if self.has_constant_original(definition)? {
             let context = self.original_context(definition)?;
             let body = context
                 .body()
@@ -327,9 +351,8 @@ impl Stage {
         })
     }
 
-    /// Version thirteen: value code 17 names the exported constant
-    /// declaration a body reads. Its value travels once, in that
-    /// declaration's header row.
+    /// Value code 17 reads a constant with a completed value or a closed
+    /// inherent initializer identified by the declaration header.
     pub(crate) fn constant_read(
         &mut self,
         definition: DefId,
@@ -429,7 +452,7 @@ impl Stage {
             let range = self.range_required_constant(facts, id);
             if range
                 || self.authored_required_constant(report, facts, id)
-                || self.provided_constant(facts, id)
+                || self.has_constant_original(id)?
             {
                 let header = self.associated_constant_header(facts, id, declaration, range, ty)?;
                 self.reserve(size_of::<s::ConstantHeader>())?;

@@ -107,7 +107,12 @@ impl Stage {
             }
         }
         let nested = self.anonymous_signature_field(facts, parts)?.is_some();
-        let closed = facts.types.needs_region_context(ty) == Some(false)
+        // A constant can reuse a function's shared signature, but its own
+        // signatures are bound to the actual Call in the initializer.
+        let initializer = self.rows.body_owners[body.0 as usize].kind
+            == crate::support::crates::owner_catalog::BodyKind::Constant;
+        let closed = !initializer
+            && facts.types.needs_region_context(ty) == Some(false)
             && facts.types.contains_parameters(ty) == Some(false)
             && !nested;
         let key = if closed { shared } else { local };

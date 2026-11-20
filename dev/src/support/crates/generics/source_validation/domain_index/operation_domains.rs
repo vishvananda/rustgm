@@ -239,8 +239,8 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
-    /// Version thirteen: a constant read names a validated constant row of
-    /// this artifact and has exactly its declared scalar type.
+    /// A constant read names a validated row of this artifact and retains
+    /// the declared result type.
     fn constant(
         &self,
         constant: crate::support::crates::owner_catalog::DeclarationRef,
@@ -255,6 +255,19 @@ impl DomainIndex<'_, '_> {
             .constants()
             .get(ordinal as usize)
             .ok_or("source constant read names no validated constant declaration")?;
+        if matches!(header.body, s::ConstantBody::Original(_)) && self.declaration_policies {
+            let parent = rows.declarations[constant.0 as usize]
+                .definition
+                .parent
+                .ok_or("source constant read lacks its actual inherent owner")?;
+            if matches!(self.headers.header(parent, work)?, Some(HeaderRef::Implementation(index))
+                if rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types))
+                && ty == header.ty
+            {
+                return Ok(());
+            }
+            return Err("source constant read changed its declaration's owner or type");
+        }
         if !matches!(header.body, s::ConstantBody::Evaluated(_)) {
             return Err("source constant read requires its completed value");
         }

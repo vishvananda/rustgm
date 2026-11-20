@@ -539,8 +539,8 @@ pub(super) fn function_effect_read(
         _ => Err("unknown source constness effect"),
     }
 }
-/// A const definition is usable at runtime or CTFE; its call use is Conditional.
-/// Exact original-context equality and genuine const targets are still required.
+/// Const definitions use Conditional. Version fourteen initializer calls
+/// use Const. Validation checks the exact context and target for both.
 pub(super) fn call_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
@@ -551,6 +551,7 @@ pub(super) fn call_effect_read(
     match read.reader.u8()? {
         0 => Ok(Constness::Ordinary),
         2 => Ok(Constness::Conditional),
+        1 if read.profile.declaration_policies() => Ok(Constness::Const),
         1 => Err("source closed-const call requires its wider profile"),
         _ => Err("unknown source constness effect"),
     }
