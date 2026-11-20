@@ -67,6 +67,7 @@ type 64 function-item def=25 signature=59 arguments=[region:region:1,type:11]
 type 65 reference mutable=true region=region:4 referent=11
 type 66 reference mutable=true region=region:5 referent=11
 type 67 aggregate def=15 regions=[region:7]
+type 68 reference mutable=true region=region:1 referent=11
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 15 type=21 name="D" source=0:28

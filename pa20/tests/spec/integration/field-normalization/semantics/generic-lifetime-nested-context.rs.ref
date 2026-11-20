@@ -77,8 +77,10 @@ type 74 aggregate def=24 arguments=[region:region:6,type:11]
 type 75 projection def=21 self=11 trait=19 arguments=[region:region:6] family arguments=[]
 type 76 aggregate def=15 regions=[region:8]
 type 77 aggregate def=15 regions=[region:6]
-type 78 aggregate def=24 arguments=[region:region:1,type:11]
-type 79 aggregate def=15 regions=[region:9]
+type 78 reference mutable=true region=region:6 referent=11
+type 79 aggregate def=24 arguments=[region:region:1,type:11]
+type 80 aggregate def=15 regions=[region:9]
+type 81 reference mutable=true region=region:1 referent=11
 def 13 type=29 name="check" source=0:13
 def 14 type=31 name="fail" source=0:22
 def 15 type=21 name="D" source=0:28
