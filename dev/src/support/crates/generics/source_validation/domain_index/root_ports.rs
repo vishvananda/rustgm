@@ -220,9 +220,12 @@ impl DomainIndex<'_, '_> {
         if context.frame != Some(signature.binder) {
             return Err("source signature root lost its actual binder context");
         }
+        let rows = self.headers.rows();
+        super::super::reject_foreign_value(rows, signature.result)?;
         self.types
             .root(self.headers, context, signature.result, work)?;
-        for &input in signature.parameters.slice(&self.headers.rows().roots)? {
+        for &input in signature.parameters.slice(&rows.roots)? {
+            super::super::reject_foreign_value(rows, input)?;
             self.types.root(self.headers, context, input, work)?;
         }
         Ok(())

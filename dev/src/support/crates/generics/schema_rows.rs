@@ -220,6 +220,8 @@ pub enum Type {
     /// Version fourteen source types, separate from the ordinary scalar ABI.
     F16,
     F128,
+    /// Version fourteen: the exact local opaque foreign declaration.
+    Foreign(DeclarationRef),
     Parameter(SlotRef),
     Reference {
         mutable: bool,

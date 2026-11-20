@@ -146,6 +146,14 @@ impl Graph {
                 Self::scope_ready(facts, definition)?;
             }
             s::DefinitionKind::Static => self.static_ready(rows, row, *cell)?,
+            s::DefinitionKind::ForeignType => {
+                // The actual definition is already authenticated above.
+                if cell.and_then(|ty| facts.types.kind(ty))
+                    != Some(Kind::Foreign(ItemId(definition.0)))
+                {
+                    return Err("source foreign readiness lost its actual opaque type");
+                }
+            }
             s::DefinitionKind::SelfType => {
                 self.self_type_ready(rows, facts, definition, raw.definition.parent, *cell)?;
             }

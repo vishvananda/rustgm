@@ -329,6 +329,7 @@ impl Arena {
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
                 s::Type::F16 => Recipe::Leaf(Node::F16),
                 s::Type::F128 => Recipe::Leaf(Node::F128),
+                s::Type::Foreign(declaration) => Recipe::Leaf(Node::Foreign(declaration)),
                 s::Type::Str => Recipe::Leaf(Node::Str),
                 s::Type::Never => Recipe::Leaf(Node::Never),
                 s::Type::Tuple(elements) => Recipe::Tuple(elements),

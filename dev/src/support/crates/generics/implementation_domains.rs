@@ -250,6 +250,7 @@ impl ModuleContractColumns {
                 s::DefinitionKind::Module
                     | s::DefinitionKind::Trait
                     | s::DefinitionKind::TraitAlias
+                    | s::DefinitionKind::ForeignType
                     | s::DefinitionKind::Struct
                     | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
@@ -361,6 +362,7 @@ impl ModuleContractColumns {
             s::DefinitionKind::Module
             | s::DefinitionKind::Trait
             | s::DefinitionKind::TraitAlias
+            | s::DefinitionKind::ForeignType
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum
             | s::DefinitionKind::TypeAlias => Namespace::Type,

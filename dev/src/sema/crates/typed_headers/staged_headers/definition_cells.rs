@@ -2,7 +2,8 @@
 use super::{Declarations, Error, Headers, Scope, error, mapped_source, s};
 use crate::{
     resolve::model::DefId,
-    types::{TypeId, arguments::Argument},
+    support::crates::owner_catalog::DeclarationRef,
+    types::{ItemId, Kind, TypeId, arguments::Argument},
 };
 
 pub(super) fn prepare(
@@ -63,10 +64,22 @@ pub(super) fn prepare(
         }
         assign(&mut cells, row, callable.ty)?;
     }
+    finish_cells(context, facts, cells, budget)
+}
+
+fn finish_cells(
+    context: &mapped_source::Context<'_>,
+    facts: &mut Declarations,
+    cells: Vec<Option<TypeId>>,
+    budget: &mut Headers,
+) -> Result<Vec<(DefId, TypeId)>, Error> {
+    let rows = context.descriptor.rows();
     let mut result = Vec::with_capacity(rows.declarations.len());
     for (index, (raw, cell)) in rows.declarations.iter().zip(cells).enumerate() {
         budget.charge(1)?;
-        let row = u32::try_from(index).map_err(|_| error("source type cell ordinal overflow"))?;
+        let row = DeclarationRef(
+            u32::try_from(index).map_err(|_| error("source type cell ordinal overflow"))?,
+        );
         let required = match raw.definition.kind {
             s::DefinitionKind::Struct
             | s::DefinitionKind::Enum
@@ -79,9 +92,7 @@ pub(super) fn prepare(
             | s::DefinitionKind::TypeParameter
             | s::DefinitionKind::ConstParameter => true,
             // A record variant is no value: `E::V` names no constructor.
-            s::DefinitionKind::Variant => !rows
-                .record_variant(crate::support::crates::owner_catalog::DeclarationRef(row))
-                .map_err(error)?,
+            s::DefinitionKind::Variant => !rows.record_variant(row).map_err(error)?,
             _ => false,
         };
         if required != cell.is_some() {
@@ -89,11 +100,9 @@ pub(super) fn prepare(
                 "source declaration has a missing or invented canonical type cell",
             ));
         }
-        if let Some(ty) = cell {
-            let definition = context.definition(
-                crate::support::crates::owner_catalog::DeclarationRef(row),
-                budget,
-            )?;
+        let foreign = raw.definition.kind == s::DefinitionKind::ForeignType;
+        if foreign || cell.is_some() {
+            let definition = context.definition(row, budget)?;
             if facts
                 .definitions
                 .get(definition.0 as usize)
@@ -103,6 +112,16 @@ pub(super) fn prepare(
                     "source type cell is outside its actual destination or already installed",
                 ));
             }
+            let ty = if foreign {
+                // A declared but unused external type may have no recipe row.
+                budget.reserve(4 * size_of::<Kind>())?;
+                facts
+                    .types
+                    .intern(Kind::Foreign(ItemId(definition.0)))
+                    .map_err(error)?
+            } else {
+                cell.ok_or_else(|| error("source type cell is missing"))?
+            };
             result.push((definition, ty));
         }
     }

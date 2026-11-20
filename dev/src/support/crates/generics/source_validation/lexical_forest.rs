@@ -23,6 +23,11 @@ pub(super) fn validate(
                 .declarations
                 .get(parent)
                 .ok_or("source lexical declaration parent is unknown")?;
+            if row.definition.kind == DefinitionKind::ForeignType
+                && actual.definition.kind != DefinitionKind::Module
+            {
+                return Err("source foreign declaration has no actual module owner");
+            }
             let ordinary = matches!(
                 actual.definition.kind,
                 DefinitionKind::Module

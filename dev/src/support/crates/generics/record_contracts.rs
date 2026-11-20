@@ -13,6 +13,13 @@ pub(super) fn require_profile(
             .saturating_add(1),
     )?;
     if !profile.declaration_policies() {
+        if rows
+            .declarations
+            .iter()
+            .any(|row| row.definition.kind == DefinitionKind::ForeignType)
+        {
+            return Err("source foreign types require the declaration policies profile");
+        }
         work.charge(rows.nominals.len())?;
         if rows.nominals.iter().any(|row| row.fundamental) {
             return Err("source fundamental nominal requires the declaration policy profile");

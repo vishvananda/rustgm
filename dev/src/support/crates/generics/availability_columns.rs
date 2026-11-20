@@ -393,6 +393,7 @@ impl AvailabilityRows {
                 DefinitionKind::Module
                     | DefinitionKind::Trait
                     | DefinitionKind::TraitAlias
+                    | DefinitionKind::ForeignType
                     | DefinitionKind::Struct
                     | DefinitionKind::Enum
                     | DefinitionKind::SelfType

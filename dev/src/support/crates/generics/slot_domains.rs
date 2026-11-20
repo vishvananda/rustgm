@@ -29,6 +29,8 @@ pub enum DefinitionKind {
     TypeAlias,
     /// A v14 module trait alias with a lexical Self and declared clauses.
     TraitAlias,
+    /// An opaque foreign declaration with no value representation.
+    ForeignType,
     /// Version fourteen: a module-owned static allocation.
     Static,
 }
@@ -457,6 +459,7 @@ fn valid_parent(
         | DefinitionKind::TypeParameter
         | DefinitionKind::RegionParameter
         | DefinitionKind::ConstParameter
+        | DefinitionKind::ForeignType
         | DefinitionKind::Static
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,

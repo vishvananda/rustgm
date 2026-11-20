@@ -12,7 +12,7 @@ impl Builder<'_, '_> {
         node: usize,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        use s::Type::{F16, F128, Never, Parameter, Str};
+        use s::Type::{F16, F128, Foreign, Never, Parameter, Scalar, Str};
         let rows = self.headers.rows();
         if node < self.result.type_count {
             match rows.types[node] {
@@ -91,7 +91,7 @@ impl Builder<'_, '_> {
                         "source application signature recipes require a complete wider profile",
                     );
                 }
-                s::Type::Scalar(_) | F16 | F128 | Never | Parameter(_) | Str => {}
+                Scalar(_) | Foreign(_) | F16 | F128 | Never | Parameter(_) | Str => {}
             }
         } else {
             let offset = node - self.result.type_count;
@@ -161,6 +161,13 @@ impl Builder<'_, '_> {
                 }
                 Summary::default()
             }
+            s::Type::Foreign(declaration) => {
+                if !self.profile.declaration_policies() {
+                    return Err("source foreign type requires the version-fourteen profile");
+                }
+                super::super::declaration(rows, declaration, s::DefinitionKind::ForeignType, work)?;
+                Summary::default()
+            }
             s::Type::Nominal {
                 declaration,
                 arguments,
@@ -193,7 +200,7 @@ impl Builder<'_, '_> {
             s::Type::Slice(element) => {
                 if matches!(
                     rows.types.get(element.0 as usize),
-                    Some(s::Type::Str | s::Type::Slice(_))
+                    Some(s::Type::Str | s::Type::Slice(_) | s::Type::Foreign(_))
                 ) {
                     return Err("source slice element requires a sized type");
                 }
@@ -278,7 +285,7 @@ impl Builder<'_, '_> {
         let rows = self.headers.rows();
         if matches!(
             rows.types.get(element.0 as usize),
-            Some(s::Type::Str | s::Type::Slice(_))
+            Some(s::Type::Str | s::Type::Slice(_) | s::Type::Foreign(_))
         ) {
             return Err("source array element requires a sized type");
         }
@@ -591,8 +598,10 @@ impl Builder<'_, '_> {
             .binders
             .get(signature.binder.0 as usize)
             .ok_or("source function type has an unknown actual binder")?;
+        super::super::reject_foreign_value(rows, signature.result)?;
         let mut summary = self.child(signature.result, work)?;
         for &input in signature.parameters.slice(&rows.roots)? {
+            super::super::reject_foreign_value(rows, input)?;
             summary = self.merge(summary, self.child(input, work)?, work)?;
         }
         if let Some(bound) = summary.bound {

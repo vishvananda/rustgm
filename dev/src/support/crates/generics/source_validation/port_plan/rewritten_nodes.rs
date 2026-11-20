@@ -52,6 +52,7 @@ pub(super) enum Node {
     Scalar(Scalar),
     F16,
     F128,
+    Foreign(crate::support::crates::owner_catalog::DeclarationRef),
     /// Version thirteen: an evaluated const argument by its primitive type and
     /// canonical bits, held as four words so the node keeps its alignment. A
     /// rigid const term is a `Parameter` of its const slot.
@@ -307,6 +308,7 @@ impl Arena {
             | Node::Scalar(_)
             | Node::F16
             | Node::F128
+            | Node::Foreign(_)
             | Node::ConstValue { .. }
             | Node::Str
             | Node::Never => NodeFacts(NodeFacts::FORMED),

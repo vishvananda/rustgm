@@ -615,6 +615,10 @@ impl Stage {
         if self.declaration_policies() {
             match definition.kind {
                 DefKind::TraitAlias => return Ok(Some(s::DefinitionKind::TraitAlias)),
+                DefKind::ForeignType => {
+                    require_foreign_declaration(report, facts, id)?;
+                    return Ok(Some(s::DefinitionKind::ForeignType));
+                }
                 DefKind::Static => {
                     statics::require_definition(report, facts, id)?;
                     return Ok(Some(s::DefinitionKind::Static));
@@ -1051,6 +1055,46 @@ fn implementation_result(report: &Report, facts: &Declarations, id: DefId) -> bo
                     }
                 )
             })
+}
+
+fn require_foreign_declaration(
+    report: &Report,
+    facts: &Declarations,
+    id: DefId,
+) -> Result<(), &'static str> {
+    use crate::{
+        syntax::{ast::Kind, item::ItemKind},
+        types::ItemId,
+    };
+    let definition = &report.resolution.definitions[id.0 as usize];
+    let source = definition
+        .node
+        .ok_or("source foreign type has no actual declaration")?;
+    let block = report
+        .resolution
+        .foreign_owners
+        .get(&id)
+        .copied()
+        .filter(|block| report.resolution.foreign_blocks.contains(block))
+        .ok_or("source foreign type has no actual external block")?;
+    let item = |location: crate::resolve::unit::NodeKey| {
+        let ast = &report.package.unit(location.file).configured.ast;
+        let Kind::Item(index) = ast.node(location.node).kind else {
+            return None;
+        };
+        ast.items.get(index as usize).map(|item| item.kind)
+    };
+    let cell = facts.definitions.get(id.0 as usize).copied().flatten();
+    if definition.namespace != Namespace::Type
+        || item(source) != Some(ItemKind::ForeignType)
+        || !matches!(item(block), Some(ItemKind::ExternBlock { .. }))
+        || cell != facts.node(source).and_then(|node| node.ty)
+        || cell.and_then(|ty| facts.types.kind(ty))
+            != Some(crate::types::Kind::Foreign(ItemId(id.0)))
+    {
+        return Err("source foreign type changed its actual opaque declaration");
+    }
+    Ok(())
 }
 
 fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>, &'static str> {

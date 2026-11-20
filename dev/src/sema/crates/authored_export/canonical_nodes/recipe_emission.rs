@@ -1,5 +1,5 @@
 //! Iterative ownership-aware type recipes finish children before their parents.
-use super::{Context, Declarations, Key, Kind, Stage, TypeId, g, retained, s, signatures};
+use super::{Context, Declarations, DefId, Key, Kind, Stage, TypeId, g, retained, s, signatures};
 
 #[derive(Clone, Copy)]
 enum Task {
@@ -219,6 +219,9 @@ impl Stage {
                 declaration: self.address(crate::resolve::model::DefId(item.0))?,
                 arguments: self.arguments(facts, arguments, context)?,
             },
+            Kind::Foreign(item) if self.declaration_policies() => {
+                s::Type::Foreign(self.declaration(DefId(item.0))?)
+            }
             Kind::Parameter(parameter) => s::Type::Parameter(
                 *self
                     .graph

@@ -499,6 +499,41 @@ impl<M: Storage> Worklist<M> {
 
         store.intern(kind).map(Demand::Ready).map_err(error)
     }
+    fn nominal_type<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        declaration: s::DeclarationAddress,
+        arguments: g::Range,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        if declaration.artifact.0 != 0 {
+            return Err(error(
+                "source nominal requires its actual local artifact declaration",
+            ));
+        }
+        let definition = port.definition(declaration.declaration, budget)?;
+        let rows = port.rows();
+        let arguments = arguments.slice(&rows.arguments).map_err(error)?;
+        budget.charge(arguments.len().saturating_add(1))?;
+        budget.reserve(arguments.len().saturating_mul(4 * size_of::<Argument>()))?;
+        let mut mapped = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            mapped.push(match *argument {
+                s::Argument::Type(ty) => Argument::Type(self.child(ty)?),
+                s::Argument::Region(region) => match port.region(region, budget)? {
+                    Demand::Ready(region) => Argument::Lifetime(region),
+                    Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+                },
+                s::Argument::Const(term) => const_argument(port, store, term, budget)?,
+            });
+        }
+        let kind = Kind::Adt(
+            crate::types::ItemId(definition.0),
+            store.intern_arguments(&mapped).map_err(error)?,
+        );
+        store.intern(kind).map(Demand::Ready).map_err(error)
+    }
     fn intern<'rows, B: Budget, P: Port<'rows, B>>(
         &self,
         port: &mut P,
@@ -517,31 +552,11 @@ impl<M: Storage> Worklist<M> {
                 declaration,
                 arguments,
             } => {
-                if declaration.artifact.0 != 0 {
-                    return Err(error(
-                        "source nominal requires its actual local artifact declaration",
-                    ));
-                }
-                let definition = port.definition(declaration.declaration, budget)?;
-                let rows = port.rows();
-                let arguments = arguments.slice(&rows.arguments).map_err(error)?;
-                budget.charge(arguments.len().saturating_add(1))?;
-                budget.reserve(arguments.len().saturating_mul(4 * size_of::<Argument>()))?;
-                let mut mapped = Vec::with_capacity(arguments.len());
-                for argument in arguments {
-                    mapped.push(match *argument {
-                        s::Argument::Type(ty) => Argument::Type(self.child(ty)?),
-                        s::Argument::Region(region) => match port.region(region, budget)? {
-                            Demand::Ready(region) => Argument::Lifetime(region),
-                            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
-                        },
-                        s::Argument::Const(term) => const_argument(port, store, term, budget)?,
-                    });
-                }
-                Kind::Adt(
-                    crate::types::ItemId(definition.0),
-                    store.intern_arguments(&mapped).map_err(error)?,
-                )
+                return self.nominal_type(port, store, declaration, arguments, budget);
+            }
+            s::Type::Foreign(declaration) => {
+                let definition = port.definition(declaration, budget)?;
+                Kind::Foreign(crate::types::ItemId(definition.0))
             }
             s::Type::Scalar(_) | s::Type::F16 | s::Type::F128 | s::Type::Str | s::Type::Never => {
                 return leaf(row);
@@ -799,7 +814,7 @@ fn next(
                 });
             std::iter::once(row.subject).chain(args).nth(cursor)
         }
-        s::Type::Scalar(_) | F16 | F128 | Never | Parameter(_) | Str => None,
+        s::Type::Scalar(_) | s::Type::Foreign(_) | F16 | F128 | Never | Parameter(_) | Str => None,
         s::Type::Nominal { arguments, .. } => arguments
             .slice(&rows.arguments)
             .map_err(error)?

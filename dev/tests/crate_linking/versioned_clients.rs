@@ -1682,3 +1682,85 @@ fn narrow<T: base::Thin + ?base::Sized>(_: *const T) -> <T as base::Pointee>::Me
     }
     Ok(())
 }
+
+#[test]
+fn cli_version_fourteen_keeps_imported_foreign_types_opaque() -> Result {
+    use rustgm::support::crates;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/foreign-metadata-v14/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let source = std::fs::read_to_string(
+        root.join("pa31/tests/spec/foreign-types/identity-and-pointee.rs"),
+    )?;
+    let (foundation, _) = source
+        .split_once("unsafe extern")
+        .ok_or("foreign role fixture")?;
+    let provider = folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        format!(
+            r#"{foundation}
+unsafe extern "C" {{ pub type VTable; pub type Other; }}
+pub struct Holder<T: PointeeSized> {{ pub raw: *const T }}
+pub struct Carrier {{ pub table: Holder<VTable> }}
+pub type TablePtr = *const VTable;
+"#
+        ),
+    )?;
+    let metadata = folder.join("provider.rgcrate");
+    super::artifacts::checked(
+        "foreign-provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &folder.join("provider.lowir"),
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, body, diagnostic) in [
+        (
+            "pointer",
+            "fn table(value: base::Carrier) -> base::TablePtr { value.table.raw }\n\
+            pub fn opaque(address: usize) -> usize { (address as base::TablePtr) as usize }\n\
+            pub fn metadata() -> <base::VTable as base::Pointee>::Metadata { () }",
+            None,
+        ),
+        (
+            "different",
+            "fn wrong(input: *const base::Other) -> base::TablePtr { input }",
+            Some("incompatible types"),
+        ),
+        (
+            "by-value",
+            "fn wrong(_: base::VTable) {}",
+            Some("function parameters and result must be sized"),
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\n{body}\n"),
+        )?;
+        let result = source_client(&client, &metadata, &folder.join(format!("{name}.lowir")))
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(result.stderr)?;
+        if let Some(diagnostic) = diagnostic {
+            assert_eq!(result.status.code(), Some(1), "{name}: {stderr}");
+            assert!(stderr.contains(diagnostic), "{name}: {stderr}");
+        } else {
+            assert!(result.status.success(), "{name}: {stderr}");
+        }
+    }
+    Ok(())
+}

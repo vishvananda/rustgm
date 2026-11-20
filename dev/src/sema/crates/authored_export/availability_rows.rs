@@ -379,6 +379,7 @@ impl Stage {
                 DefKind::Module
                     | DefKind::Trait
                     | DefKind::TraitAlias
+                    | DefKind::ForeignType
                     | DefKind::Struct
                     | DefKind::Enum
                     | DefKind::Variant
