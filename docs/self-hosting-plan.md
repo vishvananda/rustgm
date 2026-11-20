@@ -991,15 +991,18 @@ Rust independently runs the separate-crate control and prints
 A fresh RustGM client decodes the same artifact and initially stops at
 `v4 method conformance requires its actual override`. `7839da8d0` keeps
 an inherited initializer under its trait owner while installing the
-implementation's own members. The same packet then reaches an exact
-declaration-kind check in imported conformance. The importer still
-classifies constant links as function links there. Four focused
-checks pass after the owner repair. Constant link conformance,
-reconstruction and execution in the fresh client, and the open
-request to the actual supertrait remain pending. The candidate stays
-in the frontier worktree. Evidence is under
-`obj/qualification/fast/{1795163643806322253,1795163819440629720}/` and
-`obj/parallel/v14-associated-constants/{provided-stable-v2,provided-independent-v1}/`.
+implementation's own members. Four focused checks pass after the owner
+repair. `dc9017c11` classifies imported method, type and constant links
+by the installed declaration kind. It re-proves each constant override's
+canonical type and lifetime contract and verifies that inherited links
+refer to an actual trait default. The two focused constant checks pass,
+including the required generic constant regression. A fresh client of the
+same 8,439-byte packet now passes imported conformance and fails at
+`source original preflight omitted its actual function header`.
+Fresh client body reconstruction and execution, and the open request to
+the actual supertrait, remain pending in the frontier worktree. Evidence is
+under `obj/qualification/fast/1795164896161285346/` and
+`obj/parallel/v14-associated-constants/provided-stable-v2/`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a

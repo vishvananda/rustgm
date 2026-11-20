@@ -20,10 +20,13 @@ passed. `4520c8716` repairs the private decoder call. The private
 harness reached its build deadline before execution. Frontier commit
 `d7a9ddcc8` publishes and byte-round-trips an actual default and
 override with five passing focused tests. `7839da8d0` keeps the default
-under its trait owner and passes four focused checks. A fresh RustGM
-client now reaches the declaration-kind check in imported conformance.
-Fresh original reconstruction, owner substitution and the open
-supertrait request remain pending.
+under its trait owner and passes four focused checks. `dc9017c11`
+re-proves imported constant links using the actual declaration kind
+and canonical constant contract. Two focused checks pass. A fresh
+RustGM client with the same provider now reaches original-body preflight,
+which expects a function header. Initializer reconstruction is in
+development. Owner substitution and the open supertrait request remain
+pending.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
