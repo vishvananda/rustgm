@@ -54,6 +54,10 @@ pub(super) fn prepare(
         budget.charge(1)?;
         assign(&mut cells, declaration, graph.ty(row.ty)?)?;
     }
+    for alias in rows.type_aliases() {
+        budget.charge(1)?;
+        assign(&mut cells, alias.declaration, graph.ty(alias.target)?)?;
+    }
     variant_cells(context, graph, facts, &mut cells, budget)?;
     for callable in callables {
         budget.charge(1)?;
@@ -75,6 +79,7 @@ pub(super) fn prepare(
             s::DefinitionKind::Struct
             | s::DefinitionKind::Enum
             | s::DefinitionKind::AssociatedType
+            | s::DefinitionKind::TypeAlias
             | s::DefinitionKind::Function
             | s::DefinitionKind::Constant
             | s::DefinitionKind::SelfType

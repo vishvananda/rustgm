@@ -593,6 +593,7 @@ pub struct ColdColumns {
     /// Version thirteen: one header row per constant declaration, in
     /// declaration order. Each row holds its own term in place.
     pub constants: Vec<ConstantHeader>,
+    pub type_aliases: Vec<TypeAliasHeader>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -608,6 +609,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     consts: Vec::new(),
     array_lengths: Vec::new(),
     constants: Vec::new(),
+    type_aliases: Vec::new(),
     bodies: None,
 };
 impl ColdColumns {
@@ -623,10 +625,21 @@ impl ColdColumns {
             && self.consts.is_empty()
             && self.array_lengths.is_empty()
             && self.constants.is_empty()
+            && self.type_aliases.is_empty()
             && self.bodies.is_none()
     }
 }
+/// A v14 public, closed module alias and its transparent target recipe.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TypeAliasHeader {
+    pub declaration: DeclarationRef,
+    pub target: TypeRef,
+}
+
 impl Rows {
+    pub(crate) fn type_aliases(&self) -> &[TypeAliasHeader] {
+        &self.cold().type_aliases
+    }
     #[must_use]
     pub fn cold(&self) -> &ColdColumns {
         ColdColumns::of(self.cold.as_deref())

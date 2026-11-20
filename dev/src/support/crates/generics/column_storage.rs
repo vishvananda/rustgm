@@ -68,7 +68,8 @@ impl Columns {
             || !cold.diagnostics.is_empty()
             || !cold.consts.is_empty()
             || !cold.array_lengths.is_empty()
-            || !cold.constants.is_empty())
+            || !cold.constants.is_empty()
+            || !cold.type_aliases.is_empty())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -78,6 +79,7 @@ impl Columns {
                 consts: cold.consts.clone(),
                 array_lengths: cold.array_lengths.clone(),
                 constants: cold.constants.clone(),
+                type_aliases: cold.type_aliases.clone(),
                 bodies: None,
             })
         })
@@ -106,6 +108,11 @@ impl Columns {
     pub fn array_lengths(&self) -> &[super::super::ConstTerm] {
         &self.cold().array_lengths
     }
+    #[must_use]
+    pub(crate) fn type_aliases(&self) -> &[super::super::TypeAliasHeader] {
+        &self.cold().type_aliases
+    }
+
     #[must_use]
     pub fn constants(&self) -> &[super::super::ConstantHeader] {
         &self.cold().constants

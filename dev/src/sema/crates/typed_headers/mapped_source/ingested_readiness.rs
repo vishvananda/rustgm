@@ -82,6 +82,9 @@ impl Graph {
                 self.function_ready(catalog, facts, headers, definition, steps)?;
             }
             s::DefinitionKind::Constant => self.constant_ready(rows, row, *cell)?,
+            s::DefinitionKind::TypeAlias => {
+                self.alias_ready(rows, facts, (definition, row), *cell)?;
+            }
             s::DefinitionKind::SelfType => {
                 let owner = self.installed_owner(facts, definition)?;
                 let schema = facts
@@ -119,6 +122,31 @@ impl Graph {
             }
         }
         Ok(Readiness::Declaration)
+    }
+
+    fn alias_ready(
+        &self,
+        rows: s::ValidatedView<'_>,
+        facts: &Declarations,
+        (definition, row): (DefId, crate::support::crates::owner_catalog::DeclarationRef),
+        cell: Option<crate::types::TypeId>,
+    ) -> Result<(), &'static str> {
+        let Some(s::HeaderRef::TypeAlias(index)) = rows.header(row)? else {
+            return Err("source alias readiness lost its actual type header");
+        };
+        let alias = &rows.type_aliases()[index as usize];
+        let target = self
+            .ty(alias.target)
+            .map_err(|_| "source alias target is unmapped")?;
+        if alias.declaration != row
+            || cell != Some(target)
+            || facts.associated.owner(definition).is_some()
+            || facts.generics.parameters.contains_key(&definition)
+            || facts.lifetimes.parameters.contains_key(&definition)
+        {
+            return Err("source alias readiness changed its closed target or owner");
+        }
+        Ok(())
     }
 
     fn associated_ready(

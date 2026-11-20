@@ -424,14 +424,8 @@ impl ValidatedRows {
         profile: Profile,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
-        super::nominal_contracts::require_profile(&rows, profile, work)?;
-        super::sum_contracts::require_profile(&rows, profile, work)?;
-        super::free_constants::require_profile(&rows, profile, work)?;
-        super::inherent_contracts::require_profile(&rows, profile, work)?;
-        super::operation_contracts::require_profile(&rows, profile, work)?;
+        require_source_profile(&rows, profile, work)?;
         let features = profile.feature_predicates();
-        safety_profile::require_profile(&rows, profile, work)?;
-        branch_profile::require_profile(&rows, profile, work)?;
         if !profile.definitions() {
             exact_exports::legacy(&rows, work)?;
         }
@@ -544,13 +538,7 @@ impl ValidatedRows {
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
-        super::nominal_contracts::require_profile(&rows, profile, work)?;
-        super::sum_contracts::require_profile(&rows, profile, work)?;
-        super::free_constants::require_profile(&rows, profile, work)?;
-        super::inherent_contracts::require_profile(&rows, profile, work)?;
-        super::operation_contracts::require_profile(&rows, profile, work)?;
-        safety_profile::require_profile(&rows, profile, work)?;
-        branch_profile::require_profile(&rows, profile, work)?;
+        require_source_profile(&rows, profile, work)?;
         exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
@@ -661,6 +649,24 @@ type FrozenExtension = (
     Option<Box<provided_contracts::ProvidedContractColumns>>,
     usize,
 );
+fn require_source_profile(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    super::nominal_contracts::require_profile(rows, profile, work)?;
+    super::sum_contracts::require_profile(rows, profile, work)?;
+    super::free_constants::require_profile(rows, profile, work)?;
+    if !profile.declaration_policies() && !rows.type_aliases().is_empty() {
+        return Err("named type alias rows require the declaration policies profile");
+    }
+    super::inherent_contracts::require_profile(rows, profile, work)?;
+    super::operation_contracts::require_profile(rows, profile, work)?;
+    safety_profile::require_profile(rows, profile, work)?;
+    branch_profile::require_profile(rows, profile, work)?;
+    Ok(())
+}
+
 fn complete_extension(
     extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     rows: &SourceRows,

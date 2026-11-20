@@ -11,7 +11,7 @@ pub(in crate::sema::crates::typed_headers) fn kind(kind: s::DefinitionKind) -> D
         s::DefinitionKind::Struct => DefKind::Struct,
         s::DefinitionKind::Enum => DefKind::Enum,
         s::DefinitionKind::Variant => DefKind::Variant,
-        s::DefinitionKind::AssociatedType => DefKind::TypeAlias,
+        s::DefinitionKind::AssociatedType | s::DefinitionKind::TypeAlias => DefKind::TypeAlias,
         s::DefinitionKind::Trait => DefKind::Trait,
         s::DefinitionKind::SelfType => DefKind::SelfType,
         s::DefinitionKind::Function => DefKind::Function,

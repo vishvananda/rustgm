@@ -26,16 +26,17 @@ impl Stage {
         let mut active = vec![false; count];
         for (index, enabled) in active.iter_mut().enumerate() {
             self.charge(1)?;
-            *enabled = self.definitions[index].is_some()
-                && matches!(
-                    report.resolution.definitions[index].kind,
-                    DefKind::SelfType
-                        | DefKind::Trait
-                        | DefKind::Function
-                        | DefKind::Struct
-                        | DefKind::Enum
-                        | DefKind::TypeAlias
+            if let Some(row) = self.definitions[index] {
+                *enabled = matches!(
+                    self.rows.declarations[row.0 as usize].definition.kind,
+                    s::DefinitionKind::SelfType
+                        | s::DefinitionKind::Trait
+                        | s::DefinitionKind::Function
+                        | s::DefinitionKind::Struct
+                        | s::DefinitionKind::Enum
+                        | s::DefinitionKind::AssociatedType
                 );
+            }
         }
         let mut children = vec![Vec::new(); count];
         let mut roots = Vec::new();

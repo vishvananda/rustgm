@@ -39,6 +39,7 @@ impl Graph {
                 | s::HeaderRef::Nominal(_)
                 | s::HeaderRef::Variant(_)
                 | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::TypeAlias(_)
                 | s::HeaderRef::Constant(_),
             ) => None,
             Some(s::HeaderRef::AssociatedDefinition(_)) => raw.definition.parent,
@@ -131,6 +132,7 @@ impl Graph {
                 s::HeaderRef::AssociatedDefinition(_)
                 | s::HeaderRef::Variant(_)
                 | s::HeaderRef::Constructor(_)
+                | s::HeaderRef::TypeAlias(_)
                 | s::HeaderRef::Constant(_),
             ) => {
                 return Ok(Some(&[]));

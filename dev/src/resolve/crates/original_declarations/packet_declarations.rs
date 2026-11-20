@@ -300,7 +300,9 @@ pub(super) fn kind(kind: s::DefinitionKind) -> (DefKind, Namespace) {
         s::DefinitionKind::Enum => (DefKind::Enum, Namespace::Type),
         // One declaration names each variant; its constructor is its value.
         s::DefinitionKind::Variant => (DefKind::Variant, Namespace::Value),
-        s::DefinitionKind::AssociatedType => (DefKind::TypeAlias, Namespace::Type),
+        s::DefinitionKind::AssociatedType | s::DefinitionKind::TypeAlias => {
+            (DefKind::TypeAlias, Namespace::Type)
+        }
         s::DefinitionKind::Trait => (DefKind::Trait, Namespace::Type),
         s::DefinitionKind::SelfType => (DefKind::SelfType, Namespace::Type),
         s::DefinitionKind::Function => (DefKind::Function, Namespace::Value),

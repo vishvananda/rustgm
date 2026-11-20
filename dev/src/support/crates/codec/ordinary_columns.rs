@@ -118,14 +118,21 @@ pub(super) fn encode_module_availability(
     let availability = rows.availability()?;
     let const_bodies = availability.const_bodies.as_deref();
     let profile = rows.descriptor().profile();
+    let aliases = rows.type_aliases();
     if profile.compiler_operations() {
-        out.u8(
-            u8::from(const_bodies.is_some()) | (u8::from(availability.deprecations.is_some()) << 1)
-        )?;
+        out.u8(u8::from(const_bodies.is_some())
+            | (u8::from(availability.deprecations.is_some()) << 1)
+            | (u8::from(!aliases.is_empty()) << 2))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
         notice_wire::encode(out, deprecations)?;
+    }
+    if !aliases.is_empty() {
+        write(out, aliases, |out, row| {
+            id(out, row.declaration.0)?;
+            id(out, row.target.0)
+        })?;
     }
     if profile.compiler_operations() {
         if profile.body_nodes() {
@@ -241,7 +248,7 @@ fn decode_availability_profile(
         enums_wire::decode(&mut read, &mut rows)?;
         free_constants_wire::decode(&mut read, &mut rows)?;
     }
-    decode_availability_trailers(&mut read, &mut availability)?;
+    decode_availability_trailers(&mut read, &mut rows, &mut availability)?;
     if profile.compiler_operations() {
         if profile.body_nodes() {
             compiler_wire::decode_operations(&mut read, &mut rows)?;
@@ -259,6 +266,7 @@ fn decode_availability_profile(
 
 fn decode_availability_trailers(
     read: &mut Input<'_, '_>,
+    rows: &mut s::SourceRows,
     availability: &mut s::AvailabilityRows,
 ) -> Result<(), &'static str> {
     if !read.profile.compiler_operations() {
@@ -266,7 +274,12 @@ fn decode_availability_trailers(
         return Ok(());
     }
     let flags = read.reader.u8()?;
-    if flags > 3 || flags > 1 && !read.profile.declaration_policies() {
+    let maximum = if read.profile.declaration_policies() {
+        7
+    } else {
+        1
+    };
+    if flags > maximum {
         return Err("invalid compiler-operation const-body trailer presence");
     }
     if flags & 1 != 0 {
@@ -277,6 +290,18 @@ fn decode_availability_trailers(
     }
     if flags & 2 != 0 {
         availability.deprecations = Some(Box::new(notice_wire::decode(read)?));
+    }
+    if flags & 4 != 0 {
+        let aliases = read.list(crates::MAX_COMPONENTS, 8, |read| {
+            Ok(s::TypeAliasHeader {
+                declaration: DeclarationRef(read.id()?),
+                target: g::TypeRef(read.id()?),
+            })
+        })?;
+        if aliases.is_empty() {
+            return Err("type alias trailer must contain an actual alias");
+        }
+        read.cold(rows)?.type_aliases = aliases;
     }
     Ok(())
 }

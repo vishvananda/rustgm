@@ -241,7 +241,18 @@ impl Stage {
         if declaration.kind != DefKind::TypeAlias {
             return Ok(false);
         }
-        if self.definitions.get(binding.target.0 as usize) != Some(&None)
+        let row = self
+            .definitions
+            .get(binding.target.0 as usize)
+            .copied()
+            .flatten();
+        if row.is_some_and(|row| {
+            self.rows.declarations[row.0 as usize].definition.kind == s::DefinitionKind::TypeAlias
+        }) {
+            return Ok(false);
+        }
+        if row.is_some()
+            || !matches!(declaration.access, Access::Within(_))
             || !matches!(binding.origin, Origin::Direct)
             || declaration.scope != scope
             || binding.access != declaration.access
@@ -250,7 +261,7 @@ impl Stage {
         }
         // The absent row is not proof. Reauthenticate the same source node,
         // complete closed type and nongeneric/nonassociated private owner.
-        self.private_alias(report, facts, binding.target)?;
+        self.closed_alias(report, facts, binding.target)?;
         Ok(true)
     }
     /// Version thirteen names a unit or tuple variant once, by its

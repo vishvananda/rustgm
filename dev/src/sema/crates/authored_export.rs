@@ -42,6 +42,7 @@ use crate::{
         },
     },
     syntax::item::Shape,
+    types::TypeId,
 };
 pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
@@ -521,7 +522,7 @@ impl Stage {
             );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
-        stage.declarations(report, facts, mode)?;
+        let aliases = stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts)?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
         if stage.nominal_transport {
@@ -533,6 +534,7 @@ impl Stage {
         if stage.body_nodes() {
             stage.constant_headers(report, facts)?;
         }
+        stage.alias_headers(facts, aliases)?;
         stage.functions(report, facts, identity)?;
         stage.implementations(report, facts)?;
         stage.diagnostic_roles(report)?;
@@ -632,8 +634,10 @@ impl Stage {
             ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
         ) && definition.kind == DefKind::TypeAlias
         {
-            self.private_alias(report, facts, id)?;
-            return Ok(None);
+            self.closed_alias(report, facts, id)?;
+            return Ok(
+                (definition.access == Access::Public).then_some(s::DefinitionKind::TypeAlias)
+            );
         }
         if definition.kind == DefKind::Struct
             && matches!(mode, ExportMode::Nominals | ExportMode::CompilerOperations)
@@ -695,7 +699,8 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
         mode: ExportMode,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Vec<(DeclarationRef, TypeId)>, &'static str> {
+        let mut aliases = Vec::new();
         let mut features =
             non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
         let mut owners = scope_owners(report, facts, self)?;
@@ -732,26 +737,7 @@ impl Stage {
             {
                 return Err("restricted trait implementation policy transport is not implemented");
             }
-            let parent = if Some(id) == report.resolution.crate_root {
-                None
-            } else if kind == s::DefinitionKind::Variant {
-                let variant = facts
-                    .members
-                    .constructor(id)
-                    .ok_or("source variant lacks its actual constructor")?;
-                Some(DefId(facts.members.variants[variant.0 as usize].owner.0))
-            } else {
-                let mut scope = definition.scope;
-                if owners.get(scope.0 as usize).copied().flatten() == Some(id) {
-                    scope = report
-                        .resolution
-                        .scopes
-                        .get(scope.0 as usize)
-                        .and_then(|scope| scope.parent)
-                        .ok_or("source declaration owns no actual parent scope")?;
-                }
-                Some(find_owner(report, &mut owners, scope, self)?)
-            };
+            let parent = self.declaration_parent(report, facts, &mut owners, id, kind)?;
             let ordinal = if let Some(parent) = parent {
                 let next = ordinals
                     .get_mut(parent.0 as usize)
@@ -778,6 +764,17 @@ impl Stage {
             if kind == s::DefinitionKind::Variant {
                 self.publish_variant(facts, id, row)?;
             }
+            if kind == s::DefinitionKind::TypeAlias {
+                let target =
+                    facts.definitions[index].ok_or("source alias lost its completed target")?;
+                self.scratch(
+                    aliases
+                        .len()
+                        .saturating_add(1)
+                        .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
+                )?;
+                aliases.push((row, target));
+            }
             parents.push(parent);
             self.rows.declarations.push(s::Declaration {
                 definition: s::Definition { kind, parent: None },
@@ -795,13 +792,76 @@ impl Stage {
                 self.rows.declarations[index].definition.parent = Some(parent);
             }
         }
-        features.finish()
+        features.finish()?;
+        Ok(aliases)
     }
 
-    /// Private transparent aliases have no independent nominal identity. All
-    /// uses retain the real completed canonical type; exported alias names still
-    /// require a declaration row and therefore remain outside this profile.
-    fn private_alias(
+    fn declaration_parent(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owners: &mut [Option<DefId>],
+        id: DefId,
+        kind: s::DefinitionKind,
+    ) -> Result<Option<DefId>, &'static str> {
+        if Some(id) == report.resolution.crate_root {
+            return Ok(None);
+        }
+        if kind == s::DefinitionKind::Variant {
+            let variant = facts
+                .members
+                .constructor(id)
+                .ok_or("source variant lacks its actual constructor")?;
+            return Ok(Some(DefId(
+                facts.members.variants[variant.0 as usize].owner.0,
+            )));
+        }
+        let mut scope = report.resolution.definitions[id.0 as usize].scope;
+        if owners.get(scope.0 as usize).copied().flatten() == Some(id) {
+            scope = report
+                .resolution
+                .scopes
+                .get(scope.0 as usize)
+                .and_then(|scope| scope.parent)
+                .ok_or("source declaration owns no actual parent scope")?;
+        }
+        find_owner(report, owners, scope, self).map(Some)
+    }
+
+    fn alias_headers(
+        &mut self,
+        facts: &Declarations,
+        aliases: Vec<(DeclarationRef, TypeId)>,
+    ) -> Result<(), &'static str> {
+        if !aliases.is_empty() {
+            self.reserve(
+                aliases
+                    .len()
+                    .saturating_mul(size_of::<s::TypeAliasHeader>()),
+            )?;
+            self.cold()?.type_aliases.reserve_exact(aliases.len());
+        }
+        for (declaration, target) in aliases {
+            let target = self.ty(
+                facts,
+                target,
+                canonical_nodes::Context {
+                    owner: declaration,
+                    frame: None,
+                    body: None,
+                },
+            )?;
+            self.cold()?.type_aliases.push(s::TypeAliasHeader {
+                declaration,
+                target,
+            });
+        }
+        Ok(())
+    }
+
+    /// A closed transparent alias retains its completed canonical type. Only
+    /// v14 also gives its public module name an independent declaration row.
+    fn closed_alias(
         &mut self,
         report: &Report,
         facts: &Declarations,
@@ -812,10 +872,11 @@ impl Stage {
             .resolution
             .definitions
             .get(id.0 as usize)
-            .ok_or("private alias lost its actual declaration")?;
+            .ok_or("source alias lost its actual declaration")?;
         if declaration.kind != DefKind::TypeAlias
             || declaration.namespace != Namespace::Type
-            || !matches!(declaration.access, Access::Within(_))
+            || !(matches!(declaration.access, Access::Within(_))
+                || self.declaration_policies() && declaration.access == Access::Public)
             || facts.associated.owner(id).is_some()
             || facts
                 .generics
@@ -830,20 +891,23 @@ impl Stage {
         {
             return Err("named, associated or generic alias transport requires its wider profile");
         }
+        if declaration.access == Access::Public && facts.alias_requirements.contains(id) {
+            return Err("source alias has deferred proof requirements");
+        }
         let source = declaration
             .node
-            .ok_or("private alias lost its actual source owner")?;
+            .ok_or("source alias lost its actual source owner")?;
         let ty = facts
             .definitions
             .get(id.0 as usize)
             .copied()
             .flatten()
-            .ok_or("private alias has no completed canonical type")?;
+            .ok_or("source alias has no completed canonical type")?;
         if facts.node(source).and_then(|node| node.ty) != Some(ty)
             || facts.types.contains_parameters(ty) != Some(false)
             || facts.types.needs_region_context(ty) != Some(false)
         {
-            return Err("private alias changed its completed closed type or source witness");
+            return Err("source alias changed its completed closed type or source witness");
         }
         Ok(())
     }

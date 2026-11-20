@@ -58,6 +58,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     associated_headers(rows, &mut headers, &mut clauses, work)?;
     function_headers(rows, &mut headers, &mut clauses, work)?;
     super::super::free_constants::headers(rows, &mut headers, work)?;
+    alias_headers(rows, &mut headers, work)?;
     for (index, row) in rows.declarations.iter().enumerate() {
         work.charge(1)?;
         if matches!(
@@ -69,6 +70,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
                 | DefinitionKind::Variant
                 | DefinitionKind::AssociatedType
                 | DefinitionKind::Constant
+                | DefinitionKind::TypeAlias
         ) && headers[index].is_none()
         {
             return Err("source declaration has no complete typed header");
@@ -97,6 +99,37 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     body_coverage::validate(rows, &headers, bodies.as_deref(), work)?;
     formal_rows::validate(rows, bodies.as_deref(), work)?;
     Ok((headers, bodies))
+}
+
+fn alias_headers(
+    rows: &SourceRows,
+    headers: &mut [Option<HeaderRef>],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let mut previous = None;
+    for (index, header) in rows.type_aliases().iter().enumerate() {
+        insert(
+            rows,
+            headers,
+            header.declaration,
+            DefinitionKind::TypeAlias,
+            HeaderRef::TypeAlias(ordinal(index)?),
+            work,
+        )?;
+        let row = &rows.declarations[header.declaration.0 as usize];
+        let parent = row
+            .definition
+            .parent
+            .and_then(|id| rows.declarations.get(id.0 as usize));
+        if !row.public
+            || parent.is_none_or(|parent| parent.definition.kind != DefinitionKind::Module)
+            || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
+        {
+            return Err("source type alias lacks canonical order or its public module declaration");
+        }
+        previous = Some(header.declaration.0);
+    }
+    Ok(())
 }
 
 fn trait_header(

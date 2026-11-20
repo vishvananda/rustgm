@@ -415,6 +415,7 @@ impl AvailabilityRows {
                     | DefinitionKind::Variant
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
+                    | DefinitionKind::TypeAlias
             )
             && !view.primitive_constant(origin)
         {
@@ -537,6 +538,7 @@ impl Validation<'_> {
                 super::HeaderRef::Nominal(_)
                 | super::HeaderRef::AssociatedType(_)
                 | super::HeaderRef::AssociatedDefinition(_)
+                | super::HeaderRef::TypeAlias(_)
                 | super::HeaderRef::Variant(_)
                 | super::HeaderRef::Constructor(_),
             ) => false,

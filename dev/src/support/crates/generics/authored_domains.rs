@@ -57,6 +57,8 @@ pub enum HeaderRef {
     Constructor(u32),
     /// Version thirteen: one row of the constant header column.
     Constant(u32),
+    /// Version fourteen: one transparent type alias header.
+    TypeAlias(u32),
 }
 
 pub(crate) type HeaderRows = (Vec<Option<HeaderRef>>, usize, super::bodymap::Shared);

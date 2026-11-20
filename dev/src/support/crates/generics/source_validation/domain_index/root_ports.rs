@@ -2,10 +2,14 @@
 use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
 
 impl DomainIndex<'_, '_> {
-    /// An impl's result value is a root of its impl's own frame: it can name
-    /// only that impl's formals, never the trait frame it satisfies.
     fn definition_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
+        for alias in rows.type_aliases() {
+            if !self.types.closed_root(alias.target, work)? {
+                return Err("source alias target requires a foreign parameter, frame or body");
+            }
+        }
+        // An impl's result can name only the formals of its own frame.
         for row in rows.associated_definitions() {
             let parent = rows
                 .declarations

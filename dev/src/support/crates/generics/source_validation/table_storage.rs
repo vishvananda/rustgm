@@ -181,6 +181,7 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         count.vector(&cold.consts, work)?;
         count.vector(&cold.array_lengths, work)?;
         count.vector(&cold.constants, work)?;
+        count.vector(&cold.type_aliases, work)?;
     }
     Ok(())
 }

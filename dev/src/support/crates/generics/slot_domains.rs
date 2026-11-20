@@ -25,6 +25,8 @@ pub enum DefinitionKind {
     ValueParameter,
     Local,
     AssociatedType,
+    /// A public, closed v14 module type alias with no binder scope.
+    TypeAlias,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Definition {
@@ -417,6 +419,7 @@ fn valid_parent(
         | DefinitionKind::RegionParameter
         | DefinitionKind::ConstParameter
         | DefinitionKind::Constant
+        | DefinitionKind::TypeAlias
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }

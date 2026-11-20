@@ -903,3 +903,93 @@ fn cli_version_eight_retains_actual_unsafe_calls_and_legacy_denials() -> Result 
     assert!(!rejected.exists());
     Ok(())
 }
+
+#[test]
+fn cli_version_fourteen_transports_closed_module_type_aliases() -> Result {
+    use rustgm::support::crates;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/v14-type-aliases/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let provider = folder.join("provider.rs");
+    let mut source = macro_role_foundation(root)?;
+    source.push_str(
+        r"
+pub mod digits {
+    pub type Digit32 = u32;
+    pub type Quad = (Digit32, u16);
+    type Hiddentype = u64;
+}
+pub use digits::Digit32 as Word;
+pub struct Wrapper { pub value: u32 }
+pub type Wrapped = Wrapper;
+mod nested { pub type Reexported = u32; }
+pub use nested::Reexported;
+",
+    );
+    std::fs::write(&provider, source)?;
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    super::artifacts::checked(
+        "provider",
+        &folder,
+        source_export(
+            "module-body-operations-v14",
+            &provider,
+            &metadata,
+            &lowir,
+            true,
+        )
+        .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, source, status) in [
+        (
+            "allowed",
+            "pub fn value() -> base::digits::Digit32 { 42 }\npub fn word() -> base::Word { 7 }\nfn pair(_: &base::digits::Quad) {}\nfn wrapped(v: &base::Wrapped) -> &base::Wrapper { v }\nfn reexported() -> base::Reexported { 7 }",
+            0,
+        ),
+        ("private", "fn hidden(_: &base::digits::Hiddentype) {}", 1),
+        (
+            "wrong",
+            "fn value(x: u64) -> base::digits::Digit32 { x }",
+            1,
+        ),
+        (
+            "generic-arguments",
+            "fn applied(_: base::digits::Digit32<u8>) {}",
+            1,
+        ),
+    ] {
+        let client = folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\n{source}\n"),
+        )?;
+        let output = source_client(&client, &metadata, &folder.join(format!("{name}.lowir")))
+            .args(["--crate-type=lib", "--cap-lints=allow"])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        assert_eq!(output.status.code(), Some(status), "{name}: {stderr}");
+        if name == "wrong" {
+            assert!(stderr.contains("incompatible types"), "{stderr}");
+        }
+    }
+    let legacy = folder.join("legacy.rgcrate");
+    let output = source_export("module-bodies-v13", &provider, &legacy, &lowir, true)
+        .arg("--cap-lints=allow")
+        .output()?;
+    let stderr = String::from_utf8(output.stderr)?;
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains("named, associated or generic alias transport"),
+        "{stderr}"
+    );
+    assert!(!legacy.exists());
+    Ok(())
+}

@@ -252,6 +252,7 @@ impl ModuleContractColumns {
                     | s::DefinitionKind::Struct
                     | s::DefinitionKind::Enum
                     | s::DefinitionKind::Function
+                    | s::DefinitionKind::TypeAlias
                     | s::DefinitionKind::Variant
             ) && binding_owner(rows, row).is_some_and(|p| {
                 rows.declarations[p.0 as usize].definition.kind == s::DefinitionKind::Module
@@ -358,7 +359,8 @@ impl ModuleContractColumns {
             s::DefinitionKind::Module
             | s::DefinitionKind::Trait
             | s::DefinitionKind::Struct
-            | s::DefinitionKind::Enum => Namespace::Type,
+            | s::DefinitionKind::Enum
+            | s::DefinitionKind::TypeAlias => Namespace::Type,
             s::DefinitionKind::Function => {
                 if super::callable_paths::nested_function(
                     &rows.declarations,
