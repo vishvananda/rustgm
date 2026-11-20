@@ -1068,6 +1068,10 @@ source. The focused receipts are
 `obj/qualification/fast/{1795169936582256425,1795178346706127965}/`
 in the frontier worktree.
 
+The seven compiler checkpoints through `75e9fa917` are integrated on
+local `main` through `d4f8759f6`. The transferred source, tests, scripts
+and specifications match the frontier contents byte for byte.
+
 The authenticated Core unit replay uses the same source inventory,
 crate identity, flags and environment as the frozen compiler graph.
 The unoptimized development binary reached its 180-second limit
@@ -1076,7 +1080,21 @@ with no compiler diagnostic. Its receipt is under
 `obj/parallel/strict-compiler-unit-graph/core-open-constants-v1/target-units/`
 with SHA-256
 `f8c935a5212d2f0badcc9cd87da2c6332221ddbc56a104ac5835a312bb5af299`.
-The next replay uses an optimized observation binary.
+The optimized incremental build reached the five-minute development
+limit before updating the executable. Its guarded receipt is
+`obj/parallel/resources/f2f48a304b624e77b02030360b9469da.json`.
+An otherwise identical replay at 215 seconds also times out before
+publication. Its receipt is
+`obj/parallel/strict-compiler-unit-graph/core-open-constants-v2/target-units/receipt.json`
+with SHA-256
+`bac3974455ab9a04de74fb468c20b92c8cc2922da5df382a5aee556fa2ae4acb`.
+
+The reproof binary imports the existing frozen 12,929-byte reduced Core
+provider, preserving the client LowIR bytes. The CPPGM-linked fresh
+client again matches pinned Rust on `10 22 27 91`. The replay pins
+the provider metadata and original source hashes. Its result is in
+`lemire-default-control-v3/rustgm-native-reproof-client-only-v1/result.json`
+with SHA-256 `322692a687766f7c1946da719b814cd3558bb59847ed05ba9af9c8f577622428`.
 
 Macro deprecation still requires its own published definition and
 expansion-time diagnostics. The independent staged reference diagnoses a
@@ -2262,7 +2280,8 @@ archived bytes. The lifetime-dense one-use and 128-use controls copy
 528 and 55,392 bytes. The ordinary control copies zero bytes, and the
 first loan conflict keeps its exact diagnostic and observes 84 copied
 bytes. The candidate `faf3e88dd` moves collection to the public body
-inspection path. Focused parity and paired timing are pending.
+inspection path. Shared disk pressure prevented admission to the first
+focused validation. Focused parity and paired timing remain pending.
 The original counter receipt is under
 `obj/parallel/lifetime-inspection-arrays/count-v2/receipt.json` in the
 performance worktree with SHA-256

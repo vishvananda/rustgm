@@ -44,9 +44,16 @@ native client matches pinned Rust on `10 22 27 91`. `75e9fa917`
 re-proves each reconstructed open trait read. The focused consumer
 accepts the actual bound and rejects a packet whose same-typed operand
 requires an unrelated trait, even when the source function is unused.
+The seven trait-constant commits are on local `main` through
+`d4f8759f6`. The compiler, tests and scripts match the qualified
+frontier checkout byte for byte. The final proof-aware compiler
+replays the frozen reduced Core metadata, emits byte-identical client
+LowIR and matches pinned Rust's native output.
 The authenticated original Core unit timed out after 180 seconds on
 the unoptimized dev-fast binary, before publishing any output. The
-optimized observation replay is pending.
+optimized build expired at the five-minute limit before producing a
+replacement executable. The unoptimized 215-second replay also
+expired before publication.
 Stage 1 and Stage 2 are pending.
 [Strict Core evidence](docs/self-hosting-plan.md#L979)
 
