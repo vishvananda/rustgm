@@ -11,6 +11,7 @@ mod collected_provider;
 mod contract_rows;
 mod deprecation_rows;
 mod evaluated_constants;
+pub(crate) use evaluated_constants::prepare_primitive_constants;
 mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
@@ -175,7 +176,7 @@ impl Stage {
     pub(crate) fn body_nodes(&self) -> bool {
         self.body_transport == BodyTransport::Nodes
     }
-    fn declaration_policies(&self) -> bool {
+    pub(crate) fn declaration_policies(&self) -> bool {
         self.body_nodes() && self.compiler_operations
     }
     pub(crate) fn callable_effects(&self) -> bool {
@@ -533,7 +534,7 @@ impl Stage {
             stage.constant_headers(report, facts)?;
         }
         stage.functions(report, facts, identity)?;
-        stage.implementations(facts)?;
+        stage.implementations(report, facts)?;
         stage.diagnostic_roles(report)?;
         stage.install_private_symbols(facts, identity)?;
         Ok(stage)
@@ -677,6 +678,7 @@ impl Stage {
                         Ok(None)
                     } else if facts.associated.owner(id).is_some()
                         && !self.range_required_constant(facts, id)
+                        && self.primitive_constant(report, facts, id).is_none()
                     {
                         Err("source associated constants require their wider profile")
                     } else {
@@ -1084,13 +1086,7 @@ fn require_export_mode(
                 .map_err(|error| error.message),
         )?;
     }
-    let provider = report
-        .package
-        .source_core()
-        .ok_or("source export requires its actual own-provider policy")?;
-    if provider.current != *identity || provider.provider != *identity {
-        return Err("source export identity differs from its actual provider");
-    }
+    require_provider_identity(report, identity)?;
     if facts.members.has_contextual_fields() {
         return Err("contextual aggregate field metadata is not implemented");
     }
@@ -1132,6 +1128,20 @@ fn require_export_mode(
             mode == ExportMode::CompilerOperations,
             languages,
         )?;
+    }
+    Ok(())
+}
+
+fn require_provider_identity(
+    report: &Report,
+    identity: &CrateIdentity,
+) -> Result<(), &'static str> {
+    let provider = report
+        .package
+        .source_core()
+        .ok_or("source export requires its actual own-provider policy")?;
+    if provider.current != *identity || provider.provider != *identity {
+        return Err("source export identity differs from its actual provider");
     }
     Ok(())
 }

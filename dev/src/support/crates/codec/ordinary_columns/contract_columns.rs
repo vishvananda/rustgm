@@ -53,7 +53,7 @@ pub(super) fn implementation_write(
     }
     option(out, row.trait_application.map(|r| r.0))?;
     out.bytes(&[
-        u8::from(row.unsafe_),
+        u8::from(row.unsafe_) | (u8::from(row.core_primitive_inherent) << 1),
         u8::from(row.constant),
         row.polarity as u8,
     ])?;
@@ -64,12 +64,23 @@ pub(super) fn implementation_write(
     range(out, row.members)
 }
 pub(super) fn implementation_read(read: &mut Input<'_, '_>) -> Result<s::ImplHeader, &'static str> {
+    let self_definition = DeclarationRef(read.id()?);
+    let scope = DeclarationRef(read.id()?);
+    let self_type = g::TypeRef(read.id()?);
+    let trait_application = read.option()?.map(s::TraitApplicationRef);
+    let (unsafe_, core_primitive_inherent) = match read.reader.u8()? {
+        0 => (false, false),
+        1 => (true, false),
+        2 if read.profile.declaration_policies() => (false, true),
+        _ => return Err("invalid source boolean"),
+    };
     Ok(s::ImplHeader {
-        self_definition: DeclarationRef(read.id()?),
-        scope: DeclarationRef(read.id()?),
-        self_type: g::TypeRef(read.id()?),
-        trait_application: read.option()?.map(s::TraitApplicationRef),
-        unsafe_: read.boolean()?,
+        self_definition,
+        scope,
+        self_type,
+        trait_application,
+        unsafe_,
+        core_primitive_inherent,
         constant: read.boolean()?,
         polarity: match read.reader.u8()? {
             0 => ImplPolarity::Positive,

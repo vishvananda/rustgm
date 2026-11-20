@@ -162,6 +162,16 @@ impl Graph {
         {
             return Err("imported inherent impl changed its actual Self or modifiers");
         }
+        if raw.core_primitive_inherent {
+            return if descriptor.profile().declaration_policies()
+                && matches!(store.kind(self_type), Some(crate::types::Kind::Primitive(tag))
+                    if tag != crate::types::Primitive::Str)
+            {
+                Ok(())
+            } else {
+                Err("imported Core primitive authority changed its canonical Self type")
+            };
+        }
         let Some(crate::types::Kind::Adt(nominal, _)) = store.kind(self_type) else {
             return Err("imported inherent impl Self is not a nominal of its own provider");
         };

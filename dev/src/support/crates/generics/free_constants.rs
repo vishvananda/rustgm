@@ -118,7 +118,7 @@ pub(super) fn validate(
             }
             continue;
         }
-        free_owner(rows, row, work)?;
+        value_owner(rows, headers, row, work)?;
         let value = match header.value {
             None => return Err("source free constant requires its value"),
             Some(ConstTerm::Parameter(_)) => {
@@ -134,19 +134,36 @@ pub(super) fn validate(
     Ok(())
 }
 
-/// A trait or impl member is an associated constant, the next profile's.
-fn free_owner(rows: &SourceRows, row: &Declaration, work: &mut Work) -> Result<(), &'static str> {
+/// An evaluated associated member belongs to its closed primitive provider owner.
+fn value_owner(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    row: &Declaration,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     work.charge(1)?;
-    let parent = row
+    let owner = row
         .definition
         .parent
-        .and_then(|parent| rows.declarations.get(parent.0 as usize))
-        .map(|parent| parent.definition.kind);
-    match parent {
-        Some(DefinitionKind::Module | DefinitionKind::Function) => Ok(()),
-        Some(DefinitionKind::SelfType | DefinitionKind::Trait) => {
-            Err("source associated constants require their wider profile")
+        .ok_or("source constant header lost its free owner")?;
+    match rows
+        .declarations
+        .get(owner.0 as usize)
+        .map(|parent| parent.definition.kind)
+    {
+        Some(DefinitionKind::Module | DefinitionKind::Function) => return Ok(()),
+        Some(DefinitionKind::SelfType) => {
+            if let Some(HeaderRef::Implementation(index)) = headers.header(owner, work)?
+                && rows
+                    .implementations
+                    .get(index as usize)
+                    .is_some_and(|implementation| implementation.core_primitive_inherent)
+            {
+                return Ok(());
+            }
         }
-        _ => Err("source constant header lost its free owner"),
+        Some(DefinitionKind::Trait) => {}
+        _ => return Err("source constant header lost its free owner"),
     }
+    Err("source associated constants require their wider profile")
 }

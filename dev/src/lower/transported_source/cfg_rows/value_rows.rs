@@ -154,6 +154,15 @@ fn item(
         }
         ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind),
         ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item),
+        ir::Rvalue::AssociatedConstant(instance)
+            if stage.declaration_policies()
+                && instance.arguments == crate::types::GenericArgs::EMPTY
+                && crate::sema::values::Reader::new(facts)
+                    .associated(instance)
+                    .is_some() =>
+        {
+            stage.constant_read(instance.definition)
+        }
         _ => Err(WIDER),
     }
 }

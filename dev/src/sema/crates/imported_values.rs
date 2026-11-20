@@ -2,8 +2,12 @@
 use super::{Declarations, Error, Report, error, scalar};
 use crate::{
     resolve::model::DefId,
-    sema::values::{Constant, Evaluator},
+    sema::{
+        associated::OwnerKind,
+        values::{Constant, Evaluator, Instance},
+    },
     support::crates::{Scalar, ScalarValue, generics::source as s},
+    types::GenericArgs,
 };
 
 pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -24,11 +28,13 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
     }
     // A source constant's cell is already its installed header type.
     for &(definition, _) in &source {
-        facts
-            .crates
-            .get_or_insert_default()
-            .imported_constants
-            .insert(definition);
+        if facts.associated.owner(definition).is_none() {
+            facts
+                .crates
+                .get_or_insert_default()
+                .imported_constants
+                .insert(definition);
+        }
     }
     let mut evaluator = Evaluator::new(report, facts);
     for (definition, value) in imported.constants() {
@@ -84,7 +90,36 @@ fn complete(
     } else {
         Constant::scalar(convert(value).map_err(error)?)
     };
-    evaluator.complete_definition(definition, value);
+    if let Some(id) = evaluator.facts().associated.owner(definition) {
+        let facts = evaluator.facts();
+        if !facts
+            .associated
+            .get(id)
+            .is_some_and(|owner| matches!(owner.kind, OwnerKind::ImportedInherent(_)))
+        {
+            return Err(error(
+                "source constant value requires its installed inherent owner",
+            ));
+        }
+        let ty = facts
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| error("source inherent constant lost its declared type"))?;
+        evaluator
+            .complete_associated(
+                Instance {
+                    definition,
+                    arguments: GenericArgs::EMPTY,
+                },
+                ty,
+                value,
+            )
+            .map_err(|failure| error(failure.message()))?;
+    } else {
+        evaluator.complete_definition(definition, value);
+    }
     Ok(())
 }
 pub(super) use super::closed_values::decode as convert;

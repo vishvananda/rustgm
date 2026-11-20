@@ -137,7 +137,7 @@ fn value_kind(
             Rvalue::Reify(ValueId(value))
         }
         s::ValueKind::Constant(declaration) if view.rows().descriptor().profile().body_nodes() => {
-            Rvalue::Constant(view.constant(declaration, &mut work.steps)?)
+            constant_read(view, declaration, &mut work.steps)?
         }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
         s::ValueKind::ScalarCast(_) => {
@@ -797,16 +797,46 @@ fn same_value(
         {
             actual.0 == record
         }
-        (Rvalue::Constant(actual), s::ValueKind::Constant(record))
-            if view.rows().descriptor().profile().body_nodes() =>
-        {
-            actual == view.constant(record, steps)?
+        (
+            actual @ (Rvalue::Constant(_) | Rvalue::AssociatedConstant(_)),
+            s::ValueKind::Constant(record),
+        ) if view.rows().descriptor().profile().body_nodes() => {
+            match (actual, constant_read(view, record, steps)?) {
+                (Rvalue::Constant(actual), Rvalue::Constant(expected)) => actual == expected,
+                (Rvalue::AssociatedConstant(actual), Rvalue::AssociatedConstant(expected)) => {
+                    actual == expected
+                }
+                _ => false,
+            }
         }
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?
         }
         (actual, raw) => same_binary(view, actual, raw)?,
     })
+}
+
+fn constant_read(
+    view: &SourceOriginal<'_>,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    steps: &mut usize,
+) -> Result<Rvalue, &'static str> {
+    let definition = view.constant(declaration, steps)?;
+    let rows = view.rows();
+    if rows.descriptor().profile().declaration_policies()
+        && let Some(parent) = rows
+            .declarations
+            .get(declaration.0 as usize)
+            .and_then(|row| row.definition.parent)
+        && let Some(s::HeaderRef::Implementation(index)) = rows.header(parent)?
+        && rows.implementations[index as usize].core_primitive_inherent
+    {
+        return Ok(Rvalue::AssociatedConstant(crate::sema::values::Instance {
+            definition,
+            arguments: crate::types::GenericArgs::EMPTY,
+        }));
+    }
+    Ok(Rvalue::Constant(definition))
 }
 fn same_action(a: Action, b: Action) -> bool {
     match (a, b) {

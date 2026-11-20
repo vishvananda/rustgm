@@ -1,6 +1,11 @@
 //! Associated constant types and values inherit their owner's immutable environment.
 use super::{Checker, DefId, Error, ItemKind, NodeKey, regions};
-use crate::{resolve::model::DefKind, sema::associated::OwnerKind, syntax::item::Visibility};
+use crate::{
+    resolve::model::DefKind,
+    sema::{associated::OwnerKind, values::Instance},
+    syntax::item::Visibility,
+    types::GenericArgs,
+};
 
 impl Checker<'_> {
     pub(super) fn constant_context(
@@ -72,9 +77,9 @@ impl Checker<'_> {
                 continue;
             }
             let Some(key) = definition.node else {
-                // The imported range family already re-proved its required
-                // constants' Self types in the actual trait's empty binder.
-                if self.imported_range_bound(id)? {
+                // Imported constants already have a checked owner and type,
+                // and closed inherent constants also have a completed value.
+                if self.imported_inherent_constant(id)? || self.imported_range_bound(id)? {
                     continue;
                 }
                 return Err(Error::at(
@@ -103,6 +108,32 @@ impl Checker<'_> {
             self.constant_type_regions(id, key, ty)?;
         }
         Ok(())
+    }
+
+    fn imported_inherent_constant(&self, definition: DefId) -> Result<bool, Error> {
+        let Some(&owner) = self
+            .facts
+            .associated
+            .owner(definition)
+            .and_then(|id| self.facts.associated.get(id))
+            .filter(|owner| matches!(owner.kind, OwnerKind::ImportedInherent(_)))
+        else {
+            return Ok(false);
+        };
+        self.facts
+            .associated
+            .require_imported(owner)
+            .map_err(Error::unlocated)?;
+        let instance = Instance {
+            definition,
+            arguments: GenericArgs::EMPTY,
+        };
+        Ok(self
+            .facts
+            .constant_instances
+            .get(&instance)
+            .and_then(|value| value.ty)
+            .is_some_and(|ty| self.facts.definitions[definition.0 as usize] == Some(ty)))
     }
 
     fn imported_range_bound(&self, definition: DefId) -> Result<bool, Error> {

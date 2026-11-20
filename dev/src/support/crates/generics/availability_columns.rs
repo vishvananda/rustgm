@@ -416,6 +416,7 @@ impl AvailabilityRows {
                     | DefinitionKind::SelfType
                     | DefinitionKind::Function
             )
+            && !view.primitive_constant(origin)
         {
             return Err("regular policy origin is not an actual API declaration");
         }
@@ -530,7 +531,7 @@ impl Validation<'_> {
                 .columns
                 .constants()
                 .get(index as usize)
-                .is_some_and(|row| row.value.is_none()),
+                .is_some_and(|row| row.value.is_none() || self.primitive_constant(owner)),
             None
             | Some(
                 super::HeaderRef::Nominal(_)
@@ -540,6 +541,23 @@ impl Validation<'_> {
                 | super::HeaderRef::Constructor(_),
             ) => false,
         }
+    }
+
+    fn primitive_constant(&self, owner: DeclarationRef) -> bool {
+        let Some(declaration) = self.columns.declarations.get(owner.0 as usize) else {
+            return false;
+        };
+        if declaration.definition.kind != DefinitionKind::Constant {
+            return false;
+        }
+        declaration
+            .definition
+            .parent
+            .and_then(|parent| self.headers.get(parent.0 as usize).copied().flatten())
+            .is_some_and(|header| {
+                matches!(header, super::HeaderRef::Implementation(index)
+                if self.columns.implementations[index as usize].core_primitive_inherent)
+            })
     }
 }
 

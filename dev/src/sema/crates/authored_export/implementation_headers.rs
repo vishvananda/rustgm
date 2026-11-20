@@ -1,9 +1,13 @@
 //! Canonical conformance keeps actual trait/member links and typed impl Self.
-use super::{Declarations, DefId, OwnerKind, Stage, g, s};
+use super::{Declarations, DefId, OwnerKind, Report, Stage, g, s};
 use crate::support::constness::Constness;
 
 impl Stage {
-    pub(super) fn implementations(&mut self, facts: &Declarations) -> Result<(), &'static str> {
+    pub(super) fn implementations(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<(), &'static str> {
         let mut count = 0usize;
         let declarations = facts
             .generics
@@ -33,7 +37,7 @@ impl Stage {
         }
         if self.body_nodes() {
             count = count
-                .checked_add(self.inherent_implementations(facts)?)
+                .checked_add(self.inherent_implementations(report, facts)?)
                 .ok_or("source implementation count overflow")?;
         }
         self.charge(facts.associated.owners().len())?;
@@ -53,7 +57,11 @@ impl Stage {
     /// Version thirteen: an inherent impl on a provider nominal is a header
     /// without a trait application whose links name only its own methods.
     /// It follows every trait impl, so declared results keep their order.
-    fn inherent_implementations(&mut self, facts: &Declarations) -> Result<usize, &'static str> {
+    fn inherent_implementations(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<usize, &'static str> {
         let mut count = 0usize;
         for (index, owner) in facts.associated.owners().iter().enumerate() {
             self.charge(1)?;
@@ -78,7 +86,7 @@ impl Stage {
                 .associated
                 .owner_members(id)
                 .ok_or("source inherent impl has no actual member inventory")?;
-            self.inherent_implementation(facts, &owner, methods)?;
+            self.inherent_implementation(report, facts, &owner, methods)?;
             count = count
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
@@ -88,6 +96,7 @@ impl Stage {
 
     fn inherent_implementation(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         owner: &crate::sema::associated::SourceOwner,
         methods: &[DefId],
@@ -97,11 +106,20 @@ impl Stage {
             .associated
             .schema(owner.self_definition)
             .ok_or("source implementation has no completed typed Self schema")?;
-        let Some(crate::types::Kind::Adt(nominal, _)) = facts.types.kind(schema.self_type) else {
-            return Err("source inherent impl requires a provider nominal Self");
-        };
-        if self.declaration(DefId(nominal.0)).is_err() {
-            return Err("source inherent impl requires a provider nominal Self");
+        let core_primitive_inherent = self.declaration_policies()
+            && super::evaluated_constants::core_primitive_owner(
+                report,
+                facts,
+                owner.self_definition,
+            );
+        if !core_primitive_inherent {
+            let Some(crate::types::Kind::Adt(nominal, _)) = facts.types.kind(schema.self_type)
+            else {
+                return Err("source inherent impl requires a provider nominal Self");
+            };
+            if self.declaration(DefId(nominal.0)).is_err() {
+                return Err("source inherent impl requires a provider nominal Self");
+            }
         }
         let context = self.frame(
             declaration,
@@ -130,11 +148,13 @@ impl Stage {
         self.reserve(methods.len().saturating_mul(4 * size_of::<s::MemberLink>()))?;
         for &method in methods {
             self.charge(1)?;
-            if !self
+            let admitted = self
                 .functions
                 .headers
                 .contains_key(&crate::types::ItemId(method.0))
-            {
+                || (core_primitive_inherent
+                    && self.primitive_constant(report, facts, method).is_some());
+            if !admitted {
                 return Err(
                     "source inherent associated constants and types require a wider profile",
                 );
@@ -157,6 +177,7 @@ impl Stage {
             self_type,
             trait_application: None,
             unsafe_: false,
+            core_primitive_inherent,
             constant: false,
             polarity: crate::sema::associated::ImplPolarity::Positive,
             region_captures: schema.captures,
@@ -254,6 +275,7 @@ impl Stage {
             self_type,
             trait_application,
             unsafe_,
+            core_primitive_inherent: false,
             constant,
             polarity,
             region_captures: schema.captures,

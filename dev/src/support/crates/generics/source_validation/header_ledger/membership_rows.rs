@@ -23,10 +23,16 @@ pub(super) fn validate(
         definitions: 0,
     };
     ledger.traits(work)?;
+    let mut primitive_inherent = false;
     for (index, implementation) in rows.implementations.iter().enumerate() {
         ledger.implementation(index, implementation, work)?;
+        primitive_inherent |= implementation.core_primitive_inherent;
     }
-    ledger.finish(work)
+    ledger.finish(work)?;
+    if primitive_inherent {
+        ledger.inherent_constants(work)?;
+    }
+    Ok(())
 }
 struct Members<'a> {
     rows: &'a SourceRows,
@@ -205,6 +211,26 @@ impl<'a> Members<'a> {
             return self.definition(implementation, stamp, link.implementation, work);
         }
         if let Some(member) = link.implementation {
+            if implementation.core_primitive_inherent
+                && let Some(HeaderRef::Constant(index)) =
+                    self.headers.get(member.0 as usize).copied().flatten()
+            {
+                declaration(self.rows, member, DefinitionKind::Constant, work)?;
+                let row = &self.rows.declarations[member.0 as usize];
+                if row.definition.parent != Some(implementation.self_definition)
+                    || self
+                        .rows
+                        .constants()
+                        .get(index as usize)
+                        .is_none_or(|header| header.value.is_none())
+                    || std::mem::replace(&mut self.stamps[member.0 as usize], stamp) != 0
+                {
+                    return Err(
+                        "source primitive constant lost its actual inherent owner or value",
+                    );
+                }
+                return Ok(());
+            }
             declaration(self.rows, member, DefinitionKind::Function, work)?;
             let Some(HeaderRef::Function(index)) = self.headers[member.0 as usize] else {
                 return Err("source impl member header is absent");
@@ -269,6 +295,21 @@ impl<'a> Members<'a> {
                         if self.stamps[function.declaration.0 as usize] != 0 => {}
                     _ => return Err("source function has an unauthenticated associated parent"),
                 }
+            }
+        }
+        Ok(())
+    }
+    fn inherent_constants(&self, work: &mut Work) -> Result<(), &'static str> {
+        work.charge(self.rows.declarations.len())?;
+        for (row, stamp) in self.rows.declarations.iter().zip(&self.stamps) {
+            if row.definition.kind == DefinitionKind::Constant
+                && *stamp == 0
+                && let Some(owner) = row.definition.parent
+                && let Some(HeaderRef::Implementation(index)) =
+                    self.headers.get(owner.0 as usize).copied().flatten()
+                && self.rows.implementations[index as usize].core_primitive_inherent
+            {
+                return Err("source primitive constant has no actual inherent member link");
             }
         }
         Ok(())

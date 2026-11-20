@@ -259,11 +259,6 @@ impl Checker<'_> {
             .associated
             .require_imported(owner)
             .map_err(Error::unlocated)?;
-        if self.report.resolution.definitions[member.0 as usize].kind != DefKind::Function {
-            return Err(Error::unlocated(
-                "imported inherent associated constants and types require a wider profile",
-            ));
-        }
         let schema = self
             .facts
             .associated
@@ -275,7 +270,17 @@ impl Checker<'_> {
             .kind(schema.self_type)
             .map(Head::canonical)
             .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self type"))?;
-        let Some(bucket @ Bucket::Nominal(..)) = Bucket::declared(&self.facts.types, head, name)
+        // The installed owner packet has already re-proved primitive authority.
+        let primitive = matches!(head, Head::Primitive(_));
+        let kind = self.report.resolution.definitions[member.0 as usize].kind;
+        if kind != DefKind::Function && !(primitive && kind == DefKind::Const) {
+            return Err(Error::unlocated(
+                "imported inherent associated constants and types require a wider profile",
+            ));
+        }
+        let bucket = Bucket::declared(&self.facts.types, head, name);
+        let Some(bucket) =
+            bucket.filter(|bucket| primitive || matches!(bucket, Bucket::Nominal(..)))
         else {
             return Err(Error::unlocated(
                 "imported inherent impl Self is not a nominal of its own provider",

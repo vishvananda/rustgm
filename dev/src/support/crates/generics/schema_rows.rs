@@ -424,6 +424,8 @@ pub struct ImplHeader {
     pub self_type: TypeRef,
     pub trait_application: Option<TraitApplicationRef>,
     pub unsafe_: bool,
+    /// Version fourteen retains the provider's checked Core authorization for this owner.
+    pub core_primitive_inherent: bool,
     pub constant: bool,
     pub polarity: crate::support::polarity::ImplPolarity,
     pub region_captures: u32,

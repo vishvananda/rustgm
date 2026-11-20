@@ -13,6 +13,30 @@ pub(super) fn require_profile(
     work.charge(rows.implementations.len().saturating_add(1))?;
     for implementation in &rows.implementations {
         work.charge(1)?;
+        if implementation.core_primitive_inherent {
+            let primitive = match rows.types.get(implementation.self_type.0 as usize) {
+                Some(Type::F16 | Type::F128) => true,
+                Some(Type::Scalar(tag)) => *tag != crate::support::crates::Scalar::Unit,
+                _ => false,
+            };
+            if !profile.declaration_policies()
+                || implementation.trait_application.is_some()
+                || implementation.constant
+                || implementation.unsafe_
+                || !implementation.polarity.is_positive()
+                || implementation.scope != implementation.self_definition
+                || implementation.region_captures != 0
+                || implementation.region_bounds.start != implementation.region_bounds.end
+                || implementation.inputs.start != implementation.inputs.end
+                || implementation.declared_inputs != 0
+                || !primitive
+            {
+                return Err(
+                    "source Core primitive authority requires an actual closed inherent owner",
+                );
+            }
+            continue;
+        }
         if implementation.trait_application.is_some() {
             continue;
         }

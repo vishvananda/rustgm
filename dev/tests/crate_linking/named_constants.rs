@@ -186,6 +186,85 @@ fn older_profiles_keep_the_constant_kind_fence() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn version_fourteen_keeps_primitive_inherent_constant_owners_and_values() -> Result {
+    let packet = Packet::new("v14-primitive-constants", SPEC, "frontend", "core_scalar")?;
+    let provider = packet.folder.join("provider.rs");
+    std::fs::write(
+        &provider,
+        r#"#![feature(no_core,lang_items,rustc_attrs)]
+#![no_core]
+#![rustc_coherence_is_core]
+#[lang="pointee_sized"] pub trait PointeeSized {}
+#[lang="meta_sized"] pub trait MetaSized:PointeeSized {}
+#[lang="sized"] pub trait Sized:MetaSized {}
+impl u32 {
+    pub const TRANSPORT: u32 = 42;
+    pub const UNUSED: u32 = 7;
+    const PRIVATE: u32 = 9;
+}
+impl u64 { pub const TRANSPORT: u64 = 64; }
+pub const fn read() -> u32 { u32::TRANSPORT }
+"#,
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        packet
+            .export("module-body-operations-v14", &provider, &packet.metadata)
+            .arg("--cap-lints=allow"),
+    )?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    assert_eq!(crates::encode(&crates::decode(&bytes)?)?, bytes);
+    for (name, source, diagnostic) in [
+        (
+            "allowed",
+            "pub const LEFT: u32 = u32::TRANSPORT;\npub const RIGHT: u64 = u64::TRANSPORT;\npub const UNUSED: u32 = u32::UNUSED;\npub fn value() -> u32 { LEFT }\n",
+            None,
+        ),
+        (
+            "call",
+            "pub const CALL: u32 = base::read();\npub fn value() -> u32 { CALL }\n",
+            None,
+        ),
+        (
+            "private",
+            "pub const VALUE: u32 = u32::PRIVATE;\n",
+            Some("no applicable inherent method for this prefix"),
+        ),
+        (
+            "wrong",
+            "pub const VALUE: u32 = u64::TRANSPORT;\n",
+            Some("incompatible types"),
+        ),
+    ] {
+        let client = packet.folder.join(format!("{name}.rs"));
+        std::fs::write(
+            &client,
+            format!("#![feature(no_core)]#![no_core]\nextern crate base;\n{source}"),
+        )?;
+        let mut command = packet.consumer(&client, name, &packet.metadata, &packet.owner());
+        command.arg("--cap-lints=allow");
+        if let Some(diagnostic) = diagnostic {
+            packet.rejected(name, &mut command, diagnostic)?;
+        } else {
+            super::artifacts::checked(name, &packet.folder, &mut command)?;
+            let lowir = std::fs::read_to_string(packet.folder.join(format!("{name}.lowir")))?;
+            assert!(lowir.contains("return u32 42"), "{lowir}");
+        }
+    }
+    let legacy = packet.folder.join("legacy.rgcrate");
+    packet.rejected(
+        "legacy",
+        packet
+            .export(PROFILE, &provider, &legacy)
+            .arg("--cap-lints=allow"),
+        ASSOCIATED,
+    )?;
+    assert!(unwritten(&legacy)?);
+    Ok(())
+}
 #[test]
 #[ignore = "requires configured locked CPPGM object backend and host C compiler"]
 fn constant_clients_execute_natively() -> Result {

@@ -312,6 +312,11 @@ impl Source {
             | super::instances::SourcePublication::ModuleBranches
             | super::instances::SourcePublication::ModuleBodies
             | super::instances::SourcePublication::ModuleBodyOperations => {
+                if profile == super::instances::SourcePublication::ModuleBodyOperations {
+                    crate::sema::crates::authored_export::prepare_primitive_constants(
+                        report, facts, identity,
+                    )?;
+                }
                 let (source, modules) =
                     Self::begin_module_nominals(report, facts, checked, identity, profile)
                         .map_err(legacy_error)?;

@@ -145,7 +145,10 @@ impl<'a> HeaderIndex<'a> {
             }
         }
         for header in &rows.implementations {
-            scopes.complete_slots(header.scope, work)?;
+            let slots = scopes.complete_slots(header.scope, work)?;
+            if header.core_primitive_inherent && slots != 0 {
+                return Err("source Core primitive inherent owner has generic parameters");
+            }
         }
         for header in &rows.functions {
             scopes.complete_slots(header.scope, work)?;
