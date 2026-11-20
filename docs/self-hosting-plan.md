@@ -1772,16 +1772,24 @@ The report is in `obj/parallel/inline-single-inferred-argument/` in the
 performance checkout and the isolated fast gate is
 `obj/qualification/fast/1795141696010580141/`.
 
-The same performance checkout is now testing a count-only non-trait
-hypothesis. In the 26,865-sample original-core profile, 6,222 body samples
-lack a visible trait-related stack frame. The two lint-provenance leaf
-symbols have 151 body samples with a caller-site tracking ancestor and
-195 with a checked-tracking ancestor. These ancestor counts overlap. The
-observer counts successful sealed owner-witness rereads and any displaced
-comptime receipts before a production reuse decision. The observed
+In the 26,865-sample original-core profile, 6,222 body samples lack a
+visible trait-related stack frame. The two lint-provenance leaf symbols
+have 151 body samples with a caller-site tracking ancestor and 195 with
+a checked-tracking ancestor. Those ancestor counts overlap. The observed
 settled-type resolution chain outside visible trait ancestry accounts for
-0.42% of the whole profile across declarations and bodies. Declaration
-walks and demand preparation remain separate attribution targets.
+0.42% of the whole profile across declarations and bodies.
+
+A count-only observer on exact `9c643b901` reproduces the existing output
+bytes, statuses and diagnostics on 14 focused pairs and the frozen
+746-input core and Unicode graph. It observes 70,271 sealed caller-tracking
+witness scans. Sharing the existing 32 receipt slots predicts 62,951
+new tracking hits and displaces 770 existing comptime hits while adding
+240. That saves 62,421 net physical scans, covering 3,957,568 witness
+steps. The compiler must still pay its original work ledger. Every observed
+replay debit preview succeeds. The separate tracking table and one-slot
+request receipt predict fewer hits. Production implementation and
+calibrated measurements are pending. The graph and focused receipts are
+in `obj/parallel/caller-tracking-witness/` in the performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
