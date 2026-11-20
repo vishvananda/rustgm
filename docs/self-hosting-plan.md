@@ -1708,6 +1708,24 @@ of additional explicit copying on the measured search route. The experiment
 remains isolated. The report and raw profiles are in
 `obj/parallel/trait-instantiation-scratch/` in the performance checkout.
 
+`672467557` reads the existing canonical trait argument span in order during
+instantiation. The paired graph preserves exact output bytes and proof order.
+The observed graph reaches 390,810 nonempty argument spans. The source-backed
+allocation control drops 1,943 blocks and 62,176 bytes at the removed collection
+site. Four integration cases on the combined compiler cover mixed argument
+order, nested binders and the wide constant client. They pass in 172.38 seconds.
+
+ABBA and BAAB retire 0.327% and 0.331% fewer instructions, with about 0.45% fewer
+loads and 0.52% fewer stores. The ordinary control retains 257 allocations and
+adds about 1,300 to 1,450 instructions. Both orders show adverse elapsed
+medians, with different magnitudes. In the latter order the same baseline
+binary ranges from 34.585 to 54.351 seconds as sibling CPU occupancy moves
+from 31% to 97% at effectively identical instruction counts. The paired work
+reduction qualifies. The wall and cycle effects need comparable core occupancy.
+The report is in `obj/parallel/canonical-argument-span/` in the performance
+checkout and the integration receipt is in
+`obj/qualification/fast/1795141587723920143/` in the frontier checkout.
+
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
 positions and 16,384 invocations the median was 1,117.90 ms before and 67.79 ms
