@@ -25,7 +25,9 @@ The performance worker survived the restart. Its worktree is
 `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` on
 `lane/ordered-liveness-seeds-20261120` at `72264239b`. The optimized
 candidate matches `f5e3fbdcf` on the frozen graph, 17 focused outcomes
-and all six typed loan-ledger controls. Exclusive counters are pending.
+and all six typed loan-ledger controls. Paired counters show 0.253% more
+retired instructions on the original graph, so the candidate stays
+isolated. The worker is tracing the seeds already covered by full extents.
 The private harness reached its build deadline. Bounded child-proof
 reuse `9143861f0` and its early source guard `049db339d` are both on
 `main`. The separate trait-header experiments are parked. Lifetime

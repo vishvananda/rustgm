@@ -2022,9 +2022,22 @@ Independent destructor controls keep five concrete cleanup scopes,
 increase the region pairs from 110 to 1,888, and match the Rust and
 RustGM native result. Candidate `72264239b` retains the ordered runs
 through mapping and replays the original solver inputs. Its static
-checks passed. Private execution and paired measurements are pending.
-Evidence is under `obj/parallel/v5-nontrait-schedule/` in the performance
-checkout.
+checks passed. Private execution remains pending after the harness
+reached its build deadline.
+
+The optimized pair matches the original graph, 17 focused outcomes and six
+typed loan ledgers, including the first work failure. Exclusive A/A and
+ABBA measure 89.615 billion to 89.842 billion retired instructions
+(+0.253%) on the original graph. Both pairs agree. Loads rise 0.267% and
+stores 0.318%. The two orders disagree on wall time and cycles, with
+about 18.5% A/A variation. The ordinary scalar control uses 0.127% more
+instructions and the long plain-loan control uses 0.115% fewer. Destructor
+widths 32 and 128 use 0.978% and 1.532% fewer instructions. The candidate
+stays isolated because of the original-graph increase. The next analysis
+examines whether full extents can avoid materializing already-covered
+seeds while preserving charged work and failure order. The counter and
+preflight receipts are under `obj/parallel/v5-nontrait-schedule/` in the
+performance checkout.
 
 The matcher scratch change passed its focused regression and an opt-level 1
 paired run with seven frozen inputs and byte-equal expansions. At 65,536 arm
