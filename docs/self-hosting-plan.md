@@ -1000,12 +1000,17 @@ Three focused CLI checks, 29 script tests and all six target-graph outcomes
 pass. Evidence is under
 `obj/parallel/compiler-execution-freeze/terminal-artifact-validation/`.
 
-The next link step needs the binary LowIR and its exact library closure in
-frozen order, together with the verified native objects and ordered library
-directives. The actual compiler link and the perturbed-order control await
-those inputs.
-[Artifact options](../dev/bin/crates.rs) · [Native manifest](../dev/bin/link_manifest.rs) ·
-[Backend linker](../scripts/backend.py)
+The strict native linker takes the selected binary's LowIR and the library
+closure in recorded target order. It checks the compiled dependencies against
+their actual metadata arguments, verifies input and tool hashes, and lowers
+each unit to a checked CPPGM object. It applies the binary's ordered native
+library directives and records the published executable hash. Two independent
+builds of the strict library-and-binary control link to byte-identical
+executables and run successfully. The controls reject a reordered closure, an
+omitted transitive library and a changed linker pin. The actual compiler link
+still awaits its strict sysroot and compiler artifacts. Receipts are under
+`obj/parallel/compiler-execution-freeze/native-closure-probe/production-qualified/`.
+[Stage linker](../scripts/link_self_hosting.py) · [Native manifest](../dev/bin/link_manifest.rs)
 
 The PA45 stage comparator checks the same frozen graph and executor, the
 stage 1 compiler pin used by stage 2, and the actual strict compiler

@@ -58,12 +58,23 @@ absolute paths, host randomness or unordered iteration may reach an output.
 `RUSTGM_TEST_APP` already selects the compiler under test for the course
 runner, so stage 1 needs no new test entry point.
 
-Use the two target-unit output directories and the linked executables for the
-stage comparison.
+Link the binary target and its recorded dependency closure after each strict
+target build. Use the binary unit's index from the frozen plan and the host
+linker from its tool inventory.
+
+```sh
+python3 scripts/link_self_hosting.py obj/stage1/target \
+    --unit "$BINARY_UNIT" --out obj/stage1/native \
+    --linker "$LINKER" --linker-sha256 "$LINKER_SHA256"
+```
+
+The output directory contains the linked `rustgm`, its command log, the native
+objects and their hashes. Use the two target-unit output directories and linked
+executables for the stage comparison.
 
 ```sh
 python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
-    --stage1-binary obj/stage1/rustgm --stage2-binary obj/stage2/rustgm
+    --stage1-binary obj/stage1/native/rustgm --stage2-binary obj/stage2/native/rustgm
 ```
 
 The comparison checks the frozen graph, strict receipts, compiler diagnostics
