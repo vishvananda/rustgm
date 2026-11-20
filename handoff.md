@@ -26,11 +26,11 @@ The performance worker survived the restart. Its worktree is
 `lane/ordered-liveness-seeds-20261120` at `72264239b`. The optimized
 candidate matches `f5e3fbdcf` on the frozen graph, 17 focused outcomes
 and all six typed loan-ledger controls. Exclusive counters are pending.
-The private harness reached its build deadline. The separate
-child-proof lane is parked. Its early source guard `049db339d` is on
-`main`, and the broader bounded replay remains on its experiment
-branches. Evidence is under `obj/parallel/v5-nontrait-schedule/` in
-the performance worktree.
+The private harness reached its build deadline. Bounded child-proof
+reuse `9143861f0` and its early source guard `049db339d` are both on
+`main`. The separate trait-header experiments are parked. Lifetime
+evidence is under `obj/parallel/v5-nontrait-schedule/` in the
+performance worktree.
 [Performance evidence](docs/self-hosting-plan.md#L2015)
 
 ## Historical bring-up checkpoint — 2026-11-19
