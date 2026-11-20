@@ -102,8 +102,9 @@ a backend that handles the LowIR volume. The runtime lane probes these now.
 
 ## Assignment close-out
 
-- **Package what exists:** the nine implemented, unpublished units and the
-  PA1–PA20 release records.
+- **Package what exists:** publish the remaining implemented components and
+  reconcile the PA1–PA20 release records. The [unit graph](../assignment-plan.json)
+  records current implementation and publication status.
 - **Falls out of the ladder:** PA32 (M1), PA33 (M2), PA34/35 (executor and
   crates), PA36 (M3), PA44 and PA45 (M5 to M7).
 - **Independent feature work:** PA37/38 after std; PA39 to PA43 in parallel
@@ -1027,10 +1028,10 @@ native boundary as the workload reaches them. [Bring-up runner](../scripts/bring
 Start the strict executor from the existing target-unit and link tooling. Freeze
 an ordered per-unit inventory with source hashes, crate identities, extern aliases,
 features, target cfg, generated inputs and environment. Pin stage 0, CPPGM, the
-native linker, native inputs and link order. The current target executor emits
-metadata for library units only, and the CLI rejects binary `--metadata-output`.
-Close that gap in the existing typed output path for the PA45 per-crate
-comparison. Run `scripts/course.py paN --app "$RUSTGM_TEST_APP"` for each of
+native linker, native inputs and link order. Retain LowIR, metadata and the native
+link manifest for every unit, including the compiler binary. Link the binary with
+its recorded dependency closure and use the per-crate artifacts for comparison.
+Run `scripts/course.py paN --app "$RUSTGM_TEST_APP"` for each of
 PA1–PA24 under the shared guards with the variable set to the pinned stage 1
 executable. Compare raw bytes from independently built directories to catch
 path and ordering leaks. Diagnose differences at the first differing unit
