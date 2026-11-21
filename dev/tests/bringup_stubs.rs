@@ -723,6 +723,15 @@ const RECORD: &str = "\
 pub struct Header{pub tag:u8,pub length:u32,pub flags:u16,pub pair:(bool,[char;2])}
 #[unsafe(no_mangle)]pub fn zeroable_record(){assert_zero_valid::<Header>()}
 ";
+/// A struct whose union field holds a reference: the union admits all-zero
+/// bytes whatever its fields, as `MaybeUninit` padding in libc's `statx` does.
+const UNION: &str = "\
+impl Clone for u64{fn clone(&self)->Self{*self}}impl Copy for u64{}
+impl<T:PointeeSized> Clone for &T{fn clone(&self)->Self{*self}}impl<T:PointeeSized> Copy for &T{}
+pub union Slot{pub word:u64,pub borrowed:&'static u8}
+pub struct Padded{pub tag:u16,pub pad:Slot}
+#[unsafe(no_mangle)]pub fn zeroable_union(){assert_zero_valid::<Padded>()}
+";
 /// A struct whose reference field rules out all-zero bytes.
 const REFERENCED: &str = "\
 pub struct Borrowed(pub u8,pub &'static u8);
@@ -827,6 +836,14 @@ const LOWERINGS: &[Lowering] = &[
     Lowering {
         name: "record",
         source: [MEMORY, RECORD],
+        fence: DECLARED_KIND,
+        lowered: STORED,
+        emitted: SHIMS,
+        trapped: None,
+    },
+    Lowering {
+        name: "union",
+        source: [MEMORY, UNION],
         fence: DECLARED_KIND,
         lowered: STORED,
         emitted: SHIMS,

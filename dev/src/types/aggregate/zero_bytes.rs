@@ -40,7 +40,9 @@ impl Definitions {
                                 .fields,
                         ),
                         Aggregate::Enum => physical(ty)?,
-                        Aggregate::Union => ZeroFields::Unproven,
+                        // rustc's default check never looks inside a union:
+                        // all-zero bytes are a value of every union.
+                        Aggregate::Union => ZeroFields::Valid,
                     }
                 }
                 _ => return Ok(false),
