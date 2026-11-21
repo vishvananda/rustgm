@@ -403,7 +403,8 @@ pushes. Retain pending broad checks explicitly in handoffs. Push/PR CI runs the
 bounded smoke workflow plus harness/upstream/audit-cache contracts. Nightly
 and manual CI run full release tests, all native maintainer tests, uncached
 architecture audits, all-target strict Clippy, all active text suites, debug
-library invariants and independent Rust qualification. Cancel superseded push
+library invariants and independent Rust qualification. The text suites run as
+their own step after the release tests, whichever fails. Cancel superseded push
 jobs rather than accumulating outdated builds. The fast CI smoke is deliberately
 small; source-specific regression selections belong in the developer's receipt.
 

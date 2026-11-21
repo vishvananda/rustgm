@@ -58,8 +58,13 @@ jobs:
         run: make fmt-check setup-audit audit-rust lint test-harness test-upstream
       - name: Independent host build graph
         run: make test-host-builds
-      - name: Release and course tests
-        run: make test
+      - name: Release tests
+        run: make test-release
+      # A failing release test must not hide the text suites: they run as
+      # their own step, and the job fails if either step does.
+      - name: Course text suites
+        if: ${{ !cancelled() }}
+        run: make test-report
       - name: Native maintainer qualification
         run: |
           python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py

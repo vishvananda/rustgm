@@ -8,7 +8,7 @@ ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
+.PHONY: all test test-release test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 .PHONY: observe
@@ -42,10 +42,12 @@ smoke:
 .PHONY: tidy-archive
 tidy-archive:
 	$(PYTHON) scripts/resources.py run --wait-seconds 0 $(ARCHIVE_RESOURCE_ARGS) -- $(PYTHON) scripts/archive_scratch.py $(ARCHIVE_ARGS)
+# The release tests and the course text suites each run whether or not the
+# other fails; the target fails if either does.
 test:
+	@status=0; $(MAKE) test-release || status=1; $(MAKE) test-report || status=1; exit $$status
+test-release:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast
-	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
 test-debug:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked --no-fail-fast
 test-debug-invariants:
