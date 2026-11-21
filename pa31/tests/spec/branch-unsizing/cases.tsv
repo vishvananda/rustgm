@@ -12,3 +12,6 @@ pa31/tests/spec/branch-unsizing/adjusted-earlier.rs	0
 pa31/tests/spec/branch-unsizing/lub-arrays.rs	1
 pa31/tests/spec/branch-unsizing/mut-slice-later.rs	1
 pa31/tests/spec/branch-unsizing/lub-deref.rs	1
+pa31/tests/spec/branch-unsizing/deref-later.rs	0
+pa31/tests/spec/branch-unsizing/deref-earlier.rs	0
+pa31/tests/spec/branch-unsizing/deref-unrelated.rs	1

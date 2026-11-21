@@ -190,7 +190,11 @@ impl Checker<'_> {
         }
     }
 
-    fn may_dereference_reference(&mut self, node: NodeId, subject: TermId) -> Result<bool, Error> {
+    pub(super) fn may_dereference_reference(
+        &mut self,
+        node: NodeId,
+        subject: TermId,
+    ) -> Result<bool, Error> {
         let (owner, _) = crate::sema::compiler_items::dereferencing::target(
             self.report,
             self.facts,

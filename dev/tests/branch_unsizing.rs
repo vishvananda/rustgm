@@ -1,6 +1,8 @@
 //! Branches share one reference type as rustc's `CoerceMany` does: each branch
 //! coerces to a known slice expectation, and without one an earlier array
-//! referent unsizes to a later slice (core's `Split::as_slice`, `next_back`).
+//! referent unsizes to a later slice (core's `Split::as_slice`, `next_back`)
+//! and an earlier referent that alone implements `Deref` dereferences to a
+//! later one.
 use crate::native_references as native;
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -76,7 +78,7 @@ fn branch_references_unsize_like_rustc() -> Result {
         }
         count += 1;
     }
-    assert_eq!(count, 14);
+    assert_eq!(count, 17);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }

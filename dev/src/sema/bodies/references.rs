@@ -217,8 +217,8 @@ impl Checker<'_> {
         a: TermId,
         b: TermId,
     ) -> Result<TermId, Error> {
-        let (ad, _) = self.reference_shape(node, a)?;
-        let (bd, _) = self.reference_shape(node, b)?;
+        let (ad, earlier) = self.reference_shape(node, a)?;
+        let (bd, later) = self.reference_shape(node, b)?;
         let a_mutable = matches!(
             self.head(node, a)?,
             Some(Constructor::Reference { mutable: true, .. })
@@ -227,6 +227,22 @@ impl Checker<'_> {
             self.head(node, b)?,
             Some(Constructor::Reference { mutable: true, .. })
         );
+        // A later `&String` after an earlier `&str` dereferences to it: the
+        // first coercion rustc tries, of the later operand to the earlier
+        // type, succeeds, and no common shape relates the two referents. When
+        // the later referent has no `Deref` implementation that coercion
+        // cannot succeed, and rustc coerces the earlier operand to the later
+        // type instead: an earlier `&String` before a later `&str`. Each
+        // operand then coerces to the chosen type, which rejects a pair no
+        // dereference relates, as rustc does.
+        if ad == 1 && bd == 1 && self.distinct_referents(node, (a, earlier), (b, later))? {
+            if (a_mutable || !b_mutable) && self.earlier_dereferences_only(node, a, b)? {
+                return self.inferred_regions(node, b);
+            }
+            if b_mutable || !a_mutable {
+                return self.inferred_regions(node, a);
+            }
+        }
         // rustc first coerces the later operand to the earlier one. When that
         // fails it coerces the earlier one to the later: an earlier array
         // referent unsizes to a later slice of the same mutability.
@@ -241,6 +257,59 @@ impl Checker<'_> {
         let (converted, _, _) = self.reference_conversion(node, actual, expected, false)?;
         self.callable_shape(node, converted, expected)?;
         self.inferred_regions(node, expected)
+    }
+    /// Whether only the earlier of two references can reach the other's
+    /// referent through `Deref`: the later referent implements no `Deref`.
+    fn earlier_dereferences_only(
+        &mut self,
+        node: NodeId,
+        earlier: TermId,
+        later: TermId,
+    ) -> Result<bool, Error> {
+        if !crate::sema::compiler_items::dereferencing::available(self.facts) {
+            return Ok(false);
+        }
+        let later = self.child(node, later, 0)?;
+        if self.may_dereference_reference(node, later)? {
+            return Ok(false);
+        }
+        let earlier = self.child(node, earlier, 0)?;
+        self.may_dereference_reference(node, earlier)
+    }
+    /// Whether two single references have known referents that cannot unify,
+    /// leaving unsizing (an array, slice or object referent) and callable
+    /// referents to the shape path.
+    fn distinct_referents(
+        &mut self,
+        node: NodeId,
+        (earlier, earlier_head): (TermId, Option<Constructor>),
+        (later, later_head): (TermId, Option<Constructor>),
+    ) -> Result<bool, Error> {
+        let unsizing = |head: Option<Constructor>| {
+            matches!(
+                head,
+                None | Some(
+                    Constructor::Array(_)
+                        | Constructor::ArrayTerm(_)
+                        | Constructor::ArrayInfer(_)
+                        | Constructor::Slice
+                        | Constructor::Dynamic { .. }
+                        | Constructor::FunctionItem(..)
+                        | Constructor::FunctionItemArgs(..)
+                        | Constructor::Closure(..)
+                        | Constructor::Function { .. }
+                )
+            )
+        };
+        if unsizing(earlier_head) || unsizing(later_head) {
+            return Ok(false);
+        }
+        let earlier = self.child(node, earlier, 0)?;
+        let later = self.child(node, later, 0)?;
+        self.state
+            .infer
+            .incompatible(&self.facts.types, earlier, later)
+            .map_err(|e| self.error(node, e))
     }
     /// Whether `array` refers to an array and `slice` to a slice.
     fn array_slice_referents(

@@ -41,8 +41,10 @@ candidate (2ddb3a67) before any implementation. That candidate accepts only
   dereferences, as in rustc.
 - **Joins without an expectation.** When two references have the same depth
   and mutability, an earlier array referent and a later slice referent join
-  at the slice. The earlier branch unsizes to it. Every other join keeps its
-  existing direction.
+  at the slice. The earlier branch unsizes to it. Two single references
+  with known, distinct referents take the earlier type, unless only the
+  earlier referent implements `Deref`; then they take the later one. Every
+  other join keeps its existing direction.
 
 No new engine, backend, storage policy or compiler limit is added.
 
@@ -53,7 +55,8 @@ Tradeoffs:
   branches to a later type. Batch 3's `adjusted-earlier` shows rustc
   accepting the one disagreement the declaration predicted, and no other
   disagreement is known.
-- Only array-to-slice referents take the earlier-to-later direction. An earlier
+- Only array-to-slice referents and an earlier referent that alone
+  implements `Deref` take the earlier-to-later direction. An earlier
   `&S<[T; N]>` with a later `&S<[T]>`, or an earlier `&T` with a later
   `&dyn Trait`, without an expectation, still fails closed with "incompatible
   types". rustc unsizes both. Core's reached failures use neither form.
@@ -62,10 +65,11 @@ Tradeoffs:
 
 ## Contract
 
-**PA31** (`pa31/tests/spec/branch-unsizing/`, fourteen source-core
-reductions). RustGM agrees with rustc 1.98.0 on all 14 (`outcomes.json`). The base,
+**PA31** (`pa31/tests/spec/branch-unsizing/`, seventeen source-core
+reductions). RustGM agrees with rustc 1.98.0 on all 17 (`outcomes.json`). The base,
 clean candidate 2ddb3a67, rejects every case except `lub-earlier` and the
-three negatives with "incompatible types".
+three negatives with "incompatible types". Batch 4's base, c12c9776c, rejects
+both of its positives the same way.
 
 | Case | Form | Rust | Expected type |
 | --- | --- | --- | --- |
@@ -83,6 +87,9 @@ three negatives with "incompatible types".
 | `lub-arrays` | `&[1u8]` and `&[1u8, 2]` | E0308 | none |
 | `mut-slice-later` | `&[]` and a `&mut [T]` | E0308 | none |
 | `lub-deref` | `&[]` and a `&&[T]` | E0308 | none |
+| `deref-later` | earlier `&Text`, later `&Owned` | accept | none |
+| `deref-earlier` | earlier `&Owned`, later `&Text` | accept | none |
+| `deref-unrelated` | `&Text` and `&Other` | E0308 | none |
 
 ## Qualification
 

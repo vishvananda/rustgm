@@ -1,6 +1,6 @@
 # Branch unsizing (source core)
 
-Fourteen no_core source-core libraries reduce pinned core's `Split::as_slice`
+Seventeen no_core source-core libraries reduce pinned core's `Split::as_slice`
 7874 (`slice/iter.rs:427`, `if self.finished { &[] } else { &self.v }`) and
 `SplitInclusive::next_back` 7900 (`slice/iter.rs:646`,
 `let remainder = if self.finished { &[] } else { ... }`). They are checked
@@ -11,7 +11,8 @@ which declares `Unsize` and `CoerceUnsized` for references.
 rustc's `CoerceMany` gives branches one type. With a known expectation, each
 branch coerces to it. Without one, a later branch first coerces to the merged
 type. If that fails, the earlier branches coerce to the later branch's type,
-so an earlier `&[_; N]` unsizes to a later `&[T]`.
+so an earlier `&[_; N]` unsizes to a later `&[T]` and an earlier `&Owned`
+dereferences to a later `&Text` that cannot become `&Owned`.
 
 - With an expectation, `core-as-slice` (an empty array and a `&&[T]` deref
   coercion), `ret-expected` and `let-annotated` (two array lengths) accept.
@@ -22,12 +23,17 @@ so an earlier `&[_; N]` unsizes to a later `&[T]`.
 - Typing rejects `lub-arrays` (two array lengths with no expectation),
   `mut-slice-later` (`&[_; 0]` against `&mut [T]`) and `lub-deref` (`&&[T]`
   needs an expectation to deref), each with E0308.
+- Batch 4 declares `Deref` (as `async-drop-source` does) and joins `&Text`
+  with `&Owned`, `Owned: Deref<Target = Text>`: `deref-later` and
+  `deref-earlier` accept in either order, and `deref-unrelated` (`&Text`
+  and `&Other`) rejects with E0308.
 
 Outcomes were declared before the frozen rustc 1.98.0 oracle and before any
-RustGM run of each batch. 13 of the 14 declarations agree. `adjusted-earlier`
+RustGM run of each batch. 16 of the 17 declarations agree. `adjusted-earlier`
 was declared rejected (E0308), and rustc accepts it; rustc is the oracle. Both
 are recorded in `outcomes.json`. The batches are in
-`obj/parallel/branch-unsize/core/declared.json`. The cases keep Rust's
+`obj/parallel/branch-unsize/core/declared.json` and, for batch 4,
+`obj/parallel/stage1-census-b/probes/branch-deref/declared.txt`. The cases keep Rust's
 MIT/Apache-2.0 attribution; see root NOTICE and `third_party/sources.json`.
 
 `dev/tests/branch_unsizing.rs` checks every case's typing through the CLI. It
