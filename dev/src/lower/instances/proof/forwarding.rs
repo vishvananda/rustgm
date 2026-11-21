@@ -28,7 +28,9 @@ impl Builder {
             0
         };
         *budget = budget.saturating_add(growth.bytes).saturating_add(handoff);
-        if *budget > 64_000_000 || self.forwarding.contains_key(&self.bodies.len()) {
+        if *budget > crate::lower::instances::BODY_BYTES
+            || self.forwarding.contains_key(&self.bodies.len())
+        {
             return Err(borrow::Error {
                 node: Some(source.into()),
                 message: "caller forwarding exceeds its actual instance budget or repeats a body"

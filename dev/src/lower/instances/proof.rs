@@ -759,7 +759,7 @@ impl Builder {
                     .retained_bytes()
                     .saturating_sub(input.retained_bytes()),
             );
-            if *budget > 64_000_000 {
+            if *budget > super::demand::BODY_BYTES {
                 return Err(borrow::Error {
                     node: Some(body.source.into()),
                     message: "factory source contracts exceed their retained instance budget"

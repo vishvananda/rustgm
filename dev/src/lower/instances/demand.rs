@@ -221,10 +221,14 @@ impl Ordinary {
         }))
     }
 }
-/// The demand budget's fixed byte cap, rustc-style: it bounds instantiation by
-/// output, since demanded bodies may legitimately grow superlinearly in input.
-pub(in crate::lower) const BODY_BYTES: usize = 64_000_000;
-pub(in crate::lower) const BODIES_EXCEEDED: &str = "generic instance bodies exceed 64 MB budget";
+/// The demand budget's byte cap. It bounds instantiation by output, since
+/// demanded bodies may legitimately grow superlinearly in input, and one
+/// budget pays for every body, adapter, factory and forwarding a session
+/// demands: a whole-graph session demands far more than any one item, so
+/// the cap is a coarse runaway guard.
+pub(in crate::lower) const BODY_BYTES: usize = 1 << 31;
+pub(in crate::lower) const BODIES_EXCEEDED: &str =
+    "generic instance bodies exceed their whole-graph runaway limit";
 #[derive(Default)]
 struct Budget {
     active: HashMap<BodyKey, usize>,
@@ -246,8 +250,8 @@ impl Budget {
             .canonical_steps
             .saturating_add(growth.work.saturating_add(1));
         self.bytes = self.bytes.saturating_add(growth.bytes);
-        if self.bytes > 64_000_000 {
-            return Err("generic instance work exceeds 64 MB budget");
+        if self.bytes > BODY_BYTES {
+            return Err("generic instance work exceeds its whole-graph runaway limit");
         }
         work.push(value);
         Ok(())
@@ -554,7 +558,7 @@ fn materialize(
 #[cfg(test)]
 thread_local! {
     /// Test-only: the bytes a demand budget starts from, so a control can
-    /// reach the fixed cap without 64 MB of input; the bytes the last demand
+    /// reach the cap without its bytes of input; the bytes the last demand
     /// budget on this thread held; and the work its demand scopes paid.
     static DEMAND: std::cell::Cell<[usize; 3]> = const { std::cell::Cell::new([0, 0, 0]) };
     /// Test-only: work and bytes every specialized instance also charges.
@@ -1435,7 +1439,7 @@ pub(super) fn caller_work_payments(
     assert_eq!(budget.bytes, cold);
     assert_eq!(facts.body_work.canonical_steps - before, 2);
     let mut rejected = Vec::new();
-    budget.bytes = 64_000_000;
+    budget.bytes = BODY_BYTES;
     let attempted = facts.body_work.canonical_steps;
     assert!(
         budget
@@ -1444,7 +1448,7 @@ pub(super) fn caller_work_payments(
     );
     assert!(rejected.is_empty());
     assert_eq!(rejected.capacity(), 0);
-    assert!(budget.bytes > 64_000_000);
+    assert!(budget.bytes > BODY_BYTES);
     assert_eq!(facts.body_work.canonical_steps - attempted, 1);
     Ok(())
 }

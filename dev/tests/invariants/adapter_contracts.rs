@@ -343,13 +343,14 @@ fn receiver_adapter_requires_the_exact_sealed_source() -> TestResult {
     let prepared = build_adapter(facts, entry, builder.body(source)?)?;
     let previous = builder.bodies.len();
     let work = facts.body_work.canonical_steps;
-    let mut exhausted = 64_000_000;
+    let cap = crate::lower::instances::BODY_BYTES;
+    let mut exhausted = cap;
     assert!(
         builder
             .push_adapter(&report, facts, &checked, source, prepared, &mut exhausted)
             .is_err()
     );
-    assert!(exhausted > 64_000_000 && facts.body_work.canonical_steps > work);
+    assert!(exhausted > cap && facts.body_work.canonical_steps > work);
     assert_eq!(builder.bodies.len(), previous);
     assert!(builder.forwarding.is_empty());
     let prepared = build_adapter(facts, entry, builder.body(source)?)?;

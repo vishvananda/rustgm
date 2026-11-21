@@ -3,6 +3,11 @@ use super::{Declarations, TypeId, dependencies::Reader};
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Kind, ListId};
 
+/// One registry serves every storage proof of a session, so its work is
+/// bounded by a coarse whole-graph runaway guard rather than by what one
+/// proof may spend.
+const WORK_LIMIT: usize = 1 << 30;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct RecipeId(usize);
 impl RecipeId {
@@ -47,8 +52,8 @@ impl Registry {
         self.steps = self
             .steps
             .checked_add(count)
-            .filter(|steps| *steps <= 4_000_000)
-            .ok_or("storage dependency work budget exceeded")?;
+            .filter(|steps| *steps <= WORK_LIMIT)
+            .ok_or("storage dependency work exceeds its whole-session runaway limit")?;
         Ok(())
     }
     fn retain(&mut self, bytes: usize) -> Result<(), &'static str> {

@@ -734,10 +734,12 @@ impl Dependencies {
         }
         Ok(())
     }
+    /// One collector follows the dependencies of every body a session
+    /// demands, so its work limit is a coarse whole-graph runaway guard.
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
-        if self.steps > 1_000_000 {
-            return Err("callable dependency work budget exceeded");
+        if self.steps > 1 << 30 {
+            return Err("callable dependency work exceeds its whole-graph runaway limit");
         }
         Ok(())
     }
