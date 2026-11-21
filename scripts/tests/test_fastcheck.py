@@ -41,7 +41,7 @@ class FastcheckBudget(unittest.TestCase):
             binary = root / "suite_frontend"
             binary.touch()
             steps = mock.Mock()
-            steps.receipt = {}
+            steps.receipt, steps.environment = {}, {"CARGO_BUILD_JOBS": "8"}
             steps.run.return_value = json.dumps({"reason": "compiler-artifact", "executable": str(binary),
                                                  "profile": {"test": True},
                                                  "target": {"kind": ["test"], "name": "suite_frontend"}})
@@ -53,7 +53,8 @@ class FastcheckBudget(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "assignment-metadata failed"):
                     fastcheck_run.execute(root, args, steps)
             # The compile ran beside the gates and kept its cache; no test step started.
-            self.assertEqual([call.args[0] for call in steps.run.call_args_list], ["clippy-public"])
+            self.assertEqual(sorted(call.args[0] for call in steps.run.call_args_list),
+                             ["build-public", "clippy-public"])
 
     def test_subprocess_timeout_retains_failure_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -67,6 +68,29 @@ class FastcheckBudget(unittest.TestCase):
                 steps.run("hang", [sys.executable, "-c", "import time; time.sleep(30)"])
             self.assertEqual(steps.receipt["steps"][0]["status"], 124)
             self.assertTrue((root / "obj/check/receipt.json").is_file())
+
+    def test_compiles_run_together_are_charged_their_common_time_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "dev").mkdir()
+            (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
+            args = Namespace(evidence_root=root / "obj/check", prune_under=[], seconds=300, compile_seconds=60)
+            sleep = [sys.executable, "-c", "import time; time.sleep(0.4)"]
+            with mock.patch("builtins.print"):
+                steps = Steps(root, args)
+                started = time.monotonic()
+                fastcheck_run.together(steps, [("one", sleep, {}), ("two", sleep, {})])
+                wall = time.monotonic() - started
+                used = steps.receipt["budget"]["compile_used"]
+                self.assertGreaterEqual(used, 0.4)
+                self.assertLessEqual(used, wall)
+                self.assertTrue(all(row["together"] for row in steps.receipt["steps"]))
+                # A failure is reported only after the other compile has finished.
+                failing = [sys.executable, "-c", "raise SystemExit(3)"]
+                with self.assertRaisesRegex(ValueError, "fails failed with status 3"):
+                    fastcheck_run.together(steps, [("fails", failing, {}), ("slow", sleep, {})])
+            self.assertEqual([(row["name"], row["status"]) for row in steps.receipt["steps"][2:]],
+                             [("fails", 3), ("slow", 0)])
 
     def scripted(self, root, script, **limits):
         """Run named steps of scripted durations against a virtual clock."""
@@ -259,25 +283,36 @@ class LinkedPrivateHarness(unittest.TestCase):
                 audit.touch()
                 commands = []
                 steps = mock.Mock()
-                steps.receipt = {}
+                steps.receipt, steps.environment = {}, {"CARGO_BUILD_JOBS": "8"}
 
                 def run(name, command, **_):
                     commands.append((name, command))
                     if command[:2] != ["cargo", "fmt"] and command[0] == "cargo":
-                        # Clippy is the compiler of every Cargo build, which is never killed.
-                        self.assertIn(command[1], ("test", "build"))
-                        self.assertEqual(_["overrides"]["RUSTC_WORKSPACE_WRAPPER"], "test-clippy-driver")
-                        self.assertEqual(_["overrides"]["CLIPPY_ARGS"], "-Dwarnings")
-                        self.assertNotIn("RUSTFLAGS", _["overrides"])
+                        # Every Cargo compile is never killed; only checks and the harness lint.
                         self.assertTrue(_["compiles"])
+                        self.assertNotIn("RUSTFLAGS", _["overrides"])
+                        linted = name.startswith("clippy-")
+                        self.assertEqual(_["overrides"].get("RUSTC_WORKSPACE_WRAPPER"),
+                                         "test-clippy-driver" if linted else None)
+                        self.assertEqual(_["overrides"].get("CLIPPY_ARGS"), "-Dwarnings" if linted else None)
+                        self.assertEqual(command[1], {"clippy-private": "test", "build-public": "test",
+                                                      "build-cli": "build"}.get(name, "check"))
+                        if name != "clippy-private":
+                            # The build and its check run together on half the width each.
+                            self.assertTrue(_["together"])
+                            self.assertEqual(_["overrides"]["CARGO_BUILD_JOBS"], "4")
+                    if name in ("clippy-public", "clippy-cli"):
+                        self.assertTrue(_["overrides"]["CARGO_TARGET_DIR"].endswith("obj/rust/public-lint"))
+                        self.assertEqual(command[-1], "--message-format=json-render-diagnostics")
+                        self.assertIn("--bins", command)
+                        self.assertNotIn("--no-run", command)
                     if name == "clippy-private":
                         self.assertEqual(command[:2], ["cargo", "test"])
                         self.assertIn("--lib", command)
                         self.assertIn("--no-run", command)
                         self.assertTrue(_["overrides"]["CARGO_TARGET_DIR"].endswith("obj/rust/private-lint"))
                         return json.dumps(record)
-                    if name == "clippy-public":
-                        self.assertEqual(command[:2], ["cargo", "test"])
+                    if name == "build-public":
                         self.assertNotIn("--lib", command)
                         self.assertIn("--no-run", command)
                         self.assertIn("--message-format=json-render-diagnostics", command)
@@ -303,10 +338,11 @@ class LinkedPrivateHarness(unittest.TestCase):
                         mock.patch.object(fastcheck_run, "Beside", QuietGates):
                     fastcheck_run.execute(root, args, steps)
                 compiles = [name for name, command in commands if command[0] == "cargo" and name != "format"]
-                self.assertEqual(compiles, ["clippy-private"] + ["clippy-public"] * mixed + ["build-cli"] * text)
+                self.assertEqual(sorted(compiles), sorted(["clippy-private"] + ["build-public", "clippy-public"] * mixed
+                                                          + ["build-cli", "clippy-cli"] * text))
                 self.assertEqual(steps.receipt["private_harness_producer"], "clippy-private")
 
-    def test_public_selection_needs_no_separate_clippy_pass(self):
+    def test_public_selection_builds_once_and_checks_once_beside_it(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             _, binary = self.fixture(root)
@@ -315,12 +351,12 @@ class LinkedPrivateHarness(unittest.TestCase):
             audit.touch()
             commands = []
             steps = mock.Mock()
-            steps.receipt = {}
+            steps.receipt, steps.environment = {}, {"CARGO_BUILD_JOBS": "8"}
 
             def run(name, command, **_):
                 if name != "format":
                     commands.append(command[:2])
-                if name == "clippy-public":
+                if name == "build-public":
                     return json.dumps({"reason": "compiler-artifact", "executable": str(binary),
                                        "profile": {"test": True},
                                        "target": {"kind": ["test"], "name": "suite_frontend"}})
@@ -335,8 +371,10 @@ class LinkedPrivateHarness(unittest.TestCase):
                     mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \
                     mock.patch.object(fastcheck_run, "Beside", QuietGates):
                 fastcheck_run.execute(root, args, steps)
-            # One Cargo invocation compiles the edit; nothing checks it a second time.
-            self.assertEqual([command for command in commands if command[0] == "cargo"], [["cargo", "test"]])
+            # rustc compiles the edit once and clippy-driver checks it once, at the same time.
+            self.assertEqual(sorted(command for command in commands if command[0] == "cargo"),
+                             [["cargo", "check"], ["cargo", "test"]])
+            steps.charge.assert_called_once()
             with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
                     mock.patch.object(fastcheck_run.shutil, "which", return_value=None), \
                     mock.patch.object(fastcheck_run, "fingerprint", return_value={}), \

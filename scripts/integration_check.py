@@ -15,7 +15,7 @@ import time
 
 from fastcheck import admission_marker, launch
 from fastcheck_gates import Digests
-from fastcheck_run import COMMON, Beside, Steps, build, fingerprint, lint_environment
+from fastcheck_run import Beside, Steps, build, build_cli, fingerprint
 from maintainer_suites import discover
 from storage import check_space, exclusive, minimum_reserve
 
@@ -141,8 +141,7 @@ def execute(root, args, steps, parts):
     binaries = {}
     try:
         binaries = build(root, args, steps, groups)
-        steps.run("build-cli", ["cargo", "build", *COMMON, "--bin", "rustgm"], overrides=lint_environment(),
-                  compiles=True)
+        build_cli(root, steps)
         parts.add("build", True, "private harness, every suite group and the CLI")
     except (TimeoutError, ValueError) as error:
         parts.add("build", False, str(error))

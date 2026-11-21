@@ -78,12 +78,13 @@ class Steps:
         self.save()
         print(f"SKIP {name}: inputs match fingerprint {fingerprint[:16]} passed in {matched}", flush=True)
 
-    def run(self, name, command, *, cwd=None, overrides=None, compiles=False, extra=None):
+    def run(self, name, command, *, cwd=None, overrides=None, compiles=False, extra=None, together=False):
         """Run one step against the clock that owns it.
 
         A killed rustc discards its incremental session, so a compile is never
         stopped at the feedback budget: it finishes, persists its cache and moves
-        the budget's deadline by exactly the time it took.
+        the budget's deadline by exactly the time it took. Compiles run
+        `together` leave the clocks to `charge`, once for their common time.
         """
         kind = "compile ceiling" if compiles else "development feedback budget"
         with self.lock:
@@ -103,17 +104,25 @@ class Steps:
                 status = 124
         elapsed = time.monotonic() - started
         with self.lock:
-            if compiles:
+            if compiles and not together:
                 self.compile_left -= elapsed
                 self.deadline += elapsed
             self.receipt["steps"].append({"name": name, "command": list(map(str, command)),
                                           "seconds": elapsed, "status": status,
                                           "charged": "compile" if compiles else "feedback",
-                                          "environment": overrides or {}, **(extra or {})})
+                                          "environment": overrides or {}, **(extra or {}),
+                                          **({"together": True} if together else {})})
         self.save()
         print(f"END {name}: {elapsed:.2f}s, status {status}", flush=True)
         stdout = self.output(name, status, kind, compiles)
         return stdout
+
+    def charge(self, elapsed):
+        """Charge compiles that ran together their common wall time, once."""
+        with self.lock:
+            self.compile_left -= elapsed
+            self.deadline += elapsed
+        self.save()
 
     def note(self, name, **fields):
         with self.lock:
@@ -242,27 +251,76 @@ def execute(root, args, steps):
 
 
 COMMON = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
+# Cargo renders the diagnostics; its JSON on stdout names the executables.
+MESSAGES = "--message-format=json-render-diagnostics"
+# The strict check of the public targets keeps its own cache beside the build's.
+PUBLIC_LINT = "obj/rust/public-lint"
 
 
 def lint_environment():
-    """Clippy is the compiler: each Cargo build lints strictly and links in the
-    same pass, so an edit is compiled once. Cargo owns the complete build graph;
-    a separate cargo clippy would check the library a second time as metadata
-    only, which cannot link."""
+    """clippy-driver as the workspace compiler with every warning an error."""
     driver = shutil.which("clippy-driver")
     if driver is None:
         raise ValueError("fastcheck requires the installed clippy-driver")
     return {"RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"}
 
 
+def together(steps, runs):
+    """Run compiles at once. Each finishes, since a killed rustc loses its
+    session, and a failure is reported after both have stopped."""
+    results, errors = {}, []
+
+    def one(name, command, overrides):
+        try:
+            results[name] = steps.run(name, command, overrides=overrides, compiles=True, together=True)
+        except Exception as error:  # reraised below, once the other compile has finished
+            errors.append(error)
+
+    started = time.monotonic()
+    threads = [threading.Thread(target=one, args=run) for run in runs]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    steps.charge(time.monotonic() - started)
+    if errors:
+        raise errors[0]
+    return [results[name] for name, *_ in runs]
+
+
+def linted_build(root, steps, build_step, lint_step):
+    """Compile with rustc while clippy-driver checks the same targets beside it.
+
+    Clippy's crate-level passes rerun over the whole library after any edit,
+    about a third of a one-module rebuild; inside the build they sat on its
+    critical path. As a metadata-only check in its own target directory they
+    overlap the build, and the pair costs about the check's time. Both must
+    pass, and the two Cargo processes share the granted width.
+    """
+    lint = lint_environment()
+    jobs = int(steps.environment.get("CARGO_BUILD_JOBS", "1"))
+    first, second = str(max(1, (jobs + 1) // 2)), str(max(1, jobs // 2))
+    (name, command), (lint_name, lint_command) = build_step, lint_step
+    return together(steps, [
+        (name, command, {"CARGO_BUILD_JOBS": first}),
+        (lint_name, lint_command, {"CARGO_TARGET_DIR": str(root / PUBLIC_LINT), "CARGO_BUILD_JOBS": second, **lint}),
+    ])[0]
+
+
+def build_cli(root, steps):
+    """The CLI from the public build, checked strictly beside it; both are fresh after a public selection."""
+    linted_build(root, steps, ("build-cli", ["cargo", "build", *COMMON, "--bin", "rustgm"]),
+                 ("clippy-cli", ["cargo", "check", *COMMON, "--lib", "--bins", MESSAGES]))
+
+
 def build(root, args, steps, groups):
-    common, lint = COMMON, lint_environment()
-    # Cargo renders the diagnostics; its JSON on stdout names the executables.
-    link = ["--no-run", "--message-format=json-render-diagnostics"]
+    common = COMMON
+    link = ["--no-run", MESSAGES]
     binaries = {}
     if "lib" in groups:
+        # The private harness is linted and linked by one clippy-driver build.
         linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", *link],
-                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"), **lint},
+                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"), **lint_environment()},
                            compiles=True)
         binaries.update(artifacts(linked, {"lib": groups["lib"]}))
         steps.receipt["private_harness_producer"] = "clippy-private"
@@ -270,8 +328,9 @@ def build(root, args, steps, groups):
     if remaining:
         # An integration target builds the library, itself and the CLI it runs.
         build_targets = [flag for name in remaining for flag in ("--test", name)]
-        built = steps.run("clippy-public", ["cargo", "test", *common, *build_targets, *link],
-                          overrides=lint, compiles=True)
+        built = linted_build(root, steps, ("build-public", ["cargo", "test", *common, *build_targets, *link]),
+                             ("clippy-public", ["cargo", "check", *common, "--lib", "--bins", *build_targets,
+                                                MESSAGES]))
         binaries.update(artifacts(built, remaining))
     return binaries
 
@@ -303,9 +362,8 @@ def run_tests(root, args, steps, groups, binaries, digests=None):
                 root, apply=True, since=started, paths=args.prune_under)})
             steps.save()
     if args.pa:
-        # The same lint build: already complete after an integration selection.
-        steps.run("build-cli", ["cargo", "build", *COMMON, "--bin", "rustgm"], overrides=lint_environment(),
-                  compiles=True)
+        # The public build and check: already complete after an integration selection.
+        build_cli(root, steps)
         for stage in dict.fromkeys(args.pa):
             steps.run(stage, [sys.executable, "scripts/course.py", stage,
                               "--app", root / "obj/rust/dev-fast/rustgm"])

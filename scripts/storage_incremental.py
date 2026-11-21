@@ -62,7 +62,7 @@ def retire(root):
         if active_artifacts(root):
             raise ValueError("Incremental retirement refused: compiler/test is active")
         profiles = [root / "obj/rust/dev-fast", root / "obj/rust/private-lint/dev-fast",
-                    root / "obj/rust/observe"]
+                    root / "obj/rust/public-lint/dev-fast", root / "obj/rust/observe"]
         # Validate every profile before mutating either cache.
         for profile in profiles:
             for path in (root / "obj", root / "obj/rust", profile.parent, profile,

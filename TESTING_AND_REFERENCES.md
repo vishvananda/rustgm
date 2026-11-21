@@ -313,20 +313,25 @@ into success. Partition unrelated target groups instead.
 
 The `dev-fast` Cargo profile keeps assertions and overflow checks, disables
 optimization and debug symbols, and enables bounded incremental caches under
-`obj/rust/dev-fast` and `obj/rust/private-lint/dev-fast`. It does not rebuild release artifacts. Formatting covers
+`obj/rust/dev-fast`, `obj/rust/private-lint/dev-fast` and
+`obj/rust/public-lint/dev-fast`. It does not rebuild release artifacts. Formatting covers
 all implementation/test modules. The architecture audit reads content hashes,
 reuses unchanged per-file syntax results, then reruns global duplicate,
 filename-stem and ownership checks over the complete current file set. Audit
 implementation, parser versions and role-table changes invalidate that cache.
 Strict Clippy covers selected test targets and their library; integration/text
-selections also check the CLI. Each compilation mode is compiled once: the
-integration build's `cargo test --no-run` runs with `RUSTC_WORKSPACE_WRAPPER`
-set to the installed `clippy-driver` and `CLIPPY_ARGS=-Dwarnings`, which
-lints strictly and links the executables in the same compilation. There is
-no separate `cargo clippy` pass and no redundant `cargo check`. Only selected
-test binaries are compiled.
-Private selections compile the library harness the same way with `cargo test
---lib --no-run`, which checks `cfg(test)` with strict Clippy. Cargo builds
+selections also check the CLI. Clippy's crate-level passes rerun over the whole
+library after any edit, so the integration build does not carry them: rustc
+builds the selected binaries with `cargo test --no-run` while, at the same
+time, `cargo check --lib --bins --test ...` runs the same targets with
+`RUSTC_WORKSPACE_WRAPPER` set to the installed `clippy-driver` and
+`CLIPPY_ARGS=-Dwarnings` in `obj/rust/public-lint`. Both must pass, the two
+Cargo processes share the granted width, and the pair costs about the time of
+the check. The CLI for text selections is built and checked the same way.
+Only selected test binaries are compiled.
+Private selections compile the library harness in one build with `cargo test
+--lib --no-run` and `clippy-driver` as the compiler, which checks `cfg(test)`
+with strict Clippy and links the harness in the same compilation. Cargo builds
 actual dependency libraries, renders the diagnostics and reports the exact
 test executable; the runner does not infer an
 executable from check-mode metadata or search old cache outputs. The

@@ -54,6 +54,9 @@ class IntegrationCheck(unittest.TestCase):
                 (root / "obj/rust/dev-fast").mkdir(parents=True)
                 (root / "obj/rust/dev-fast/rustgm").touch()
                 return mock.Mock(returncode=0)
+            if command[:2] == ["cargo", "check"]:
+                # The CLI's strict check, beside its build.
+                return mock.Mock(returncode=0)
             name = Path(command[0]).name if command[0] != sys.executable else command[2]
             if name == "pa3":
                 raise subprocess.TimeoutExpired(command, 1)

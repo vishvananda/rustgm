@@ -183,6 +183,16 @@ class IncrementalRetirement(unittest.TestCase):
         self.assertTrue(ordinary.is_dir())
         self.assertTrue(current.is_dir())
 
+    def test_public_lint_cache_retires_only_superseded_sessions(self):
+        self.crate = self.root / "obj/rust/public-lint/dev-fast/incremental/example"
+        self.crate.mkdir(parents=True)
+        old = self.session("s-old-check", 1)
+        current = self.session("s-current-check", 2)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            rows = storage_incremental.retire(self.root)
+        self.assertEqual([row["path"] for row in rows], [str(old.relative_to(self.root))])
+        self.assertTrue(current.is_dir())
+
     def test_private_profile_symlink_is_rejected_before_ordinary_retirement(self):
         old = self.session("s-ordinary-old", 1)
         self.session("s-ordinary-current", 2)

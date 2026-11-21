@@ -39,14 +39,16 @@ path; its adopted direction is summarized below.
   selections) and the metadata, formatting and architecture gates. The gates run
   beside the compile, before any test, and each is skipped only when the
   fingerprint of everything it reads matches a passed run. The private
-  harness and the integration binaries are each linted and linked in one Cargo
-  build with `clippy-driver` as the compiler, so an edit is compiled once per
-  mode; do not repeat that compilation with a separate `cargo clippy`,
-  `cargo test` or `cargo test --lib`. Unknown/empty
+  harness is linted and linked in one Cargo build with `clippy-driver` as the
+  compiler. The integration binaries and the CLI are built by rustc while one
+  strict `clippy-driver` check of the same targets runs beside the build in
+  `obj/rust/public-lint`, so Clippy's whole-crate passes stay off the build's
+  critical path. Do not add another `cargo clippy`, `cargo check`, `cargo test`
+  or `cargo test --lib` pass over the same targets. Unknown/empty
   selections and timeouts fail. Do not run a
   release build, all-target compilation, full private inventory, broad native
-  sweep or performance matrix for each edit/new binary. Do not duplicate Clippy
-  with `cargo check`. Settle related edits and choose controls before running.
+  sweep or performance matrix for each edit/new binary. Settle related edits
+  and choose controls before running.
 - Batch related edits into coherent checkpoints. Focused passing evidence is
   sufficient to integrate/push development work; retain honest pending checks.
   Before publishing to `main`, the integrator runs `make integration-check`:
@@ -116,8 +118,9 @@ tools as they behave today; they change together with the tools.
   Cargo/test/measurement commands; `make fastcheck` supplies its own guards.
   Use `--no-prune` before `--` for other build-only commands. The wrapper reserves
   40 GiB locally and disables incremental caches outside `dev-fast` and
-  `observe`. Fastcheck keeps bounded incremental caches under `obj/rust/dev-fast`
-  and `obj/rust/private-lint/dev-fast`; shared output caps include both caches.
+  `observe`. Fastcheck keeps bounded incremental caches under `obj/rust/dev-fast`,
+  `obj/rust/private-lint/dev-fast` and `obj/rust/public-lint/dev-fast`; shared
+  output caps include all three.
   `make observe` builds the optimized incremental `obj/rust/observe/rustgm` for
   whole-crate observation runs; fastcheck retires its older sessions likewise,
   and its binaries are never release, qualification or measurement evidence.
