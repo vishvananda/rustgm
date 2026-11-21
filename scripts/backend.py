@@ -209,8 +209,34 @@ def configure_object(checkout):
     print("Configured immutable pinned CPPGM LowIR object backend")
 
 
+# A coarse runaway guard on one backend command, not a performance bound: a
+# base for small inputs on a loaded host plus a share per MB that it reads.
+# The pinned tools take under 0.2 s per MB of LowIR even at -O2.
+COMMAND_SECONDS = 120
+COMMAND_SECONDS_PER_MB = 1
+
+
+def time_limit(command):
+    """The seconds one command may run: the base plus a share per MB of its existing inputs."""
+    size = 0
+    arguments = iter(command[1:])
+    for argument in arguments:
+        if argument == "-o":
+            next(arguments, None)
+            continue
+        path = Path(argument)
+        if path.is_file():
+            size += path.stat().st_size
+    return COMMAND_SECONDS + COMMAND_SECONDS_PER_MB * size // 1_000_000
+
+
 def invoke(command):
-    result = subprocess.run(command, capture_output=True, timeout=60)
+    limit = time_limit(command)
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=limit)
+    except subprocess.TimeoutExpired as expired:
+        raise ValueError(f"backend command {Path(command[0]).name} exceeded its runaway limit of "
+                         f"{limit} s for its inputs") from expired
     if result.returncode:
         raise ValueError(f"backend command failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
 

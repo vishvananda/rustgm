@@ -267,6 +267,26 @@ class MultipleUnits(unittest.TestCase):
                 self.assertEqual(invoke.call_args_list, [
                     mock.call(["cc", *map(str, objects), "-lm", "-o", str(output)])])
 
+    def test_command_time_limit_scales_with_the_inputs_it_reads(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, output = root / "graph.lowir", root / "graph.o"
+            with source.open("wb") as stream:
+                stream.truncate(400_000_000)
+            with output.open("wb") as stream:
+                stream.truncate(900_000_000)
+            command = ["/pinned/cppgm", "-O0", "-c", str(source), "-o", str(output)]
+            self.assertEqual(backend.time_limit(command), backend.COMMAND_SECONDS + 400)
+            self.assertEqual(backend.time_limit(["cc", "-lm", "-o", str(output)]),
+                             backend.COMMAND_SECONDS)
+
+    def test_a_command_past_its_limit_fails_with_a_runaway_diagnostic(self):
+        expired = backend.subprocess.TimeoutExpired(["cppgm"], backend.COMMAND_SECONDS)
+        with mock.patch.object(backend.subprocess, "run", side_effect=expired) as run:
+            with self.assertRaisesRegex(ValueError, "cppgm exceeded its runaway limit of 120 s"):
+                backend.invoke(["/pinned/cppgm", "-O0", "-c", "missing.lowir"])
+            self.assertEqual(run.call_args.kwargs["timeout"], backend.COMMAND_SECONDS)
+
     def test_object_inputs_cannot_route_to_the_cpp_frontend(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
