@@ -4335,6 +4335,25 @@
       }
     },
     {
+      "path": "tests/spec/nested-captures/inferred-input-port.rs",
+      "source_sha256": "45ec9778dcb789e39ba96f0f6ebebb478e19736908208194981455fa245142b9",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/nested-captures/great-grandchild.rs",
       "source_sha256": "7c587c34b17010129bdb55682303086dece21d074c944f9c0466e528d29084df",
       "exit_status": 0,

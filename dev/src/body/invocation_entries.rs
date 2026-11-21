@@ -26,7 +26,7 @@ use crate::support::hash::HashMap;
 use crate::{
     sema::model::Declarations,
     support::call_traits::CallTrait,
-    types::{Kind as Type, TypeId, closure::CallKind, instance::Instance},
+    types::{Kind as Type, TypeId, closure::CallKind, instance::Instance, substitute::Bound},
 };
 
 /// Construction is private to canonical selection and complete structural matching.
@@ -213,6 +213,7 @@ pub(crate) fn select(
         return Err("closure entries were selected twice");
     }
     let mut proofs = crate::body::instantiate::ProofCursor::default();
+    let mut openings = None;
     for (index, value) in body.values.iter().enumerate() {
         if let Rvalue::Unsize {
             value: operand,
@@ -259,6 +260,7 @@ pub(crate) fn select(
         if candidates::captured(facts, receiver, kind)?.is_none() {
             continue;
         }
+        let signature = open_call(facts, signature, &mut openings)?;
         let selected = call_signature(&mut facts.types, receiver, signature, value.ty)?;
         let entry = select_execution(
             facts,
@@ -279,6 +281,33 @@ pub(crate) fn select(
     }
     Ok(())
 }
+
+/// A CFG call records its argument and result types under the signature's
+/// empty binder. Its receiver is already in the caller's body scope.
+fn open_call(
+    facts: &mut Declarations,
+    signature: TypeId,
+    openings: &mut Option<Bound>,
+) -> Result<TypeId, &'static str> {
+    if facts.types.escaping_binders(signature) == Some(0) {
+        return Ok(signature);
+    }
+    if !matches!(
+        facts.types.kind(signature),
+        Some(Type::Function {
+            bound_regions: 0,
+            ..
+        })
+    ) {
+        return Err("closure call requires an opened safe signature");
+    }
+    let fold = openings.get_or_insert_with(|| Bound::lower(1));
+    let before = fold.steps;
+    let opened = fold.signature(&mut facts.types, signature, 0)?;
+    facts.body_work.canonical_steps += fold.steps - before;
+    Ok(opened)
+}
+
 fn shape_execution(
     types: &mut crate::types::Store,
     mut execution: crate::sema::closures::Execution,
