@@ -124,9 +124,11 @@ pub(crate) use copying::{
     copy_declaration, prove_body_requirements, reserved_copy_declaration,
 };
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
+mod catalog_state;
 #[path = "compiler_items/boundary_contract.rs"]
 mod range_contract;
 mod roles;
+pub(in crate::sema) use catalog_state::SelectionState;
 pub(in crate::sema) use range_contract::{
     RangeHelper, SourceRangeMember, require_range_transport, source_range_headers,
     source_range_member,

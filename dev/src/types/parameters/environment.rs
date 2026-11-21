@@ -158,9 +158,15 @@ impl Environment {
     }
     /// The identity of the crate-wide projection promises; zero without them.
     pub(crate) fn projection_promise_identity(&self) -> usize {
-        self.projection_promises
-            .as_ref()
+        self.projection_promise_set()
             .map_or(0, |promises| Arc::as_ptr(promises).addr())
+    }
+    /// The crate-wide promise set itself, for a cache that keys by its address
+    /// and so must hold it.
+    pub(crate) fn projection_promise_set(
+        &self,
+    ) -> Option<&Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>> {
+        self.projection_promises.as_ref()
     }
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.

@@ -18,6 +18,7 @@ use super::{
     Decision, Declarations, Frame, Node, Predicate, Query, Search, Source, frames::Sources,
 };
 use crate::resolve::model::DefId;
+use crate::sema::compiler_items::SelectionState;
 use crate::sema::query_census::{self, Answer as Event};
 use crate::sema::traits::implementations::{Availability, Purpose};
 use crate::support::hash::HashMap;
@@ -32,6 +33,8 @@ use std::sync::Arc;
 
 /// A proof with more nodes keeps the ordinary search.
 const STEPS: usize = 64;
+
+type Promises = HashMap<crate::types::ItemId, crate::types::projection::Builtins>;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Key {
@@ -115,8 +118,13 @@ struct Caller {
 #[derive(Default)]
 pub(in crate::sema::traits::selection) struct Answers {
     entries: HashMap<Key, Entry>,
-    /// The source catalog every entry was proved under.
-    provider: usize,
+    /// Every projection promise set that a key names by address. Holding it
+    /// keeps that address from naming another set while the entry lives.
+    promises: Vec<Arc<Promises>>,
+    /// The in-place state of the source catalog every entry was proved under,
+    /// compared by content: a catalog never moves out of its `Declarations`,
+    /// and its address would not tell an in-place write apart.
+    catalog: Option<SelectionState>,
     /// The caller classified last; consecutive queries usually share it.
     caller: Option<Caller>,
     #[cfg(test)]
@@ -130,13 +138,29 @@ pub(super) struct Counts {
     pub recorded: usize,
 }
 impl Answers {
-    /// Entries answer only for the catalog they were proved under.
-    fn current(&mut self, provider: usize) -> &mut Self {
-        if self.provider != provider {
+    /// Entries answer only for the catalog state they were proved under.
+    fn current(&mut self, catalog: Option<SelectionState>) -> &mut Self {
+        if self.catalog != catalog {
             self.entries.clear();
-            self.provider = provider;
+            self.promises.clear();
+            self.catalog = catalog;
         }
         self
+    }
+
+    /// Enter `entry` unless its key has one, holding the promise set the key
+    /// names; a key that names another set than `promises` is refused.
+    fn insert(&mut self, key: Key, entry: Entry, promises: Option<&Arc<Promises>>) -> bool {
+        if promises.map_or(0, |set| Arc::as_ptr(set).addr()) != key.promises {
+            return false;
+        }
+        if let Some(set) = promises
+            && !self.promises.iter().any(|held| Arc::ptr_eq(held, set))
+        {
+            self.promises.push(Arc::clone(set));
+        }
+        self.entries.entry(key).or_insert(entry);
+        true
     }
 
     /// Whether the caller's clauses or its environment hold a closed premise.
@@ -186,11 +210,11 @@ fn same<T>(left: Option<&Arc<T>>, right: Option<&Arc<T>>) -> bool {
     }
 }
 
-fn provider(facts: &Declarations) -> usize {
+fn catalog(facts: &Declarations) -> Option<SelectionState> {
     facts
         .source_bindings
         .as_deref()
-        .map_or(0, |catalog| std::ptr::from_ref(catalog).addr())
+        .map(crate::sema::compiler_items::Catalog::selection_state)
 }
 
 /// The marked frames of one query, in marking order.
@@ -297,8 +321,8 @@ impl Search<'_> {
             return Ok(None);
         };
         query_census::answer(Event::Lookup);
-        let provider = provider(facts);
-        let answers = facts.generics.selection_memo.answers().current(provider);
+        let catalog = catalog(facts);
+        let answers = facts.generics.selection_memo.answers().current(catalog);
         let key = Key {
             goal,
             mode,
@@ -394,8 +418,8 @@ impl Search<'_> {
         } else {
             None
         };
-        let provider = provider(facts);
-        let answers = facts.generics.selection_memo.answers().current(provider);
+        let catalog = catalog(facts);
+        let answers = facts.generics.selection_memo.answers().current(catalog);
         let fresh = match decision {
             Decision::Absent => Some(Entry::Absent(shape)),
             Decision::Proven(index) => self.capture(answers, index, key, shape),
@@ -413,7 +437,13 @@ impl Search<'_> {
         }
         match (fresh, unsettled) {
             (Some(entry), None) => {
-                answers.entries.entry(key).or_insert(entry);
+                let promises = self
+                    .caller
+                    .environment
+                    .and_then(|environment| environment.projection_promise_set());
+                if !answers.insert(key, entry, promises) {
+                    return Err("trait answer key names another caller's promises".into());
+                }
                 query_census::answer(Event::Recorded);
                 #[cfg(test)]
                 {
@@ -435,7 +465,10 @@ impl Search<'_> {
     /// does not depend on which nodes this query had completed before.
     fn capture(&self, answers: &Answers, root: usize, key: Key, shape: ShapeKey) -> Option<Entry> {
         let nodes = &self.query.nodes;
-        if !nodes.get(root)?.debt_free || nodes[root].goal != key.goal {
+        // Child flags reach the root when a node is pushed, so the root's
+        // flags cover the whole proof.
+        let top = nodes.get(root)?;
+        if !top.debt_free || top.provisional_size || top.cycle_dependent || top.goal != key.goal {
             return None;
         }
         let mut order = Vec::new();

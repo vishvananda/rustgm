@@ -71,3 +71,58 @@ fn a_self_check_proves_each_hit_again_and_agrees() -> Result {
     );
     Ok(())
 }
+
+#[test]
+fn an_entry_holds_the_promise_set_its_key_names_so_no_later_set_takes_its_address() -> Result {
+    use std::sync::Arc;
+    let promised = |item| {
+        let mut set = super::Promises::default();
+        set.insert(
+            crate::types::ItemId(item),
+            crate::types::projection::Builtins::default(),
+        );
+        Arc::new(set)
+    };
+    let mut facts = check_family("")?;
+    let recorded = &mut facts.generics.selection_memo.answers().entries;
+    let (key, entry) = recorded.drain().next().ok_or("no recorded answer")?;
+    let mut answers = super::Answers::default();
+    let first = promised(0);
+    let keyed = super::Key {
+        promises: Arc::as_ptr(&first).addr(),
+        ..key
+    };
+    assert!(answers.insert(keyed, entry, Some(&first)));
+    // The caller's last handle goes away while the entry lives. A freed block
+    // is what the allocator hands the next set of the same size, so without
+    // the table's hold one of these sets would name the first set's entry.
+    drop(first);
+    for item in 1..=16 {
+        let later = promised(item);
+        let probe = super::Key {
+            promises: Arc::as_ptr(&later).addr(),
+            ..key
+        };
+        assert!(!answers.entries.contains_key(&probe));
+    }
+    assert_eq!(answers.promises.len(), 1);
+    Ok(())
+}
+
+#[test]
+fn a_catalog_written_in_place_empties_the_table_at_its_next_lookup() -> Result {
+    use crate::resolve::model::DefId;
+    use crate::sema::compiler_items::SelectionState;
+    let mut facts = check_family("")?;
+    let recorded = &mut facts.generics.selection_memo.answers().entries;
+    let (key, entry) = recorded.drain().next().ok_or("no recorded answer")?;
+    let mut answers = super::Answers::default();
+    // The catalog keeps its address, so only its content can tell the two
+    // lookups apart.
+    let before = SelectionState::default();
+    assert!(answers.current(Some(before)).insert(key, entry, None));
+    assert!(answers.current(Some(before)).entries.contains_key(&key));
+    let after = before.with_destruction(DefId(7));
+    assert!(answers.current(Some(after)).entries.is_empty());
+    Ok(())
+}
