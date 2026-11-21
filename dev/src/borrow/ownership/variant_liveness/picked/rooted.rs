@@ -106,7 +106,8 @@ impl Selected {
                 let parent_ty = *resolved
                     .get(parent.0 as usize)
                     .ok_or("selected cleanup parent type is unresolved")?;
-                memo.field(types, definitions, parts, parent_ty, node.step)?
+                let field = memo.field(types, definitions, parts, parent_ty, node.step)?;
+                stored(types, definitions, parent_ty, node.step, field)
             } else {
                 if !matches!(node.step, Step::Root) {
                     return Err("selected cleanup has a non-root semantic origin");
@@ -284,6 +285,28 @@ impl<'a> Resolver<'a> {
             .map_err(|_| "selected shape authentication allocation failed")?;
         self.checked.insert((ty, id));
         Ok(())
+    }
+}
+
+/// A concrete nominal stores a projected field, as `Cow<'_, str>` stores
+/// `<str as ToOwned>::Owned`, in its normalized form, and the cleanup geometry
+/// reads that storage. The field's full coordinate is the same normal form;
+/// a field whose nominal has no normalized storage keeps its substituted type.
+fn stored(
+    types: &Store,
+    definitions: &Definitions,
+    parent: TypeId,
+    step: Step,
+    field: TypeId,
+) -> TypeId {
+    match step {
+        Step::Nominal {
+            variant,
+            field: index,
+        } if types.contains_projections(field) == Some(true) => definitions
+            .stored_field(types, parent, variant as usize, index as usize)
+            .unwrap_or(field),
+        _ => field,
     }
 }
 

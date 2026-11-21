@@ -13,6 +13,18 @@ impl Fields {
     }
 }
 impl Definitions {
+    /// One field's independently normalized storage type, once the storage
+    /// of the exact nominal `ty` has been normalized.
+    pub(crate) fn stored_field(
+        &self,
+        types: &Store,
+        ty: TypeId,
+        variant: usize,
+        field: usize,
+    ) -> Option<TypeId> {
+        let lists = self.storage.as_ref()?.get(ty)?;
+        types.list(*lists.get(variant)?)?.get(field).copied()
+    }
     /// Read available fields without starting substitution or semantic work.
     /// Pending fields are distinct from an empty shape and from malformed IDs.
     /// Discriminants do not participate in structural storage readiness.
