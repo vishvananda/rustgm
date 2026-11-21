@@ -164,7 +164,7 @@ fn persistent_data_growth_is_bounded_before_expanding_nonzero_repeats()
     let path = folder.join("input.rs");
     std::fs::write(
         &path,
-        "static A:[u8;1000001]=[7;1000001];fn main(){let _=A[0];}",
+        "static A:[u8;67108865]=[7;67108865];fn main(){let _=A[0];}",
     )?;
     let result = Command::new(env!("CARGO_BIN_EXE_rustgm"))
         .arg("--emit-lowir")
@@ -172,6 +172,9 @@ fn persistent_data_growth_is_bounded_before_expanding_nonzero_repeats()
         .output()?;
     assert_eq!(result.status.code(), Some(1));
     assert!(result.stdout.is_empty());
-    assert!(String::from_utf8(result.stderr)?.contains("persistent data work budget exceeded"));
+    assert!(
+        String::from_utf8(result.stderr)?
+            .contains("persistent data work exceeds its whole-graph runaway limit")
+    );
     Ok(())
 }

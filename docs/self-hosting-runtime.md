@@ -728,15 +728,15 @@ and memory at this size were not measured.
   2.5 GB of LowIR in one unit. The first run set the per-process limit above
   the job's and the job was killed at 256 rounds
   (`obj/parallel/lowir-scale/attempt-256-rounds.log`).
-- **RustGM's own budgets** are lower than anything measured here and were not
-  exercised: 64 MB of generic instance bodies and of instance work
-  (`dev/src/lower/instances/demand.rs:215-216,238`), 100,000 export roots
-  (`dev/src/lower/roots.rs:42-60`), 100,000 intrinsic shims
-  (`dev/src/lower/intrinsics.rs:133-134`), 1,000,000 persistent data steps
-  (`dev/src/lower/data.rs:62-68`) and 1,025 LowIR units per link
-  (`scripts/backend.py:170-171`). What each counts against the 309,093
-  instances of the self-hosting program is for the frontier's census to
-  report.
+- **RustGM's own budgets** on a whole program are coarse runaway guards:
+  4,194,304 demanded instance bodies and 2 GiB of their retained bodies
+  (`dev/src/lower/instances/demand.rs`), 1,048,576 export roots
+  (`dev/src/lower/roots.rs`), 1,048,576 intrinsic shims
+  (`dev/src/lower/intrinsics.rs`) and 67,108,864 persistent data steps
+  (`dev/src/lower/data.rs`). The bridge's 1,025 LowIR units per link
+  (`scripts/backend.py`) is a crate profile budget; a joint-graph build links
+  one unit. What each counts against the 309,093 instances of the
+  self-hosting program is for the frontier's census to report.
 
 Not measured: backend optimisation levels above `-O0`; a program above 256
 rounds, so the backend's own failure point is unknown; a link of many units;

@@ -40,17 +40,21 @@ impl Exports {
         }
     }
 }
+/// A coarse runaway guard: a whole-graph session exports the roots of every
+/// crate in it; this bounds only the sorted root lists.
+const LIMIT: usize = 1 << 20;
+const EXCEEDED: &str = "export roots exceed their whole-graph runaway limit";
+
 pub(super) fn exports(facts: &Declarations, explicit: &[DefId]) -> Result<Exports, &'static str> {
-    const LIMIT: usize = 100_000;
     if explicit.len() > LIMIT {
-        return Err("export roots exceed 100000 function budget");
+        return Err(EXCEEDED);
     }
     let (mut functions, mut globals) = facts.foreign.as_deref().map_or_else(
         || (Vec::new(), Vec::new()),
         crate::sema::foreign::Registry::all_exports,
     );
     if functions.len().saturating_add(explicit.len()) > LIMIT {
-        return Err("export roots exceed 100000 function budget");
+        return Err(EXCEEDED);
     }
     let retained = facts.compiler_retained_statics()?;
     if functions
@@ -60,7 +64,7 @@ pub(super) fn exports(facts: &Declarations, explicit: &[DefId]) -> Result<Export
         .saturating_add(retained.len())
         > LIMIT
     {
-        return Err("export roots exceed 100000 definition budget");
+        return Err(EXCEEDED);
     }
     functions.extend_from_slice(explicit);
     functions.sort_unstable_by_key(|id| id.0);

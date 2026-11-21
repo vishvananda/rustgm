@@ -19,7 +19,18 @@ use crate::{
     types::{Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
+/// A coarse runaway guard: one program's shims are its distinct intrinsic
+/// instances, and a whole-graph build demands many thousands of them.
+const SHIM_LIMIT: usize = 1 << 20;
+
 impl Context<'_> {
+    /// Room for one more intrinsic shim.
+    pub(super) fn reserve_shim(&self) -> Result<(), &'static str> {
+        if self.intrinsic_symbols.len() >= SHIM_LIMIT {
+            return Err("intrinsic shims exceed their whole-graph runaway limit");
+        }
+        Ok(())
+    }
     pub(super) fn intrinsic_type(
         &mut self,
         intrinsic: Intrinsic,
@@ -132,9 +143,7 @@ impl Context<'_> {
         if let Some(symbol) = self.intrinsic_symbols.get(&instance) {
             return Ok(*symbol);
         }
-        if self.intrinsic_symbols.len() >= 100_000 {
-            return Err("intrinsic shim count exceeds 100000");
-        }
+        self.reserve_shim()?;
         let representation = self.intrinsic_type(intrinsic, instance)?;
         let Some(Kind::FunctionItem { signature, .. }) = self.types.kind(instance.ty()) else {
             return Err("intrinsic shim requires a function item");

@@ -80,13 +80,18 @@ pub(super) struct Storage {
     zeroes: HashMap<(TypeId, Constant), bool>,
     steps: usize,
 }
+/// A coarse runaway guard on the work of serializing a program's persistent
+/// data, about one step per item: a whole-graph build serializes every string
+/// and table of every crate in it, and the guard stops a runaway table while
+/// its items still fit well within a job's memory.
+const DATA_WORK_LIMIT: usize = 1 << 26;
 impl Storage {
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self
             .steps
             .checked_add(count)
-            .filter(|n| *n <= 1_000_000)
-            .ok_or("persistent data work budget exceeded")?;
+            .filter(|n| *n <= DATA_WORK_LIMIT)
+            .ok_or("persistent data work exceeds its whole-graph runaway limit")?;
         Ok(())
     }
 }

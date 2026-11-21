@@ -32,9 +32,7 @@ impl Context<'_> {
             "raw_eq" => compared(Some(self.layout(element)?.size))?,
             _ => return Ok(None),
         };
-        if self.intrinsic_symbols.len() >= 100_000 {
-            return Err("intrinsic shim count exceeds 100000");
-        }
+        self.reserve_shim()?;
         let signature = self.signature(signature)?;
         let symbol = self.output.declare(
             self.internal_name(format!("rg.unqualified.{name}.t{}", instance.ty().0)),

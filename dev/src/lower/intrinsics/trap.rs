@@ -17,9 +17,7 @@ impl Context<'_> {
             }
             return Ok(symbol);
         }
-        if self.intrinsic_symbols.len() >= 100_000 {
-            return Err("intrinsic shim count exceeds 100000");
-        }
+        self.reserve_shim()?;
         let fence = format!("source intrinsic executable lowering is not implemented: {name}");
         if !crate::support::bringup::waive(&fence) {
             return Err("source intrinsic executable lowering is not implemented");

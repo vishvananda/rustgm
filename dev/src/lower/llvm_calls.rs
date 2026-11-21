@@ -59,9 +59,7 @@ impl Context<'_> {
         let Representation::Scalar(result) = self.representation(result)? else {
             return Err("LLVM unary intrinsic lacks a scalar result representation");
         };
-        if self.intrinsic_symbols.len() >= 100_000 {
-            return Err("intrinsic shim count exceeds profile budget");
-        }
+        self.reserve_shim()?;
         let signature = self.signature(function.signature)?;
         let body = bit_kernels::build(intrinsic.operation, input, result, intrinsic.bits)?;
         let symbol = self.output.declare(
@@ -92,9 +90,7 @@ impl Context<'_> {
         {
             return Err("selected LLVM intrinsic operation is not implemented");
         }
-        if self.intrinsic_symbols.len() >= 100_000 {
-            return Err("intrinsic shim count exceeds profile budget");
-        }
+        self.reserve_shim()?;
         let mut builder = Builder::default();
         let entry = builder.block()?;
         builder.enter(entry)?;

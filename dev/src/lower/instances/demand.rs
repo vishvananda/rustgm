@@ -419,13 +419,16 @@ impl Budget {
         Ok((index, family))
     }
     fn enter(&mut self, item: BodyKey, body: &Body, input: &Contract) -> Result<(), &'static str> {
+        // A coarse runaway guard: one budget counts every instance body a
+        // whole-graph session demands.
+        const INSTANCES: usize = 1 << 22;
         let active = self.active.entry(item).or_default();
         if *active >= 128 {
             return Err("recursive generic instantiation exceeds 128 active instances");
         }
         self.instances += 1;
-        if self.instances > 100_000 {
-            return Err("generic instantiation exceeds 100000 bodies");
+        if self.instances > INSTANCES {
+            return Err("generic instantiation exceeds its whole-graph runaway limit");
         }
         let bytes = body
             .retained_bytes()
