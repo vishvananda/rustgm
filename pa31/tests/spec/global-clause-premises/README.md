@@ -40,4 +40,7 @@ attribution; see root NOTICE and `third_party/sources.json`.
 
 `dev/tests/global_clause_premises.rs` checks typing through the CLI, each
 rejection's message at its site and prepared lowering for every accepted
-case. See `docs/pa31-global-clause-premises.md`.
+case. Since a method call's expected type shapes its result before its
+arguments, both `select` rejections report at rustc's primary span (the
+`1u16` literal, 75:98, and the argument `b`, 75:115) rather than at the
+second argument and the body; `outcomes.json` keeps the earlier CLI's sites. See `docs/pa31-global-clause-premises.md`.

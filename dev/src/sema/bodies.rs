@@ -328,7 +328,7 @@ enum Work {
         operand: NodeId,
         expected: TermId,
     },
-    MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
+    MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>, Expectation),
     AssignmentValue(NodeId),
     /// One node of a destructuring assignment's left operand.
     Assignee(NodeId),
@@ -1077,8 +1077,8 @@ impl Checker<'_> {
                         return Ok(Some(dependency));
                     }
                 }
-                Work::MethodArguments(node, headers) => {
-                    if let Some(dependency) = self.method_arguments(node, headers)? {
+                Work::MethodArguments(node, headers, expectation) => {
+                    if let Some(dependency) = self.method_arguments(node, headers, expectation)? {
                         return Ok(Some(dependency));
                     }
                 }
@@ -1745,7 +1745,9 @@ impl Checker<'_> {
             }
             Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
                 self.prepare_language_receiver(receiver)?;
-                self.state.work.push(Work::MethodArguments(node, None));
+                self.state
+                    .work
+                    .push(Work::MethodArguments(node, None, expectation));
                 self.state.work.push(Work::Enter(receiver, None));
                 return Ok(());
             }
@@ -2613,41 +2615,7 @@ impl Checker<'_> {
             self.invocation_signature(node, callee, arguments)?
         };
         self.retain_active_call(node, term, receiver)?;
-        let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
-            return Err(self.error(node, "call requires a known function type"));
-        };
-        if let Some(expected) = expectation.ty() {
-            let result = self.child(node, term, parameters as usize)?;
-            if let Some(expected) = self.call_result_hint(node, result, expectation, constructor)?
-                && (constructor
-                    || !self.unsized_input_expectation(node, term, parameters, result, expected)?)
-                && (constructor
-                    || match self
-                        .state
-                        .infer
-                        .incompatible(&self.facts.types, result, expected)
-                    {
-                        Ok(false) => true,
-                        Ok(true) | Err(crate::types::infer::Error::Normalization) => false,
-                        Err(error) => return Err(self.error(node, error)),
-                    })
-            {
-                self.shape_equation(node, result, expected)?;
-            }
-            // An unsized borrowed rvalue is checked before the outer borrow
-            // coerces. It cannot fix an open result tied to a generic input.
-            if !constructor
-                && expectation.hard().is_some()
-                && self.contextual_head(node, result)?.is_none()
-                && self.contextual_head(node, expected)?.is_some()
-                && (matches!(
-                    self.contextual_head(node, expected)?,
-                    Some(Constructor::Function { .. })
-                ) || self.call_result_reaches_inputs(node, term, result)?)
-            {
-                self.callable_shape(node, result, expected)?;
-            }
-        }
+        self.expect_call_result(node, term, expectation, constructor)?;
         self.schedule_call_arguments(node, term, arguments, 0)
     }
     fn schedule_call_arguments(

@@ -61,13 +61,18 @@ impl Pending {
 }
 
 impl Checker<'_> {
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one method-call protocol: receiver choice, adjustment, signature, then the expected result before arguments"
+    )]
     pub(super) fn method_arguments(
         &mut self,
         node: NodeId,
         headers: Option<Box<std::vec::IntoIter<DefId>>>,
+        expectation: super::Expectation,
     ) -> Result<Option<super::Dependency>, Error> {
         if let Some(headers) = headers {
-            return self.method_headers(node, headers);
+            return self.method_headers(node, headers, expectation);
         }
         let site = self
             .report
@@ -96,14 +101,19 @@ impl Checker<'_> {
         let selected = match progress {
             receiver::Progress::Ready(selected) => selected,
             receiver::Progress::Absent(message, tail) => {
-                return if self.advance_method_receiver(node, site.receiver, (term, tail))? {
+                return if self.advance_method_receiver(
+                    node,
+                    site.receiver,
+                    (term, tail),
+                    expectation,
+                )? {
                     Ok(None)
                 } else {
                     Err(self.error(node, message))
                 };
             }
             receiver::Progress::Prepare(members) => {
-                return self.method_headers(node, Box::new(members));
+                return self.method_headers(node, Box::new(members), expectation);
             }
         };
         if selected.from_bound {
@@ -161,6 +171,7 @@ impl Checker<'_> {
             },
         )?;
         self.retain_active_call(node, signature, callable)?;
+        self.expect_call_result(node, signature, expectation, false)?;
         self.schedule_call_arguments(node, signature, site.arguments, 1)?;
         Ok(None)
     }
@@ -171,6 +182,7 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         mut members: Box<std::vec::IntoIter<DefId>>,
+        expectation: super::Expectation,
     ) -> Result<Option<super::Dependency>, Error> {
         for definition in members.by_ref() {
             self.state.steps = self.state.steps.saturating_add(1);
@@ -183,9 +195,11 @@ impl Checker<'_> {
                 .get(definition.0 as usize)
                 .is_some_and(Option::is_none)
             {
-                self.state
-                    .work
-                    .push(super::Work::MethodArguments(node, Some(members)));
+                self.state.work.push(super::Work::MethodArguments(
+                    node,
+                    Some(members),
+                    expectation,
+                ));
                 return Ok(Some(super::Dependency {
                     requirement: super::Requirement::Definition(definition),
                     source: self.key(node),
@@ -194,7 +208,7 @@ impl Checker<'_> {
         }
         self.state
             .work
-            .push(super::Work::MethodArguments(node, None));
+            .push(super::Work::MethodArguments(node, None, expectation));
         Ok(None)
     }
 

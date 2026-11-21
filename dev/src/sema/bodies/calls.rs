@@ -190,6 +190,54 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(node, e))
     }
+    /// The expected type of a call or method call shapes its open result
+    /// before the arguments are checked, as rustc's expected inputs do, so an
+    /// argument such as `&[]` meets the unsized input its result implies.
+    pub(super) fn expect_call_result(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+        expectation: super::Expectation,
+        constructor: bool,
+    ) -> Result<(), Error> {
+        let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
+            return Err(self.error(node, "call requires a known function type"));
+        };
+        let Some(expected) = expectation.ty() else {
+            return Ok(());
+        };
+        let result = self.child(node, term, parameters as usize)?;
+        if let Some(expected) = self.call_result_hint(node, result, expectation, constructor)?
+            && (constructor
+                || !self.unsized_input_expectation(node, term, parameters, result, expected)?)
+            && (constructor
+                || match self
+                    .state
+                    .infer
+                    .incompatible(&self.facts.types, result, expected)
+                {
+                    Ok(false) => true,
+                    Ok(true) | Err(infer::Error::Normalization) => false,
+                    Err(error) => return Err(self.error(node, error)),
+                })
+        {
+            self.shape_equation(node, result, expected)?;
+        }
+        // An unsized borrowed rvalue is checked before the outer borrow
+        // coerces. It cannot fix an open result tied to a generic input.
+        if !constructor
+            && expectation.hard().is_some()
+            && self.contextual_head(node, result)?.is_none()
+            && self.contextual_head(node, expected)?.is_some()
+            && (matches!(
+                self.contextual_head(node, expected)?,
+                Some(Constructor::Function { .. })
+            ) || self.call_result_reaches_inputs(node, term, result)?)
+        {
+            self.callable_shape(node, result, expected)?;
+        }
+        Ok(())
+    }
     pub(super) fn callable_shape(
         &mut self,
         node: NodeId,

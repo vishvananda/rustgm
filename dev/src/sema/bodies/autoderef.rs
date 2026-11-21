@@ -37,6 +37,7 @@ impl Checker<'_> {
         node: NodeId,
         operand: NodeId,
         (term, (subject, dereferences)): (TermId, (TermId, u32)),
+        expectation: super::Expectation,
     ) -> Result<bool, Error> {
         if !crate::sema::compiler_items::dereferencing::available(self.facts) {
             return Ok(false);
@@ -107,7 +108,9 @@ impl Checker<'_> {
                 AccessPlanId::new(slot).map_err(|e| self.error(node, e))?,
             )?;
         }
-        self.state.work.push(Work::MethodArguments(node, None));
+        self.state
+            .work
+            .push(Work::MethodArguments(node, None, expectation));
         Ok(true)
     }
 

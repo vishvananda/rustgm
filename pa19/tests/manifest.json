@@ -16892,6 +16892,53 @@
       }
     },
     {
+      "path": "tests/spec/call-argument-context/method-result-slice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/call-argument-context/method-result-slice-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/call-argument-context/method-unexpected-slice.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.call-argument-context"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/self-constructors/alias-impl.rs",
       "exit_status": 0,
       "features": [
