@@ -264,7 +264,7 @@ impl Declarations {
             Ok(())
         };
         let methods =
-            super::definitions::trait_methods(&self.types, &self.associated, hidden, &pay);
+            super::definitions::trait_methods(&self.types, &self.associated, &[hidden], &pay);
         preparation.charge(steps.get())?;
         let methods = methods?;
         if methods.is_empty() {

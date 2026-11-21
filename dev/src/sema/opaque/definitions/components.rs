@@ -10,13 +10,15 @@ use crate::{
 
 fn walk(
     store: &Store,
-    root: TypeId,
+    roots: &[TypeId],
     mut visit: impl FnMut(TypeId, Kind) -> Result<(), &'static str>,
     pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     let mut work = Vec::new();
     let mut seen = HashSet::default();
-    push(&mut work, root, pay)?;
+    for &root in roots {
+        push(&mut work, root, pay)?;
+    }
     while let Some(ty) = work.pop() {
         pay(1, 0)?;
         if seen.contains(&ty) {
@@ -130,7 +132,7 @@ pub(super) fn applications(
     let pay = |steps, bytes| report.package.pay_named_opaque(steps, bytes);
     walk(
         store,
-        root,
+        &[root],
         |ty, kind| {
             if let Kind::Opaque(id, _) = kind {
                 let growth =
@@ -149,19 +151,20 @@ pub(super) fn applications(
     )?;
     Ok(applications)
 }
-/// The trait methods a hidden type names as its defining body typed them,
-/// as `<Input as From<&P>>::from` for `.map(Input::from)`, once their own
+/// The trait methods the types `roots` name as a body typed them, as
+/// `<Input as From<&P>>::from` for `.map(Input::from)`, once their own
 /// inputs are concrete: no parameter, projection, opaque or bound lifetime.
-pub(in crate::sema::opaque) fn trait_methods(
+/// Each distinct method is listed once.
+pub(crate) fn trait_methods(
     store: &Store,
     associated: &crate::sema::associated::Inventory,
-    root: TypeId,
+    roots: &[TypeId],
     pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
 ) -> Result<Vec<TypeId>, &'static str> {
     let mut methods = Vec::new();
     walk(
         store,
-        root,
+        roots,
         |ty, kind| {
             if let Kind::FunctionItem { item, .. } = kind
                 && associated.trait_owner(DefId(item.0)).is_some()
@@ -221,7 +224,7 @@ pub(super) fn require_alias_parameters(
 ) -> Result<(), &'static str> {
     walk(
         store,
-        hidden,
+        &[hidden],
         |_, kind| {
             if let Kind::Parameter(id) = kind {
                 require_parameter(store, id, owner)?;

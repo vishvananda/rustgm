@@ -27060,6 +27060,25 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/projections/callable-projections/lowir/trait-method-value-lifetime-copies.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census instance family: a trait method value whose implementation takes its own late lifetime, passed to a generic callee that names it again at fresh lifetimes",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

@@ -10,6 +10,7 @@ use crate::{
     types::{Kind as Type, RegionId, substitute::Bound},
 };
 mod callers;
+mod copied_method_types;
 mod non_type_enclosing;
 mod originals;
 pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
@@ -170,6 +171,13 @@ fn resolve_using(
         parameters.validate(facts)?;
     }
     if !replacements.is_empty() {
+        copied_method_types::select(
+            facts,
+            (body, contract),
+            &mut dispatcher,
+            &mut replacements,
+            &mut preparation,
+        )?;
         let originals = replacements.keys().copied().collect::<Vec<_>>();
         let mut fold = Bound::selected_items(&facts.types, replacements)?;
         if let Some(scope) = scope.as_deref_mut() {
