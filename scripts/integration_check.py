@@ -95,7 +95,7 @@ def libtest_failures(output):
 
 
 def unit_part(steps, parts, name, binary):
-    status, output = attempt(steps, name, [binary], cwd=steps.root / "dev")
+    status, output = attempt(steps, name, [binary], cwd=steps.root / "dev", overrides=steps.tests)
     counts = RESULT.findall(output)
     if len(counts) != 1:
         parts.add(name, False, f"status {status}; no single libtest result", libtest_failures(output))

@@ -11,7 +11,7 @@ import threading
 import time
 
 from fastcheck_gates import Digests, Gates, edition
-from maintainer_batch import artifacts, inventory, package_environment, selection
+from maintainer_batch import artifacts, inventory, package_environment, selection, toolchain_environment
 from maintainer_suites import discover
 from resource_policy import discover as controller, width
 from storage import check_space, cleanup_roots, exclusive, minimum_reserve, prune
@@ -63,6 +63,8 @@ class Steps:
         self.environment = {**os.environ, **package_environment(root), "CARGO_INCREMENTAL": "1",
                             "CARGO_TARGET_DIR": str(root / "obj/rust"),
                             "CARGO_BUILD_JOBS": jobs, "RUST_TEST_THREADS": jobs}
+        # Test executions only: the builds keep the toolchain file's own selection.
+        self.tests = toolchain_environment(root)
 
     def save(self):
         with self.lock:
@@ -420,7 +422,8 @@ def run_tests(root, args, steps, groups, binaries, digests=None):
     steps.save()
     for group, binary in binaries.items():
         started = time.time()
-        output = steps.run(group, [binary, *flags, "--exact", *selected[group]], cwd=root / "dev")
+        output = steps.run(group, [binary, *flags, "--exact", *selected[group]], cwd=root / "dev",
+                           overrides=steps.tests)
         counts = re.findall(r"test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;", output)
         if len(counts) != 1 or tuple(map(int, counts[0])) != (len(selected[group]), 0, 0):
             raise ValueError(f"{group}: execution count differs from exact selection")

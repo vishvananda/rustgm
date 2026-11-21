@@ -11,7 +11,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from maintainer_batch import artifacts, build_command, inventory, package_environment, run_batch, selection
+from maintainer_batch import (artifacts, build_command, inventory, package_environment, run_batch, selection,
+                              toolchain_environment)
 
 
 def result(stdout="", code=0):
@@ -110,6 +111,28 @@ class MaintainerBatchTests(unittest.TestCase):
                 manifest.write_text('[package]\nname = "rustgm"\nversion = ' + version + '\n')
                 with self.subTest(version=version), self.assertRaises(ValueError):
                     package_environment(root)
+
+    def test_directly_launched_tests_name_the_pinned_toolchain_as_cargo_does(self):
+        with (tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()),
+              patch.dict(os.environ)):
+            os.environ.pop("RUSTUP_TOOLCHAIN", None)
+            root = Path(directory)
+            self.assertEqual(toolchain_environment(root), {})
+            (root / "rust-toolchain.toml").write_text('[toolchain]\nchannel = "1.98.0"\n')
+            self.assertEqual(toolchain_environment(root), {"RUSTUP_TOOLCHAIN": "1.98.0"})
+            runner = Mock(side_effect=[result(self.artifact(root)), result("loans::one: test\n"),
+                                       result(""), result("test result: ok. 1 passed; 0 failed; 0 ignored;\n")])
+            self.assertEqual(run_batch({"loans": "suite_memory"}, self.args(suites=["loans"]),
+                                       root=root, runner=runner), 0)
+            self.assertNotIn("env", runner.call_args_list[0].kwargs)
+            self.assertEqual(runner.call_args_list[-1].kwargs["env"]["RUSTUP_TOOLCHAIN"], "1.98.0")
+            os.environ["RUSTUP_TOOLCHAIN"] = "nightly"
+            self.assertEqual(toolchain_environment(root), {})
+            os.environ.pop("RUSTUP_TOOLCHAIN")
+            for text in ('[toolchain]\nchannel = ""\n', "toolchain = 1\n", "[toolchain\n"):
+                (root / "rust-toolchain.toml").write_text(text)
+                with self.subTest(text=text):
+                    self.assertEqual(toolchain_environment(root), {})
 
     def test_native_failure_is_retained_and_never_cached_as_passed(self):
         with tempfile.TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):

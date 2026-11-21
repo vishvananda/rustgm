@@ -342,6 +342,7 @@ class LinkedPrivateHarness(unittest.TestCase):
                 commands = []
                 steps = mock.Mock()
                 steps.receipt, steps.environment = {}, {"CARGO_BUILD_JOBS": "8"}
+                steps.tests = {"RUSTUP_TOOLCHAIN": "pinned"}
 
                 def run(name, command, **_):
                     commands.append((name, command))
@@ -384,6 +385,8 @@ class LinkedPrivateHarness(unittest.TestCase):
                     if name.endswith("-inventory"):
                         return "sample::case: test\n" if name == "lib-inventory" else "lexer::valid: test\n"
                     if name in ("lib", "suite_frontend"):
+                        # Only test executions name the toolchain; the builds keep the file's selection.
+                        self.assertEqual(_["overrides"], {"RUSTUP_TOOLCHAIN": "pinned"})
                         return "test result: ok. 1 passed; 0 failed; 0 ignored;\n"
                     return ""
 

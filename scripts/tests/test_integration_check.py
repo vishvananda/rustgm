@@ -50,9 +50,13 @@ class IntegrationCheck(unittest.TestCase):
         (root / "obj/audit-venv/bin/python").touch()
         binaries = {name: root / name for name in ("lib", "suite_frontend", "suite_traits")}
         commands = []
+        self.environments = {}
 
         def run(command, *, stdout, **_):
             commands.append(command)
+            name = " ".join(command[:2]) if command[0] == "cargo" else (
+                Path(command[0]).name if command[0] != sys.executable else command[2])
+            self.environments[name] = _["env"]
             if command[:2] == ["cargo", "build"]:
                 (root / "obj/rust/dev-fast").mkdir(parents=True)
                 (root / "obj/rust/dev-fast/rustgm").touch()
@@ -60,7 +64,6 @@ class IntegrationCheck(unittest.TestCase):
             if command[:2] == ["cargo", "check"]:
                 # The CLI's strict check, beside its build.
                 return mock.Mock(returncode=0)
-            name = Path(command[0]).name if command[0] != sys.executable else command[2]
             if name == "pa3":
                 raise subprocess.TimeoutExpired(command, 1)
             status, text = OUTPUTS[name]
@@ -117,6 +120,16 @@ class IntegrationCheck(unittest.TestCase):
         self.assertEqual(summary[-2], "Integration: 5 of 10 parts passed; "
                                       "failed: gate format, suite_frontend, suite_traits, pa2, pa3")
         self.assertIn("  FAIL pa2: 1/2 cases; status 1 (pa2/b.rs)", summary)
+
+    def test_test_binaries_name_the_pinned_toolchain_and_compiles_do_not(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ):
+            os.environ.pop("RUSTUP_TOOLCHAIN", None)
+            root = Path(directory)
+            (root / "rust-toolchain.toml").write_text('[toolchain]\nchannel = "1.98.0"\n')
+            self.run_check(root)
+        self.assertEqual({name: environment.get("RUSTUP_TOOLCHAIN") for name, environment in self.environments.items()},
+                         {"cargo build": None, "cargo check": None, "lib": "1.98.0", "suite_frontend": "1.98.0",
+                          "suite_traits": "1.98.0", "pa1": None, "pa2": None, "pa3": None})
 
     def test_failing_names_are_one_flat_list_and_compare_reports_both_directions(self):
         expected = ["gate format", "pa2::b.rs", "pa3", "suite_frontend::lexer::bad", "suite_frontend::lexer::worse",

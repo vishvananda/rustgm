@@ -35,6 +35,23 @@ def package_environment(root):
     return environment
 
 
+def toolchain_environment(root):
+    """Name the pinned toolchain for directly launched tests, as Cargo's proxy does.
+
+    Under `cargo test` the rustup proxy gives every test RUSTUP_TOOLCHAIN.
+    Without it, each plain `rustc` a test spawns rereads rust-toolchain.toml
+    and the installed channel manifest to verify its components: about 60 ms
+    a call against 20 ms. An inherited RUSTUP_TOOLCHAIN already applies.
+    """
+    if "RUSTUP_TOOLCHAIN" in os.environ:
+        return {}
+    try:
+        channel = tomllib.loads((root / "rust-toolchain.toml").read_text())["toolchain"]["channel"]
+    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError):
+        return {}
+    return {"RUSTUP_TOOLCHAIN": channel} if isinstance(channel, str) and channel else {}
+
+
 def selection(suites, names, library_cases):
     """Keep suite boundaries and private test identities explicit."""
     groups = {}
@@ -138,7 +155,8 @@ def run_batch(suites, args, *, root, runner=subprocess.run):
             return built.returncode
         binaries = artifacts(built.stdout, groups)
         receipt["package_environment"] = package_environment(root)
-        environment = {**os.environ, **receipt["package_environment"]}
+        receipt["toolchain_environment"] = toolchain_environment(root)
+        environment = {**os.environ, **receipt["package_environment"], **receipt["toolchain_environment"]}
         selected = {}
         flags = ["--ignored"] if args.ignored else []
         # Enumerate all targets before any execution; one missing case fails the batch.

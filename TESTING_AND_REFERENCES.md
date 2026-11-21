@@ -230,6 +230,11 @@ manifest paths. These overrides apply to inventory and execution without
 changing the parent environment; receipts record only the package overrides.
 This keeps compiler subprocesses in environment-sensitive tests consistent with
 ordinary `cargo test`. Workspace-inherited metadata is rejected explicitly.
+Test execution also names the `rust-toolchain.toml` channel in
+`RUSTUP_TOOLCHAIN`, as Cargo's rustup proxy does under `cargo test`, unless the
+parent already names a toolchain. Without it, every plain `rustc` a test spawns
+rereads the toolchain file and the installed channel manifest: about 60 ms a
+call against 20 ms. Builds keep the toolchain file's own selection.
 The private library lane accepts complete test paths, with no substring filters:
 
 ```sh
