@@ -101,6 +101,34 @@ fn main() {
 const GUARD: &str =
     "compiler assertion requires checked source panic signature, caller and runtime routing";
 
+/// A listed function whose body types and returns `impl Trait` capturing its
+/// lifetime, as core's `FlattenCompat` helper `flatten`, and the caller that
+/// stores its result.
+const OPAQUE: &str = "\
+trait Read {
+    fn read(&self) -> u8;
+}
+struct Cell<'a>(&'a u8);
+impl Read for Cell<'_> {
+    fn read(&self) -> u8 {
+        *self.0
+    }
+}
+fn reader<'a>(value: &'a u8) -> impl Read + 'a {
+    Cell(value)
+}
+fn reads(value: u8) -> u8 {
+    reader(&value).read()
+}
+fn kept(x: u8) -> u8 {
+    x | 1
+}
+fn main() {
+    let _ = reads(2);
+    let _ = kept(1);
+}
+";
+
 /// Compile `source` as a source-core library named by `identity`; with
 /// `publish`, it writes `probe.rgm` into the folder in version thirteen,
 /// which still fences general declaration policy (version fourteen carries it).
@@ -549,6 +577,36 @@ fn an_unevaluable_constant_stubs_the_function_that_demands_it() -> Result {
     // The function that only uses evaluable values keeps its body.
     assert!(stubbed.contains("binary and"));
     assert_eq!(stubbed.matches("call void @abort()").count(), 1);
+    Ok(())
+}
+
+#[test]
+fn a_typed_stub_leaves_its_opaque_result_undefined_and_names_its_user() -> Result {
+    let folder = folder_with("opaque", OPAQUE)?;
+    text(&run(&folder, &[], &[])?)?;
+    let offset = |start: &str| OPAQUE.find(start).ok_or("fixture lost a function");
+    let listed = format!("main.rs\t{}\treader\tlisted\n", offset("fn reader")?);
+    // The trapping stub chooses none of the lifetimes its typed body's hidden
+    // type needs, so the result stays opaque: the caller that stores it is
+    // named, never the listed function again.
+    let named = run(&folder, &[&listed], &[])?;
+    assert_eq!(named.status.code(), Some(1));
+    let stderr = String::from_utf8(named.stderr)?;
+    let rows = stderr
+        .lines()
+        .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
+        .collect::<Vec<_>>();
+    let &[row] = rows.as_slice() else {
+        return Err(format!("expected one blocker: {stderr}").into());
+    };
+    let user = format!(
+        "main.rs\t{}\treads\topaque storage requires a checked defining type\t",
+        offset("fn reads")?
+    );
+    assert!(row.starts_with(&user), "{row}");
+    let both = format!("{listed}main.rs\t{}\treads\tnamed\n", offset("fn reads")?);
+    let stubbed = run(&folder, &[&both], &[])?;
+    assert!(text(&stubbed)?.contains("binary or"));
     Ok(())
 }
 

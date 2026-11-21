@@ -852,10 +852,15 @@ fn publish_source_opaque_heads(
     if facts.opaques.owners.is_empty() {
         return Ok(());
     }
+    // A bring-up stub defines no hidden type even when its body typed: the
+    // trapping body chooses none of the lifetimes its inferred type needs.
+    // Its results stay opaque, as a stub's whose body did not type, and a
+    // user that needs their storage fails in turn.
     let owners: crate::support::hash::HashMap<_, _> = facts
         .functions
         .iter()
         .filter(|f| facts.opaques.owners.contains_key(&f.definition))
+        .filter(|f| !body::bringup::stub(report, f.node))
         .filter_map(|f| f.body.map(|body| (body, f.definition)))
         .collect();
     for proof in &checked.regions().bodies {
