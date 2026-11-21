@@ -6,7 +6,7 @@ use crate::{
     types::{Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
 const LIMIT: usize = 64_000_000;
-const WORK: usize = 1_000_000;
+pub(super) const EXPOSURE_WORK_LIMIT: usize = 1_000_000;
 
 impl Cache {
     pub(crate) fn exposed_empty(
@@ -35,7 +35,7 @@ impl Cache {
         let exact = self.needs.catalogue_bytes()?.is_some();
         self.needs
             .require_catalogue_environment(types, definitions)?;
-        if exact && self.steps > WORK {
+        if exact && self.steps > EXPOSURE_WORK_LIMIT {
             return Err("exact exposure cache previously failed");
         }
         Ok(())
@@ -69,7 +69,10 @@ impl Cache {
     pub(in crate::body::drops::glue) fn fail(&mut self, key: Key, message: &'static str) {
         let exact = matches!(self.needs.catalogue_bytes(), Ok(Some(_)));
         if exact {
-            self.steps = self.steps.saturating_add(self.states.len()).max(WORK + 1);
+            self.steps = self
+                .steps
+                .saturating_add(self.states.len())
+                .max(EXPOSURE_WORK_LIMIT + 1);
         }
         for state in self.states.values_mut() {
             if matches!(state, State::Active) {
@@ -89,7 +92,7 @@ impl Cache {
             self.needs.catalogue_bytes()?.unwrap_or(0),
         ]);
         if bytes > LIMIT {
-            self.steps = self.steps.max(WORK + 1);
+            self.steps = self.steps.max(EXPOSURE_WORK_LIMIT + 1);
             return Err("exact exposure recipes exceed 64 MB budget");
         }
         self.retained = self.retained.max(bytes);

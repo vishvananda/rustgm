@@ -54,6 +54,12 @@ impl NeedsDrop {
         }
         Ok(())
     }
+    /// Whether this query owns a bound exact exposure catalogue.
+    pub(crate) fn has_bound_exposure(&self) -> bool {
+        self.scope
+            .as_deref()
+            .is_some_and(|scope| matches!(scope.mode, ScopeMode::Exact(Some(_))))
+    }
     /// Only the new bound exact mode reports owned query storage to the recipe budget.
     pub(crate) fn catalogue_bytes(&self) -> Result<Option<usize>, &'static str> {
         match self.scope.as_deref().map(|scope| &scope.mode) {

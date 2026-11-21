@@ -120,11 +120,18 @@ impl Cache {
         recipe.method = Some(super::Method::Instance(instance));
         Ok(())
     }
+    fn work_limit(&self) -> usize {
+        if self.needs.has_bound_exposure() {
+            exposure::EXPOSURE_WORK_LIMIT
+        } else {
+            WORK_LIMIT
+        }
+    }
     pub(super) fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self
             .steps
             .checked_add(count)
-            .filter(|n| *n <= WORK_LIMIT)
+            .filter(|n| *n <= self.work_limit())
             .ok_or("destruction recipe work exceeds its runaway limit")?;
         Ok(())
     }

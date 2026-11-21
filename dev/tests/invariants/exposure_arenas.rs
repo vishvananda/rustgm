@@ -119,7 +119,7 @@ fn failed_exact_exposure_work_cannot_reuse_previously_warm_false() -> Result<(),
     let cache = Cache::exposed_empty(&mut types, &mut definitions)?;
     let mut catalog = cache.attach(&types, &definitions, &members);
     assert_eq!(catalog.expose(TypeId::UNIT)?, None);
-    catalog.cache.steps = 1_000_000;
+    catalog.cache.steps = catalog.cache.work_limit();
     assert!(catalog.expose(root).is_err());
     assert!(catalog.expose(TypeId::UNIT).is_err());
     assert!(catalog.cache.work.is_empty());

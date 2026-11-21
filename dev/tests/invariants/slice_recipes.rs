@@ -93,7 +93,7 @@ fn source_slice_recipes_retain_failed_budget_and_dropless_answers() -> Result {
     let root = facts.types.intern(Kind::Slice(methods[0].target))?;
     let empty = facts.types.intern(Kind::Slice(TypeId::UNIT))?;
     let mut cache = Cache::new(methods)?;
-    cache.steps = 999_999;
+    cache.steps = cache.work_limit() - 1;
     let mut catalog = cache.attach(&facts.types, &facts.aggregates, &facts.members);
     assert!(catalog.expose(root).is_err());
     let steps = catalog.steps();
