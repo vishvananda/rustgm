@@ -35,7 +35,9 @@ fn reference_tables_retain_complete_self_and_checked_adapters() -> Result {
             assert_eq!(adapter.instance(), entry.instance);
             assert_eq!(adapter.requested(), entry.requested);
             assert_ne!(adapter.receiver(), entry.instance.ty());
-            let mut erase = Bound::shape();
+            // Tables erase their concrete type as vtable types do, keeping
+            // the binders of nested callable types.
+            let mut erase = Bound::vtable();
             assert_eq!(erase.apply(&mut facts.types, adapter.receiver())?, concrete);
             assert_eq!(
                 closure::reference_leaf(&facts.types, adapter.receiver())?.0,

@@ -109,10 +109,12 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
         TraitFlags::from_bits(TraitFlags::RESTRICTED_IMPL)?.bits(),
         TraitFlags::RESTRICTED_IMPL
     );
-    for unknown in [512, 512 | TraitFlags::CONST, u16::MAX] {
+    // Bits 512 to 2048 are the v14 inherent-authority and dispatch policies.
+    for unknown in [4096, 4096 | TraitFlags::CONST, u16::MAX] {
         assert!(TraitFlags::from_bits(unknown).is_err());
     }
     assert_eq!(TraitFlags::from_bits(255)?.bits(), 255);
+    assert_eq!(TraitFlags::from_bits(4095)?.bits(), 4095);
     println!(
         "SourceRows={} SourceFunction={} SourceTrait={} SourceImpl={} SourceSlot={} SourceScope={} SourceCall={} SourceOriginal={} ScopeIndex={}",
         size_of::<SourceRows>(),
