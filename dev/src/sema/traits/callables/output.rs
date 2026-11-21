@@ -59,14 +59,12 @@ fn expose(
             // arguments before projecting its input types. Closure signatures
             // can still be inferred from their input types and defining body.
             Err(infer::Error::Unresolved | infer::Error::Normalization)
-                if matches!(
-                    probe
-                        .context()
-                        .head(&facts.types, application.predicate.subject())?,
-                    Some(Constructor::FunctionItemArgs(..))
-                ) && !probe
-                    .context()
-                    .inputs_fixed(&facts.types, opened.signature.output)? =>
+                if can_expose_function_output(
+                    &mut facts.types,
+                    probe.context(),
+                    application.predicate.subject(),
+                    &opened.signature,
+                )? =>
             {
                 Ok(opened.signature)
             }
@@ -131,6 +129,33 @@ fn expose(
         .export(&facts.types, source, output)
         .map_err(error)?
         .map(|output| (output, proof)))
+}
+
+/// An unresolved function item can expose a flexible output independent of its
+/// own late-bound lifetimes. A method such as `for<'r> fn(&'r S) -> &'r T`
+/// gets its output lifetime from the actual input.
+fn can_expose_function_output(
+    types: &mut crate::types::Store,
+    context: &mut Context,
+    subject: TermId,
+    signature: &super::Matched,
+) -> Result<bool, infer::Error> {
+    if !matches!(
+        context.head(types, subject)?,
+        Some(Constructor::FunctionItemArgs(..))
+    ) || context.inputs_fixed(types, signature.output)?
+    {
+        return Ok(false);
+    }
+    if signature.regions.is_empty() {
+        return Ok(true);
+    }
+    let mut observed = Bound::observe_regions();
+    context.map_regions(types, signature.output, &mut observed)?;
+    context.account_work(observed.steps)?;
+    Ok(!observed
+        .observed_regions()
+        .any(|region| signature.regions.contains(&region.0)))
 }
 
 fn error(error: infer::Error) -> String {

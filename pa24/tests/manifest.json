@@ -14767,6 +14767,128 @@
       },
       "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/method-path-callables/trait-path-map.rs",
+      "exit_status": 0,
+      "source_sha256": "cbdd7ff08f6142f19d10eff9c08f02926960b760c4b9ce790c7151c27a7af7a9",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/method-path-callables/trait-path-opaque.rs",
+      "exit_status": 0,
+      "source_sha256": "81ba8535bbf202c3dbe59c6ef2fcc8d972f88eab6e6bc5fd99fb0bb3624dac52",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/method-path-callables/elided-self-opaque.rs",
+      "exit_status": 0,
+      "source_sha256": "af8b05083103106fb8cd0d5b45b0f14b25d8657fe462bb1581b5bae6601a8e43",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/method-path-callables/two-views-expected.rs",
+      "exit_status": 0,
+      "source_sha256": "2e9beee73f15848694906dc2807a6b8e6446dfd6f5869c8d68430666bb2269c8",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/method-path-callables/inherent-path-map.rs",
+      "exit_status": 0,
+      "source_sha256": "9532aaf9c79f12c36a5de0a908711af0e84588daf83c5b4c40547822146e3a9b",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/method-path-callables/trait-path-no-impl.rs",
+      "exit_status": 1,
+      "source_sha256": "197dd5d13d40bbb381d310a06a32a79705fcda318a38c1c81434e8ef23864362",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
     }
   ]
 }
