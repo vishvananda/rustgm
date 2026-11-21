@@ -33,6 +33,7 @@ fn restore_budget_preserves_layout_and_never_retains_unknown_ids() -> Result<(),
     );
     let mut store = Store::default();
     let mut fold = folder(1 << 20, 1000)?;
+    let idle_bytes = fold.region_retained_bytes()?;
     assert!(fold.region(RegionId(2), 0).is_err());
     assert!(fold.region(RegionId(20), 0).is_err());
     assert_eq!(fold.region(RegionId(1), 0)?, RegionId(20));
@@ -60,6 +61,11 @@ fn restore_budget_preserves_layout_and_never_retains_unknown_ids() -> Result<(),
         (RegionId::bound(0, 0)?, RegionId::bound(0, 1)?),
     ]));
     assert_eq!(result, ordinary.apply(&mut store, ty)?);
+    let paid = fold.steps;
+    fold.release_restore_workspace();
+    assert!(fold.steps >= paid);
+    assert!(fold.region_retained_bytes()? <= idle_bytes);
+    assert_eq!(fold.apply(&mut store, ty)?, result);
     let foreign = reference(&mut store, RegionId(99))?;
     assert!(fold.apply(&mut store, foreign).is_err());
     Ok(())

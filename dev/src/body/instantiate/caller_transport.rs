@@ -263,6 +263,7 @@ pub(super) fn body(
         }
         body.rewrite_nominal_inputs(facts, fold)?;
         body.validate_nominal_inputs(facts)?;
+        fold.release_restore_workspace();
         Ok(())
     })
 }

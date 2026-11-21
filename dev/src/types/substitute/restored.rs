@@ -189,6 +189,17 @@ impl Bound {
             .ok_or("missing restore budget")?
             .check_bytes(self.region_retained_bytes()?)
     }
+
+    /// A materialized body owns its canonical types. Keep the namespace and
+    /// cumulative work while releasing the memo and buffers used to build it.
+    pub(crate) fn release_restore_workspace(&mut self) {
+        self.completed = HashMap::default();
+        self.applications = None;
+        self.work = Vec::new();
+        self.children = Vec::new();
+        self.regions = Vec::new();
+        self.generic = Vec::new();
+    }
 }
 #[cfg(test)]
 #[path = "../../../tests/invariants/budgeted_restores.rs"]
