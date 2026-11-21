@@ -198,6 +198,10 @@ impl Inputs {
                 {
                     uses.needed = true;
                 }
+                if intrinsic == Some(crate::support::bindings::SourceIntrinsic::DiscriminantValue) {
+                    let raw = Instance::new(&facts.types, ty)?;
+                    crate::sema::compiler_items::prepare_discriminant(facts, raw)?;
+                }
             }
             Ok(())
         })();

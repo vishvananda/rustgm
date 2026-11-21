@@ -62,6 +62,35 @@ impl DiscriminantSelection {
     }
 }
 
+/// Prepare the selected input's relocation before read-only execution checks.
+pub(crate) fn prepare_discriminant(
+    facts: &mut Declarations,
+    instance: Instance,
+) -> Result<(), &'static str> {
+    let Some(Kind::FunctionItem { arguments, .. }) = facts.types.kind(instance.ty()) else {
+        return Err("source discriminant lacks its actual function item");
+    };
+    let input = instance_input(&facts.types, arguments)?;
+    let before = facts.types.capture_shift_steps();
+    let result = facts.types.shift_type(input, 1);
+    let work = facts.types.capture_shift_steps().saturating_sub(before);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    result.map(|_| ())
+}
+
+fn instance_input(
+    types: &crate::types::Store,
+    arguments: crate::types::GenericArgs,
+) -> Result<TypeId, &'static str> {
+    let mut args = types
+        .arguments(arguments)
+        .ok_or("invalid discriminant instance arguments")?;
+    let (Some(Argument::Type(input)), None) = (args.next(), args.next()) else {
+        return Err("source discriminant requires its complete single-type instance");
+    };
+    Ok(input)
+}
+
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
     let parameters = facts
         .generics
@@ -219,13 +248,7 @@ impl Catalog {
             return Err("source discriminant completed header changed");
         }
         validate(facts, *function)?;
-        let mut args = facts
-            .types
-            .arguments(arguments)
-            .ok_or("invalid discriminant instance arguments")?;
-        let (Some(Argument::Type(input)), None) = (args.next(), args.next()) else {
-            return Err("source discriminant requires its complete single-type instance");
-        };
+        let input = instance_input(&facts.types, arguments)?;
         let owner = self
             .traits
             .as_deref()

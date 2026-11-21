@@ -8,13 +8,15 @@ use crate::{
 
 pub(super) fn require(
     report: &Report,
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     value: &Value,
     ty: TypeId,
 ) -> Result<(), &'static str> {
+    let instance = Instance::new(&facts.types, ty)?;
+    crate::sema::compiler_items::prepare_discriminant(facts, instance)?;
     let selected = Reader::new(facts)
-        .source_discriminant(Instance::new(&facts.types, ty)?, body.source)?
+        .source_discriminant(instance, body.source)?
         .ok_or("source discriminant dependency lost its actual descriptor")?;
     facts
         .source_bindings

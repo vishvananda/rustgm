@@ -115,7 +115,9 @@ fn source_call(
             catalog.require_vararg_report(report, facts, &read.selected, body.source)?;
             Ok(Some(kind))
         }
-        Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(kind @ (SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::DiscriminantValue)) => {
+            Ok(Some(kind))
+        }
         Some(kind @ SourceIntrinsic::Layout(_)) => {
             layout_call(report, facts, body, value, ty, (signature, arguments))?;
             Ok(Some(kind))
@@ -133,10 +135,6 @@ fn source_call(
         Some(SourceIntrinsic::ThreeWayCompare) => {
             compare_dependencies::require(report, facts, body, value, ty)
                 .map(|()| Some(SourceIntrinsic::ThreeWayCompare))
-        }
-        Some(SourceIntrinsic::DiscriminantValue) => {
-            tag_dependencies::require(report, facts, body, value, ty)
-                .map(|()| Some(SourceIntrinsic::DiscriminantValue))
         }
         Some(kind @ (SourceIntrinsic::PtrMetadata | SourceIntrinsic::AggregateRawPtr)) => {
             ptr_values::require_operation(report, facts, body, value, ty, kind).map(|()| Some(kind))
@@ -301,7 +299,7 @@ impl Discovered {
     fn callable_operand(
         &mut self,
         report: &crate::resolve::expansion::Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         body: &Body,
         index: usize,
         value: &crate::body::ir::Value,
@@ -318,6 +316,9 @@ impl Discovered {
                 self.selectors.push(crate::body::ir::ValueId(
                     u32::try_from(index).map_err(|_| "too many source selector values")?,
                 ));
+            }
+            Some(SourceIntrinsic::DiscriminantValue) => {
+                tag_dependencies::require(report, facts, body, value, ty)?;
             }
             Some(_) => {
                 // The classifier returns Some only for an authenticated direct
@@ -785,11 +786,10 @@ impl Dependencies {
     fn run(
         &mut self,
         report: &crate::resolve::expansion::Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         layouts: &mut Layouts,
         body: &Body,
     ) -> Result<Discovered, &'static str> {
-        let reader = Reader::new(facts);
         let mut result = Discovered::default();
         let mut work = Vec::new();
         self.charge(body.values.len())?;
@@ -827,6 +827,7 @@ impl Dependencies {
                 result.callable_operand(report, facts, body, index, value, ty)?;
             }
         }
+        let reader = Reader::new(facts);
         for (id, static_) in body::constants::references(body) {
             self.charge(1)?;
             if static_

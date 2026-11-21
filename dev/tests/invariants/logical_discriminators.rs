@@ -425,6 +425,41 @@ fn selected_local_calls() -> TestResult {
     );
     Ok(())
 }
+/// A generic caller's substituted enum can contain a caller lifetime that
+/// needs relocation before checking the intrinsic's public signature.
+#[test]
+fn generic_caller_instances_prepare_their_discriminant_input() -> TestResult {
+    let report = provider("instances/generic-callers")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    for name in [
+        "value_len",
+        "empty_len",
+        "borrowed_len",
+        "tagged",
+        "maybe_tag",
+    ] {
+        assert!(
+            program
+                .symbols
+                .iter()
+                .any(|symbol| symbol.name == name && symbol.body.is_some()),
+            "{name}"
+        );
+    }
+    Ok(())
+}
 #[test]
 fn source_marker_impls_override_structural_defaults_without_std_leaks() -> TestResult {
     for (name, pass) in [

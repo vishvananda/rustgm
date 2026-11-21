@@ -1,0 +1,18 @@
+{
+  "state": "late-binder relocation outcomes declared before revised fixture execution",
+  "editions": [
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "generic-callers.rs",
+      "status": 0,
+      "error_codes": []
+    }
+  ],
+  "native": [],
+  "positive": "generic-callers.rs LowIR contains value_len, empty_len, borrowed_len, tagged and maybe_tag with the demanded Maybe<u8>::len, Maybe<u16>::len, Maybe<&u8>::len, tag<Tagged> and tag<Maybe<&u8>> instances",
+  "source_sha256": {
+    "generic-callers.rs": "d94f1361c5291081f8ef6d79b45092ad7dc1e9c18678f0ecef9fd38b2227e54b"
+  }
+}

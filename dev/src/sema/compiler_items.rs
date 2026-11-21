@@ -109,7 +109,7 @@ pub(in crate::sema) mod pointee;
 mod ptr_metadata;
 pub(crate) use compare_intrinsic::ThreeWaySelection;
 mod tag_intrinsic;
-pub(crate) use tag_intrinsic::DiscriminantSelection;
+pub(crate) use tag_intrinsic::{DiscriminantSelection, prepare_discriminant};
 #[path = "compiler_items/logical_tags.rs"]
 pub(in crate::sema) mod discriminant;
 pub(crate) use discriminant::authenticate as authenticate_discriminant;
