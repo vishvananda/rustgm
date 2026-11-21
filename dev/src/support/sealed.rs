@@ -15,23 +15,43 @@ pub fn request_self_check() {
 /// Whether a read of a sealed table must repeat its publication checks.
 #[must_use]
 pub fn self_check() -> bool {
-    REQUESTS.load(Ordering::Relaxed) != 0
+    REQUESTS.load(Ordering::Relaxed) != 0 || held()
 }
 
-/// Hold the self-check mode for one scope. Overlapping holders compose, so
-/// concurrent tests cannot switch each other's checks off.
+#[cfg(not(test))]
+const fn held() -> bool {
+    false
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Test holders on this thread. Each test runs on its own thread, so a
+    /// holder never switches the checks on for a test running beside it.
+    static HELD: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+#[cfg(test)]
+fn held() -> bool {
+    HELD.with(|held| held.get() != 0)
+}
+
+/// Hold the self-check mode for one scope of the current thread. Nested
+/// holders compose; a thread the test spawns does not inherit it.
 #[cfg(test)]
 pub(crate) struct SelfCheck(());
 #[cfg(test)]
 impl SelfCheck {
     pub(crate) fn hold() -> Self {
-        request_self_check();
+        HELD.with(|held| held.set(held.get() + 1));
         Self(())
     }
 }
 #[cfg(test)]
 impl Drop for SelfCheck {
     fn drop(&mut self) {
-        REQUESTS.fetch_sub(1, Ordering::Relaxed);
+        HELD.with(|held| held.set(held.get() - 1));
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/check_holders.rs"]
+mod tests;
