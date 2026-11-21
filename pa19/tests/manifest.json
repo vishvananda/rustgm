@@ -18458,6 +18458,170 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/closureconst/callback_uses.rs"
+    },
+    {
+      "path": "tests/spec/receiver-readiness/reference-field.rs",
+      "exit_status": 0,
+      "source_sha256": "a30740abbc5549df0a8634c0edee5ffab009aecb494538e637f6a1eb7ed64b71",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/value-field.rs",
+      "exit_status": 0,
+      "source_sha256": "26297541cbd407058874c05b67ce78e4fe1919fd9ef21758474a58bc2ddee824",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/let-then-field.rs",
+      "exit_status": 0,
+      "source_sha256": "7c0fd9afcbc336670a9f38e966950a95034c3e222752654eb20a1973dde2dc90",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/method-on-field.rs",
+      "exit_status": 0,
+      "source_sha256": "aa4af21473a29f8698f1457b75998e056d3c359ca13d50ba88fe3e139bd9f463",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/two-statements.rs",
+      "exit_status": 0,
+      "source_sha256": "0d15310432d623958aef74823f3645b6f8506708bdfda158d8553c5c24584398",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/tuple-value.rs",
+      "exit_status": 0,
+      "source_sha256": "ca04bdbebbb38fb15187383a3252937f14da3e596a6fdeda59f36fc3e33a99bd",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/annotated-binding.rs",
+      "exit_status": 0,
+      "source_sha256": "e762abab07d557c555ce6010b35eedc4f2c925f41d1e8f4de092076c6e3404b2",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-readiness/ambiguous-field.rs",
+      "exit_status": 1,
+      "source_sha256": "6fe5df72c5aa704b3728580d12ae842c06fb103d6aebc14a0956d2b1bbb3dc5f",
+      "input": "file",
+      "features": [
+        "pa19.partial-inference"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
     }
   ]
 }

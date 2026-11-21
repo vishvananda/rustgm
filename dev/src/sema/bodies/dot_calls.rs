@@ -82,6 +82,12 @@ impl Checker<'_> {
             .copied()
             .ok_or_else(|| self.error(node, "missing resolved method call site"))?;
         let term = self.method_receiver_term(node, site.receiver)?;
+        if let Some(dependency) = self.receiver_readiness(node, term)? {
+            self.state
+                .work
+                .push(super::Work::MethodArguments(node, None, expectation));
+            return Ok(Some(dependency));
+        }
         let environment = self.trait_query_environment(node)?;
         let traits = self.trait_assumptions(node)?;
         let key = self.key(node);

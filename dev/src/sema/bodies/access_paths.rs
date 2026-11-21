@@ -461,6 +461,12 @@ impl Checker<'_> {
         mut private: Option<PrivateField>,
     ) -> Result<Option<super::Dependency>, Error> {
         self.advance_projections(node)?;
+        if let Some(dependency) = self.receiver_readiness(node, original.receiver)? {
+            self.state
+                .work
+                .push(super::Work::Field(node, original, private));
+            return Ok(Some(dependency));
+        }
         let (mut receiver, mut dereferences) = self
             .state
             .infer

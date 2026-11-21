@@ -71,6 +71,42 @@ impl Checker<'_> {
         }
     }
 
+    /// A field or method receiver needs a structurally known type behind its
+    /// references. As rustc does before it requires one, select the pending
+    /// goals that can be selected now when that type's head is unknown: in
+    /// `let v: V<_> = gather(b); v.0.f` the unique `V<?T>: Collect<B>`
+    /// implementation names `?T`. Unfinished goals stay with their owner, and
+    /// a projected receiver is normalized by the access itself.
+    pub(in crate::sema::bodies) fn receiver_readiness(
+        &mut self,
+        node: NodeId,
+        receiver: super::super::TermId,
+    ) -> Result<Option<Dependency>, Error> {
+        self.advance_projections(node)?;
+        let target = match self
+            .state
+            .infer
+            .reference_target(&self.facts.types, receiver)
+        {
+            Ok((target, _)) => target,
+            Err(crate::types::infer::Error::Normalization) => return Ok(None),
+            Err(error) => return Err(self.error(node, error)),
+        };
+        if self
+            .state
+            .infer
+            .head(&self.facts.types, target)
+            .map_err(|e| self.error(node, e))?
+            .is_some()
+        {
+            return Ok(None);
+        }
+        match self.poll_trait_obligations(self.state.body.node, false)? {
+            Progress::Prepare(dependency) => Ok(Some(dependency)),
+            Progress::Ready(_) | Progress::Waiting => Ok(None),
+        }
+    }
+
     fn poll_trait_obligations(&mut self, body: NodeId, finishing: bool) -> Result<Progress, Error> {
         let Some(mut pending) = self.take_trait_goals(body)? else {
             return Ok(Progress::Ready(HashMap::default()));
