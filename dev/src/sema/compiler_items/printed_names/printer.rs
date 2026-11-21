@@ -1,6 +1,6 @@
 //! rustc's type name printer for the types it spells: primitives, `str`,
 //! `!`, tuples, arrays, slices, references, raw pointers and nominal types
-//! declared directly in a module of this crate. A reference's lifetime is
+//! declared directly in a source module. A reference's lifetime is
 //! left out; a lifetime argument of a path is erased to `'_`.
 use crate::{
     resolve::{
@@ -202,25 +202,35 @@ impl<'a> Printer<'a> {
             return Err("type name of a declaration outside a module is not implemented");
         }
         let names = &report.package.names;
-        let mut segments = vec![names.get(definition.name)];
-        let mut current = module;
-        loop {
-            let record = report
+        let modules = &report.package.modules;
+        let mut current = modules
+            .get(module.0 as usize)
+            .ok_or("type name declaration has no actual module")?;
+        let krate = current.krate;
+        let crate_name = if krate == CrateSlot::HOST {
+            report.package.crate_name.as_str()
+        } else {
+            let member = report
                 .package
-                .modules
-                .get(current.0 as usize)
+                .crate_members()
+                .get(krate.0 as usize)
+                .ok_or("type name declaration has no actual crate")?;
+            names.get(member.name)
+        };
+        let mut segments = vec![names.get(definition.name)];
+        while let Some(parent) = current.parent {
+            segments.push(names.get(current.name));
+            current = modules
+                .get(parent.0 as usize)
                 .ok_or("type name declaration has no actual module")?;
-            if record.krate != CrateSlot::HOST {
-                return Err("type name of a guest crate's declaration is not implemented");
+            if current.krate != krate {
+                return Err("type name module path crossed its declaring crate");
             }
-            let Some(parent) = record.parent else { break };
-            segments.push(names.get(record.name));
-            current = parent;
         }
         if segments.iter().any(|segment| segment.starts_with("r#")) {
             return Err("type name of a raw identifier path is not implemented");
         }
-        self.push(&report.package.crate_name)?;
+        self.push(crate_name)?;
         for segment in segments.iter().rev() {
             self.push("::")?;
             self.push(segment)?;
