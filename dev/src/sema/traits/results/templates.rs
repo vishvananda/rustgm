@@ -148,8 +148,7 @@ fn finish<const CHARGED: bool>(
     let index = Arc::new(index);
     if let Some(contracts) = contracts {
         let cache = &mut contracts.result_rules;
-        if cache.enabled {
-            cache.account(steps)?;
+        if cache.admit(steps) {
             if CHARGED {
                 let growth = Growth::map::<ResultId, Arc<Index>>(
                     cache.templates.len(),

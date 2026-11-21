@@ -21,6 +21,9 @@ use crate::{
 use std::sync::Arc;
 #[cfg(test)]
 pub(in crate::sema) use templates::consequence_controls;
+#[cfg(test)]
+#[path = "../../../tests/invariants/rule_admission.rs"]
+mod tests;
 
 /// Pure mapped clauses, never caller permission or implementation proof.
 #[derive(Default)]
@@ -41,32 +44,25 @@ impl Cache {
     fn get(&self, ty: TypeId, item: ItemId) -> Option<Arc<Assumptions>> {
         self.entries.get(&(ty, item)).cloned()
     }
-    fn account(&mut self, cost: usize) -> Result<(), &'static str> {
-        self.steps = self.steps.saturating_add(cost);
-        if self
-            .steps
-            .saturating_add(self.entries.len())
+    /// The caller already paid for computing the rules. Retain them when
+    /// there is room so that future queries can reuse the mapped clauses.
+    fn admit(&mut self, cost: usize) -> bool {
+        let steps = self.steps.saturating_add(cost);
+        let rows = self
+            .entries
+            .len()
             .saturating_add(self.equalities.len())
-            .saturating_add(self.templates.len())
-            > 1_000_000
-        {
-            return Err("associated result rule cache work budget exceeded");
+            .saturating_add(self.templates.len());
+        if !self.enabled || steps.saturating_add(rows).saturating_add(1) > 1_000_000 {
+            return false;
         }
-        Ok(())
+        self.steps = steps;
+        true
     }
-    fn insert(
-        &mut self,
-        ty: TypeId,
-        item: ItemId,
-        rules: Arc<Assumptions>,
-        cost: usize,
-    ) -> Result<(), &'static str> {
-        if !self.enabled {
-            return Ok(());
+    fn insert(&mut self, ty: TypeId, item: ItemId, rules: &Arc<Assumptions>, cost: usize) {
+        if self.admit(cost) {
+            self.entries.insert((ty, item), Arc::clone(rules));
         }
-        self.account(cost)?;
-        self.entries.insert((ty, item), rules);
-        Ok(())
     }
 }
 
@@ -133,12 +129,7 @@ pub(in crate::sema) fn traits(
         .as_mut()
         .ok_or("missing result rule contracts")?
         .result_rules
-        .insert(
-            ty,
-            item,
-            Arc::clone(&result),
-            steps.saturating_sub(template_steps),
-        )?;
+        .insert(ty, item, &result, steps.saturating_sub(template_steps));
     Ok(Some((result, steps)))
 }
 
@@ -276,8 +267,7 @@ pub(super) fn equalities(
         .as_mut()
         .ok_or("missing result equality contracts")?
         .result_rules;
-    if cache.enabled {
-        cache.account(steps.saturating_sub(template_steps))?;
+    if cache.admit(steps.saturating_sub(template_steps)) {
         cache.equalities.insert((ty, item), Arc::clone(&result));
     }
     Ok(Equations {

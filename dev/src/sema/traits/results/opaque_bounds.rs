@@ -41,7 +41,7 @@ pub(super) fn traits(
         .as_mut()
         .ok_or("missing opaque rule contracts")?
         .result_rules
-        .insert(ty, item, Arc::clone(&result), cost)?;
+        .insert(ty, item, &result, cost);
     Ok((result, cost.saturating_add(template_steps)))
 }
 
