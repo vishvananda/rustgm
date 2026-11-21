@@ -84,7 +84,7 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 216);
+    assert_eq!(LangItem::ALL.len(), 217);
     for (role, index, spelling) in [
         (LangItem::UnwindSafe, 214, "unwind_safe_trait"),
         (LangItem::RefUnwindSafe, 215, "ref_unwind_safe_trait"),
@@ -94,14 +94,13 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
         assert_eq!(role.spelling(), None);
         assert_eq!(LangItem::from_name(spelling), None);
     }
-    assert_eq!(LangItem::DECLARATIONS.len(), 127);
+    assert_eq!(LangItem::DECLARATIONS.len(), 128);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
-        // Declarations follow the 87 frozen rows; the diagnostic rows after
-        // them have no declaration profile.
+        // Preserve both diagnostic ordinals when appending declarations.
         assert_eq!(
             role.declaration_profile().is_some(),
-            (87..87 + LangItem::DECLARATIONS.len()).contains(&index)
+            index >= 87 && !matches!(index, 214 | 215)
         );
     }
     for line in
@@ -151,9 +150,15 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
             DeclarationTarget::Function,
             GenericRequirement::Any,
         ),
+        (
+            "global_alloc_ty",
+            216,
+            DeclarationTarget::Struct,
+            GenericRequirement::Any,
+        ),
     ] {
-        let role = LangItem::from_name(name).ok_or("pinned startup role")?;
-        let profile = role.declaration_profile().ok_or("startup role profile")?;
+        let role = LangItem::from_name(name).ok_or("pinned role")?;
+        let profile = role.declaration_profile().ok_or("pinned role profile")?;
         assert_eq!(role.index(), ordinal);
         assert_eq!(role.spelling(), Some(name));
         assert_eq!(profile.target, target);

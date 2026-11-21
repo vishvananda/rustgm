@@ -57,11 +57,19 @@ pub(in crate::sema) fn complete(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
-    let Some(declaration) = catalog.language(LangItem::OwnedBox) else {
+    let owned_box = catalog.language(LangItem::OwnedBox);
+    if let Some(declaration) = owned_box {
+        catalog
+            .require_provider_report(report)
+            .map_err(|message| Declarations::error(report, declaration.origin, message))?;
+    }
+    if let Some(declaration) = catalog.language(LangItem::GlobalAlloc) {
+        complete_global_allocator(report, facts, declaration)?;
+    }
+    let Some(declaration) = owned_box else {
         return Ok(());
     };
     let error = |message| Declarations::error(report, declaration.origin, message);
-    catalog.require_provider_report(report).map_err(error)?;
     crate::sema::header_attributes::charge_source_contract_query(facts, 8)?;
     let item = ItemId(declaration.definition.0);
     shape(facts, item).map_err(error)?;
@@ -71,6 +79,24 @@ pub(in crate::sema) fn complete(
     }
     Ok(())
 }
+
+fn complete_global_allocator(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    declaration: crate::resolve::bindings::Declaration,
+) -> Result<(), crate::resolve::package::Error> {
+    let role = LangItem::GlobalAlloc;
+    if !super::roles::nominal_completed(report, facts, role, declaration)? {
+        let item = ItemId(declaration.definition.0);
+        facts
+            .aggregates
+            .declare_global_allocator(item)
+            .map_err(|message| Declarations::error(report, declaration.origin, message))?;
+        super::roles::complete_nominal(facts, role, declaration)?;
+    }
+    Ok(())
+}
+
 fn shape(facts: &Declarations, owner: ItemId) -> Result<(), &'static str> {
     let definition = facts
         .aggregates

@@ -86,6 +86,7 @@ pub enum FieldDestruction {
 struct NominalPolicy {
     destruction: FieldDestruction,
     may_dangle: bool,
+    global_allocator: bool,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Definition {
@@ -258,6 +259,45 @@ impl Definitions {
     #[must_use]
     pub const fn owned_box(&self) -> Option<ItemId> {
         self.owned_box
+    }
+    pub(crate) fn declare_global_allocator(&mut self, item: ItemId) -> Result<(), &'static str> {
+        if !self
+            .get(item)
+            .is_some_and(|definition| definition.kind == Kind::Struct)
+        {
+            return Err("global allocator role requires a checked struct");
+        }
+        self.nominal_policies
+            .entry(item)
+            .or_default()
+            .global_allocator = true;
+        Ok(())
+    }
+    /// The pointee of a built-in owning pointer using the declared global allocator.
+    pub(crate) fn global_box_content(&self, types: &Store, ty: TypeId) -> Option<TypeId> {
+        let super::Kind::Adt(item, arguments) = types.kind(ty)? else {
+            return None;
+        };
+        if self.owned_box != Some(item) {
+            return None;
+        }
+        let mut arguments = types.arguments(arguments)?;
+        let super::arguments::Argument::Type(content) = arguments.next()? else {
+            return None;
+        };
+        match (arguments.next(), arguments.next()) {
+            (None, None) => Some(content),
+            (Some(super::arguments::Argument::Type(allocator)), None) => {
+                let super::Kind::Adt(allocator, _) = types.kind(allocator)? else {
+                    return None;
+                };
+                self.nominal_policies
+                    .get(&allocator)?
+                    .global_allocator
+                    .then_some(content)
+            }
+            _ => None,
+        }
     }
     pub(crate) fn permits_dangling_pointers(&self, item: ItemId) -> Option<bool> {
         self.get(item)?;

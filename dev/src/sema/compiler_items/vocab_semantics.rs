@@ -34,6 +34,7 @@ const fn ordinary_declaration(role: LangItem) -> bool {
         LangItem::CoroutineState
             | LangItem::CStr
             | LangItem::OwnedBox
+            | LangItem::GlobalAlloc
             | LangItem::Start
             | LangItem::Termination
             | LangItem::BeginPanic

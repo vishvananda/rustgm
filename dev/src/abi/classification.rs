@@ -224,6 +224,11 @@ impl Plans {
         if let Some(passing) = nullable_scalar(layouts, &layout, head)? {
             return Ok(passing);
         }
+        if definitions.owned_box() == Some(item)
+            && let Some(leaf) = layouts.global_box_scalar(types, definitions, head, layout)?
+        {
+            return Ok(Passing::Scalar(leaf));
+        }
         if definition.repr.representation == Representation::Transparent
             && let Some(leaf) = layouts.transparent_scalar(types, definitions, head)?
             && scalar(types.kind(leaf).ok_or("missing C scalar payload")?)?

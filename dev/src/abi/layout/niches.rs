@@ -274,6 +274,50 @@ impl Layouts {
             _ => None,
         })
     }
+    /// The owning pointer can cross a C boundary as one scalar when its checked
+    /// layout has only the thin content pointer and zero-sized allocator storage.
+    pub(crate) fn global_box_scalar(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+        layout: Layout,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let Some(content) = definitions.global_box_content(types, ty) else {
+            return Ok(None);
+        };
+        if layout.size != 8
+            || layout.align != 8
+            || !matches!(layout.shape, Shape::Aggregate { tag: None, .. })
+        {
+            return Ok(None);
+        }
+        let Some(field) =
+            self.transparent_carrier_child(types, layout, &mut Budget::new(1_000_000))?
+        else {
+            return Ok(None);
+        };
+        if self
+            .variants(&layout)
+            .first()
+            .and_then(|variant| types.list(variant.fields))
+            .and_then(<[_]>::first)
+            != Some(&field)
+        {
+            return Ok(None);
+        }
+        let Some(leaf) = self.transparent_scalar(types, definitions, field)? else {
+            return Ok(None);
+        };
+        let pointer = match types.kind(leaf) {
+            Some(Kind::Pattern {
+                base,
+                constraint: crate::types::Constraint::NonNull,
+            }) => base,
+            _ => leaf,
+        };
+        Ok(matches!(types.kind(pointer), Some(Kind::Pointer { pointee, .. }) if pointee == content).then_some(leaf))
+    }
     pub(crate) fn scalar_carrier(
         &mut self,
         types: &Store,

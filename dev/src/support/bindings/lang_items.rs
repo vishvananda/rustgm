@@ -14,9 +14,13 @@ macro_rules! language_items {
             $($diagnostic = $diagnostic_index,)*
         }
         impl LangItem {
-            pub const ALL: [Self; language_items!(@count $($old)* $($new)* $($diagnostic)*)] = [
-                $(Self::$old,)* $(Self::$new,)* $(Self::$diagnostic,)*
-            ];
+            pub const ALL: [Self; language_items!(@count $($old)* $($new)* $($diagnostic)*)] = {
+                let mut roles = [Self::Sized; language_items!(@count $($old)* $($new)* $($diagnostic)*)];
+                $(roles[$index] = Self::$old;)*
+                $(roles[$new_index] = Self::$new;)*
+                $(roles[$diagnostic_index] = Self::$diagnostic;)*
+                roles
+            };
             /// New declaration profiles still require their actual semantic consumers.
             pub(crate) const DECLARATIONS: [Self; language_items!(@count $($new)*)] = [$(Self::$new,)*];
             #[must_use]
@@ -277,6 +281,7 @@ language_items! {
         Termination = 211 => "termination", Trait, GenericRequirement::Any;
         BeginPanic = 212 => "begin_panic", Function, GenericRequirement::Any;
         EhPersonality = 213 => "eh_personality", Function, GenericRequirement::Any;
+        GlobalAlloc = 216 => "global_alloc_ty", Struct, GenericRequirement::Any;
     }
     diagnostic {
         UnwindSafe = 214;

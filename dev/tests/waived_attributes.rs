@@ -11,9 +11,9 @@
 //! `rustc_std_internal_symbol` names a symbol, which declaration linkage
 //! implements, and `rustc_conversion_suggestion` only feeds rustc's
 //! diagnostics, so both profiles accept all of them without a waiver once
-//! their form, owner and gate hold. The lang items `global_alloc_ty` and
-//! `String` have no role here; bring-up admits their structs as ordinary ones
-//! after rustc's target and generic requirement. `owned_box` is the built-in
+//! their form, owner and gate hold. Bring-up admits the `String` struct with
+//! a waiver for its diagnostic role. `global_alloc_ty` names the global
+//! allocator and `owned_box` names the built-in
 //! owning pointer in both profiles, so a `Box` position of
 //! `write_box_via_move`, which alloc's `vec!` calls, matches exactly that
 //! struct.
@@ -225,11 +225,10 @@ const ALLOCATORS: [Case; 7] = [
     },
 ];
 
-const GLOBAL_ALLOC_WAIVER: &str = "lang item `global_alloc_ty` is admitted as an ordinary struct: the global allocator's Box layout and calling convention are not implemented";
 const STRING_WAIVER: &str = "lang item `String` is admitted as an ordinary struct: its diagnostics and the uniqueness of its role are not checked";
 const UNSUPPORTED: &str = "unsupported source language item";
 
-const LANG_ROLES: [Case; 6] = [
+const LANG_ROLES: [Case; 8] = [
     Case {
         name: "owned-box",
         header: INTERNAL,
@@ -240,10 +239,21 @@ const LANG_ROLES: [Case; 6] = [
         name: "global-allocator",
         header: INTERNAL,
         items: "#[lang = \"global_alloc_ty\"]\npub struct Global;\n",
-        outcome: Outcome::Waived {
-            waiver: GLOBAL_ALLOC_WAIVER,
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Accepted,
+    },
+    Case {
+        name: "global-allocator-enum",
+        header: INTERNAL,
+        items: "#[lang = \"global_alloc_ty\"]\npub enum Global {}\n",
+        outcome: Outcome::Rejected(
+            "source language item differs from its required declaration target or owner",
+        ),
+    },
+    Case {
+        name: "duplicate-global-allocator",
+        header: INTERNAL,
+        items: "#[lang = \"global_alloc_ty\"]\npub struct First;\n#[lang = \"global_alloc_ty\"]\npub struct Second;\n",
+        outcome: Outcome::Rejected("duplicate source language item"),
     },
     Case {
         name: "string",
@@ -406,10 +416,9 @@ fn allocator_attributes_are_accepted_in_both_profiles_after_validation() -> Resu
     Ok(())
 }
 
-/// alloc's `global_alloc_ty` and `String` declarations pass only in bring-up
-/// and only with a recorded waiver, after rustc's target and generic
-/// requirement; `owned_box` passes in both profiles without one; a
-/// misplaced or unknown role is rejected in both.
+/// The global allocator and owning box roles pass in both modes. Bring-up
+/// waives the diagnostic role for `String` after checking its target.
+/// Misplaced and unknown roles fail in both modes.
 #[test]
 fn lang_roles_are_validated_and_unimplemented_ones_waived_in_bringup() -> Result {
     let failures = check("lang-roles", &LANG_ROLES, "")?;
