@@ -318,9 +318,9 @@ def linted_build(root, steps, build_step, lint_step):
     ])[0]
 
 
-def build_cli(root, steps):
+def build_cli(root, steps, flags=()):
     """The CLI from the public build, checked strictly beside it; both are fresh after a public selection."""
-    linted_build(root, steps, ("build-cli", ["cargo", "build", *COMMON, "--bin", "rustgm"]),
+    linted_build(root, steps, ("build-cli", ["cargo", "build", *COMMON, *flags, "--bin", "rustgm"]),
                  ("clippy-cli", ["cargo", "check", *COMMON, "--lib", "--bins", MESSAGES]))
 
 
@@ -380,7 +380,8 @@ def harness_session(root):
     return {"changed_inputs": changed, "carried": not dropped, "dropped_sessions": len(dropped)}
 
 
-def build(root, args, steps, groups):
+def build(root, args, steps, groups, flags=()):
+    """The selected targets; FLAGS go to the public build only, never to its strict check."""
     common = COMMON
     link = ["--no-run", MESSAGES]
     binaries = {}
@@ -398,7 +399,8 @@ def build(root, args, steps, groups):
     if remaining:
         # An integration target builds the library, itself and the CLI it runs.
         build_targets = [flag for name in remaining for flag in ("--test", name)]
-        built = linted_build(root, steps, ("build-public", ["cargo", "test", *common, *build_targets, *link]),
+        built = linted_build(root, steps, ("build-public", ["cargo", "test", *common, *flags, *build_targets,
+                                                            *link]),
                              ("clippy-public", ["cargo", "check", *common, "--lib", "--bins", *build_targets,
                                                 MESSAGES]))
         binaries.update(artifacts(built, remaining))

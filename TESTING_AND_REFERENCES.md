@@ -305,7 +305,14 @@ failure. Pending generated references are allowed here; the full layout check
 still requires their complete provenance. `make integration-check` runs the
 whole private unit binary, every harness suite group and the active course text
 suites against one dev-fast build at the granted width; every part runs, each
-gets one summary line, and any failed part fails the command. Before compiling
+gets one summary line, and any failed part fails the command. It builds the
+public targets and the CLI at opt-level 1 (`--config profile.dev-fast.opt-level=1`),
+beside fastcheck's level-0 units in `obj/rust`. Debug assertions and overflow
+checks stay on. At level 0 two thirds of the suites' and the CLI's CPU went to
+core helpers that level 1 inlines: the suites ran 3.7 times faster with every
+outcome unchanged, against 254 s more for the public build after a rebase and
+22 s more on average after a one-module edit, which is why fastcheck and the
+private harness keep level 0. Before compiling
 it compares the room left under its output cap with what the run writes (each
 cached crate's newest incremental session, or the cold cache size, plus test
 scratch) and stops with the remedy when that does not fit. It warns about any

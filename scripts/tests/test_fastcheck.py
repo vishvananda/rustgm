@@ -376,6 +376,8 @@ class LinkedPrivateHarness(unittest.TestCase):
                         self.assertIn("--no-run", command)
                         self.assertIn("--message-format=json-render-diagnostics", command)
                         self.assertNotIn("CARGO_TARGET_DIR", _["overrides"])
+                        # Fastcheck keeps opt-level 0; only the integration check optimizes.
+                        self.assertFalse(any(word.startswith("profile.") for word in command))
                         return json.dumps({"reason": "compiler-artifact", "executable": str(binary),
                                            "profile": {"test": True},
                                            "target": {"kind": ["test"], "name": "suite_frontend"}})

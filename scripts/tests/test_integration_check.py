@@ -70,7 +70,8 @@ class IntegrationCheck(unittest.TestCase):
             stdout.write(text)
             return mock.Mock(returncode=status)
 
-        def build(*_):
+        def build(*arguments):
+            self.build_flags = arguments[4:]
             if build_fails:
                 raise ValueError("clippy-private failed with status 101")
             return binaries
@@ -116,6 +117,10 @@ class IntegrationCheck(unittest.TestCase):
         self.assertTrue(all(command[3:5] == ["--app", str(Path(directory) / "obj/rust/dev-fast/rustgm")]
                             for command in course))
         self.assertTrue(all(command[5] == "--jobs" for command in course))
+        # The public build and the CLI it runs are optimized; their strict checks are not.
+        self.assertEqual(self.build_flags, (integration_check.OPTIMIZED,))
+        cargo = [command for command in commands if command[0] == "cargo"]
+        self.assertEqual([command[1] for command in cargo if "profile.dev-fast.opt-level=1" in command], ["build"])
         summary = "\n".join(lines).split("\n")
         self.assertEqual(summary[-2], "Integration: 5 of 10 parts passed; "
                                       "failed: gate format, suite_frontend, suite_traits, pa2, pa3")

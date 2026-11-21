@@ -34,6 +34,12 @@ WARN_GIB = 10
 COLD_GIB = {"obj/rust/dev-fast": 10, "obj/rust/private-lint/dev-fast": 4.5, "obj/rust/public-lint/dev-fast": 1.2}
 # Test parts write scratch (native programs, evidence) on top of the build.
 SCRATCH_GIB = 2
+# The suites and the course run the compiler thousands of times. At opt-level 0
+# two thirds of their CPU went to core helpers that level 1 inlines: they ran
+# 3.7 times faster with every outcome unchanged, which outweighs the 254 s it
+# adds to the public build after a rebase. Debug assertions and overflow checks
+# stay on; fastcheck and the private harness keep level 0 for the edit loop.
+OPTIMIZED = ("--config", "profile.dev-fast.opt-level=1")
 
 
 def parser():
@@ -208,8 +214,8 @@ def execute(root, args, steps, parts):
     groups = {"lib": [], **{target: [] for target in targets}}
     binaries = {}
     try:
-        binaries = build(root, args, steps, groups)
-        build_cli(root, steps)
+        binaries = build(root, args, steps, groups, OPTIMIZED)
+        build_cli(root, steps, OPTIMIZED)
         parts.add("build", True, "private harness, every suite group and the CLI")
     except (TimeoutError, ValueError) as error:
         parts.add("build", False, str(error))

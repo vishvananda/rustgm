@@ -54,6 +54,7 @@ path; its adopted direction is summarized below.
   Before publishing to `main`, the integrator runs `make integration-check`:
   the whole private unit binary, every harness suite group and the active
   course text suites against one dev-fast build, one summary line per part.
+  Its public targets and CLI are built at opt-level 1; fastcheck keeps level 0.
   Full release regular/native tests, uncached audits, all-target strict Clippy,
   harness, course text and independent suites run in scheduled/manual CI.
   Run `make test-upstream` after fixture changes and `make test-backend` after
