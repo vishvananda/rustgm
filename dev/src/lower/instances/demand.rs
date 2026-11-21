@@ -658,6 +658,12 @@ impl Traversal<'_> {
             .adapter_source(&facts.types, templates, &self.instances, entry)
             .map_err(|e| diagnostic(report, Some(source), e.into()))?;
         let Some(original) = original else {
+            // A source instance bring-up set aside never materializes, so
+            // its adapter is dropped with it; the stage still fails when it
+            // ends. Retrying it would alternate with that instance forever.
+            if self.failed.contains(&entry.instance()) {
+                return Ok(());
+            }
             self.budget
                 .push_work(facts, &mut self.work, Work::Adapter(entry, source, caller))
                 .map_err(error)?;
