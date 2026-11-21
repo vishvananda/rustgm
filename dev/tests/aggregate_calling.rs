@@ -32,12 +32,13 @@ fn aggregate_profile_has_explicit_language_and_implementation_boundaries()
             result.is_ok(),
             matches!(
                 name,
-                "interop" | "aligned" | "indirect" | "nested" | "array"
+                "interop" | "aligned" | "indirect" | "enum" | "nested" | "array"
             ),
             "{name}: {:?}",
             result.as_ref().err()
         );
-        if matches!(name, "rust-repr" | "packed" | "union" | "enum" | "empty") {
+        // A fieldless `repr(C)` enum passes as its 32- or 64-bit tag.
+        if matches!(name, "rust-repr" | "packed" | "union" | "empty") {
             let diagnostic = result.err().ok_or("missing profile boundary")?;
             assert!(
                 diagnostic.contains("C aggregate ABI profile"),

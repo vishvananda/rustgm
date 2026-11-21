@@ -47,9 +47,9 @@ python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggre
 python3 scripts/storage.py run -- python3 scripts/maintainer_suites.py run aggregate_calling --ignored
 ```
 
-This is not PA30 completion or activation. Rust-layout, packed, empty, union,
-enum values remain explicit boundaries in
-this callable profile. The separately qualified [nested aggregate checkpoint](pa30-composite-abi.md) extends it with nested `repr(C)` structs and fixed-array fields; its eighteen independent hypotheses and shifted mixed-field controls are retained separately. Variadic calls, aggregate crate metadata transport and
+This is not PA30 completion or activation. Rust-layout, packed, empty and union
+values remain explicit boundaries in this callable profile; a fieldless `repr(C)`
+enum passes as its 32- or 64-bit integer tag. The separately qualified [nested aggregate checkpoint](pa30-composite-abi.md) extends it with nested `repr(C)` structs and fixed-array fields; its eighteen independent hypotheses and shifted mixed-field controls are retained separately. Variadic calls, aggregate crate metadata transport and
 other target ABIs remain unfinished. Ordinary Rust aggregate calls preserve
 their existing internal ABI. Default-release pins are prepared for baseline `84f6f84e` and candidate
 `07037425`. Five shared inputs have identical LowIR bytes/status/stderr, and

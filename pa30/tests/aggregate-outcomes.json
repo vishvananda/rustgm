@@ -64,7 +64,7 @@
     },
     {
       "path": "tests/spec/aggregate-abi/enum.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa30.c-aggregate-abi"
       ],
