@@ -11,7 +11,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(super) enum Input {
     Sized,
-    Slice,
+    Length,
     Dynamic,
 }
 impl Input {
@@ -35,8 +35,9 @@ impl Input {
                     return Err("slice cleanup requires a completed sized element");
                 }
                 context.layout(element)?;
-                (Self::Slice, Metadata::Length)
+                (Self::Length, Metadata::Length)
             }
+            Some(Kind::Primitive(crate::types::Primitive::Str)) => (Self::Length, Metadata::Length),
             Some(Kind::Dynamic { .. }) => (Self::Dynamic, Metadata::VTable(selection.element)),
             _ => return Err("unsized source drop glue requires metadata-aware cleanup"),
         };
@@ -68,7 +69,7 @@ impl Input {
                     | glue::Shape::Variants(_)
                     | glue::Shape::Array { .. }
                     | glue::Shape::Boxed { .. }
-            ) | (Self::Slice, glue::Shape::Slice { .. })
+            ) | (Self::Length, glue::Shape::Slice { .. })
                 | (Self::Dynamic, glue::Shape::Dynamic)
         ) || (!matches!(self, Self::Sized) && recipe.ty != selected)
         {
@@ -84,11 +85,11 @@ impl Input {
             Self::Sized => {
                 builder.call(signature, Type::Void, Operand::Symbol(symbol), &[input])?;
             }
-            Self::Slice | Self::Dynamic => {
+            Self::Length | Self::Dynamic => {
                 let data = builder.load(Type::Ptr, input.operand)?;
                 let offset = builder.integer(Type::I64, 8)?;
                 let metadata = builder.index(Type::U8, input, offset)?;
-                let kind = if matches!(self, Self::Slice) {
+                let kind = if matches!(self, Self::Length) {
                     Type::I64
                 } else {
                     Type::Ptr
@@ -119,7 +120,7 @@ fn wide_reference(
         || layout.align != 8
         || !matches!(representation, Representation::Object(span) if span.bytes == 16 && span.align == 8)
     {
-        return Err("source slice cleanup requires its exact wide-reference ABI");
+        return Err("source unsized cleanup requires its exact wide-reference ABI");
     }
     Ok(())
 }

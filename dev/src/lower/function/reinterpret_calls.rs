@@ -68,7 +68,13 @@ impl Lower<'_, '_, '_> {
             );
         }
         if source.size == 0 {
-            return Err("zero-sized transmute requires a supported runtime validity profile");
+            if !source.inhabited || !destination.inhabited {
+                return Err("zero-sized transmute requires inhabited source and destination types");
+            }
+            // The input must have been evaluated. The result has no runtime
+            // bits, and its checked type still records any callable identity.
+            self.value(*input)?;
+            return Ok(Some(Selected::Unit));
         }
         let span = MemorySpan {
             bytes: source.size,
