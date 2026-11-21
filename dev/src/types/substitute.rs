@@ -26,6 +26,10 @@ use crate::support::hash::HashMap;
 
 type Key = (TypeId, u16);
 const WORK_LIMIT: usize = 1_000_000;
+/// The Store's shape-key folders accumulate the work of every query of a
+/// session, so their limit is a coarse whole-graph runaway guard rather than
+/// the per-query limit of every other substitution.
+const SESSION_WORK_LIMIT: usize = 1 << 26;
 /// A selected type kept a lifetime its query cannot map back: an internal
 /// invariant, which the census fold keeps as its own kind.
 pub(crate) const UNMAPPED_LIFETIME: &str = "selected type retains an unmapped lifetime";
@@ -38,7 +42,12 @@ enum Action {
     Universals(Box<universals::Mapping>),
     Regions(Box<region_mapping::Mapping>),
     BodyScope(std::sync::Arc<super::relations::BodyAliases>),
-    Shape { preserve_static: bool },
+    /// `session` marks the Store's folders, whose work accumulates over
+    /// every query of a session.
+    Shape {
+        preserve_static: bool,
+        session: bool,
+    },
     Vtable,
     Normalize,
 }
@@ -102,19 +111,38 @@ impl Bound {
         bound
     }
 
+    /// The cumulative work this folder may spend before it fails.
+    const fn work_limit(&self) -> usize {
+        if matches!(self.action, Action::Shape { session: true, .. }) {
+            SESSION_WORK_LIMIT
+        } else {
+            WORK_LIMIT
+        }
+    }
+    /// The failure of a folder that spent its work limit.
+    const fn exhausted(&self) -> &'static str {
+        if matches!(self.action, Action::Shape { session: true, .. }) {
+            "shape key work exceeds its whole-session runaway limit"
+        } else {
+            "lifetime substitution work budget exceeded"
+        }
+    }
     /// An index key for lifetime-insensitive shape equality, never a usable type.
     pub(crate) fn shape() -> Self {
         let mut bound = Self::new(Vec::new());
         bound.action = Action::Shape {
             preserve_static: false,
+            session: false,
         };
         bound
     }
 
-    pub(crate) fn auto_shape() -> Self {
+    /// The Store's shape folder, shared by every query of a session.
+    pub(crate) fn session_shape(preserve_static: bool) -> Self {
         let mut bound = Self::new(Vec::new());
         bound.action = Action::Shape {
-            preserve_static: true,
+            preserve_static,
+            session: true,
         };
         bound
     }
@@ -151,8 +179,8 @@ impl Bound {
         store: &Store,
         ty: TypeId,
     ) -> Result<Option<TypeId>, &'static str> {
-        if self.steps > WORK_LIMIT {
-            return Err("lifetime substitution work budget exceeded");
+        if self.steps > self.work_limit() {
+            return Err(self.exhausted());
         }
         self.result(store, (ty, 0))
     }
@@ -308,8 +336,8 @@ impl Bound {
             if BOUNDED {
                 budget.check_steps(self.steps)?;
             }
-            if self.steps > WORK_LIMIT {
-                return Err("lifetime substitution work budget exceeded");
+            if self.steps > self.work_limit() {
+                return Err(self.exhausted());
             }
             if self.result(store, key)?.is_some() {
                 continue;
@@ -344,8 +372,8 @@ impl Bound {
     }
 
     fn queue(&mut self, ty: TypeId, depth: u16) -> Result<(), &'static str> {
-        if self.work.len().saturating_add(self.steps) >= WORK_LIMIT {
-            return Err("lifetime substitution work budget exceeded");
+        if self.work.len().saturating_add(self.steps) >= self.work_limit() {
+            return Err(self.exhausted());
         }
         self.work.push(((ty, self.cache_depth(depth)), false));
         Ok(())
@@ -474,7 +502,10 @@ impl Bound {
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
-        if let Action::Shape { preserve_static } = self.action {
+        if let Action::Shape {
+            preserve_static, ..
+        } = self.action
+        {
             return Ok(if preserve_static && region != RegionId::STATIC {
                 RegionId(1)
             } else {
@@ -630,8 +661,8 @@ impl Bound {
         if let Some(budget) = self.region_budget()? {
             budget.check_steps(self.steps)?;
         }
-        if self.steps.saturating_add(self.work.len()) > WORK_LIMIT {
-            return Err("lifetime substitution work budget exceeded");
+        if self.steps.saturating_add(self.work.len()) > self.work_limit() {
+            return Err(self.exhausted());
         }
         Ok(())
     }

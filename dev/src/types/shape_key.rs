@@ -23,7 +23,7 @@ impl Store {
             shapes
         } else {
             charge(1, size_of::<Bound>())?;
-            Box::new(Bound::shape())
+            Box::new(Bound::session_shape(false))
         };
         let before = shapes.steps;
         let result = shapes
@@ -74,11 +74,11 @@ impl Store {
         let mut shapes = if auto {
             self.auto_shapes
                 .take()
-                .unwrap_or_else(|| Box::new(Bound::auto_shape()))
+                .unwrap_or_else(|| Box::new(Bound::session_shape(true)))
         } else {
             self.shapes
                 .take()
-                .unwrap_or_else(|| Box::new(Bound::shape()))
+                .unwrap_or_else(|| Box::new(Bound::session_shape(false)))
         };
         let before = shapes.steps;
         let result = shapes.predicate(self, predicate).map(ShapeKey);

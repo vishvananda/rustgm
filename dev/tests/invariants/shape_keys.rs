@@ -223,3 +223,45 @@ fn erased_callable_tails_do_not_repeat_work_at_each_binder_depth() -> TestResult
     }
     Ok(())
 }
+
+/// The Store's shape folder accumulates the work of a whole session: it keeps
+/// working past the per-query limit of every other substitution and fails
+/// only past its coarse whole-graph guard, with a diagnostic of its own.
+#[test]
+fn session_shapes_fail_only_past_their_whole_graph_guard() -> TestResult {
+    let mut store = Store::default();
+    let mut subject = TypeId::primitive(Primitive::U8);
+    let mut fresh = |store: &mut Store| -> TestResult<Predicate> {
+        subject = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId(3),
+            referent: subject,
+        })?;
+        predicate(
+            store,
+            subject,
+            ItemId(1),
+            &[Argument::Lifetime(RegionId(3))],
+        )
+    };
+    let first = fresh(&mut store)?;
+    store.shape_key(first)?;
+    let folder = store
+        .shapes
+        .as_mut()
+        .ok_or("missing session shape folder")?;
+    folder.steps = 2_000_000;
+    let past_query_limit = fresh(&mut store)?;
+    store.shape_key(past_query_limit)?;
+    let folder = store
+        .shapes
+        .as_mut()
+        .ok_or("missing session shape folder")?;
+    folder.steps = 1 << 26;
+    let past_guard = fresh(&mut store)?;
+    assert_eq!(
+        store.shape_key(past_guard).map(|_| ()),
+        Err("shape key work exceeds its whole-session runaway limit")
+    );
+    Ok(())
+}

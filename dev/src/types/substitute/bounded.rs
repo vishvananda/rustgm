@@ -256,7 +256,8 @@ impl Bound {
         if !matches!(
             self.action,
             Action::Shape {
-                preserve_static: false
+                preserve_static: false,
+                ..
             }
         ) || self.parameters.is_some()
             || self.applications.is_some()
