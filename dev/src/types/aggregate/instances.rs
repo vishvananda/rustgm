@@ -6,6 +6,12 @@ use crate::types::{Kind, ListId, Store, TypeId, substitute::Bound};
 #[path = "../../../tests/invariants/success_rows.rs"]
 mod tests;
 
+/// One registry instantiates every aggregate of a session, so its work and
+/// retained fields are bounded by coarse whole-graph runaway guards rather
+/// than by what one declaration may spend.
+const WORK_LIMIT: usize = 1 << 30;
+const RETAINED_LIMIT: usize = 1 << 31;
+
 #[derive(Clone, Copy)]
 struct Range {
     start: u32,
@@ -142,16 +148,16 @@ impl Instances {
         self.steps = self
             .steps
             .checked_add(cost)
-            .filter(|n| *n <= 4_000_000)
-            .ok_or("aggregate instantiation work budget exceeded")?;
+            .filter(|n| *n <= WORK_LIMIT)
+            .ok_or("aggregate instantiation work exceeds its whole-session runaway limit")?;
         Ok(())
     }
     pub(super) fn retain(&mut self, bytes: usize) -> Result<(), &'static str> {
         self.retained = self
             .retained
             .checked_add(bytes)
-            .filter(|n| *n <= 64_000_000)
-            .ok_or("aggregate instantiation exceeds 64 MB budget")?;
+            .filter(|n| *n <= RETAINED_LIMIT)
+            .ok_or("aggregate instantiation exceeds its whole-session runaway limit")?;
         Ok(())
     }
     fn instantiate(
