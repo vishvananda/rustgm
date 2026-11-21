@@ -15,6 +15,7 @@ from maintainer_batch import artifacts, inventory, package_environment, selectio
 from maintainer_suites import discover
 from resource_policy import discover as controller, width
 from storage import check_space, cleanup_roots, exclusive, minimum_reserve, prune
+from storage_incremental import drop_sessions
 
 
 def fingerprint(root, digests=None):
@@ -259,6 +260,10 @@ COMMON = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fas
 MESSAGES = "--message-format=json-render-diagnostics"
 # The strict check of the public targets keeps its own cache beside the build's.
 PUBLIC_LINT = "obj/rust/public-lint"
+PRIVATE_LINT = "obj/rust/private-lint"
+# What the private harness's carried session was compiled from (see harness_session).
+HARNESS_INPUTS = f"{PRIVATE_LINT}/dev-fast/rustgm-harness-inputs.json"
+BROAD_CHANGE = 10
 
 
 def lint_environment():
@@ -317,16 +322,75 @@ def build_cli(root, steps):
                  ("clippy-cli", ["cargo", "check", *COMMON, "--lib", "--bins", MESSAGES]))
 
 
+def harness_inputs(root, files):
+    digests = {}
+    for relative in files:
+        try:
+            digests[relative] = hashlib.sha256((root / relative).read_bytes()).hexdigest()
+        except OSError:
+            digests[relative] = None
+    return digests
+
+
+def record_harness_inputs(root, binary):
+    """After a successful harness compile, record the digest of every file its dep-info names."""
+    try:
+        lines = Path(f"{binary}.d").read_text().splitlines()
+    except OSError:
+        return
+    files = []
+    for line in lines:
+        # Each input also appears alone as `path:`; the first line names the output.
+        if line.endswith(":") and not line.startswith("#") and ": " not in line:
+            # Cargo runs rustc in dev/, so inputs are relative to it unless absolute.
+            path = Path(os.path.normpath(root / "dev" / line[:-1].replace("\\ ", " ")))
+            if path.is_relative_to(root):
+                files.append(path.relative_to(root).as_posix())
+    record = root / HARNESS_INPUTS
+    record.write_text(json.dumps({"files": harness_inputs(root, sorted(set(files)))}, indent=0) + "\n")
+
+
+def harness_session(root):
+    """Compile the private harness without its carried session after a broad change.
+
+    An incremental compile holds the previous session's results while it
+    recomputes: after a rebase it peaked 1.1–1.4 GiB above a compile with no
+    session (8.3–8.45 GiB) and saved 10–60 s of 310–360 s. A one-module edit
+    changes one to three inputs and keeps the session; BROAD_CHANGE or more
+    changed inputs, or no record of the session's inputs, drop it first.
+    """
+    profile = root / PRIVATE_LINT / "dev-fast"
+    try:
+        recorded = json.loads((root / HARNESS_INPUTS).read_text())["files"]
+    except (OSError, ValueError, KeyError, TypeError):
+        recorded = None
+    changed = None
+    if isinstance(recorded, dict):
+        changed = sum(digest != recorded[name] for name, digest in harness_inputs(root, recorded).items())
+    if changed is not None and changed < BROAD_CHANGE:
+        return {"changed_inputs": changed, "carried": True}
+    dropped = drop_sessions(root, profile)
+    (root / HARNESS_INPUTS).unlink(missing_ok=True)
+    reason = "no record of its inputs" if changed is None else f"{changed} changed inputs"
+    if dropped:
+        print(f"clippy-private: {reason}; compiling without the carried incremental session "
+              f"to keep memory headroom", flush=True)
+    return {"changed_inputs": changed, "carried": not dropped, "dropped_sessions": len(dropped)}
+
+
 def build(root, args, steps, groups):
     common = COMMON
     link = ["--no-run", MESSAGES]
     binaries = {}
     if "lib" in groups:
+        steps.receipt["private_harness_session"] = harness_session(root)
         # The private harness is linted and linked by one clippy-driver build.
         linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", *link],
-                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"), **lint_environment()},
+                           overrides={"CARGO_TARGET_DIR": str(root / PRIVATE_LINT), **lint_environment()},
                            compiles=True)
         binaries.update(artifacts(linked, {"lib": groups["lib"]}))
+        if "lib" in binaries:
+            record_harness_inputs(root, binaries["lib"])
         steps.receipt["private_harness_producer"] = "clippy-private"
     remaining = {name: cases for name, cases in groups.items() if name != "lib"}
     if remaining:

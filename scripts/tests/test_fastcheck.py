@@ -257,6 +257,64 @@ class FastcheckAdmission(unittest.TestCase):
             self.assertEqual(seen, {"marked": True, "limits": (100.0, 1800)})
 
 
+class PrivateHarnessSession(unittest.TestCase):
+    """After a broad change the harness is compiled without its carried session."""
+
+    def tree(self, root, count):
+        (root / "dev/src").mkdir(parents=True)
+        (root / "dev/tests/helpers").mkdir(parents=True)
+        names = [f"dev/src/m{index}.rs" for index in range(count)] + ["dev/tests/helpers/shared.rs"]
+        for name in names:
+            (root / name).write_text(f"// {name}\n")
+        deps = root / "obj/rust/private-lint/dev-fast/deps"
+        deps.mkdir(parents=True)
+        binary = deps / "rustgm-abcd"
+        inputs = [name.removeprefix("dev/") for name in names[:-1]] + ["src/../tests/helpers/shared.rs"]
+        (deps / "rustgm-abcd.d").write_text(f"{binary}: {' '.join(inputs)}\n\n" + "".join(
+            f"{name}:\n" for name in inputs) + "\n# env-dep:CARGO_PKG_NAME=rustgm\n")
+        session = root / "obj/rust/private-lint/dev-fast/incremental/rustgm-x/s-a-b"
+        session.mkdir(parents=True)
+        (session / "work-products.bin").write_bytes(b"carried")
+        return names, binary, session
+
+    def test_a_one_module_edit_keeps_the_session_and_a_broad_one_drops_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            names, binary, session = self.tree(root, 12)
+            fastcheck_run.record_harness_inputs(root, binary)
+            recorded = json.loads((root / fastcheck_run.HARNESS_INPUTS).read_text())["files"]
+            self.assertEqual(sorted(recorded), sorted(names))
+            self.assertEqual(fastcheck_run.harness_session(root), {"changed_inputs": 0, "carried": True})
+            for name in names[:fastcheck_run.BROAD_CHANGE - 1]:
+                (root / name).write_text("// edited\n")
+            self.assertEqual(fastcheck_run.harness_session(root),
+                             {"changed_inputs": fastcheck_run.BROAD_CHANGE - 1, "carried": True})
+            self.assertTrue(session.is_dir())
+            (root / names[-1]).write_text("// edited too\n")
+            with mock.patch("builtins.print") as printed:
+                decision = fastcheck_run.harness_session(root)
+            self.assertEqual(decision, {"changed_inputs": fastcheck_run.BROAD_CHANGE, "carried": False,
+                                        "dropped_sessions": 1})
+            self.assertFalse(session.exists())
+            self.assertIn("compiling without the carried incremental session", printed.call_args.args[0])
+            # The record described the dropped session; the next success writes a new one.
+            self.assertFalse((root / fastcheck_run.HARNESS_INPUTS).exists())
+
+    def test_a_session_without_a_record_of_its_inputs_is_dropped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, _, session = self.tree(root, 1)
+            with mock.patch("builtins.print"):
+                self.assertEqual(fastcheck_run.harness_session(root),
+                                 {"changed_inputs": None, "carried": False, "dropped_sessions": 1})
+            self.assertFalse(session.exists())
+            # With nothing carried there is nothing to drop and nothing to say.
+            with mock.patch("builtins.print") as printed:
+                self.assertEqual(fastcheck_run.harness_session(root),
+                                 {"changed_inputs": None, "carried": True, "dropped_sessions": 0})
+            printed.assert_not_called()
+
+
 class LinkedPrivateHarness(unittest.TestCase):
     def fixture(self, root):
         (root / "dev/src").mkdir(parents=True)

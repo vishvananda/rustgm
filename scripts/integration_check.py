@@ -27,6 +27,8 @@ COURSE_TOTAL = re.compile(r"^(pa\d+): (\d+)/(\d+)$", re.M)
 COURSE_FAILURE = re.compile(r"^(pa\d+/\S+): FAIL", re.M)
 LIMITS = (60, 14400)
 GIB = 1024 ** 3
+# A step above this many GiB of anonymous memory leaves less than 2 GiB of the 12 GiB cap.
+WARN_GIB = 10
 
 
 def parser():
@@ -236,6 +238,12 @@ def check(root, args):
         highest = marks.close()
         if highest:
             print(f"Integration memory: anonymous peak {highest[1]:.2f} GiB while {highest[0]} ran", flush=True)
+        over = {name: peak for name, peak in steps.receipt["memory_anon_peak_gib"].items() if peak > WARN_GIB}
+        if over:
+            steps.receipt["memory_warnings"] = over
+            for name, peak in over.items():
+                print(f"WARNING: {name} peaked at {peak:.2f} GiB of anonymous memory, above {WARN_GIB} GiB of "
+                      f"the job's memory cap", flush=True)
         rows = steps.receipt["parts"]
         steps.receipt["state"] = "passed" if rows and all(row["passed"] for row in rows) else "failed"
         steps.save()

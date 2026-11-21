@@ -37,6 +37,46 @@ def retire_abandoned_session(root, session):
         return remove_session(root, session)
 
 
+def drop_sessions(root, profile):
+    """Remove every complete, unpinned session of one profile's incremental cache.
+
+    The caller holds the storage lock and starts no compile in this profile
+    until it returns. A session whose rustc lock is taken is kept.
+    """
+    root = Path(root).resolve()
+    folder = profile / "incremental"
+    for path in (root / "obj", profile.parent, profile, folder):
+        if path.is_symlink():
+            raise ValueError("Incremental retirement refuses a symlinked cache")
+    if not folder.is_dir() or any((path / ".keep-artifacts").exists() for path in (profile, folder)):
+        return []
+    rows = []
+    for crate in sorted(folder.iterdir()):
+        if crate.is_symlink():
+            raise ValueError("Incremental retirement refuses a symlinked crate cache")
+        if not crate.is_dir() or (crate / ".keep-artifacts").exists():
+            continue
+        for session in sorted(crate.iterdir()):
+            if session.is_symlink():
+                raise ValueError("Incremental retirement refuses a symlinked session")
+            if (not session.is_dir() or not session.name.startswith("s-") or session.name.endswith("-working")
+                    or not (session / "work-products.bin").is_file() or any(session.rglob(".keep-artifacts"))):
+                continue
+            lock = crate / (session.name.rsplit("-", 1)[0] + ".lock")
+            if lock.is_symlink():
+                raise ValueError("Incremental retirement refuses a symlinked session lock")
+            if not lock.exists():
+                rows.append(remove_session(root, session))
+                continue
+            with lock.open("rb") as descriptor:
+                try:
+                    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    continue
+                rows.append(remove_session(root, session))
+    return rows
+
+
 def retire_codegen_objects(root, folder):
     """Loose rcgu objects are linker scratch; incremental copies remain intact."""
     if not folder.exists() or (folder / ".keep-artifacts").exists():

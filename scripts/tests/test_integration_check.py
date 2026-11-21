@@ -42,7 +42,7 @@ OUTPUTS = {
 
 
 class IntegrationCheck(unittest.TestCase):
-    def run_check(self, root, *, build_fails=False):
+    def run_check(self, root, *, build_fails=False, marks=None):
         (root / "dev").mkdir()
         (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
         (root / "obj/audit-venv/bin").mkdir(parents=True)
@@ -73,12 +73,15 @@ class IntegrationCheck(unittest.TestCase):
 
         args = Namespace(stages=["pa1", "pa2", "pa3"], seconds=600, compile_seconds=600,
                          evidence_root=root / "obj/qualification/integration/run")
+        memory = mock.patch.object(integration_check, "MemoryMarks", marks) if marks else mock.patch.object(
+            integration_check, "own_cgroup", return_value=None)
         with mock.patch.object(integration_check, "discover",
                                return_value={"lexer": "suite_frontend", "traits": "suite_traits"}), \
                 mock.patch.object(integration_check, "fingerprint", return_value={}), \
                 mock.patch.object(integration_check, "Beside", RecordedGates), \
                 mock.patch.object(integration_check, "build", side_effect=build), \
                 mock.patch.object(integration_check, "check_space"), \
+                memory, \
                 mock.patch.object(fastcheck_run, "controller", return_value=None), \
                 mock.patch.object(fastcheck_run.shutil, "which", return_value="clippy-driver"), \
                 mock.patch.object(fastcheck_run.subprocess, "run", side_effect=run), \
@@ -113,6 +116,21 @@ class IntegrationCheck(unittest.TestCase):
         self.assertEqual(summary[-2], "Integration: 5 of 10 parts passed; "
                                       "failed: gate format, suite_frontend, suite_traits, pa2, pa3")
         self.assertIn("  FAIL pa2: 1/2 cases; status 1 (pa2/b.rs)", summary)
+
+    def test_a_step_above_ten_gib_is_warned_about(self):
+        class Marks:
+            def __init__(self, steps, _folder):
+                self.steps = steps
+
+            def close(self):
+                self.steps.receipt["memory_anon_peak_gib"] = {"clippy-private": 10.4, "lib": 0.6}
+                return "clippy-private", 10.4
+
+        with tempfile.TemporaryDirectory() as directory:
+            _, receipt, lines, _ = self.run_check(Path(directory), marks=Marks)
+        self.assertEqual(receipt["memory_warnings"], {"clippy-private": 10.4})
+        self.assertIn("WARNING: clippy-private peaked at 10.40 GiB of anonymous memory, above 10 GiB of the "
+                      "job's memory cap", lines)
 
     def test_memory_marks_charge_each_sample_to_the_steps_running_then(self):
         with tempfile.TemporaryDirectory() as directory:

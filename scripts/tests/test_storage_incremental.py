@@ -193,6 +193,39 @@ class IncrementalRetirement(unittest.TestCase):
         self.assertEqual([row["path"] for row in rows], [str(old.relative_to(self.root))])
         self.assertTrue(current.is_dir())
 
+    def test_dropping_a_profiles_sessions_keeps_pinned_working_and_locked_ones(self):
+        import fcntl
+        ordinary = self.session("s-ordinary-complete", 1)
+        self.crate = self.root / "obj/rust/private-lint/dev-fast/incremental/rustgm-abc"
+        self.crate.mkdir(parents=True)
+        old = self.session("s-old-complete", 1)
+        newest = self.session("s-newest-complete", 2)
+        pinned = self.session("s-pinned-complete", 3)
+        (pinned / ".keep-artifacts").touch()
+        working = self.session("s-busy-working", 4)
+        held = self.session("s-held-complete", 5)
+        profile = self.root / "obj/rust/private-lint/dev-fast"
+        with (self.crate / "s-held.lock").open("wb") as descriptor:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            rows = storage_incremental.drop_sessions(self.root, profile)
+        self.assertEqual(sorted(row["path"] for row in rows),
+                         sorted(str(path.relative_to(self.root)) for path in (old, newest)))
+        for kept in (pinned, working, held):
+            self.assertTrue(kept.is_dir())
+        # Only the named profile is touched.
+        self.assertTrue(ordinary.is_dir())
+        self.assertEqual(storage_incremental.drop_sessions(self.root, self.root / "obj/rust/public-lint/dev-fast"), [])
+
+    def test_dropping_sessions_refuses_a_symlinked_profile(self):
+        outside = self.root / "outside"
+        (outside / "incremental/rustgm-abc/s-a-b").mkdir(parents=True)
+        (outside / "incremental/rustgm-abc/s-a-b/work-products.bin").write_bytes(b"keep")
+        (self.root / "obj/rust/private-lint").mkdir(parents=True)
+        (self.root / "obj/rust/private-lint/dev-fast").symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlinked cache"):
+            storage_incremental.drop_sessions(self.root, self.root / "obj/rust/private-lint/dev-fast")
+        self.assertTrue((outside / "incremental/rustgm-abc/s-a-b/work-products.bin").is_file())
+
     def test_private_profile_symlink_is_rejected_before_ordinary_retirement(self):
         old = self.session("s-ordinary-old", 1)
         self.session("s-ordinary-current", 2)

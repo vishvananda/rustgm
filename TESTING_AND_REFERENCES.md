@@ -300,7 +300,8 @@ failure. Pending generated references are allowed here; the full layout check
 still requires their complete provenance. `make integration-check` runs the
 whole private unit binary, every harness suite group and the active course text
 suites against one dev-fast build at the granted width; every part runs, each
-gets one summary line, and any failed part fails the command.
+gets one summary line, and any failed part fails the command. It warns about
+any step above 10 GiB of anonymous memory.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
 another lease. It queues for a shared-controller slot for at most
 `--wait-seconds` (one hour by default) and names the jobs holding the slots;
@@ -342,7 +343,12 @@ preserve normal host compiler flags. A separate `cargo clippy --lib` excludes pr
 tests, while Cargo's `--tests` would select unrelated integration targets.
 The harness has a stable build cache under `obj/rust/private-lint` so it cannot
 evict the integration build's results. Idle retirement also bounds this cache while
-preserving each crate's newest warm session and explicit pins.
+preserving each crate's newest warm session and explicit pins. A harness compile
+records the digest of every input its dep-info names. When ten or more of them
+have changed since, or there is no record, it first drops the carried sessions
+(not pinned, working or locked ones): after a rebase that session added
+1.1–1.4 GiB to a compile that peaks near 8.4 GiB without it, and saved 10–60 s
+of 310–360 s.
 A cold worktree's first compile is not stopped at the budget; gates and test
 execution keep the same budget.
 Private tests use complete names, integration suites retain exact outer-module
