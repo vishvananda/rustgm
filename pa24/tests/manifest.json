@@ -14953,6 +14953,27 @@
       }
     },
     {
+      "path": "tests/spec/method-path-callables/opaque-iterator-receiver.rs",
+      "exit_status": 0,
+      "source_sha256": "839ebed0ecae2c6f6b993c36a07064bb9892e15b909c2fe09a81c7b936387f60",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "Stage 1 reduction of a trait method item taking the borrowed opaque iterator supplied by its caller",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/method-path-callables/trait-path-no-impl.rs",
       "exit_status": 1,
       "source_sha256": "197dd5d13d40bbb381d310a06a32a79705fcda318a38c1c81434e8ef23864362",

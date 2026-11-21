@@ -2,6 +2,7 @@
 mod input_proof;
 mod original_inputs;
 mod promised_outputs;
+mod revealed_receiver;
 use super::{model::Declarations, nominals::traits::State};
 use crate::support::hash::HashMap;
 use crate::{
@@ -34,7 +35,11 @@ pub(crate) fn specialize(
     caller: Option<&crate::types::parameters::environment::Environment>,
     universals: u32,
 ) -> Result<Option<Assumptions>, &'static str> {
-    requirements(facts, owner, substitution, caller, universals, 1)?
+    let mut predicates = instantiate(facts, owner, substitution, caller)?;
+    for predicate in &mut predicates {
+        *predicate = revealed_receiver::storage(facts, *predicate)?;
+    }
+    clauses(facts, &predicates, universals, 1)?
         .map(|proof| witnesses(facts, proof, universals))
         .transpose()
 }
@@ -50,6 +55,16 @@ pub(crate) fn requirements(
     universals: u32,
     first: u32,
 ) -> Result<Option<Obligations>, &'static str> {
+    let predicates = instantiate(facts, owner, substitution, caller)?;
+    clauses(facts, &predicates, universals, first)
+}
+
+fn instantiate(
+    facts: &mut Declarations,
+    owner: DefId,
+    substitution: &mut Bound,
+    caller: Option<&crate::types::parameters::environment::Environment>,
+) -> Result<Vec<Clause>, &'static str> {
     let mut predicates = Vec::new();
     for predicate in
         crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)?
@@ -101,11 +116,10 @@ pub(crate) fn requirements(
             )?);
         }
     }
-    let predicates = predicates
+    predicates
         .into_iter()
         .map(|predicate| substitution.clause(&mut facts.types, predicate))
-        .collect::<Result<Vec<_>, _>>()?;
-    clauses(facts, &predicates, universals, first)
+        .collect()
 }
 
 /// Only an independently validated declared implementation condition may use
