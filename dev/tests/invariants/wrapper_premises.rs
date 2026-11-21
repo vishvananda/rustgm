@@ -38,12 +38,12 @@ fn fixture() -> Result<(Store, Execution, Adapter)> {
         environment,
         arguments: GenericArgs::EMPTY,
     })?;
-    let receiver = reference(&mut types, RegionId::bound(0, 2)?, self_ty)?;
-    let signature = function(&mut types, &[receiver, input], 3)?;
+    let receiver = reference(&mut types, RegionId::bound(0, 3)?, self_ty)?;
+    let signature = function(&mut types, &[receiver, input], 4)?;
     let execution = Execution {
         self_ty,
         signature,
-        universals: 3,
+        universals: 4,
         receiver: CallKind::Shared,
     };
     let adapter = Adapter::new(
@@ -58,7 +58,23 @@ fn wrapper_premises_exclude_public_receiver_private_and_unused_slots() -> Result
     let (types, execution, adapter) = fixture()?;
     let external = RegionId::bound(0, 1)?;
     let declared = [(external, RegionId::STATIC), (RegionId::STATIC, external)];
-    validate(&types, execution, 2, adapter, &declared)?;
+    let (mapped, _) = caller_conditions(&types, execution, 3, adapter, &declared)?;
+    assert_eq!(mapped, declared);
+    let private = RegionId::bound(0, 2)?;
+    let conditions = [
+        (private, external),
+        (external, private),
+        (private, RegionId::STATIC),
+    ];
+    let (mapped, _) = caller_conditions(&types, execution, 3, adapter, &conditions)?;
+    assert_eq!(
+        mapped,
+        [
+            (external, external),
+            (external, external),
+            (external, RegionId::STATIC)
+        ]
+    );
     for invalid in [
         RegionId::bound(0, 0)?,
         RegionId::bound(0, 2)?,
@@ -66,8 +82,8 @@ fn wrapper_premises_exclude_public_receiver_private_and_unused_slots() -> Result
         RegionId::bound(1, 1)?,
         RegionId(1),
     ] {
-        assert!(validate(&types, execution, 2, adapter, &[(invalid, external)]).is_err());
-        assert!(validate(&types, execution, 2, adapter, &[(external, invalid)]).is_err());
+        assert!(caller_conditions(&types, execution, 3, adapter, &[(invalid, external)]).is_err());
+        assert!(caller_conditions(&types, execution, 3, adapter, &[(external, invalid)]).is_err());
     }
     Ok(())
 }
@@ -92,7 +108,7 @@ fn wrapper_contract_cannot_inject_or_replace_declared_premises() -> Result {
     contract.assumptions = vec![pair];
     let input = Requirements(vec![pair]);
     input.validate(&contract)?;
-    assert!(validate(&types, execution, 2, adapter, &[(RegionId(1), pair.1)]).is_err());
+    assert!(caller_conditions(&types, execution, 3, adapter, &[(RegionId(1), pair.1)]).is_err());
     // A source catalog's own Copy carrier adds no interface premise; a pending
     // predicate in that carrier still does.
     let mut carrier = crate::body::regions::BuiltinRequirements::empty();

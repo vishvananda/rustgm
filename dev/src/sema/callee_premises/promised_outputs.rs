@@ -2,7 +2,7 @@
 use super::{Clause, Declarations, Obligations, PredicateBound, RegionId};
 use crate::{
     resolve::model::DefId,
-    sema::closures::{Execution, actual, matching},
+    sema::closures::{Execution, actual, condition_slots, matching},
     types::{Kind, TypeId, instance::Instance, lifetime_proof::ScopeId, substitute::Bound},
 };
 
@@ -62,22 +62,13 @@ pub(super) fn append(
         let instance = Instance::closure(&facts.types, leaf)?;
         let execution = actual::execution(facts, instance, execution)?;
         let bindings = bind(facts, execution, leaf, proof)?;
-        let actual = |region: RegionId| {
-            if region == RegionId::STATIC {
-                return Ok(region);
-            }
-            let Some((0, slot)) = region.bound_parts() else {
-                return Err("declared callable condition escapes its source binder");
-            };
-            bindings
-                .slots
-                .get(&slot)
-                .copied()
-                .ok_or("declared callable condition has no actual source slot")
-        };
-        for (a, b) in conditions {
-            proof.outlives.push((actual(a)?, actual(b)?));
-        }
+        let work = condition_slots::visit(
+            &conditions,
+            |slot| bindings.slots.get(&slot).copied(),
+            "declared callable condition has no actual source slot",
+            |pair| proof.outlives.push(pair),
+        )?;
+        facts.body_work.canonical_steps += work;
         proof.equalities.extend(bindings.equalities);
     }
     facts.body_work.canonical_steps += lowering.map_or(0, |fold| fold.steps);

@@ -1,6 +1,7 @@
 //! Typed closure captures and callable contracts; source inference supplies place uses.
 pub(crate) mod actual;
 pub mod captures;
+pub(crate) mod condition_slots;
 mod execution_requirements;
 pub mod imports;
 pub(crate) mod matching;

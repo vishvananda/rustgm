@@ -78,7 +78,8 @@ impl Candidate {
             )?;
         }
         if generic {
-            require_conditions(facts, identity, &bindings, caller.into(), contract)?;
+            let work = require_conditions(facts, identity, &bindings, caller.into(), contract)?;
+            facts.body_work.canonical_steps += work;
         }
         equalities.extend(bindings.equalities);
         contract

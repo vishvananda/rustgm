@@ -5,7 +5,7 @@ mod tests;
 use crate::{
     body::{invocation_entries, regions::Contract},
     sema::{
-        closures::{Body, Execution},
+        closures::{Body, Execution, condition_slots},
         model::Declarations,
     },
     types::{RegionId, Store, closure::Adapter, outlives::Pair},
@@ -34,7 +34,7 @@ impl Requirements {
     }
 }
 pub(super) fn selected(
-    facts: &Declarations,
+    facts: &mut Declarations,
     source: Body,
     canonical: Execution,
     adapter: Adapter,
@@ -49,16 +49,18 @@ pub(super) fn selected(
         .closures
         .conditions(source.identity)
         .ok_or("adapter requires checked source execution preconditions")?;
-    validate(&facts.types, canonical, source.universals, adapter, pairs)?;
-    Ok(Requirements(pairs.to_vec()))
+    let (mapped, work) =
+        caller_conditions(&facts.types, canonical, source.universals, adapter, pairs)?;
+    facts.body_work.canonical_steps += work;
+    Ok(Requirements(mapped))
 }
-fn validate(
+fn caller_conditions(
     types: &Store,
     canonical: Execution,
     original: u32,
     adapter: Adapter,
     pairs: &[Pair],
-) -> Result<(), &'static str> {
+) -> Result<(Vec<Pair>, usize), &'static str> {
     // Only free body slots occurring in complete Self can be interface inputs.
     // The matcher leaves callable-local binders rigid, so public input slots
     // cannot become premises through their nested signature occurrence.
@@ -72,15 +74,24 @@ fn validate(
             let Some((0, slot)) = region.bound_parts() else {
                 return Err("adapter precondition is not an external source lifetime");
             };
-            if u32::from(slot) >= original
-                || bindings
-                    .slots
-                    .binary_search_by_key(&slot, |&(slot, _)| slot)
-                    .is_err()
-            {
-                return Err("adapter precondition does not occur in external Self");
+            if u32::from(slot) >= original {
+                return Err("adapter precondition is not an external source lifetime");
             }
         }
     }
-    Ok(())
+
+    let mut mapped = Vec::with_capacity(pairs.len());
+    let work = condition_slots::visit(
+        pairs,
+        |slot| {
+            bindings
+                .slots
+                .binary_search_by_key(&slot, |&(slot, _)| slot)
+                .ok()
+                .and_then(|_| RegionId::bound(0, slot).ok())
+        },
+        "adapter precondition does not occur in external Self",
+        |pair| mapped.push(pair),
+    )?;
+    Ok((mapped, work))
 }

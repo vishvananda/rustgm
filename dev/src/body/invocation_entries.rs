@@ -540,29 +540,20 @@ fn require_conditions(
     bindings: &matching::Bindings,
     source: crate::body::ir::ProofSite,
     contract: &mut Contract,
-) -> Result<(), &'static str> {
+) -> Result<usize, &'static str> {
     let conditions = facts
         .closures
         .conditions(identity)
         .ok_or("generic closure call requires checked source execution conditions")?;
-    let actual = |region: crate::types::RegionId| {
-        if region == crate::types::RegionId::STATIC {
-            return Ok(region);
-        }
-        let Some((0, slot)) = region.bound_parts() else {
-            return Err("closure execution condition has an invalid binder");
-        };
-        bindings
-            .slots
-            .get(&slot)
-            .copied()
-            .ok_or("closure execution condition has no actual input")
-    };
-    for &(a, b) in conditions {
-        contract.obligations.push(Obligation {
-            source,
-            kind: Kind::Outlives((actual(a)?, actual(b)?)),
-        });
-    }
-    Ok(())
+    crate::sema::closures::condition_slots::visit(
+        conditions,
+        |slot| bindings.slots.get(&slot).copied(),
+        "closure execution condition has no actual input",
+        |pair| {
+            contract.obligations.push(Obligation {
+                source,
+                kind: Kind::Outlives(pair),
+            });
+        },
+    )
 }
