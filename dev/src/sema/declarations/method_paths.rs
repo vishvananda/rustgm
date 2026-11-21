@@ -1,6 +1,6 @@
 //! Qualified inherent paths consume typed owner buckets before body inference.
 use super::associated::Path;
-use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, Work, regions};
+use super::{Checker, DefKind, Error, Kind, NodeId, NodeKey, Target, TypeFlavor, Work, regions};
 use crate::{
     resolve::model::{Access, Namespace},
     sema::methods::buckets::Bucket,
@@ -258,6 +258,21 @@ impl Checker<'_> {
             }
             key.node = match self.kind(key) {
                 Kind::Group(node) | Kind::Attributed { value: node, .. } => node,
+                // A written compound with an inferred element, `<[_]>::len`,
+                // has no complete type yet. Its constructor alone selects the
+                // inherent bucket; the selected method's Self type then infers
+                // the element.
+                Kind::Type { flavor, .. } if self.partial_compound(key) => {
+                    return Some(match flavor {
+                        TypeFlavor::Tuple => Head::Tuple,
+                        TypeFlavor::Slice => Head::Slice,
+                        TypeFlavor::Array => Head::Array,
+                        TypeFlavor::Ref => Head::Reference(false),
+                        TypeFlavor::RefMut => Head::Reference(true),
+                        TypeFlavor::PointerConst => Head::Pointer(false),
+                        TypeFlavor::PointerMut => Head::Pointer(true),
+                    });
+                }
                 _ => return None,
             };
         }
