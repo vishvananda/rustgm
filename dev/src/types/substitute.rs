@@ -13,6 +13,7 @@ pub(crate) mod lookup;
 mod normalize;
 mod observed;
 mod restored;
+pub(crate) use restored::RegionRun;
 mod rewrite;
 pub(crate) use normalize::Failure as NormalizationFailure;
 pub use normalize::{Alias, Normalizer, Request, Resolution, Step};

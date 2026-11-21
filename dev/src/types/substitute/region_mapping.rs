@@ -122,6 +122,12 @@ impl Mapping {
         };
         let replacement = if let Some(&replacement) = self.replacements.get(&key) {
             replacement
+        } else if let Mode::Restore {
+            retained: Retained::Budget(owner),
+        } = &self.mode
+            && let Some(transport) = &owner.transport
+        {
+            transport.region(key, steps)?
         } else if matches!(self.mode, Mode::Observe | Mode::ObserveBudget(_)) {
             self.insert_observed::<CHARGED>(key, key, charge)?;
             key
@@ -430,7 +436,12 @@ impl Mapping {
             Mode::Restore {
                 retained: Retained::Budget(owner),
             }
-            | Mode::ObserveBudget(owner) => total.boxed(owner.as_ref()),
+            | Mode::ObserveBudget(owner) => {
+                total.boxed(owner.as_ref());
+                if let Some(transport) = &owner.transport {
+                    total.add(transport.bytes());
+                }
+            }
             Mode::Scopes(values)
             | Mode::Restore {
                 retained: Retained::Stream(values),

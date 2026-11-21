@@ -6,13 +6,59 @@ use super::{
 };
 use crate::support::hash::HashMap;
 use crate::types::RegionId;
+use std::{ops::Range, sync::Arc};
+
 pub(super) struct Owner {
     pub(super) budget: Budget,
     pub(super) external: usize,
+    pub(super) transport: Option<Box<Transport>>,
+}
+
+/// An exact owned interval and the first region in its translated interval.
+pub(crate) struct RegionRun {
+    pub source: Range<u32>,
+    pub target: u32,
+}
+impl RegionRun {
+    pub(crate) fn at_or_after<'a>(
+        runs: &'a [Self],
+        region: u32,
+        steps: &mut usize,
+    ) -> Option<&'a Self> {
+        let index = runs.partition_point(|run| {
+            *steps = steps.saturating_add(1);
+            run.source.end <= region
+        });
+        runs.get(index)
+    }
+}
+
+pub(super) struct Transport {
+    runs: Arc<[RegionRun]>,
+    universals: u32,
+}
+impl Transport {
+    pub(super) fn bytes(&self) -> usize {
+        size_of::<Self>() + size_of_val(self.runs.as_ref())
+    }
+
+    pub(super) fn region(&self, id: RegionId, steps: &mut usize) -> Result<RegionId, &'static str> {
+        if let Some((depth, slot)) = id.bound_parts() {
+            return if depth == 0 && u32::from(slot) < self.universals {
+                Ok(id)
+            } else {
+                Err(super::UNMAPPED_LIFETIME)
+            };
+        }
+        let run = RegionRun::at_or_after(&self.runs, id.0, steps)
+            .filter(|run| run.source.contains(&id.0))
+            .ok_or(super::UNMAPPED_LIFETIME)?;
+        Ok(RegionId(run.target + (id.0 - run.source.start)))
+    }
 }
 impl Bound {
-    pub(crate) const fn restore_owner_overhead() -> usize {
-        size_of::<Mapping>() + size_of::<Owner>()
+    pub(crate) const fn restore_transport_overhead() -> usize {
+        size_of::<Mapping>() + size_of::<Owner>() + size_of::<Transport>()
     }
 
     pub(crate) fn restore_budgeted_regions(
@@ -20,15 +66,44 @@ impl Bound {
         work: usize,
         bytes: usize,
     ) -> Result<Self, &'static str> {
+        Self::with_restore_owner(
+            replacements,
+            Owner {
+                budget: Budget::new(bytes, work),
+                external: 0,
+                transport: None,
+            },
+        )
+    }
+
+    /// Reuse the caller's ordered, disjoint translation ranges in the fold.
+    pub(crate) fn restore_translated_regions(
+        replacements: HashMap<RegionId, RegionId>,
+        runs: Arc<[RegionRun]>,
+        universals: u32,
+        work: usize,
+        bytes: usize,
+    ) -> Result<Self, &'static str> {
+        Self::with_restore_owner(
+            replacements,
+            Owner {
+                budget: Budget::new(bytes, work),
+                external: 0,
+                transport: Some(Box::new(Transport { runs, universals })),
+            },
+        )
+    }
+
+    fn with_restore_owner(
+        replacements: HashMap<RegionId, RegionId>,
+        owner: Owner,
+    ) -> Result<Self, &'static str> {
         let mut fold = Self::restore_regions(replacements);
         let Action::Regions(mapping) = &mut fold.action else {
             return Err("missing restore map");
         };
         mapping.mode = Mode::Restore {
-            retained: Retained::Budget(Box::new(Owner {
-                budget: Budget::new(bytes, work),
-                external: 0,
-            })),
+            retained: Retained::Budget(Box::new(owner)),
         };
         fold.region_budget()?
             .ok_or("missing restore budget")?
@@ -88,6 +163,7 @@ impl Bound {
             size_of::<Self>(),
             size_of::<Mapping>(),
             size_of::<Owner>(),
+            owner.transport.as_deref().map_or(0, Transport::bytes),
             map(&mapping.replacements),
             map(&self.completed).saturating_mul(4),
             vector(&self.arguments),

@@ -1,10 +1,14 @@
 //! Alpha transport uses exact owned segments before external arguments are introduced.
 use super::{Obligations, Range};
 use crate::support::hash::HashMap;
-use crate::types::{RegionId, Store, substitute::Bound};
+use crate::types::{
+    RegionId, Store,
+    substitute::{Bound, RegionRun},
+};
+use std::sync::Arc;
 
 pub(crate) struct OwnedTransport {
-    ranges: Vec<(Range<u32>, Range<u32>)>,
+    ranges: Arc<[RegionRun]>,
     pub(crate) fold: Bound,
     pub(crate) steps: usize,
     first: u32,
@@ -42,20 +46,16 @@ impl OwnedTransport {
         let entries = count
             .saturating_add(retained.len())
             .saturating_add(universals as usize);
-        let extra = size_of::<Self>()
-            .saturating_sub(size_of::<Bound>())
-            .saturating_add(
-                owned
-                    .len()
-                    .saturating_mul(size_of::<(Range<u32>, Range<u32>)>()),
-            );
+        let extra = size_of::<Self>() - size_of::<Bound>();
+        let ranges_bytes = owned.len().saturating_mul(2 * size_of::<RegionRun>());
         if first == 0
             || universals > 65_536
             || entries > 1_000_000
-            || crate::support::retained::new_map::<RegionId, RegionId>(entries)
+            || crate::support::retained::new_map::<RegionId, RegionId>(retained.len())
                 .saturating_add(extra)
+                .saturating_add(ranges_bytes)
                 .saturating_add(size_of::<Bound>())
-                .saturating_add(Bound::restore_owner_overhead())
+                .saturating_add(Bound::restore_transport_overhead())
                 > bytes.min(64 * 1024 * 1024)
         {
             return Err("caller lifetime transport storage budget exceeded");
@@ -65,21 +65,17 @@ impl OwnedTransport {
             .filter(|&end| end < 0x8000_0000)
             .ok_or("caller lifetime transport identity space exhausted")?;
         let mut replacements = HashMap::with_capacity_and_hasher(
-            entries,
+            retained.len(),
             crate::support::hash::BuildFxHasher::default(),
         );
         let mut ranges = Vec::with_capacity(owned.len());
         let mut next = first;
         for interval in owned {
-            let target = next..next + interval.end - interval.start;
-            replacements.extend(
-                interval
-                    .clone()
-                    .zip(target.clone())
-                    .map(|(a, b)| (RegionId(a), RegionId(b))),
-            );
-            next = target.end;
-            ranges.push((interval.clone(), target));
+            ranges.push(RegionRun {
+                source: interval.clone(),
+                target: next,
+            });
+            next += interval.end - interval.start;
         }
         for &region in retained {
             let index = owned.partition_point(|interval| interval.end <= region.0);
@@ -93,19 +89,17 @@ impl OwnedTransport {
             }
             replacements.insert(region, region);
         }
-        for slot in 0..universals {
-            let region =
-                RegionId::bound(0, u16::try_from(slot).map_err(|_| "too many caller slots")?)?;
-            replacements.insert(region, region);
-        }
+        let ranges: Arc<[_]> = ranges.into();
         Ok(Self {
-            ranges,
-            fold: Bound::restore_budgeted_regions(
+            fold: Bound::restore_translated_regions(
                 replacements,
+                Arc::clone(&ranges),
+                universals,
                 1_000_000,
                 bytes.saturating_sub(extra),
             )?,
-            steps: owned.len().saturating_add(entries),
+            ranges,
+            steps: owned.len().saturating_mul(2).saturating_add(retained.len()),
             first,
             end,
         })
@@ -114,24 +108,17 @@ impl OwnedTransport {
         self.fold.validate_restore_owner()
     }
     pub(crate) fn matches(&self, owned: &[Range<u32>]) -> bool {
-        self.ranges.iter().map(|(source, _)| source).eq(owned)
+        self.ranges.iter().map(|run| &run.source).eq(owned)
     }
     pub(crate) fn interval_range(&self) -> Range<u32> {
         self.first..self.end
     }
     pub(crate) fn retained_bytes(&self) -> (usize, usize) {
         let (bytes, visits) = self.fold.retained_allocation();
-        (
-            bytes
-                .saturating_add(size_of::<Self>())
-                .saturating_add(crate::support::retained::vector(&self.ranges)),
-            visits,
-        )
+        (bytes.saturating_add(size_of::<Self>()), visits)
     }
     pub(crate) fn tighten_bytes(&mut self, bytes: usize) -> Result<(), &'static str> {
-        let extra = size_of::<Self>()
-            .saturating_sub(size_of::<Bound>())
-            .saturating_add(crate::support::retained::vector(&self.ranges));
+        let extra = size_of::<Self>() - size_of::<Bound>();
         self.fold.tighten_restore_bytes(bytes.saturating_sub(extra))
     }
     /// Disjointness is necessary, but does not establish ownership of actuals.
@@ -145,19 +132,8 @@ impl OwnedTransport {
         Ok(())
     }
     fn position(&mut self, original: u32) -> u32 {
-        let mut left = 0;
-        let mut right = self.ranges.len();
-        while left < right {
-            self.steps = self.steps.saturating_add(1);
-            let middle = left + (right - left) / 2;
-            if self.ranges[middle].0.end <= original {
-                left = middle + 1;
-            } else {
-                right = middle;
-            }
-        }
-        self.ranges.get(left).map_or(self.end, |(source, target)| {
-            target.start + original.saturating_sub(source.start)
+        RegionRun::at_or_after(&self.ranges, original, &mut self.steps).map_or(self.end, |run| {
+            run.target + original.saturating_sub(run.source.start)
         })
     }
     fn interval(&mut self, original: Range<u32>) -> Result<Range<u32>, &'static str> {

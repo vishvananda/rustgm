@@ -29,6 +29,7 @@ impl Bound {
             mode: Mode::ObserveBudget(Box::new(Owner {
                 budget: Budget::new(bytes, work),
                 external: 0,
+                transport: None,
             })),
             replacements: HashMap::default(),
         }));

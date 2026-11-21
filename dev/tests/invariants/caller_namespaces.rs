@@ -11,6 +11,26 @@ fn reference(store: &mut Store, region: RegionId) -> Result<TypeId, &'static str
 }
 
 #[test]
+fn contiguous_caller_regions_keep_storage_bounded_by_their_ranges() -> Result<(), &'static str> {
+    let small = OwnedTransport::new(std::slice::from_ref(&(10..12)), &[], 1, 100_000)?;
+    let mut wide = OwnedTransport::new_budgeted(
+        std::slice::from_ref(&(10..60_010)),
+        &[],
+        4096,
+        100_000,
+        4096,
+    )?;
+    assert!(wide.retained_bytes().0 <= 2 * small.retained_bytes().0);
+    assert_eq!(wide.fold.region(RegionId(10), 0)?, RegionId(100_000));
+    assert_eq!(wide.fold.region(RegionId(60_009), 0)?, RegionId(159_999));
+    assert!(wide.fold.region(RegionId(60_010), 0).is_err());
+    let formal = RegionId::bound(0, 4095)?;
+    assert_eq!(wide.fold.region(formal, 0)?, formal);
+    assert!(wide.fold.region(RegionId::bound(0, 4096)?, 0).is_err());
+    Ok(())
+}
+
+#[test]
 fn private_roots_rebase_before_colliding_actuals_and_preserve_nested_binders()
 -> Result<(), &'static str> {
     let mut store = Store::default();
