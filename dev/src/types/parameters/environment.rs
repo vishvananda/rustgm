@@ -114,6 +114,52 @@ impl Environment {
     pub(crate) fn is_neutral(&self) -> bool {
         self.has_only_parameters() && !self.shape_assumptions && self.projection_promises.is_none()
     }
+    /// Whether some premise could answer or shape a goal whose inputs name no
+    /// type or const parameter: a premise on a closed subject, a closed trait
+    /// or equality clause, or a feature grant. Without one, such a goal has
+    /// the same answer here as in a neutral caller with the same projection
+    /// promises, which are shared by every environment of a crate.
+    /// # Errors
+    /// Rejects unknown premise identities.
+    pub(crate) fn has_closed_premises(&self, types: &Store) -> Result<bool, &'static str> {
+        let closed = |ty: TypeId| {
+            types
+                .contains_parameters(ty)
+                .map(|parameters| !parameters)
+                .ok_or("invalid environment premise subject")
+        };
+        if let Some(assumptions) = &self.assumptions {
+            for &ty in assumptions.predicates.keys().chain(&assumptions.sized) {
+                if closed(ty)? {
+                    return Ok(true);
+                }
+            }
+        }
+        for clause in self
+            .builtins
+            .iter()
+            .flat_map(|builtins| builtins.clauses())
+            .chain(
+                self.equalities
+                    .iter()
+                    .flat_map(|equalities| equalities.clauses()),
+            )
+        {
+            if !clause.contains_parameters(types)? {
+                return Ok(true);
+            }
+        }
+        match self.trait_index(types)? {
+            (Some(index), _) => index.has_closed_premises(types),
+            (None, _) => Ok(false),
+        }
+    }
+    /// The identity of the crate-wide projection promises; zero without them.
+    pub(crate) fn projection_promise_identity(&self) -> usize {
+        self.projection_promises
+            .as_ref()
+            .map_or(0, |promises| Arc::as_ptr(promises).addr())
+    }
     /// Parameter identities and abilities contain no regions to substitute.
     /// Composite and trait predicates still need the ordinary binder mapping.
     pub(crate) fn has_only_parameters(&self) -> bool {

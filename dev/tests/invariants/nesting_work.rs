@@ -256,9 +256,10 @@ fn nested_saturation_is_a_sticky_error_and_hot_layouts_stay_fixed() -> TestResul
     assert_eq!(size_of::<Caller<'_>>(), 32);
     assert_eq!(size_of::<OwnedCaller>(), 32);
     assert_eq!(size_of::<crate::sema::projections::Cursor>(), 584);
+    // One word holds the frames marked for the crate-wide answer table.
     assert_eq!(
         size_of::<crate::sema::traits::selection::search::continuation::Query>(),
-        696
+        704
     );
     Ok(())
 }

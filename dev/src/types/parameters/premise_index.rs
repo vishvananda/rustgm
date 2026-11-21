@@ -286,6 +286,37 @@ impl ClauseIndex {
         })
     }
 
+    /// Whether some premise in any layer names no type or const parameter, or
+    /// grants a non-type feature. Only such a premise can answer a goal whose
+    /// inputs are closed: a rigid parameter equals no closed type. An opening
+    /// substitutes lifetimes only, so the base layer's clauses decide.
+    /// # Errors
+    /// Rejects unknown clause identities.
+    pub(crate) fn has_closed_premises(&self, types: &Store) -> Result<bool, &'static str> {
+        for (layer, _) in self.layers() {
+            if layer
+                .features
+                .as_ref()
+                .is_some_and(|features| !features.values.is_empty())
+            {
+                return Ok(true);
+            }
+            for &predicate in &layer.seen {
+                if !predicate.contains_parameters(types)? {
+                    return Ok(true);
+                }
+            }
+            if let Some(quantified) = &layer.quantified {
+                for &id in &quantified.seen {
+                    if !Clause::ForAll(id).contains_parameters(types)? {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+        Ok(false)
+    }
+
     fn payload_allocation(&self) -> crate::support::retained::Allocation {
         let mut own = crate::support::retained::Allocation::default();
         own.map(&self.candidates);

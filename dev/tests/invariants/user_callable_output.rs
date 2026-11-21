@@ -176,10 +176,18 @@ fn a_pattern_marker_without_base_evidence_never_relists_its_candidates() -> Test
     };
     // `*const u8` is Copy through its one impl, whose `u8: PointeeSized`
     // condition lists no impl; `*mut u8` has none. Every frame lists its own
-    // candidates once: the marker's (no impl names a pattern type) precede its base's.
-    assert_eq!(
-        first.as_slice(),
-        [(true, vec![0, 1, 0]), (false, vec![0, 0])],
+    // candidates at most once: the marker's (no impl names a pattern type)
+    // precede its base's, and a frame the crate-wide answer table answers
+    // lists none.
+    let [(true, copied), (false, uncopied)] = first.as_slice() else {
+        return Err(format!("unexpected outcomes {first:?}").into());
+    };
+    assert!(
+        copied.starts_with(&[0, 1])
+            && copied.len() <= 3
+            && copied[2..].iter().all(|&owners| owners == 0)
+            && uncopied.len() <= 2
+            && uncopied.iter().all(|&owners| owners == 0),
         "{first:?}"
     );
     assert!(

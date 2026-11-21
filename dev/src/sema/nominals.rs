@@ -648,6 +648,12 @@ impl Proof {
         }
         Ok(())
     }
+    /// Physical sizes learned so far, which the root evidence will carry.
+    pub(in crate::sema) fn learned_sizes(&self) -> usize {
+        self.traits
+            .as_deref()
+            .map_or(0, traits::State::learned_sizes)
+    }
     pub(in crate::sema) fn take_sizes(&mut self) -> Option<Box<sizes::Learned>> {
         self.traits
             .as_deref_mut()

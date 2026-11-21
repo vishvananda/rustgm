@@ -82,6 +82,52 @@ pub struct Row {
     pub dependent_first: usize,
 }
 
+/// What the crate-wide answer table did with one resolved goal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Answer {
+    /// The goal is closed and its search may use the table.
+    Lookup,
+    Hit,
+    /// The entry's proof meets an active goal or a completed node of this
+    /// search, so the ordinary search keeps its cycle cutoffs and sharing.
+    Intersecting,
+    /// A self-check re-ran the search that a hit would have answered.
+    Checked,
+    Recorded,
+    /// The finished search did not qualify: it interned, learned a size,
+    /// met a cycle cutoff, or proved more than a closed source proof.
+    Unrecorded,
+    /// The goal is closed but its search may not use the table: the caller
+    /// has a closed premise, or the query or frame mode is outside the table.
+    CallerPremises,
+    Mode,
+}
+impl Answer {
+    pub const ALL: [Self; 8] = [
+        Self::Lookup,
+        Self::Hit,
+        Self::Intersecting,
+        Self::Checked,
+        Self::Recorded,
+        Self::Unrecorded,
+        Self::CallerPremises,
+        Self::Mode,
+    ];
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Lookup => "lookup",
+            Self::Hit => "hit",
+            Self::Intersecting => "intersecting",
+            Self::Checked => "checked",
+            Self::Recorded => "recorded",
+            Self::Unrecorded => "unrecorded",
+            Self::CallerPremises => "caller-premises",
+            Self::Mode => "mode",
+        }
+    }
+}
+
 const EXACT: u64 = 1;
 const REFERENCE: u64 = 2;
 const ADT: u64 = 4;
@@ -127,6 +173,7 @@ impl Scope {
 struct State {
     phase: usize,
     rows: [[Row; 3]; 3],
+    answers: [usize; Answer::ALL.len()],
     phase_keys: HashSet<(u8, u64, u64)>,
     keys: HashSet<(u8, u64, u64)>,
     /// The innermost root's caller and mode.
@@ -166,6 +213,19 @@ pub fn rows() -> Vec<(Phase, Level, Row)> {
         }
     });
     rows
+}
+/// Every answer-table count, in [`Answer::ALL`] order; empty unless started.
+#[must_use]
+pub fn answer_rows() -> Vec<(Answer, usize)> {
+    let mut rows = Vec::new();
+    with(|state| rows.extend(Answer::ALL.into_iter().zip(state.answers)));
+    rows
+}
+/// Count one answer-table event.
+pub(in crate::sema) fn answer(event: Answer) {
+    if active() {
+        with(|state| state.answers[event as usize] += 1);
+    }
 }
 #[inline]
 pub(in crate::sema) fn active() -> bool {

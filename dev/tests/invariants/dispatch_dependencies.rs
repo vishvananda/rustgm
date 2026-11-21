@@ -46,6 +46,7 @@ fn facts(
 #[test]
 fn completed_closures_share_across_callers_but_not_availability_modes()
 -> Result<(), Box<dyn std::error::Error>> {
+    let mut separate = Vec::new();
     for depth in [32, 96] {
         let mut source = String::from("trait A{const C:usize;}fn main(){let _=<S0 as A>::C;}");
         for i in 0..depth {
@@ -85,12 +86,19 @@ fn completed_closures_share_across_callers_but_not_availability_modes()
         assert!(repeated.context.steps * depth < initial_work * 2);
         let mut validated = Dispatcher::new(0, 1)?;
         assert_eq!(validated.constant(&mut facts, source)?, selected);
-        assert!(validated.context.steps >= initial_work / 2);
         assert!(facts.dispatch_dependencies.validated.len() >= depth);
         let mut caller = Dispatcher::new(1, 1)?;
         assert_eq!(caller.constant(&mut facts, source)?, selected);
-        assert!(caller.context.steps >= initial_work / 2);
+        separate.push((validated.context.steps, caller.context.steps));
     }
+    // Another availability mode and a caller with universals repeat the
+    // closures' work instead of sharing it, so their work grows with the
+    // depth, although a closed trait answer may come from the crate-wide table.
+    let [(validated, caller), (deeper_validated, deeper_caller)] = separate[..] else {
+        return Err("expected two depths".into());
+    };
+    assert!(deeper_validated >= validated * 2, "{separate:?}");
+    assert!(deeper_caller >= caller * 2, "{separate:?}");
     Ok(())
 }
 #[test]

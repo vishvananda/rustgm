@@ -73,6 +73,11 @@ pub(super) struct Query {
     pub families: HashMap<super::member_conditions::Key, super::member_conditions::Entry>,
     // Completed answers belong to one immutable caller, mode and region scope.
     pub completed: HashMap<Predicate, Decision>,
+    /// Whether a closed premise may answer this caller's closed goals.
+    pub answer_premised: Option<bool>,
+    /// Only a query that searches a closed goal afresh marks frames for the
+    /// crate-wide answer table, so every other query pays one word.
+    pub answer_marks: Option<Box<super::answers::Marks>>,
     pub cycles: u32,
     pub reused: bool,
     pub steps: usize,
@@ -171,6 +176,8 @@ impl<'a> Search<'a> {
                 auto_provisional: HashMap::default(),
                 families: HashMap::default(),
                 completed: HashMap::default(),
+                answer_premised: None,
+                answer_marks: None,
                 cycles: 0,
                 reused: false,
                 steps: 0,
@@ -384,6 +391,9 @@ impl<'a> Search<'a> {
             result?;
             return Ok(None);
         }
+        if completed.formation_cacheable() {
+            self.remember_answer(facts, completed, decision)?;
+        }
         if self.query.universal.is_some() {
             // The caller still needs the original root to publish its refined inputs.
             self.query.stack = std::mem::take(stack);
@@ -402,6 +412,7 @@ impl<'a> Search<'a> {
     ) -> Result<(), String> {
         if completed.formation_cacheable() {
             self.remember(facts, completed, decision)?;
+            self.remember_answer(facts, completed, decision)?;
             self.query.export_completed(facts, decision)?;
             self.remember_child_proof(facts, completed, decision);
         }

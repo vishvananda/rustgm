@@ -6,7 +6,10 @@
 //! proof is reused, and only after a second identical search allocated no
 //! caller region and interned no canonical identity. Later uses then publish
 //! exactly the evidence a fresh search would.
-use super::{Evidence, Selection, Source, search::ChildProofs};
+use super::{
+    Evidence, Selection, Source,
+    search::{Answers, ChildProofs},
+};
 use crate::resolve::model::DefId;
 use crate::support::hash::HashMap;
 use crate::types::{
@@ -44,6 +47,7 @@ pub(super) struct ChildWork {
 struct Storage {
     roots: HashMap<Vec<u32>, State>,
     children: ChildProofs,
+    answers: Answers,
 }
 
 #[derive(Default)]
@@ -60,6 +64,11 @@ impl Memo {
 
     pub(super) fn child_proofs(&mut self) -> &mut ChildProofs {
         &mut self.storage.get_or_insert_with(Default::default).children
+    }
+
+    /// The crate-wide table of closed trait answers.
+    pub(super) fn answers(&mut self) -> &mut Answers {
+        &mut self.storage.get_or_insert_with(Default::default).answers
     }
 
     fn root(&self) -> Option<State> {

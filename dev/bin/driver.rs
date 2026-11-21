@@ -75,6 +75,9 @@ fn write_query_census(path: &str) -> Result<(), String> {
             row.dependent_first,
         );
     }
+    for (event, count) in rustgm::sema::query_census::answer_rows() {
+        let _ = writeln!(text, "answers\t{}\t{count}", event.name());
+    }
     fs::write(path, text).map_err(|error| format!("--trait-query-census {path}: {error}"))
 }
 

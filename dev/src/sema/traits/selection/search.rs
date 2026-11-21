@@ -25,9 +25,11 @@ mod pointers;
 mod transmutability;
 pub(in crate::sema) use cloning::copying_predicate;
 pub(in crate::sema) use no_drop::no_drop_predicate;
+mod answers;
 mod child_proofs;
 mod coherence;
 mod coinduction;
+pub(super) use answers::Answers;
 pub(super) use child_proofs::ChildProofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/fn_copying.rs"]
@@ -744,6 +746,9 @@ impl Search<'_> {
                 {
                     return self.auto_cycle(facts, frame, goal);
                 }
+                if let Some(decision) = self.answer(facts, frame, goal)? {
+                    return Ok(Some(decision));
+                }
                 let (key, work) = facts.types.shape_key(goal)?;
                 frame.inputs.context.account_work(work).map_err(inference)?;
                 if !self.query.active.insert(key) {
@@ -751,6 +756,7 @@ impl Search<'_> {
                     return Ok(Some(Decision::Absent));
                 }
                 frame.key = Some(key);
+                self.begin_answer(facts, frame);
             }
             Err(infer::Error::Unresolved) => {}
             Err(error) => return Err(inference(error)),

@@ -358,8 +358,12 @@ fn unrelated_builtin_does_not_acquire_sizing_sharing_and_hot_layouts_stay_fixed(
     // per-node and per-frame layouts below are unchanged. Amended at
     // MetaSized: a negative coherence query's `MetaSized` premises and debts
     // are one optional box, one word per query, since only those cold queries
-    // have them; the per-node and per-frame layouts are unchanged.
-    assert_eq!(size_of::<Query>(), 672 + size_of::<Vec<usize>>());
+    // have them; the per-node and per-frame layouts are unchanged. Amended at
+    // the answer table: frames marked for the crate-wide table of closed
+    // answers are one optional box, one word per query, since only a query
+    // that searches a closed goal afresh marks one; the per-node and
+    // per-frame layouts are unchanged.
+    assert_eq!(size_of::<Query>(), 680 + size_of::<Vec<usize>>());
     assert_eq!(size_of::<Node>(), 160);
     assert_eq!(size_of::<super::super::Frame>(), 1312);
     Ok(())

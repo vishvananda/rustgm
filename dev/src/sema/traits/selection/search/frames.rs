@@ -49,6 +49,8 @@ pub(super) struct Frame {
     pub canonical: Option<Predicate>,
     pub cycles: u32,
     pub child_proof_extent: Option<std::num::NonZeroU32>,
+    /// This frame's slot among its query's answer-table marks.
+    pub answer: Option<std::num::NonZeroU16>,
     pub candidates: CandidateOwners,
     pub pending_headers: Option<std::vec::IntoIter<DefId>>,
     pub cursor: usize,
@@ -155,6 +157,7 @@ impl Frame {
             canonical: None,
             cycles: 0,
             child_proof_extent: None,
+            answer: None,
             candidates: CandidateOwners::default(),
             pending_headers: None,
             cursor: 0,

@@ -282,6 +282,13 @@ impl State {
             .get_or_insert_with(|| Box::new(sizes::Learned::new(owner)))
             .insert(ty, sized)
     }
+    /// How many physical sizes this State has learned and not yet handed out.
+    pub(in crate::sema::nominals) fn learned_sizes(&self) -> usize {
+        self.shapes
+            .as_deref()
+            .and_then(|sizes| sizes.learned.as_deref())
+            .map_or(0, sizes::Learned::len)
+    }
     pub(in crate::sema::nominals) fn take_sizes(&mut self) -> Option<Box<sizes::Learned>> {
         let learned = self.shapes.as_mut().and_then(|sizes| sizes.learned.take());
         if self.provisional_size { None } else { learned }
