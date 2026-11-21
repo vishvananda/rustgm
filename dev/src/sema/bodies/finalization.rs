@@ -30,12 +30,12 @@ pub(super) struct Publication {
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
         self.finish_field_calls()?;
-        if self
+        let entering = self
             .state
             .trait_goals
             .as_ref()
-            .is_none_or(|pending| !pending.finishing)
-        {
+            .is_none_or(|pending| !pending.finishing);
+        if entering {
             for adjustment in &self.state.adjustments {
                 if adjustment.kind == AdjustmentKind::Never {
                     self.state
@@ -52,6 +52,9 @@ impl Checker<'_> {
             .infer
             .default_defining_results(&self.facts.types)
             .map_err(|e| self.error(body, e))?;
+        if entering {
+            self.infer_associated_outputs(body)?;
+        }
         let evidence = match self.infer_trait_obligations(body)? {
             super::trait_goals::Progress::Ready(evidence) => Some(evidence),
             super::trait_goals::Progress::Waiting => None,

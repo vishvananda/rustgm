@@ -115,6 +115,16 @@ impl Instantiation {
     ) -> impl Iterator<Item = (crate::types::opaque::OpaqueId, TermId)> + use<'_> {
         self.opaques.iter().map(|(&id, &term)| (id, term))
     }
+    /// Instantiate additional context with the defining body's existing terms.
+    pub(crate) fn reuse_opaque_results(
+        context: &mut Context,
+        store: &Store,
+        terms: &[(crate::types::opaque::OpaqueId, TermId)],
+    ) -> Result<Self, Error> {
+        let mut value = Self::new(context, store, &[])?;
+        value.opaques.extend(terms.iter().copied());
+        Ok(value)
+    }
     /// Binder shifts can rebuild projections supplied through a type parameter,
     /// even when its template contains none. Register those new occurrences in
     /// their destination scope; this flag supplies no normalization permission.

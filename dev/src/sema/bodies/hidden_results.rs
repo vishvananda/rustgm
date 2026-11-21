@@ -104,6 +104,72 @@ impl Checker<'_> {
         Ok(())
     }
 
+    /// Only unresolved representations need the declared output as context.
+    /// Complete representations already prove their bounds after inference.
+    pub(super) fn infer_associated_outputs(&mut self, node: NodeId) -> Result<(), Error> {
+        let mut substitution = None;
+        for index in 0..self.state.opaque_terms.len() {
+            let (id, term) = self.state.opaque_terms[index];
+            if self
+                .state
+                .infer
+                .inputs_fixed(&self.facts.types, term)
+                .map_err(|e| self.error(node, e))?
+            {
+                continue;
+            }
+            if substitution.is_none() {
+                substitution = Some(
+                    Instantiation::reuse_opaque_results(
+                        &mut self.state.infer,
+                        &self.facts.types,
+                        &self.state.opaque_terms,
+                    )
+                    .map_err(|e| self.error(node, e))?,
+                );
+            }
+            let substitution = substitution
+                .as_mut()
+                .ok_or_else(|| self.error(node, "missing defining opaque inference terms"))?;
+            let bounds = self.facts.opaques.declarations[&id].bounds.clone();
+            for clause in bounds {
+                let clause = self.defining_opaque_clause(node, id, clause)?;
+                self.infer_opaque_associated_result(node, id, clause, substitution)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn infer_opaque_associated_result(
+        &mut self,
+        node: NodeId,
+        id: crate::types::opaque::OpaqueId,
+        clause: Clause,
+        substitution: &mut Instantiation,
+    ) -> Result<(), Error> {
+        use crate::types::Kind;
+
+        let Clause::Predicate(value) = clause else {
+            return Ok(());
+        };
+        let Some(Kind::Projection(projection)) = self.facts.types.kind(value.ty) else {
+            return Ok(());
+        };
+        if !matches!(value.bound, Bound::ProjectionEqual(_))
+            || !matches!(self.facts.types.kind(projection.subject), Some(Kind::Opaque(owner, _)) if owner == id)
+            || self.facts.associated.callable_output() == Some(super::DefId(projection.item.0))
+        {
+            return Ok(());
+        }
+        let value = self.alias_predicate(node, value)?;
+        let predicate = self
+            .state
+            .infer
+            .instantiate_predicate(&mut self.facts.types, value, substitution)
+            .map_err(|e| self.error(node, e))?;
+        self.defer_bound_inputs(node, &predicate)
+    }
+
     pub(super) fn result_term(&mut self, node: NodeId) -> Result<TermId, Error> {
         if let Some(term) = self.state.result_term {
             Ok(term)

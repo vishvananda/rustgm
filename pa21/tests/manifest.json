@@ -11782,6 +11782,40 @@
       }
     },
     {
+      "path": "tests/spec/opaque/return-types/cases/lowir/associated-output-inference.rs",
+      "source_sha256": "2a220db1058819a2eb088abd313e4ca9846d786c56843ae22370dc99329aa967",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-types/cases/lowir/associated-output-mismatch.rs",
+      "source_sha256": "348d19387bde9e8954efd1a64ac1bc4ab68ede7815c322bd82c8ffdd59aeddef",
+      "exit_status": 1,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/opaque/return-types/closed/lowir/value.rs",
       "exit_status": 0,
       "features": [
