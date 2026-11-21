@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import threading
 import time
 
 from fastcheck import admission_marker, launch
@@ -174,16 +175,67 @@ def summary(rows):
     return lines
 
 
+def own_cgroup():
+    try:
+        lines = Path("/proc/self/cgroup").read_text().splitlines()
+    except OSError:
+        return None
+    return next((Path("/sys/fs/cgroup") / line[3:].lstrip("/") for line in lines if line.startswith("0::")), None)
+
+
+def anonymous_bytes(folder):
+    try:
+        rows = (folder / "memory.stat").read_text().splitlines()
+    except OSError:
+        return None
+    return next((int(row.split()[1]) for row in rows if row.startswith("anon ")), None)
+
+
+class MemoryMarks:
+    """Each step's anonymous-memory high-water mark in this job's cgroup.
+
+    A sample is charged to every step running at that moment, so a peak names
+    the parts that overlapped to produce it.
+    """
+
+    def __init__(self, steps, folder, interval=1.0):
+        self.steps, self.folder, self.interval, self.peaks = steps, folder, interval, {}
+        self.stop = threading.Event()
+        self.thread = threading.Thread(target=self.main, daemon=True)
+        if folder is not None and anonymous_bytes(folder) is not None:
+            self.thread.start()
+
+    def main(self):
+        while not self.stop.wait(self.interval):
+            value = anonymous_bytes(self.folder)
+            with self.steps.lock:
+                for name in self.steps.running if value is not None else ():
+                    self.peaks[name] = max(self.peaks.get(name, 0), value)
+
+    def close(self):
+        self.stop.set()
+        if self.thread.is_alive():
+            self.thread.join()
+        with self.steps.lock:
+            self.steps.receipt["memory_anon_peak_gib"] = {
+                name: round(value / GIB, 2) for name, value in sorted(self.peaks.items(), key=lambda row: -row[1])}
+        return next(iter(self.steps.receipt["memory_anon_peak_gib"].items()), None)
+
+
 def check(root, args):
     with exclusive(root):
         check_space(root, minimum_reserve())
         steps = Steps(root, argparse.Namespace(**vars(args), prune_under=[]))
         steps.receipt["profile"] = "dev-fast integration"
         parts = Parts(steps)
+        marks = MemoryMarks(steps, own_cgroup())
         try:
             execute(root, args, steps, parts)
         except (OSError, ValueError) as error:
             parts.add("integration", False, str(error))
+        highest = marks.close()
+        if highest:
+            print(f"Integration memory: anonymous peak {highest[1]:.2f} GiB while {highest[0]} ran", flush=True)
         rows = steps.receipt["parts"]
         steps.receipt["state"] = "passed" if rows and all(row["passed"] for row in rows) else "failed"
         steps.save()

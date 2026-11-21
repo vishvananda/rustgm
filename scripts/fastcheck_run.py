@@ -49,6 +49,7 @@ class Steps:
         self.compile_left = args.compile_seconds
         # Gates run in threads beside the compile; receipt updates share this lock.
         self.lock = threading.RLock()
+        self.running = set()
         self.receipt = {"profile": "dev-fast", "state": "running", "steps": [],
                         "budget": {"feedback_seconds": args.seconds,
                                    "compile_ceiling_seconds": args.compile_seconds}}
@@ -92,6 +93,8 @@ class Steps:
         if remaining <= 0:
             raise TimeoutError(f"{name}: {kind} exhausted")
         print(f"START {name} ({remaining:.0f}s of the {kind} remaining)", flush=True)
+        with self.lock:
+            self.running.add(name)
         started = time.monotonic()
         with (self.folder / f"{name}.stdout").open("w") as output, (
                 self.folder / f"{name}.stderr").open("w") as errors:
@@ -104,6 +107,7 @@ class Steps:
                 status = 124
         elapsed = time.monotonic() - started
         with self.lock:
+            self.running.discard(name)
             if compiles and not together:
                 self.compile_left -= elapsed
                 self.deadline += elapsed

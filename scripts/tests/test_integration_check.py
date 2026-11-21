@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from unittest import mock
 
@@ -111,6 +113,29 @@ class IntegrationCheck(unittest.TestCase):
         self.assertEqual(summary[-2], "Integration: 5 of 10 parts passed; "
                                       "failed: gate format, suite_frontend, suite_traits, pa2, pa3")
         self.assertIn("  FAIL pa2: 1/2 cases; status 1 (pa2/b.rs)", summary)
+
+    def test_memory_marks_charge_each_sample_to_the_steps_running_then(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            stat = folder / "memory.stat"
+            stat.write_text("anon 1073741824\nfile 5\n")
+            steps = mock.Mock(receipt={}, running={"clippy-private", "format"})
+            steps.lock = threading.RLock()
+            marks = integration_check.MemoryMarks(steps, folder, interval=0.01)
+            time.sleep(0.1)
+            with steps.lock:
+                steps.running = {"suite_patterns"}
+                stat.write_text("anon 3221225472\n")
+            time.sleep(0.1)
+            highest = marks.close()
+        self.assertEqual(highest, ("suite_patterns", 3.0))
+        self.assertEqual(steps.receipt["memory_anon_peak_gib"],
+                         {"suite_patterns": 3.0, "clippy-private": 1.0, "format": 1.0})
+        # Without a readable cgroup nothing is sampled and nothing is claimed.
+        quiet = mock.Mock(receipt={}, running=set())
+        quiet.lock = threading.RLock()
+        self.assertIsNone(integration_check.MemoryMarks(quiet, None).close())
+        self.assertEqual(quiet.receipt["memory_anon_peak_gib"], {})
 
     def test_a_failed_build_reports_every_test_part_as_not_run(self):
         with tempfile.TemporaryDirectory() as directory:
