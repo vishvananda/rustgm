@@ -510,6 +510,13 @@ from the initial abort-profile graph. PA45 reproducible self-hosting is the
 required capstone as of 2026-11-15. CPPGM is the explicit LowIR backend; backend extensions
 require separate reviewed capability work.
 
+The first whole-graph bring-up build compiled and linked a native RustGM.
+The executable reproduced stage 0's token output on a smoke input and passed
+all PA1 and PA4 oracles. The remaining course failures include calls into
+skipped bodies. PA45 still requires the original source graph to build without
+skips, waivers, unproved obligations or traps, then pass PA1–PA24 and reproduce
+the stage 1 LowIR and executable at stage 2.
+
 The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)
 clears the authenticated const-closure overflow attribute frontier. The actual
 joined CLI now reaches LIB189, a cold closure in str/pattern.rs1858,19.5022s with

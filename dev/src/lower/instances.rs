@@ -32,6 +32,7 @@ use crate::{
     body, borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
+    support::bindings::LangItem,
 };
 
 /// Inspect actual source-provider transport rows after complete original,
@@ -574,6 +575,7 @@ fn inspect_selected<R>(
         super::roots::Selected<'_>,
     ) -> R,
 ) -> Result<R, Error> {
+    let construction = Construction::ordinary(facts);
     inspect_staged(
         report,
         facts,
@@ -581,7 +583,7 @@ fn inspect_selected<R>(
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
-        Construction::ordinary(),
+        construction,
     )
 }
 
@@ -612,11 +614,15 @@ enum Construction<'a> {
     Local,
 }
 impl<'a> Construction<'a> {
-    /// Every selected body. The bring-up profile leaves the compiler-owned
-    /// async operation to its owner, as a source publication does, so that a
-    /// program can be lowered in the same session as its source provider.
-    fn ordinary() -> Self {
-        if crate::support::bringup::selected().is_some() {
+    /// Retain the compiler-owned async operation as a checked recipe when a
+    /// program is lowered in the same session as its source provider.
+    fn ordinary(facts: &Declarations) -> Self {
+        if facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(LangItem::AsyncDropInPlace))
+            .is_some()
+        {
             Self::CompilerOperations
         } else {
             Self::Complete
@@ -796,9 +802,7 @@ fn prepare_template_inputs(
         && let Some(definition) = facts
             .source_bindings
             .as_deref()
-            .and_then(|catalog| {
-                catalog.language(crate::support::bindings::LangItem::AsyncDropInPlace)
-            })
+            .and_then(|catalog| catalog.language(LangItem::AsyncDropInPlace))
             .map(|declaration| declaration.definition)
         && crate::sema::compiler_items::async_operation_recipe(report, facts, definition)?.is_some()
     {
