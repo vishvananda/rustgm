@@ -131,16 +131,15 @@ impl Declarations {
         loop {
             let ty = if let Some(ty) = replay.next() {
                 ty
-            } else if self.opaques.storage_cursor < self.types.len() {
-                let index = self.opaques.storage_cursor;
+            } else if let Some(ty) = self.types.opaque_application(self.opaques.storage_cursor) {
                 self.opaques.storage_cursor += 1;
-                TypeId(u32::try_from(index).map_err(|_| "too many storage types")?)
+                ty
             } else {
                 break;
             };
             preparation.charge(1)?;
             let Some(Kind::Opaque(id, arguments)) = self.types.kind(ty) else {
-                continue;
+                return Err("opaque storage index has a different canonical type".into());
             };
             let result = (|| {
                 // An application is interned before its declaration is published, and

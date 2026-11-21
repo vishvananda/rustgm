@@ -271,7 +271,7 @@ pub struct Store {
     auto_shapes: Option<Box<substitute::Bound>>,
     opaques: Option<Vec<opaque::Entry>>,
     opaque_outlives: Option<Box<opaque::bounds::Declarations>>,
-    storage_heads: Option<HashMap<TypeId, TypeId>>,
+    opaque_storage: Option<opaque::Storage>,
     shifts: Option<Box<binder_shift::Shifts>>,
     dynamics: Option<Box<dynamic::Storage>>,
     closures: Option<Vec<closure::Declaration>>,
@@ -315,7 +315,7 @@ impl Default for Store {
             auto_shapes: None,
             opaques: None,
             opaque_outlives: None,
-            storage_heads: None,
+            opaque_storage: None,
             shifts: None,
             dynamics: None,
             closures: None,
@@ -626,6 +626,9 @@ impl Store {
             charge(growth.work, growth.bytes)?;
         }
         let properties = self.properties(kind)?;
+        if matches!(kind, Kind::Opaque(..)) {
+            self.retain_opaque_application::<CHARGED>(id, charge)?;
+        }
         self.has_nominals |= matches!(kind, Kind::Adt(..));
         self.kinds.push(kind);
         self.properties.push(properties);

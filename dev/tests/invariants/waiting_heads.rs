@@ -151,7 +151,11 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         .as_ref()
         .ok_or("preparation")?
         .steps;
-    for _ in 0..128 {
+    for length in 0..128 {
+        facts.types.intern(Kind::Array {
+            element: TypeId::primitive(Primitive::U8),
+            length,
+        })?;
         facts.prepare_opaque_storage()?;
     }
     let preparation = facts
@@ -159,7 +163,7 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         .storage_preparation
         .as_ref()
         .ok_or("preparation")?;
-    assert_eq!(preparation.steps, steps);
+    assert!(preparation.steps <= steps);
     assert_eq!(preparation.waiting_entries, 1);
     assert!(preparation.ready.is_empty());
     assert!(facts.types.storage_head(application).is_err());

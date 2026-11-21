@@ -1,6 +1,7 @@
 //! Published opaque identities never expose their defining body's representation.
 pub(super) mod bounds;
 use super::{GenericArgs, Kind, Properties, Store, TypeId, copy};
+use crate::support::{hash::HashMap, retained::Growth};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OpaqueId(pub u32);
@@ -26,7 +27,42 @@ pub(super) struct Entry {
     pub future: Option<Box<super::future::Shape>>,
 }
 
+#[derive(Default)]
+pub(super) struct Storage {
+    applications: Vec<TypeId>,
+    // Keep the sparse map header out of the inline type store.
+    heads: Option<Box<HashMap<TypeId, TypeId>>>,
+}
+
 impl Store {
+    pub(super) fn retain_opaque_application<const CHARGED: bool>(
+        &mut self,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            let (length, capacity) = self.opaque_storage.as_ref().map_or((0, 0), |storage| {
+                (storage.applications.len(), storage.applications.capacity())
+            });
+            let growth = Growth::vector::<TypeId>(length, capacity, 1);
+            charge(growth.work, growth.bytes)?;
+        }
+        self.opaque_storage
+            .get_or_insert_with(Storage::default)
+            .applications
+            .push(ty);
+        Ok(())
+    }
+
+    /// Canonical opaque applications in intern order.
+    pub(crate) fn opaque_application(&self, index: usize) -> Option<TypeId> {
+        self.opaque_storage
+            .as_ref()?
+            .applications
+            .get(index)
+            .copied()
+    }
+
     /// Physical storage is separate from canonical type equality and public bounds.
     /// Only the defining-context preparation publishes these fully substituted heads.
     /// # Errors
@@ -35,8 +71,9 @@ impl Store {
         if !matches!(self.kind(ty), Some(Kind::Opaque(..))) {
             return Ok(ty);
         }
-        self.storage_heads
+        self.opaque_storage
             .as_ref()
+            .and_then(|storage| storage.heads.as_ref())
             .and_then(|heads| heads.get(&ty))
             .copied()
             .ok_or("opaque storage requires a checked defining type")
@@ -52,7 +89,11 @@ impl Store {
         {
             return Err("invalid opaque storage head");
         }
-        let heads = self.storage_heads.get_or_insert_with(Default::default);
+        let storage = self
+            .opaque_storage
+            .as_mut()
+            .ok_or("opaque application storage is absent")?;
+        let heads = storage.heads.get_or_insert_with(Default::default);
         if heads.get(&ty).is_some_and(|previous| *previous != head) {
             return Err("opaque storage representation changed");
         }
