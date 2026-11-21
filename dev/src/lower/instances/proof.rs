@@ -824,7 +824,9 @@ impl Builder {
             .template
             .validate_contract(&facts.types, &prepared.input)
             .map_err(error)?;
-        let mut query = crate::types::destruction::NeedsDrop::new(
+        // One adapter visits only its own types. A dense query would initialize
+        // a slot for every type in the entire session on its first demand.
+        let mut query = crate::types::destruction::NeedsDrop::sparse_ordinary(
             facts
                 .destructors
                 .implementations()
