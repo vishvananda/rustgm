@@ -183,6 +183,8 @@ impl Checker<'_> {
         {
             return Ok(false);
         }
+        // A quantified argument can trigger the unsizing probe even when the
+        // operands still have compatible shapes for ordinary coercion.
         let assumptions = self.trait_assumptions(node)?;
         if !selection::may_have_subject(
             self.facts,
@@ -192,6 +194,11 @@ impl Checker<'_> {
             assumptions.as_deref(),
         )
         .map_err(|e| self.error(node, e))?
+            && !self
+                .state
+                .infer
+                .incompatible(&self.facts.types, actual, expected)
+                .map_err(|e| self.error(node, e))?
         {
             return Ok(false);
         }
