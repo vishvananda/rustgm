@@ -89,9 +89,10 @@ fn descendant_completion_is_one_paid_census_across_expectations_and_unrelated_bo
             facts.finalize_lints(&report, true)?;
             let paid = producer.work().steps - before;
             let declarations = report.resolution.definitions.len();
-            // The u16 member set bounds each body query; source-owner work is
+            // An unchecked body reads its policy's 20 lint expectation slots,
+            // two steps each, and its definition once; source-owner work is
             // separate from the one shared declaration census.
-            let member_bound = 2 * usize::try_from(u16::BITS)? + 2;
+            let member_bound = 2 * 20 + 1;
             let bound = member_bound * declarations + 32 * parents + 128;
             assert!(
                 paid <= bound,

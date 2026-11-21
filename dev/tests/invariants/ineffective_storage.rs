@@ -143,7 +143,9 @@ fn annotation_storage_and_work_follow_actual_impl_width() -> TestResult {
             width
         );
         assert!(facts.warnings().next().is_none());
-        assert_eq!(facts.retained_policy_rows().2, 188);
+        // A safety row is one lint policy, pinned above, and its completion.
+        // Rows exist only where lint attributes change policy.
+        assert_eq!(facts.retained_policy_rows().2, 196);
         assert!(producer.work().steps < 30_000 * (width + 1));
         assert!(producer.work().bytes < 30_000 * (width + 1));
         observations.push((producer.work().steps, producer.work().bytes));

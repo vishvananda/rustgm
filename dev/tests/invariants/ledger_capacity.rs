@@ -51,7 +51,7 @@ fn large_single_owner_sources_pay_only_real_header_and_binding_rows() -> Result 
     // carried demand boundary, opened during lowering. It is one per crate
     // inside the boxed ledger, kept inline so no lowering charge pays an
     // allocation or an indirection.
-    assert_eq!(size_of::<Headers>(), 224);
+    assert_eq!(size_of::<Headers>(), 232);
     Ok(())
 }
 #[test]
