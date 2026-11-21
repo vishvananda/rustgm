@@ -27041,6 +27041,25 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/projections/callable-projections/lowir/nested-projection-caller-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census instance family: a callee's projected parameter at a lifetime its caller relates only by a where-clause equality",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

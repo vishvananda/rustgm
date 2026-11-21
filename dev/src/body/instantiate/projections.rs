@@ -150,10 +150,12 @@ pub(super) fn normalize_with_owner(
     let mut proof = Obligations::new(first);
     let mut session = projections::concrete(&mut proof, ScopeId::ROOT)?;
     let mut storage = crate::sema::stored_fields::Preparation::default();
-    if let Some((expected, actual)) = comparison
-        && session.normalize(facts, expected)?.0 != session.normalize(facts, actual)?.0
-    {
-        return Err("instance signature differs from normalized template");
+    if let Some((expected, actual)) = comparison {
+        let expected = session.normalize(facts, expected)?.0;
+        let actual = session.normalize(facts, actual)?.0;
+        if expected != actual && !same_rigid_signature(&facts.types, expected, actual)? {
+            return Err("instance signature differs from normalized template");
+        }
     }
     body.result = ty(facts, &mut session, &mut storage, body.result)?;
     for local in &mut body.locals {
@@ -199,6 +201,29 @@ pub(super) fn normalize_with_owner(
         }
     }
     debts::normalize_with_owner(facts, contract, next, owner).map(|(_, next)| next)
+}
+
+/// A caller names a projected result at its own lifetimes. A where-clause
+/// equality, as `I::Item: IntoIterator<IntoIter = U>` in core's
+/// `FlattenCompat<I, U>`, relates two lifetimes of the caller instance that
+/// the template's normal form names once, and a caller's own selection of
+/// `I::Item` may name a lifetime the subject relates to only by equation.
+/// Instances are region-erased and the template's proof holds for every
+/// choice of its lifetimes, so the two views must agree in rigid shape and
+/// binders; the instance keeps the template's normal form, and the caller's
+/// lifetime relations stay its own proof.
+fn same_rigid_signature(
+    types: &crate::types::Store,
+    expected: TypeId,
+    actual: TypeId,
+) -> Result<bool, &'static str> {
+    use crate::types::region_graph::Error;
+    crate::types::structural::Normalized::<false>::new(types)
+        .matches(actual, expected)
+        .map_err(|error| match error {
+            Error::Budget => "instance signature comparison work budget exceeded",
+            _ => "invalid instance signature identity",
+        })
 }
 
 pub(super) fn first_region(contract: &Contract) -> Result<u32, &'static str> {
