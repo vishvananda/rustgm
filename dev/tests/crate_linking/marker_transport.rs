@@ -117,13 +117,15 @@ fn role_declaration(bytes: &[u8], spelling: &str) -> Result<[u8; 4]> {
     Ok(<[u8; 4]>::try_from(&bytes[address + 4..address + 8])?)
 }
 /// The trait header row of `UnwindSafe`, found as the one byte that its
-/// unsafety moves: it anchors the fixed-width trait header table.
+/// unsafety moves: it anchors the fixed-width trait header table. Its
+/// diagnostic identity names only a safe auto trait, and no metadata profile
+/// represents it, so the unsafe variant is a custom auto trait without it.
 fn calibrated(packet: &Packet, bytes: &[u8]) -> Result<usize> {
     let custom = variant(
         packet,
         bytes,
         "unsafe-unwind",
-        "pub auto trait UnwindSafe {}",
+        "#[rustc_diagnostic_item = \"unwind_safe_trait\"]\npub auto trait UnwindSafe {}",
         "pub unsafe auto trait UnwindSafe {}",
     )?;
     let row = custom.checked_sub(FLAGS).ok_or("trait header row")?;
