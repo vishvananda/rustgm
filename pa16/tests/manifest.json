@@ -1682,6 +1682,23 @@
       "maintainer_origin": "dev/tests/constant_storage.rs"
     },
     {
+      "path": "tests/spec/persistent-native/word-data.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.persistent-native",
+        "pa16.pattern-native"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/persistent-native/zero-repeat.rs",
       "exit_status": 0,
       "features": [

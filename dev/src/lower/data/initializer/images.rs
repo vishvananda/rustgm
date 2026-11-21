@@ -21,32 +21,26 @@ impl Context<'_> {
         let words = image.complete_words()?;
         self.data
             .charge(image.bytes.len().saturating_add(words.len()))?;
+        let byte = |index: usize| {
+            if image.initialized(index) {
+                image.bytes[index]
+            } else {
+                0
+            }
+        };
         let mut cursor = 0usize;
         for fragment in words {
             let start = usize::try_from(fragment.offset)
                 .map_err(|_| "constant image relocation exceeds host size")?;
-            for index in cursor..start {
-                let byte = if image.initialized(index) {
-                    image.bytes[index]
-                } else {
-                    0
-                };
-                init.bits(offset + index as u64, 1, u128::from(byte))?;
-            }
+            let gap = start.saturating_sub(cursor);
+            init.byte_run(offset + cursor as u64, gap, |index| byte(cursor + index))?;
             self.initialize_word(init, offset + fragment.offset, fragment.target)?;
             cursor = start
                 .checked_add(8)
                 .ok_or("constant image relocation extent overflow")?;
         }
-        for index in cursor..image.bytes.len() {
-            let byte = if image.initialized(index) {
-                image.bytes[index]
-            } else {
-                0
-            };
-            init.bits(offset + index as u64, 1, u128::from(byte))?;
-        }
-        Ok(())
+        let rest = image.bytes.len().saturating_sub(cursor);
+        init.byte_run(offset + cursor as u64, rest, |index| byte(cursor + index))
     }
     fn initialize_word(
         &mut self,

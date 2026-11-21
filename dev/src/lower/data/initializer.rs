@@ -129,47 +129,85 @@ impl Context<'_> {
                 length,
             } => self.initialize_repeat(init, offset, layout, repeated, length),
             View::Product { length, .. } => {
-                self.data.charge(
-                    usize::try_from(length).map_err(|_| "constant product exceeds host size")?,
-                )?;
-                for index in (0..length).rev() {
-                    let (delta, ty) = self.constant_field(&layout, Some(value), index)?;
-                    init.work.push(Work::Value {
-                        offset: offset + delta,
-                        ty,
-                        value: self.constants.field(value, index)?,
-                    });
-                }
-                if let Some(niche) = self.layouts.niche(&layout)? {
-                    let ordinal = self.constant_variant(value)?;
-                    // A zero-sized companion's one field writes no bytes.
-                    if ordinal == niche.empty as usize && length <= 1 {
-                        init.work.push(Work::Bits {
-                            offset: offset + niche.offset,
-                            bytes: niche.carrier.bytes(),
-                            bits: niche.carrier.empty_bits(self.types)?,
-                        });
-                    } else if ordinal != niche.payload as usize || length != 1 {
-                        return Err("nullable constant differs from its canonical variant");
-                    }
-                }
-                if let Shape::Aggregate { tag: Some(tag), .. } = layout.shape {
-                    let variant = self
-                        .layouts
-                        .variants(&layout)
-                        .get(self.constant_variant(value)?)
-                        .ok_or("constant enum lacks its variant layout")?;
-                    let bits = variant.discriminant;
-                    let bytes = self.layout(TypeId::primitive(tag.ty))?.size;
-                    init.work.push(Work::Bits {
-                        offset: offset + tag.offset,
-                        bytes,
-                        bits,
-                    });
-                }
-                Ok(())
+                self.initialize_product(init, offset, &layout, value, length)
             }
         }
+    }
+    /// A tuple, struct, enum variant or array: its fields, then any niche or tag.
+    fn initialize_product(
+        &mut self,
+        init: &mut Initializer,
+        offset: u64,
+        layout: &Layout,
+        value: Constant,
+        length: u64,
+    ) -> Result<(), &'static str> {
+        self.data
+            .charge(usize::try_from(length).map_err(|_| "constant product exceeds host size")?)?;
+        if let Some(bytes) = self.byte_elements(init, layout, value, length)? {
+            return init.byte_run(offset, bytes.len(), |index| bytes[index]);
+        }
+        for index in (0..length).rev() {
+            let (delta, ty) = self.constant_field(layout, Some(value), index)?;
+            init.work.push(Work::Value {
+                offset: offset + delta,
+                ty,
+                value: self.constants.field(value, index)?,
+            });
+        }
+        if let Some(niche) = self.layouts.niche(layout)? {
+            let ordinal = self.constant_variant(value)?;
+            // A zero-sized companion's one field writes no bytes.
+            if ordinal == niche.empty as usize && length <= 1 {
+                init.work.push(Work::Bits {
+                    offset: offset + niche.offset,
+                    bytes: niche.carrier.bytes(),
+                    bits: niche.carrier.empty_bits(self.types)?,
+                });
+            } else if ordinal != niche.payload as usize || length != 1 {
+                return Err("nullable constant differs from its canonical variant");
+            }
+        }
+        if let Shape::Aggregate { tag: Some(tag), .. } = layout.shape {
+            let variant = self
+                .layouts
+                .variants(layout)
+                .get(self.constant_variant(value)?)
+                .ok_or("constant enum lacks its variant layout")?;
+            let bits = variant.discriminant;
+            let bytes = self.layout(TypeId::primitive(tag.ty))?.size;
+            init.work.push(Work::Bits {
+                offset: offset + tag.offset,
+                bytes,
+                bits,
+            });
+        }
+        Ok(())
+    }
+    /// The elements of a byte array long enough for word items, when each is
+    /// a scalar; otherwise `None`, and the array is written element by element.
+    fn byte_elements(
+        &mut self,
+        init: &Initializer,
+        layout: &Layout,
+        value: Constant,
+        length: u64,
+    ) -> Result<Option<Vec<u8>>, &'static str> {
+        if init.align < 8
+            || length < super::WORD_RUN
+            || !matches!(layout.shape, Shape::Array { stride: 1, .. })
+        {
+            return Ok(None);
+        }
+        let mut bytes = Vec::new();
+        for index in 0..length {
+            let View::Scalar(scalar) = self.constants.view(self.constants.field(value, index)?)?
+            else {
+                return Ok(None);
+            };
+            bytes.push(u8::try_from(bits(scalar)).map_err(|_| "constant byte exceeds its width")?);
+        }
+        Ok(Some(bytes))
     }
     fn initialize_bytes(
         &mut self,
@@ -180,10 +218,7 @@ impl Context<'_> {
     ) -> Result<(), &'static str> {
         let bytes = self.constants.stored_bytes(ty, value)?;
         self.data.charge(bytes.len())?;
-        for (index, &byte) in bytes.iter().enumerate() {
-            init.bits(offset + index as u64, 1, u128::from(byte))?;
-        }
-        Ok(())
+        init.byte_run(offset, bytes.len(), |index| bytes[index])
     }
     fn initialize_repeat(
         &mut self,
@@ -209,8 +244,14 @@ impl Context<'_> {
             init.zero(layout.size)?;
             return Ok(());
         }
-        self.data
-            .charge(usize::try_from(length).map_err(|_| "constant repeat exceeds host size")?)?;
+        let count = usize::try_from(length).map_err(|_| "constant repeat exceeds host size")?;
+        self.data.charge(count)?;
+        if stride == 1
+            && let View::Scalar(scalar) = self.constants.view(repeated)?
+        {
+            let byte = u8::try_from(bits(scalar)).map_err(|_| "constant byte exceeds its width")?;
+            return init.byte_run(offset, count, |_| byte);
+        }
         for index in (0..length).rev() {
             init.work.push(Work::Value {
                 offset: offset + index * stride,
@@ -276,26 +317,21 @@ impl Context<'_> {
         }
         let bytes = self.constants.bytes(id)?;
         self.data.charge(bytes.len().saturating_add(1))?;
-        let size = (bytes.len() as u64).max(1);
+        let span = super::definition_span(bytes.len() as u64, 1, false);
         let global = self.output.global(
             self.internal_name(format!("rg.data.{}", self.output.globals.len())),
-            crate::lowir::program::MemorySpan {
-                bytes: size,
-                align: 1,
-            },
+            span,
             GlobalStorage::Readonly,
         )?;
         let mut init = Initializer {
             global,
             items: Vec::new(),
             cursor: 0,
-            align: 1,
+            align: span.align,
             work: Vec::new(),
         };
-        for (i, &byte) in bytes.iter().enumerate() {
-            init.bits(i as u64, 1, u128::from(byte))?;
-        }
-        init.pad(size)?;
+        init.byte_run(0, bytes.len(), |index| bytes[index])?;
+        init.pad(span.bytes)?;
         self.output.initialize(global, &init.items)?;
         self.data.globals.insert(key, global);
         Ok(global)
@@ -356,6 +392,32 @@ impl Initializer {
                 .cursor
                 .checked_add(bytes)
                 .ok_or("constant data cursor overflow")?;
+        }
+        Ok(())
+    }
+    /// `length` bytes from `offset`: a run of at least [`super::WORD_RUN`]
+    /// bytes in storage aligned to eight takes one item per aligned 8-byte
+    /// word, the rest one item per byte (zero bytes still merge into runs).
+    fn byte_run(
+        &mut self,
+        offset: u64,
+        length: usize,
+        byte: impl Fn(usize) -> u8,
+    ) -> Result<(), &'static str> {
+        let words = length as u64 >= super::WORD_RUN && self.align >= 8;
+        let mut index = 0;
+        while index < length {
+            let at = offset + index as u64;
+            if words && at.is_multiple_of(8) && length - index >= 8 {
+                let word = (0..8).fold(0_u64, |word, k| {
+                    word | (u64::from(byte(index + k)) << (8 * k))
+                });
+                self.bits(at, 8, u128::from(word))?;
+                index += 8;
+            } else {
+                self.bits(at, 1, u128::from(byte(index)))?;
+                index += 1;
+            }
         }
         Ok(())
     }

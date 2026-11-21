@@ -33,6 +33,26 @@ pub(super) enum Key {
     Temporary(usize, ValueId),
     Bytes(crate::sema::text::Id),
 }
+/// A defined object of at least this many bytes is aligned to eight bytes,
+/// so that its byte runs are written as 8-byte words: the `LowIR` reader places
+/// each typed data item at its natural alignment. Rust promises no more than
+/// the type's alignment, and smaller objects keep exactly that.
+pub(super) const WORD_RUN: u64 = 32;
+const WORD: u32 = 8;
+
+/// The storage of a local definition. One linked under another unit's exact
+/// name keeps its type's alignment, as that unit declares it.
+fn definition_span(size: u64, align: u32, exact: bool) -> MemorySpan {
+    let bytes = size.max(u64::from(align));
+    MemorySpan {
+        bytes,
+        align: if exact || bytes < WORD_RUN {
+            align
+        } else {
+            align.max(WORD)
+        },
+    }
+}
 #[derive(Clone, Copy)]
 pub(super) struct Pointer {
     pub global: GlobalId,
@@ -141,14 +161,15 @@ impl Context<'_> {
         let storage = self.data_storage(key, ty, readonly)?;
         self.data.charge(1)?;
         let name = self.data_name(key)?;
-        let global = self.output.global(
-            name,
-            MemorySpan {
-                bytes: layout.size.max(u64::from(layout.align)),
-                align: layout.align,
-            },
-            storage,
-        )?;
+        let exact = match key {
+            Key::Definition(id) => self
+                .foreign
+                .and_then(|registry| registry.global(id))
+                .is_some_and(|record| record.linkage != crate::support::linkage::Linkage::Internal),
+            _ => false,
+        };
+        let span = definition_span(layout.size, layout.align, exact);
+        let global = self.output.global(name, span, storage)?;
         self.data.globals.insert(key, global);
         self.data.pending.push(Pending { global, value, ty });
         Ok(global)
