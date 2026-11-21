@@ -149,6 +149,37 @@ pub(super) fn applications(
     )?;
     Ok(applications)
 }
+/// The trait methods a hidden type names as its defining body typed them,
+/// as `<Input as From<&P>>::from` for `.map(Input::from)`, once their own
+/// inputs are concrete: no parameter, projection, opaque or bound lifetime.
+pub(in crate::sema::opaque) fn trait_methods(
+    store: &Store,
+    associated: &crate::sema::associated::Inventory,
+    root: TypeId,
+    pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<Vec<TypeId>, &'static str> {
+    let mut methods = Vec::new();
+    walk(
+        store,
+        root,
+        |ty, kind| {
+            if let Kind::FunctionItem { item, .. } = kind
+                && associated.trait_owner(DefId(item.0)).is_some()
+                && store.escaping_binders(ty) == Some(0)
+                && store.contains_parameters(ty) == Some(false)
+                && store.contains_projections(ty) == Some(false)
+                && store.contains_opaques(ty) == Some(false)
+            {
+                let growth = Growth::vector::<TypeId>(methods.len(), methods.capacity(), 1);
+                pay(growth.work, growth.bytes)?;
+                methods.push(ty);
+            }
+            Ok(())
+        },
+        pay,
+    )?;
+    Ok(methods)
+}
 pub(super) fn defining_arguments(
     report: &Report,
     store: &Store,

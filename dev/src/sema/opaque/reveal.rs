@@ -160,6 +160,7 @@ impl Declarations {
                 let hidden = substitution.apply(&mut self.types, hidden)?;
                 preparation.charge(substitution.steps)?;
                 let hidden = self.normalized_hidden(preparation, hidden)?;
+                let hidden = self.selected_hidden(preparation, hidden)?;
                 self.aggregates.prepare(&mut self.types, hidden)?;
                 self.hidden_storage(preparation, hidden)?;
                 Ok(Some(hidden))
@@ -204,6 +205,95 @@ impl Declarations {
         let (normalized, steps) = session.normalize(self, hidden)?;
         preparation.charge(steps)?;
         Ok(normalized)
+    }
+    /// A hidden type names a trait's method as its defining body typed it:
+    /// `.map(Input::from)` stores `Map<_, <Input as From<&P>>::from>`.
+    /// Dispatch selects the implementation's method among that body's own
+    /// values, so the value it returns names the implementation; once the
+    /// method's inputs are concrete, at the defining body or at a caller's
+    /// instance, storage selects it the same way, and a caller executes and
+    /// stores what its callee returns. An application in a signature names
+    /// the signature's own lifetimes: they open as fresh probe lifetimes for
+    /// the selection and close again. As for normalization, the probe's
+    /// facts are dropped: the defining body proved the method's bounds when
+    /// it typed the path.
+    fn selected_hidden(
+        &mut self,
+        preparation: &mut Preparation,
+        hidden: TypeId,
+    ) -> Result<TypeId, &'static str> {
+        use crate::types::substitute::Bound;
+        if self.types.contains_function_items(hidden) != Some(true) {
+            return Ok(hidden);
+        }
+        let first = self.probe_first(preparation, hidden)?;
+        if self.types.escaping_binders(hidden) == Some(0) {
+            return self.select_trait_methods(preparation, hidden, first);
+        }
+        let mut open = Bound::open_regions(first)?;
+        let opened = open.apply(&mut self.types, hidden);
+        preparation.charge(open.steps)?;
+        let opened = opened?;
+        let next = open
+            .next_region()
+            .ok_or("opened hidden storage has no lifetime frontier")?;
+        let selected = self.select_trait_methods(preparation, opened, next)?;
+        if selected == opened {
+            return Ok(hidden);
+        }
+        let mut close = Bound::restore_regions(
+            open.opened_regions()
+                .map(|(original, alias)| (alias, original))
+                .collect(),
+        );
+        let closed = close.apply(&mut self.types, selected);
+        preparation.charge(close.steps)?;
+        closed
+    }
+    /// Select the trait methods of a hidden type without escaping lifetimes.
+    /// The dispatch probe is numbered from `first`, past the type's own.
+    fn select_trait_methods(
+        &mut self,
+        preparation: &mut Preparation,
+        hidden: TypeId,
+        first: u32,
+    ) -> Result<TypeId, &'static str> {
+        let steps = std::cell::Cell::new(0_usize);
+        let pay = |work: usize, _| {
+            steps.set(steps.get().saturating_add(work));
+            Ok(())
+        };
+        let methods =
+            super::definitions::trait_methods(&self.types, &self.associated, hidden, &pay);
+        preparation.charge(steps.get())?;
+        let methods = methods?;
+        if methods.is_empty() {
+            return Ok(hidden);
+        }
+        let mut dispatch = crate::sema::dispatch::Dispatcher::new(0, first)?;
+        let mut selected = Vec::with_capacity(methods.len());
+        for method in methods {
+            let target = dispatch
+                .select(self, method)
+                .map_err(|_| "hidden trait method has no selected implementation")?;
+            selected.push((method, target));
+        }
+        let mut restore = dispatch.finish().body_restoration()?;
+        let mut replacements = HashMap::default();
+        for (method, target) in selected {
+            let target = restore.apply(&mut self.types, target)?;
+            if target != method {
+                replacements.insert(method, target);
+            }
+        }
+        preparation.charge(restore.steps)?;
+        if replacements.is_empty() {
+            return Ok(hidden);
+        }
+        let mut fold = crate::types::substitute::Bound::selected_items(&self.types, replacements)?;
+        let result = fold.apply(&mut self.types, hidden);
+        preparation.charge(fold.steps)?;
+        result
     }
     /// A caller stores an opaque value as its hidden type. Instantiated at
     /// the caller's lifetimes, a concrete hidden type is a different type

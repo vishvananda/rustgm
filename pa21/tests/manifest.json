@@ -14377,6 +14377,25 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/hidden-trait-method-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census instance family: a hidden type names a trait method through its implementing type, concretely, through a parameter and as an overridden default",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

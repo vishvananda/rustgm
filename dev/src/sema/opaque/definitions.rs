@@ -1,5 +1,6 @@
 //! Named declarations keep alias coordinates separate from their authorized bodies.
 mod components;
+pub(super) use components::trait_methods;
 #[cfg(test)]
 #[path = "../../../tests/invariants/definer_authority.rs"]
 mod tests;
