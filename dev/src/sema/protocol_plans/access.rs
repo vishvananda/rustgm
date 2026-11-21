@@ -261,17 +261,22 @@ pub(in crate::sema) fn check_rows(
         .ast
         .node(plan.node.node)
         .kind;
+    let payments =
+        super::super::header_attributes::source_payments(facts.must_use_contracts.as_deref())?;
+    let pay = |work, bytes| payments.charge(work, bytes);
+    let mut shapes = crate::types::structural::Normalized::<false>::new_charged(
+        &facts.types,
+        &pay,
+        crate::types::structural::Memo::default(),
+    );
     let valid = match plan.kind {
         super::Kind::Coercion { .. } => {
-            operand == plan.node.node && facts.reference_adjustments.get(&plan.node).is_some_and(|r| {
-                r.conversion.dereferences == dereferences + 1 && !r.conversion.unsize
-                && matches!(facts.types.kind(r.borrow), Some(crate::types::Kind::Reference { referent, .. }) if referent == receiver)
-                && facts.node(plan.node).and_then(|n| n.adjustment).is_some_and(|a| {
-                    a.kind == super::super::model::AdjustmentKind::Reborrow
-                    && matches!(facts.types.kind(a.target), Some(crate::types::Kind::Reference { referent, .. }) if referent == receiver)
-                })
-            })
-        },
+            match coercion_target(facts, plan.node, operand, receiver, dereferences) {
+                Some(target) if target == receiver => true,
+                Some(target) => shapes.matches_charged(receiver, target).map_err(error)?,
+                None => false,
+            }
+        }
         super::Kind::Field { field, .. } => {
             matches!(syntax, crate::syntax::ast::Kind::Field { value, .. } if value == operand)
                 && matches!(facts.node(plan.node).and_then(|node| node.operation), Some(super::super::model::Operation::Field { field: actual, .. }) if actual == field)
@@ -321,14 +326,6 @@ pub(in crate::sema) fn check_rows(
         })
         .and_then(|node| node.ty)
         .ok_or_else(|| error("field plan lost its actual original operand type"))?;
-    let payments =
-        super::super::header_attributes::source_payments(facts.must_use_contracts.as_deref())?;
-    let pay = |work, bytes| payments.charge(work, bytes);
-    let mut shapes = crate::types::structural::Normalized::<false>::new_charged(
-        &facts.types,
-        &pay,
-        crate::types::structural::Memo::default(),
-    );
     let mut calls = plan.calls().map_err(error)?;
     while let Some(step) = next_from(plan, steps, entries, &mut calls).map_err(error)? {
         ty = builtin_dereferences(facts, ty, step.dereferences).map_err(error)?;
@@ -345,6 +342,42 @@ pub(in crate::sema) fn check_rows(
         check_method(facts, plan, call)?;
     }
     Ok(())
+}
+
+/// The plan retains the dereferenced place's exact type. A coercion may relate
+/// lifetimes inside that place to different lifetimes in the target.
+fn coercion_target(
+    facts: &super::super::model::Declarations,
+    node: NodeKey,
+    operand: NodeId,
+    receiver: TypeId,
+    dereferences: u32,
+) -> Option<TypeId> {
+    use crate::{sema::model::AdjustmentKind, types::Kind};
+    let reference = facts.reference_adjustments.get(&node)?;
+    let adjustment = facts.node(node)?.adjustment?;
+    if operand != node.node
+        || reference.conversion.dereferences != dereferences + 1
+        || reference.conversion.unsize
+        || adjustment.kind != AdjustmentKind::Reborrow
+    {
+        return None;
+    }
+    let Some(Kind::Reference {
+        mutable, referent, ..
+    }) = facts.types.kind(reference.borrow)
+    else {
+        return None;
+    };
+    let Some(Kind::Reference {
+        mutable: target_mutable,
+        referent: target,
+        ..
+    }) = facts.types.kind(adjustment.target)
+    else {
+        return None;
+    };
+    (referent == receiver && mutable == target_mutable).then_some(target)
 }
 
 /// The place an index operand's calls reach is the one its index reads: the
