@@ -5,7 +5,10 @@ mod coverage;
 mod headers;
 mod receivers;
 use super::{Checker, Error, Type, heads};
-use crate::{sema::destructors::Implementation, types::outlives::Queries};
+use crate::{
+    sema::destructors::{Coverage, Implementation},
+    types::{ItemId, outlives::Queries},
+};
 
 pub(super) struct Pending {
     header: headers::Header,
@@ -81,6 +84,9 @@ impl Checker<'_> {
             let coverage = self
                 .drop_target_coverage(header.self_definition, item, arguments, captures)
                 .map_err(|e| self.error(key, e))?;
+            if header.may_dangle {
+                self.record_drop_eyepatch(&header, item, &coverage, environment.as_ref())?;
+            }
             self.facts
                 .destructors
                 .insert(Implementation {
@@ -115,6 +121,35 @@ impl Checker<'_> {
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
         }
         Ok(())
+    }
+    fn record_drop_eyepatch(
+        &mut self,
+        header: &headers::Header,
+        item: ItemId,
+        coverage: &Coverage,
+        local: Option<&super::impl_headers::Header>,
+    ) -> Result<(), Error> {
+        let source = header.source;
+        let binder = local
+            .map(|header| header.binder)
+            .or_else(|| self.owner_binders.get(&header.self_definition).copied())
+            .ok_or_else(|| self.error(source, "missing checked Drop lifetime binder"))?;
+        let lifetimes = self
+            .regions
+            .bindings(binder)
+            .map_err(|e| self.error(source, e))?;
+        let relaxed = crate::sema::eyepatches::arguments(
+            self.report,
+            &self.facts,
+            (header.self_definition, item),
+            coverage,
+            &lifetimes,
+            source,
+        )?;
+        self.facts
+            .aggregates
+            .declare_drop_eyepatch(item, relaxed)
+            .map_err(|e| self.error(source, e))
     }
     pub(super) fn validate_destructors(&mut self) -> Result<(), Error> {
         if self.facts.destructors.implementations().is_empty() {

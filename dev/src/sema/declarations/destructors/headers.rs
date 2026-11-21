@@ -18,6 +18,7 @@ pub(super) struct Header {
     pub self_definition: DefId,
     pub target: NodeKey,
     pub method: Option<DefId>,
+    pub may_dangle: bool,
 }
 pub(super) fn item(report: &Report, key: NodeKey) -> Result<Item, Error> {
     let ast = &report.package.unit(key.file).configured.ast;
@@ -90,15 +91,13 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
                 "Drop requires a positive safe impl without trait arguments",
             ));
         }
-        if marked {
-            crate::sema::eyepatches::admit(report, source)?;
-        }
         owners[index] = Some(headers.len());
         headers.push(Header {
             source,
             self_definition: owner.self_definition,
             target,
             method: None,
+            may_dangle: marked,
         });
     }
     for member in facts.associated.members() {

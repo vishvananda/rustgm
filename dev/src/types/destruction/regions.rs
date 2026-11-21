@@ -1,8 +1,9 @@
 //! Drop checking follows owned fields; references do not own their referents.
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
-    ItemId, Kind, RegionId, Store, TypeId,
+    GenericArgs, ItemId, Kind, RegionId, Store, TypeId,
     aggregate::Definitions,
+    arguments::Argument,
     outlives::{
         Parts, TypeComponents,
         storage::{Lists, Values},
@@ -25,7 +26,7 @@ enum State {
 }
 /// One immutable type/definition environment and custom-destructor set. Nominal
 /// templates are analyzed once; uses substitute only their required lifetime slots.
-/// This profile has no may-dangle opt-out: custom Drop requires every argument.
+/// A checked destructor can relax individual arguments while preserving owned field requirements.
 pub struct Regions {
     custom: Arc<HashSet<ItemId>>,
     environment: Option<Arc<Environment>>,
@@ -261,6 +262,27 @@ impl Regions {
         self.charge(values.parts().len())?;
         Ok(values)
     }
+    fn unrelaxed_inputs(
+        &mut self,
+        types: &Store,
+        arguments: GenericArgs,
+        relaxed: &[u32],
+        values: &mut Values,
+    ) -> Result<(), &'static str> {
+        let arguments = types.arguments(arguments).ok_or("invalid drop arguments")?;
+        self.charge(arguments.len())?;
+        for (index, argument) in (0_u32..).zip(arguments) {
+            if relaxed.binary_search(&index).is_ok() {
+                continue;
+            }
+            match argument {
+                Argument::Lifetime(region) => values.regions.push(region),
+                Argument::Type(ty) => values.extend(self.argument_inputs(types, ty)?.parts()),
+                Argument::Const(_) => {}
+            }
+        }
+        Ok(())
+    }
     fn finish(
         &mut self,
         types: &Store,
@@ -276,8 +298,17 @@ impl Regions {
         if let Key::Type(ty) = key
             && let Some(Kind::Adt(item, args)) = types.kind(ty)
         {
+            let custom = self.custom.contains(&item);
+            let relaxed = if custom {
+                definitions.drop_eyepatches(item)
+            } else {
+                &[]
+            };
+            if custom && !relaxed.is_empty() {
+                self.unrelaxed_inputs(types, args, relaxed, &mut values)?;
+            }
             if types.region_args(args).is_none() {
-                if self.custom.contains(&item) {
+                if custom && relaxed.is_empty() {
                     return self.argument_inputs(types, ty);
                 }
                 self.collect(types, definitions, key, &mut values)?;
@@ -286,7 +317,7 @@ impl Regions {
             let arguments = types
                 .region_args(args)
                 .ok_or("invalid drop region arguments")?;
-            if self.custom.contains(&item) {
+            if custom && relaxed.is_empty() {
                 self.charge(arguments.len())?;
                 values.regions.extend_from_slice(arguments);
                 return Ok(values);
@@ -408,7 +439,11 @@ fn dependencies(
                 if types.region_args(args).is_none() {
                     definitions.shape(types, ty)?;
                 }
-                if !custom.contains(&item) {
+                let custom = custom.contains(&item);
+                if !custom || !definitions.drop_eyepatches(item).is_empty() {
+                    if custom && let Some(content) = definitions.box_content(types, ty)? {
+                        visit(Key::Type(content))?;
+                    }
                     if let Some(target) = definitions.phantom_argument(types, ty)? {
                         visit(Key::Type(target))?;
                         return Ok(());

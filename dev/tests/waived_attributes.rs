@@ -4,7 +4,7 @@
 //!
 //! `#[may_dangle]` (feature `dropck_eyepatch`) marks a lifetime or type
 //! parameter of an `unsafe impl Drop`, as alloc's `Vec`, `Box`, `Rc` and
-//! collection destructors do; drop checking here has no opt-out for it. The
+//! collection destructors do. Drop checking retains the requirements of owned fields. The
 //! allocator attributes (`rustc_allocator`, `rustc_deallocator`,
 //! `rustc_reallocator`, `rustc_allocator_zeroed`,
 //! `rustc_allocator_zeroed_variant`) only inform rustc's LLVM backend,
@@ -71,8 +71,6 @@ pub struct Holder<T>(T);
 pub struct Pair<'a, T>(&'a T);
 "#;
 
-const DANGLE_WAIVER: &str = "`#[may_dangle]` is admitted without its drop-check opt-out: drop checking still requires every argument of a marked Drop impl";
-const DANGLE_STRICT: &str = "`#[may_dangle]` drop-check opt-out is not implemented";
 const MISPLACED: &str =
     "`#[may_dangle]` must be applied to a lifetime or type generic parameter in `Drop` impl";
 
@@ -100,22 +98,18 @@ struct Case {
     outcome: Outcome,
 }
 
-const EYEPATCH_WAIVED: Outcome = Outcome::Waived {
-    waiver: DANGLE_WAIVER,
-    strict: DANGLE_STRICT,
-};
 const EYEPATCHES: [Case; 9] = [
     Case {
         name: "type-eyepatch",
         header: EYEPATCH,
         items: "unsafe impl<#[may_dangle] T> Drop for Holder<T> {\n    fn drop(&mut self) {}\n}\n",
-        outcome: EYEPATCH_WAIVED,
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "lifetime-eyepatch",
         header: EYEPATCH,
         items: "unsafe impl<#[may_dangle] 'a, T> Drop for Pair<'a, T> {\n    fn drop(&mut self) {}\n}\n",
-        outcome: EYEPATCH_WAIVED,
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "ungated",
@@ -397,10 +391,10 @@ fn check(folder: &str, cases: &[Case], prelude: &str) -> Result<Vec<String>> {
     Ok(failures)
 }
 
-/// Marked `Drop` impls pass only in bring-up and only with a recorded waiver;
-/// every misplaced, ungated or mismatched use is rejected in both profiles.
+/// Marked `Drop` impls pass in both modes after checking the target and gate.
+/// Misplaced and mismatched uses fail in both modes.
 #[test]
-fn eyepatches_are_waived_in_bringup_and_rejected_in_strict_mode() -> Result {
+fn eyepatches_require_marked_parameters_of_checked_unsafe_drop_impls() -> Result {
     let failures = check("eyepatch", &EYEPATCHES, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())

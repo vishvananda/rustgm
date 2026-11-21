@@ -6,7 +6,7 @@
 use crate::{
     sema::model::Declarations,
     support::bindings::LangItem,
-    types::{ItemId, Kind, Store, TypeId, aggregate::Definitions, arguments::Argument},
+    types::{ItemId, Store, TypeId, aggregate::Definitions},
 };
 
 /// A box type's content: the first type argument of the declared box struct.
@@ -17,20 +17,7 @@ pub(crate) fn content(
     definitions: &Definitions,
     ty: TypeId,
 ) -> Result<Option<TypeId>, &'static str> {
-    let (Some(owner), Some(Kind::Adt(item, arguments))) = (definitions.owned_box(), types.kind(ty))
-    else {
-        return Ok(None);
-    };
-    if item != owner {
-        return Ok(None);
-    }
-    let first = types.arguments(arguments).and_then(|mut arguments| {
-        arguments.find(|argument| !matches!(argument, Argument::Lifetime(_)))
-    });
-    match first {
-        Some(Argument::Type(content)) => Ok(Some(content)),
-        _ => Err("owned box requires its leading content type argument"),
-    }
+    definitions.box_content(types, ty)
 }
 
 /// The struct `#[lang = "owned_box"]` names, before its role completes. A

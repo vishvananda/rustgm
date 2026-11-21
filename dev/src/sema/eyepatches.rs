@@ -1,22 +1,22 @@
-//! `#[may_dangle]` marks a parameter that an `unsafe impl Drop` promises not
-//! to read, which lets rustc's drop check skip that argument. Drop checking
-//! here has no such opt-out: it still requires every argument of a marked
-//! impl, which rejects more programs than rustc and accepts none that rustc
-//! rejects. The attribute is therefore admitted only as a bring-up waiver.
+//! `#[may_dangle]` records which arguments an unsafe destructor allows to expire.
+//! Owned fields retain their independent drop requirements.
+use crate::support::hash::HashSet;
 use crate::{
     resolve::{
         bindings::FeatureName,
         expansion::{MacroAllowanceSession, Report},
+        model::DefId,
         package::Error,
         unit::NodeKey,
     },
-    sema::model::Declarations,
+    sema::{destructors::Coverage, model::Declarations},
     syntax::{
         ast::Kind,
         attribute::{Attribute, Input, Style},
         item::{GenericFlavor, ItemKind},
         token_tree::Forest,
     },
+    types::{ItemId, RegionId, arguments::Argument},
 };
 
 /// rustc's placement rule for the attribute.
@@ -86,6 +86,16 @@ pub(super) fn consume(
 /// # Errors
 /// Rejects an attribute with arguments.
 pub(super) fn marked(report: &Report, source: NodeKey) -> Result<bool, Error> {
+    Ok(marked_parameters(report, source)?
+        .next()
+        .transpose()?
+        .is_some())
+}
+
+fn marked_parameters(
+    report: &Report,
+    source: NodeKey,
+) -> Result<impl Iterator<Item = Result<NodeKey, Error>> + '_, Error> {
     let unit = report.package.unit(source.file);
     let ast = &unit.configured.ast;
     let Kind::Item(index) = ast.node(source.node).kind else {
@@ -95,31 +105,95 @@ pub(super) fn marked(report: &Report, source: NodeKey) -> Result<bool, Error> {
             "missing impl item syntax",
         ));
     };
-    for &node in ast.list(ast.items[index as usize].generics) {
-        if unit.configured.active.get(node.get() as usize) == Some(&true)
-            && unit
-                .word_attribute(Some(node), "may_dangle")
-                .map_err(|error| Error::at(source.file, error.offset, error.message))?
-        {
-            return Ok(true);
-        }
-    }
-    Ok(false)
+    Ok(ast
+        .list(ast.items[index as usize].generics)
+        .iter()
+        .filter_map(move |&node| {
+            if unit.configured.active.get(node.get() as usize) != Some(&true) {
+                return None;
+            }
+            unit.word_attribute(Some(node), "may_dangle")
+                .map_err(|error| Error::at(source.file, error.offset, error.message))
+                .map(|marked| {
+                    marked.then(|| {
+                        let mut node = node;
+                        while let Kind::Attributed { value, .. } = ast.node(node).kind {
+                            node = value;
+                        }
+                        NodeKey { node, ..source }
+                    })
+                })
+                .transpose()
+        }))
 }
 
-/// Admit a marked `Drop` impl: a recorded waiver in bring-up, a rejection
-/// in every strict compilation.
-/// # Errors
-/// Outside the bring-up profile.
-pub(super) fn admit(report: &Report, source: NodeKey) -> Result<(), Error> {
-    if crate::support::bringup::waive(
-        "`#[may_dangle]` is admitted without its drop-check opt-out: drop checking still requires every argument of a marked Drop impl",
-    ) {
-        return Ok(());
+/// Map the marked, checked impl parameters to their positions in its nominal self type.
+pub(super) fn arguments(
+    report: &Report,
+    facts: &Declarations,
+    (owner, item): (DefId, ItemId),
+    coverage: &Coverage,
+    lifetimes: &[(DefId, RegionId)],
+    source: NodeKey,
+) -> Result<Box<[u32]>, Error> {
+    let error = |message| Declarations::error(report, source, message);
+    let mut bindings = marked_parameters(report, source)?
+        .map(|key| {
+            facts
+                .node(key?)
+                .and_then(|node| node.binding)
+                .ok_or_else(|| error("missing resolved Drop parameter"))
+        })
+        .collect::<Result<HashSet<_>, _>>()?;
+    let inverse = facts
+        .types
+        .arguments(coverage.arguments)
+        .ok_or_else(|| error("missing checked Drop argument coverage"))?;
+    let mut marked = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .into_iter()
+        .flatten()
+        .zip(inverse)
+        .filter_map(|(parameter, nominal)| bindings.remove(&parameter.binding).then_some(nominal))
+        .collect::<HashSet<_>>();
+    for &(binding, region) in lifetimes {
+        if !bindings.remove(&binding) {
+            continue;
+        }
+        let Some((0, slot)) = region.bound_parts() else {
+            return Err(error(
+                "marked Drop lifetime is outside its implementation binder",
+            ));
+        };
+        let nominal = *coverage
+            .regions
+            .get(usize::from(slot))
+            .ok_or_else(|| error("missing checked Drop lifetime coverage"))?;
+        marked.insert(Argument::Lifetime(nominal));
     }
-    Err(Declarations::error(
-        report,
-        source,
-        "`#[may_dangle]` drop-check opt-out is not implemented",
-    ))
+    if !bindings.is_empty() {
+        return Err(error(
+            "marked Drop parameters differ from their checked nominal arguments",
+        ));
+    }
+    let Some(crate::types::Kind::Adt(_, nominal)) = facts
+        .definitions
+        .get(item.0 as usize)
+        .and_then(|&ty| ty)
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err(error("missing nominal Drop schema"));
+    };
+    facts
+        .types
+        .arguments(nominal)
+        .ok_or_else(|| error("missing nominal Drop arguments"))?
+        .enumerate()
+        .filter(|(_, argument)| marked.contains(argument))
+        .map(|(index, _)| {
+            u32::try_from(index).map_err(|_| error("too many nominal Drop arguments"))
+        })
+        .collect()
 }

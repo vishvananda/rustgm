@@ -82,11 +82,12 @@ pub enum FieldDestruction {
     /// The actual `ManuallyDrop` role suppresses even an authored destructor.
     Never,
 }
-#[derive(Clone, Copy, Default)]
+#[derive(Default)]
 struct NominalPolicy {
     destruction: FieldDestruction,
     may_dangle: bool,
     global_allocator: bool,
+    drop_eyepatches: Option<Box<[u32]>>,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Definition {
@@ -260,6 +261,28 @@ impl Definitions {
     pub const fn owned_box(&self) -> Option<ItemId> {
         self.owned_box
     }
+    /// The first type argument of the validated built-in owning pointer.
+    pub(crate) fn box_content(
+        &self,
+        types: &Store,
+        ty: TypeId,
+    ) -> Result<Option<TypeId>, &'static str> {
+        let (Some(owner), Some(super::Kind::Adt(item, arguments))) =
+            (self.owned_box, types.kind(ty))
+        else {
+            return Ok(None);
+        };
+        if item != owner {
+            return Ok(None);
+        }
+        let first = types.arguments(arguments).and_then(|mut arguments| {
+            arguments.find(|argument| !matches!(argument, super::arguments::Argument::Lifetime(_)))
+        });
+        match first {
+            Some(super::arguments::Argument::Type(content)) => Ok(Some(content)),
+            _ => Err("owned box requires its leading content type argument"),
+        }
+    }
     pub(crate) fn declare_global_allocator(&mut self, item: ItemId) -> Result<(), &'static str> {
         if !self
             .get(item)
@@ -306,6 +329,28 @@ impl Definitions {
                 .get(&item)
                 .is_some_and(|policy| policy.may_dangle),
         )
+    }
+    /// Register the checked Drop target's argument policy before its fields are published.
+    pub(crate) fn declare_drop_eyepatch(
+        &mut self,
+        item: ItemId,
+        arguments: Box<[u32]>,
+    ) -> Result<(), &'static str> {
+        if arguments.is_empty() {
+            return Ok(());
+        }
+        let policy = self.nominal_policies.entry(item).or_default();
+        if policy.drop_eyepatches.is_some() {
+            return Err("drop eyepatches are already registered");
+        }
+        policy.drop_eyepatches = Some(arguments);
+        Ok(())
+    }
+    pub(super) fn drop_eyepatches(&self, item: ItemId) -> &[u32] {
+        self.nominal_policies
+            .get(&item)
+            .and_then(|policy| policy.drop_eyepatches.as_deref())
+            .unwrap_or_default()
     }
     /// Instantiate immediate fields from completed templates, keyed by the full
     /// canonical nominal type. This does not expand referents or prove layout.
