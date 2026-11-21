@@ -143,6 +143,7 @@ enum Work {
     ConstantUse(NodeKey, regions::Context),
     ConstantArguments(NodeKey),
     Bounds(DefId, regions::Context),
+    PrepareItemArguments(NodeKey, DefId, regions::Context),
     ItemArguments(NodeKey, DefId),
     AliasVariant(NodeKey, DefId, regions::Context),
     AssociatedPrefix(NodeKey, DefId, regions::Context),
@@ -779,6 +780,9 @@ impl Checker<'_> {
             Work::Bounds(owner, context) => self.complete_bounds(owner, context)?,
             Work::AliasVariant(key, owner, context) => {
                 self.complete_alias_variant(key, owner, context)?;
+            }
+            Work::PrepareItemArguments(key, owner, context) => {
+                self.schedule_item_arguments(key, owner, context, steps, limit, scan)?;
             }
             Work::ItemArguments(key, owner) => {
                 self.complete_item_arguments(key, owner)?;

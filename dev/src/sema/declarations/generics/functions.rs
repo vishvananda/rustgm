@@ -87,6 +87,15 @@ impl Checker<'_> {
         if self.report.resolution.definitions[owner.0 as usize].kind
             == crate::resolve::model::DefKind::Function
         {
+            let index = owner.0 as usize;
+            if self.facts.definitions[index].is_none()
+                && self.states[index] != super::super::State::Complete
+            {
+                self.work
+                    .push(Work::PrepareItemArguments(key, owner, context));
+                self.work.push(Work::Definition(owner, false));
+                return Ok(());
+            }
             prepare_callable_template(self.report, &mut self.facts, key, owner)?;
         }
         let (_, supplied) = self.item_argument_lists(key, owner)?;
