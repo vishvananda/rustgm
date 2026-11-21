@@ -6,7 +6,9 @@ use crate::{
     types::{Kind, TypeId},
 };
 
-type Applications = (HashMap<TypeId, TypeId>, Vec<TypeId>);
+/// Pending hidden types by application, the roots in order, and the first
+/// failure bring-up set aside.
+type Applications = (HashMap<TypeId, TypeId>, Vec<TypeId>, Option<StorageFailure>);
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/undeclared_opaque_storage.rs"]
@@ -37,11 +39,10 @@ impl Declarations {
         &mut self,
         preparation: &mut Preparation,
     ) -> Result<(), StorageFailure> {
-        let (mut pending, roots) = self.collect_opaque_applications(preparation)?;
+        // Bring-up reports every root whose storage fails, then still fails.
+        let (mut pending, roots, mut deferred) = self.collect_opaque_applications(preparation)?;
         let mut path = Vec::new();
         let mut active = HashSet::default();
-        // Bring-up reports every root whose storage fails, then still fails.
-        let mut deferred = None;
         for &root in &roots {
             if !pending.contains_key(&root) {
                 continue;
@@ -123,6 +124,7 @@ impl Declarations {
     ) -> Result<Applications, StorageFailure> {
         let mut pending = HashMap::default();
         let mut roots = Vec::new();
+        let mut deferred = None;
         let replay = std::mem::take(&mut preparation.ready);
         let replay_capacity = replay.capacity();
         let mut replay = replay.into_iter();
@@ -159,17 +161,25 @@ impl Declarations {
                 preparation.charge(substitution.steps)?;
                 let hidden = self.normalized_hidden(preparation, hidden)?;
                 self.aggregates.prepare(&mut self.types, hidden)?;
+                self.hidden_storage(preparation, hidden)?;
                 Ok(Some(hidden))
             })();
-            let Some(hidden) =
-                result.map_err(|message| self.opaque_storage_failure(ty, message))?
-            else {
-                continue;
+            let hidden = match result {
+                Ok(Some(hidden)) => hidden,
+                Ok(None) => continue,
+                Err(message) => {
+                    let failure = self.opaque_storage_failure(ty, message);
+                    if !self.defer_storage_failure(failure) {
+                        return Err(failure);
+                    }
+                    deferred.get_or_insert(failure);
+                    continue;
+                }
             };
             pending.insert(ty, hidden);
             roots.push(ty);
         }
-        Ok((pending, roots))
+        Ok((pending, roots, deferred))
     }
     /// A concrete hidden type is stored as rustc reveals it, normalized: a
     /// returned closure capturing `&mut Option<T::IntoIter>` stores
@@ -191,6 +201,62 @@ impl Declarations {
         let (normalized, steps) = session.normalize(self, hidden)?;
         preparation.charge(steps)?;
         Ok(normalized)
+    }
+    /// A caller stores an opaque value as its hidden type. Instantiated at
+    /// the caller's lifetimes, a concrete hidden type is a different type
+    /// from the one its defining body prepared, so its projected fields, as
+    /// `Option<U::IntoIter>` in a returned `FlatMap`, need their normal
+    /// storage here. The probe's lifetime facts are dropped: the defining
+    /// body proves its hidden type, and field readiness grants nothing.
+    fn hidden_storage(
+        &mut self,
+        preparation: &mut Preparation,
+        hidden: TypeId,
+    ) -> Result<(), &'static str> {
+        use crate::types::lifetime_proof::{Obligations, ScopeId};
+        if !self.aggregates.has_projected_templates()
+            || self.types.contains_parameters(hidden) != Some(false)
+            || self.types.contains_projections(hidden) != Some(false)
+        {
+            return Ok(());
+        }
+        let first = self.probe_first(preparation, hidden)?;
+        let before = self.stored_field_work().steps;
+        let mut proof = Obligations::new(first);
+        let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
+        let mut storage = crate::sema::stored_fields::Preparation::default();
+        let result = storage.prepare(self, hidden, &mut session);
+        preparation.charge(
+            self.stored_field_work()
+                .steps
+                .saturating_sub(before)
+                .saturating_add(storage.steps())
+                .saturating_add(session.nested_work()),
+        )?;
+        result
+    }
+    /// A probe's first lifetime identity. Disposable probes start beyond every
+    /// numbered unit, but a caller instance's opened lifetimes, which its
+    /// opaque applications carry, can lie beyond that frontier too.
+    fn probe_first(
+        &mut self,
+        preparation: &mut Preparation,
+        ty: TypeId,
+    ) -> Result<u32, &'static str> {
+        let mut observe = crate::types::substitute::Bound::observe_regions();
+        let observed = observe.apply(&mut self.types, ty);
+        preparation.charge(observe.steps)?;
+        observed?;
+        observe
+            .observed_regions()
+            .filter(|region| region.bound_parts().is_none())
+            .try_fold(self.body_regions.probe_frontier()?, |first, region| {
+                region
+                    .0
+                    .checked_add(1)
+                    .map(|next| first.max(next))
+                    .ok_or("opaque storage probe lifetime identity space exhausted")
+            })
     }
     fn opaque_storage_failure(&self, ty: TypeId, message: &'static str) -> StorageFailure {
         let owner = match self.types.kind(ty) {
