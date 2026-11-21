@@ -1,4 +1,7 @@
 //! Alpha-rename source-owned facts before simultaneous external substitutions.
+#[cfg(test)]
+#[path = "../../../tests/invariants/coalesced_segments.rs"]
+mod tests;
 use super::Declarations;
 pub(super) use super::allocated_owners::normalize;
 use crate::{
@@ -109,6 +112,7 @@ fn transport_contract(
 }
 fn segments(contract: &Contract, bytes: usize) -> Result<(Vec<Range<u32>>, usize), &'static str> {
     let mut owned = Vec::<Range<u32>>::new();
+    let mut input_ranges = 0;
     let mut visits = contract
         .obligations
         .len()
@@ -118,8 +122,18 @@ fn segments(contract: &Contract, bytes: usize) -> Result<(Vec<Range<u32>>, usize
         if range.is_empty() {
             return Ok(());
         }
-        if owned.len() >= 1_000_000 {
+        input_ranges += 1;
+        if input_ranges > 1_000_000 {
             return Err("source caller segment budget exceeded");
+        }
+        // Variables arrive in allocation order. Coalesce their consecutive
+        // IDs before paying for temporary rows. Proof ranges may arrive out of
+        // order and still go through the sort and merge below.
+        if let Some(last) = owned.last_mut()
+            && (last.start..=last.end).contains(&range.start)
+        {
+            last.end = last.end.max(range.end);
+            return Ok(());
         }
         if owned.len() == owned.capacity() {
             let capacity = owned.capacity().saturating_mul(2).max(4);
