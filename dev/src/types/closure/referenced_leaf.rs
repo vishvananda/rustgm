@@ -3,8 +3,19 @@ use crate::types::{Kind, Store, TypeId};
 
 pub(crate) fn leaf(
     types: &Store,
-    mut subject: TypeId,
+    subject: TypeId,
 ) -> Result<(Option<TypeId>, usize), &'static str> {
+    let (subject, kind, visits) = terminal(types, subject)?;
+    Ok((
+        matches!(kind, Kind::Closure { .. }).then_some(subject),
+        visits,
+    ))
+}
+
+pub(crate) fn terminal(
+    types: &Store,
+    mut subject: TypeId,
+) -> Result<(TypeId, Kind, usize), &'static str> {
     let mut visits = 1usize;
     subject = types.storage_head(subject)?;
     while let Some(Kind::Reference { referent, .. }) = types.kind(subject) {
@@ -17,8 +28,5 @@ pub(crate) fn leaf(
     let kind = types
         .kind(subject)
         .ok_or("invalid callable reference type")?;
-    Ok((
-        matches!(kind, Kind::Closure { .. }).then_some(subject),
-        visits,
-    ))
+    Ok((subject, kind, visits))
 }

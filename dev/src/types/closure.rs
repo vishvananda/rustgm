@@ -4,7 +4,7 @@ use super::{
     GenericArgs, Store, TypeId,
     properties::{Properties, Property},
 };
-pub(crate) use referenced_leaf::leaf as reference_leaf;
+pub(crate) use referenced_leaf::{leaf as reference_leaf, terminal as reference_terminal};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ClosureId(pub u32);

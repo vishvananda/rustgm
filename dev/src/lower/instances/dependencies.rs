@@ -435,6 +435,7 @@ impl Discovered {
         Ok(())
     }
     fn collect_tables(
+        report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         concrete: &mut Vec<Instance>,
         object_types: &mut Vec<TypeId>,
@@ -442,7 +443,7 @@ impl Discovered {
         closures: &mut Vec<TypeId>,
         invocation_locations: &mut u8,
     ) -> Result<(), String> {
-        for id in crate::sema::vtable_plans::complete_tables(facts)? {
+        for id in crate::sema::vtable_plans::complete_tables(report, facts)? {
             let table = facts
                 .objects
                 .table(id)
@@ -480,7 +481,8 @@ impl Discovered {
                             invocation_locations,
                         )?;
                     }
-                    crate::sema::vtable_plans::Target::Captured(_) => {}
+                    crate::sema::vtable_plans::Target::Captured(_)
+                    | crate::sema::vtable_plans::Target::Forwarded(_) => {}
                 }
             }
             object_types.push(table.concrete);
@@ -692,6 +694,7 @@ impl Dependencies {
             crate::sema::vtable_plans::prepare_upcast(report, facts, source, target)?;
         }
         Discovered::collect_tables(
+            report,
             facts,
             &mut concrete,
             &mut object_types,

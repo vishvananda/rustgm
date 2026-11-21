@@ -1,5 +1,6 @@
 //! Executable object plans are demanded from bodies whose source proofs have passed.
 mod captured;
+mod forwarded;
 mod members;
 mod operators;
 mod shapes;
@@ -37,6 +38,7 @@ pub(crate) enum Target {
     Function(Instance),
     Callable(Callable),
     Captured(Captured),
+    Forwarded(Operator),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Callable {

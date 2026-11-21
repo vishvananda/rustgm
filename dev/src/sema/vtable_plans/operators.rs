@@ -4,7 +4,7 @@ use crate::{
     resolve::expansion::Report,
     sema::model::Declarations,
     support::call_traits::CallTrait,
-    types::{Kind, Store, TypeId, arguments::Argument, callable::Convention},
+    types::{GenericArgs, Kind, Store, TypeId, arguments::Argument, callable::Convention},
 };
 
 #[derive(Clone, Copy)]
@@ -55,26 +55,7 @@ pub(crate) fn prepare_operator(
     )?;
     let shape = shapes::prepare(report, facts, object)?;
     let arguments = facts.types.intern_arguments(&[Argument::Type(tuple)])?;
-    // A source core declares its own call traits; both kinds register here.
-    let declaration = facts
-        .associated
-        .callable_definition(kind)
-        .ok_or("missing canonical callable trait")?;
-    let parent = facts
-        .types
-        .intern_trait_application(crate::types::traits::Application {
-            item: crate::types::ItemId(declaration.0),
-            arguments,
-        })?;
-    let slots = facts
-        .objects
-        .shape(shape)
-        .ok_or("missing object invocation shape")?;
-    let slot = slots
-        .indices
-        .get(&(Method::Callable(kind), parent))
-        .copied()
-        .ok_or("object invocation differs from its complete callable application")?;
+    let call = virtual_slot(facts, shape, kind, arguments)?;
     let count = facts
         .types
         .list(parameters)
@@ -90,7 +71,7 @@ pub(crate) fn prepare_operator(
     storage.operators.insert(
         (receiver, requested, signature),
         Operator {
-            call: Virtual { shape, slot },
+            call,
             execution,
             // Both &dyn Fn and &&dyn Fn pass the address of the fat reference.
             dereferences: references.saturating_sub(2),
@@ -99,10 +80,37 @@ pub(crate) fn prepare_operator(
     Ok(())
 }
 
+pub(super) fn virtual_slot(
+    facts: &mut Declarations,
+    shape: super::ShapeId,
+    kind: CallTrait,
+    arguments: GenericArgs,
+) -> Result<Virtual, &'static str> {
+    let declaration = facts
+        .associated
+        .callable_definition(kind)
+        .ok_or("missing canonical callable trait")?;
+    let parent = facts
+        .types
+        .intern_trait_application(crate::types::traits::Application {
+            item: crate::types::ItemId(declaration.0),
+            arguments,
+        })?;
+    let slot = facts
+        .objects
+        .shape(shape)
+        .ok_or("missing object invocation shape")?
+        .indices
+        .get(&(Method::Callable(kind), parent))
+        .copied()
+        .ok_or("object invocation differs from its complete callable application")?;
+    Ok(Virtual { shape, slot })
+}
+
 fn subject(
     types: &Store,
     receiver: TypeId,
-    mut kind: CallTrait,
+    kind: CallTrait,
 ) -> Result<(TypeId, CallTrait, u32), &'static str> {
     let mut ty = types.storage_head(receiver)?;
     let mut references = 0u32;
@@ -119,6 +127,15 @@ fn subject(
         references += 1;
         ty = types.storage_head(referent)?;
     }
+    reference_subject(types, ty, kind, references)
+}
+
+pub(super) fn reference_subject(
+    types: &Store,
+    mut ty: TypeId,
+    mut kind: CallTrait,
+    mut references: u32,
+) -> Result<(TypeId, CallTrait, u32), &'static str> {
     while let Some(Kind::Reference {
         referent, mutable, ..
     }) = types.kind(ty)

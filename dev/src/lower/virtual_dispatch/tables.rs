@@ -126,6 +126,9 @@ impl Context<'_> {
                         crate::sema::vtable_plans::Target::Captured(entry) => {
                             self.demand_captured(entry)?
                         }
+                        crate::sema::vtable_plans::Target::Forwarded(operator) => {
+                            self.object_operator(operator)?
+                        }
                     }),
                     addend: 0,
                 }

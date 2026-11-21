@@ -1,6 +1,10 @@
 //! Share concrete tables by complete erased object shape, preserving typed targets.
 use super::{ShapeId, Table, TableId, shapes};
-use crate::{resolve::expansion::Report, sema::model::Declarations, types::TypeId};
+use crate::{
+    resolve::expansion::Report,
+    sema::model::Declarations,
+    types::{Kind, TypeId},
+};
 
 pub(crate) fn prepare_table(
     report: &Report,
@@ -18,7 +22,7 @@ pub(crate) fn prepare_table(
     let object = storage.erase.apply(&mut facts.types, object)?;
     storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
     let shape = shapes::prepare(report, facts, object)?;
-    let id = intern(facts, concrete, shape)?;
+    let id = intern(report, facts, concrete, shape)?;
     facts
         .objects
         .storage
@@ -31,7 +35,10 @@ pub(crate) fn prepare_table(
 
 /// New upcast edges and new concrete types meet in one deduplicated worklist.
 /// No existing source body or previously selected method table is rescanned.
-pub(crate) fn complete_tables(facts: &mut Declarations) -> Result<Vec<TableId>, String> {
+pub(crate) fn complete_tables(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<Vec<TableId>, String> {
     while let Some((concrete, shape)) = facts.objects.storage.as_mut().and_then(|s| s.pending.pop())
     {
         facts
@@ -41,7 +48,7 @@ pub(crate) fn complete_tables(facts: &mut Declarations) -> Result<Vec<TableId>, 
             .ok_or("missing pending vtables")?
             .pending_keys
             .remove(&(concrete, shape));
-        intern(facts, concrete, shape)?;
+        intern(report, facts, concrete, shape)?;
     }
     Ok(facts
         .objects
@@ -50,7 +57,12 @@ pub(crate) fn complete_tables(facts: &mut Declarations) -> Result<Vec<TableId>, 
         .map_or_else(Vec::new, |s| std::mem::take(&mut s.fresh)))
 }
 
-fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<TableId, String> {
+fn intern(
+    report: &Report,
+    facts: &mut Declarations,
+    concrete: TypeId,
+    shape: ShapeId,
+) -> Result<TableId, String> {
     let storage = facts
         .objects
         .storage
@@ -66,16 +78,16 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
         .clone();
     // A table hit above never supplies source permission. Classification is only
     // for choosing physical targets and runs once for each new callable table.
-    let captured = if slots
+    let leaf = if slots
         .slots
         .iter()
         .any(|slot| matches!(slot.method, super::Method::Callable(_)))
     {
-        let (leaf, visits) = crate::types::closure::reference_leaf(&facts.types, concrete)?;
+        let (_, leaf, visits) = crate::types::closure::reference_terminal(&facts.types, concrete)?;
         storage.charge(visits)?;
-        leaf.is_some_and(|ty| matches!(facts.types.kind(ty), Some(crate::types::Kind::Closure { environment, .. }) if environment != TypeId::UNIT))
+        Some(leaf)
     } else {
-        false
+        None
     };
     facts.aggregates.prepare(&mut facts.types, concrete)?;
     let mut methods = Vec::with_capacity(slots.slots.len());
@@ -85,15 +97,17 @@ fn intern(facts: &mut Declarations, concrete: TypeId, shape: ShapeId) -> Result<
                 crate::sema::dispatch::table_method(facts, concrete, slot)?
                     .map(super::Target::Function)
             }
-            super::Method::Callable(_) => {
-                if captured {
+            super::Method::Callable(_) => match leaf {
+                Some(Kind::Closure { environment, .. }) if environment != TypeId::UNIT => {
                     super::captured::target(facts, concrete, slot.method)?
-                } else {
-                    Some(super::Target::Callable(super::operators::target(
-                        facts, concrete,
-                    )?))
                 }
-            }
+                Some(Kind::Dynamic { .. }) => Some(super::Target::Forwarded(
+                    super::forwarded::target(report, facts, concrete, slot)?,
+                )),
+                _ => Some(super::Target::Callable(super::operators::target(
+                    facts, concrete,
+                )?)),
+            },
         });
     }
     let storage = facts

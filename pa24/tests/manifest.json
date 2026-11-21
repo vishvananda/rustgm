@@ -2217,6 +2217,66 @@
       ]
     },
     {
+      "path": "tests/spec/erased-callables/borrowed-fn-deep.rs",
+      "source_sha256": "9922723d977b1d2579683492eb9ede3447c15ae9e7e7ae35245fd8be5c68346e",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa23.objects",
+        "pa24.closures"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/erased-callables/borrowed-fn-mut.rs",
+      "source_sha256": "46ab30da35617877d0c39966e8f4323d9a276aaa042fec10e093695cc9ec25d8",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa23.objects",
+        "pa24.closures"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/erased-callables/borrowed-fn.rs",
+      "source_sha256": "2f69885447e71a6bec3de673da3b78b8fbb4381f5e46d0494a3f0db006f3d06d",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa23.objects",
+        "pa24.closures"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/erased-callables/captured-output.rs",
       "source_sha256": "d33c15ba7b29b3f5eb3b56dd9021100187f55980f0ff800e9a21f6e6ea036764",
       "exit_status": 0,
