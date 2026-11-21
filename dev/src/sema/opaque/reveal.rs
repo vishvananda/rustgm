@@ -185,6 +185,8 @@ impl Declarations {
     /// returned closure capturing `&mut Option<T::IntoIter>` stores
     /// `&mut Option<I>`, the type its caller's checked execution also has.
     /// Users still prove that normalization; storage grants no permission.
+    /// The disposable proof is numbered past the hidden type's own lifetimes,
+    /// which an instance's caller opened.
     fn normalized_hidden(
         &mut self,
         preparation: &mut Preparation,
@@ -196,7 +198,8 @@ impl Declarations {
         {
             return Ok(hidden);
         }
-        let mut proof = Obligations::new(1);
+        let first = self.probe_first(preparation, hidden)?;
+        let mut proof = Obligations::new(first);
         let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
         let (normalized, steps) = session.normalize(self, hidden)?;
         preparation.charge(steps)?;

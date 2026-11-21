@@ -14027,6 +14027,44 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/hidden-projection-caller-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census instance family: a caller stores a hidden type naming a projection at the caller's own lifetime",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/hidden-projection-instance-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census instance family: a generic caller's instance normalizes a hidden projection at its opened lifetime",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
