@@ -1,7 +1,7 @@
 //! Filesystem transport stays outside the frontend's typed metadata consumers.
 use crate::census;
 use rustgm::support::crates::{
-    self, ArtifactContext, CrateIdentity, Dependencies, Dependency, OutputKind,
+    self, ArtifactContext, CrateIdentity, Dependencies, Dependency, Guest, OutputKind,
 };
 use rustgm::support::hash::HashMap;
 use std::{fs, io::Read, path::PathBuf, sync::Arc};
@@ -34,10 +34,14 @@ pub struct Options {
     /// Analysis-only census records; never a build output.
     pub census: Option<String>,
     pub census_progress: Option<String>,
-    /// Bring-up guest crates in command-line order; never a strict input.
-    pub guests: Vec<rustgm::support::bringup::Guest>,
-    /// Guest crates with cfg options of their own, and those options.
-    pub guest_cfgs: Vec<(String, Option<String>)>,
+    guests: Vec<Guest>,
+    guest_cfgs: Vec<GuestCfg>,
+    bringup_guests: bool,
+}
+struct GuestCfg {
+    name: String,
+    setting: Option<String>,
+    option: &'static str,
 }
 impl Options {
     /// Consume only arguments owned by this crate/environment boundary.
@@ -66,8 +70,9 @@ impl Options {
             "--metadata-output" => {
                 self.metadata = Some(args.next().ok_or("--metadata-output requires a path")?);
             }
-            "--bringup-guest" => self.guest(args.next().as_deref())?,
-            "--bringup-guest-cfg" => self.guest_cfg(args.next())?,
+            "--bringup-guest" | "--source-guest" => self.guest(arg, args.next().as_deref())?,
+            "--bringup-guest-cfg" => self.guest_cfg("--bringup-guest-cfg", args.next())?,
+            "--source-guest-cfg" => self.guest_cfg("--source-guest-cfg", args.next())?,
             "--crate-type=lib" => self.output = Some(OutputKind::Library),
             "--crate-type=bin" => self.output = Some(OutputKind::Binary),
             "--extern" | "--dependency-metadata" => {
@@ -89,14 +94,15 @@ impl Options {
         }
         Ok(true)
     }
-    /// `--bringup-guest NAME[@EDITION]=ROOT.rs`: one more crate in this session.
-    fn guest(&mut self, value: Option<&str>) -> Result<(), String> {
+    /// `--source-guest NAME[@EDITION]=ROOT.rs`: one more crate in this session.
+    fn guest(&mut self, option: &str, value: Option<&str>) -> Result<(), String> {
+        self.bringup_guests |= option == "--bringup-guest";
         let (name, root) = value
             .and_then(|value| value.split_once('='))
             .filter(|(_, root)| !root.is_empty())
-            .ok_or("--bringup-guest requires NAME=ROOT.rs")?;
+            .ok_or_else(|| format!("{option} requires NAME=ROOT.rs"))?;
         if self.guests.len() >= 64 {
-            return Err("guest crates exceed the bring-up profile's limit of 64".into());
+            return Err("guest crates exceed the source graph limit of 64".into());
         }
         let (name, edition) = match name.split_once('@') {
             Some((name, edition)) => {
@@ -107,36 +113,40 @@ impl Options {
                     "2021" => Edition::Rust2021,
                     "2024" => Edition::Rust2024,
                     _ => {
-                        return Err(
-                            "--bringup-guest edition must be 2015, 2018, 2021 or 2024".into()
-                        );
+                        return Err(format!("{option} edition must be 2015, 2018, 2021 or 2024"));
                     }
                 };
                 (name, Some(edition))
             }
             None => (name, None),
         };
-        let guest = rustgm::support::bringup::Guest::new(name, PathBuf::from(root))
-            .map_err(|message| format!("--bringup-guest {name}: {message}"))?;
+        let guest = Guest::new(name, PathBuf::from(root))
+            .map_err(|message| format!("{option} {name}: {message}"))?;
         self.guests.push(match edition {
             Some(edition) => guest.with_edition(edition),
             None => guest,
         });
         Ok(())
     }
-    /// `--bringup-guest-cfg NAME[=SETTING]`: the guest crate NAME has cfg
+    /// `--source-guest-cfg NAME[=SETTING]`: the guest crate NAME has cfg
     /// options of its own instead of the session's `--cfg` options; SETTING,
     /// spelled as for `--cfg`, is one of them.
-    fn guest_cfg(&mut self, value: Option<String>) -> Result<(), String> {
-        let value = value.ok_or("--bringup-guest-cfg requires NAME[=SETTING]")?;
+    fn guest_cfg(&mut self, option: &'static str, value: Option<String>) -> Result<(), String> {
+        self.bringup_guests |= option == "--bringup-guest-cfg";
+        let required = || format!("{option} requires NAME[=SETTING]");
+        let value = value.ok_or_else(required)?;
         let (name, setting) = match value.split_once('=') {
             Some((name, setting)) => (name, Some(setting.to_owned())),
             None => (value.as_str(), None),
         };
         if name.is_empty() || self.guest_cfgs.len() >= 4096 {
-            return Err("--bringup-guest-cfg requires NAME[=SETTING]".into());
+            return Err(required());
         }
-        self.guest_cfgs.push((name.to_owned(), setting));
+        self.guest_cfgs.push(GuestCfg {
+            name: name.to_owned(),
+            setting,
+            option,
+        });
         Ok(())
     }
     pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
@@ -328,24 +338,61 @@ impl Options {
     /// An analysis-only census may observe a guest session: it records every
     /// crate's declarations and bodies and still never passes a build.
     fn validate_guests(&self, mode: &str) -> Result<(), String> {
-        if !self.guests.is_empty()
-            && (self.source_core.is_none()
-                || self.dependency_count() != 0
-                || mode == "--emit-names")
-        {
-            return Err("--bringup-guest requires --source-core and a view that expands the crate, without external crates".into());
+        let option = if self.bringup_guests {
+            "--bringup-guest"
+        } else {
+            "--source-guest"
+        };
+        if !self.guests.is_empty() {
+            if self.source_core.is_none() || self.dependency_count() != 0 || mode == "--emit-names"
+            {
+                return Err(format!(
+                    "{option} requires --source-core and a view that expands the crate, without external crates"
+                ));
+            }
+            if rustgm::support::bringup::selected().is_none()
+                && (self.is_library() || self.metadata.is_some())
+            {
+                return Err(
+                    "a strict source graph produces one program without crate metadata".into(),
+                );
+            }
         }
-        if let Some((name, _)) = self
-            .guest_cfgs
-            .iter()
-            .find(|(name, _)| !self.guests.iter().any(|guest| guest.name() == name))
-        {
-            return Err(format!(
-                "--bringup-guest-cfg {name}: no --bringup-guest names this crate"
-            ));
+        for cfg in &self.guest_cfgs {
+            if !self.guests.iter().any(|guest| guest.name() == cfg.name) {
+                return Err(format!(
+                    "{} {}: no {option} names this crate",
+                    cfg.option, cfg.name
+                ));
+            }
+        }
+        if self.bringup_guests && rustgm::support::bringup::selected().is_none() {
+            return Err(
+                "--bringup-guest requires the bring-up profile (--bringup-skip-list)".into(),
+            );
         }
         Ok(())
     }
+
+    /// Install source roots and cfg scopes after the session's own cfg is complete.
+    pub fn configure_guests(
+        &mut self,
+        config: &mut rustgm::expand::config::Config,
+    ) -> Result<(), String> {
+        if !self.guests.is_empty() {
+            config.set_guest_crates(std::mem::take(&mut self.guests));
+        }
+        for cfg in &self.guest_cfgs {
+            let scope = config.crate_scope(&cfg.name);
+            if let Some(setting) = &cfg.setting {
+                scope.add(setting).map_err(|e| {
+                    format!("{} {}: {}: {}", cfg.option, cfg.name, e.offset, e.message)
+                })?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn dependency_count(&self) -> usize {
         self.externs
             .len()

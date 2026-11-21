@@ -22,7 +22,7 @@ use super::{
 };
 use crate::{
     expand::marks::ItemContext,
-    support::{bringup::Guest, edition::Edition},
+    support::{crates::Guest, edition::Edition},
 };
 
 /// The crate that owns a module: the host, or a guest in driver order.
@@ -206,7 +206,7 @@ impl Package {
         core.guests = Some(Box::new(guests));
         Ok(())
     }
-    /// Whether this session resolves bring-up guest crates beside its own.
+    /// Whether this session resolves guest crates beside its own.
     #[must_use]
     pub fn has_guests(&self) -> bool {
         self.guest_state().is_some()
@@ -220,8 +220,7 @@ impl Package {
     fn member(&self, slot: CrateSlot) -> Option<&Member> {
         self.guest_state()?.members.get(slot.index())
     }
-    /// The entered guest crate that owns `module`, if any. Strict sessions
-    /// answer from the module's own slot without reading any guest state.
+    /// The module's crate slot identifies any guest that owns it.
     pub(crate) fn entered_guest(&self, module: ModuleId) -> Option<&Root> {
         let slot = self.modules.get(module.0 as usize)?.krate.guest()?;
         self.guest_state()?.roots.get(slot)
@@ -282,7 +281,7 @@ impl Package {
         let slot = self.macro_crate_slot(name)?;
         self.member(slot).map(|member| member.root)
     }
-    /// Each crate's root module and root node: the bring-up guests' in
+    /// Each crate's root module and root node: the guests' in
     /// reverse driver order, then the host's.
     pub(crate) fn crate_roots(&self) -> impl Iterator<Item = (ModuleId, NodeKey)> + '_ {
         let guests = self.crate_members().iter().skip(1).rev();

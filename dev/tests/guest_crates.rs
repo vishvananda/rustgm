@@ -1,4 +1,4 @@
-//! Bring-up guest crates resolve as crates of their own inside one session.
+//! Guest crates resolve as crates of their own inside one source session.
 //!
 //! Every outcome was declared before either compiler ran. `rustc:` names what
 //! rustc 1.98.0 does with the same sources as real separate crates (the host
@@ -527,21 +527,31 @@ fn hosted_session(host: &str, name: &str, guests: &[(&str, &str)]) -> Result<Out
     Ok(command.arg(folder.join("core.rs")).output()?)
 }
 pub(crate) fn prepare(name: &str, guests: &[(&str, &str)]) -> Result<(PathBuf, Command)> {
+    prepare_graph(name, guests, true)
+}
+
+fn prepare_graph(name: &str, guests: &[(&str, &str)], bringup: bool) -> Result<(PathBuf, Command)> {
     let folder = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/guest-crates")
         .join(format!("{name}-{}", std::process::id()));
     std::fs::create_dir_all(&folder)?;
     std::fs::write(folder.join("core.rs"), HOST)?;
     let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    let identity = if bringup { IDENTITY } else { "source_graph" };
+    let option = if bringup {
+        "--bringup-guest"
+    } else {
+        "--source-guest"
+    };
     command
         .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
-        .args(["--crate-name", "core", "--crate-disambiguator", IDENTITY])
-        .args(["--source-core", &format!("core@{IDENTITY}")]);
+        .args(["--crate-name", "core", "--crate-disambiguator", identity])
+        .args(["--source-core", &format!("core@{identity}")]);
     for (guest, source) in guests {
         let root = folder.join(format!("{guest}.rs"));
         std::fs::write(&root, source)?;
         command
-            .arg("--bringup-guest")
+            .arg(option)
             .arg(format!("{guest}={}", root.display()));
     }
     Ok((folder, command))
@@ -592,6 +602,22 @@ fn a_guest_with_cfg_options_of_its_own_never_sees_the_sessions() -> Result {
         Ok(command.arg(folder.join("core.rs")).output()?)
     };
     accepted(&run("own-cfg", true)?)?;
+    let (folder, mut command) = prepare_graph(
+        "strict-own-cfg",
+        &[("first", OWN_CFG), ("app", SESSION_CFG)],
+        false,
+    )?;
+    let strict = command
+        .args([
+            "--cfg",
+            "feature=\"session\"",
+            "--source-guest-cfg",
+            "first=feature=\"first\"",
+        ])
+        .arg(folder.join("core.rs"))
+        .output()?;
+    assert!(accepted(&strict)?.contains("function @main"));
+    assert!(strict.stderr.is_empty());
     rejected(
         &run("session-cfg", false)?,
         (1, OWN_CFG),
@@ -842,8 +868,8 @@ fn a_guest_program_that_needs_an_allocator_must_have_one() -> Result {
     )
 }
 
-/// rustc: no analog. Guest crates exist only in the bring-up profile, over a
-/// source core, with distinct plain names and existing root sources.
+/// rustc: no analog. The bring-up option requires its profile. Guest roots
+/// use distinct plain names and existing files in a source-core session.
 #[test]
 fn guest_options_are_refused_outside_their_profile() -> Result {
     let (folder, mut command) = prepare("no-profile", &[("app", APP)])?;
@@ -988,6 +1014,14 @@ fn census(name: &str, guests: &[(&str, &str)]) -> Result<(Vec<Vec<String>>, Path
 /// would define: it fails closed instead of guessing that type.
 #[test]
 fn guest_bodies_that_do_not_type_are_named_and_stubbed() -> Result {
+    let (folder, mut command) = prepare_graph("strict-mistyped", &[("app", MISTYPED_APP)], false)?;
+    let strict = command.arg(folder.join("core.rs")).output()?;
+    assert_eq!(strict.status.code(), Some(1));
+    assert!(strict.stdout.is_empty());
+    let message = String::from_utf8_lossy(&strict.stderr);
+    assert!(message.contains("incompatible types"), "{message}");
+    assert!(!message.lines().any(|line| line.starts_with("bringup-")));
+
     let (rounds, _, lowir) = census("mistyped", &[("app", MISTYPED_APP)])?;
     let row = |item: &str, name: &str, message: &str, stage: &str| -> Result<String> {
         let offset = MISTYPED_APP

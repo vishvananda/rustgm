@@ -5,6 +5,7 @@ mod dependencies;
 pub mod exported_macros;
 pub mod generics;
 mod globals;
+mod guest;
 mod identity;
 mod interface;
 mod nominals;
@@ -20,6 +21,7 @@ pub use generics::source::{Descriptor as SourceDescriptor, Profile as SourceProf
 pub use globals::{
     Static, StaticRef, Storage, StorageOrigin, StoredKind, StoredProjection, StoredValue, ValueRef,
 };
+pub use guest::Guest;
 pub use identity::{CrateIdentity, ExternalDef, ExternalKind, Namespace};
 pub use interface::{Function, Interface, LoaderFlags, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef, RecordRepr};

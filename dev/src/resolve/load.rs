@@ -265,12 +265,12 @@ impl<'a, S: Sources> Loader<'a, S> {
                 context.crate_name.as_deref(),
             )?;
         }
-        loader.load_guests(crate::support::bringup::guests())?;
+        loader.load_guests(config.guest_crates())?;
         Ok(loader)
     }
-    /// Load each bring-up guest's root source as a further crate root of this
+    /// Load each guest's root source as a further crate root of this
     /// session, with its own module directory and admitted source bytes.
-    fn load_guests(&mut self, inputs: &[crate::support::bringup::Guest]) -> Result<(), Error> {
+    fn load_guests(&mut self, inputs: &[crate::support::crates::Guest]) -> Result<(), Error> {
         if inputs.is_empty() {
             return Ok(());
         }

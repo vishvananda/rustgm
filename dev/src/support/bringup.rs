@@ -1,9 +1,6 @@
 //! Bring-up stubs are an explicit unqualified profile, never a release contract.
 use super::hash::HashMap;
-use std::{
-    path::{Path, PathBuf},
-    sync::{Mutex, OnceLock, PoisonError},
-};
+use std::sync::{Mutex, OnceLock, PoisonError};
 
 /// The driver selects the profile at most once, before loading any source.
 /// It is process-wide so that strict compilations carry no bring-up state.
@@ -21,73 +18,6 @@ pub fn select(stubs: Stubs) -> Result<(), &'static str> {
 #[must_use]
 pub fn selected() -> Option<&'static Stubs> {
     SELECTED.get()
-}
-
-/// A guest crate as the driver names it: its crate name, root source and
-/// optional edition. An omitted edition inherits the host's.
-#[derive(Clone, Debug)]
-pub struct Guest {
-    name: String,
-    root: PathBuf,
-    edition: Option<super::edition::Edition>,
-}
-impl Guest {
-    /// # Errors
-    /// Rejects a name that is not a plain crate identifier.
-    pub fn new(name: &str, root: PathBuf) -> Result<Self, &'static str> {
-        let mut characters = name.chars();
-        let plain = characters
-            .next()
-            .is_some_and(|first| first == '_' || first.is_ascii_alphabetic())
-            && characters.all(|next| next == '_' || next.is_ascii_alphanumeric());
-        if !plain || matches!(name, "_" | "self" | "Self" | "super" | "crate") {
-            return Err("a guest crate name must be a plain identifier");
-        }
-        Ok(Self {
-            name: name.to_owned(),
-            root,
-            edition: None,
-        })
-    }
-    /// Select this crate's source edition without changing the host's inputs.
-    #[must_use]
-    pub const fn with_edition(mut self, edition: super::edition::Edition) -> Self {
-        self.edition = Some(edition);
-        self
-    }
-    #[must_use]
-    pub const fn edition(&self) -> Option<super::edition::Edition> {
-        self.edition
-    }
-    #[must_use]
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-    #[must_use]
-    pub fn root(&self) -> &Path {
-        &self.root
-    }
-}
-
-/// The selected profile's guest crates in driver order: further crate roots
-/// that the session resolves beside its own.
-static GUESTS: OnceLock<Vec<Guest>> = OnceLock::new();
-
-/// Give the selected profile its guest crates.
-/// # Errors
-/// Refused outside the bring-up profile, and when given twice.
-pub fn admit_guests(guests: Vec<Guest>) -> Result<(), &'static str> {
-    if selected().is_none() {
-        return Err("guest crates require the bring-up profile");
-    }
-    GUESTS
-        .set(guests)
-        .map_err(|_| "the bring-up guest crates were already given")
-}
-/// The session's guest crates; none in every strict compilation.
-#[must_use]
-pub fn guests() -> &'static [Guest] {
-    GUESTS.get().map_or(&[], Vec::as_slice)
 }
 
 /// Crate-level publication fences passed over, in first-met order.

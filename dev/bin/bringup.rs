@@ -2,7 +2,7 @@
 use rustgm::{
     resolve::{expansion::Report, package::Error},
     sema::model::Declarations,
-    support::bringup::{Stubs, admit_guests, select, selected},
+    support::bringup::{Stubs, select, selected},
 };
 use std::{
     fs,
@@ -24,13 +24,9 @@ pub(super) fn consume(
     Ok(true)
 }
 
-/// Guest crates exist only in the bring-up profile, which takes them here.
 /// A bring-up library names the profile in its identity, so that no consumer
 /// can bind it where it expects a strict artifact.
 pub(super) fn validate(crates: &crate::crates::Options) -> Result<(), String> {
-    if selected().is_none() && !crates.guests.is_empty() {
-        return Err("--bringup-guest requires the bring-up profile (--bringup-skip-list)".into());
-    }
     if selected().is_some()
         && crates.is_library()
         && !crates
@@ -41,26 +37,6 @@ pub(super) fn validate(crates: &crate::crates::Options) -> Result<(), String> {
         return Err(
             "a bring-up library requires a --crate-disambiguator ending in _bringup".into(),
         );
-    }
-    if !crates.guests.is_empty() {
-        admit_guests(crates.guests.clone())?;
-    }
-    Ok(())
-}
-
-/// Give each guest crate named by `--bringup-guest-cfg` its own cfg options,
-/// once the session's own configuration is complete.
-pub(super) fn configure(
-    crates: &crate::crates::Options,
-    config: &mut rustgm::expand::config::Config,
-) -> Result<(), String> {
-    for (name, setting) in &crates.guest_cfgs {
-        let scope = config.crate_scope(name);
-        if let Some(setting) = setting {
-            scope
-                .add(setting)
-                .map_err(|e| format!("--bringup-guest-cfg {name}: {}: {}", e.offset, e.message))?;
-        }
     }
     Ok(())
 }

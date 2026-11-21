@@ -51,17 +51,18 @@ pub struct Config {
     lint_cap: crate::support::diagnostics::LintCap,
     flags: HashSet<String>,
     values: HashMap<String, HashSet<String>>,
-    /// Bring-up guest crates configured with cfg options of their own, out
-    /// of line: a strict session has none.
+    /// Additional crate roots and their cfg options stay out of line.
     crates: Option<Box<GuestScopes>>,
 }
 
-/// The cfg scopes of bring-up guest crates, by crate name.
-#[derive(Debug)]
-struct GuestScopes(Vec<(String, Config)>);
+#[derive(Default, Debug)]
+struct GuestScopes {
+    roots: Vec<crate::support::crates::Guest>,
+    scopes: Vec<(String, Config)>,
+}
 
 impl Config {
-    /// Give the bring-up guest crate `name` cfg options of its own, as rustc
+    /// Give the guest crate `name` cfg options of its own, as rustc
     /// gives each crate its own `--cfg` set: its source sees the fixed target
     /// facts and only the options added to the returned scope, never the
     /// session's. Every other setting is copied from the session as it stands,
@@ -74,10 +75,7 @@ impl Config {
             lint_cap: self.lint_cap,
             ..Self::default()
         };
-        let crates = &mut self
-            .crates
-            .get_or_insert_with(|| Box::new(GuestScopes(Vec::new())))
-            .0;
+        let crates = &mut self.crates.get_or_insert_with(Box::default).scopes;
         let index = crates
             .iter()
             .position(|(seen, _)| seen == name)
@@ -87,6 +85,15 @@ impl Config {
             });
         &mut crates[index].1
     }
+    /// Supply the additional crate roots in the session's dependency order.
+    pub fn set_guest_crates(&mut self, guests: Vec<crate::support::crates::Guest>) {
+        self.crates.get_or_insert_with(Box::default).roots = guests;
+    }
+
+    pub(crate) fn guest_crates(&self) -> &[crate::support::crates::Guest] {
+        self.crates.as_deref().map_or(&[], |crates| &crates.roots)
+    }
+
     /// The cfg scope and configuration of one crate of this session: a guest
     /// crate with options of its own has its scope, numbered from one; every
     /// other crate shares the session's, scope zero.
@@ -95,7 +102,11 @@ impl Config {
         let scoped = guest
             .zip(self.crates.as_deref())
             .and_then(|(name, crates)| {
-                crates.0.iter().zip(1..).find(|((seen, _), _)| seen == name)
+                crates
+                    .scopes
+                    .iter()
+                    .zip(1..)
+                    .find(|((seen, _), _)| seen == name)
             });
         scoped.map_or((0, self), |((_, scope), index)| (index, scope))
     }

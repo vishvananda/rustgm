@@ -188,7 +188,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Options, String> {
         .crates
         .validate(&options.mode, options.count, options.output.as_deref())?;
     bringup::validate(&options.crates)?;
-    bringup::configure(&options.crates, &mut options.config)?;
+    options.crates.configure_guests(&mut options.config)?;
     Ok(options)
 }
 
