@@ -8,9 +8,11 @@ use crate::{
     resolve::model::DefKind,
     sema::traits::{assumptions::Assumptions, selection},
     types::{
-        TypeId,
+        Kind, TypeId,
         arguments::Argument,
         infer::{Context, Instantiation, predicates::Predicate as Goal},
+        lifetime_proof::Obligations,
+        outlives::Queries,
     },
 };
 use std::sync::Arc;
@@ -48,13 +50,10 @@ impl Attempt {
         }
     }
 
-    fn advance(
-        &mut self,
-        facts: &mut crate::sema::model::Declarations,
-        owner: DefId,
-    ) -> Result<Step, String> {
-        self.plan.require_current(facts, owner)?;
+    fn advance(&mut self, checker: &mut Checker<'_>, owner: DefId) -> Result<Step, String> {
+        self.plan.require_current(&checker.facts, owner)?;
         while let Some(&requirement) = self.plan.requirements.get(self.cursor) {
+            let facts = &mut checker.facts;
             if self.goal.is_none() {
                 let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
                     .map_err(|error| error.to_string())?;
@@ -109,8 +108,7 @@ impl Attempt {
                 selection::Progress::Ready(selection::Selection::Proven(evidence)) => {
                     if evidence.completion.provisional()
                         || !evidence.sized.is_empty()
-                        || !evidence.proof.is_empty()
-                        || !self.context.region_equalities.is_empty()
+                        || !self.prerequisite_regions(checker, owner, evidence.proof)?
                     {
                         return Ok(Step::Unsupported(Unsupported::ProofDebt));
                     }
@@ -128,6 +126,45 @@ impl Attempt {
             }
         }
         Ok(Step::Complete)
+    }
+
+    /// Prove the reference blanket's region evidence in its own checked impl scope.
+    fn prerequisite_regions(
+        &mut self,
+        checker: &Checker<'_>,
+        owner: DefId,
+        mut proof: Obligations,
+    ) -> Result<bool, String> {
+        if proof.is_empty() && self.context.region_equalities.is_empty() {
+            return Ok(true);
+        }
+        let facts = &checker.facts;
+        if !matches!(
+            facts.types.kind(self.plan.predicate.ty),
+            Some(Kind::Reference { mutable: false, .. })
+        ) {
+            return Ok(false);
+        }
+        proof.equalities.append(&mut self.context.region_equalities);
+        self.context
+            .account_work(
+                proof
+                    .equalities
+                    .len()
+                    .saturating_mul(2)
+                    .saturating_add(proof.outlives.len())
+                    .saturating_add(proof.types.len()),
+            )
+            .map_err(|error| error.to_string())?;
+        let mut queries = Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        let mut constraints = checker.trait_region_environment(owner, &mut queries)?;
+        proof.require(&mut constraints, &mut queries)?;
+        constraints.solve().map_err(|error| error.to_string())?;
+        Ok(true)
     }
 }
 
@@ -155,7 +192,7 @@ impl Checker<'_> {
         pending
             .charge(&mut self.facts, 4)
             .map_err(|e| self.error(attempt.plan.source, e))?;
-        let progress = attempt.advance(&mut self.facts, owner);
+        let progress = attempt.advance(self, owner);
         let total = attempt.context.steps.max(
             attempt
                 .query_context_start

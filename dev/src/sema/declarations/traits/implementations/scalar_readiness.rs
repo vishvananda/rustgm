@@ -309,6 +309,21 @@ impl Checker<'_> {
         crate::sema::copy_trace::record(|| format!("demanded conformance owner={}", owner.0));
         self.imported_conformance(owner, predicate)
     }
+    fn early_implementation_error(&self, owner: DefId) -> Error {
+        let message = "implementation validation is outside the early scalar profile";
+        let source = self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .and_then(|implementations| implementations.header(owner))
+            .and_then(|header| header.source);
+        if let Some(source) = source {
+            self.error(source, message)
+        } else {
+            Error::unlocated(message)
+        }
+    }
     fn advance_scalar_impl(
         &mut self,
         owner: DefId,
@@ -319,9 +334,7 @@ impl Checker<'_> {
             return if matches!(phase, Phase::Try) {
                 Ok(())
             } else {
-                Err(Error::unlocated(
-                    "implementation validation is outside the early scalar profile",
-                ))
+                Err(self.early_implementation_error(owner))
             };
         }
         match phase {
@@ -335,9 +348,7 @@ impl Checker<'_> {
                     return if matches!(phase, Phase::Try) {
                         Ok(())
                     } else {
-                        Err(Error::unlocated(
-                            "implementation validation is outside the early scalar profile",
-                        ))
+                        Err(self.early_implementation_error(owner))
                     };
                 }
                 self.append_implementation_pairs(pending)?;

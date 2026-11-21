@@ -202,7 +202,7 @@ fn each_required_predicate_has_one_context_start_and_unique_work_transfer() -> R
     let expected = plan.requirements.len();
     let mut attempt = Attempt::new(plan);
     assert!(matches!(
-        attempt.advance(&mut checker.facts, owner)?,
+        attempt.advance(&mut checker, owner)?,
         Step::Complete
     ));
     assert_eq!(attempt.cursor, expected);

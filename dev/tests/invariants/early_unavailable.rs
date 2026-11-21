@@ -197,7 +197,7 @@ fn declared_blanket_bounds_supply_only_the_actual_prerequisite_environment() -> 
     );
     let mut attempt = Attempt::new(actual);
     assert!(matches!(
-        attempt.advance(&mut checker.facts, owner)?,
+        attempt.advance(&mut checker, owner)?,
         Step::Complete
     ));
     assert!(attempt.context.steps > 0);

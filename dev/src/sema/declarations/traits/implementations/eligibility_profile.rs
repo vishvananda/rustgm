@@ -204,7 +204,12 @@ impl Checker<'_> {
         let owner_kind = actual
             .ok_or_else(|| self.error(source, "source owner disappeared"))?
             .kind;
-        if !self.early_source_subject(owner, predicate.ty, pending)?
+        let Some((application, _)) = predicate.bound.trait_parts() else {
+            return Ok(Eligibility::Unsupported(Unsupported::Requirements));
+        };
+        let pointer_binder = self.copy_clone_pointer_binder(owner, predicate.ty, application)?;
+        let region_depth = pointer_binder.unwrap_or(0);
+        if (pointer_binder.is_none() && !self.early_source_subject(owner, predicate.ty, pending)?)
             || (matches!(
                 self.facts.types.kind(predicate.ty),
                 Some(Kind::Primitive(_))
@@ -212,15 +217,12 @@ impl Checker<'_> {
                 .contains_parameters(&self.facts.types)
                 .map_err(|e| self.error(source, e))?)
             || predicate
-                .has_free_regions(&self.facts.types)
+                .has_regions_outside(&self.facts.types, region_depth)
                 .map_err(|e| self.error(source, e))?
-            || self.trait_region_count(owner) != 0
+            || self.trait_region_count(owner) != u32::from(region_depth)
         {
             return Ok(Eligibility::Unsupported(Unsupported::OpenSubject));
         }
-        let Some((application, _)) = predicate.bound.trait_parts() else {
-            return Ok(Eligibility::Unsupported(Unsupported::Requirements));
-        };
         let Some(trait_owner) = self.scalar_trait_owner(source, application)? else {
             return Ok(Eligibility::Unsupported(Unsupported::SourceOwner));
         };
@@ -236,7 +238,8 @@ impl Checker<'_> {
         let Some(member_profile) = self.scalar_member_profile(source, owners, &members)? else {
             return Ok(Eligibility::Unsupported(Unsupported::Members));
         };
-        let requirements = self.scalar_requirements(owner, source, predicate, pending)?;
+        let requirements =
+            self.scalar_requirements(owner, source, predicate, region_depth, pending)?;
         let Some(requirements) = requirements else {
             return Ok(Eligibility::Unsupported(Unsupported::Requirements));
         };
@@ -279,7 +282,12 @@ impl Checker<'_> {
         pay(1, size_of::<Option<Arc<Assumptions>>>()).map_err(|e| self.error(source, e))?;
         if !matches!(
             self.facts.types.kind(subject),
-            Some(Kind::Parameter(_) | Kind::Adt(..))
+            Some(
+                Kind::Parameter(_)
+                    | Kind::Adt(..)
+                    | Kind::Reference { mutable: false, .. }
+                    | Kind::Pointer { .. }
+            )
         ) {
             return Ok(None);
         }
@@ -289,6 +297,52 @@ impl Checker<'_> {
             Assumptions::from_environment_charged(&self.facts.types, environment, &pay)
                 .map_err(|e| self.error(source, e))?;
         Ok(Some(Arc::new(assumptions)))
+    }
+
+    /// Check the core Copy and Clone impls for raw pointers and shared references.
+    /// Only the shared reference has one lifetime in its own scope.
+    fn copy_clone_pointer_binder(
+        &self,
+        owner: DefId,
+        subject: crate::types::TypeId,
+        application: crate::types::traits::ApplicationId,
+    ) -> Result<Option<u16>, Error> {
+        use crate::support::bindings::LangItem;
+        use crate::types::arguments::Argument;
+        let (referent, depth) = match self.facts.types.kind(subject) {
+            Some(Kind::Reference {
+                mutable: false,
+                referent,
+                region,
+            }) if region.bound_parts() == Some((0, 0)) => (referent, 1),
+            Some(Kind::Pointer { pointee, .. }) => (pointee, 0),
+            _ => return Ok(None),
+        };
+        if self.own_type_parameters(owner).is_none_or(|parameters| {
+            !matches!(parameters, [parameter] if parameter.argument == Argument::Type(referent))
+        }) {
+            return Ok(None);
+        }
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let actual = self
+            .facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| {
+                Error::unlocated("early pointer conformance lost its trait application")
+            })?;
+        for role in [LangItem::Copy, LangItem::Clone] {
+            if catalog
+                .validated_language(role)
+                .map_err(Error::unlocated)?
+                .is_some_and(|declaration| declaration.definition.0 == actual.item.0)
+            {
+                return Ok(Some(depth));
+            }
+        }
+        Ok(None)
     }
 
     fn early_source_subject(
@@ -485,6 +539,7 @@ impl Checker<'_> {
         owner: DefId,
         source: NodeKey,
         predicate: Predicate,
+        region_depth: u16,
         pending: &mut Pending,
     ) -> Result<Option<Vec<Predicate>>, Error> {
         let requirements = self
@@ -522,7 +577,7 @@ impl Checker<'_> {
                     | Bound::ConstTrait(_)
                     | Bound::MaybeConstTrait(_)
             ) || value
-                .has_free_regions(&self.facts.types)
+                .has_regions_outside(&self.facts.types, region_depth)
                 .map_err(|e| self.error(source, e))?
             {
                 return Ok(None);
