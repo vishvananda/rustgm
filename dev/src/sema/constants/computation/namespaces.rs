@@ -5,7 +5,9 @@ use crate::{sema::traits::obligations::Reservation, types::lifetime_proof::Owned
 use std::ops::Range;
 
 struct Entry {
-    transport: Option<OwnedTransport>,
+    // Keep folder storage out of the map's spare capacity. The folder is
+    // charged separately, once per caller.
+    transport: Option<Box<OwnedTransport>>,
     /// The universals the transport keeps fixed: its contract's binder.
     universals: u32,
     bytes: usize,
@@ -84,7 +86,7 @@ fn take(
     universals: u32,
     owned: &[Range<u32>],
     scratch: usize,
-) -> Result<OwnedTransport, &'static str> {
+) -> Result<Box<OwnedTransport>, &'static str> {
     let existing = facts
         .source_computations
         .as_deref_mut()
@@ -195,12 +197,12 @@ fn take(
         },
     );
     namespaces.bytes = planned;
-    Ok(transport)
+    Ok(Box::new(transport))
 }
 fn restore(
     facts: &mut Declarations,
     key: CallerKey,
-    transport: OwnedTransport,
+    transport: Box<OwnedTransport>,
     bytes: usize,
 ) -> Result<(), &'static str> {
     let fixed = transport.validate_fixed();
