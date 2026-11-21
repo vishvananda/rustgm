@@ -330,6 +330,17 @@ impl<'a> Templates<'a> {
                 if shape.definition.repr.representation == Representation::Transparent {
                     self.transparent(types, layouts, &shape)?;
                 }
+                // A concrete instance can store a projection where this walk
+                // does not descend, as `Vec<A::Item>` stores `PhantomData<A::Item>`
+                // and a pointer to a sized `A::Item`. Its layout reads normalized
+                // storage, which no declaration prepares, so the instance stays
+                // symbolic, like one with a projected field by value.
+                if matches!(
+                    definitions.try_shape(types, ty)?,
+                    aggregate::ShapeReadiness::Pending
+                ) {
+                    properties.readiness = properties.readiness.combine(Readiness::Symbolic);
+                }
             }
             _ => {}
         }

@@ -26927,6 +26927,44 @@
         "tests/spec/nominal-residuals/scaling-128.rs",
         "tests/spec/nominal-residuals/observe.c"
       ]
+    },
+    {
+      "path": "tests/spec/projections/definition-readiness/lowir/storage-indirect-projection-holder.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census declaration gate: a concrete holder of an instance whose projected fields sit only behind pointers",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/projections/definition-readiness/lowir/storage-indirect-projection-variant.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "Independently declared selfhost census declaration gate: an enum variant stores a parameter projection behind a pointer only",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
