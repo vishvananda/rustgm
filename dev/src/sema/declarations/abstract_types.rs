@@ -228,6 +228,9 @@ impl Checker<'_> {
                 path, definition, ..
             } = written
             {
+                // A result's bound elides like the result itself (rustc's
+                // rule); an alias's bound has no output lifetime to take.
+                let mut elided = false;
                 self.bound_subject_inputs(
                     path,
                     owner,
@@ -235,7 +238,13 @@ impl Checker<'_> {
                         .explicit
                         .as_deref_mut()
                         .map(|captures| &mut captures.names),
+                    matches!(context.position, Position::Output).then_some(&mut elided),
                 )?;
+                if elided && let Some(explicit) = &mut pending.explicit {
+                    let region = self.regions.elided(context);
+                    let region = region.map_err(|e| self.error(path, e))?;
+                    explicit.regions.insert(region);
+                }
                 self.schedule_associated_bindings(path, context)?;
                 self.work
                     .push(Work::PathArguments(path, definition, context));

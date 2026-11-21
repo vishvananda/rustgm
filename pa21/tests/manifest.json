@@ -10240,6 +10240,114 @@
       }
     },
     {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/receiver-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/input-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/receiver-over-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/wildcard-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/tuple-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/lowir/callable-bound-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/opaque/return-regions/accepted/semantics/elided-reference.rs",
       "exit_status": 0,
       "features": [
@@ -10380,6 +10488,84 @@
       "maintainer_origin": "dev/tests/return_regions.rs:ACCEPTED"
     },
     {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/receiver-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/input-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/receiver-over-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/wildcard-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/tuple-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/accepted/semantics/callable-bound-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
       "path": "tests/spec/opaque/return-regions/rejected/lowir/caller-escape.rs",
       "exit_status": 1,
       "features": [
@@ -10452,6 +10638,62 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/return_regions.rs:REJECTED",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/rejected/lowir/no-input-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/rejected/lowir/two-inputs-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/rejected/lowir/where-clause-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/opaque/return-regions/rejected/lowir/argument-item.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.opaque"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
       "mode": "--emit-lowir"
     },
     {

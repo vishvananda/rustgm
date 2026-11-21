@@ -460,7 +460,7 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
     ) -> Result<(), Error> {
-        self.bound_subject_inputs(key, owner, None)
+        self.bound_subject_inputs(key, owner, None, None)
     }
     /// Whether a written bound of `owner` names `definition` in its subject or
     /// trait path, as an impl's bounds may name its own `Self`. The walk visits
@@ -493,11 +493,15 @@ impl Checker<'_> {
     }
     /// Retain written identities during the existing syntax walk, before aliases
     /// erase arguments. Nested binders have distinct resolved definitions.
+    /// With `output_elision`, as for a result `impl Trait`, a reference without
+    /// a named lifetime is accepted and later lowered to the signature's elided
+    /// output lifetime; the flag records that one was written.
     pub(in super::super) fn bound_subject_inputs(
         &mut self,
         key: NodeKey,
         owner: DefId,
         mut captures: Option<&mut crate::support::hash::HashSet<DefId>>,
+        mut output_elision: Option<&mut bool>,
     ) -> Result<(), Error> {
         let ast = &self.report.package.unit(key.file).configured.ast;
         let raw = matches!(
@@ -554,7 +558,9 @@ impl Checker<'_> {
                     let children = ast.list(elements);
                     let valid = children.len() == 2
                         && matches!(ast.node(children[0]).kind,Kind::Name(span, _) if self.report.package.unit(key.file).spelling(span).is_ok_and(|s|s!="'_"));
-                    if !valid {
+                    if let Some(elided) = output_elision.as_deref_mut() {
+                        *elided |= !valid;
+                    } else if !valid {
                         return Err(self.error(
                             NodeKey { node, ..key },
                             "bound references require explicit named lifetimes",
