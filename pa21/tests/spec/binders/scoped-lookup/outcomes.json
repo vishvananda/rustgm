@@ -50,6 +50,41 @@
       "source_sha256": "7442b88de5ed3ea72d1d7f62b3c1de2d9948721ce78518995febb79cb4c869c5",
       "reference_status": 0,
       "baseline_status": 1
+    },
+    {
+      "file": "static-result-receiver.rs",
+      "expected_status": 0,
+      "source_sha256": "6ab46c4e994a963d9cc0da80ce3e17305ebeb789a59f50f753e60f63feee80b9",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "static-result-qualified.rs",
+      "expected_status": 0,
+      "source_sha256": "741104110fdd5aafbaeb1fa824e82be0091e2d3d1c3ffb3e5d7d8517cd3cb70e",
+      "reference_status": 0,
+      "baseline_status": 0
+    },
+    {
+      "file": "static-result-self-path.rs",
+      "expected_status": 0,
+      "source_sha256": "a3f7895cab3519885600f7f9380d3d1aae041d60da8f5ee698d9159403a1d387",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "static-result-fallback.rs",
+      "expected_status": 0,
+      "source_sha256": "d0a39f1954457e7d61372fbd88e72ebcb25feb0e6449c0f5d639ae816e7375c5",
+      "reference_status": 0,
+      "baseline_status": 1
+    },
+    {
+      "file": "static-result-unsatisfied.rs",
+      "expected_status": 1,
+      "source_sha256": "cf0d3ec2633d5db9ac264f676876791f77f3b2f98d57674a381be3fb1ce27baa",
+      "reference_status": 1,
+      "baseline_status": 1
     }
   ]
 }

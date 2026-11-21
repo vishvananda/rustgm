@@ -43,7 +43,7 @@ impl Goal {
             Err(error) => return Err(inference(error)),
         };
         if predicate.contains_parameters(&facts.types)?
-            || predicate.has_regions_outside(&facts.types, 1)?
+            || predicate.has_scoped_regions_outside(&facts.types, 1)?
             || predicate.contains_opaques(&facts.types)?
         {
             return Ok(true);
@@ -106,7 +106,8 @@ pub(super) fn quantified(
     if scoped.bound_regions == 0 {
         return Ok(None);
     }
-    if scoped.predicate.has_regions_outside(store, 1)?
+    // `'static` is closed: a binder that names it encloses no outer scope.
+    if scoped.predicate.has_scoped_regions_outside(store, 1)?
         || matches!(scoped.predicate.bound, Bound::Outlives(_))
     {
         return Err("quantified clause requires a scoped consumer");

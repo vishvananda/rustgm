@@ -470,6 +470,13 @@ impl Store {
             .get(id.0 as usize)
             .map(|p| p.has(Property::FreeRegions) || p.escaping > depth)
     }
+    /// Free regions other than `'static`, which is closed and names no scope.
+    #[must_use]
+    pub fn has_scoped_regions(&self, id: TypeId, depth: u16) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::NonStaticFreeRegions) || p.escaping > depth)
+    }
     /// Static lifetimes and lifetimes bound inside the type need no outer scope.
     #[must_use]
     pub fn needs_region_context(&self, id: TypeId) -> Option<bool> {

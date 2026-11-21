@@ -184,23 +184,50 @@ impl Predicate {
         store: &crate::types::Store,
         depth: u16,
     ) -> Result<bool, &'static str> {
-        let subject = store
-            .has_free_regions(self.ty, depth)
-            .ok_or("invalid predicate subject")?;
+        self.regions_outside(store, depth, false)
+    }
+    /// As `has_regions_outside`, except that `'static` is closed: a binder
+    /// whose body names only it and its own regions encloses no other scope.
+    pub(crate) fn has_scoped_regions_outside(
+        self,
+        store: &crate::types::Store,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
+        self.regions_outside(store, depth, true)
+    }
+    fn regions_outside(
+        self,
+        store: &crate::types::Store,
+        depth: u16,
+        closed_static: bool,
+    ) -> Result<bool, &'static str> {
+        let free = |ty: crate::types::TypeId| {
+            if closed_static {
+                store.has_scoped_regions(ty, depth)
+            } else {
+                store.has_free_regions(ty, depth)
+            }
+        };
+        let property = if closed_static {
+            crate::types::Property::NonStaticFreeRegions
+        } else {
+            crate::types::Property::FreeRegions
+        };
+        let subject = free(self.ty).ok_or("invalid predicate subject")?;
         let arguments = match self.bound {
             Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
                 let properties = store
                     .trait_properties(id)
                     .ok_or("invalid predicate trait application")?;
-                properties.escaping > depth || properties.has(crate::types::Property::FreeRegions)
+                properties.escaping > depth || properties.has(property)
             }
             Bound::Outlives(region) => {
                 region != crate::types::RegionId::STATIC
                     && region.bound_parts().is_none_or(|(level, _)| level >= depth)
             }
-            Bound::ProjectionEqual(result) => store
-                .has_free_regions(result, depth)
-                .ok_or("invalid projection equality result")?,
+            Bound::ProjectionEqual(result) => {
+                free(result).ok_or("invalid projection equality result")?
+            }
             Bound::Copy | Bound::Clone | Bound::Sized | Bound::Auto(_) => false,
         };
         Ok(subject || arguments)

@@ -17,3 +17,14 @@ Outer captured binders and quantified outlives lookup clauses retain their named
 fences. Caller-dependent or unresolved conditions remain possibility checks;
 lookup publishes no proof authority. No generated references precede the frozen
 outcomes or independent object checks.
+
+Five later sources name `'static` inside the quantified condition,
+`F: FnMut(&u8) -> &'static u8`, the shape of an impl whose closures return
+`Result<_, &'static str>`. `'static` names no enclosing scope, so the binder is
+as closed as one naming only its own regions. Their outcomes were declared on
+2026-11-21 before the Rust 1.98 run and before any RustGM run of these bytes.
+Receiver and `Self::` lookups accept, and so does the qualified path, which a
+baseline without a receiver already accepted. A pointer returning its input's
+lifetime does not satisfy the condition: alone it is rejected (E0599), beside a
+trait method it falls back to that method's u16 result. An outer named lifetime
+in the condition keeps its fence.
