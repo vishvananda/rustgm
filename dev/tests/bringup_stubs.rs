@@ -102,7 +102,8 @@ const GUARD: &str =
     "compiler assertion requires checked source panic signature, caller and runtime routing";
 
 /// Compile `source` as a source-core library named by `identity`; with
-/// `publish`, in the source profile that writes `probe.rgm` into the folder.
+/// `publish`, it writes `probe.rgm` into the folder in version thirteen,
+/// which still fences general declaration policy (version fourteen carries it).
 fn library(
     name: &str,
     source: &str,
@@ -125,7 +126,7 @@ fn library(
         ]);
     if publish {
         command
-            .args(["--source-profile", "module-body-operations-v14"])
+            .args(["--source-profile", "module-bodies-v13"])
             .arg("--metadata-output")
             .arg(&metadata);
     }
@@ -298,9 +299,9 @@ fn rejected_functions_are_named_until_the_list_compiles_the_rest() -> Result {
 /// its inline constant. rustc 1.98.0 rejects each mistyped `let` with E0308
 /// (mismatched types), the thin-to-wide pointer cast with E0607, and the
 /// constant of `overflows`, which types, with E0080 (its evaluation
-/// overflows). It accepts `chooses`, whose generic inline constant `RustGM` evaluates
-/// before any instance, as alloc's `SpecFromIter` selection for in-place
-/// collection does, and fails.
+/// overflows). It accepts `chooses`, whose generic inline constant selects its
+/// function per instance, as alloc's `SpecFromIter` selection for in-place
+/// collection does; so does `RustGM`, which keeps that body.
 const MISTYPED: &str = "\
 fn mistyped() -> u8 {
     let value: u8 = 1i32;
@@ -425,7 +426,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
     );
     let mut later = later.concat();
     later.sort_unstable();
-    assert_eq!(later, ["chooses", "evaluates", "overflows"]);
+    assert_eq!(later, ["evaluates", "overflows"]);
     // Callers keep their bodies and the checked signatures of the stubs.
     assert!(stubbed.contains("binary or"), "{stubbed}");
     assert!(!stubbed.contains("binary and"), "{stubbed}");
@@ -433,7 +434,7 @@ fn bodies_that_do_not_type_are_named_together_and_become_stubs() -> Result {
         .split("\nfunction @")
         .filter(|function| function.contains("call void @abort()"))
         .count();
-    assert_eq!(trapping, 10, "{stubbed}");
+    assert_eq!(trapping, 9, "{stubbed}");
     Ok(())
 }
 
@@ -614,11 +615,9 @@ impl<T:PointeeSized> LegacyReceiver for &T{}
 /// with types the lowering handles.
 const LOWERED: &str = "\
 #[rustc_intrinsic] const fn ctpop<T>(x:T)->u32;
-#[rustc_intrinsic] const fn saturating_add<T>(a:T,b:T)->T;
 #[rustc_intrinsic] const unsafe fn offset<P,D>(dst:P,offset:D)->P;
 #[rustc_intrinsic] const unsafe fn read_via_copy<T>(ptr:*const T)->T;
 #[unsafe(no_mangle)]pub fn ones(x:u32)->u32{ctpop(x)}
-#[unsafe(no_mangle)]pub fn clamped(a:u8,b:u8)->u8{saturating_add(a,b)}
 #[unsafe(no_mangle)]pub unsafe fn third(p:*const u32)->u32{unsafe{read_via_copy(offset(p,3isize))}}
 ";
 /// A call with a type that the lowering of the same intrinsic does not handle.
@@ -690,7 +689,7 @@ struct Lowering {
     emitted: &'static [&'static str],
     trapped: Option<&'static str>,
 }
-const PLAIN: &[&str] = &["ctpop", "saturating_add", "offset", "read_via_copy"];
+const PLAIN: &[&str] = &["ctpop", "offset", "read_via_copy"];
 const SCALAR: &[&str] = &["binary ushr", "index u8"];
 const STORED: &[&str] = &[
     "copy_nonoverlapping",

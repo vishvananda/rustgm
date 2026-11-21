@@ -104,13 +104,13 @@ const REJECTED: &[(&str, &[&str], &str, &str)] = &[
         "fn main(){check(Range(Opt::No,Opt::No).sum_into::<u32>()==500);}\n",
         AMBIGUOUS,
     ),
-    // rustc selects at the call and reports the later `u64` (E0308); the
-    // frontend selects at its frontier, where the literal is already `u64`.
+    // Both select at the call, fixing the literal as `u32`, and report the
+    // later `u64` (rustc E0308).
     (
         "later-conflict",
         &[OWNED, BORROWED],
         "fn main(){let a=1;let s=Range(a,10).sum_into::<u32>();let b:u64=a;check(s==101&&b==1);}\n",
-        AMBIGUOUS,
+        "incompatible types",
     ),
 ];
 

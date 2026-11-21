@@ -91,7 +91,7 @@ const CASES: [Case; 9] = [
         items: &[DIRECTIVE, HOLDER],
         capped: true,
         rejected: Some(
-            "unsupported active source-core feature or undefined library feature request",
+            "unsupported active source-core feature or undefined library feature request `diagnostic_on_moves`",
         ),
     },
     Case {
