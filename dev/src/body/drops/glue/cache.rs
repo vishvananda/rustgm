@@ -9,9 +9,11 @@ use crate::{
     types::{ItemId, Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
 
-/// A coarse runaway guard on one session's destruction recipe work: a
-/// whole-graph build discovers recipes for hundreds of thousands of types.
+/// Coarse runaway guards on one session's destruction recipes, their work and
+/// retained bytes: a whole-graph build discovers recipes for hundreds of
+/// thousands of types.
 const WORK_LIMIT: usize = 1 << 26;
+const RETAINED_LIMIT: usize = 1 << 30;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Key {
@@ -133,8 +135,8 @@ impl Cache {
         self.retained = count
             .checked_mul(size_of::<T>())
             .and_then(|n| self.retained.checked_add(n))
-            .filter(|n| *n <= 64_000_000)
-            .ok_or("destruction recipes exceed 64 MB budget")?;
+            .filter(|n| *n <= RETAINED_LIMIT)
+            .ok_or("destruction recipes exceed their retained-byte runaway limit")?;
         Ok(())
     }
 }
