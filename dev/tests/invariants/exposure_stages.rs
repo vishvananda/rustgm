@@ -32,7 +32,7 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
         .find(|&ty| matches!(facts.types.kind(ty), Some(Kind::Adt(..))))
         .ok_or("concrete")?;
     sema::vtable_plans::prepare_table(&report, &mut facts, concrete, object)?;
-    let tables = sema::vtable_plans::complete_tables(&mut facts)?;
+    let tables = sema::vtable_plans::complete_tables(&report, &mut facts)?;
     assert!(!tables.is_empty());
     let roots = tables
         .iter()
@@ -47,7 +47,7 @@ fn first_vtable_batch_retains_exposure_before_later_dynamic_helper_demand() -> R
     let empty = builder.object_dependencies(&mut facts, &roots)?;
     assert!(empty.ordinary.is_empty());
     assert!(empty.futures.is_none());
-    assert!(sema::vtable_plans::complete_tables(&mut facts)?.is_empty());
+    assert!(sema::vtable_plans::complete_tables(&report, &mut facts)?.is_empty());
     let before = builder
         .recipes
         .as_ref()
