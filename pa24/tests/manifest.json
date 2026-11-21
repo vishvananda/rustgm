@@ -2975,6 +2975,25 @@
       ]
     },
     {
+      "path": "tests/spec/generic-captures/associated-constant.rs",
+      "source_sha256": "6f2118e32d613b70bf602a40f3eec0ce9983c8adfd40bbce4b4cf1904bde84a8",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closures"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/generic-captures/borrow-conflict.rs",
       "source_sha256": "1a71a5ab726c4ad8d2760a2810949eea0ab3d4e0e7b5ffebd8fab5323b4a4ae3",
       "exit_status": 1,

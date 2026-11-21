@@ -6,6 +6,8 @@ use std::ops::Range;
 
 struct Entry {
     transport: Option<OwnedTransport>,
+    /// The universals the transport keeps fixed: its contract's binder.
+    universals: u32,
     bytes: usize,
 }
 pub(super) struct Namespaces {
@@ -41,11 +43,13 @@ pub(crate) fn with_namespace<T>(
     };
     let (mut key, publication) = computations.0.original(source)?;
     publication.validate(facts, source)?;
-    if matches!(enclosing, CallerInstance::Original) || key.universals != universals {
+    if matches!(enclosing, CallerInstance::Original)
+        || key.universals != universals && !captured_execution(facts, key, universals)
+    {
         return Err("source namespace does not match its original body binder");
     }
     key.enclosing = enclosing;
-    let mut transport = take(facts, key, owned, scratch)?;
+    let mut transport = take(facts, key, universals, owned, scratch)?;
     let before = transport.steps.saturating_add(transport.fold.steps);
     let result = (|| {
         transport.tighten_bytes(room(facts, key)?.saturating_sub(scratch))?;
@@ -63,9 +67,21 @@ pub(crate) fn with_namespace<T>(
     restored?;
     result
 }
+/// A captured closure executes under its typed binder plus the receiver
+/// borrow appended after it. That universal is the call's, never source-owned,
+/// so its contract travels in the typed body's namespace and keeps it fixed.
+fn captured_execution(facts: &Declarations, key: CallerKey, universals: u32) -> bool {
+    facts.closures.get(key.source).is_some_and(|closure| {
+        closure.universals == key.universals
+            && closure
+                .execution
+                .is_some_and(|execution| execution.universals == universals)
+    })
+}
 fn take(
     facts: &mut Declarations,
     key: CallerKey,
+    universals: u32,
     owned: &[Range<u32>],
     scratch: usize,
 ) -> Result<OwnedTransport, &'static str> {
@@ -75,6 +91,9 @@ fn take(
         .and_then(|c| c.0.namespaces.as_deref_mut())
         .and_then(|n| n.entries.get_mut(&key));
     if let Some(entry) = existing {
+        if entry.universals != universals {
+            return Err("source caller namespace changed its contract binder");
+        }
         let transport = entry
             .transport
             .as_ref()
@@ -126,7 +145,7 @@ fn take(
         .saturating_sub(metadata)
         .saturating_sub(prefix_bytes)
         .saturating_sub(scratch);
-    let mut transport = OwnedTransport::new_budgeted(owned, &[], key.universals, first, bytes)?;
+    let mut transport = OwnedTransport::new_budgeted(owned, &[], universals, first, bytes)?;
     transport.check_actuals(super::observed_arguments::regions(facts, key.enclosing)?)?;
     let (bytes, visits) = transport.retained_bytes();
     facts.body_work.canonical_steps = facts
@@ -171,6 +190,7 @@ fn take(
         key,
         Entry {
             transport: None,
+            universals,
             bytes,
         },
     );

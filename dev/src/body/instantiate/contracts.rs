@@ -143,11 +143,15 @@ fn prepare<const CAPTURES: bool>(
         ResultRequest::Source(ty) | ResultRequest::Conditional(ty) => Some(ty),
     };
     let mut contract = original.clone();
+    let closure = matches!(original.key, crate::body::ir::BodyKey::Closure(_));
     if !retain_output
-        && requested.is_some()
-        && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_))
+        && (closure
+            || requested.is_some()
+                && matches!(original.key, crate::body::ir::BodyKey::Anonymous(_)))
     {
         // Reprove the complete child without assuming its conditional conclusion.
+        // A closure's formation obligations are its own source facts, so they
+        // move into a caller's namespace with the rest of its contract.
         super::closures::formation(&mut contract);
     }
     if retain_output {
@@ -161,7 +165,7 @@ fn prepare<const CAPTURES: bool>(
     } else {
         Bound::parameters(&facts.types, &inputs.bindings)?
     };
-    if matches!(original.key, crate::body::ir::BodyKey::Closure(_)) {
+    if closure && retain_output {
         super::closures::formation(&mut contract);
     }
     if inputs.connections.is_some() && matches!(premises, super::Premises::Declared) {
