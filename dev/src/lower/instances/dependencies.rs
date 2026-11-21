@@ -41,6 +41,9 @@ pub(super) struct FutureDemand {
 }
 #[cfg(test)]
 const _: [(); 8] = [(); size_of::<FutureDemand>()];
+/// A coarse runaway guard on one program's future operation demands: a
+/// whole-graph build polls hundreds of thousands of generated futures.
+const FUTURE_DEMAND_LIMIT: usize = 1 << 24;
 #[cfg(test)]
 const _: [(); 4] = [(); size_of::<Instance>()];
 
@@ -354,8 +357,9 @@ impl Discovered {
         let (length, capacity) = self.futures.as_deref().map_or((0, 0), |rows| {
             (rows.requests.len(), rows.requests.capacity())
         });
-        if length >= 100_000 {
-            return Err("future operation demand count exceeds 100000");
+        // A coarse runaway guard; the retained rows are budgeted below.
+        if length >= FUTURE_DEMAND_LIMIT {
+            return Err("future operation demand count exceeds its runaway limit");
         }
         let growth = crate::support::retained::Growth::vector::<FutureDemand>(length, capacity, 1);
         facts.charge_caller_inputs(

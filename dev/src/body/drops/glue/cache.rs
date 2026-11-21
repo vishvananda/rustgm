@@ -9,6 +9,10 @@ use crate::{
     types::{ItemId, Store, TypeId, aggregate::Definitions, destruction::NeedsDrop},
 };
 
+/// A coarse runaway guard on one session's destruction recipe work: a
+/// whole-graph build discovers recipes for hundreds of thousands of types.
+const WORK_LIMIT: usize = 1 << 26;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Key {
     Nominal(ItemId),
@@ -118,8 +122,8 @@ impl Cache {
         self.steps = self
             .steps
             .checked_add(count)
-            .filter(|n| *n <= 1_000_000)
-            .ok_or("destruction recipe work budget exceeded")?;
+            .filter(|n| *n <= WORK_LIMIT)
+            .ok_or("destruction recipe work exceeds its runaway limit")?;
         Ok(())
     }
     pub(super) fn retain<T>(&mut self, count: usize) -> Result<(), &'static str> {

@@ -713,6 +713,11 @@ pub(in crate::sema) fn retain_lending(
     Ok(())
 }
 
+/// A coarse runaway guard on the generated method selections of one session:
+/// a whole-graph build compares and polls hundreds of thousands of distinct
+/// generated types. The registry's retained bytes are budgeted separately.
+const SELECTION_LIMIT: usize = 1 << 24;
+
 fn prepay(facts: &mut Declarations, instance: Instance) -> Result<&mut Registry, &'static str> {
     let registry = facts.primitive_methods.as_deref();
     let (length, capacity, additional, old_work, old_bytes) =
@@ -725,8 +730,8 @@ fn prepay(facts: &mut Declarations, instance: Instance) -> Result<&mut Registry,
                 registry.bytes,
             )
         });
-    if length.saturating_add(additional) > 100_000 {
-        return Err("generated method selection count exceeds 100000");
+    if length.saturating_add(additional) > SELECTION_LIMIT {
+        return Err("generated method selection count exceeds its runaway limit");
     }
     let growth =
         crate::support::retained::Growth::map::<Instance, Entry>(length, capacity, additional);

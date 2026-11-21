@@ -733,10 +733,20 @@ and memory at this size were not measured.
   (`dev/src/lower/instances/demand.rs`), 1,048,576 export roots
   (`dev/src/lower/roots.rs`), 1,048,576 intrinsic shims
   (`dev/src/lower/intrinsics.rs`) and 67,108,864 persistent data steps
-  (`dev/src/lower/data.rs`). The bridge's 1,025 LowIR units per link
-  (`scripts/backend.py`) is a crate profile budget; a joint-graph build links
-  one unit. What each counts against the 309,093 instances of the
+  (`dev/src/lower/data.rs`). Per session, destruction recipes stop at
+  67,108,864 steps
+  (`dev/src/body/drops/glue/cache.rs`) and generated method selections and
+  future operation demands at 16,777,216 each
+  (`dev/src/sema/primitive_methods.rs`,
+  `dev/src/lower/instances/dependencies.rs`). The bridge's 1,025 LowIR units
+  per link (`scripts/backend.py`) is a crate profile budget; a joint-graph
+  build links one unit. Each bridge command may run 120 s plus 1 s per MB of
+  the files it reads. What each counts against the 309,093 instances of the
   self-hosting program is for the frontier's census to report.
+- **Per-body guards** (typing, type inference, temporary scopes, type
+  privacy) stay at 1,000,000 steps each: they bound one body, and the largest
+  literal table in the joint graph has 1,519 elements
+  (`core/src/unicode/unicode_data.rs`).
 
 Not measured: backend optimisation levels above `-O0`; a program above 256
 rounds, so the backend's own failure point is unknown; a link of many units;
