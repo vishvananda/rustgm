@@ -153,12 +153,13 @@ pub(super) fn applications(
 }
 /// The trait methods the types `roots` name as a body typed them, as
 /// `<Input as From<&P>>::from` for `.map(Input::from)`, once their own
-/// inputs are concrete: no parameter, projection, opaque or bound lifetime.
-/// Each distinct method is listed once.
+/// inputs are concrete. A direct root may use its surrounding body binder
+/// when that root is explicitly admitted. Each method is listed once.
 pub(crate) fn trait_methods(
     store: &Store,
     associated: &crate::sema::associated::Inventory,
     roots: &[TypeId],
+    admits_body_root: impl Fn(TypeId) -> bool,
     pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
 ) -> Result<Vec<TypeId>, &'static str> {
     let mut methods = Vec::new();
@@ -168,7 +169,8 @@ pub(crate) fn trait_methods(
         |ty, kind| {
             if let Kind::FunctionItem { item, .. } = kind
                 && associated.trait_owner(DefId(item.0)).is_some()
-                && store.escaping_binders(ty) == Some(0)
+                && matches!(store.escaping_binders(ty),
+                    Some(depth) if depth == 0 || depth == 1 && admits_body_root(ty))
                 && store.contains_parameters(ty) == Some(false)
                 && store.contains_projections(ty) == Some(false)
                 && store.contains_opaques(ty) == Some(false)

@@ -56,6 +56,17 @@ pub(super) fn select(
     if roots.is_empty() {
         return Ok(());
     }
+    // A copied argument at the root of a body coercion uses that body's own
+    // universals. A method found only inside another callable's binder does not.
+    let body_methods = roots
+        .iter()
+        .copied()
+        .filter(|&ty| {
+            contract.universals != 0
+                && facts.types.escaping_binders(ty) == Some(1)
+                && item(facts, ty).is_some_and(|item| items.contains(&item))
+        })
+        .collect::<HashSet<_>>();
     let steps = std::cell::Cell::new(0_usize);
     let pay = |work: usize, _| {
         steps.set(steps.get().saturating_add(work));
@@ -68,6 +79,7 @@ pub(super) fn select(
         &facts.types,
         &facts.associated,
         &roots,
+        |ty| body_methods.contains(&ty),
         &pay,
     )?;
     for method in methods {

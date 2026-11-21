@@ -263,8 +263,13 @@ impl Declarations {
             steps.set(steps.get().saturating_add(work));
             Ok(())
         };
-        let methods =
-            super::definitions::trait_methods(&self.types, &self.associated, &[hidden], &pay);
+        let methods = super::definitions::trait_methods(
+            &self.types,
+            &self.associated,
+            &[hidden],
+            |_| false,
+            &pay,
+        );
         preparation.charge(steps.get())?;
         let methods = methods?;
         if methods.is_empty() {
