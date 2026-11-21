@@ -45,11 +45,15 @@ impl super::Trial {
                         .map_err(inference)?,
                     Some(crate::types::infer::Domain::Integer | crate::types::infer::Domain::Float)
                 );
-                let primitive = matches!(
-                    context.head(&facts.types, goal.subject()).map_err(inference)?,
-                    Some(crate::types::infer::Constructor::Primitive(value))
-                        if value != crate::types::Primitive::Str
-                );
+                let primitive = match context.head(&facts.types, goal.subject()) {
+                    Ok(Some(crate::types::infer::Constructor::Primitive(value))) => {
+                        value != crate::types::Primitive::Str
+                    }
+                    // A projected goal may still need normalization when the
+                    // ordinary trial resumes. It has no numeric certificate yet.
+                    Ok(_) | Err(crate::types::infer::Error::Normalization) => false,
+                    Err(error) => return Err(inference(error)),
+                };
                 if !numeric && !primitive {
                     return Ok(());
                 }
