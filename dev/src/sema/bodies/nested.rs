@@ -2,6 +2,7 @@
 mod completion;
 mod incoming_fields;
 pub(super) mod output;
+mod ported_captures;
 use super::{Checker, Dependency, Error, NodeId, State, Work, closures, inline};
 use crate::support::hash::HashMap;
 use crate::{
@@ -194,8 +195,10 @@ impl Checker<'_> {
                     self.error(self.state.body.node, "missing output interface parent")
                 })?;
             let payload = &mut scheduler.entries[index].payload;
-            let signature = payload.closure().ok().map(closures::Metadata::signature);
-            self.prepare_nested_output(payload.lifetimes_mut(), parent, signature)?;
+            let (signature, captured) = payload.closure().map_or((None, Vec::new()), |closure| {
+                (Some(closure.signature()), closure.captured_types())
+            });
+            self.prepare_nested_output(payload.lifetimes_mut(), parent, signature, &captured)?;
         }
         let result = match kind {
             Some(Kind::Closure) => self.export_closure_inputs(&mut scheduler),

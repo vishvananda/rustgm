@@ -14516,6 +14516,82 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "path": "tests/spec/sibling-closure-inputs/ok-or-else-map-err.rs",
+      "exit_status": 0,
+      "source_sha256": "a64204a17618577b706758d0d1dab97951e4f2ed0c911d4888bd8f2767089d67",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sibling-closure-inputs/mutable-slot.rs",
+      "exit_status": 0,
+      "source_sha256": "bc027eb52a6402f6fe1ef786c940f80d39453da81d06991f8ffb7a3d6694b751",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/sibling-closure-inputs/two-types.rs",
+      "exit_status": 1,
+      "source_sha256": "ff8ef24214c1916905bce69713a9682d60438a3dd478f24062190e7aff1ffeef",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/sibling-closure-inputs/annotated-escape.rs",
+      "exit_status": 1,
+      "source_sha256": "2aca087e4d9e623dde5650ac7dd175cc7e4117e88394c105db63593fcb3bbc56",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
     }
   ]
 }

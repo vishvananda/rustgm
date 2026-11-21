@@ -82,18 +82,22 @@ impl Checker<'_> {
         result
     }
     /// The result's private and imported regions, and the private regions of a
-    /// closure's inputs. rustc makes every free region of a closure signature
-    /// external to its body. A region that an unannotated parameter gains inside
-    /// the body becomes a port, as a private result region does, so the body's
-    /// requirements on it reach the parent. Imported input regions keep their
-    /// existing identity, and whether any input mentions one. An annotated
-    /// elided input lifetime stays in the closure's own binder, as rustc makes
-    /// it late-bound.
+    /// closure's inputs and captured locals. rustc makes every free region of a
+    /// closure signature external to its body. A region that an unannotated
+    /// parameter gains inside the body becomes a port, as a private result
+    /// region does, so the body's requirements on it reach the parent. So does
+    /// one that a parent inference hole in a captured local's type gains here,
+    /// such as the inferred input of a sibling closure this body calls: the
+    /// parent shares that hole, and rustc infers both bodies together.
+    /// Imported input regions keep their existing identity, and whether any
+    /// input mentions one. An annotated elided input lifetime stays in the
+    /// closure's own binder, as rustc makes it late-bound.
     fn nested_port_regions(
         &mut self,
         interface: &Interface,
         parent: NodeKey,
         signature: Option<TermId>,
+        captured: &[TermId],
     ) -> Result<(PortRegions, bool), Error> {
         let source = self.state.body;
         let result = self
@@ -119,6 +123,13 @@ impl Checker<'_> {
                     .map_regions(&mut self.facts.types, input, &mut inputs)
                     .map_err(|e| self.error(source.node, e))?;
             }
+        }
+        let mut locals = Bound::observe_regions();
+        for &local in captured {
+            self.state
+                .infer
+                .map_regions(&mut self.facts.types, local, &mut locals)
+                .map_err(|e| self.error(source.node, e))?;
         }
         let imported: HashMap<_, _> = interface
             .opening
@@ -161,6 +172,7 @@ impl Checker<'_> {
         regions.extend(
             inputs
                 .observed_regions()
+                .chain(locals.observed_regions())
                 .filter(|region| {
                     !imported.contains_key(region)
                         && !interface.is_annotation(*region)
@@ -171,7 +183,7 @@ impl Checker<'_> {
         regions.sort_unstable_by_key(|(region, _)| region.0);
         regions.dedup_by_key(|(region, _)| region.0);
         self.facts.body_work.canonical_steps +=
-            observe.steps + inputs.steps + interface.opening.universal_count();
+            observe.steps + inputs.steps + locals.steps + interface.opening.universal_count();
         Ok((regions, imported_inputs))
     }
 
@@ -180,9 +192,11 @@ impl Checker<'_> {
         interface: &mut Interface,
         parent: NodeKey,
         signature: Option<TermId>,
+        captured: &[TermId],
     ) -> Result<(), Error> {
         let source = self.state.body;
-        let (regions, imported_inputs) = self.nested_port_regions(interface, parent, signature)?;
+        let (regions, imported_inputs) =
+            self.nested_port_regions(interface, parent, signature, captured)?;
         interface.imported_inputs |= imported_inputs;
         for (private, caller) in regions {
             if interface

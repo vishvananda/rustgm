@@ -38,6 +38,14 @@ impl Metadata {
     pub(super) fn signature(&self) -> TermId {
         self.signature
     }
+    /// The body's imported types of the parent locals it names. They share the
+    /// parent's inference holes, which this body may resolve.
+    pub(super) fn captured_types(&self) -> Vec<TermId> {
+        self.bindings.iter().map(|&(_, term)| term).collect()
+    }
+    pub(super) const fn identity(&self) -> ClosureId {
+        self.identity
+    }
 }
 impl Checker<'_> {
     pub(super) fn enter_closure(
@@ -301,7 +309,13 @@ impl Checker<'_> {
         };
         completed.map_err(|e| self.error(body, e))?;
         let signature = metadata.signature;
-        self.prepare_nested_output(&mut metadata.lifetimes, parent.body, Some(signature))?;
+        let captured = metadata.captured_types();
+        self.prepare_nested_output(
+            &mut metadata.lifetimes,
+            parent.body,
+            Some(signature),
+            &captured,
+        )?;
         self.closure_result_boundary(&metadata.lifetimes)?;
         // The child resumes these after its real incoming caller constraints.
         // Existing Exit work then performs the full original cast preparation.

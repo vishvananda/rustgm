@@ -81,7 +81,9 @@ impl Checker<'_> {
                 .map(|pending| pending.arguments.as_slice()),
         );
         self.state.infer = infer.recycled();
-        let (solved, predicates, arguments) = finished.map_err(|e| self.error(body, e))?;
+        let (mut solved, mut predicates, mut arguments) =
+            finished.map_err(|e| self.error(body, e))?;
+        self.close_captured_ports(&mut solved, &mut predicates, &mut arguments)?;
         self.publish_nested_body(&solved)?;
         let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
