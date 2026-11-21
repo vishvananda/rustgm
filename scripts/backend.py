@@ -269,7 +269,7 @@ def build_many(sources, output, *, native_plan=None, native_search=(), native_ob
     invoke([tools["lowir2native"], "-O0", "-o", str(output), *units])
 
 
-def build_objects(sources, output, *, libraries=(), search=(), native_objects=()):
+def build_objects(sources, output, *, libraries=(), search=(), native_objects=(), run=None):
     # The executable reader concatenates symbols instead of merging declarations.
     # The object driver validates with the host ABI facts, including SSEUP.
     # The standalone reader deliberately has a narrower executable profile.
@@ -280,12 +280,13 @@ def build_objects(sources, output, *, libraries=(), search=(), native_objects=()
     objects = []
     for index, source in enumerate(sources):
         object_file = output.with_suffix(f".unit-{index}.o")
-        emit_object(source, object_file, tools)
+        emit_object(source, object_file, tools, run=run)
         objects.append(str(object_file))
     for path in native_objects:
         verify_object(path)
         objects.append(str(path))
-    invoke(["cc", *objects, *native_links.arguments(libraries, search), "-lm", "-o", str(output)])
+    (invoke if run is None else run)(
+        ["cc", *objects, *native_links.arguments(libraries, search), "-lm", "-o", str(output)])
 
 
 def build_object(source, output):

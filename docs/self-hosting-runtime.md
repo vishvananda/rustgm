@@ -286,6 +286,14 @@ through the object bridge, also for a single unit. There `abort` is glibc's and
 the program dies of SIGABRT like rustc's; exit status 134 belongs to the other
 two paths.
 
+`scripts/stage1_run.py LOWIR --native-links MANIFEST --out DIR` builds one
+joint-graph unit this way at `-O0` and runs it under time and address-space
+limits, with `--arg`, `--stdin`, `--env`, `--expect-status` and
+`--expect-stdout`; `DIR/record.json` holds the hashes, times and peak memory.
+A reached bring-up stub or trapping intrinsic aborts without a message, so
+`--backtrace` repeats a run that a signal ends under gdb and records its
+innermost frames.
+
 ### Gaps
 
 Ordered by the first rung that meets them. "Owner" is where the work is; no

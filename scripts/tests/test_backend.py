@@ -262,7 +262,7 @@ class MultipleUnits(unittest.TestCase):
                     backend, "invoke") as invoke, mock.patch.object(backend, "emit_object") as emit:
                 backend.build_many(sources, output)
                 objects = [output.with_suffix(f".unit-{index}.o") for index in range(2)]
-                self.assertEqual(emit.call_args_list, [mock.call(unit, target, tools)
+                self.assertEqual(emit.call_args_list, [mock.call(unit, target, tools, run=None)
                                                      for unit, target in zip(sources, objects)])
                 self.assertEqual(invoke.call_args_list, [
                     mock.call(["cc", *map(str, objects), "-lm", "-o", str(output)])])
