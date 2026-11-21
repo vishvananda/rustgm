@@ -118,6 +118,7 @@ pub(super) fn needs_field_normalization(
                     .list(list)
                     .ok_or("missing instance storage tuple")?,
             ),
+            Type::Closure { environment, .. } => work.push(environment),
             Type::Array { element, .. }
             | Type::ArrayTerm { element, .. }
             | Type::Slice(element) => work.push(element),
