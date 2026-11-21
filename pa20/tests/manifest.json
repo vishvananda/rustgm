@@ -6995,6 +6995,56 @@
       "mode": "--emit-lowir"
     },
     {
+      "path": "tests/spec/constants/value/lowir/module_length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/value/lowir/restricted_length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/constants/value/lowir/root_private_length.rs",
+      "exit_status": 1,
+      "features": [
+        "pa20.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/constants/value/semantics/array.rs",
       "exit_status": 0,
       "features": [
@@ -7331,6 +7381,32 @@
       },
       "maintainer_origin": "dev/tests/associated_declarations.rs:670",
       "source_note": "An explicit allow(unconditional_panic) attribute preserves the maintainer wrapper policy for intentionally unused erroneous initializers; other default lints remain enabled."
+    },
+    {
+      "path": "tests/spec/constants/value/semantics/module_length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/constants/value/semantics/restricted_length.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.constants"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      }
     },
     {
       "path": "tests/spec/contracts/associated-type-declarations/lowir/alias-erased-impl-lifetime.rs",

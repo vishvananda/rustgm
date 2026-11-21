@@ -1145,12 +1145,15 @@ impl Checker<'_> {
                     self.node_work(key.file, ty, context);
                     self.declaration_parameters(id, key, context)?;
                 }
-                ItemKind::Const { ty, .. } => {
+                ItemKind::Const { ty, value, .. } => {
                     let context = self.constant_context(id, key)?;
+                    self.retain_initializer_site(id, value, context, key);
                     self.node_work(key.file, ty, context);
                 }
-                ItemKind::Static { ty, .. } => {
-                    self.node_work(key.file, ty, regions::Context::item_static(id));
+                ItemKind::Static { ty, value, .. } => {
+                    let context = regions::Context::item_static(id);
+                    self.retain_initializer_site(id, value, context, key);
+                    self.node_work(key.file, ty, context);
                 }
                 _ => return Err(self.error(key, "unsupported type declaration")),
             }

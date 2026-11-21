@@ -39,7 +39,7 @@ pub(super) struct Pending {
     /// Anonymous constants nested in a body, whose own nested constants are too.
     in_bodies: HashSet<NodeKey>,
     /// The site of each constant without a binder owner, which the constants
-    /// nested in it share.
+    /// nested in it share, and of each binderless const or static initializer.
     sites: HashMap<NodeKey, Site>,
 }
 
@@ -67,7 +67,14 @@ impl Checker<'_> {
             | regions::Position::Nominal(item)
             | regions::Position::Alias(item)
             | regions::Position::Default(item) => Site::Declaration(item),
-            regions::Position::Local(body) => Site::Scope(NodeKey { node: body, ..key }),
+            regions::Position::Local(body) => {
+                let body = NodeKey { node: body, ..key };
+                self.constant_evaluations
+                    .sites
+                    .get(&body)
+                    .copied()
+                    .unwrap_or(Site::Scope(body))
+            }
             regions::Position::Constant(root) => self
                 .constant_evaluations
                 .sites
@@ -77,6 +84,23 @@ impl Checker<'_> {
             regions::Position::Input | regions::Position::Impl | regions::Position::Output => {
                 Site::CrateRoot
             }
+        }
+    }
+    /// A binderless const or static initializer opens no scope of its own:
+    /// the constants in it are typed in the item's lexical module.
+    pub(super) fn retain_initializer_site(
+        &mut self,
+        id: DefId,
+        value: Option<crate::syntax::ast::NodeId>,
+        context: regions::Context,
+        key: NodeKey,
+    ) {
+        if let Some(node) = value
+            && context.binder.is_none()
+        {
+            self.constant_evaluations
+                .sites
+                .insert(NodeKey { node, ..key }, Site::Declaration(id));
         }
     }
     /// Keep a binderless constant's site for the constants nested in it.
