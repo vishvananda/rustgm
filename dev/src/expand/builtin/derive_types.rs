@@ -128,8 +128,25 @@ pub(super) fn node(
                 *output = node(source, *output, target, charge, depth + 1)?;
             }
         }
-        Kind::Call { callee, arguments } => {
-            *callee = node(source, *callee, target, charge, depth + 1)?;
+        Kind::Call {
+            callee: base,
+            arguments,
+        }
+        | Kind::MethodCall {
+            receiver: base,
+            arguments,
+            ..
+        } => {
+            *base = node(source, *base, target, charge, depth + 1)?;
+            *arguments = list(source, *arguments, target, charge, depth + 1)?;
+        }
+        Kind::GenericMethodCall {
+            receiver,
+            method,
+            arguments,
+        } => {
+            *receiver = node(source, *receiver, target, charge, depth + 1)?;
+            *method = node(source, *method, target, charge, depth + 1)?;
             *arguments = list(source, *arguments, target, charge, depth + 1)?;
         }
         Kind::Macro {

@@ -320,3 +320,33 @@ fn original_stdarch_types_macro_has_a_real_captured_array_literal() -> TestResul
     );
     Ok(())
 }
+
+#[test]
+fn array_count_method_receiver_arguments_and_name_keep_their_source() -> TestResult {
+    let text = "struct Holder([u8; Owner::VALUE.count(3usize)]);";
+    let (unit, root) = typed(text, TypeFlavor::Array)?;
+    let source = &unit.configured.ast;
+    let parsed = field(source, root, &|_, _| Ok(())).map_err(|error| error.message)?;
+    let method_call = |ast: &crate::syntax::ast::Syntax<StoredValue>| {
+        ast.nodes.iter().find_map(|node| match node.kind {
+            Kind::MethodCall {
+                receiver,
+                name,
+                arguments,
+            } => Some((
+                node.span,
+                ast.node(receiver).span,
+                name,
+                ast.list(arguments)
+                    .iter()
+                    .map(|&argument| ast.node(argument).span)
+                    .collect::<Vec<_>>(),
+            )),
+            _ => None,
+        })
+    };
+    let actual = method_call(&parsed.ast).ok_or("missing copied method call")?;
+    assert_eq!(Some(actual), method_call(source));
+    assert_eq!(parsed.ast.literals.len(), 1);
+    Ok(())
+}
