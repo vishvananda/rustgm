@@ -22,6 +22,11 @@ fn counted_queries_partition_into_open_and_keyed_rows() -> Result<(), Box<dyn st
         assert!(row.independent_keys <= row.independent);
         assert!(row.dependent_first <= row.dependent_keys);
         assert!(row.dependent_keys <= row.dependent);
+        // Equal premises merge callers; renaming merges equal shapes further.
+        assert!(row.structural_first <= row.structural_keys);
+        assert!(row.structural_keys <= row.dependent_keys);
+        assert!(row.renamed_first <= row.renamed_keys);
+        assert!(row.renamed_keys <= row.structural_keys);
         queries += row.queries;
     }
     assert!(queries > 0);

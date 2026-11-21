@@ -1,6 +1,8 @@
 //! Immutable assumptions for one symbolic body. Absence of a bound is not proof
 //! that a concrete instantiation lacks it; it only withholds that operation here.
 mod binder_opening;
+mod census;
+pub(crate) use census::Premise as CensusPremise;
 mod equalities;
 mod features;
 mod owned_payload;

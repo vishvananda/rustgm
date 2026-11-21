@@ -23,6 +23,12 @@ impl Parameters {
             .get(&id)
             .or_else(|| self.prefix.as_ref().and_then(|prefix| prefix.own.get(&id)))
     }
+    /// Every declared parameter, the prefix's included.
+    pub(super) fn entries(&self) -> impl Iterator<Item = (&ParameterId, &Abilities)> {
+        self.own
+            .iter()
+            .chain(self.prefix.iter().flat_map(|prefix| prefix.own.iter()))
+    }
     pub(super) fn contains_key(&self, id: ParameterId) -> bool {
         self.get(id).is_some()
     }

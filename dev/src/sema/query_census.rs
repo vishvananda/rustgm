@@ -1,6 +1,7 @@
 //! An off-by-default shadow count of the trait queries one canonical cache
 //! would answer. It reads the goals the search receives, interns nothing and
 //! changes no decision; its rows are diagnostics, never proof facts.
+mod callers;
 #[cfg(test)]
 #[path = "../../tests/invariants/query_census.rs"]
 mod tests;
@@ -10,7 +11,10 @@ use crate::types::{
     Kind, RegionId, Store, TypeId,
     arguments::Argument as Canonical,
     infer::{Context, arguments::Argument, predicates::Predicate as Goal},
-    parameters::{environment::Environment, predicates::Bound, premise_index::ClauseIndex},
+    parameters::{
+        ParameterId, ParameterKind, environment::Environment, predicates::Bound,
+        premise_index::ClauseIndex,
+    },
 };
 use std::cell::RefCell;
 use std::hash::{Hash, Hasher};
@@ -80,6 +84,13 @@ pub struct Row {
     pub dependent: usize,
     pub dependent_keys: usize,
     pub dependent_first: usize,
+    /// Dependent keys again, where callers with equal premises share one
+    /// identity.
+    pub structural_keys: usize,
+    pub structural_first: usize,
+    /// Likewise, with every parameter named by its argument slot.
+    pub renamed_keys: usize,
+    pub renamed_first: usize,
 }
 
 /// What the crate-wide answer table did with one resolved goal.
@@ -94,24 +105,48 @@ pub enum Answer {
     /// A self-check re-ran the search that a hit would have answered.
     Checked,
     Recorded,
-    /// The finished search did not qualify: it interned, learned a size,
-    /// met a cycle cutoff, or proved more than a closed source proof.
-    Unrecorded,
-    /// The goal is closed but its search may not use the table: the caller
-    /// has a closed premise, or the query or frame mode is outside the table.
+    /// The finished search did not enter the table: it met a cycle cutoff,
+    /// interned a type, learned a size or allocated a region; it proved
+    /// more than a closed source proof; or it deferred or refuted the goal.
+    Cyclic,
+    Interning,
+    Sizing,
+    Allocating,
+    Uncaptured,
+    Unproven,
+    /// The goal is closed but the caller has a closed premise.
     CallerPremises,
-    Mode,
+    /// The goal is closed but its frame or query is outside the table: a
+    /// nested scope or universe, a restricted source set, a normalization or
+    /// formation frame, a proof-reuse session, a non-use purpose or
+    /// placeholder premises, or an unsealed registry or size table.
+    Scoped,
+    Restricted,
+    Normalizing,
+    Reusing,
+    Purpose,
+    Unsealed,
 }
 impl Answer {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 18] = [
         Self::Lookup,
         Self::Hit,
         Self::Intersecting,
         Self::Checked,
         Self::Recorded,
-        Self::Unrecorded,
+        Self::Cyclic,
+        Self::Interning,
+        Self::Sizing,
+        Self::Allocating,
+        Self::Uncaptured,
+        Self::Unproven,
         Self::CallerPremises,
-        Self::Mode,
+        Self::Scoped,
+        Self::Restricted,
+        Self::Normalizing,
+        Self::Reusing,
+        Self::Purpose,
+        Self::Unsealed,
     ];
     #[must_use]
     pub const fn name(self) -> &'static str {
@@ -121,9 +156,19 @@ impl Answer {
             Self::Intersecting => "intersecting",
             Self::Checked => "checked",
             Self::Recorded => "recorded",
-            Self::Unrecorded => "unrecorded",
+            Self::Cyclic => "cyclic",
+            Self::Interning => "interning",
+            Self::Sizing => "sizing",
+            Self::Allocating => "allocating",
+            Self::Uncaptured => "uncaptured",
+            Self::Unproven => "unproven",
             Self::CallerPremises => "caller-premises",
-            Self::Mode => "mode",
+            Self::Scoped => "scoped",
+            Self::Restricted => "restricted",
+            Self::Normalizing => "normalizing",
+            Self::Reusing => "reusing",
+            Self::Purpose => "purpose",
+            Self::Unsealed => "unsealed",
         }
     }
 }
@@ -139,11 +184,17 @@ const FIXED_REGION: u64 = 10;
 const FREE_REGION: u64 = 11;
 const CONSTANT: u64 = 12;
 const CHILD: u64 = 13;
+const PARAMETER: u64 = 14;
+/// Key classes beside a level and its dependence.
+const STRUCTURAL: u8 = 0x20;
+const RENAMED: u8 = 0x40;
 
 #[derive(Default)]
 struct Scope {
     clauses: Option<Arc<ClauseIndex>>,
     environment: Option<Arc<Environment>>,
+    /// The premises as content, exactly and renamed; `None` keeps identity.
+    structure: Option<[[u64; 2]; 2]>,
 }
 impl Scope {
     fn identities(&self) -> [u64; 2] {
@@ -179,6 +230,11 @@ struct State {
     /// The innermost root's caller and mode.
     scope: Scope,
     mode: u64,
+    /// Name parameters by their argument slot rather than their identity.
+    rename: bool,
+    /// Caller changes whose premises were read as content, and those that
+    /// kept their identity.
+    scopes: [usize; 2],
     /// Every earlier caller stays alive, so an address names one caller.
     pinned: Vec<Scope>,
     key: Vec<u64>,
@@ -221,6 +277,14 @@ pub fn answer_rows() -> Vec<(Answer, usize)> {
     with(|state| rows.extend(Answer::ALL.into_iter().zip(state.answers)));
     rows
 }
+/// Caller changes whose premises were read as content, then those whose
+/// free regions, openings or feature grants kept the caller's identity.
+#[must_use]
+pub fn scope_rows() -> Vec<(&'static str, usize)> {
+    let mut rows = Vec::new();
+    with(|state| rows.extend(["content", "identity"].into_iter().zip(state.scopes)));
+    rows
+}
 /// Count one answer-table event.
 pub(in crate::sema) fn answer(event: Answer) {
     if active() {
@@ -239,6 +303,14 @@ fn with(action: impl FnOnce(&mut State)) {
             action(state);
         }
     });
+}
+/// Two independent hashes of a key.
+fn pair(key: &[u64]) -> [u64; 2] {
+    let mut fast = FxHasher::default();
+    key.hash(&mut fast);
+    let mut slow = std::hash::DefaultHasher::new();
+    key.hash(&mut slow);
+    [fast.finish(), slow.finish()]
 }
 fn same<T>(left: Option<&Arc<T>>, right: Option<&Arc<T>>) -> bool {
     match (left, right) {
@@ -261,11 +333,18 @@ pub(in crate::sema) fn root(
         if !same(state.scope.clauses.as_ref(), clauses)
             || !same(state.scope.environment.as_ref(), caller.environment)
         {
+            let structure = state.premises(
+                types,
+                clauses.map(Arc::as_ref),
+                caller.environment.map(Arc::as_ref),
+            );
+            state.scopes[usize::from(structure.is_none())] += 1;
             let previous = std::mem::replace(
                 &mut state.scope,
                 Scope {
                     clauses: clauses.cloned(),
                     environment: caller.environment.cloned(),
+                    structure,
                 },
             );
             state.pinned.push(previous);
@@ -306,18 +385,15 @@ impl State {
                 .trait_arguments()
                 .is_some_and(|(item, _)| self.scope.mentions(item));
         self.key.push(self.mode);
+        let goal_end = self.key.len();
         if dependent {
             self.key.extend(self.scope.identities());
         }
         let class = ((level as u8) << 1) | u8::from(dependent);
-        let mut fast = FxHasher::default();
-        self.key.hash(&mut fast);
-        let mut slow = std::hash::DefaultHasher::new();
-        self.key.hash(&mut slow);
-        let key = (fast.finish(), slow.finish());
-        let phase = u8::try_from(self.phase).unwrap_or(u8::MAX);
-        let distinct = self.phase_keys.insert(((phase << 3) | class, key.0, key.1));
-        let first = self.keys.insert((class, key.0, key.1));
+        let (distinct, first) = self.insert(class);
+        if dependent {
+            self.structural(types, context, goal, level, goal_end);
+        }
         let row = &mut self.rows[self.phase][level as usize];
         let (count, keys, firsts) = if dependent {
             (
@@ -335,6 +411,54 @@ impl State {
         *count += 1;
         *keys += usize::from(distinct);
         *firsts += usize::from(first);
+    }
+
+    /// Whether the key is new in this phase and new in the census.
+    fn insert(&mut self, class: u8) -> (bool, bool) {
+        let [fast, slow] = pair(&self.key);
+        let phase = u8::try_from(self.phase).unwrap_or(u8::MAX);
+        let distinct = self.phase_keys.insert(((phase << 3) | class, fast, slow));
+        let first = self.keys.insert((class, fast, slow));
+        (distinct, first)
+    }
+
+    /// Count a dependent goal's key once more under the caller's premises as
+    /// content, exactly and then with its parameters renamed.
+    fn structural(
+        &mut self,
+        types: &Store,
+        context: &mut Context,
+        goal: &Goal,
+        level: Level,
+        goal_end: usize,
+    ) {
+        let [exact, renamed] = self.scope.structure.unwrap_or_else(|| {
+            let identity = self.scope.identities();
+            [identity, identity]
+        });
+        let class = ((level as u8) << 1) | 1;
+        self.key.truncate(goal_end);
+        self.key.push(u64::from(self.scope.structure.is_some()));
+        self.key.extend(exact);
+        let (distinct, first) = self.insert(class | STRUCTURAL);
+        let row = &mut self.rows[self.phase][level as usize];
+        row.structural_keys += usize::from(distinct);
+        row.structural_first += usize::from(first);
+        self.key.clear();
+        self.regions.clear();
+        self.rename = true;
+        let complete = self.requirement(goal) && self.inputs(types, context, goal).is_some();
+        self.rename = false;
+        if !complete {
+            return;
+        }
+        self.key
+            .extend([self.mode, u64::from(self.scope.structure.is_some())]);
+        self.key.extend(renamed);
+        let (distinct, first) = self.insert(class | RENAMED);
+        let row = &mut self.rows[self.phase][level as usize];
+        row.renamed_keys += usize::from(distinct);
+        row.renamed_first += usize::from(first);
     }
 
     /// The requirement's own identity; false keeps the query open.
@@ -404,11 +528,14 @@ impl State {
         self.stack.clear();
         self.stack.push(root);
         while let Some(ty) = self.stack.pop() {
-            if types.contains_regions(ty) != Some(true) {
+            if types.contains_regions(ty) != Some(true)
+                && !(self.rename && types.contains_parameters(ty) == Some(true))
+            {
                 self.key.extend([EXACT, u64::from(ty.0)]);
                 continue;
             }
             match types.kind(ty) {
+                Some(Kind::Parameter(id)) if self.rename => self.parameter(types, id),
                 Some(Kind::Reference {
                     mutable,
                     region,
@@ -440,6 +567,20 @@ impl State {
                 _ => self.key.extend([EXACT, u64::from(ty.0)]),
             }
         }
+    }
+
+    /// A parameter by its identity, or renamed to its argument slot.
+    fn parameter(&mut self, types: &Store, id: ParameterId) {
+        let Some(parameter) = types.parameter(id).filter(|_| self.rename) else {
+            self.key.extend([PARAMETER, u64::from(id.0)]);
+            return;
+        };
+        let kind = match parameter.kind {
+            ParameterKind::Type { sized } => u64::from(sized),
+            ParameterKind::Const { ty } => 2 + u64::from(ty.0),
+        };
+        self.key
+            .extend([PARAMETER + 1, u64::from(parameter.index), kind]);
     }
 
     fn nominal(

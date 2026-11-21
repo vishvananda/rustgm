@@ -56,12 +56,13 @@ fn write_query_census(path: &str) -> Result<(), String> {
     let mut text = String::from(
         "rustgm-trait-query-census\t1\tshadow-count\tnot-a-qualification\n\
          phase\tlevel\tqueries\topen\tregional\tindependent\tindependent_keys\t\
-         independent_first\tdependent\tdependent_keys\tdependent_first\n",
+         independent_first\tdependent\tdependent_keys\tdependent_first\t\
+         structural_keys\tstructural_first\trenamed_keys\trenamed_first\n",
     );
     for (phase, level, row) in rustgm::sema::query_census::rows() {
         let _ = writeln!(
             text,
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
             phase.name(),
             level.name(),
             row.queries,
@@ -73,10 +74,17 @@ fn write_query_census(path: &str) -> Result<(), String> {
             row.dependent,
             row.dependent_keys,
             row.dependent_first,
+            row.structural_keys,
+            row.structural_first,
+            row.renamed_keys,
+            row.renamed_first,
         );
     }
     for (event, count) in rustgm::sema::query_census::answer_rows() {
         let _ = writeln!(text, "answers\t{}\t{count}", event.name());
+    }
+    for (kind, count) in rustgm::sema::query_census::scope_rows() {
+        let _ = writeln!(text, "scopes\t{kind}\t{count}");
     }
     fs::write(path, text).map_err(|error| format!("--trait-query-census {path}: {error}"))
 }

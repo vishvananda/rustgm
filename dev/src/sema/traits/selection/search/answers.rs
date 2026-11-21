@@ -210,20 +210,25 @@ struct Mark {
 }
 
 impl Search<'_> {
-    /// The table key's mode, or `None` when this frame or query is outside it.
-    fn answer_mode(&self, facts: &Declarations, frame: &Frame) -> Option<u8> {
+    /// The table key's mode, or why this frame or query is outside the table.
+    fn answer_mode(&self, facts: &Declarations, frame: &Frame) -> Result<u8, Event> {
         let query = &self.query;
-        if frame.scope != ScopeId::ROOT
-            || frame.sources != Sources::All
-            || frame.explicit_auto
-            || frame.normalized_inputs.is_some()
-            || frame.formation.is_some()
-            || query.universal.is_some()
-            || query.scopes.is_some()
-            || query.reuse.is_some()
-            || query.purpose != Purpose::Use
-            || self.caller.placeholders.is_some()
-            || facts.generics.partial_epoch
+        if frame.scope != ScopeId::ROOT || query.scopes.is_some() || query.universal.is_some() {
+            return Err(Event::Scoped);
+        }
+        if frame.sources != Sources::All || frame.explicit_auto {
+            return Err(Event::Restricted);
+        }
+        if frame.normalized_inputs.is_some() || frame.formation.is_some() {
+            return Err(Event::Normalizing);
+        }
+        if query.reuse.is_some() {
+            return Err(Event::Reusing);
+        }
+        if query.purpose != Purpose::Use || self.caller.placeholders.is_some() {
+            return Err(Event::Purpose);
+        }
+        if facts.generics.partial_epoch
             || !facts.types.nominal_sizes_sealed()
             || !facts
                 .generics
@@ -233,14 +238,14 @@ impl Search<'_> {
                     registry.headers_validated() && registry.selection_headers_ready()
                 })
         {
-            return None;
+            return Err(Event::Unsealed);
         }
         let availability = match query.availability {
             Availability::Validated => 0,
             Availability::Executable => 1,
             Availability::Declarations => 2,
         };
-        Some(availability | (u8::from(self.caller.retain_sized) << 2))
+        Ok(availability | (u8::from(self.caller.retain_sized) << 2))
     }
 
     fn caller_class(&mut self, facts: &mut Declarations) -> Result<Class, String> {
@@ -280,9 +285,12 @@ impl Search<'_> {
         if !goal.is_concrete(&facts.types)? || goal.contains_opaques(&facts.types)? {
             return Ok(None);
         }
-        let Some(mode) = self.answer_mode(facts, frame) else {
-            query_census::answer(Event::Mode);
-            return Ok(None);
+        let mode = match self.answer_mode(facts, frame) {
+            Ok(mode) => mode,
+            Err(event) => {
+                query_census::answer(event);
+                return Ok(None);
+            }
         };
         let Class::Neutral { promises } = self.caller_class(facts)? else {
             query_census::answer(Event::CallerPremises);
@@ -375,10 +383,17 @@ impl Search<'_> {
             mode: mark.mode,
             promises: mark.promises,
         };
-        let settled = frame.cycles == self.query.cycles
-            && mark.extent == facts.types.interned_extent()
-            && mark.sizes == self.query.builtins.learned_sizes()
-            && mark.regions == self.query.allocations.end();
+        let unsettled = if frame.cycles != self.query.cycles {
+            Some(Event::Cyclic)
+        } else if mark.extent != facts.types.interned_extent() {
+            Some(Event::Interning)
+        } else if mark.sizes != self.query.builtins.learned_sizes() {
+            Some(Event::Sizing)
+        } else if mark.regions != self.query.allocations.end() {
+            Some(Event::Allocating)
+        } else {
+            None
+        };
         let provider = provider(facts);
         let answers = facts.generics.selection_memo.answers().current(provider);
         let fresh = match decision {
@@ -396,8 +411,8 @@ impl Search<'_> {
             }
             return Ok(());
         }
-        match fresh {
-            Some(entry) if settled => {
+        match (fresh, unsettled) {
+            (Some(entry), None) => {
                 answers.entries.entry(key).or_insert(entry);
                 query_census::answer(Event::Recorded);
                 #[cfg(test)]
@@ -405,7 +420,11 @@ impl Search<'_> {
                     answers.counts.recorded += 1;
                 }
             }
-            _ => query_census::answer(Event::Unrecorded),
+            (_, Some(event)) => query_census::answer(event),
+            (None, None) if matches!(decision, Decision::Proven(_)) => {
+                query_census::answer(Event::Uncaptured);
+            }
+            (None, None) => query_census::answer(Event::Unproven),
         }
         Ok(())
     }

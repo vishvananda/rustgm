@@ -293,14 +293,10 @@ impl ClauseIndex {
     /// # Errors
     /// Rejects unknown clause identities.
     pub(crate) fn has_closed_premises(&self, types: &Store) -> Result<bool, &'static str> {
+        if self.grants_features() {
+            return Ok(true);
+        }
         for (layer, _) in self.layers() {
-            if layer
-                .features
-                .as_ref()
-                .is_some_and(|features| !features.values.is_empty())
-            {
-                return Ok(true);
-            }
             for &predicate in &layer.seen {
                 if !predicate.contains_parameters(types)? {
                     return Ok(true);
@@ -315,6 +311,16 @@ impl ClauseIndex {
             }
         }
         Ok(false)
+    }
+
+    /// Whether any layer grants a non-type feature.
+    pub(crate) fn grants_features(&self) -> bool {
+        self.layers().any(|(layer, _)| {
+            layer
+                .features
+                .as_ref()
+                .is_some_and(|features| !features.values.is_empty())
+        })
     }
 
     fn payload_allocation(&self) -> crate::support::retained::Allocation {
