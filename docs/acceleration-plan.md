@@ -235,7 +235,7 @@ The edit loop then is one lint-compile of the CLI plus the affected fixtures.
   dependency order that the audit enforces, so a workspace split is possible.
   `sema` is 46% of the code and one strongly connected component of 64
   submodules, and most edits land there, so the split pays off fully only once
-  `sema` is broken up. Do it after steps 1 and 2 and measure before committing.
+  `sema` is broken up. Measured and declined for now: see decision 7.
 - **Self-hosted builds.** Once stage 1 exists and the frontend reaches its
   targets, RustGM builds RustGM. CPPGM self-compiles in a quarter of GCC's CPU
   time; the equivalent here turns the 100 s compile into seconds and is the
@@ -361,7 +361,7 @@ the PA45 handout carry the resulting rules.
 | 4 | Does PA45 require separately compiled strict artifacts with metadata for every crate? | Amend it to a strict whole-graph session: zero stubs, obligations and waivers, comparing merged LowIR and the linked compiler. Leave separate compilation to PA29 and PA32–PA36, sized by the export census. | A bounded route to PA45 |
 | 5 | Do the finite contracts close PA25–PA31? | Yes, at the published manifest plus deferred list, with deferred items carried by PA44. | Closing seven assignments |
 | 6 | May the loop rules in `AGENTS.md` change? | Yes: compiles are never killed, admission queues, 8 build jobs, fixtures first, harness suites at checkpoints. | Section 2 |
-| 7 | Should the crate split be allowed? | Decide after step 2 of section 2 with measurements. | Section 2, step 3 |
+| 7 | Should the crate split be allowed? | Not now (measured 2026-11-21). Splitting into base, `sema` and upper crates saves a mean 10–12 s of a 63 s one-module rebuild (nothing for a `lex` edit, about 18 s for `sema`, 45 s for `pipeline`) against 10,545 path rewrites, 2,489 items widened to `pub`, 917 `#[path]` test files split across harnesses and a multi-crate audit. Revisit if edits concentrate above `sema`. | Section 2, step 3 |
 
 ## Evidence
 
