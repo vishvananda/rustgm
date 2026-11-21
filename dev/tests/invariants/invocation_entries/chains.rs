@@ -59,7 +59,13 @@ fn nested_prefixes_preserve_unused_source_slots_and_nested_callable_binders() ->
         receiver,
         CallTrait::FnOnce,
     )?;
-    let matched = borrowed::prepared(&mut types, canonical, 3, adapter, true)?;
+    let report = crate::test_source::resolve("fn main(){}", true)
+        .map_err(|_| "empty receiver fixture failed to resolve")?;
+    let mut facts = crate::pipeline::analyze_source(&report)
+        .map_err(|_| "empty receiver fixture failed to type check")?
+        .facts;
+    facts.types = types;
+    let matched = borrowed::prepared(&mut facts, canonical, 3, adapter, true)?;
     assert_eq!(matched.execution.universals, 5);
     assert!(matched.equalities.is_empty());
     let expected = [
@@ -75,7 +81,7 @@ fn nested_prefixes_preserve_unused_source_slots_and_nested_callable_binders() ->
             referent,
             mutable: false,
             region: actual,
-        }) = types.kind(ty)
+        }) = facts.types.kind(ty)
         else {
             return Err("nested reference shape changed");
         };

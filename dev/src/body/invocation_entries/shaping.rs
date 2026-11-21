@@ -32,13 +32,8 @@ pub(super) fn prepare(
         let prepared = crate::body::instantiate::closure_self_type(facts, execution)?;
         canonical = prepared.execution;
         proofs.extend(prepared.proof);
-        let prepared = borrowed::prepared(
-            &mut facts.types,
-            prepared.execution,
-            source.universals,
-            adapter,
-            true,
-        )?;
+        let prepared =
+            borrowed::prepared(facts, prepared.execution, source.universals, adapter, true)?;
         equalities = prepared.equalities;
         let prepared =
             crate::body::instantiate::normalize_closure_execution(facts, prepared.execution)?;
@@ -46,7 +41,7 @@ pub(super) fn prepare(
         prepared.execution
     } else {
         let mut execution = if let Some(adapter) = adapter {
-            let prepared = borrowed::execution(&mut facts.types, source, adapter)?;
+            let prepared = borrowed::execution(facts, source, adapter)?;
             equalities = prepared.equalities;
             prepared.execution
         } else {

@@ -1,7 +1,10 @@
 //! Reference Self keeps its own ABI and lifetime slots beside the source closure contract.
 use super::{CallKind, CallTrait, Type, TypeId, matching};
 use crate::{
-    sema::closures::{Body, Execution},
+    sema::{
+        closures::{self, Body, Execution},
+        model::Declarations,
+    },
     types::{RegionId, Store, closure::Adapter},
 };
 pub(super) fn subject(
@@ -76,27 +79,27 @@ pub(super) struct Matched {
     pub equalities: Vec<crate::types::outlives::Pair>,
 }
 pub(super) fn execution(
-    types: &mut Store,
+    facts: &mut Declarations,
     source: Body,
     adapter: Adapter,
 ) -> Result<Matched, &'static str> {
-    adapter.validate(types)?;
-    let canonical = super::validate_execution(types, source)?;
-    prepared(types, canonical, source.universals, adapter, false)
+    adapter.validate(&facts.types)?;
+    let canonical = super::validate_execution(&facts.types, source)?;
+    prepared(facts, canonical, source.universals, adapter, false)
 }
 /// A specialized source keeps its obsolete receiver slot before generic slots.
 pub(super) fn prepared(
-    types: &mut Store,
+    facts: &mut Declarations,
     canonical: Execution,
     original_receiver: u32,
     adapter: Adapter,
     preserve_slots: bool,
 ) -> Result<Matched, &'static str> {
-    adapter.validate(types)?;
+    adapter.validate(&facts.types)?;
     if adapter.receiver() == adapter.instance().ty() {
         return Ok(Matched {
             execution: super::shape_execution(
-                types,
+                &mut facts.types,
                 canonical,
                 original_receiver,
                 adapter.requested(),
@@ -110,6 +113,8 @@ pub(super) fn prepared(
     } else {
         original_receiver
     };
+    closures::matching::prepare_heads(facts, canonical.self_ty, adapter.receiver())?;
+    let types = &mut facts.types;
     let prefix = reference_self(types, canonical.self_ty, adapter, base)?;
     let self_ty = prefix.self_ty;
     let receiver = CallKind::from_trait(adapter.requested());
