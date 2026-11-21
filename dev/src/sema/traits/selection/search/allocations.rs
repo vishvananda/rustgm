@@ -7,6 +7,9 @@ pub(super) struct Allocations {
     end: u32,
     stream: Option<Box<Obligations>>,
     monotonic: bool,
+    /// How many scoped frontiers this query reserved; a replayed answer
+    /// reserves one when the search it replaces did.
+    reservations: u32,
 }
 impl Allocations {
     pub fn new(first: u32) -> Self {
@@ -16,6 +19,7 @@ impl Allocations {
             end: first,
             stream: None,
             monotonic: false,
+            reservations: 0,
         }
     }
     /// Only an uninterrupted root allocation owns every ID in this interval.
@@ -27,6 +31,9 @@ impl Allocations {
     }
     pub fn end(&self) -> u32 {
         self.end
+    }
+    pub fn reservations(&self) -> u32 {
+        self.reservations
     }
     /// No trial or scope allocated a caller region identity.
     pub fn untouched(&self) -> bool {
@@ -40,6 +47,7 @@ impl Allocations {
     }
     /// Scoped siblings must never reuse a previously attempted universal alias.
     pub fn reserve_scoped(&mut self) -> u32 {
+        self.reservations = self.reservations.wrapping_add(1);
         self.monotonic = true;
         self.floor = self.end;
         self.end

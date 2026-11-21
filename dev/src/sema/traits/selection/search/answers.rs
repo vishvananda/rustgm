@@ -12,10 +12,14 @@
 //! enters: no region, lifetime or Sized debt, no provisional size, no cycle
 //! cutoff, no automatic or caller-supplied node, and a search that interned no
 //! type, learned no size and allocated no region, so a replay leaves the state
-//! a fresh search would.
+//! a fresh search would. A node that the search itself built needs no entry
+//! of its own when it proves the same goal or is a nominal formation prefix;
+//! a replay registers that formation as the search did.
 //! The self-check mode runs the fresh search on every hit and compares.
 use super::{
-    Decision, Declarations, Frame, Node, Predicate, Query, Search, Source, frames::Sources,
+    Decision, Declarations, Frame, Node, Predicate, Query, Search, Source,
+    frames::Sources,
+    member_conditions::{Entry as Formed, Key as Family},
 };
 use crate::resolve::model::DefId;
 use crate::sema::compiler_items::SelectionState;
@@ -23,7 +27,7 @@ use crate::sema::query_census::{self, Answer as Event};
 use crate::sema::traits::implementations::{Availability, Purpose};
 use crate::support::hash::HashMap;
 use crate::types::{
-    GenericArgs, Store,
+    GenericArgs, Store, TypeId,
     lifetime_proof::ScopeId,
     parameters::{environment::Environment, premise_index::ClauseIndex},
     shape_key::ShapeKey,
@@ -61,23 +65,28 @@ enum Proof {
         owner: DefId,
         arguments: GenericArgs,
     },
+    /// A node without a source: a nominal formation prefix, whose children
+    /// prove the formed type's requirements.
+    Formation,
 }
 impl Proof {
     fn of(source: Option<&Source>) -> Option<Self> {
-        match *source? {
-            Source::Builtin => Some(Self::Builtin),
-            Source::Implementation { owner, arguments } => {
+        match source {
+            None => Some(Self::Formation),
+            Some(Source::Builtin) => Some(Self::Builtin),
+            Some(&Source::Implementation { owner, arguments }) => {
                 Some(Self::Implementation { owner, arguments })
             }
-            _ => None,
+            Some(_) => None,
         }
     }
-    const fn source(self) -> Source {
+    const fn source(self) -> Option<Source> {
         match self {
-            Self::Builtin => Source::Builtin,
+            Self::Builtin => Some(Source::Builtin),
             Self::Implementation { owner, arguments } => {
-                Source::Implementation { owner, arguments }
+                Some(Source::Implementation { owner, arguments })
             }
+            Self::Formation => None,
         }
     }
 }
@@ -88,22 +97,39 @@ struct Step {
     shape: ShapeKey,
     proof: Proof,
     children: Box<[usize]>,
+    /// The root-scope nominal formations, as type and depth, that the search
+    /// completed with this node, in a fixed order.
+    formed: Box<[(TypeId, u16)]>,
+}
+struct CompletedFormation {
+    node: usize,
+    keys: Vec<(TypeId, u16)>,
 }
 #[derive(Debug, PartialEq, Eq)]
 enum Entry {
     Absent(ShapeKey),
     /// Children precede their parents; the last step is the goal's own node.
-    Proven(Box<[Step]>),
+    /// `scoped` records that the search reserved a scoped region frontier.
+    Proven {
+        steps: Box<[Step]>,
+        scoped: bool,
+    },
 }
 impl Entry {
     /// A proof through an active goal must keep the search's cycle cutoff, and
-    /// one through a node this query completed must share that node.
+    /// one through a node this query completed must share that node. A
+    /// formation this query holds would likewise be shared or cut off.
     fn intersects(&self, query: &Query) -> bool {
         match self {
             Self::Absent(shape) => query.active.contains(shape),
-            Self::Proven(steps) => steps.iter().any(|step| {
+            Self::Proven { steps, .. } => steps.iter().any(|step| {
                 query.active.contains(&step.shape)
                     || query.completed(ScopeId::ROOT, step.goal).is_some()
+                    || step.formed.iter().any(|&(ty, depth)| {
+                        query
+                            .families
+                            .contains_key(&Family::Nominal(ty, depth, ScopeId::ROOT))
+                    })
             }),
         }
     }
@@ -192,13 +218,17 @@ impl Answers {
     /// The shape of a completed descendant, which must have its own entry
     /// with the same selected source.
     fn shape(&self, key: Key, proof: Proof) -> Option<ShapeKey> {
-        let Some(Entry::Proven(steps)) = self.entries.get(&key) else {
+        self.proven(key)
+            .filter(|step| step.proof == proof)
+            .map(|step| step.shape)
+    }
+
+    /// The last step of the proof entered for `key`.
+    fn proven(&self, key: Key) -> Option<&Step> {
+        let Some(Entry::Proven { steps, .. }) = self.entries.get(&key) else {
             return None;
         };
-        steps
-            .last()
-            .filter(|step| step.goal == key.goal && step.proof == proof)
-            .map(|step| step.shape)
+        steps.last().filter(|step| step.goal == key.goal)
     }
 }
 
@@ -229,6 +259,9 @@ struct Mark {
     extent: usize,
     sizes: usize,
     regions: u32,
+    /// The query's first node index that this frame's own search built.
+    nodes: usize,
+    reservations: u32,
     /// A self-check compares this fresh search with the existing entry.
     checking: bool,
 }
@@ -365,6 +398,8 @@ impl Search<'_> {
             extent: 0,
             sizes: 0,
             regions: 0,
+            nodes: 0,
+            reservations: 0,
             checking,
         });
         frame.answer = Some(slot);
@@ -383,6 +418,8 @@ impl Search<'_> {
         mark.extent = facts.types.interned_extent();
         mark.sizes = self.query.builtins.learned_sizes();
         mark.regions = self.query.allocations.end();
+        mark.nodes = self.query.nodes.len();
+        mark.reservations = self.query.allocations.reservations();
     }
 
     /// After a marked frame's search: enter its answer, or under a self-check
@@ -421,9 +458,11 @@ impl Search<'_> {
         let catalog = catalog(facts);
         let answers = facts.generics.selection_memo.answers().current(catalog);
         let fresh = match decision {
-            Decision::Absent => Some(Entry::Absent(shape)),
-            Decision::Proven(index) => self.capture(answers, index, key, shape),
-            Decision::Deferred | Decision::Refuted(_) => None,
+            Decision::Absent if self.query.allocations.reservations() == mark.reservations => {
+                Some(Entry::Absent(shape))
+            }
+            Decision::Proven(index) => self.capture(answers, index, key, (shape, mark)),
+            Decision::Absent | Decision::Deferred | Decision::Refuted(_) => None,
         };
         if mark.checking {
             if answers.entries.get(&key) != fresh.as_ref() {
@@ -459,16 +498,30 @@ impl Search<'_> {
         Ok(())
     }
 
-    /// The selected proof below `root`, when every node is a debt-free source
-    /// or builtin proof and every descendant already has its own entry. Its
-    /// steps follow the first-visit postorder of the children, so the entry
-    /// does not depend on which nodes this query had completed before.
-    fn capture(&self, answers: &Answers, root: usize, key: Key, shape: ShapeKey) -> Option<Entry> {
+    /// The selected proof below `root`, when every node is a debt-free
+    /// source, builtin or formation proof. A node of another goal needs its own
+    /// entry with the same proof, unless it is a formation prefix that this
+    /// frame's own search built; a node of the same goal needs one only when an
+    /// earlier search built it. Its steps follow the first-visit postorder of
+    /// the children, so the entry does not depend on which nodes this query had
+    /// completed before.
+    fn capture(
+        &self,
+        answers: &Answers,
+        root: usize,
+        key: Key,
+        (shape, mark): (ShapeKey, Mark),
+    ) -> Option<Entry> {
         let nodes = &self.query.nodes;
         // Child flags reach the root when a node is pushed, so the root's
         // flags cover the whole proof.
         let top = nodes.get(root)?;
-        if !top.debt_free || top.provisional_size || top.cycle_dependent || top.goal != key.goal {
+        if !top.debt_free
+            || top.provisional_size
+            || top.cycle_dependent
+            || top.goal != key.goal
+            || top.source.is_none()
+        {
             return None;
         }
         let mut order = Vec::new();
@@ -489,42 +542,103 @@ impl Search<'_> {
                 stack.pop();
             }
         }
-        let steps = order
+        let mut formed = self.formed(&order)?;
+        let steps: Box<[Step]> = order
             .iter()
             .map(|&index| {
                 let node = &nodes[index];
                 let proof = Proof::of(node.source.as_ref())?;
-                let shape = if index == root {
+                let own = index >= mark.nodes;
+                if proof == Proof::Formation && !own {
+                    return None;
+                }
+                let goal = Key {
+                    goal: node.goal,
+                    ..key
+                };
+                let shape = if index == root || (own && node.goal == key.goal) {
                     shape
+                } else if proof == Proof::Formation {
+                    answers.proven(goal)?.shape
                 } else {
-                    answers.shape(
-                        Key {
-                            goal: node.goal,
-                            ..key
-                        },
-                        proof,
-                    )?
+                    answers.shape(goal, proof)?
                 };
                 let children = node
                     .children
                     .iter()
                     .map(|child| order.iter().position(|index| index == child))
                     .collect::<Option<_>>()?;
+                let formed = formed
+                    .iter_mut()
+                    .find(|formation| formation.node == index)
+                    .map(|formation| std::mem::take(&mut formation.keys))
+                    .unwrap_or_default();
                 Some(Step {
                     goal: node.goal,
                     shape,
                     proof,
                     children,
+                    formed: formed.into_boxed_slice(),
                 })
             })
             .collect::<Option<_>>()?;
-        Some(Entry::Proven(steps))
+        let scoped = self.query.allocations.reservations() != mark.reservations;
+        // A replay reserves the frontier after placing its root; only a
+        // builtin root's place does not depend on that order.
+        if scoped && steps.last().is_none_or(|step| step.proof != Proof::Builtin) {
+            return None;
+        }
+        Some(Entry::Proven { steps, scoped })
+    }
+
+    /// The root-scope nominal formations that this query completed with each
+    /// formation node of `order`, in a fixed order, or `None` when one of them
+    /// is registered under a key a replay does not restore.
+    fn formed(&self, order: &[usize]) -> Option<Vec<CompletedFormation>> {
+        let nodes = &self.query.nodes;
+        let mut formed: Vec<_> = order
+            .iter()
+            .copied()
+            .filter(|&node| nodes[node].source.is_none())
+            .map(|node| CompletedFormation {
+                node,
+                keys: Vec::new(),
+            })
+            .collect();
+        if formed.is_empty() {
+            return Some(formed);
+        }
+        for (&family, &entry) in &self.query.families {
+            let Formed::Completed(index) = entry else {
+                continue;
+            };
+            let Some(formation) = formed.iter_mut().find(|formation| formation.node == index)
+            else {
+                continue;
+            };
+            match family {
+                Family::Nominal(ty, depth, scope) if scope == ScopeId::ROOT => {
+                    formation.keys.push((ty, depth));
+                }
+                _ => return None,
+            }
+        }
+        for formation in &mut formed {
+            if formation.keys.is_empty() {
+                return None;
+            }
+            formation
+                .keys
+                .sort_unstable_by_key(|&(ty, depth)| (ty.0, depth));
+        }
+        Some(formed)
     }
 
     /// Push an entry's proof as this query's own completed nodes, at the
-    /// region a fresh search would have started that proof's root.
+    /// region a fresh search would have started that proof's root, and
+    /// register its formations and scoped frontier as that search did.
     fn replay(&mut self, frame: &Frame, entry: &Entry) -> Decision {
-        let Entry::Proven(steps) = entry else {
+        let Entry::Proven { steps, scoped } = entry else {
             return Decision::Absent;
         };
         let first = match steps.last().map(|step| step.proof) {
@@ -532,8 +646,14 @@ impl Search<'_> {
             _ => frame.available_region().max(self.query.allocations.floor()),
         };
         let query = &mut self.query;
+        if *scoped {
+            // The search allocated no region, so its reservation met the
+            // frontier this one meets.
+            query.allocations.reserve_scoped();
+        }
         let start = query.nodes.len();
         let mut edges = 0;
+        let mut formation = false;
         for step in steps {
             edges += step.children.len();
             let index = query.push(
@@ -542,7 +662,7 @@ impl Search<'_> {
                     cycle_dependent: false,
                     provisional_size: false,
                     goal: step.goal,
-                    source: Some(step.proof.source()),
+                    source: step.proof.source(),
                     children: step.children.iter().map(|child| start + child).collect(),
                     first,
                     end: first,
@@ -554,10 +674,21 @@ impl Search<'_> {
                 ScopeId::ROOT,
                 first..first,
             );
-            query.remember(ScopeId::ROOT, step.goal, Decision::Proven(index));
+            for &(ty, depth) in &step.formed {
+                query.families.insert(
+                    Family::Nominal(ty, depth, ScopeId::ROOT),
+                    Formed::Completed(index),
+                );
+            }
+            if step.proof == Proof::Formation {
+                formation = true;
+            } else {
+                query.remember(ScopeId::ROOT, step.goal, Decision::Proven(index));
+            }
         }
-        // A step with two parents is shared, as a completed node is.
-        query.reused |= edges >= steps.len();
+        // A step with two parents is shared, as a completed node is, and a
+        // formation prefix joins its goal's proof as inherited inputs do.
+        query.reused |= formation || edges >= steps.len();
         Decision::Proven(query.nodes.len() - 1)
     }
 }
