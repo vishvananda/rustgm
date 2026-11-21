@@ -309,13 +309,7 @@ fn copy_link(
         revision: link.revision,
         universals: link.universals,
         bridges: link.bridges.clone(),
-        formation: link
-            .formation
-            .as_ref()
-            .map(|f| crate::sema::nested_outputs::Formation {
-                identity: f.identity,
-                inputs: f.inputs.clone(),
-            }),
+        formation: link.formation.clone(),
     }
 }
 

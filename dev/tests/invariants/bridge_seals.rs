@@ -1,6 +1,6 @@
 //! Revision-zero input bridges are sealed by immutable identity, not just a count.
 use super::*;
-use crate::sema::nested_outputs::{Bridge, Formation, Link};
+use crate::sema::nested_outputs::{Bridge, Link};
 use std::sync::Arc;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn copy_link(link: &Link) -> Link {
@@ -10,10 +10,7 @@ fn copy_link(link: &Link) -> Link {
         revision: link.revision,
         universals: link.universals,
         bridges: link.bridges.clone(),
-        formation: link.formation.as_ref().map(|f| Formation {
-            identity: f.identity,
-            inputs: f.inputs.clone(),
-        }),
+        formation: link.formation.clone(),
     }
 }
 #[test]

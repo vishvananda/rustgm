@@ -242,39 +242,68 @@ impl Checker<'_> {
 
     /// A closure's captured inputs whose formation the parent must prove.
     fn closure_formation(&mut self, source: NodeKey) -> Result<Option<Formation>, Error> {
-        Ok(
-            if let Some(closure) = self.facts.closures.get(source)
-                && let Some(environment) = self.facts.closures.environment(closure.identity)
-            {
-                let (inputs, work) = environment
-                    .formation_inputs()
-                    .map_err(|e| self.error(source.node, e))?;
-                self.facts.body_work.canonical_steps += work;
-                let mut queries = crate::types::outlives::Queries::new(
-                    &self.facts.types,
-                    &self.facts.lifetimes.nominal_requirements,
-                    &self.facts.lifetimes.callables,
-                );
-                let inputs: Vec<_> = inputs
-                    .into_iter()
-                    .filter(|input| {
-                        !queries
-                            .symbolic_requirements(input.child)
-                            .is_ok_and(|requirements| {
-                                requirements.scalars.regions.is_empty()
-                                    && requirements.scalars.parameters.is_empty()
-                                    && requirements.projections.is_empty()
-                            })
+        let Some(closure) = self.facts.closures.get(source).copied() else {
+            return Ok(None);
+        };
+        let Some(environment) = self.facts.closures.environment(closure.identity) else {
+            return Ok(None);
+        };
+        let (inputs, work) = environment
+            .formation_inputs()
+            .map_err(|e| self.error(source.node, e))?;
+        self.facts.body_work.canonical_steps += work;
+        let mut queries = crate::types::outlives::Queries::new(
+            &self.facts.types,
+            &self.facts.lifetimes.nominal_requirements,
+            &self.facts.lifetimes.callables,
+        );
+        let inputs: Vec<_> = inputs
+            .into_iter()
+            .filter(|input| {
+                !queries
+                    .symbolic_requirements(input.child)
+                    .is_ok_and(|requirements| {
+                        requirements.scalars.regions.is_empty()
+                            && requirements.scalars.parameters.is_empty()
+                            && requirements.projections.is_empty()
                     })
-                    .collect();
-                (!inputs.is_empty()).then(|| Formation {
-                    identity: closure.identity,
-                    inputs: inputs.into_boxed_slice(),
-                })
-            } else {
-                None
-            },
-        )
+            })
+            .collect();
+        if inputs.is_empty() {
+            return Ok(None);
+        }
+        let callable_slots = self.formation_callable_slots(closure)?;
+        Ok(Some(Formation {
+            identity: closure.identity,
+            inputs: inputs.into_boxed_slice(),
+            inherited: closure.inherited,
+            callable_slots,
+        }))
+    }
+
+    /// Local slots of captured roots remain formation obligations. Only slots
+    /// visible in the sealed closure Self can also become caller conditions.
+    fn formation_callable_slots(
+        &mut self,
+        closure: crate::sema::closures::Body,
+    ) -> Result<Box<[u16]>, Error> {
+        let Some(execution) = closure.execution else {
+            return Ok(Box::new([]));
+        };
+        let mut observation = Bound::observe_regions();
+        observation
+            .apply(&mut self.facts.types, execution.self_ty)
+            .map_err(|e| self.error(closure.source.node, e))?;
+        let mut slots: Vec<_> = observation
+            .observed_regions()
+            .filter_map(|region| match region.bound_parts() {
+                Some((0, slot)) if u32::from(slot) >= closure.inherited => Some(slot),
+                _ => None,
+            })
+            .collect();
+        slots.sort_unstable();
+        self.facts.body_work.canonical_steps += observation.steps + slots.len();
+        Ok(slots.into_boxed_slice())
     }
 
     /// A closure links to its parent when it has output ports, captured

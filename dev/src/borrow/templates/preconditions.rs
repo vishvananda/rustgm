@@ -63,7 +63,10 @@ impl<'a> Collector<'a> {
             // all parameter/projection/private duties in the original contract.
             charge(&mut self.work, requirements.scalars.regions.len())?;
             for &pair in requirements.scalars.regions {
-                if !formal(pair.0, universals) || !formal(pair.1, universals) {
+                if ![pair.0, pair.1]
+                    .into_iter()
+                    .all(|region| formal(region, universals) && formation.has_caller_slot(region))
+                {
                     continue;
                 }
                 if seen.is_none() {

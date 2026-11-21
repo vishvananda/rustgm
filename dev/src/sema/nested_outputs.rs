@@ -43,6 +43,10 @@ impl Registry {
                 .bridges
                 .windows(2)
                 .any(|pair| pair[0].slot >= pair[1].slot)
+            || link
+                .formation
+                .as_ref()
+                .is_some_and(|formation| !formation.valid_slots(link.universals))
             || usize::try_from(link.revision).ok()
                 != Some(link.bridges.iter().filter(|bridge| bridge.output).count())
         {
@@ -52,10 +56,12 @@ impl Registry {
             .bridges
             .checked_add(
                 link.bridges.len()
-                    + link
-                        .formation
-                        .as_ref()
-                        .map_or(0, |formation| formation.inputs.len()),
+                    + link.formation.as_ref().map_or(0, |formation| {
+                        formation
+                            .inputs
+                            .len()
+                            .saturating_add(formation.callable_slots.len())
+                    }),
             )
             .filter(|&count| count <= 1_000_000)
             .ok_or("nested output bridge budget exceeded")?;
@@ -68,6 +74,10 @@ impl Registry {
                     .inputs
                     .len()
                     .saturating_mul(size_of::<super::closures::FormationInput>())
+                + formation
+                    .callable_slots
+                    .len()
+                    .saturating_mul(size_of::<u16>())
         });
         self.charge(
             size_of::<Link>()
@@ -107,9 +117,31 @@ pub struct Link {
     pub bridges: Box<[Bridge]>,
     pub formation: Option<Formation>,
 }
+#[derive(Clone)]
 pub struct Formation {
     pub identity: crate::types::closure::ClosureId,
     pub inputs: Box<[super::closures::FormationInput]>,
+    pub(super) inherited: u32,
+    pub(super) callable_slots: Box<[u16]>,
+}
+impl Formation {
+    fn valid_slots(&self, universals: u32) -> bool {
+        self.inherited <= universals
+            && self
+                .callable_slots
+                .iter()
+                .all(|&slot| (self.inherited..universals).contains(&u32::from(slot)))
+            && self.callable_slots.windows(2).all(|pair| pair[0] < pair[1])
+    }
+
+    pub(crate) fn has_caller_slot(&self, region: RegionId) -> bool {
+        region == RegionId::STATIC
+            || region.bound_parts().is_some_and(|(depth, slot)| {
+                depth == 0
+                    && (u32::from(slot) < self.inherited
+                        || self.callable_slots.binary_search(&slot).is_ok())
+            })
+    }
 }
 
 #[cfg(test)]
@@ -150,6 +182,24 @@ mod tests {
         assert!(registry.insert(source(1), changed).is_err());
         assert_eq!(registry.retained_bytes, 0);
     }
+    #[test]
+    fn formation_exports_only_inherited_and_callable_slots() -> Result<(), &'static str> {
+        let formation = Formation {
+            identity: crate::types::closure::ClosureId(0),
+            inputs: Box::new([]),
+            inherited: 1,
+            callable_slots: Box::new([2]),
+        };
+        assert!(formation.valid_slots(3));
+        assert!(!formation.valid_slots(2));
+        assert!(formation.has_caller_slot(RegionId::STATIC));
+        assert!(formation.has_caller_slot(RegionId::bound(0, 0)?));
+        assert!(!formation.has_caller_slot(RegionId::bound(0, 1)?));
+        assert!(formation.has_caller_slot(RegionId::bound(0, 2)?));
+        assert!(!formation.has_caller_slot(RegionId::bound(1, 2)?));
+        Ok(())
+    }
+
     #[test]
     fn output_port_limit_is_deterministic_and_has_no_partial_charge() -> Result<(), &'static str> {
         let mut registry = Registry::default();
