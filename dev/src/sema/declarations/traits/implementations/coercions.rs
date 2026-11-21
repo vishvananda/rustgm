@@ -188,7 +188,7 @@ impl Checker<'_> {
 
 type PointerPair = (TypeId, TypeId, Option<(RegionId, RegionId)>);
 
-fn pointer_pair(
+pub(super) fn pointer_pair(
     types: &crate::types::Store,
     source: TypeId,
     target: TypeId,

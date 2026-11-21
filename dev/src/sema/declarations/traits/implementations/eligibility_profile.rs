@@ -207,9 +207,14 @@ impl Checker<'_> {
         let Some((application, _)) = predicate.bound.trait_parts() else {
             return Ok(Eligibility::Unsupported(Unsupported::Requirements));
         };
+        let coercion_target = self.early_coercion_target(owner, predicate.ty, application)?;
         let pointer_binder = self.copy_clone_pointer_binder(owner, predicate.ty, application)?;
-        let region_depth = pointer_binder.unwrap_or(0);
-        if (pointer_binder.is_none() && !self.early_source_subject(owner, predicate.ty, pending)?)
+        let regions = self.trait_region_count(owner);
+        let region_depth = u16::from(regions != 0);
+        if (coercion_target.is_none()
+            && (regions != u32::from(pointer_binder.unwrap_or(0))
+                || (pointer_binder.is_none()
+                    && !self.early_source_subject(owner, predicate.ty, pending)?)))
             || (matches!(
                 self.facts.types.kind(predicate.ty),
                 Some(Kind::Primitive(_))
@@ -219,7 +224,6 @@ impl Checker<'_> {
             || predicate
                 .has_regions_outside(&self.facts.types, region_depth)
                 .map_err(|e| self.error(source, e))?
-            || self.trait_region_count(owner) != u32::from(region_depth)
         {
             return Ok(Eligibility::Unsupported(Unsupported::OpenSubject));
         }
@@ -238,8 +242,14 @@ impl Checker<'_> {
         let Some(member_profile) = self.scalar_member_profile(source, owners, &members)? else {
             return Ok(Eligibility::Unsupported(Unsupported::Members));
         };
-        let requirements =
-            self.scalar_requirements(owner, source, predicate, region_depth, pending)?;
+        let requirements = self.scalar_requirements(
+            owner,
+            source,
+            predicate,
+            region_depth,
+            coercion_target,
+            pending,
+        )?;
         let Some(requirements) = requirements else {
             return Ok(Eligibility::Unsupported(Unsupported::Requirements));
         };
@@ -283,10 +293,7 @@ impl Checker<'_> {
         if !matches!(
             self.facts.types.kind(subject),
             Some(
-                Kind::Parameter(_)
-                    | Kind::Adt(..)
-                    | Kind::Reference { mutable: false, .. }
-                    | Kind::Pointer { .. }
+                Kind::Parameter(_) | Kind::Adt(..) | Kind::Reference { .. } | Kind::Pointer { .. }
             )
         ) {
             return Ok(None);
@@ -343,6 +350,56 @@ impl Checker<'_> {
             }
         }
         Ok(None)
+    }
+
+    fn early_coercion_target(
+        &self,
+        owner: DefId,
+        subject: crate::types::TypeId,
+        application: crate::types::traits::ApplicationId,
+    ) -> Result<Option<crate::types::TypeId>, Error> {
+        use crate::support::bindings::LangItem;
+        use crate::types::arguments::Argument;
+        if !matches!(
+            self.facts.types.kind(subject),
+            Some(Kind::Reference { .. } | Kind::Pointer { .. })
+        ) {
+            return Ok(None);
+        }
+        let actual = self
+            .facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| Error::unlocated("early pointer coercion lost its trait application"))?;
+        if crate::sema::compiler_items::unsizing_role(&self.facts, DefId(actual.item.0))
+            .map_err(Error::unlocated)?
+            != Some(LangItem::CoerceUnsized)
+        {
+            return Ok(None);
+        }
+        let mut arguments = self
+            .facts
+            .types
+            .arguments(actual.arguments)
+            .ok_or_else(|| Error::unlocated("early pointer coercion lost its target arguments"))?;
+        let Some(Argument::Type(target)) = arguments.next() else {
+            return Ok(None);
+        };
+        let Ok((from, to, _)) = super::coercions::pointer_pair(&self.facts.types, subject, target)
+        else {
+            return Ok(None);
+        };
+        let owns_parameter = |ty| {
+            matches!(
+                self.facts.types.kind(ty),
+                Some(Kind::Parameter(id))
+                    if self.facts.types.parameter(id).is_some_and(|parameter| parameter.owner.0 == owner.0)
+            )
+        };
+        Ok(
+            (arguments.next().is_none() && owns_parameter(from) && owns_parameter(to))
+                .then_some(target),
+        )
     }
 
     fn early_source_subject(
@@ -540,6 +597,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
         region_depth: u16,
+        coercion_target: Option<crate::types::TypeId>,
         pending: &mut Pending,
     ) -> Result<Option<Vec<Predicate>>, Error> {
         let requirements = self
@@ -555,6 +613,7 @@ impl Checker<'_> {
                 .charge(&mut self.facts, 1)
                 .map_err(|e| self.error(source, e))?;
             if ty != predicate.ty
+                && Some(ty) != coercion_target
                 && !matches!(self.facts.types.kind(ty), Some(Kind::Primitive(_)))
                 && !matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
                     if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0))

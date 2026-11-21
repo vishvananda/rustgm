@@ -128,7 +128,7 @@ impl Attempt {
         Ok(Step::Complete)
     }
 
-    /// Prove the reference blanket's region evidence in its own checked impl scope.
+    /// Prove the reference implementation's region evidence in its checked scope.
     fn prerequisite_regions(
         &mut self,
         checker: &Checker<'_>,
@@ -141,7 +141,7 @@ impl Attempt {
         let facts = &checker.facts;
         if !matches!(
             facts.types.kind(self.plan.predicate.ty),
-            Some(Kind::Reference { mutable: false, .. })
+            Some(Kind::Reference { .. })
         ) {
             return Ok(false);
         }
