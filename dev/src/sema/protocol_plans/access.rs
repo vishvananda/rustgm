@@ -25,6 +25,7 @@ pub(crate) struct Step {
 pub(in crate::sema) struct Rows {
     pub steps: Vec<Step>,
 }
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<Step>()];
 
 pub(crate) fn rows(

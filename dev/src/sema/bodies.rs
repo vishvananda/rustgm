@@ -339,6 +339,7 @@ enum Work {
     CollectClosure(Option<pointer_casts::QueuedCasts>),
     CollectInline,
 }
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<Work>()];
 /// Cleared storage can be reused between short declaration-time constants.
 /// Successful checks clear touched slots; caller evidence is cleared before reuse.

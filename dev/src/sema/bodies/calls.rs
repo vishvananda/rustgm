@@ -59,6 +59,7 @@ struct Constraint {
     bound_regions: Option<u32>,
     intrinsic: bool,
 }
+#[cfg(test)]
 const _: [(); 728] = [(); size_of::<CallTypes>()];
 impl CallTypes {
     pub fn bound_regions(&self, index: usize) -> Option<u32> {

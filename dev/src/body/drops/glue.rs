@@ -51,7 +51,9 @@ pub struct Recipe {
     pub method: Option<Method>,
     pub kind: Shape,
 }
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<Method>()];
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<Recipe>()];
 #[derive(Clone, Copy)]
 pub struct Field {

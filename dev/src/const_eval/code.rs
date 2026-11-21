@@ -62,7 +62,9 @@ pub(crate) struct Code {
     pub operands: Vec<PreparedOperand>,
     callables: HashMap<Instance, Instance>,
 }
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<PreparedOperand>()];
+#[cfg(test)]
 const _: [(); 304] = [(); size_of::<Code>()];
 
 impl Code {

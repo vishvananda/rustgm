@@ -39,7 +39,9 @@ pub(super) struct FutureDemand {
     /// Actual Call/Reify operation, not merely another value of the same type.
     pub site: crate::body::ir::ValueId,
 }
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<FutureDemand>()];
+#[cfg(test)]
 const _: [(); 4] = [(); size_of::<Instance>()];
 
 #[derive(Default)]
@@ -54,6 +56,7 @@ pub(super) struct Demands {
     pub object_types: Vec<TypeId>,
     pub futures: Option<Box<FutureDemands>>,
 }
+#[cfg(test)]
 const _: [(); 104] = [(); size_of::<Demands>()];
 
 #[derive(Default)]
@@ -72,6 +75,7 @@ struct Discovered {
     invocation_locations: u8,
 }
 
+#[cfg(test)]
 const _: [(); 256] = [(); size_of::<Discovered>()];
 
 /// Classify only an actual direct operation, never a reified/Invoke target.

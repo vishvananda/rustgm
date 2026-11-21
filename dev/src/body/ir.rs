@@ -738,7 +738,11 @@ pub struct Program {
     pub body_regions: Vec<crate::sema::numbered_regions::AllocatedRegion>,
 }
 
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Action>()];
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<ProjectionKind>()];
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<Projection>()];
+#[cfg(test)]
 const _: [(); 20] = [(); size_of::<Statement>()];

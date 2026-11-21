@@ -55,6 +55,7 @@ pub struct Predicate {
     subject: TermId,
     requirement: Requirement,
 }
+#[cfg(test)]
 #[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<Predicate>() == 24);
 

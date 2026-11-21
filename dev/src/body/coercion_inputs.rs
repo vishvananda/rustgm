@@ -318,6 +318,7 @@ impl Body {
     }
 }
 
+#[cfg(test)]
 const _: () = {
     assert!(size_of::<NominalUse>() == 24);
     assert!(size_of::<NominalInputs>() == 72);

@@ -18,6 +18,7 @@ pub(crate) struct Normalized<'t, const SUBSUMPTION: bool, C: Cost = ()> {
 // All real depths are u16. A finish marker uses the existing tuple padding,
 // preserving the12-byte work record and publishing only completed DAG pairs.
 const FINISHED: u32 = u32::MAX;
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<(TypeId, TypeId, u32)>()];
 impl<'t, const SUBSUMPTION: bool> Normalized<'t, SUBSUMPTION> {
     pub(crate) fn new(types: &'t Store) -> Self {
@@ -439,6 +440,9 @@ impl<const SUBSUMPTION: bool> Normalized<'_, SUBSUMPTION, PaidCost<'_>> {
         })
     }
 }
+#[cfg(test)]
 const _: [(); 72] = [(); size_of::<Normalized<'_, false>>()];
+#[cfg(test)]
 const _: [(); 104] = [(); size_of::<Normalized<'_, false, PaidCost<'_>>>()];
+#[cfg(test)]
 const _: [(); 64] = [(); size_of::<Memo>()];

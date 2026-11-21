@@ -560,6 +560,7 @@ fn captured_span(
     })
 }
 
+#[cfg(test)]
 const _: () = assert!(size_of::<Origin>() == 32);
 /// An unsuffixed decimal tuple index without a leading zero.
 pub(crate) fn is_index(spelling: &str) -> bool {

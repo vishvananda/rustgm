@@ -21,6 +21,7 @@ pub(in crate::sema) struct Selected {
     future: TypeId,
     output: TypeId,
 }
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Selected>()];
 
 pub(in crate::sema) fn kind(

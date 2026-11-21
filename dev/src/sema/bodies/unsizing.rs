@@ -21,8 +21,11 @@ pub(super) enum Justification {
     /// Stable index of this body's actual canonical `CoerceUnsized` goal.
     NominalGoal(u32),
 }
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<Justification>()];
+#[cfg(test)]
 const _: [(); 48] = [(); size_of::<Pending>()];
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<crate::types::unsizing::Conversion<crate::types::TypeId>>()];
 impl Pending {
     pub(super) fn borrow_view(&self) -> Option<TermId> {

@@ -171,4 +171,5 @@ impl ScratchCosts {
         Ok(())
     }
 }
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<ScratchCosts>()];

@@ -11,6 +11,7 @@ pub(crate) struct Method {
     instance: Instance,
     future: TypeId,
 }
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<Method>()];
 
 pub(crate) struct Validated {

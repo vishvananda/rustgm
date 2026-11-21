@@ -603,8 +603,11 @@ enum Entry {
     Lending(crate::sema::lending_methods::Method),
 }
 // Actual cold scalar payload stays12; the shared discriminated row is measured.
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<Selected>()];
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Entry>()];
+#[cfg(test)]
 const _: [(); 20] = [(); size_of::<(Instance, Entry)>()];
 #[derive(Default)]
 pub(crate) struct Registry {
@@ -612,6 +615,7 @@ pub(crate) struct Registry {
     work: usize,
     bytes: usize,
 }
+#[cfg(test)]
 const _: [(); 48] = [(); size_of::<Registry>()];
 impl Registry {
     pub(crate) fn get(&self, instance: Instance) -> Option<Selected> {

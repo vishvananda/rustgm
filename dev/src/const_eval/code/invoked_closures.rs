@@ -52,7 +52,9 @@ pub(super) struct Cost<'a, 'p> {
     pub work: &'a mut usize,
     pub pay: Option<Payment<'p>>,
 }
+#[cfg(test)]
 const _: [(); 64] = [(); size_of::<Context>()];
+#[cfg(test)]
 const _: [(); 64] = [(); size_of::<Call>()];
 impl Plan {
     pub(crate) fn collect(

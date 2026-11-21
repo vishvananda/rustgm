@@ -19,9 +19,13 @@ pub(super) struct Pending {
     matched: Matched,
     inputs: Option<Box<Inputs>>,
 }
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<Pending>()];
+#[cfg(test)]
 const _: [(); 96] = [(); size_of::<Language>()];
+#[cfg(test)]
 const _: [(); 1312] = [(); size_of::<Frame>()];
+#[cfg(test)]
 const _: [(); 160] = [(); size_of::<Node>()];
 struct Inputs {
     goal: Predicate,

@@ -524,4 +524,5 @@ impl Producer {
     }
 }
 
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<Expectation>()];

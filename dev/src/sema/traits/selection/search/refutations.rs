@@ -9,6 +9,7 @@ impl Paid {
         &self.0.identity
     }
 }
+#[cfg(test)]
 const _: () = assert!(size_of::<Paid>() == size_of::<Box<Conditional>>());
 
 impl Search<'_> {

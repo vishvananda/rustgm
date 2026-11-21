@@ -39,6 +39,7 @@ pub(super) struct Builder {
     original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
     future_store: Option<crate::types::arena::Identity>,
 }
+#[cfg(test)]
 const _: [(); 1808] = [(); size_of::<Builder>()];
 
 enum RegionProof {

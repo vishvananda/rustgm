@@ -96,4 +96,5 @@ fn operation(
     Ok(signature)
 }
 
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<FutureCaller<'_>>()];

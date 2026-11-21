@@ -11,6 +11,7 @@ pub(in crate::sema::bodies) struct DereferenceCall {
     pub(in crate::sema::bodies) borrow: TermId,
     pub(in crate::sema::bodies) target: TermId,
 }
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<DereferenceCall>()];
 
 impl Checker<'_> {

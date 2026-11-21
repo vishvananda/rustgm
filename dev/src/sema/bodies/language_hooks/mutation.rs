@@ -24,6 +24,7 @@ enum Selection {
     Index(Hook),
     Dereference { mutable: bool },
 }
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<Selected>()];
 #[derive(Default)]
 pub(in crate::sema::bodies) struct Places {

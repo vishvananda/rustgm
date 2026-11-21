@@ -186,8 +186,11 @@ impl<'body> Execution<'body> {
     }
 }
 
+#[cfg(test)]
 const _: [(); 784] = [(); size_of::<Prepared<'_>>()];
+#[cfg(test)]
 const _: [(); 904] = [(); size_of::<Prepared<'_, crate::borrow::destruction::Plan>>()];
+#[cfg(test)]
 const _: [(); 224] = [(); size_of::<Execution<'_>>()];
 impl Verifier {
     pub(crate) fn begin_qualification<S: std::hash::BuildHasher>(

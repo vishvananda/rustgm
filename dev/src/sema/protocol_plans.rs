@@ -190,7 +190,9 @@ pub(crate) struct Calls {
     next: u32,
     remaining: u32,
 }
+#[cfg(test)]
 const _: [(); 64] = [(); size_of::<Plan>()];
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<Calls>()];
 
 /// Reauthenticate at the real CFG boundary, after canonical call publication.

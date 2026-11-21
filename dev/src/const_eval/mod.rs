@@ -126,7 +126,9 @@ struct Frame {
     union_views: HashMap<crate::body::ir::LocalId, memory::UnionField>,
     allocations: Vec<crate::sema::values::LocationId>,
 }
+#[cfg(test)]
 const _: [(); 8] = [(); size_of::<ReturnTo>()];
+#[cfg(test)]
 const _: [(); 248] = [(); size_of::<Frame>()];
 /// All CFGs are immutable and already checked by their defining-body pipeline.
 pub struct Machine<'a, 'b> {

@@ -10,8 +10,11 @@ pub(crate) enum Bridge {
     Adapter(usize),
 }
 pub(crate) type Forwarding = HashMap<usize, Bridge>;
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Bridge>()];
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<Forwarding>()];
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<(usize, Bridge)>()];
 impl Bridge {
     pub(crate) fn caller<'a>(

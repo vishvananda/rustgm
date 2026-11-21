@@ -89,6 +89,7 @@ pub(crate) struct Plan {
     pub fields: Vec<Span>,
     pub step: Step,
 }
+#[cfg(test)]
 const _: () = {
     assert!(size_of::<Step>() == 12);
     assert!(size_of::<Span>() == 40);

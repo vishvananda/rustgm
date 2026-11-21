@@ -45,8 +45,11 @@ pub(in crate::sema) struct CallContexts {
     safety: Option<Box<discharged_sites::Rows>>,
     access: Option<Box<crate::sema::protocol_plans::access::Rows>>,
 }
+#[cfg(test)]
 const _: [(); 96] = [(); size_of::<CallContexts>()];
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<crate::sema::model::Operation>()];
+#[cfg(test)]
 const _: [(); 80] = [(); size_of::<crate::sema::model::NodeFacts>()];
 // Coarse runaway guards: one table serves every body of a whole-graph session.
 const MAX_ROWS: usize = 1 << 30;

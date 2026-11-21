@@ -100,8 +100,11 @@ enum Generated {
     Adapter(crate::types::closure::Adapter),
     Future(crate::types::future::EntryKey),
 }
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<Generated>()];
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<(Generated, usize)>()];
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<HashMap<Generated, usize>>()];
 /// Owned per-body cleanup plans, indexed like the checked bodies.
 type Plans = Vec<Option<Box<crate::borrow::destruction::Plan>>>;

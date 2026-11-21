@@ -37,6 +37,7 @@ struct State {
     loans: Vec<loans::Analysis>,
     contracts: Vec<Contract>,
 }
+#[cfg(test)]
 const _: [(); 176] = [(); size_of::<State>()];
 
 impl State {

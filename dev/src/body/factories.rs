@@ -25,4 +25,5 @@ impl Permit {
     }
 }
 
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Permit>()];

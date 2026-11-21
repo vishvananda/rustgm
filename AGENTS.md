@@ -77,7 +77,11 @@ unimplemented and process exit in production. Narrow lint expectations require
 reasons; blanket allowances and mechanical file splitting are prohibited.
 The syntax-aware audit additionally checks file/function size, nesting, unsafe
 code (accepted only in that FFI file, each block justified), duplicated blocks,
-phase dependencies and misplaced environment access.
+phase dependencies, misplaced environment access and layout assertions outside
+`cfg(test)`. A `size_of`/`align_of` assertion in `dev/src` is a performance
+guard marked `#[cfg(test)]` beside its type, evaluated only when rustc builds
+the private unit harness, because `repr(Rust)` layout is unspecified and
+RustGM's differs.
 
 ## Direction adopted 2026-11-20
 

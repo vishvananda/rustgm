@@ -107,9 +107,11 @@ pub(super) enum Node {
 }
 
 // A const value keeps the node at its version-twelve width.
+#[cfg(test)]
 const _: [(); 20] = [(); size_of::<Node>()];
 #[derive(Clone, Copy)]
 struct NodeFacts(u8);
+#[cfg(test)]
 const _: [(); size_of::<bool>()] = [(); size_of::<NodeFacts>()];
 impl NodeFacts {
     const FORMED: u8 = 1;

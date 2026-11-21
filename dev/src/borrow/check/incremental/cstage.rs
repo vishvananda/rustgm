@@ -13,7 +13,9 @@ pub(crate) struct Completed {
     pub(super) targets: Option<Box<Bound>>,
     pub(super) seal: Option<Box<Seal>>,
 }
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<Completed>()];
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<Seal>()];
 /// The callback only borrows this owned immutable body. A completed result from
 /// another allocation cannot be attached, and no mutable CFG view crosses it.

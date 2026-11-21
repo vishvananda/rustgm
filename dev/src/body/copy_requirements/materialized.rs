@@ -22,7 +22,9 @@ pub(in crate::body) struct InstanceScope {
 }
 
 // Both selected identities retain the same actual cold row bounds.
+#[cfg(test)]
 const _: [(); 56] = [(); size_of::<Original>()];
+#[cfg(test)]
 const _: [(); 80] = [(); size_of::<InstanceScope>()];
 
 pub(in crate::body) fn capture(

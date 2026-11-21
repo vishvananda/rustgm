@@ -12,14 +12,19 @@ pub(super) enum ArgumentOwner {
     Initializer(crate::sema::values::Instance),
     AsyncBody(crate::types::TypeId),
 }
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<Context>()];
+#[cfg(test)]
 const _: [(); size_of::<Context>()] = [(); size_of::<ArgumentOwner>()];
+#[cfg(test)]
 const _: [(); 20] = [(); size_of::<CallerInstance>()];
 
 pub(super) struct Observed {
     regions: Vec<RegionId>,
 }
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<(Context, Observed)>()];
+#[cfg(test)]
 const _: [(); size_of::<(Context, Observed)>()] = [(); size_of::<(ArgumentOwner, Observed)>()];
 fn context(facts: &Declarations, enclosing: CallerInstance) -> Result<ArgumentOwner, &'static str> {
     Ok(match enclosing {

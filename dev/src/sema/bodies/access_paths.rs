@@ -66,6 +66,7 @@ pub(super) struct OpenStep {
     pub dereferences: u32,
 }
 
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<OpenStep>()];
 
 /// A prepared call's actual first receiver, never its invocation-time target.
@@ -75,6 +76,7 @@ pub(super) struct CaptureReceiver {
     pub dereferences: u32,
     pub borrow: TermId,
 }
+#[cfg(test)]
 const _: [(); 12] = [(); size_of::<CaptureReceiver>()];
 
 #[derive(Default)]

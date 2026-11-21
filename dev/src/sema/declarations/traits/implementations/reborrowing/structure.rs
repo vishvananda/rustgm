@@ -18,7 +18,9 @@ pub(in crate::sema) struct StructView {
     pub ty: TypeId,
     pub fields: Vec<Field>,
 }
+#[cfg(test)]
 const _: [(); 16] = [(); size_of::<Field>()];
+#[cfg(test)]
 const _: [(); 32] = [(); size_of::<StructView>()];
 
 struct Declared {

@@ -147,6 +147,7 @@ impl Declaration {
         }
     }
 }
+#[cfg(test)]
 const _: () = assert!(size_of::<Declaration>() == 1);
 impl CallKind {
     pub(crate) const fn from_trait(kind: crate::support::call_traits::CallTrait) -> Self {

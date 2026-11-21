@@ -342,6 +342,7 @@ pub(crate) struct Assembled {
     destruction: Option<Box<destruction::Proof>>,
     forwarding: Forwarding,
 }
+#[cfg(test)]
 const _: [(); size_of::<Program>()
     + size_of::<Option<Box<destruction::Proof>>>()
     + size_of::<Forwarding>()] = [(); size_of::<Assembled>()];

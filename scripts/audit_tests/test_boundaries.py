@@ -80,3 +80,23 @@ class AuditBoundaries(unittest.TestCase):
             with self.subTest(source=source):
                 self.assertTrue(any("unsafe/FFI implementation is prohibited" in finding
                                     for finding in self.inspect(boundary, source)))
+
+    def test_layout_assertions_in_compiler_source_are_test_only(self):
+        item = "struct Node(u8);\n"
+        pins = ("const _: [(); 1] = [(); size_of::<Node>()];\n",
+                "#[cfg(target_pointer_width = \"64\")]\nconst _: () = assert!(size_of::<Node>() == 1);\n",
+                "const _: () = {\n    assert!(align_of::<Node>() == 1);\n};\n")
+        for pin in pins:
+            with self.subTest(pin=pin):
+                self.assertTrue(any("layout assertion outside #[cfg(test)]" in finding
+                                    for finding in self.inspect("dev/src/body/example.rs", item + pin)))
+                self.assertEqual(self.inspect("dev/src/body/example.rs",
+                                              item + "#[cfg(test)]\n" + pin), [])
+                self.assertEqual(self.inspect("dev/tests/invariants/example.rs", item + pin), [])
+        nested = "#[cfg(test)]\nmod tests {\n    " + item + "    " + pins[0] + "}\n"
+        self.assertEqual(self.inspect("dev/src/body/example.rs", nested), [])
+        # A named constant computing a size, and a capacity check, are not layout pins.
+        for source in ("const WORDS: usize = size_of::<u64>() / size_of::<u32>();\n",
+                       "const LIST: [u8; 2] = [1, 2];\nconst _: [(); 4 - LIST.len()] = [(); 2];\n"):
+            with self.subTest(source=source):
+                self.assertEqual(self.inspect("dev/src/body/example.rs", source), [])

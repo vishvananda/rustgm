@@ -202,4 +202,5 @@ fn construction(
     }
     Ok(())
 }
+#[cfg(test)]
 const _: [(); 48] = [(); size_of::<Permit>()];

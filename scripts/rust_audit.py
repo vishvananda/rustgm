@@ -89,6 +89,24 @@ def justified(lines, row):
     return False
 
 
+# A compile-time size or alignment assertion pins rustc's `repr(Rust)` layout,
+# which is unspecified and which RustGM computes differently, so in compiler
+# source only the rustc-built private unit harness evaluates it.
+LAYOUT_PIN = re.compile(r"\b(?:size_of|align_of)\b")
+
+
+def test_only(node, data):
+    """Whether the item or an item enclosing it carries `#[cfg(test)]`."""
+    while node is not None:
+        sibling = node.prev_sibling
+        while sibling is not None and sibling.type in {"attribute_item", *COMMENTS}:
+            if re.sub(r"\s+", "", node_text(sibling, data)) == "#[cfg(test)]":
+                return True
+            sibling = sibling.prev_sibling
+        node = node.parent
+    return False
+
+
 def inspect_file(path, root, roles):
     data = path.read_bytes()
     relative = path.relative_to(root).as_posix()
@@ -118,6 +136,10 @@ def inspect_file(path, root, roles):
     owner = parts[2] if len(parts) > 3 and parts[:2] == ("dev", "src") else None
     for node in walk(tree):
         content = node_text(node, data)
+        if (node.type == "const_item" and parts[:2] == ("dev", "src")
+                and node_text(node.child_by_field_name("name"), data) == "_"
+                and LAYOUT_PIN.search(content) and not test_only(node, data)):
+            errors.append(f"line {node.start_point.row + 1}: layout assertion outside #[cfg(test)]")
         if node.type in {"use_declaration", "scoped_identifier", "scoped_type_identifier"} and owner in ALLOWED_DEPENDENCIES:
             dependencies = re.findall(r"\bcrate\s*::\s*(\w+)", content)
             grouped = re.search(r"\bcrate\s*::\s*\{([^;]+)", content)

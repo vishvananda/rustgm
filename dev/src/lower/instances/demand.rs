@@ -33,6 +33,7 @@ enum Work {
     FutureDrop(crate::types::TypeId, body::ir::ProofSite),
     Leave(BodyKey),
 }
+#[cfg(test)]
 const _: [(); 40] = [(); size_of::<Work>()];
 
 #[derive(Default)]

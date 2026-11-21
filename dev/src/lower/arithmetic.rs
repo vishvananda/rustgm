@@ -19,6 +19,7 @@ pub(super) struct Arithmetic<'a, 'facts> {
     pub panic: &'a mut Option<BlockId>,
     pub constants: Reader<'facts>,
 }
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<Arithmetic<'static, 'static>>()];
 impl Arithmetic<'_, '_> {
     pub fn guard(&mut self, fault: Value, cause: LangItem) -> Result<(), &'static str> {

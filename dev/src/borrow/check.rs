@@ -22,6 +22,7 @@ pub struct Checked<'a> {
     destruction: Option<Box<super::destruction::Proof>>,
     forwarding: Option<&'a incremental::Forwarding>,
 }
+#[cfg(test)]
 const _: [(); 24] = [(); size_of::<Checked<'_>>()];
 impl Checked<'_> {
     #[must_use]

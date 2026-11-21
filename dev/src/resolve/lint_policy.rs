@@ -309,4 +309,5 @@ impl Lint {
     }
 }
 
+#[cfg(test)]
 const _: [(); 188] = [(); size_of::<Policy>()];
