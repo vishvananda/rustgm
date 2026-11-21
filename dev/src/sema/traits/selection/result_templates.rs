@@ -70,7 +70,13 @@ pub(in crate::sema) fn symbolic_result(
         && facts.associated.callable_output() == Some(DefId(item.0))
         && application.arguments.is_empty()
     {
-        return crate::sema::traits::callables::symbolic(facts, source, root, caller.first_region);
+        return crate::sema::traits::callables::symbolic(
+            facts,
+            source,
+            root,
+            caller.first_region,
+            false,
+        );
     }
     let goal = &application.predicate;
     let (item, _) = goal
@@ -297,6 +303,57 @@ impl Candidate {
         }
     }
 
+    /// A header variable that only a callable premise's output determines
+    /// takes that callable's actual output, as rustc's projection of the
+    /// premise does once the implementation is selected. With
+    /// `impl<B, F: FnMut(u8) -> Option<B>> Source for Gen<F> { type Item = B; }`
+    /// and a closure returning `Option<?X>`, `Item` is the closure's own `?X`;
+    /// `?X` may itself await `Item`'s use. The callable premise stays with the
+    /// ordinary selector. A result that already names only source holes is left
+    /// alone. Returns false when the output cannot have the premise's shape.
+    fn determine_callable_results(&mut self, facts: &mut Declarations) -> Result<bool, String> {
+        let Some(output) = facts.associated.callable_output() else {
+            return Ok(true);
+        };
+        for index in 0..self.instance.goals.len() {
+            let goal = &self.instance.goals[index];
+            let (subject, Some(result)) = (goal.subject(), goal.projection_result()) else {
+                continue;
+            };
+            let item = self
+                .probe
+                .context()
+                .projection_item(&facts.types, subject)
+                .map_err(inference)?;
+            if item.map(|item| DefId(item.0)) != Some(output)
+                || self
+                    .probe
+                    .names_inputs(&facts.types, result)
+                    .map_err(inference)?
+            {
+                continue;
+            }
+            let first = self.proof.regions.end;
+            let Some((actual, proof)) = crate::sema::traits::callables::symbolic(
+                facts,
+                self.probe.context(),
+                subject,
+                first,
+                true,
+            )?
+            else {
+                continue;
+            };
+            self.proof.extend(proof)?;
+            match self.probe.context().equate(&facts.types, result, actual) {
+                Ok(()) => {}
+                Err(Error::Mismatch | Error::Occurs) => return Ok(false),
+                Err(error) => return Err(inference(error)),
+            }
+        }
+        Ok(true)
+    }
+
     fn export(
         &mut self,
         facts: &mut Declarations,
@@ -321,6 +378,9 @@ impl Candidate {
             self.probe
                 .alias_fresh_results(&facts.types, aliases)
                 .map_err(inference)?;
+            if !self.determine_callable_results(facts)? {
+                return Ok(None);
+            }
         }
         let result = match item {
             ResultId::Associated(item) => {

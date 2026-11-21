@@ -165,6 +165,29 @@ impl Probe {
         if !self.preserves_inputs(source)? {
             return Ok(None);
         }
+        let mut reverse = self.reverse()?;
+        if !self.exportable(store, result, &reverse)? {
+            return Ok(None);
+        }
+        source
+            .import_with(store, &mut self.context, result, &mut reverse)
+            .map(Some)
+    }
+
+    /// Whether `result` names only source holes and complete structure, so
+    /// that it exports once the inputs are preserved. A fresh unbound query
+    /// variable in it has no source identity.
+    ///
+    /// # Errors
+    /// Rejects malformed identities and exhausted work.
+    pub fn names_inputs(&mut self, store: &Store, result: TermId) -> Result<bool, Error> {
+        self.context
+            .account_work(self.mappings.types.len() + self.mappings.constants.len())?;
+        let reverse = self.reverse()?;
+        self.exportable(store, result, &reverse)
+    }
+
+    fn reverse(&mut self) -> Result<Import, Error> {
         let mut reverse = Import::default();
         for (&original, &copied) in &self.mappings.types {
             let copied = self.context.root(copied)?;
@@ -174,12 +197,7 @@ impl Probe {
             let copied = self.context.constants().root(copied)?;
             reverse.constants.insert(copied, original);
         }
-        if !self.exportable(store, result, &reverse)? {
-            return Ok(None);
-        }
-        source
-            .import_with(store, &mut self.context, result, &mut reverse)
-            .map(Some)
+        Ok(reverse)
     }
 
     fn source_unchanged(&mut self, source: &mut Context) -> Result<(), Error> {

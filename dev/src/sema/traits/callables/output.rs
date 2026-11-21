@@ -2,14 +2,18 @@
 use super::{Constructor, Context, Declarations, TermId, infer, open_signature};
 use crate::types::{infer::probe::Probe, lifetime_proof::Obligations, substitute::Bound};
 
+/// The callable premise of a selected implementation (`premise`) may expose a
+/// closure's output before its projected input is normalized; a projection a
+/// body writes waits for that input as before.
 pub(in crate::sema) fn symbolic(
     facts: &mut Declarations,
     source: &mut Context,
     root: TermId,
     first: u32,
+    premise: bool,
 ) -> Result<Option<(TermId, Obligations)>, String> {
     let (mut probe, roots) = Probe::new(&facts.types, source, &[root]).map_err(error)?;
-    let result = expose(facts, source, &mut probe, roots[0], first);
+    let result = expose(facts, source, &mut probe, roots[0], (first, premise));
     source.account_work(probe.context().steps).map_err(error)?;
     result
 }
@@ -19,7 +23,7 @@ fn expose(
     source: &mut Context,
     probe: &mut Probe,
     root: TermId,
-    first: u32,
+    (first, premise): (u32, bool),
 ) -> Result<Option<(TermId, Obligations)>, String> {
     let mut opening = Bound::open_regions(first)?;
     let root = probe
@@ -63,6 +67,23 @@ fn expose(
                 ) && !probe
                     .context()
                     .inputs_fixed(&facts.types, opened.signature.output)? =>
+            {
+                Ok(opened.signature)
+            }
+            // A closure signature without its own lifetime binder has one
+            // output for every input it accepts. An input written as a
+            // projection that is not normalized yet, `I::Item` in
+            // `F: FnMut(I::Item) -> Option<B>`, leaves that output exact; the
+            // callable premise itself retains the input equation.
+            Err(infer::Error::Normalization)
+                if premise
+                    && opened.signature.regions.is_empty()
+                    && matches!(
+                        probe
+                            .context()
+                            .head(&facts.types, application.predicate.subject())?,
+                        Some(Constructor::Closure(..))
+                    ) =>
             {
                 Ok(opened.signature)
             }

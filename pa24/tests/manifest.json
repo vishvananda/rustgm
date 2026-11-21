@@ -14518,6 +14518,162 @@
       ]
     },
     {
+      "path": "tests/spec/premise-results/filter-map-struct.rs",
+      "exit_status": 0,
+      "source_sha256": "b6bf1d08c1e16c6f01b7a7a5839e381abac62d05e23bfde574e63fcc7e92fe81",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-results/filter-map-method.rs",
+      "exit_status": 0,
+      "source_sha256": "3c8d142f6a0c97d8de1b019cf7fd7586ab88deded5b06c51c47dbb345d3ea99c",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-results/filter-map-turbofish.rs",
+      "exit_status": 0,
+      "source_sha256": "1eb75bf739c26d4d4fff2ab59df08eb1024ef4c35be52fbc37d7a78600bae916",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-results/filter-map-concrete-input.rs",
+      "exit_status": 0,
+      "source_sha256": "b8811f410856a234d4c789caf08b0522e669d176d6202c12f6419202eedcce3b",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-results/method-concrete-input.rs",
+      "exit_status": 0,
+      "source_sha256": "b318ac0cbd78084746c9e22c89223d3733f136f37c5b9764f73448cb89407b99",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/premise-results/output-not-option.rs",
+      "exit_status": 1,
+      "source_sha256": "1b3bd579ba20d6e8b2f2b1e91ec55ae504282fa2feb04ade9619b6191f718fc1",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/premise-results/item-conflict.rs",
+      "exit_status": 1,
+      "source_sha256": "2fe17b5180e7b4f1da7af88842216343f19054a32ed8b04b09635f3080847e22",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/premise-results/two-gathers.rs",
+      "exit_status": 1,
+      "source_sha256": "1414c83915106af45d620261d1ec0768368d1d1f5df6929aff82e8a8707f8ff4",
+      "input": "file",
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
+      "mode": "--emit-lowir"
+    },
+    {
       "path": "tests/spec/sibling-closure-inputs/ok-or-else-map-err.rs",
       "exit_status": 0,
       "source_sha256": "a64204a17618577b706758d0d1dab97951e4f2ed0c911d4888bd8f2767089d67",
