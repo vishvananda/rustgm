@@ -19,8 +19,9 @@ impl Bound {
     }
     pub(crate) fn retained_allocation(&self) -> (usize, usize) {
         let mut total = Allocation::default();
-        let mut work = vec![self];
-        while let Some(value) = work.pop() {
+        let mut work = Vec::new();
+        let mut value = self;
+        loop {
             total.vector(&value.arguments);
             total.map(&value.completed);
             total.vector(&value.work);
@@ -59,6 +60,8 @@ impl Bound {
                 | Action::Vtable
                 | Action::Normalize => {}
             }
+            let Some(next) = work.pop() else { break };
+            value = next;
         }
         (total.bytes, total.visits)
     }

@@ -84,7 +84,7 @@ fn independent_parameter_maps_do_not_reapply_each_others_replacements() -> Resul
 }
 
 #[test]
-fn failed_capture_shift_preserves_completed_results_and_budget() -> Result<(), &'static str> {
+fn failed_capture_shift_preserves_completed_and_independent_queries() -> Result<(), &'static str> {
     let mut store = Store::default();
     let input = reference(&mut store, 0)?;
     let (expected, _) = store.shift_type(input, 1)?;
@@ -97,19 +97,9 @@ fn failed_capture_shift_preserves_completed_results_and_budget() -> Result<(), &
     let independent = reference(&mut store, 2)?;
     let (shifted, _) = store.shift_type(independent, 1)?;
     assert_eq!(shifted, reference(&mut store, 3)?);
-    let shifts = store.shifts.as_mut().ok_or("missing shift budget")?;
-    shifts.steps = 1_000_001;
-    let folders = shifts.folders.len();
-    assert!(store.shift_type(input, 2).is_err());
-    assert_eq!(
-        store
-            .shifts
-            .as_ref()
-            .ok_or("lost shift budget")?
-            .folders
-            .len(),
-        folders
-    );
+    store.shifts.as_mut().ok_or("missing shifts")?.steps = 1_000_001;
+    let (shifted_again, _) = store.shift_type(input, 2)?;
+    assert_eq!(shifted_again, reference(&mut store, 2)?);
     Ok(())
 }
 
@@ -126,6 +116,8 @@ fn completed_capture_lookup_is_cold_readonly_and_bound_to_exact_amount_and_type(
     assert!(store.shifts.is_none());
     assert!(store.prepared_shift(TypeId(u32::MAX), 0).is_err());
     let (expected, _) = store.shift_type(callback, 1)?;
+    assert_eq!(store.prepared_shift(callback, 1)?, None);
+    store.prepare_shift(callback, 1)?;
     let before = (store.len(), store.shifts.as_ref().ok_or("shifts")?.steps);
     for _ in 0..128 {
         assert_eq!(store.prepared_shift(callback, 1)?, Some(expected));
@@ -139,6 +131,8 @@ fn completed_capture_lookup_is_cold_readonly_and_bound_to_exact_amount_and_type(
     assert_eq!(store.prepared_shift(capture, 1)?, None);
     let (shifted_capture, _) = store.shift_type(capture, 1)?;
     assert_eq!(shifted_capture, reference(&mut store, 2)?);
+    assert_eq!(store.prepared_shift(capture, 1)?, None);
+    store.prepare_shift(capture, 1)?;
     assert_eq!(store.prepared_shift(capture, 1)?, Some(shifted_capture));
     let foreign = reference(&mut store, 3)?;
     assert_eq!(store.prepared_shift(foreign, 1)?, None);
@@ -146,21 +140,23 @@ fn completed_capture_lookup_is_cold_readonly_and_bound_to_exact_amount_and_type(
 }
 
 #[test]
-fn completed_capture_lookup_preserves_both_folder_and_shared_budget_failure()
--> Result<(), &'static str> {
+fn prepared_capture_lookup_survives_optional_cache_retirement() -> Result<(), &'static str> {
     let mut store = Store::default();
     let input = reference(&mut store, 0)?;
-    let (expected, _) = store.shift_type(input, 1)?;
+    store.prepare_shift(input, 1)?;
+    let expected = reference(&mut store, 1)?;
+    let shifts = store.shifts.as_mut().ok_or("shifts")?;
+    shifts.cache_bytes = super::Shifts::CACHE_LIMIT;
+    let another = reference(&mut store, 2)?;
+    let (shifted, _) = store.shift_type(another, 1)?;
+    assert_eq!(shifted, reference(&mut store, 3)?);
+    let shifts = store.shifts.as_ref().ok_or("shifts")?;
+    assert!(shifts.cache_full);
+    assert!(shifts.folders.is_empty());
     assert_eq!(store.prepared_shift(input, 1)?, Some(expected));
-    let shifts = store.shifts.as_mut().ok_or("shifts")?;
-    shifts.folders.get_mut(&1).ok_or("folder")?.steps = 1_000_001;
-    assert!(store.prepared_shift(input, 1).is_err());
-    assert!(store.prepared_shift(TypeId::UNIT, 1).is_err());
-    let shifts = store.shifts.as_mut().ok_or("shifts")?;
-    shifts.folders.get_mut(&1).ok_or("folder")?.steps = 0;
-    shifts.steps = 1_000_001;
-    assert!(store.prepared_shift(input, 1).is_err());
-    assert!(store.prepared_shift(input, 2).is_err());
-    assert!(store.prepared_shift(TypeId::UNIT, 0).is_err());
+    assert_eq!(store.prepared_shift(another, 1)?, None);
+    store.prepare_shift(another, 1)?;
+    assert_eq!(store.prepared_shift(another, 1)?, Some(shifted));
+    assert_eq!(store.prepared_shift(TypeId::UNIT, 0)?, Some(TypeId::UNIT));
     Ok(())
 }

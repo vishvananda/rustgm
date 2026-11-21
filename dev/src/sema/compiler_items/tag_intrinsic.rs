@@ -72,10 +72,10 @@ pub(crate) fn prepare_discriminant(
     };
     let input = instance_input(&facts.types, arguments)?;
     let before = facts.types.capture_shift_steps();
-    let result = facts.types.shift_type(input, 1);
+    let result = facts.types.prepare_shift(input, 1);
     let work = facts.types.capture_shift_steps().saturating_sub(before);
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
-    result.map(|_| ())
+    result
 }
 
 fn instance_input(

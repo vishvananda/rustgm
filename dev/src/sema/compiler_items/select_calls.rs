@@ -62,7 +62,7 @@ pub(crate) fn prepare_select(
         for ty in types {
             work += 1;
             let before = facts.types.capture_shift_steps();
-            let shifted = facts.types.shift_type(ty, 1);
+            let shifted = facts.types.prepare_shift(ty, 1);
             work += facts.types.capture_shift_steps().saturating_sub(before);
             shifted?;
         }
