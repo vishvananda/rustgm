@@ -8,6 +8,7 @@ if any part failed. The queue is not charged; compiles share their own ceiling.
 """
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -29,6 +30,10 @@ LIMITS = (60, 14400)
 GIB = 1024 ** 3
 # A step above this many GiB of anonymous memory leaves less than 2 GiB of the 12 GiB cap.
 WARN_GIB = 10
+# Cold sizes of the three build caches (measured 2026-11-21), for a profile without sessions.
+COLD_GIB = {"obj/rust/dev-fast": 10, "obj/rust/private-lint/dev-fast": 4.5, "obj/rust/public-lint/dev-fast": 1.2}
+# Test parts write scratch (native programs, evidence) on top of the build.
+SCRATCH_GIB = 2
 
 
 def parser():
@@ -42,6 +47,9 @@ def parser():
     result.add_argument("--wait-seconds", type=float, default=3600,
                         help="longest queue for a resource slot, at most 3600 seconds")
     result.add_argument("--max-output-gib", type=float, help="absolute cap including retained output")
+    result.add_argument("--compare", type=Path, metavar="RECEIPT",
+                        help="print tests failing now but not in RECEIPT and the reverse; "
+                             "exit zero only when nothing new fails")
     result.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     result.add_argument("--evidence-root", type=Path, help=argparse.SUPPRESS)
     return result
@@ -131,7 +139,64 @@ def gate_parts(steps, parts, gates):
             parts.add(f"gate {name}", last["status"] == 0, f"status {last['status']}, {last['seconds']:.1f}s")
 
 
+def unshared_bytes(folder):
+    total = 0
+    for path in folder.rglob("*"):
+        info = path.lstat()
+        if path.is_file() and not path.is_symlink() and info.st_nlink == 1:
+            total += info.st_blocks * 512
+    return total
+
+
+def expected_growth(root):
+    """What a build writes: one new session per crate beside the carried one, or a cold cache.
+
+    Superseded sessions are retired only before the next admission, so each
+    compiled crate adds about its newest session's unshared size.
+    """
+    total = 0
+    for spelling, cold in COLD_GIB.items():
+        folder = root / spelling / "incremental"
+        largest = {}
+        for crate in sorted(folder.iterdir()) if folder.is_dir() else ():
+            sessions = [session for session in crate.iterdir() if session.is_dir() and not session.is_symlink()
+                        and session.name.startswith("s-") and not session.name.endswith("-working")]
+            if sessions:
+                newest = max(sessions, key=lambda session: (session.stat().st_mtime_ns, session.name))
+                name = crate.name.rsplit("-", 1)[0]
+                largest[name] = max(largest.get(name, 0), unshared_bytes(newest))
+        total += sum(largest.values()) if largest else int(cold * GIB)
+    return total + SCRATCH_GIB * GIB
+
+
+def lease_room():
+    """This job's absolute output cap and the usage its admission scan found, in bytes."""
+    try:
+        record = json.loads(Path(os.environ["RUSTGM_RESOURCE_LEASE"]).read_text())
+    except (KeyError, OSError, ValueError):
+        return None
+    budget, used = record.get("budget_bytes"), record.get("used_bytes")
+    return (budget, used) if isinstance(budget, int) and isinstance(used, int) else None
+
+
+def check_room(root):
+    """Refuse before compiling when the build cannot fit under the output cap."""
+    room = lease_room()
+    if room is None:
+        return
+    budget, used = room
+    need = expected_growth(root)
+    if budget - used < need:
+        raise ValueError(
+            f"only {max(0, budget - used) / GIB:.1f} GiB of the {budget / GIB:g} GiB output cap remain and this "
+            f"run writes about {need / GIB:.1f} GiB (new incremental sessions, binaries and test scratch); "
+            "nothing was compiled. Free space with `make tidy` (failed-run artifacts) or `make tidy-build` "
+            "(the whole Cargo cache; the next build is then cold, about 16 GiB), or raise --max-output-gib "
+            "up to the controller's worker_gib")
+
+
 def execute(root, args, steps, parts):
+    check_room(root)
     suites = discover(root)
     targets = sorted(set(suites.values()))
     digests = Digests(root)
@@ -175,6 +240,48 @@ def summary(rows):
     lines.append(f"Integration: {len(rows) - len(failed)} of {len(rows)} parts passed"
                  + (f"; failed: {', '.join(failed)}" if failed else ""))
     return lines
+
+
+def failing(rows):
+    """One flat sorted list: `part::test` per named failure, the part itself when it names none."""
+    names = set()
+    for row in rows:
+        if row["passed"]:
+            continue
+        part = row["part"]
+        names.update([f"{part}::{name.removeprefix(part + '/')}" for name in row["failures"]] or [part])
+    return sorted(names)
+
+
+def load_receipt(path):
+    path = path / "receipt.json" if path.is_dir() else path
+    receipt = json.loads(path.read_text())
+    if not isinstance(receipt, dict) or not isinstance(receipt.get("parts"), list):
+        raise ValueError(f"{path}: not an integration receipt")
+    return receipt
+
+
+def compare(names, receipt):
+    """Failing now but not in the receipt, and failing there but not now."""
+    before = set(receipt.get("failing") or failing(receipt["parts"]))
+    return sorted(set(names) - before), sorted(before - set(names))
+
+
+def compared(folder, path):
+    """Compare a finished run with an earlier receipt, print and record it; zero only when nothing new fails."""
+    current = load_receipt(folder)
+    names = current.get("failing")
+    if not isinstance(names, list):
+        raise ValueError(f"{folder}: the run recorded no list of failing tests")
+    new, fixed = compare(names, load_receipt(path))
+    current["compare"] = {"receipt": str(path), "new": new, "fixed": fixed}
+    (folder / "receipt.json").write_text(json.dumps(current, indent=2) + "\n")
+    print(f"Compared with {path}: {len(new)} failing now but not there, {len(fixed)} failing there but not now",
+          flush=True)
+    for label, rows in (("NEW", new), ("FIXED", fixed)):
+        for name in rows:
+            print(f"  {label} {name}", flush=True)
+    return 0 if not new else 1
 
 
 def own_cgroup():
@@ -246,6 +353,7 @@ def check(root, args):
                       f"the job's memory cap", flush=True)
         rows = steps.receipt["parts"]
         steps.receipt["state"] = "passed" if rows and all(row["passed"] for row in rows) else "failed"
+        steps.receipt["failing"] = failing(rows)
         steps.save()
         print("\n".join(summary(rows)), flush=True)
         print(f"Integration evidence: {steps.folder}", flush=True)
@@ -273,8 +381,17 @@ def main():
                 raise ValueError("internal worker requires an evidence root")
             admission_marker(args.evidence_root).touch()
             return check(ROOT, args)
+        if args.compare is not None:
+            # Refuse an unreadable comparison before queueing; the worker ignores it.
+            load_receipt(args.compare)
         status, folder = launch(args, started, script="scripts/integration_check.py",
                                 evidence="obj/qualification/integration", seconds=LIMITS, label="Integration")
+        if args.compare is not None:
+            try:
+                status = compared(folder, args.compare)
+            except (OSError, ValueError) as error:
+                print(f"Integration comparison FAILED: {error}", flush=True)
+                status = 1
         found = resources(folder)
         if found:
             path, marks = found

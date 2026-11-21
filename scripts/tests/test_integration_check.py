@@ -1,6 +1,7 @@
 """The integration check runs every part, reports each on one line and fails if any part failed."""
 from argparse import Namespace
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -42,8 +43,8 @@ OUTPUTS = {
 
 
 class IntegrationCheck(unittest.TestCase):
-    def run_check(self, root, *, build_fails=False, marks=None):
-        (root / "dev").mkdir()
+    def run_check(self, root, *, build_fails=False, room=None, marks=None):
+        (root / "dev").mkdir(parents=True)
         (root / "dev/Cargo.toml").write_text('[package]\nname="test"\nversion="1.0.0"\n')
         (root / "obj/audit-venv/bin").mkdir(parents=True)
         (root / "obj/audit-venv/bin/python").touch()
@@ -72,7 +73,7 @@ class IntegrationCheck(unittest.TestCase):
             return binaries
 
         args = Namespace(stages=["pa1", "pa2", "pa3"], seconds=600, compile_seconds=600,
-                         evidence_root=root / "obj/qualification/integration/run")
+                         evidence_root=root / "obj/qualification/integration/run", compare=None)
         memory = mock.patch.object(integration_check, "MemoryMarks", marks) if marks else mock.patch.object(
             integration_check, "own_cgroup", return_value=None)
         with mock.patch.object(integration_check, "discover",
@@ -81,7 +82,7 @@ class IntegrationCheck(unittest.TestCase):
                 mock.patch.object(integration_check, "Beside", RecordedGates), \
                 mock.patch.object(integration_check, "build", side_effect=build), \
                 mock.patch.object(integration_check, "check_space"), \
-                memory, \
+                mock.patch.object(integration_check, "lease_room", return_value=room), memory, \
                 mock.patch.object(fastcheck_run, "controller", return_value=None), \
                 mock.patch.object(fastcheck_run.shutil, "which", return_value="clippy-driver"), \
                 mock.patch.object(fastcheck_run.subprocess, "run", side_effect=run), \
@@ -117,6 +118,70 @@ class IntegrationCheck(unittest.TestCase):
                                       "failed: gate format, suite_frontend, suite_traits, pa2, pa3")
         self.assertIn("  FAIL pa2: 1/2 cases; status 1 (pa2/b.rs)", summary)
 
+    def test_failing_names_are_one_flat_list_and_compare_reports_both_directions(self):
+        expected = ["gate format", "pa2::b.rs", "pa3", "suite_frontend::lexer::bad", "suite_frontend::lexer::worse",
+                    "suite_traits"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, receipt, _, _ = self.run_check(root / "plain")
+            self.assertEqual(receipt["failing"], expected)
+            folder = root / "plain/obj/qualification/integration/run"
+            earlier = root / "earlier.json"
+            earlier.write_text(json.dumps({"parts": [], "failing": [*expected[:3], *expected[4:], "lib::old::case"]}))
+            with mock.patch("builtins.print") as printed:
+                self.assertEqual(integration_check.compared(folder, earlier), 1)
+            lines = [call.args[0] for call in printed.call_args_list]
+            self.assertEqual(lines[1:], ["  NEW suite_frontend::lexer::bad", "  FIXED lib::old::case"])
+            self.assertEqual(json.loads((folder / "receipt.json").read_text())["compare"],
+                             {"receipt": str(earlier), "new": ["suite_frontend::lexer::bad"],
+                              "fixed": ["lib::old::case"]})
+            # Known failures alone pass the comparison, though the run itself failed; an
+            # older receipt without the flat list is read from its parts.
+            (root / "same").mkdir()
+            (root / "same/receipt.json").write_text(json.dumps({"parts": receipt["parts"]}))
+            with mock.patch("builtins.print"):
+                self.assertEqual(integration_check.compared(folder, root / "same"), 0)
+            self.assertEqual(json.loads((folder / "receipt.json").read_text())["state"], "failed")
+            for broken in ({"failing": []}, [1]):
+                earlier.write_text(json.dumps(broken))
+                with self.subTest(broken=broken), self.assertRaisesRegex(ValueError, "not an integration receipt"):
+                    integration_check.compared(folder, earlier)
+
+    def test_the_launcher_compares_after_the_run_and_returns_the_comparisons_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            folder = root / "run"
+            folder.mkdir()
+            (folder / "receipt.json").write_text(json.dumps({"parts": [], "state": "failed",
+                                                             "failing": ["suite_traits::known"]}))
+            earlier = root / "earlier.json"
+            earlier.write_text(json.dumps({"parts": [], "failing": ["suite_traits::known"]}))
+            argv = ["integration_check.py", "pa1", "--compare", str(earlier)]
+            with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"), \
+                    mock.patch.object(integration_check, "resources", return_value=None), \
+                    mock.patch.object(integration_check, "launch", return_value=(1, folder)) as launched:
+                self.assertEqual(integration_check.main(), 0)
+            launched.assert_called_once()
+            # An unreadable comparison receipt fails before queueing.
+            argv[-1] = str(root / "missing.json")
+            with mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"), \
+                    mock.patch.object(integration_check, "launch") as launched:
+                self.assertEqual(integration_check.main(), 1)
+            launched.assert_not_called()
+
+    def test_too_little_room_under_the_output_cap_stops_before_compiling(self):
+        with tempfile.TemporaryDirectory() as directory:
+            gib = integration_check.GIB
+            status, receipt, lines, commands = self.run_check(Path(directory), room=(36 * gib, 35 * gib))
+        self.assertEqual(status, 1)
+        self.assertEqual([row["part"] for row in receipt["parts"]], ["integration"])
+        detail = receipt["parts"][0]["detail"]
+        self.assertIn("only 1.0 GiB of the 36 GiB output cap remain", detail)
+        self.assertIn("nothing was compiled", detail)
+        self.assertIn("make tidy", detail)
+        self.assertEqual(commands, [])
+        self.assertNotIn("steps", [row.get("name") for row in receipt["steps"]])
+
     def test_a_step_above_ten_gib_is_warned_about(self):
         class Marks:
             def __init__(self, steps, _folder):
@@ -131,6 +196,22 @@ class IntegrationCheck(unittest.TestCase):
         self.assertEqual(receipt["memory_warnings"], {"clippy-private": 10.4})
         self.assertIn("WARNING: clippy-private peaked at 10.40 GiB of anonymous memory, above 10 GiB of the "
                       "job's memory cap", lines)
+
+    def test_expected_growth_counts_each_crates_newest_session_or_a_cold_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gib = integration_check.GIB
+            crate = root / "obj/rust/dev-fast/incremental/rustgm-abc"
+            for name, size in (("s-old-1", 3000), ("s-new-2", 8192)):
+                (crate / name).mkdir(parents=True)
+                (crate / name / "query-cache.bin").write_bytes(b"x" * size)
+                os.utime(crate / name, ns=(1, 1) if name == "s-old-1" else (2, 2))
+            # A hardlinked work product is shared with the carried session, so it is not growth.
+            os.link(crate / "s-new-2/query-cache.bin", crate / "s-new-2/shared.o")
+            (crate / "s-new-2/own.o").write_bytes(b"y" * 4096)
+            growth = integration_check.expected_growth(root)
+        cold = int(4.5 * gib) + int(1.2 * gib) + 2 * gib
+        self.assertEqual(growth, cold + 4096)
 
     def test_memory_marks_charge_each_sample_to_the_steps_running_then(self):
         with tempfile.TemporaryDirectory() as directory:

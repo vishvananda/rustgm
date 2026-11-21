@@ -300,8 +300,14 @@ failure. Pending generated references are allowed here; the full layout check
 still requires their complete provenance. `make integration-check` runs the
 whole private unit binary, every harness suite group and the active course text
 suites against one dev-fast build at the granted width; every part runs, each
-gets one summary line, and any failed part fails the command. It warns about
-any step above 10 GiB of anonymous memory.
+gets one summary line, and any failed part fails the command. Before compiling
+it compares the room left under its output cap with what the run writes (each
+cached crate's newest incremental session, or the cold cache size, plus test
+scratch) and stops with the remedy when that does not fit. It warns about any
+step above 10 GiB of anonymous memory. The receipt's `failing` list names every
+failing `part::test`, or the part when it names none;
+`INTEGRATION_ARGS='--compare RECEIPT'` then prints the tests failing now but not
+in that receipt and the reverse, and exits zero only when nothing new fails.
 `make fastcheck` itself applies resource/storage protection; do not wrap it in
 another lease. It queues for a shared-controller slot for at most
 `--wait-seconds` (one hour by default) and names the jobs holding the slots;
