@@ -743,7 +743,9 @@ and memory at this size were not measured.
   (`dev/src/lower/intrinsics.rs`) and 67,108,864 persistent data steps
   (`dev/src/lower/data.rs`). Per session, destruction recipes stop at
   67,108,864 steps or 1 GiB retained
-  (`dev/src/body/drops/glue/cache.rs`) and generated method selections and
+  (`dev/src/body/drops/glue/cache.rs`), destructor dependencies at 67,108,864
+  steps (`dev/src/borrow/destruction/dependencies.rs`), storage proof recipes
+  at 1 GiB retained (`dev/src/sema/stored_fields/graph.rs`) and generated method selections and
   future operation demands at 16,777,216 each
   (`dev/src/sema/primitive_methods.rs`,
   `dev/src/lower/instances/dependencies.rs`). The bridge's 1,025 LowIR units

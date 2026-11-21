@@ -5,6 +5,9 @@ enum Work {
     Node(super::NodeId),
     Recipe(glue::Id),
 }
+/// A coarse runaway guard on one session's destructor dependency work: the
+/// compiler's own joint graph spends more than 1,000,000 steps.
+const WORK_LIMIT: usize = 1 << 26;
 #[derive(Default)]
 pub(crate) struct Dependencies {
     recipes: Vec<bool>,
@@ -173,8 +176,8 @@ impl Dependencies {
         self.steps = self
             .steps
             .checked_add(count)
-            .filter(|n| *n <= 1_000_000)
-            .ok_or("destructor dependency work budget exceeded")?;
+            .filter(|n| *n <= WORK_LIMIT)
+            .ok_or("destructor dependency work exceeds its runaway limit")?;
         Ok(())
     }
 }

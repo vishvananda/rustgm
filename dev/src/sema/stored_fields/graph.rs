@@ -7,6 +7,9 @@ use crate::types::{ItemId, Kind, ListId};
 /// bounded by a coarse whole-graph runaway guard rather than by what one
 /// proof may spend.
 const WORK_LIMIT: usize = 1 << 30;
+/// The same registry's retained recipes, guarded as coarsely: the compiler's
+/// own joint graph retains more than 64 MB of them.
+const RETAINED_LIMIT: usize = 1 << 30;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct RecipeId(usize);
@@ -60,8 +63,8 @@ impl Registry {
         self.retained = self
             .retained
             .checked_add(bytes)
-            .filter(|bytes| *bytes <= 64_000_000)
-            .ok_or("storage proof recipes exceed 64 MB budget")?;
+            .filter(|bytes| *bytes <= RETAINED_LIMIT)
+            .ok_or("storage proof recipes exceed their retained-byte runaway limit")?;
         Ok(())
     }
     fn push(&mut self, recipe: Recipe) -> Result<RecipeId, &'static str> {
