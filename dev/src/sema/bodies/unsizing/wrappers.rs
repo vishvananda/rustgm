@@ -1,7 +1,7 @@
 //! Whole-value wrapper coercions retain their actual ordinary trait obligation.
 use super::{Checker, Constructor, Error, Justification, NodeId, Pending, TermId};
 use crate::{
-    sema::model::AdjustmentKind,
+    sema::{model::AdjustmentKind, traits::selection},
     support::{bindings::LangItem, retained::Growth},
     types::{
         ItemId,
@@ -180,6 +180,18 @@ impl Checker<'_> {
             .infer
             .unsizing_mismatch(&self.facts.types, actual, expected)
             .map_err(|e| self.error(node, e))?
+        {
+            return Ok(false);
+        }
+        let assumptions = self.trait_assumptions(node)?;
+        if !selection::may_have_subject(
+            self.facts,
+            &mut self.state.infer,
+            ItemId(role.definition.0),
+            actual,
+            assumptions.as_deref(),
+        )
+        .map_err(|e| self.error(node, e))?
         {
             return Ok(false);
         }
