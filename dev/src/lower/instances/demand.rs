@@ -1233,6 +1233,7 @@ pub(super) fn prepare_ordinary<C: Collect>(
     let templates = originals.checked;
     crate::pipeline::checked_future_storage(report, facts, templates)
         .map_err(|e| diagnostic(report, None, e))?;
+    body::prepare_constructors(report, facts)?;
     let mut program = body::concrete_selected(
         report,
         facts,

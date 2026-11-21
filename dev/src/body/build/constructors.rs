@@ -34,20 +34,58 @@ fn selected(facts: &Declarations) -> impl Iterator<Item = (DefId, TypeId, Varian
         })
 }
 
+/// The constructors that are concrete bodies of their own.
+fn concrete_selection(
+    facts: &Declarations,
+) -> impl Iterator<Item = (DefId, TypeId, VariantId)> + '_ {
+    selected(facts).filter(|&(_, _, variant)| {
+        let declaration = facts.members.variants[variant.0 as usize];
+        // An imported constructor is synthesized only as a referenced template.
+        !facts.generics.has_parameters(DefId(declaration.owner.0))
+            && declaration.origin.diagnostic().is_some()
+    })
+}
+
+/// Give each concrete constructor's interface its field storage before the
+/// immutable build classifies its destruction. A lifetime-generic nominal's
+/// constructor reads its fields at the nominal's own lifetimes, which no
+/// other body need name: a storage proof of another lifetime instance reads
+/// that instance's fields.
+/// # Errors
+/// Rejects failed field storage normalization at the constructor.
+pub(crate) fn prepare_concrete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    if super::drops::origin(report, facts)?.is_none() {
+        return Ok(());
+    }
+    let constructors = concrete_selection(facts)
+        .map(|(definition, signature, variant)| {
+            (
+                definition,
+                signature,
+                facts.members.variants[variant.0 as usize],
+            )
+        })
+        .collect::<Vec<_>>();
+    for (definition, signature, variant) in constructors {
+        let owner = Owner::Function {
+            definition,
+            signature,
+            execution: None,
+        };
+        if let Err(message) = crate::body::instantiate::prepare_signature(facts, owner) {
+            return Err(report.body_error(anchor(report, variant)?, message));
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn concrete(
     report: &Report,
     facts: &Declarations,
     program: &mut super::Program,
     mut query: Option<&mut NeedsDrop>,
 ) -> Result<(), Error> {
-    for (definition, signature, variant) in selected(facts) {
-        let declaration = facts.members.variants[variant.0 as usize];
-        // An imported constructor is synthesized only as a referenced template.
-        if facts.generics.has_parameters(DefId(declaration.owner.0))
-            || declaration.origin.diagnostic().is_none()
-        {
-            continue;
-        }
+    for (definition, signature, variant) in concrete_selection(facts) {
         program.bodies.push(build(
             report,
             facts,
