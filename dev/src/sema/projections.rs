@@ -18,6 +18,8 @@ use crate::{
     },
 };
 pub(super) use cursor::{Completed, Cursor, Progress};
+pub(super) const MISSING_IMPLEMENTATION: &str =
+    "associated type requires an unambiguous validated implementation";
 pub(super) use selected::Definition;
 use std::sync::Arc;
 

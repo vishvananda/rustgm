@@ -1,20 +1,18 @@
-//! Internal attributes whose meaning this compiler lacks: the bring-up
-//! profile admits each one with a recorded waiver, every strict compilation
-//! rejects it, and both profiles reject a misplaced, ungated or malformed use.
+//! Strict and bring-up compilation apply the same checks to these internal
+//! attributes and language roles.
 //!
 //! `#[may_dangle]` (feature `dropck_eyepatch`) marks a lifetime or type
 //! parameter of an `unsafe impl Drop`, as alloc's `Vec`, `Box`, `Rc` and
-//! collection destructors do. Drop checking retains the requirements of owned fields. The
-//! allocator attributes (`rustc_allocator`, `rustc_deallocator`,
+//! collection destructors do. Drop checking retains the requirements of owned
+//! fields. The allocator attributes (`rustc_allocator`, `rustc_deallocator`,
 //! `rustc_reallocator`, `rustc_allocator_zeroed`,
 //! `rustc_allocator_zeroed_variant`) only inform rustc's LLVM backend,
 //! `rustc_std_internal_symbol` names a symbol, which declaration linkage
 //! implements, and `rustc_conversion_suggestion` only feeds rustc's
 //! diagnostics, so both profiles accept all of them without a waiver once
-//! their form, owner and gate hold. Bring-up admits the `String` struct with
-//! a waiver for its diagnostic role. `global_alloc_ty` names the global
-//! allocator and `owned_box` names the built-in
-//! owning pointer in both profiles, so a `Box` position of
+//! their form, owner and gate hold. Validated language roles identify `String`
+//! for diagnostics, `global_alloc_ty` for the global allocator, and `owned_box`
+//! for the built-in owning pointer, so a `Box` position of
 //! `write_box_via_move`, which alloc's `vec!` calls, matches exactly that
 //! struct.
 //!
@@ -77,12 +75,6 @@ const MISPLACED: &str =
 /// What both profiles do with one case.
 #[derive(Clone, Copy)]
 enum Outcome {
-    /// Bring-up admits it and records `waiver`; strict mode rejects it with
-    /// `strict`.
-    Waived {
-        waiver: &'static str,
-        strict: &'static str,
-    },
     /// Both profiles accept it and record no waiver.
     Accepted,
     /// Both profiles reject it with this message and record no waiver.
@@ -219,7 +211,6 @@ const ALLOCATORS: [Case; 7] = [
     },
 ];
 
-const STRING_WAIVER: &str = "lang item `String` is admitted as an ordinary struct: its diagnostics and the uniqueness of its role are not checked";
 const UNSUPPORTED: &str = "unsupported source language item";
 
 const LANG_ROLES: [Case; 8] = [
@@ -253,10 +244,7 @@ const LANG_ROLES: [Case; 8] = [
         name: "string",
         header: INTERNAL,
         items: "#[lang = \"String\"]\npub struct String;\n",
-        outcome: Outcome::Waived {
-            waiver: STRING_WAIVER,
-            strict: UNSUPPORTED,
-        },
+        outcome: Outcome::Accepted,
     },
     Case {
         name: "box-without-parameter",
@@ -270,7 +258,9 @@ const LANG_ROLES: [Case; 8] = [
         name: "string-on-enum",
         header: INTERNAL,
         items: "#[lang = \"String\"]\npub enum String {}\n",
-        outcome: Outcome::Rejected("`String` lang item must be applied to a struct"),
+        outcome: Outcome::Rejected(
+            "source language item differs from its required declaration target or owner",
+        ),
     },
     Case {
         name: "unknown-role",
@@ -332,12 +322,10 @@ fn rejects(stderr: &str, message: &str) -> bool {
     })
 }
 
-/// Whether bring-up recorded exactly this waiver, or any waiver for `None`.
-fn waived(stderr: &str, waiver: Option<&str>) -> bool {
-    stderr.lines().any(|line| {
-        line.strip_prefix("bringup-waived\t")
-            .is_some_and(|actual| waiver.is_none_or(|waiver| actual == waiver))
-    })
+fn waived(stderr: &str) -> bool {
+    stderr
+        .lines()
+        .any(|line| line.starts_with("bringup-waived\t"))
 }
 
 /// Run every case, after the core and `prelude`, in both profiles; the
@@ -360,28 +348,15 @@ fn check(folder: &str, cases: &[Case], prelude: &str) -> Result<Vec<String>> {
         let (strict, strict_err) = typed(&path, None)?;
         let (bringup, bringup_err) = typed(&path, Some(&skip))?;
         let matches = match case.outcome {
-            Outcome::Waived {
-                waiver,
-                strict: message,
-            } => {
-                !strict
-                    && rejects(&strict_err, message)
-                    && !waived(&strict_err, None)
-                    && bringup
-                    && waived(&bringup_err, Some(waiver))
-            }
-            Outcome::Accepted => {
-                strict && bringup && !waived(&strict_err, None) && !waived(&bringup_err, None)
-            }
+            Outcome::Accepted => strict && bringup,
             Outcome::Rejected(message) => {
                 !strict
                     && rejects(&strict_err, message)
                     && !bringup
                     && rejects(&bringup_err, message)
-                    && !waived(&bringup_err, None)
             }
         };
-        if !matches {
+        if !matches || waived(&strict_err) || waived(&bringup_err) {
             failures.push(format!(
                 "{}: strict={strict} {strict_err}bringup={bringup} {bringup_err}",
                 case.name
@@ -410,11 +385,10 @@ fn allocator_attributes_are_accepted_in_both_profiles_after_validation() -> Resu
     Ok(())
 }
 
-/// The global allocator and owning box roles pass in both modes. Bring-up
-/// waives the diagnostic role for `String` after checking its target.
+/// The global allocator, owning box, and String roles pass in both modes.
 /// Misplaced and unknown roles fail in both modes.
 #[test]
-fn lang_roles_are_validated_and_unimplemented_ones_waived_in_bringup() -> Result {
+fn lang_roles_are_validated_in_both_profiles() -> Result {
     let failures = check("lang-roles", &LANG_ROLES, "")?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())

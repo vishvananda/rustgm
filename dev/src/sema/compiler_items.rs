@@ -12,6 +12,7 @@ pub(in crate::sema) mod pinning;
 pub(crate) mod pointers;
 mod start_contract;
 pub(in crate::sema) mod streams;
+pub(in crate::sema) mod string_role;
 pub(crate) mod vararg;
 pub(in crate::sema) use start_contract::require_transport as require_startup_transport;
 mod vocab_semantics;

@@ -274,7 +274,7 @@ impl Checker<'_> {
             .infer
             .account_work(opened.context.steps)
             .map_err(|e| self.error(node, e))?;
-        let selected = match selected.map_err(|e| self.error(node, e))? {
+        let selected = match selected.map_err(|e| self.projection_selection_failure(node, &e))? {
             Attempt::Selected(selected) => selected,
             attempt => {
                 let nested = matches!(attempt, Attempt::NestedInputs);

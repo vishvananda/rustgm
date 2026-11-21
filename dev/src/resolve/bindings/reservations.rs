@@ -732,8 +732,7 @@ fn attribute_claim(
     Ok(Some(claim))
 }
 
-/// The role a `lang` attribute claims; none for a role that bring-up admits
-/// as an ordinary struct.
+/// Resolve a `lang` attribute to its registered role.
 fn language_claim(
     sources: &ClaimSources<'_>,
     key: NodeKey,
@@ -768,9 +767,6 @@ fn language_claim(
         std::str::from_utf8(&bytes).map_err(|_| error("language item name requires UTF-8"))?;
     if let Some(role) = LangItem::from_name(name) {
         return Ok(Some(Claim::Language(role)));
-    }
-    if super::unimplemented_roles::admit(sources.package, key, attribute.span.start, name)? {
-        return Ok(None);
     }
     Err(error("unsupported source language item"))
 }

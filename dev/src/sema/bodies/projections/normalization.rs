@@ -124,7 +124,7 @@ impl Checker<'_> {
             },
         );
         self.facts.body_work.projection_selections += selections;
-        match progress.map_err(|e| self.error(node, e))? {
+        match progress.map_err(|e| self.projection_selection_failure(node, e))? {
             Progress::Definition(definition) => self.suspend_projection(
                 continuation,
                 super::super::Requirement::Definition(definition),

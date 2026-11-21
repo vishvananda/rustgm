@@ -865,7 +865,7 @@ impl Checker<'_> {
                 )
             }),
         )
-        .map_err(|e| self.error(node, e))?;
+        .map_err(|e| self.projection_selection_failure(node, e))?;
         self.state
             .infer
             .account_work(steps)

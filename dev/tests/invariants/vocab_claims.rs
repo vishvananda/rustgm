@@ -84,7 +84,7 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 217);
+    assert_eq!(LangItem::ALL.len(), 218);
     for (role, index, spelling) in [
         (LangItem::UnwindSafe, 214, "unwind_safe_trait"),
         (LangItem::RefUnwindSafe, 215, "ref_unwind_safe_trait"),
@@ -94,7 +94,7 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
         assert_eq!(role.spelling(), None);
         assert_eq!(LangItem::from_name(spelling), None);
     }
-    assert_eq!(LangItem::DECLARATIONS.len(), 128);
+    assert_eq!(LangItem::DECLARATIONS.len(), 129);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
         // Preserve both diagnostic ordinals when appending declarations.
@@ -153,6 +153,12 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
         (
             "global_alloc_ty",
             216,
+            DeclarationTarget::Struct,
+            GenericRequirement::Any,
+        ),
+        (
+            "String",
+            217,
             DeclarationTarget::Struct,
             GenericRequirement::Any,
         ),

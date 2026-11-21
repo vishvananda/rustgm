@@ -338,7 +338,7 @@ impl Cursor {
         let source = projected
             .source
             .clone()
-            .ok_or("associated type requires an unambiguous validated implementation")?;
+            .ok_or(super::MISSING_IMPLEMENTATION)?;
         if let Some(resolution) = projected.resolution {
             return Ok(Some(resolution));
         }

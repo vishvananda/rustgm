@@ -662,6 +662,7 @@ pub(super) fn nominal_completed(
             | LangItem::CVoid
             | LangItem::OwnedBox
             | LangItem::GlobalAlloc
+            | LangItem::StringType
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -708,6 +709,7 @@ pub(super) fn complete_nominal(
             | LangItem::CVoid
             | LangItem::OwnedBox
             | LangItem::GlobalAlloc
+            | LangItem::StringType
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

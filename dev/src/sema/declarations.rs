@@ -611,6 +611,7 @@ impl Checker<'_> {
         super::compiler_items::complete_field_headers(self.report, &mut self.facts)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
         super::compiler_items::boxes::complete(self.report, &mut self.facts)?;
+        super::compiler_items::string_role::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;

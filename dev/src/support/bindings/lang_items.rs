@@ -282,6 +282,7 @@ language_items! {
         BeginPanic = 212 => "begin_panic", Function, GenericRequirement::Any;
         EhPersonality = 213 => "eh_personality", Function, GenericRequirement::Any;
         GlobalAlloc = 216 => "global_alloc_ty", Struct, GenericRequirement::Any;
+        StringType = 217 => "String", Struct, GenericRequirement::Any;
     }
     diagnostic {
         UnwindSafe = 214;

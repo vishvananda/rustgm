@@ -67,7 +67,7 @@ impl Definition {
             });
         }
         let Source::Implementation { owner, arguments } = source else {
-            return Err("associated type requires an unambiguous validated implementation");
+            return Err(super::MISSING_IMPLEMENTATION);
         };
         let (owner, arguments, id) = super::defining(facts, *owner, *arguments, item)?;
         Ok(Self {
