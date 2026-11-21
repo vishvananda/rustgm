@@ -315,9 +315,10 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
 fn layouts() {
     let (bindings, imported, role) = Catalog::binding_layouts();
     let provider = Catalog::provider_binding_bytes();
-    // The complete declaration inventory grows cold role slots; ordinary records stay fixed.
-    assert_eq!(provider, 3456);
-    assert_eq!(imported, 3528);
+    // Each language role adds one compact slot. Imported inventory metadata stays fixed.
+    let role_slots = LangItem::ALL.len();
+    assert_eq!(provider, 16 * role_slots);
+    assert_eq!(imported, 72 + 16 * role_slots);
     assert!(provider.abs_diff(imported) <= 256);
     assert!(bindings >= provider);
     eprintln!(

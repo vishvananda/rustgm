@@ -6,9 +6,9 @@ pub(super) struct Allocations {
     floor: u32,
     end: u32,
     stream: Option<Box<Obligations>>,
-    monotonic: bool,
     /// How many scoped frontiers this query reserved; a replayed answer
-    /// reserves one when the search it replaces did.
+    /// reserves one when the search it replaces did. The query work limit
+    /// bounds this count, and a nonzero count makes the frontier monotonic.
     reservations: u32,
 }
 impl Allocations {
@@ -18,13 +18,12 @@ impl Allocations {
             floor: first,
             end: first,
             stream: None,
-            monotonic: false,
             reservations: 0,
         }
     }
     /// Only an uninterrupted root allocation owns every ID in this interval.
     pub(super) fn plain(&self) -> Option<std::ops::Range<u32>> {
-        (!self.monotonic && self.stream.is_none()).then_some(self.first..self.end)
+        (self.reservations == 0 && self.stream.is_none()).then_some(self.first..self.end)
     }
     pub fn floor(&self) -> u32 {
         self.floor
@@ -37,18 +36,17 @@ impl Allocations {
     }
     /// No trial or scope allocated a caller region identity.
     pub fn untouched(&self) -> bool {
-        self.end == self.first && !self.monotonic && self.stream.is_none()
+        self.end == self.first && self.reservations == 0 && self.stream.is_none()
     }
     pub fn record(&mut self, end: u32) {
         self.end = self.end.max(end);
-        if self.monotonic {
+        if self.reservations != 0 {
             self.floor = self.end;
         }
     }
     /// Scoped siblings must never reuse a previously attempted universal alias.
     pub fn reserve_scoped(&mut self) -> u32 {
-        self.reservations = self.reservations.wrapping_add(1);
-        self.monotonic = true;
+        self.reservations += 1;
         self.floor = self.end;
         self.end
     }
@@ -73,7 +71,7 @@ impl Allocations {
             *stream
         } else {
             let mut proof = Obligations::new(self.first);
-            proof.regions.end = if self.monotonic {
+            proof.regions.end = if self.reservations != 0 {
                 self.end
             } else {
                 selected_end
