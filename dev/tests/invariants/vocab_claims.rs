@@ -97,7 +97,12 @@ fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() ->
     assert_eq!(LangItem::DECLARATIONS.len(), 127);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
-        assert_eq!(role.declaration_profile().is_some(), index >= 87);
+        // Declarations follow the 87 frozen rows; the diagnostic rows after
+        // them have no declaration profile.
+        assert_eq!(
+            role.declaration_profile().is_some(),
+            (87..87 + LangItem::DECLARATIONS.len()).contains(&index)
+        );
     }
     for line in
         test_source::fixture("pa31/tests/spec/compiler-language-claims/roles-v5.tsv")?.lines()

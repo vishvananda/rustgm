@@ -123,6 +123,15 @@ impl Stage {
                 }
                 continue;
             }
+            // Version thirteen froze while the unwind safety identities were
+            // inert diagnostic names: their declarations stay ordinary auto
+            // traits, which consumers prove structurally. Version fourteen
+            // binds the role, which no profile represents yet, and refuses it.
+            if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe)
+                && !self.declaration_policies()
+            {
+                continue;
+            }
             let address = self.address(declaration.definition)?;
             self.reserve(4 * size_of::<s::RoleBinding>())?;
             self.rows.roles.push(s::RoleBinding {
