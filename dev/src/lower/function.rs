@@ -16,6 +16,7 @@ mod intrinsics;
 mod invocations;
 mod logical_values;
 mod packed_lanes;
+mod pointed_layout;
 mod pointers;
 mod ptr_values;
 mod reborrow_values;

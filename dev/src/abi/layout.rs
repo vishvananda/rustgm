@@ -217,6 +217,22 @@ impl Layouts {
         result.map_err(|message| Error { ty, message })
     }
 
+    /// Size computation needs only the aggregate's tail field and alignment.
+    pub(crate) fn unsized_extent(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<super::tails::Extent, &'static str> {
+        let id = self
+            .tail_layout(types, definitions, ty)
+            .map_err(|e| e.message)?;
+        self.tails
+            .as_ref()
+            .and_then(|tails| tails.extent(types, id))
+            .ok_or("missing unsized extent layout")
+    }
+
     /// One selected field of a prepared unsized struct or tuple.
     /// # Errors
     /// Rejects invalid fields and the same unresolved layouts as `reference_align`.

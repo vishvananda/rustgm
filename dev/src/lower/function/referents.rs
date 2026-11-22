@@ -60,24 +60,8 @@ impl Lower<'_, '_, '_> {
             Offset::Aligned { prefix, alignment } => (prefix, alignment),
         };
         let table = metadata.ok_or("dynamic field offset lacks object metadata")?;
-        if table.ty != Type::Ptr {
-            return Err("dynamic field offset requires vtable metadata");
-        }
-        let address = self.offset(
-            Address {
-                operand: table.operand,
-                align: 8,
-            },
-            ALIGN_OFFSET,
-        )?;
-        let value = self.builder.load(Type::I64, address.operand)?;
-        let value = self.clamp_alignment(value, alignment)?;
-        let one = self.builder.integer(Type::I64, 1)?;
-        let mask = self.builder.binary(Binary::Sub, value, one)?;
-        let prefix = self.builder.integer(Type::I64, u128::from(prefix))?;
-        let rounded = self.builder.binary(Binary::Add, prefix, mask)?;
-        let mask = self.builder.unary(Unary::BitNot, mask)?;
-        let offset = self.builder.binary(Binary::And, rounded, mask)?;
+        let value = self.vtable_layout_word(table, ALIGN_OFFSET)?;
+        let offset = self.align_tail_offset(prefix, alignment, value)?;
         let pointer = self.pointer(base)?;
         let operand = self.builder.index(Type::U8, pointer, offset)?.operand;
         Ok(Address {
@@ -85,7 +69,45 @@ impl Lower<'_, '_, '_> {
             align: base.align.min(alignment.minimum),
         })
     }
-    fn clamp_alignment(
+    pub(super) fn vtable_layout_word(
+        &mut self,
+        table: Value,
+        offset: u64,
+    ) -> Result<Value, &'static str> {
+        if table.ty != Type::Ptr {
+            return Err("object layout word requires vtable metadata");
+        }
+        let address = self.offset(
+            Address {
+                operand: table.operand,
+                align: 8,
+            },
+            offset,
+        )?;
+        self.builder.load(Type::I64, address.operand)
+    }
+    pub(super) fn align_tail_offset(
+        &mut self,
+        prefix: u64,
+        alignment: Alignment,
+        object_align: Value,
+    ) -> Result<Value, &'static str> {
+        let prefix = self.builder.integer(Type::I64, u128::from(prefix))?;
+        let align = self.clamp_alignment(object_align, alignment)?;
+        self.round_extent(prefix, align)
+    }
+    pub(super) fn round_extent(
+        &mut self,
+        extent: Value,
+        align: Value,
+    ) -> Result<Value, &'static str> {
+        let one = self.builder.integer(Type::I64, 1)?;
+        let mask = self.builder.binary(Binary::Sub, align, one)?;
+        let rounded = self.builder.binary(Binary::Add, extent, mask)?;
+        let mask = self.builder.unary(Unary::BitNot, mask)?;
+        self.builder.binary(Binary::And, rounded, mask)
+    }
+    pub(super) fn clamp_alignment(
         &mut self,
         mut value: Value,
         alignment: Alignment,

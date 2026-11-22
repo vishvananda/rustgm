@@ -25,6 +25,11 @@ pub struct Layout {
     pub fields: Option<Fields>,
 }
 #[derive(Clone, Copy)]
+pub(crate) struct Extent {
+    pub alignment: Alignment,
+    pub tail: Option<(TypeId, Offset)>,
+}
+#[derive(Clone, Copy)]
 enum State {
     Active,
     Complete(Result<Id, &'static str>),
@@ -55,6 +60,22 @@ impl Queries {
     #[must_use]
     pub fn at(&self, id: Id) -> Option<&Layout> {
         self.records.get(id.0 as usize)
+    }
+    pub(super) fn extent(&self, types: &Store, id: Id) -> Option<Extent> {
+        let layout = self.at(id)?;
+        let tail = if let Some(fields) = layout.fields {
+            let ty = *types.list(fields.types)?.last()?;
+            let index = fields.offsets.end - fields.offsets.start - 1;
+            Some((ty, self.offset(fields, index)))
+        } else {
+            None
+        };
+        Some(Extent {
+            alignment: layout
+                .dynamic_alignment
+                .unwrap_or_else(|| Alignment::fixed(layout.align)),
+            tail,
+        })
     }
     #[must_use]
     pub fn offsets(&self, fields: Fields) -> impl ExactSizeIterator<Item = Offset> + '_ {

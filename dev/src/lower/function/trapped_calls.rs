@@ -43,6 +43,11 @@ impl Lower<'_, '_, '_> {
         if name == "catch_unwind" {
             return self.abort_profile_catch_unwind(id, ty).map(Some);
         }
+        if matches!(name, "size_of_val" | "align_of_val") {
+            return self
+                .pointed_value_layout(value, arguments, name == "size_of_val")
+                .map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

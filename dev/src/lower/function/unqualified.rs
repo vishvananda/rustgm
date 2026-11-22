@@ -81,9 +81,7 @@ impl Lower<'_, '_, '_> {
             "copy_nonoverlapping" | "copy" | "write_bytes" | "compare_bytes" | "raw_eq" => {
                 self.unqualified_transfer(call)?
             }
-            "size_of_val" | "align_of_val" | "assert_zero_valid" => {
-                self.unqualified_layout(call)?
-            }
+            "assert_zero_valid" => self.unqualified_assertion(call)?,
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             "unreachable" => self.unqualified_unreachable(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
