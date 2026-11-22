@@ -445,12 +445,15 @@ impl Checker<'_> {
                         .any(|p| p.argument == crate::types::arguments::Argument::Type(subject))
                 }))
             }
-            // A nominal subject applies exactly the impl's own type parameters
-            // in order, as derived `impl<T: Copy> Copy for Option<T>` does.
+            // A closed nominal has no own arguments. A generic nominal applies
+            // exactly the impl's own type parameters in order.
             Some(Kind::Adt(_, arguments)) => {
                 let Some(actual) = self.facts.types.arguments(arguments) else {
                     return Ok(false);
                 };
+                if actual.len() == 0 {
+                    return Ok(count == 0);
+                }
                 Ok(self.own_type_parameters(owner).is_some_and(|parameters| {
                     actual.eq(parameters.iter().map(|parameter| parameter.argument))
                 }))
