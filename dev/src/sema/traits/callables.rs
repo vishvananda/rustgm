@@ -83,15 +83,36 @@ pub(in crate::sema) fn match_signature(
     goal: &Predicate,
     first: u32,
 ) -> Result<Matched, infer::Error> {
-    let opened = open_signature(facts, context, goal, first)?;
+    let opened = open_signature(facts, context, goal, SignatureUse::Direct, first)?;
     opened.equate_inputs(&mut facts.types, context)?;
     Ok(opened.signature)
+}
+
+/// Infer the output of a reference to an actual closure using the language's
+/// reference forwarding rule. The original caller still has to prove the
+/// complete associated equality and mutable or shared call permission.
+pub(in crate::sema) fn match_output_signature(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Predicate,
+    first: u32,
+) -> Result<Matched, infer::Error> {
+    let opened = open_signature(facts, context, goal, SignatureUse::Output, first)?;
+    opened.equate_inputs(&mut facts.types, context)?;
+    Ok(opened.signature)
+}
+
+#[derive(Clone, Copy)]
+enum SignatureUse {
+    Direct,
+    Output,
 }
 
 fn open_signature(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &Predicate,
+    use_: SignatureUse,
     first: u32,
 ) -> Result<Opened, infer::Error> {
     let (item, _) = goal
@@ -101,7 +122,7 @@ fn open_signature(
         .associated
         .callable(DefId(item.0))
         .ok_or(infer::Error::InvalidIdentity)?;
-    open_signature_as(facts, context, goal, kind, first)
+    open_signature_as(facts, context, goal, kind, use_, first)
 }
 
 /// The signature equations are shared; the selecting protocol owns its actual
@@ -113,7 +134,7 @@ pub(in crate::sema) fn match_signature_as(
     kind: CallTrait,
     first: u32,
 ) -> Result<Matched, infer::Error> {
-    let opened = open_signature_as(facts, context, goal, kind, first)?;
+    let opened = open_signature_as(facts, context, goal, kind, SignatureUse::Direct, first)?;
     opened.equate_inputs(&mut facts.types, context)?;
     Ok(opened.signature)
 }
@@ -123,6 +144,7 @@ fn open_signature_as(
     context: &mut Context,
     goal: &Predicate,
     kind: CallTrait,
+    use_: SignatureUse,
     first: u32,
 ) -> Result<Opened, infer::Error> {
     let (_, arguments) = goal
@@ -131,7 +153,9 @@ fn open_signature_as(
     let [Argument::Type(arguments)] = arguments else {
         return Err(infer::Error::InvalidIdentity);
     };
-    let (signature, permission) = signature(facts, context, goal.subject(), kind)?;
+    let forward = matches!(use_, SignatureUse::Output)
+        && goal.constness() == Some(crate::support::constness::Constness::Ordinary);
+    let (signature, permission) = signature(facts, context, goal.subject(), kind, forward)?;
     let Some(Constructor::Function {
         bound_regions,
         parameters,
@@ -173,10 +197,25 @@ fn open_signature_as(
 fn signature(
     facts: &Declarations,
     context: &mut Context,
-    subject: TermId,
-    required: CallTrait,
+    mut subject: TermId,
+    mut required: CallTrait,
+    forward: bool,
 ) -> Result<(TermId, Permission), infer::Error> {
-    match context.head(&facts.types, subject)? {
+    let mut head = context.head(&facts.types, subject)?;
+    if forward && matches!(head, Some(Constructor::Reference { .. })) {
+        while let Some(Constructor::Reference { mutable, .. }) = head {
+            required = required.referent(mutable).ok_or(infer::Error::Mismatch)?;
+            context.account_work(1)?;
+            subject = context.child(&facts.types, subject, 0)?;
+            head = context.head(&facts.types, subject)?;
+        }
+        // Only the anonymous language closure's signature is authoritative
+        // through a reference. A nominal or parameter needs its actual impl.
+        if !matches!(head, Some(Constructor::Closure(..))) {
+            return Err(infer::Error::Unresolved);
+        }
+    }
+    match head {
         Some(Constructor::Function { .. }) => Ok((subject, Permission::Complete)),
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _)) => {
             if facts.target_feature_functions.contains_key(&DefId(item.0)) {

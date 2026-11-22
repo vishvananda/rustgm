@@ -1,5 +1,5 @@
 //! A callable output equation can expose existing holes while its trait proof stays pending.
-use super::{Constructor, Context, Declarations, TermId, infer, open_signature};
+use super::{Constructor, Context, Declarations, SignatureUse, TermId, infer, open_signature};
 use crate::types::{infer::probe::Probe, lifetime_proof::Obligations, substitute::Bound};
 
 /// The callable premise of a selected implementation (`premise`) may expose a
@@ -50,6 +50,7 @@ fn expose(
         facts,
         probe.context(),
         &application.predicate,
+        SignatureUse::Output,
         proof.regions.end,
     )
     .and_then(|opened| {

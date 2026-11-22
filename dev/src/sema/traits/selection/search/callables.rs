@@ -46,7 +46,7 @@ impl Search<'_> {
             return Ok(Action::Complete(Decision::Deferred));
         }
         let first = frame.available_region().max(self.query.allocations.floor());
-        let matched = match callables::match_signature(
+        let matched = match callables::match_output_signature(
             facts,
             &mut frame.inputs.context,
             &application.predicate,
