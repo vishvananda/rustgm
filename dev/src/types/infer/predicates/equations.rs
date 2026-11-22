@@ -314,10 +314,10 @@ impl Context {
         if self.settled_type(term) == Some(canonical) {
             return Ok(());
         }
-        if store
+        let projected = store
             .contains_projections(canonical)
-            .ok_or(Error::InvalidIdentity)?
-        {
+            .ok_or(Error::InvalidIdentity)?;
+        if projected {
             match self.resolved(store, term) {
                 Ok(original) if original == canonical => return Ok(()),
                 Ok(_) | Err(Error::Unresolved) => {}
@@ -325,38 +325,16 @@ impl Context {
             }
         }
         let known = self.known(store, canonical)?;
-        if ambient.is_empty()
-            && store
-                .contains_projections(canonical)
-                .ok_or(Error::InvalidIdentity)?
+        let compare_projected = ambient.is_empty()
+            && projected
             && !store
                 .contains_callables(canonical)
-                .ok_or(Error::InvalidIdentity)?
-        {
-            // A hole may name a complete canonical projection. Only comparisons
-            // between results wait; they never infer a projection's inputs.
-            let mut blocked = Vec::new();
-            self.equate_scoped_graph(
-                store,
-                term,
-                known,
-                ambient,
-                Some(super::super::scoped::Blocked::Pairs(&mut blocked)),
-            )?;
-            if let Some(premise) = premise {
-                return self.relate_normal_premise(store, blocked, premise);
-            }
-            for (left, right) in blocked {
-                if self.resolved(store, left)? != self.resolved(store, right)? {
-                    return Err(Error::Normalization);
-                }
-            }
-            return Ok(());
-        }
-        if !matches!(
+                .ok_or(Error::InvalidIdentity)?;
+        let function_item = matches!(
             store.kind(canonical),
             Some(crate::types::Kind::FunctionItem { .. })
-        ) {
+        );
+        if !compare_projected && !function_item && !self.has_rigid_marks() {
             return self.equate_scoped_inside(store, term, known, ambient);
         }
         let mut blocked = Vec::new();
@@ -367,8 +345,32 @@ impl Context {
             ambient,
             Some(super::super::scoped::Blocked::Pairs(&mut blocked)),
         )?;
+        for &(left, right) in &blocked {
+            let (left, right) = (self.root(left)?, self.root(right)?);
+            // A finished projection has a rigid identity. A premise with a
+            // different concrete head cannot prevent trying an implementation.
+            if self.rigid_against(store, left, right)? || self.rigid_against(store, right, left)? {
+                return Err(Error::Mismatch);
+            }
+        }
+        if compare_projected {
+            // A hole may name a complete canonical projection. Only comparisons
+            // between results wait; they never infer a projection's inputs.
+            if let Some(premise) = premise {
+                return self.relate_normal_premise(store, blocked, premise);
+            }
+            for (left, right) in blocked {
+                if self.resolved(store, left)? != self.resolved(store, right)? {
+                    return Err(Error::Normalization);
+                }
+            }
+            return Ok(());
+        }
         if blocked.is_empty() {
             return Ok(());
+        }
+        if !function_item {
+            return Err(Error::Normalization);
         }
         match self.resolved(store, term) {
             Ok(original) if original == canonical => Ok(()),

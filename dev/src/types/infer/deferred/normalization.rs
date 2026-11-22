@@ -155,10 +155,9 @@ impl Context {
     }
 
     /// Record a finished fold output's rigid projection roots. Each root is
-    /// this context's one term for that canonical type. Only the certified
-    /// premise relation and the candidate header relation read the marks:
-    /// every other operation, including `head`, `structural` and
-    /// normalization waits, still defers them.
+    /// this context's one term for that canonical type. Premise and
+    /// implementation header selection read these marks. General inference
+    /// and normalization waits keep their existing projection rules.
     pub(in crate::types::infer) fn retain_rigid_results(
         &mut self,
         store: &Store,

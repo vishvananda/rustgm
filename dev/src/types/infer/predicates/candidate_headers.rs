@@ -138,7 +138,7 @@ impl Context {
         }
     }
 
-    fn rigid_against(
+    pub(super) fn rigid_against(
         &mut self,
         store: &Store,
         rigid: TermId,

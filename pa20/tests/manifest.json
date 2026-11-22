@@ -22421,6 +22421,25 @@
       }
     },
     {
+      "path": "tests/spec/assoc-bounds/blanket-identity.rs",
+      "exit_status": 0,
+      "features": [
+        "pa20.associated-bound-constraints"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "PA20 blanket implementation on a rigid associated type",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/assoc-bounds/multi.rs",
       "exit_status": 0,
       "features": [

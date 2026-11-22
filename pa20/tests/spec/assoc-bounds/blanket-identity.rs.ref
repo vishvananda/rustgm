@@ -1,0 +1,110 @@
+function @rg.31() -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  slot $s3 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rg.26.i3(%t0, 18)
+    %t1 = addr $s1
+    %t2 = addr $s0
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s0
+    %t4 = addr $s2
+    copyobj 4x4 %t3, %t4
+    %t5 = addr $s3
+    %t6 = addr $s2
+    call void @rg.25.i4(%t5, %t6)
+    %t7 = load u32 $s3
+    %t8 = cmp ne u32 %t7, 19
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b1:
+    jump ^b4
+  block ^b4:
+    jump ^b4
+  block ^b5:
+    unreachable
+}
+function @rg.26.i3(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    %t1 = addr $s1
+    call void @rg.21(%t1, %t0)
+    %t2 = addr $s1
+    copyobj 4x4 %t2, %p0
+    return void
+}
+function @rg.25.i4(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s2
+    %t4 = addr $s1
+    call void @rg.17.i5(%t3, %t4)
+    %t5 = addr $s2
+    copyobj 4x4 %t5, %p0
+    return void
+}
+function @rg.21(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    %t1 = binary add u32 %t0, 1
+    %t2 = cmp ult u32 %t1, %t0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = addr $s1
+    call void @rg.19(%t3, %t1)
+    %t4 = addr $s1
+    copyobj 4x4 %t4, %p0
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.17.i5(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s1
+    copyobj 4x4 %t3, %p0
+    return void
+}
+function @rg.19(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.31()
+    return i64 0
+}

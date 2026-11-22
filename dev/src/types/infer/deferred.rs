@@ -43,8 +43,8 @@ struct Leaf {
 #[derive(Default)]
 pub(super) struct Storage {
     pub(super) opaque: HashMap<TermId, super::TypeId>,
-    /// Rigid normal forms a complete input rewrite left. Only the certified
-    /// premise relation reads them; every other operation still defers them.
+    /// Rigid projection results retained from a complete input rewrite.
+    /// Premise and implementation header selection can read these marks.
     pub(super) rigid: HashMap<TermId, super::TypeId>,
     equations: Vec<Equation>,
     leaves: Vec<Leaf>,
