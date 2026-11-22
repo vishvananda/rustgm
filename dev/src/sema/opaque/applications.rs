@@ -30,8 +30,8 @@ impl From<&'static str> for StorageFailure {
 pub(super) struct Preparation {
     pub layouts: crate::abi::templates::Templates<'static>,
     waiting: HashMap<OpaqueId, Vec<TypeId>>,
+    blockers: HashMap<TypeId, OpaqueId>,
     pub ready: Vec<TypeId>,
-    waiting_entries: usize,
     peak_keys: usize,
     peak_waiting: usize,
     peak_ready: usize,
@@ -67,6 +67,7 @@ impl Preparation {
     fn queue_bytes(keys: usize, waiting: usize, ready: usize) -> usize {
         size_of::<Self>()
             .saturating_add(retained::new_map::<OpaqueId, Vec<TypeId>>(keys))
+            .saturating_add(retained::new_map::<TypeId, OpaqueId>(waiting))
             .saturating_add(
                 waiting
                     .saturating_add(ready)
@@ -78,12 +79,18 @@ impl Preparation {
         let keys = self.waiting.len() + usize::from(!self.waiting.contains_key(&id));
         self.reserve(
             keys,
-            self.waiting_entries.saturating_add(1),
+            self.blockers.len().saturating_add(1),
             self.ready.len(),
         )?;
+        let std::collections::hash_map::Entry::Vacant(blocker) = self.blockers.entry(ty) else {
+            return Err("opaque application is already waiting for a defining type");
+        };
+        blocker.insert(id);
         self.waiting.entry(id).or_default().push(ty);
-        self.waiting_entries += 1;
         Ok(())
+    }
+    pub fn blocker(&self, ty: TypeId) -> Option<OpaqueId> {
+        self.blockers.get(&ty).copied()
     }
     pub fn wake(&mut self, id: OpaqueId) -> Result<(), &'static str> {
         if let Some(error) = self.failed {
@@ -101,14 +108,16 @@ impl Preparation {
         self.charge(count.saturating_add(1))?;
         self.reserve(
             self.waiting.len(),
-            self.waiting_entries,
+            self.blockers.len(),
             self.ready.len().saturating_add(count),
         )?;
         let rows = self
             .waiting
             .remove(&id)
             .ok_or("lost deferred opaque applications")?;
-        self.waiting_entries -= count;
+        for ty in &rows {
+            self.blockers.remove(ty);
+        }
         self.ready.extend(rows);
         Ok(())
     }

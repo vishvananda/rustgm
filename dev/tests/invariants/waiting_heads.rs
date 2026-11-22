@@ -80,7 +80,7 @@ fn wakeup_preserves_registration_order_and_ignores_other_identities() -> Result<
                 (0..width).map(TypeId).collect::<Vec<_>>()
             );
             assert_eq!(preparation.steps - before, width as usize + 1);
-            assert_eq!(preparation.waiting_entries, noise as usize);
+            assert_eq!(preparation.blockers.len(), noise as usize);
             let after = preparation.steps;
             preparation.wake(OpaqueId(1))?;
             preparation.wake(OpaqueId(7))?;
@@ -93,12 +93,10 @@ fn wakeup_preserves_registration_order_and_ignores_other_identities() -> Result<
 
 #[test]
 fn preparation_limits_reject_before_queue_allocation() {
-    let mut full = Preparation {
-        waiting_entries: APPLICATIONS,
-        ..Preparation::default()
-    };
-    assert!(full.wait(OpaqueId(0), TypeId(0)).is_err());
+    let mut full = Preparation::default();
+    assert!(full.reserve(1, APPLICATIONS + 1, 0).is_err());
     assert_eq!(full.waiting.capacity(), 0);
+    assert_eq!(full.blockers.capacity(), 0);
     assert_eq!(full.ready.capacity(), 0);
     let mut exhausted = Preparation {
         steps: 32_000_000,
@@ -164,7 +162,7 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         .as_ref()
         .ok_or("preparation")?;
     assert!(preparation.steps <= steps);
-    assert_eq!(preparation.waiting_entries, 1);
+    assert_eq!(preparation.blockers.len(), 1);
     assert!(preparation.ready.is_empty());
     assert!(facts.types.storage_head(application).is_err());
     assert_eq!(
@@ -201,8 +199,79 @@ fn unresolved_applications_register_once_without_revealing_inferred_heads() -> R
         .as_ref()
         .ok_or("preparation")?;
     assert_eq!(preparation.steps, steps);
-    assert_eq!(preparation.waiting_entries, 0);
+    assert!(preparation.blockers.is_empty());
     assert!(preparation.ready.is_empty());
+    Ok(())
+}
+
+#[test]
+fn forwarding_applications_wait_for_the_terminal_definition() -> Result<(), String> {
+    use crate::resolve::{
+        model::DefId,
+        unit::{FileId, NodeKey},
+    };
+    use crate::sema::model::Declarations;
+    use crate::types::{GenericArgs, Kind, Primitive, copy, opaque};
+
+    let report = crate::test_source::resolve("", true)?;
+    let mut facts = crate::sema::declarations::analyze(&report).map_err(|e| e.to_string())?;
+    let origin = NodeKey {
+        file: FileId(0),
+        node: report.package.unit(FileId(0)).configured.ast.root,
+    };
+    let declare = |facts: &mut Declarations, owner: DefId, inferred, closed: Option<TypeId>| {
+        let id = facts.types.declare_opaque(opaque::Declaration {
+            trait_result: false,
+            sized: true,
+            copies: copy::Properties::default(),
+        })?;
+        let application = facts.types.intern(Kind::Opaque(id, GenericArgs::EMPTY))?;
+        facts.opaques.owners.insert(owner, vec![id]);
+        facts.opaques.declarations.insert(
+            id,
+            super::super::Declaration {
+                owner,
+                origin: origin.into(),
+                application,
+                bounds: Vec::new(),
+                hidden: closed,
+                inferred: Some(inferred),
+                free_regions: Vec::new(),
+            },
+        );
+        Ok::<_, &'static str>((id, application))
+    };
+    let scalar = TypeId::primitive(Primitive::U8);
+    let terminal_owner = DefId(7);
+    let (terminal, base) = declare(&mut facts, terminal_owner, scalar, None)?;
+    let (_, middle) = declare(&mut facts, DefId(8), base, Some(base))?;
+    facts.prepare_opaque_storage()?;
+    let (_, outer) = declare(&mut facts, DefId(9), middle, Some(middle))?;
+    facts.prepare_opaque_storage()?;
+    let preparation = facts
+        .opaques
+        .storage_preparation
+        .as_ref()
+        .ok_or("preparation")?;
+    let steps = preparation.steps;
+    for application in [base, middle, outer] {
+        assert_eq!(preparation.blocker(application), Some(terminal));
+        assert!(facts.types.storage_head(application).is_err());
+    }
+    for _ in 0..16 {
+        facts.prepare_opaque_storage()?;
+    }
+    let preparation = facts
+        .opaques
+        .storage_preparation
+        .as_ref()
+        .ok_or("preparation")?;
+    assert!(preparation.steps <= steps);
+    facts.close_opaque_results(&report, terminal_owner, &[])?;
+    facts.prepare_opaque_storage()?;
+    for application in [base, middle, outer] {
+        assert_eq!(facts.types.storage_head(application)?, scalar);
+    }
     Ok(())
 }
 
@@ -268,7 +337,7 @@ fn failed_wakeup_remains_an_error_after_the_checked_head_closes() -> Result<(), 
         preparation.failed.map(|failure| failure.message),
         Some(error)
     );
-    assert_eq!(preparation.waiting_entries, 1);
+    assert_eq!(preparation.blockers.len(), 1);
     assert!(preparation.ready.is_empty());
     // Even a later cheap no-op cannot make this preparation usable again.
     assert_eq!(preparation.wake(OpaqueId(99)), Err(error));

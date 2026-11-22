@@ -15,7 +15,7 @@ type Applications = (HashMap<TypeId, TypeId>, Vec<TypeId>, Option<StorageFailure
 mod undeclared_tests;
 
 impl Declarations {
-    /// Prepare appended canonical applications once, independently of caller proofs.
+    /// Prepare storage for ready canonical applications, independently of caller proofs.
     /// Bodies still pass ordinary region and ownership verification before execution.
     pub(crate) fn prepare_opaque_storage(&mut self) -> Result<(), &'static str> {
         self.prepare_opaque_storage_located()
@@ -57,10 +57,19 @@ impl Declarations {
                     path.push(current);
                     current = hidden;
                 }
-                let head = self.types.storage_head(current)?;
-                for ty in path.drain(..) {
-                    self.types.publish_storage_head(ty, head)?;
-                    pending.remove(&ty);
+                if let Some(blocker) = preparation.blocker(current) {
+                    // Every forwarding application depends on the same
+                    // unpublished definition, including those found in later batches.
+                    for ty in path.drain(..) {
+                        preparation.wait(blocker, ty)?;
+                        pending.remove(&ty);
+                    }
+                } else {
+                    let head = self.types.storage_head(current)?;
+                    for ty in path.drain(..) {
+                        self.types.publish_storage_head(ty, head)?;
+                        pending.remove(&ty);
+                    }
                 }
                 active.clear();
                 Ok(())
@@ -76,6 +85,9 @@ impl Declarations {
             }
         }
         for root in roots {
+            if preparation.blocker(root).is_some() {
+                continue;
+            }
             let result = (|| {
                 let steps = preparation.layouts.steps;
                 let result = preparation
