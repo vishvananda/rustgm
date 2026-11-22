@@ -124,9 +124,37 @@ impl Context {
         Ok(())
     }
 
-    /// Record a finished search fold output's rigid projection roots. Every
-    /// projection left in such an output is a normal form of that frame's
-    /// search, so only the complete input rewrite calls this. Each root is
+    /// Keep the already proved normal forms of a trait's subject and
+    /// arguments when opening a new selection context.
+    pub(crate) fn retain_rigid_trait_inputs(
+        &mut self,
+        store: &Store,
+        subject: TypeId,
+        parent: crate::types::traits::ApplicationId,
+    ) -> Result<(), Error> {
+        use crate::types::{Property, arguments::Argument};
+
+        self.retain_rigid_results(store, subject)?;
+        let properties = store
+            .trait_properties(parent)
+            .ok_or(Error::InvalidIdentity)?;
+        if properties.has(Property::Projections) {
+            let application = store
+                .trait_application(parent)
+                .ok_or(Error::InvalidIdentity)?;
+            for argument in store
+                .arguments(application.arguments)
+                .ok_or(Error::InvalidIdentity)?
+            {
+                if let Argument::Type(ty) = argument {
+                    self.retain_rigid_results(store, ty)?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Record a finished fold output's rigid projection roots. Each root is
     /// this context's one term for that canonical type. Only the certified
     /// premise relation and the candidate header relation read the marks:
     /// every other operation, including `head`, `structural` and

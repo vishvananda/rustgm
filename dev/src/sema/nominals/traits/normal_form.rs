@@ -95,7 +95,7 @@ pub(in crate::sema) fn begin_with_scope(
     select(
         facts,
         environment,
-        request,
+        (request.0, request.1, false),
         first,
         Sizing {
             retain_sized,
@@ -133,7 +133,7 @@ pub(in crate::sema) fn begin_reusing(
     select(
         facts,
         environment,
-        request,
+        (request.0, request.1, true),
         first,
         sizing,
         availability,
@@ -175,13 +175,13 @@ fn known(
 fn select(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
-    request: (Request, u16),
+    request: (Request, u16, bool),
     first: u32,
     sizing: Sizing<'_>,
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
-    let (request, callable_depth) = request;
+    let (request, callable_depth, formed_inputs) = request;
     let requirement = crate::sema::opaque::overrides::requirement(facts, request.alias)?;
     let reuse = if environment
         .as_ref()
@@ -213,6 +213,17 @@ fn select(
     )?;
     state.assume_placeholders(sizing.placeholders.cloned())?;
     state.nest_at(sizing.nesting);
+    if formed_inputs
+        && request.alias.associated().is_some()
+        && let Some((parent, _)) = requirement.bound.trait_parts()
+    {
+        // The cursor's fold has already proved every symbolic input. Preserve
+        // that fact after restoring the inputs in this new inference context.
+        state
+            .context
+            .retain_rigid_trait_inputs(&facts.types, requirement.ty, parent)
+            .map_err(|_| "invalid normalized trait inputs")?;
+    }
     let goal = state.projection_goal(facts, requirement)?;
     let frontier = state.obligations.regions.end;
     Query {
