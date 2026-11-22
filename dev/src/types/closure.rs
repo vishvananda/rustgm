@@ -97,7 +97,7 @@ impl Adapter {
     }
 }
 
-/// The strongest receiver permission required by the body, independent of `move` capture.
+/// Receiver permission selected from the expected callable and checked body uses.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CallKind {
     Shared,

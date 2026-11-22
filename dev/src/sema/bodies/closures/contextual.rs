@@ -1,6 +1,6 @@
 //! Callable expectations retain their quantified contract and unresolved holes.
 use super::{Checker, Constructor, Error, NodeId, TermId, TypeId, universes::Interface};
-use crate::types::{Kind, Store, infer};
+use crate::types::{Kind, Store, closure::CallKind, infer};
 
 #[derive(Clone, Copy)]
 pub(super) enum Signature {
@@ -18,26 +18,28 @@ impl Checker<'_> {
         node: NodeId,
         expected: Option<TermId>,
         count: u32,
-    ) -> Result<Option<Expected>, Error> {
+    ) -> Result<(Option<Expected>, Option<CallKind>), Error> {
         let Some(term) = expected else {
-            return Ok(None);
+            return Ok((None, None));
         };
-        let term = if let Some(signature) = self
+        let (term, kind) = if let Some(signature) = self
             .state
             .opaque_callables
             .as_deref()
             .and_then(|signatures| signatures.get(&term))
             .copied()
         {
-            self.known(node, signature)?
+            let kind = self.opaque_closure_kind(node, term)?;
+            let term = self.known(node, signature)?;
+            (
+                self.callable_closure_expectation(node, term)?
+                    .0
+                    .unwrap_or(term),
+                kind,
+            )
         } else {
-            term
-        };
-        let term = if let Some(signature) = self.object_closure_expectation(node, term)? {
-            signature
-        } else {
-            self.generic_closure_expectation(node, term)?
-                .unwrap_or(term)
+            let (signature, kind) = self.callable_closure_expectation(node, term)?;
+            (signature.unwrap_or(term), kind)
         };
         let Some(Constructor::Function {
             bound_regions,
@@ -46,7 +48,7 @@ impl Checker<'_> {
             ..
         }) = self.contextual_head(node, term)?
         else {
-            return Ok(None);
+            return Ok((None, kind));
         };
         if parameters != count {
             return Err(self.error(
@@ -61,10 +63,13 @@ impl Checker<'_> {
             }
             Err(error) => return Err(self.error(node, error)),
         };
-        Ok(Some(Expected {
-            signature,
-            regions: bound_regions,
-        }))
+        Ok((
+            Some(Expected {
+                signature,
+                regions: bound_regions,
+            }),
+            kind,
+        ))
     }
 
     /// Index a defining result's callable interface once. This contextual hint
@@ -97,6 +102,17 @@ impl Checker<'_> {
                 (quantified.predicate, quantified.bound_regions)
             }
         };
+        if let Some((trait_, _)) = predicate.bound.trait_parts()
+            && matches!(self.facts.types.kind(predicate.ty), Some(Kind::Opaque(actual, _)) if actual == id)
+        {
+            let item = self
+                .facts
+                .types
+                .trait_application(trait_)
+                .ok_or_else(|| self.error(node, "missing declared callable trait"))?
+                .item;
+            return self.retain_closure_trait(node, term, item);
+        }
         let Bound::ProjectionEqual(result) = predicate.bound else {
             return Ok(());
         };

@@ -30,6 +30,7 @@ pub(super) struct Metadata {
     self_ty: TermId,
     bindings: Vec<(crate::resolve::model::DefId, TermId)>,
     captures: Option<Box<uses::Captures>>,
+    expected_kind: Option<CallKind>,
     fields: Vec<TermId>,
     pub(super) lifetimes: universes::Interface,
 }
@@ -78,7 +79,7 @@ impl Checker<'_> {
             .get(&self.key(node))
             .cloned()
             .unwrap_or_default();
-        let expected = self.closure_expectation(node, expected, count)?;
+        let (expected, expected_kind) = self.closure_expectation(node, expected, count)?;
         let bound_regions = expected
             .map_or_else(
                 || u32::try_from(annotations.len()),
@@ -139,6 +140,7 @@ impl Checker<'_> {
                 self_ty: imported.self_ty,
                 bindings: imported.bindings,
                 captures: None,
+                expected_kind,
                 fields: Vec::new(),
                 lifetimes,
             }),

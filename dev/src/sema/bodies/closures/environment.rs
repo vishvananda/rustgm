@@ -80,11 +80,15 @@ impl Checker<'_> {
             .payload
             .closure_mut()
             .map_err(|e| self.error(source, e))?;
+        let expected = metadata.expected_kind.unwrap_or(CallKind::Shared);
         if metadata.bindings.is_empty() {
-            return Ok(CallKind::Shared);
+            return Ok(expected);
         }
-        let captures =
+        let mut captures =
             self.closure_uses(source, metadata.root.node, &metadata.bindings, children)?;
+        // A contextual FnOnce receiver owns its captures. Never grant a stronger
+        // call permission than the body's checked uses allow.
+        captures.kind = captures.kind.max(expected);
         let kind = captures.kind;
         for capture in captures.plan.captures() {
             let mut ty = captures.types[capture.path.index()];
