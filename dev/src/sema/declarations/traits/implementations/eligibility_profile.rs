@@ -208,12 +208,12 @@ impl Checker<'_> {
             return Ok(Eligibility::Unsupported(Unsupported::Requirements));
         };
         let coercion_target = self.early_coercion_target(owner, predicate.ty, application)?;
-        let pointer_binder = self.copy_clone_pointer_binder(owner, predicate.ty, application)?;
+        let copy_clone_binder = self.copy_clone_binder(owner, predicate.ty, application)?;
         let regions = self.trait_region_count(owner);
         let region_depth = u16::from(regions != 0);
         if (coercion_target.is_none()
-            && (regions != u32::from(pointer_binder.unwrap_or(0))
-                || (pointer_binder.is_none()
+            && (regions != u32::from(copy_clone_binder.unwrap_or(0))
+                || (copy_clone_binder.is_none()
                     && !self.early_source_subject(owner, predicate.ty, pending)?)))
             || (matches!(
                 self.facts.types.kind(predicate.ty),
@@ -293,7 +293,11 @@ impl Checker<'_> {
         if !matches!(
             self.facts.types.kind(subject),
             Some(
-                Kind::Parameter(_) | Kind::Adt(..) | Kind::Reference { .. } | Kind::Pointer { .. }
+                Kind::Parameter(_)
+                    | Kind::Adt(..)
+                    | Kind::Reference { .. }
+                    | Kind::Pointer { .. }
+                    | Kind::ArrayTerm { .. }
             )
         ) {
             return Ok(None);
@@ -306,9 +310,9 @@ impl Checker<'_> {
         Ok(Some(Arc::new(assumptions)))
     }
 
-    /// Check the core Copy and Clone impls for raw pointers and shared references.
-    /// Only the shared reference has one lifetime in its own scope.
-    fn copy_clone_pointer_binder(
+    /// Check core Copy and Clone headers for arrays, pointers and references.
+    /// Only the shared reference owns a lifetime slot.
+    fn copy_clone_binder(
         &self,
         owner: DefId,
         subject: crate::types::TypeId,
@@ -316,18 +320,24 @@ impl Checker<'_> {
     ) -> Result<Option<u16>, Error> {
         use crate::support::bindings::LangItem;
         use crate::types::arguments::Argument;
-        let (referent, depth) = match self.facts.types.kind(subject) {
+        let (element, length, depth) = match self.facts.types.kind(subject) {
             Some(Kind::Reference {
                 mutable: false,
                 referent,
                 region,
-            }) if region.bound_parts() == Some((0, 0)) => (referent, 1),
-            Some(Kind::Pointer { pointee, .. }) => (pointee, 0),
+            }) if region.bound_parts() == Some((0, 0)) => (referent, None, 1),
+            Some(Kind::Pointer { pointee, .. }) => (pointee, None, 0),
+            Some(Kind::ArrayTerm { element, length }) => (element, Some(length), 0),
             _ => return Ok(None),
         };
-        if self.own_type_parameters(owner).is_none_or(|parameters| {
-            !matches!(parameters, [parameter] if parameter.argument == Argument::Type(referent))
-        }) {
+        let owns_inputs = if let Some(length) = length {
+            self.own_array_parameters(owner, element, length)
+        } else {
+            self.own_type_parameters(owner).is_some_and(|parameters| {
+                matches!(parameters, [parameter] if parameter.argument == Argument::Type(element))
+            })
+        };
+        if !owns_inputs {
             return Ok(None);
         }
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
@@ -338,7 +348,7 @@ impl Checker<'_> {
             .types
             .trait_application(application)
             .ok_or_else(|| {
-                Error::unlocated("early pointer conformance lost its trait application")
+                Error::unlocated("early Copy and Clone conformance lost its trait application")
             })?;
         for role in [LangItem::Copy, LangItem::Clone] {
             if catalog
@@ -350,6 +360,32 @@ impl Checker<'_> {
             }
         }
         Ok(None)
+    }
+
+    fn own_array_parameters(
+        &self,
+        owner: DefId,
+        element: crate::types::TypeId,
+        length: crate::types::arguments::ConstId,
+    ) -> bool {
+        use crate::types::{Primitive, TypeId, arguments::Argument};
+        let Some([a, b]) = self
+            .facts
+            .generics
+            .parameters
+            .get(&owner)
+            .map(Vec::as_slice)
+        else {
+            return false;
+        };
+        let (ty, count) = if a.argument == Argument::Type(element) {
+            (a.argument, b.argument)
+        } else {
+            (b.argument, a.argument)
+        };
+        ty == Argument::Type(element)
+            && count == Argument::Const(length)
+            && self.facts.types.const_type(length) == Some(TypeId::primitive(Primitive::Usize))
     }
 
     fn early_coercion_target(
