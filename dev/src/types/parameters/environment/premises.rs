@@ -475,19 +475,16 @@ impl TraitAssumptions {
         // on storage kind, randomized hash order or duplicate canonical results.
         let mut position = 0;
         let mut region_mapping = false;
-        let mut quantified = self
-            .quantified
-            .iter_mut()
-            .flat_map(|q| &mut q.entries)
-            .peekable();
-        while position < self.predicates.len() || quantified.peek().is_some() {
-            if quantified
-                .peek()
-                .is_some_and(|(index, _)| *index <= position)
+        let mut quantified: &mut [_] = &mut [];
+        if let Some(q) = &mut self.quantified {
+            quantified = q.entries.as_mut_slice();
+        }
+        let mut next_quantified = 0;
+        while position < self.predicates.len() || next_quantified < quantified.len() {
+            if let Some((index, id)) = quantified.get_mut(next_quantified)
+                && *index <= position
             {
-                let (_, id) = quantified
-                    .next()
-                    .ok_or("missing quantified environment entry")?;
+                next_quantified += 1;
                 let mapped = if CHARGED {
                     charge(1, 0)?;
                     fold.clause_charged(types, Clause::ForAll(*id), charge)?
