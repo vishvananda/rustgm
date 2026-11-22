@@ -66,7 +66,7 @@ impl Lower<'_, '_, '_> {
                 &[input] => self.runtime_bits(name, input, call.result)?,
                 _ => None,
             },
-            "offset" | "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {
+            "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {
                 self.unqualified_offset(call)?
             }
             "read_via_copy" | "write_via_move" | "write_box_via_move" | "black_box" | "forget"

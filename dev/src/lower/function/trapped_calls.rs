@@ -51,6 +51,11 @@ impl Lower<'_, '_, '_> {
         if matches!(name, "bswap" | "bitreverse") {
             return self.bit_permutation(name, arguments, value.ty).map(Some);
         }
+        if name == "offset" {
+            return self
+                .source_inbounds_offset(signature, arguments, value.ty)
+                .map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

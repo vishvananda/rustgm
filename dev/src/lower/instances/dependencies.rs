@@ -177,7 +177,7 @@ fn source_call(
             }
             if matches!(
                 name,
-                "size_of_val" | "align_of_val" | "bswap" | "bitreverse"
+                "size_of_val" | "align_of_val" | "bswap" | "bitreverse" | "offset"
             ) {
                 catalog.require_provider_report(report)?;
             }

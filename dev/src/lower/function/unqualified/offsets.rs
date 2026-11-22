@@ -26,16 +26,7 @@ impl Lower<'_, '_, '_> {
         let Some(count) = self.integer_input(second)? else {
             return Ok(None);
         };
-        let base = if call.name == "offset" {
-            // The result is the pointer type itself, moved by whole pointees.
-            if call.result != self.input_type(first)? {
-                return Ok(None);
-            }
-            self.thin_input(first)?
-        } else {
-            self.slice_data(first, call.result)?
-        };
-        let Some((base, element)) = base else {
+        let Some((base, element)) = self.slice_data(first, call.result)? else {
             return Ok(None);
         };
         if count.value.ty != Type::I64 {
