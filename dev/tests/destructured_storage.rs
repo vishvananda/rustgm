@@ -54,14 +54,18 @@ fn selected_generic_pattern_fields_keep_lifetime_and_move_checks() -> Result {
     Ok(())
 }
 #[test]
-fn closure_formation_prepares_parent_projection_storage() -> Result {
-    let source = crate::resolve::fixture("pa31/tests/spec/capture-formation-storage/overlay.rs")?;
+fn closure_projections_have_storage_in_each_body() -> Result {
     let mut config = rustgm::expand::config::Config::default();
     config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
-    let report =
-        crate::resolve::source_provider_config(&source, "capture_formation_storage", &config)?;
-    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
-    rustgm::body::templates::build(&report, &facts)?;
+    for name in ["overlay", "execution"] {
+        let source = crate::resolve::fixture(&format!(
+            "pa31/tests/spec/capture-formation-storage/{name}.rs",
+        ))?;
+        let report =
+            crate::resolve::source_provider_config(&source, "capture_formation_storage", &config)?;
+        let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+        rustgm::body::templates::build(&report, &facts)?;
+    }
     Ok(())
 }
 

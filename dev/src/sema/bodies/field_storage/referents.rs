@@ -1,7 +1,10 @@
 //! Actual selected places retain their own field instances across reference conversions.
 use super::{Checker, Error, NodeId, TypeId};
 use crate::{
-    sema::patterns::{Kind as Pattern, PatternId},
+    sema::{
+        closures::Environment,
+        patterns::{Kind as Pattern, PatternId},
+    },
     support::hash::{HashMap, HashSet},
     syntax::ast::{Kind, Unary},
     types::{Kind as Type, infer::Solved},
@@ -20,6 +23,17 @@ impl Checker<'_> {
         }
         let mut work = 0;
         let result = (|| {
+            // The hidden closure receiver projects its captured places in the
+            // closure's own lifetime context before evaluating the body.
+            if let Some(environment) = self.capture_environment(self.state.body.node) {
+                let captures = environment.plan.captures();
+                self.storage_visit(&mut work, captures.len())?;
+                roots.extend(
+                    captures
+                        .iter()
+                        .map(|capture| environment.path_types[capture.path.index()]),
+                );
+            }
             // The source of a dereference may have a different lifetime instance
             // from its contextual result. CFG projection reads the former place.
             for &node in &self.state.touched {
@@ -47,6 +61,11 @@ impl Checker<'_> {
         result?;
         Ok(roots)
     }
+    fn capture_environment(&self, node: NodeId) -> Option<&Environment> {
+        let closure = self.facts.closures.get(self.key(node))?;
+        self.facts.closures.environment(closure.identity)
+    }
+
     // Closure construction projects selected captures in the parent's lifetime
     // context. The closure environment may store only a reference to that place.
     fn capture_formation_storage(
@@ -55,12 +74,7 @@ impl Checker<'_> {
         roots: &mut Vec<TypeId>,
         work: &mut usize,
     ) -> Result<(), Error> {
-        let Some(environment) = self
-            .facts
-            .closures
-            .get(self.key(node))
-            .and_then(|closure| self.facts.closures.environment(closure.identity))
-        else {
+        let Some(environment) = self.capture_environment(node) else {
             return Ok(());
         };
         let mut seen = HashSet::default();
