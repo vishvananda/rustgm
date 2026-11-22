@@ -29,6 +29,10 @@ impl Checker<'_> {
             .schema(implementation)
             .ok_or_else(|| self.error(node, "missing selected impl schema"))?;
         let target = schema.self_type;
+        let slice = matches!(
+            self.facts.types.kind(target),
+            Some(crate::types::Kind::Slice(_))
+        );
         // A projected implementation header relates through the body's
         // normalizer, as an annotated projection does, never structurally.
         let projected = self.facts.types.contains_projections(target) == Some(true);
@@ -55,7 +59,17 @@ impl Checker<'_> {
             self.defer_normalization(node, crate::types::lifetime_proof::ScopeId::ROOT, target)?;
         }
         if let Some((_, prefix)) = dot {
-            let prefix = self.alias_argument(node, prefix)?;
+            let mut prefix = self.alias_argument(node, prefix)?;
+            if slice {
+                // A slice method infers its element type from a coercible
+                // receiver. The actual borrow still proves the complete
+                // directed receiver relation, including mutable invariance.
+                prefix = match self.try_inferred_regions(node, prefix)? {
+                    Ok(inferred) => inferred,
+                    Err(crate::types::infer::Error::Normalization) => prefix,
+                    Err(error) => return Err(self.error(node, error)),
+                };
+            }
             return self.equate(node, target, prefix);
         }
         let selected = selected.ok_or_else(|| self.error(node, "missing selected method owner"))?;

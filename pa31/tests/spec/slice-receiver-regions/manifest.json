@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "receiver.rs": {
+      "sha256": "668d943de1a10eda10f40cecc69f78513f7ddfb7c10e13bd13dd973bd2a24f48",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0,
+          "stdout": "value 42\n"
+        },
+        {
+          "cfg": [
+            "invariant"
+          ],
+          "rustc_status": 1,
+          "rustc_error": "E0521",
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Miniature language items from ../cstr-source/source.rs and ../whole-slice-validity/ordinary.rs. Native observer from ../owned-boxes/observe.c."
+}
