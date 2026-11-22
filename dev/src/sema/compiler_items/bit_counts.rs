@@ -1,6 +1,4 @@
-//! Integer bit counts bind real source declarations, never unsafe/const permission.
-//! The bring-up profile also admits the two bit reversals, whose result has the
-//! input's own type; they are waived by name and stay fenced otherwise.
+//! Source integer bit counts and permutations retain the selected width and signature.
 use super::Catalog;
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
@@ -10,9 +8,6 @@ use crate::{
         Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
     },
 };
-
-const SWAPPED_BYTES: &str = "source intrinsic uses unqualified constant evaluation: bswap";
-const REVERSED_BITS: &str = "source intrinsic uses unqualified constant evaluation: bitreverse";
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Effect {
@@ -50,10 +45,8 @@ pub(crate) fn operation(kind: SourceIntrinsic) -> Option<Operation> {
         "ctlz_nonzero" => (Effect::LeadingZeros, true),
         "cttz" => (Effect::TrailingZeros, false),
         "cttz_nonzero" => (Effect::TrailingZeros, true),
-        "bswap" if crate::support::bringup::waive(SWAPPED_BYTES) => (Effect::SwappedBytes, false),
-        "bitreverse" if crate::support::bringup::waive(REVERSED_BITS) => {
-            (Effect::ReversedBits, false)
-        }
+        "bswap" => (Effect::SwappedBytes, false),
+        "bitreverse" => (Effect::ReversedBits, false),
         _ => return None,
     };
     Some(Operation { effect, nonzero })
@@ -168,7 +161,7 @@ impl Catalog {
         }) if unsafe_ == operation.nonzero && result == output
             && facts.types.list(parameters) == Some(&[input]))
         {
-            return Err("source bit count changed its exact Rust (T) -> u32 signature");
+            return Err("source bit intrinsic changed its exact one-integer Rust signature");
         }
         let roots =
             super::intrinsic_contracts::item_roots(&facts.types, [input, output], |work| {

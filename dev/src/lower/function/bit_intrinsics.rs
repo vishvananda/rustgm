@@ -1,8 +1,5 @@
 //! Bit counts and permutations composed from shifts and masks at the operand's width.
-use super::{
-    super::{Lower, Selected, casts},
-    Call,
-};
+use super::{Lower, Selected, casts, ir};
 use crate::{
     lower::bit_kernels,
     lowir::{
@@ -11,32 +8,71 @@ use crate::{
         vocabulary::{Binary, Type, Unary},
     },
     support::llvm_symbols::Operation,
-    types::{Primitive, TypeId},
+    types::{Kind, Primitive, TypeId},
 };
 
+/// An evaluated integer input carried at its own width.
+#[derive(Clone, Copy)]
+pub(super) struct Integer {
+    pub(super) ty: TypeId,
+    pub(super) value: Value,
+    pub(super) signed: bool,
+}
+
 impl Lower<'_, '_, '_> {
-    pub(super) fn unqualified_bits(
+    pub(super) fn bit_permutation(
         &mut self,
-        call: Call<'_>,
-    ) -> Result<Option<Selected>, &'static str> {
-        let &[input] = call.inputs else {
+        name: &'static str,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let Some(&[input]) = self
+            .body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+        else {
+            return Err("source bit permutation requires one checked integer input");
+        };
+        self.runtime_bits(name, input, result)?
+            .ok_or("source bit permutation differs from its exact integer signature")
+    }
+
+    /// The input when its type is an integer primitive.
+    pub(super) fn integer_input(&self, id: ir::ValueId) -> Result<Option<Integer>, &'static str> {
+        let ty = self.input_type(id)?;
+        let Some(Kind::Primitive(primitive)) = self.context.types.kind(ty) else {
             return Ok(None);
         };
+        let Some((signed, bits)) = primitive.integer() else {
+            return Ok(None);
+        };
+        let value = self.value(id)?.runtime()?;
+        if !value.ty.is_integer() || value.ty.bits() != u32::from(bits) {
+            return Err("integer intrinsic input differs from its scalar width");
+        }
+        Ok(Some(Integer { ty, value, signed }))
+    }
+    pub(super) fn runtime_bits(
+        &mut self,
+        name: &'static str,
+        input: ir::ValueId,
+        result: TypeId,
+    ) -> Result<Option<Selected>, &'static str> {
         let Some(input) = self.integer_input(input)? else {
             return Ok(None);
         };
-        let counting = !matches!(call.name, "bswap" | "bitreverse");
+        let counting = !matches!(name, "bswap" | "bitreverse");
         let expected = if counting {
             TypeId::primitive(Primitive::U32)
         } else {
             input.ty
         };
-        if call.result != expected {
+        if result != expected {
             return Ok(None);
         }
         let builder = &mut self.builder;
         let word = casts::integer(builder, input.value, unsigned(input.value.ty)?, false)?;
-        let result = match call.name {
+        let result = match name {
             "ctpop" => bit_kernels::emit(builder, Operation::Population, word)?,
             // The nonzero forms may assume their input; the total forms are valid for it.
             "ctlz" | "ctlz_nonzero" => leading_zeros(builder, word)?,

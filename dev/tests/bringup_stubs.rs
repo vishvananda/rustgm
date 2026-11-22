@@ -140,30 +140,43 @@ fn library(
     publish: bool,
 ) -> Result<(Output, PathBuf)> {
     let folder = folder_with(name, source)?;
-    let provider = format!("probe@{identity}");
     let metadata = folder.join("probe.rgm");
-    let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
-    command
-        .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
-        .args(["--crate-type=lib", "--crate-name", "probe"])
-        .args([
-            "--crate-disambiguator",
-            identity,
-            "--source-core",
-            &provider,
-        ]);
+    let mut command = source_command(&folder, identity, list)?;
+    command.arg("--crate-type=lib");
     if publish {
         command
             .args(["--source-profile", "module-bodies-v13"])
             .arg("--metadata-output")
             .arg(&metadata);
     }
+    Ok((command.arg(folder.join("main.rs")).output()?, metadata))
+}
+
+fn source_command(folder: &Path, identity: &str, list: Option<&str>) -> Result<Command> {
+    let provider = format!("probe@{identity}");
+    let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+    command
+        .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
+        .args(["--crate-name", "probe", "--crate-disambiguator", identity])
+        .args(["--source-core", &provider]);
     if let Some(list) = list {
         let path = folder.join("skip.tsv");
         std::fs::write(&path, list)?;
         command.arg("--bringup-skip-list").arg(path);
     }
-    Ok((command.arg(folder.join("main.rs")).output()?, metadata))
+    Ok(command)
+}
+
+fn source_executable(
+    name: &str,
+    source: &str,
+    identity: &str,
+    list: Option<&str>,
+) -> Result<Output> {
+    let folder = folder_with(name, &format!("{HEAD}{source}\nfn main() {{}}\n"))?;
+    Ok(source_command(&folder, identity, list)?
+        .arg(folder.join("main.rs"))
+        .output()?)
 }
 fn waived(stderr: &str) -> Vec<&str> {
     stderr
@@ -908,31 +921,16 @@ const WRAPPED:(u8,bool)=add_with_overflow(250u8,10u8);
 ";
 
 #[test]
-fn checked_addition_runs_in_constants_and_lowered_code_and_stays_fenced_when_strict() -> Result {
-    let source = format!("{HEAD}{CHECKED_ADDITION}");
-    let (strict, _) = library("checked-add-strict", &source, "adds", None, false)?;
+fn checked_addition_uses_qualified_constants_and_lowered_code_in_both_profiles() -> Result {
+    let strict = source_executable("checked-add-strict", CHECKED_ADDITION, "adds", None)?;
     let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
-    assert!(
-        stderr.contains("source intrinsic constant execution is not implemented")
-            && !stderr.contains("bringup-")
-            && strict.stdout.is_empty(),
-        "{stderr}"
-    );
-    let (passed, _) = library("checked-add", &source, "adds_bringup", Some(""), false)?;
-    let stderr = String::from_utf8(passed.stderr)?;
-    assert!(passed.status.success(), "{stderr}");
-    let fences = waived(&stderr);
-    let fence = "source intrinsic uses unqualified checked arithmetic: add_with_overflow";
-    assert!(fences.contains(&fence), "{stderr}");
-    // Both calls take the checked contract: no trap and no in-place lowering.
-    assert!(
-        fences
-            .iter()
-            .all(|fence| !fence.starts_with(UNLOWERED) && !fence.starts_with(UNQUALIFIED)),
-        "{stderr}"
-    );
-    let text = std::str::from_utf8(&passed.stdout)?;
+    assert!(strict.status.success(), "{stderr}");
+    let bringup = source_executable("checked-add", CHECKED_ADDITION, "adds", Some(""))?;
+    let stderr = String::from_utf8(bringup.stderr)?;
+    assert!(bringup.status.success(), "{stderr}");
+    assert!(waived(&stderr).is_empty(), "{stderr}");
+    assert_eq!(strict.stdout, bringup.stdout);
+    let text = std::str::from_utf8(&strict.stdout)?;
     assert!(!text.contains("rg.trap."), "{text}");
     Ok(())
 }
@@ -952,29 +950,21 @@ const MIRRORED:u8=bitreverse(6u8);
 #[unsafe(no_mangle)]pub fn swapped()->u32{SWAPPED}
 #[unsafe(no_mangle)]pub fn narrow()->i16{NARROW}
 #[unsafe(no_mangle)]pub fn mirrored()->u8{MIRRORED}
+#[unsafe(no_mangle)]pub fn swap_runtime(input:i16)->i16{bswap(input)}
+#[unsafe(no_mangle)]pub fn reverse_runtime(input:u8)->u8{bitreverse(input)}
 ";
 
 #[test]
-fn bit_reversals_run_in_constants_and_stay_fenced_when_strict() -> Result {
-    let source = format!("{HEAD}{REVERSALS}");
-    let (strict, _) = library("reversals-strict", &source, "reversals", None, false)?;
+fn bit_permutations_use_qualified_constants_and_lowered_code_in_both_profiles() -> Result {
+    let strict = source_executable("reversals-strict", REVERSALS, "reversals", None)?;
     let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
-    assert!(
-        stderr.contains("source intrinsic constant execution is not implemented")
-            && !stderr.contains("bringup-")
-            && strict.stdout.is_empty(),
-        "{stderr}"
-    );
-    let (passed, _) = library("reversals", &source, "reversals_bringup", Some(""), false)?;
-    let stderr = String::from_utf8(passed.stderr)?;
-    assert!(passed.status.success(), "{stderr}");
-    let fences = waived(&stderr);
-    for name in ["bswap", "bitreverse"] {
-        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
-        assert!(fences.contains(&fence.as_str()), "{stderr}");
-    }
-    let text = std::str::from_utf8(&passed.stdout)?;
+    assert!(strict.status.success(), "{stderr}");
+    let bringup = source_executable("reversals", REVERSALS, "reversals", Some(""))?;
+    let stderr = String::from_utf8(bringup.stderr)?;
+    assert!(bringup.status.success(), "{stderr}");
+    assert!(waived(&stderr).is_empty(), "{stderr}");
+    assert_eq!(strict.stdout, bringup.stdout);
+    let text = std::str::from_utf8(&strict.stdout)?;
     for folded in ["2018915346", "256", "96"] {
         assert!(text.contains(folded), "{folded}: {text}");
     }

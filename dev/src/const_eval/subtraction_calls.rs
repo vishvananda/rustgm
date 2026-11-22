@@ -92,17 +92,24 @@ impl Machine<'_, '_> {
         }
         let operator = crate::sema::compiler_items::overflowing_operator(selected.kind)
             .ok_or("source arithmetic lost its selected overflow operation")?;
-        let checked =
-            self.evaluator
-                .binary(operator, selected.input, left, right, Overflow::Checked);
-        let overflow = match checked {
-            Ok(_) => false,
-            Err(Failure::Fault(_)) => true,
-            Err(error) => return Err(error),
-        };
-        let wrapped =
-            self.evaluator
-                .binary(operator, selected.input, left, right, Overflow::Wrapping)?;
+        let (wrapped, overflow) =
+            match self
+                .evaluator
+                .binary(operator, selected.input, left, right, Overflow::Checked)
+            {
+                Ok(value) => (value, false),
+                Err(Failure::Fault(_)) => (
+                    self.evaluator.binary(
+                        operator,
+                        selected.input,
+                        left,
+                        right,
+                        Overflow::Wrapping,
+                    )?,
+                    true,
+                ),
+                Err(error) => return Err(error),
+            };
         self.reserve_cells(3)?;
         self.evaluator.fields(
             &[wrapped, Constant::scalar(Scalar::Boolean(overflow))],

@@ -2,6 +2,7 @@
 mod aggregate;
 mod argument_sources;
 mod asm_invocations;
+mod bit_intrinsics;
 mod c_boundary;
 mod callback_dispatch;
 mod catch_unwind;

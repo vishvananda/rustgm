@@ -175,7 +175,10 @@ fn source_call(
                 catalog.require_provider_report(report)?;
                 crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;
             }
-            if matches!(name, "size_of_val" | "align_of_val") {
+            if matches!(
+                name,
+                "size_of_val" | "align_of_val" | "bswap" | "bitreverse"
+            ) {
                 catalog.require_provider_report(report)?;
             }
             Ok(Some(kind))

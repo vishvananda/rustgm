@@ -48,6 +48,9 @@ impl Lower<'_, '_, '_> {
                 .pointed_value_layout(value, arguments, name == "size_of_val")
                 .map(Some);
         }
+        if matches!(name, "bswap" | "bitreverse") {
+            return self.bit_permutation(name, arguments, value.ty).map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

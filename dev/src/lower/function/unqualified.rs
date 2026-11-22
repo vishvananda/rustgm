@@ -3,7 +3,6 @@
 //! call whose actual types this module does not handle, keeps its trap.
 mod arithmetic;
 mod atomics;
-mod bits;
 mod floats;
 mod layouts;
 mod memory;
@@ -29,14 +28,6 @@ struct Call<'body> {
     inputs: &'body [ir::ValueId],
     result: TypeId,
 }
-/// An evaluated integer input carried at its own width.
-#[derive(Clone, Copy)]
-struct Integer {
-    ty: TypeId,
-    value: Value,
-    signed: bool,
-}
-
 impl Lower<'_, '_, '_> {
     /// Emit the operation in place of the call. `None` leaves the trapping shim.
     pub(super) fn unqualified_call(
@@ -71,8 +62,10 @@ impl Lower<'_, '_, '_> {
         };
         let lowered = match name {
             "exact_div" => self.unqualified_arithmetic(call)?,
-            "ctpop" | "ctlz" | "ctlz_nonzero" | "cttz" | "cttz_nonzero" | "bswap"
-            | "bitreverse" => self.unqualified_bits(call)?,
+            "ctpop" | "ctlz" | "ctlz_nonzero" | "cttz" | "cttz_nonzero" => match call.inputs {
+                &[input] => self.runtime_bits(name, input, call.result)?,
+                _ => None,
+            },
             "offset" | "slice_get_unchecked" | "ptr_offset_from" | "ptr_offset_from_unsigned" => {
                 self.unqualified_offset(call)?
             }
@@ -110,27 +103,12 @@ impl Lower<'_, '_, '_> {
             .call(signature, Type::Void, Operand::Symbol(abort), &[])?;
         Ok(Some(Selected::Unit))
     }
-    fn input_type(&self, id: ir::ValueId) -> Result<TypeId, &'static str> {
+    pub(super) fn input_type(&self, id: ir::ValueId) -> Result<TypeId, &'static str> {
         self.body
             .values
             .get(id.0 as usize)
             .map(|value| value.ty)
             .ok_or("unqualified intrinsic input disappeared")
-    }
-    /// The input when its type is an integer primitive.
-    fn integer_input(&self, id: ir::ValueId) -> Result<Option<Integer>, &'static str> {
-        let ty = self.input_type(id)?;
-        let Some(Kind::Primitive(primitive)) = self.context.types.kind(ty) else {
-            return Ok(None);
-        };
-        let Some((signed, bits)) = primitive.integer() else {
-            return Ok(None);
-        };
-        let value = self.value(id)?.runtime()?;
-        if !value.ty.is_integer() || value.ty.bits() != u32::from(bits) {
-            return Err("integer intrinsic input differs from its scalar width");
-        }
-        Ok(Some(Integer { ty, value, signed }))
     }
     /// The input and its referent when it is a thin raw pointer or reference.
     fn thin_input(&mut self, id: ir::ValueId) -> Result<Option<(Value, TypeId)>, &'static str> {

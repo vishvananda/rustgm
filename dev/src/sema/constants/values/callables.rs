@@ -25,8 +25,10 @@ impl Reader<'_> {
             return Ok(None);
         };
         let name = identity.name();
-        if !matches!(name, "catch_unwind" | "size_of_val" | "align_of_val")
-            && crate::support::bringup::selected().is_none()
+        if !matches!(
+            name,
+            "catch_unwind" | "size_of_val" | "align_of_val" | "bswap" | "bitreverse"
+        ) && crate::support::bringup::selected().is_none()
         {
             return Ok(None);
         }

@@ -170,9 +170,9 @@ fn reached_intrinsics_cannot_execute_their_authored_fallback() -> TestResult {
     let unhandled = constant
         .replace(
             "ctpop<T0:Copy>(a0:T0)->u32{7}",
-            "bswap<T0:Copy>(a0:T0)->T0{a0}",
+            "rotate_left<T0:Copy>(a0:T0,_:u32)->T0{a0}",
         )
-        .replace("ctpop(7u32)", "bswap(7u32)");
+        .replace("ctpop(7u32)", "rotate_left(7u32,1u32)");
     assert_ne!(
         unhandled, constant,
         "the unhandled intrinsic source changed"
