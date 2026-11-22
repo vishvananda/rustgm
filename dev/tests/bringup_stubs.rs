@@ -1591,6 +1591,34 @@ fn trait_impl_arguments_imply_member_lifetime_bounds() -> Result {
     Ok(())
 }
 
+#[test]
+fn scoped_callback_relates_capture_to_creator_lifetime() -> Result {
+    let source = crate::resolve::fixture("pa31/tests/spec/scoped-callback-lifetimes/scoped.rs")?;
+    let folder = folder_with("scoped-callback-lifetimes", &source)?;
+    let input = folder.join("main.rs");
+    let accepted = source_command(&folder, "scoped_callback", None)?
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(accepted.stderr)?;
+    assert!(accepted.status.success(), "{diagnostics}");
+    assert!(!diagnostics.contains("bringup-"), "{diagnostics}");
+    let lowir = String::from_utf8(accepted.stdout)?;
+    assert!(lowir.contains("@entry"));
+    assert!(!lowir.contains("rg.trap."));
+
+    let rejected = source_command(&folder, "scoped_callback", None)?
+        .args(["--cfg", "unrelated"])
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{diagnostics}");
+    assert!(
+        diagnostics.contains("required lifetime does not outlive its target"),
+        "{diagnostics}"
+    );
+    Ok(())
+}
+
 const CAPTURE_DEREFERENCES: &str = "pa31/tests/spec/capture-dereferences";
 /// A source Deref call borrows its operand; the closure captures that operand
 /// rather than projecting a built-in dereference through the wrapper.

@@ -340,18 +340,31 @@ impl Checker<'_> {
         let mut closing = interface
             .closing(&self.state.call_types, true)
             .map_err(|e| self.error(source.node, e))?;
-        for (parent, slot) in interface
-            .opening
-            .universal_pairs()
-            .filter(|(_, slot)| !outputs.is_empty() || imported || captured.contains(*slot))
-        {
+        let inherited = if captured.is_empty() {
+            0
+        } else {
+            interface
+                .inherited()
+                .map_err(|e| self.error(source.node, e))?
+        };
+        for (parent, slot) in interface.opening.universal_pairs() {
+            let (_, ordinal) = slot
+                .bound_parts()
+                .ok_or_else(|| self.error(source.node, "missing output interface slot"))?;
+            let captured_slot = captured.contains(slot);
+            // A relation on a captured input can name an enclosing universal
+            // that appears only in the creator's generic premises.
+            if outputs.is_empty() && !imported && !captured_slot && u32::from(ordinal) >= inherited
+            {
+                continue;
+            }
             // Public quantified inputs belong to this closure's callable binder,
             // even when the public result can mention them. They are not parent
             // proof identities and cannot discharge a captured output condition.
             if parent.bound_parts().is_some() || closing.region(slot, 0).is_err() {
                 continue;
             }
-            if outputs.is_empty() && captured.contains(slot) {
+            if outputs.is_empty() && captured_slot {
                 self.validate_capture_input_parent(source, parent, parent_body)?;
             } else if outputs.is_empty()
                 && self
@@ -363,11 +376,8 @@ impl Checker<'_> {
                 // Only the parent's own regions are its proof identities.
                 continue;
             }
-            let (_, slot) = slot
-                .bound_parts()
-                .ok_or_else(|| self.error(source.node, "missing output interface slot"))?;
             bridges.push(Bridge {
-                slot,
+                slot: ordinal,
                 parent,
                 output: outputs.contains(&parent),
             });

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "scoped.rs": {
+      "sha256": "a7bda16ee4796351315374ef63db91da6ff0396504c0446d5f8a94de7b3abaea",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0
+        },
+        {
+          "cfg": [
+            "unrelated"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Mini-core language-item declarations copied from capture-formation-storage/execution.rs. See NOTICE and third_party/sources.json for upstream attribution."
+}
