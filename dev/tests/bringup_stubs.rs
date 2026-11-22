@@ -999,25 +999,17 @@ const UNZEROABLE: &str = "\
 ";
 
 #[test]
-fn zeroing_runs_in_constants_and_stays_fenced_when_strict() -> Result {
+fn zeroing_runs_in_qualified_constants_in_both_profiles() -> Result {
     let unimplemented = "source intrinsic constant execution is not implemented";
-    let source = format!("{HEAD}{ZEROING}");
-    let (strict, _) = library("zeroing-strict", &source, "zeroing", None, false)?;
+    let strict = source_executable("zeroing-strict", ZEROING, "zeroing", None)?;
     let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
-    assert!(
-        stderr.contains(unimplemented) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
-        "{stderr}"
-    );
-    let (passed, _) = library("zeroing", &source, "zeroing_bringup", Some(""), false)?;
-    let stderr = String::from_utf8(passed.stderr)?;
-    assert!(passed.status.success(), "{stderr}");
-    let fences = waived(&stderr);
-    for name in ["assert_zero_valid", "write_bytes"] {
-        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
-        assert!(fences.contains(&fence.as_str()), "{stderr}");
-    }
-    let text = std::str::from_utf8(&passed.stdout)?;
+    assert!(strict.status.success(), "{stderr}");
+    let bringup = source_executable("zeroing", ZEROING, "zeroing", Some(""))?;
+    let stderr = String::from_utf8(bringup.stderr)?;
+    assert!(bringup.status.success(), "{stderr}");
+    assert!(waived(&stderr).is_empty(), "{stderr}");
+    assert_eq!(strict.stdout, bringup.stdout);
+    let text = std::str::from_utf8(&strict.stdout)?;
     for folded in ["1515870810", "23130", "2880154539"] {
         assert!(text.contains(folded), "{folded}: {text}");
     }

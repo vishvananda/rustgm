@@ -1,7 +1,4 @@
-//! `mem::zeroed`'s two bodiless intrinsics in constants: bring-up only, waived
-//! by name, fenced otherwise. `assert_zero_valid::<T>()` holds when all-zero
-//! bytes are a value of T; `write_bytes::<T>(dst, byte, count)` fills `count`
-//! values of T with one byte.
+//! Authenticate the source intrinsics that assert zero validity or fill raw storage.
 use super::Catalog;
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
@@ -11,9 +8,6 @@ use crate::{
         Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
     },
 };
-
-const ASSERTION: &str = "source intrinsic uses unqualified constant evaluation: assert_zero_valid";
-const FILL: &str = "source intrinsic uses unqualified constant evaluation: write_bytes";
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Operation {
@@ -29,8 +23,8 @@ fn selected(kind: SourceIntrinsic) -> Option<bool> {
         return None;
     };
     match identity.name() {
-        "assert_zero_valid" if crate::support::bringup::waive(ASSERTION) => Some(false),
-        "write_bytes" if crate::support::bringup::waive(FILL) => Some(true),
+        "assert_zero_valid" => Some(false),
+        "write_bytes" => Some(true),
         _ => None,
     }
 }

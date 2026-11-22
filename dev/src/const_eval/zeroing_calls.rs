@@ -1,6 +1,4 @@
-//! Bring-up only: a reached `assert_zero_valid` returns when all-zero bytes are
-//! a value of its type, and a reached `write_bytes` fills its span as the
-//! counted fill does. An assertion this module cannot decide keeps the error.
+//! Reached zeroing intrinsics check the actual assertion or update the proved byte span.
 use super::{Failure, Frame, Machine, code::Code, executed_calls::Answer};
 use crate::{
     sema::compiler_items::zeroing_contract::Operation,
