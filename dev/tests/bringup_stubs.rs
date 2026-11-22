@@ -1549,6 +1549,23 @@ fn replacements_execute() -> Result {
     execute_cases(REPLACEMENTS, &["field", "reference", "variant", "generic"])
 }
 
+#[test]
+fn source_constructors_keep_the_nominals_trait_premises() -> Result {
+    let source =
+        crate::resolve::fixture("pa31/tests/spec/source-constructor-premises/associated.rs")?;
+    let folder = folder_with("source-constructor-premises", &source)?;
+    let output = source_command(&folder, "constructor_copy", None)?
+        .arg(folder.join("main.rs"))
+        .output()?;
+    let diagnostics = String::from_utf8(output.stderr)?;
+    assert!(output.status.success(), "{diagnostics}");
+    assert!(!diagnostics.contains("bringup-"), "{diagnostics}");
+    let lowir = String::from_utf8(output.stdout)?;
+    assert!(lowir.contains("@entry"));
+    assert!(!lowir.contains("rg.trap."));
+    Ok(())
+}
+
 const CAPTURE_DEREFERENCES: &str = "pa31/tests/spec/capture-dereferences";
 /// A source Deref call borrows its operand; the closure captures that operand
 /// rather than projecting a built-in dereference through the wrapper.

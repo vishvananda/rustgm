@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "associated.rs": {
+      "sha256": "7ab7694a02ab186dee454fed4cdfb18394217ff14a9ecd879ed47330fab73e16",
+      "rustc_status": 0,
+      "strict_status": 0
+    }
+  },
+  "provenance": "Mini-core language-item declarations copied from generic-pattern-storage/tuple.rs. See NOTICE and third_party/sources.json for upstream attribution."
+}

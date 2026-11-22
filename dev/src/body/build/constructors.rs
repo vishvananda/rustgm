@@ -4,7 +4,7 @@ use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::Body,
-        regions::Contract,
+        regions::{BuiltinRequirements, Contract},
         templates::{Template, Templates},
     },
     resolve::{expansion::Report, model::DefId},
@@ -160,10 +160,17 @@ pub fn templates(
         )?;
         let destruction =
             crate::body::drops::requirements(facts, &body, &mut scoped).map_err(error)?;
-        contracts.push(
+        let mut contract =
             crate::body::regions::constructor(facts, definition, declaration, source, signature)
-                .map_err(error)?,
-        );
+                .map_err(error)?;
+        if facts.uses_source_copy() {
+            // Constructor parameters have the nominal's declared trait
+            // requirements, shared by CFG construction and the body proof.
+            let mut builtins = BuiltinRequirements::empty();
+            builtins.environment = Some(Arc::clone(&environment));
+            contract.builtins = Some(Arc::new(builtins));
+        }
+        contracts.push(contract);
         templates.bodies.push(Template {
             body,
             destruction,
