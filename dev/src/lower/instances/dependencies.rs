@@ -449,6 +449,7 @@ impl Discovered {
         closures: &mut Vec<TypeId>,
         invocation_locations: &mut u8,
     ) -> Result<(), String> {
+        let mut captured_signatures = Vec::new();
         for id in crate::sema::vtable_plans::complete_tables(report, facts)? {
             let table = facts
                 .objects
@@ -487,11 +488,18 @@ impl Discovered {
                             invocation_locations,
                         )?;
                     }
-                    crate::sema::vtable_plans::Target::Captured(_)
-                    | crate::sema::vtable_plans::Target::Forwarded(_) => {}
+                    crate::sema::vtable_plans::Target::Captured(entry) => {
+                        captured_signatures.push(entry.execution);
+                    }
+                    crate::sema::vtable_plans::Target::Forwarded(_) => {}
                 }
             }
             object_types.push(table.concrete);
+        }
+        // Table entries retain the conversion's opened signature. Its ABI
+        // roots can differ from the closure body's prepared execution roots.
+        for signature in captured_signatures {
+            body::instantiate::prepare_signature_roots(facts, signature)?;
         }
         Ok(())
     }

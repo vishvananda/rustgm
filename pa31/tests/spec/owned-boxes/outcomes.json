@@ -156,6 +156,14 @@
    "rustgm_before": "box cleanup changed its struct fields",
    "declared_stdout": "alloc 1\nalloc 8\ndrop 3\nfree\nfree\nvalue 3\n",
    "native_stdout": "alloc 1\nalloc 8\ndrop 3\nfree\nfree\nvalue 3\n"
+  },
+  "borrowed-field.rs": {
+   "sha256": "5f34eb982ca7fb32ab5d0161c550879d505f8ccb7afbe2713c23e96650006d84",
+   "declared": 0,
+   "rustc_status": 0,
+   "rustgm_before": "generic aggregate requires instantiated fields",
+   "declared_stdout": "alloc 8\nfree\nvalue 42\n",
+   "native_stdout": "alloc 8\nfree\nvalue 42\n"
   }
  },
  "rustgm_before": "050a72a9b's strict source profile (obj/rust/observe/rustgm, sha256 4b7b18f840a55805d0869cf530f98b64fc2640bb00f63b26869551a46a39a140) rejects every case at its owned_box lang item",

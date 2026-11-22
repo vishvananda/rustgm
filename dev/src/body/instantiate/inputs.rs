@@ -51,7 +51,7 @@ pub(crate) fn prepare_signature(
     owner: Owner,
 ) -> Result<(), &'static str> {
     match owner {
-        Owner::Function { signature, .. } => prepare_roots(facts, signature),
+        Owner::Function { signature, .. } => prepare_signature_roots(facts, signature),
         // A closure's entry ABI reads its public callable and its specialized
         // execution, whose captured lifetimes stay bound beneath the public
         // binder, so neither is a type of the body itself.
@@ -60,13 +60,18 @@ pub(crate) fn prepare_signature(
             execution,
             ..
         } => {
-            prepare_roots(facts, signature)?;
-            execution.map_or(Ok(()), |execution| prepare_roots(facts, execution))
+            prepare_signature_roots(facts, signature)?;
+            execution.map_or(Ok(()), |execution| {
+                prepare_signature_roots(facts, execution)
+            })
         }
         _ => Ok(()),
     }
 }
-fn prepare_roots(facts: &mut Declarations, signature: TypeId) -> Result<(), &'static str> {
+pub(crate) fn prepare_signature_roots(
+    facts: &mut Declarations,
+    signature: TypeId,
+) -> Result<(), &'static str> {
     let Some(Kind::Function {
         parameters, result, ..
     }) = facts.types.kind(signature)

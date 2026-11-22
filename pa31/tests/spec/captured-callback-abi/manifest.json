@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "payment.rs": {
+      "sha256": "6caa7320bf3b7e5334609679cacd65d4a417be7c0a08a2a1ac7bbc6e26662752",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Executable source guest for the pinned original core profile."
+}

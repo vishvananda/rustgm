@@ -31,7 +31,7 @@ pub(crate) use anonymous::{
     original_context as original_inline_context, with_result as anonymous_result,
 };
 use inputs::Inputs;
-pub(crate) use inputs::prepare_signature;
+pub(crate) use inputs::{prepare_signature, prepare_signature_roots};
 mod projections;
 use super::{
     drops,

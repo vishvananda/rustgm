@@ -505,6 +505,9 @@ impl Checker<'_> {
             if let super::Constructor::Adt(item, _) | super::Constructor::AdtArgs(item, _) = kind
                 && self.facts.aggregates.owned_box() == Some(item)
             {
+                // The CFG projects through this box to reach the field.
+                // Its intermediate place needs the box's exact storage.
+                self.state.call_types.demand_fields(receiver);
                 let content = self.child(node, receiver, 0)?;
                 let (next, count) = self
                     .state
