@@ -1368,27 +1368,35 @@ impl<'a> Builder<'a> {
                     node,
                     temporaries: self.index(node, self.body.temporaries.len())?,
                 }));
-            self.scratch.work.push(Work::Place(value));
+            let work = self.pattern_input_work(value);
+            self.scratch.work.push(work);
             return Ok(());
         }
         if let Kind::Let { pattern, value, .. } = self.kind(node)
             && let Some(pattern) = self.pattern_root(pattern)
         {
+            let pattern = if let Some(value) = value {
+                self.pattern_after_input(value, pattern, self.pattern_input_depth(value))?
+            } else {
+                pattern
+            };
             self.scratch.work.push(Work::BindPattern {
                 node,
                 pattern,
                 has_value: value.is_some(),
             });
             if let Some(value) = value {
-                self.scratch.work.push(Work::Place(value));
+                let work = self.pattern_input_work(value);
+                self.scratch.work.push(work);
             }
             return Ok(());
         }
         match self.kind(node) {
             Kind::TryBlock { body, .. } => self.enter_try_block(node, body)?,
             Kind::Match { value, .. } => {
+                let work = self.pattern_input_work(value);
                 self.scratch.work.push(Work::MatchStart(node));
-                self.scratch.work.push(Work::Place(value));
+                self.scratch.work.push(work);
             }
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,

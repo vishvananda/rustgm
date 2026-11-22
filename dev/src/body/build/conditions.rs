@@ -120,9 +120,8 @@ impl Builder<'_> {
                             no,
                             base,
                         }));
-                    self.scratch
-                        .work
-                        .push(BuildWork::Place(selected.input.node));
+                    let input = self.pattern_input_work(selected.input.node);
+                    self.scratch.work.push(input);
                 } else {
                     self.scratch
                         .work
@@ -224,10 +223,12 @@ impl Builder<'_> {
         }
         let place = input.ok_or_else(|| self.error(node, "missing conditional input place"))?;
         let selected = self.conditional(node)?;
+        let input = selected.input.node;
+        let pattern =
+            self.pattern_after_input(input, selected.pattern, self.pattern_input_depth(input))?;
         let accepted = self.new_block(node)?;
         let rejected = self.new_block(node)?;
-        let plan =
-            self.constructor_decision(selected.pattern, place, accepted, rejected, failure)?;
+        let plan = self.constructor_decision(pattern, place, accepted, rejected, failure)?;
         self.switch(node, rejected)?;
         if let Some(scopes) = failure_exit {
             self.exit_scopes(node, scopes)?;
@@ -235,7 +236,7 @@ impl Builder<'_> {
         self.cleanup(node, base)?;
         self.terminate(node, Terminator::Jump(no));
         self.switch(node, accepted)?;
-        self.constructor_captures(&plan, selected.pattern, place)?;
+        self.constructor_captures(&plan, pattern, place)?;
         self.terminate(node, Terminator::Jump(yes));
         Ok(())
     }
@@ -246,6 +247,9 @@ impl Builder<'_> {
         }
         let place = input.ok_or_else(|| self.error(node, "missing let-else input place"))?;
         let selected = self.conditional(node)?;
+        let input = selected.input.node;
+        let pattern =
+            self.pattern_after_input(input, selected.pattern, self.pattern_input_depth(input))?;
         let otherwise = selected
             .otherwise
             .ok_or_else(|| self.error(node, "missing let-else failure block"))?
@@ -255,19 +259,14 @@ impl Builder<'_> {
         let no = self.new_block(node)?;
         let failure = self.new_block(otherwise)?;
         let join = self.new_block(node)?;
-        let plan = self.constructor_decision(
-            selected.pattern,
-            place,
-            yes,
-            no,
-            super::decisions::Failure::Checked,
-        )?;
+        let plan =
+            self.constructor_decision(pattern, place, yes, no, super::decisions::Failure::Checked)?;
         self.switch(node, no)?;
         self.end_initializer(node, temporaries)?;
         self.cleanup(node, base)?;
         self.terminate(node, Terminator::Jump(failure));
         self.switch(node, yes)?;
-        self.constructor_captures(&plan, selected.pattern, place)?;
+        self.constructor_captures(&plan, pattern, place)?;
         self.terminate(node, Terminator::Jump(join));
         // The failure block must see only the surrounding scope. Store just the
         // success tail in shared LIFO scratch; never copy all preceding locals.

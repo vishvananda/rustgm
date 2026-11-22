@@ -27,11 +27,13 @@ impl Builder<'_> {
         start: u32,
         end: u32,
         input: Place,
+        prefix: u32,
     ) -> Result<(u32, u32), Error> {
         let mut work = Vec::new();
         let first = self.index(self.source.node, self.body.guard_places.len())?;
         for arm in &self.facts.patterns.arms[start as usize..end as usize] {
             if let Some(pattern) = arm.pattern {
+                let pattern = self.pattern_after_input(arm.source.node, pattern, prefix)?;
                 work.push((pattern, input, None));
             }
         }

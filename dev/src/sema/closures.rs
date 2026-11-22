@@ -60,6 +60,7 @@ pub enum AccessKind {
     Reference,
     Index,
     Field,
+    Pattern,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AdjustedAccess {

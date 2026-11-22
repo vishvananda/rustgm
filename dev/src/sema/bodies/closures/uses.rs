@@ -229,6 +229,25 @@ impl Collector<'_> {
             self.push(node, Use::Value);
         }
     }
+    fn remember_adjusted(
+        &mut self,
+        checker: &Checker<'_>,
+        site: NodeId,
+        kind: AccessKind,
+        path: PathId,
+        dereferences: u32,
+    ) -> Result<(), Error> {
+        let access = AdjustedAccess { path, dereferences };
+        if self
+            .adjusted_accesses
+            .insert((checker.key(site), kind), access)
+            .is_some_and(|prior| prior != access)
+        {
+            return Err(checker.error(site, "capture input selection changed"));
+        }
+        Ok(())
+    }
+
     fn use_place(&mut self, checker: &mut Checker<'_>, work: &Work) -> Result<bool, Error> {
         let Some(mut place) = self.places.get(checker, work.node)? else {
             return Ok(false);
@@ -249,17 +268,7 @@ impl Collector<'_> {
         if consumed != 0
             && let Some((site, kind)) = work.receiver
         {
-            let access = AdjustedAccess {
-                path: place.path,
-                dereferences: consumed,
-            };
-            if self
-                .adjusted_accesses
-                .insert((checker.key(site), kind), access)
-                .is_some_and(|prior| prior != access)
-            {
-                return Err(checker.error(site, "capture receiver selection changed"));
-            }
+            self.remember_adjusted(checker, site, kind, place.path, consumed)?;
         }
         if matches!(work.usage, Use::Mention) {
             if self.mentioned.insert(place.path) {
@@ -529,8 +538,8 @@ impl Collector<'_> {
         value: NodeId,
         roots: &[crate::sema::patterns::PatternId],
     ) -> Result<(), Error> {
-        if self.places.get(checker, value)?.is_some() {
-            self.pattern_uses(checker, value, roots)
+        if let Some(place) = self.places.get(checker, value)? {
+            self.pattern_uses(checker, value, place, roots)
         } else {
             self.push(value, Use::Value);
             Ok(())

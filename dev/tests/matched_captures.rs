@@ -13,7 +13,7 @@ const PRECISE: &str = "precise capture patterns are not implemented";
 /// E0502). The recorded gaps reject what rustc accepts: an uncaptured
 /// scrutinee has no lowering place, and a capture more precise than the
 /// matched place fails closed at typing.
-const REJECTED: [(&str, &str, bool); 11] = [
+const REJECTED: [(&str, &str, bool); 10] = [
     ("match-move-twice.rs", MOVED, true),
     ("move-then-use.rs", MOVED, true),
     ("shared-conflict.rs", LOAN, true),
@@ -24,9 +24,8 @@ const REJECTED: [(&str, &str, bool); 11] = [
     ("legacy-tuple.rs", MOVED, true),
     ("wildcard.rs", "missing match input place", true),
     ("let-tuple-precise.rs", PRECISE, false),
-    ("ref-scrutinee.rs", PRECISE, false),
 ];
-const GAPS: [&str; 3] = ["wildcard.rs", "let-tuple-precise.rs", "ref-scrutinee.rs"];
+const GAPS: [&str; 2] = ["wildcard.rs", "let-tuple-precise.rs"];
 
 fn edition(name: &str) -> Result<rustgm::support::edition::Edition> {
     use rustgm::support::edition::Edition;

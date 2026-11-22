@@ -4,10 +4,10 @@
 //! A variant, literal, range or slice-length test reads the place. A binding
 //! copies, moves or borrows it. Precision stops at an enum variant and at an
 //! index projection, so those uses capture the matched place itself. A field
-//! projection or a dereference before that point would capture a more precise
-//! place, which fails closed. Whole-variable editions and moving closures
-//! capture the variable or its reference instead.
-use super::{Checker, Collector, Error, NodeId, Use, Work};
+//! projection or mutable dereference before that point needs a precise place.
+//! Shared reference prefixes can use the selected referent as the pattern input.
+use super::super::places::Place;
+use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
 use crate::sema::patterns::{Capture, Kind, PatternId, Projection};
 
 #[derive(Clone, Copy)]
@@ -49,13 +49,14 @@ impl Collector<'_> {
     /// captured place `scrutinee`; a place that no pattern uses is mentioned.
     pub(super) fn pattern_uses(
         &mut self,
-        checker: &Checker<'_>,
+        checker: &mut Checker<'_>,
         scrutinee: NodeId,
+        mut place: Place,
         roots: &[PatternId],
     ) -> Result<(), Error> {
         let whole = self.places.graph.captures_whole_variables();
         let mut sites: Vec<_> = roots.iter().rev().copied().map(Site::new).collect();
-        let mut used = false;
+        let mut prefix: Option<u32> = None;
         while let Some(site) = sites.pop() {
             self.work += 1;
             if self.work > 1_000_000 {
@@ -67,38 +68,16 @@ impl Collector<'_> {
                 .get(site.pattern.0 as usize)
                 .ok_or_else(|| checker.error(scrutinee, "missing capture pattern"))?
                 .kind;
-            let usage = match kind {
-                Kind::Pending => {
-                    return Err(checker.error(scrutinee, "capture pattern is not selected"));
-                }
-                Kind::Range(_) | Kind::Text(_) | Kind::Slice { .. } => Some(Use::Shared),
-                Kind::Product {
-                    variant: Some(variant),
-                    ..
-                } if checker.facts.members.needs_test(variant) => Some(Use::Shared),
-                Kind::Binding {
-                    capture: Capture::Borrow { mutable, .. },
-                    ..
-                } => Some(if mutable { Use::Mutable } else { Use::Shared }),
-                Kind::Binding {
-                    definition,
-                    capture: Capture::Value,
-                    ..
-                } => Some(Use::ValueOf(
-                    checker.state.locals[definition.0 as usize]
-                        .ok_or_else(|| checker.error(scrutinee, "missing capture binding type"))?,
-                )),
-                Kind::Wildcard | Kind::Product { .. } | Kind::Dereference { .. } | Kind::Or(_) => {
-                    None
-                }
-            };
+            let usage = pattern_use(checker, scrutinee, kind)?;
             match kind {
                 Kind::Binding {
                     subpattern: Some(pattern),
                     ..
                 } => sites.push(site.child(pattern)),
-                Kind::Dereference { pattern, .. } => {
-                    sites.push(self.dereferenced(site.child(pattern), whole));
+                Kind::Dereference {
+                    mutable, pattern, ..
+                } => {
+                    sites.push(self.dereferenced(site.child(pattern), whole, mutable));
                 }
                 Kind::Or(alternatives) => sites.extend(
                     patterns
@@ -137,7 +116,7 @@ impl Collector<'_> {
                     checker.error(scrutinee, "precise capture patterns are not implemented")
                 );
             }
-            used = true;
+            prefix = Some(prefix.map_or(site.dereferences, |prior| prior.min(site.dereferences)));
             self.pending.push(Work {
                 node: scrutinee,
                 usage,
@@ -145,22 +124,47 @@ impl Collector<'_> {
                 receiver: None,
             });
         }
-        if !used {
+        let Some(prefix) = prefix else {
             self.push(scrutinee, Use::Mention);
+            return Ok(());
+        };
+        if prefix != 0 && !whole && !self.moving {
+            if roots.iter().any(|&root| {
+                checker
+                    .facts
+                    .patterns
+                    .after_shared_prefix(root, prefix)
+                    .is_none()
+            }) {
+                return Err(
+                    checker.error(scrutinee, "capture pattern lacks a common reference input")
+                );
+            }
+            for _ in 0..prefix {
+                place = self.places.dereference(checker, scrutinee, place)?;
+            }
+            self.remember_adjusted(checker, scrutinee, AccessKind::Pattern, place.path, prefix)?;
         }
         Ok(())
     }
     /// A whole-variable or moving capture keeps the matched variable, so only
     /// leading dereferences are applied to it. A moving closure captures the
     /// reference itself, which truncates the place.
-    const fn dereferenced(&self, site: Site, whole: bool) -> Site {
+    const fn dereferenced(&self, site: Site, whole: bool, mutable: bool) -> Site {
         if site.truncated {
             return site;
         }
         if !whole && !self.moving {
-            return Site {
-                precise: true,
-                ..site
+            return if mutable || site.projected {
+                Site {
+                    precise: true,
+                    ..site
+                }
+            } else {
+                Site {
+                    dereferences: site.dereferences.saturating_add(1),
+                    ..site
+                }
             };
         }
         let dereferences = if site.projected {
@@ -175,4 +179,30 @@ impl Collector<'_> {
             ..site
         }
     }
+}
+
+fn pattern_use(checker: &Checker<'_>, scrutinee: NodeId, kind: Kind) -> Result<Option<Use>, Error> {
+    Ok(match kind {
+        Kind::Pending => {
+            return Err(checker.error(scrutinee, "capture pattern is not selected"));
+        }
+        Kind::Range(_) | Kind::Text(_) | Kind::Slice { .. } => Some(Use::Shared),
+        Kind::Product {
+            variant: Some(variant),
+            ..
+        } if checker.facts.members.needs_test(variant) => Some(Use::Shared),
+        Kind::Binding {
+            capture: Capture::Borrow { mutable, .. },
+            ..
+        } => Some(if mutable { Use::Mutable } else { Use::Shared }),
+        Kind::Binding {
+            definition,
+            capture: Capture::Value,
+            ..
+        } => Some(Use::ValueOf(
+            checker.state.locals[definition.0 as usize]
+                .ok_or_else(|| checker.error(scrutinee, "missing capture binding type"))?,
+        )),
+        Kind::Wildcard | Kind::Product { .. } | Kind::Dereference { .. } | Kind::Or(_) => None,
+    })
 }

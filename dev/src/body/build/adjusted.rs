@@ -4,16 +4,42 @@ use crate::sema::closures::{AccessKind, AdjustedAccess, captures::Step};
 
 impl Builder<'_> {
     fn adjusted_access(&self, site: NodeId, kind: AccessKind) -> Option<AdjustedAccess> {
-        self.capture_environment()?
-            .adjusted_accesses
-            .get(&(
-                NodeKey {
-                    node: site,
-                    ..self.source
-                },
-                kind,
-            ))
-            .copied()
+        let environment = self.capture_environment()?;
+        let source = NodeKey {
+            node: site,
+            ..self.source
+        };
+        let &access = environment.adjusted_accesses.get(&(source, kind))?;
+        if kind == AccessKind::Pattern
+            && let Some(&original) = environment.accesses.get(&source)
+            && environment.plan.covering_field(original).is_some()
+        {
+            // A separately captured ancestor still supplies the original
+            // pattern input, including its reference checks in guard retries.
+            return None;
+        }
+        Some(access)
+    }
+
+    pub(super) fn pattern_input_work(&self, input: NodeId) -> Work {
+        self.receiver_place_work(input, input, AccessKind::Pattern)
+    }
+
+    pub(super) fn pattern_input_depth(&self, input: NodeId) -> u32 {
+        self.adjusted_access(input, AccessKind::Pattern)
+            .map_or(0, |access| access.dereferences)
+    }
+
+    pub(super) fn pattern_after_input(
+        &self,
+        input: NodeId,
+        pattern: crate::sema::patterns::PatternId,
+        prefix: u32,
+    ) -> Result<crate::sema::patterns::PatternId, Error> {
+        self.facts
+            .patterns
+            .after_shared_prefix(pattern, prefix)
+            .ok_or_else(|| self.error(input, "pattern differs from its captured reference input"))
     }
 
     pub(super) fn receiver_place_work(

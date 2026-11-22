@@ -12,6 +12,7 @@ use crate::{
 pub(super) struct Frame {
     pub(super) node: NodeId,
     pub(super) place: Place,
+    pattern_input_depth: u32,
     pub(super) next: u32,
     pub(super) end: u32,
     pub(super) merge: Option<LocalId>,
@@ -46,11 +47,12 @@ impl Builder<'_> {
         let scalar = input == TypeId::NEVER
             || matches!(self.facts.types.kind(input), Some(Type::Primitive(p)) if Domain::new(p).is_some());
         let (start, end) = (decision.start, decision.end);
+        let pattern_input_depth = self.pattern_input_depth(decision.scrutinee.node);
         let tested = if self.facts.patterns.arms[start as usize..end as usize]
             .iter()
             .any(|a| a.guard.is_some())
         {
-            Some(self.guard_tested_places(start, end, place)?)
+            Some(self.guard_tested_places(start, end, place, pattern_input_depth)?)
         } else {
             None
         };
@@ -63,6 +65,7 @@ impl Builder<'_> {
         self.scratch.match_frames.push(Frame {
             node,
             place,
+            pattern_input_depth,
             next: start,
             end,
             merge,
@@ -97,6 +100,7 @@ impl Builder<'_> {
         let pattern = arm
             .pattern
             .ok_or_else(|| self.error(frame.node, "missing arm binding selection"))?;
+        let pattern = self.pattern_after_input(frame.node, pattern, frame.pattern_input_depth)?;
         if arm.guard.is_some() {
             return self.guarded_arm(index, frame, arm, pattern);
         }

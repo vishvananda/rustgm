@@ -139,6 +139,27 @@ pub struct Patterns {
     pub arms: Vec<Arm>,
 }
 impl Patterns {
+    /// Consume shared reference layers already supplied by a captured input.
+    /// A wildcard never reads its input.
+    pub(crate) fn after_shared_prefix(
+        &self,
+        mut root: PatternId,
+        prefix: u32,
+    ) -> Option<PatternId> {
+        for _ in 0..prefix {
+            match self.nodes.get(root.0 as usize)?.kind {
+                Kind::Dereference {
+                    mutable: false,
+                    pattern,
+                    ..
+                } => root = pattern,
+                Kind::Wildcard => break,
+                _ => return None,
+            }
+        }
+        Some(root)
+    }
+
     /// Reserve a compact identity before elaborating nested pattern structure.
     ///
     /// # Errors
