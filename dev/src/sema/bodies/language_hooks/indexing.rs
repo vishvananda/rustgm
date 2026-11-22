@@ -1,12 +1,12 @@
 //! Source index calls return real borrowed places; exact builtins erase after proof.
-use super::super::{Checker, Error, NodeId, TermId, Type};
+use super::super::{Checker, Error, NodeId, TermId, Type, Work};
 use crate::{
     sema::{compiler_items, model::Operation},
     support::language_hooks::Hook,
     syntax::ast::Kind,
     types::{
         ItemId, Primitive, TypeId,
-        infer::{Solved, arguments::Argument, predicates::Predicate},
+        infer::{Domain, Solved, arguments::Argument, predicates::Predicate},
     },
 };
 impl Checker<'_> {
@@ -69,6 +69,17 @@ impl Checker<'_> {
             pending,
             signature,
         )?;
+        if self
+            .state
+            .infer
+            .unresolved_domain(idx)
+            .map_err(|e| self.error(index, e))?
+            == Some(Domain::Integer)
+        {
+            // An unsuffixed index can be determined by this operator's actual
+            // impl before its result is used by the enclosing expression.
+            self.state.work.push(Work::RefineCallResult(node));
+        }
         Ok(output)
     }
     pub(in crate::sema::bodies) fn source_primitive_index_solved(

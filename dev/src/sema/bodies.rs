@@ -286,7 +286,7 @@ enum Work {
     Exit(NodeId, Option<TermId>),
     CompleteExpression(NodeId, TermId),
     /// Refresh an actual call after its simple binding's result coercion.
-    RefineInitializerCall(NodeId),
+    RefineCallResult(NodeId),
     Field(NodeId, aggregates::Field, Option<aggregates::PrivateField>),
     /// An index operand's next autoderef step, at its current subject.
     Index(NodeId, TermId),
@@ -1071,7 +1071,7 @@ impl Checker<'_> {
                     }
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
-                work @ Work::RefineInitializerCall(call) => {
+                work @ Work::RefineCallResult(call) => {
                     if let Some(dependency) = self.refine_call_result(call)? {
                         self.state.work.push(work);
                         return Ok(Some(dependency));

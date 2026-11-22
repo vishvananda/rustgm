@@ -47,7 +47,7 @@ impl Checker<'_> {
                 let refresh = self.partial_nominal_initializer_call(value, expected)?;
                 self.coerce(value, expected)?;
                 if refresh {
-                    self.state.work.push(Work::RefineInitializerCall(value));
+                    self.state.work.push(Work::RefineCallResult(value));
                 }
             }
         }
