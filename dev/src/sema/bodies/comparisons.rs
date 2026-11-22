@@ -302,8 +302,20 @@ impl Checker<'_> {
         if let Some(dependency) = self.refine_call_inputs(node, expected)? {
             return Ok(Some(dependency));
         }
-        let expected = self.contextual_head(node, expected)?.map(|_| expected);
-        self.state.work.push(Work::Enter(operand, expected));
+        let context = if self.contextual_head(node, expected)?.is_some() {
+            // Context can settle the operand's shape before its own call
+            // inputs. Give it independent regions until the final coercion
+            // relates the actual operand to the comparison parameter.
+            let context = match self.try_inferred_regions(operand, expected)? {
+                Ok(context) => context,
+                Err(crate::types::infer::Error::Normalization) => expected,
+                Err(error) => return Err(self.error(operand, error)),
+            };
+            Some(context)
+        } else {
+            None
+        };
+        self.state.work.push(Work::Enter(operand, context));
         Ok(None)
     }
 

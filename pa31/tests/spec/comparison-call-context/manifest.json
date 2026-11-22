@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "optional-slices.rs": {
+      "sha256": "a6c5705fc7bf0865a6be075a348297e881c03214a25487ca9e70cc9bc864aaa6",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "invariant-input.rs": {
+      "sha256": "d506f108d10f83ab0065d405e301661d24718642f2dab735332b233e84385852",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_diagnostic": "lifetime may not live long enough"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable source guests for the pinned original core profile."
+}
