@@ -415,8 +415,11 @@ pub struct UnionWork {
 ///
 /// The operand plans of index expressions that take source Deref calls share
 /// the existing cold comparison operand box.
+///
+/// The ABI layout cache replaces its inline state vector with one cold pointer.
 #[cfg(test)]
-pub(crate) const DECLARATIONS_SIZE: usize = 7048
+pub(crate) const DECLARATIONS_SIZE: usize = 7048 - size_of::<Vec<()>>()
+    + size_of::<Option<Box<()>>>()
     + size_of::<Vec<()>>()
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()

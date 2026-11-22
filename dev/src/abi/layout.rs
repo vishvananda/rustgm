@@ -75,10 +75,8 @@ impl std::fmt::Display for Error {
     }
 }
 impl std::error::Error for Error {}
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 enum State {
-    #[default]
-    Unseen,
     Active,
     Ready(LayoutId),
     Failed(Error),
@@ -340,17 +338,12 @@ impl Layouts {
                 } else {
                     self.steps += 1;
                 }
-                self.visit::<LIMITED>(types, definitions, next, finish, &mut budget)
+                self.visit(types, definitions, next, finish, &mut budget)
             })();
             if let Err(message) = result {
                 let error = Error { ty: next, message };
                 // Only pending finish entries and the current visit can still
                 // have active states. Completed dependencies remain reusable.
-                let failed = if budget.exhausted {
-                    State::Unseen
-                } else {
-                    State::Failed(error)
-                };
                 for pending in self
                     .work
                     .drain(..)
@@ -358,11 +351,12 @@ impl Layouts {
                     .chain(std::iter::once(next))
                 {
                     if let Some(state @ State::Active) = self.states.get_mut(pending) {
-                        *state = failed;
+                        if budget.exhausted {
+                            self.states.remove(pending);
+                        } else {
+                            *state = State::Failed(error);
+                        }
                     }
-                }
-                if let Some(state) = self.states.get_mut(ty) {
-                    *state = failed;
                 }
                 return Err(error);
             }
@@ -375,7 +369,7 @@ impl Layouts {
             }),
         }
     }
-    fn visit<const LIMITED: bool>(
+    fn visit(
         &mut self,
         types: &Store,
         definitions: &Definitions,
@@ -383,11 +377,10 @@ impl Layouts {
         finish: bool,
         budget: &mut Budget,
     ) -> Result<(), &'static str> {
-        let state = self.states.get(ty).copied().unwrap_or_default();
-        match state {
-            State::Ready(_) => return Ok(()),
-            State::Failed(error) => return Err(error.message),
-            State::Active if !finish => return Err("recursive type has infinite size"),
+        match self.states.get(ty) {
+            Some(State::Ready(_)) => return Ok(()),
+            Some(State::Failed(error)) => return Err(error.message),
+            Some(State::Active) if !finish => return Err("recursive type has infinite size"),
             _ => {}
         }
         let kind = types.kind(ty).ok_or("invalid layout type")?;
@@ -420,12 +413,9 @@ impl Layouts {
             *state = State::Ready(id);
             return Ok(());
         }
-        self.states
-            .prepare::<LIMITED>(ty, budget, &mut self.steps)?;
-        *self
-            .states
-            .get_mut(ty)
-            .ok_or("missing prepared layout state")? = State::Active;
+        // This lookup was already charged as a visit. Map growth is
+        // amortized over inserted types and depends only on reached entries.
+        self.states.begin(ty, budget)?;
         self.work.push((ty, true));
         match kind {
             Kind::Pattern { base, .. } => self.work.push((base, false)),

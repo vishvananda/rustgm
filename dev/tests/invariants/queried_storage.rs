@@ -415,21 +415,27 @@ fn source_layout_work_depends_on_reached_types() -> Result {
     let report = crate::test_source::source_provider(&source("")?, "sparse_layout_state")?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
     facts.layouts = crate::abi::layout::Layouts::default();
-    let ty = TypeId::primitive(Primitive::U16);
+    let element = TypeId::primitive(Primitive::U16);
     for length in 1..=4096 {
-        facts.types.intern(Kind::Array {
-            element: ty,
-            length,
-        })?;
+        facts.types.intern(Kind::Array { element, length })?;
     }
     let remaining = 256;
     let mut budget = Work {
         steps: crate::support::crates::MAX_COMPONENTS - remaining,
     };
-    assert!(prepare_layout(&mut facts, ty, &mut budget)?.is_none());
-    let layout = facts.layouts.get(ty).ok_or("missing reached layout")?;
-    assert_eq!((layout.size, layout.align), (2, 2));
+    assert!(prepare_layout(&mut facts, element, &mut budget)?.is_none());
     assert!(budget.remaining() > 0);
+
+    // Only the ABI cache is under test for a high, isolated type identity.
+    let array = facts.types.intern(Kind::Array {
+        element,
+        length: 8192,
+    })?;
+    let id = facts
+        .layouts
+        .demand_bounded(&facts.types, &facts.aggregates, array, 64)?;
+    let layout = facts.layouts.at(id).ok_or("missing reached layout")?;
+    assert_eq!((layout.size, layout.align), (16_384, 2));
     Ok(())
 }
 

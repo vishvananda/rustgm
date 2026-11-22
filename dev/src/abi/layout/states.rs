@@ -1,56 +1,35 @@
-//! Layout state is allocated by demand, in pages of consecutive type identities.
+//! Each layout query caches only the states whose types it touches.
 use super::{Budget, State, TypeId};
-
-const PAGE_LEN: usize = 32;
-type Page = [State; PAGE_LEN];
+use crate::support::hash::HashMap;
 
 #[derive(Default)]
 pub(super) struct States {
-    pages: Vec<Option<Box<Page>>>,
+    // Keep the layout cache small until the first query.
+    entries: Option<Box<HashMap<TypeId, State>>>,
 }
+
 impl States {
     pub(super) fn get(&self, ty: TypeId) -> Option<&State> {
-        self.pages
-            .get(ty.0 as usize / PAGE_LEN)?
-            .as_ref()
-            .map(|page| &page[ty.0 as usize % PAGE_LEN])
+        self.entries.as_ref()?.get(&ty)
     }
 
     pub(super) fn get_mut(&mut self, ty: TypeId) -> Option<&mut State> {
-        self.pages
-            .get_mut(ty.0 as usize / PAGE_LEN)?
-            .as_mut()
-            .map(|page| &mut page[ty.0 as usize % PAGE_LEN])
+        self.entries.as_mut()?.get_mut(&ty)
     }
 
-    pub(super) fn prepare<const LIMITED: bool>(
-        &mut self,
-        ty: TypeId,
-        budget: &mut Budget,
-        steps: &mut usize,
-    ) -> Result<(), &'static str> {
-        let page = ty.0 as usize / PAGE_LEN;
-        if self.pages.get(page).is_some_and(Option::is_some) {
-            return Ok(());
-        }
-        let missing = (page + 1).saturating_sub(self.pages.len());
-        if LIMITED {
-            let copied = if page >= self.pages.capacity() {
-                self.pages.len()
-            } else {
-                0
-            };
-            budget.charge(
-                steps,
-                PAGE_LEN.saturating_add(missing).saturating_add(copied),
-            )?;
-        }
-        self.pages.try_reserve(missing).map_err(|_| {
+    pub(super) fn begin(&mut self, ty: TypeId, budget: &mut Budget) -> Result<(), &'static str> {
+        let entries = self.entries.get_or_insert_with(Box::default);
+        entries.try_reserve(1).map_err(|_| {
             budget.exhausted = true;
             "layout state allocation failed"
         })?;
-        self.pages.resize_with(self.pages.len() + missing, || None);
-        self.pages[page] = Some(Box::new([State::Unseen; PAGE_LEN]));
+        entries.insert(ty, State::Active);
         Ok(())
+    }
+
+    pub(super) fn remove(&mut self, ty: TypeId) {
+        if let Some(entries) = &mut self.entries {
+            entries.remove(&ty);
+        }
     }
 }
