@@ -140,7 +140,7 @@ impl Checker<'_> {
             self.bind_pattern_self(node, rigid, base, &bindings)?;
         }
         if supplied.is_some() {
-            self.bind_method_owner(node, &arguments, &bindings)?;
+            self.bind_method_owner(node, &arguments, &bindings, Some(signature))?;
             self.bind_trait_arguments(node, &arguments, &bindings)?;
         }
         let projected_signature = self.facts.types.contains_projections(signature) == Some(true);

@@ -81,7 +81,7 @@ impl Checker<'_> {
         if let Some((rigid, base)) = protocol_self {
             self.bind_pattern_self(node, rigid, base, &bindings)?;
         }
-        self.bind_method_owner(node, &arguments, &bindings)?;
+        self.bind_method_owner(node, &arguments, &bindings, None)?;
         self.bind_trait_arguments(node, &arguments, &bindings)?;
         let ty = Bound::new(regions)
             .apply(&mut self.facts.types, ty)

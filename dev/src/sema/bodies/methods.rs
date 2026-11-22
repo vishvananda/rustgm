@@ -1,6 +1,8 @@
 //! Selected impl arguments share the ordinary callable inference graph.
 use super::{Checker, Error, NodeId};
-use crate::types::{infer::arguments::Argument, parameters::ParameterId, substitute::Bound};
+use crate::types::{
+    Kind, TypeId, infer::arguments::Argument, parameters::ParameterId, substitute::Bound,
+};
 
 impl Checker<'_> {
     pub(super) fn bind_method_owner(
@@ -8,6 +10,7 @@ impl Checker<'_> {
         node: NodeId,
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
+        signature: Option<TypeId>,
     ) -> Result<(), Error> {
         if self.bind_collection_prefix(node, bindings)?
             || self.bind_library_owner(node, bindings)?
@@ -29,10 +32,7 @@ impl Checker<'_> {
             .schema(implementation)
             .ok_or_else(|| self.error(node, "missing selected impl schema"))?;
         let target = schema.self_type;
-        let slice = matches!(
-            self.facts.types.kind(target),
-            Some(crate::types::Kind::Slice(_))
-        );
+        let slice = matches!(self.facts.types.kind(target), Some(Kind::Slice(_)));
         // A projected implementation header relates through the body's
         // normalizer, as an annotated projection does, never structurally.
         let projected = self.facts.types.contains_projections(target) == Some(true);
@@ -60,10 +60,10 @@ impl Checker<'_> {
         }
         if let Some((_, prefix)) = dot {
             let mut prefix = self.alias_argument(node, prefix)?;
-            if slice {
-                // A slice method infers its element type from a coercible
-                // receiver. The actual borrow still proves the complete
-                // directed receiver relation, including mutable invariance.
+            if slice && self.arguments_constrain_slice(signature) {
+                // Leave element lifetimes open for the other arguments to
+                // constrain. The actual borrow proves the complete directed
+                // receiver relation, including mutable invariance.
                 prefix = match self.try_inferred_regions(node, prefix)? {
                     Ok(inferred) => inferred,
                     Err(crate::types::infer::Error::Normalization) => prefix,
@@ -91,6 +91,19 @@ impl Checker<'_> {
         };
         let prefix = self.alias_argument(node, prefix)?;
         self.equate(node, target, prefix)
+    }
+    fn arguments_constrain_slice(&self, signature: Option<TypeId>) -> bool {
+        let types = &self.facts.types;
+        let Some(Kind::Function { parameters, .. }) = signature.and_then(|ty| types.kind(ty))
+        else {
+            return false;
+        };
+        types.list(parameters).is_some_and(|inputs| {
+            inputs
+                .iter()
+                .skip(1)
+                .any(|&input| types.contains_parameters(input) == Some(true))
+        })
     }
     fn bind_library_owner(
         &mut self,
