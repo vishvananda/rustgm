@@ -155,21 +155,10 @@ impl Checker<'_> {
         {
             self.mark_mutable_language_place(site.receiver)?;
         }
-        let shape = if !selected.from_bound
-            && self
-                .trait_arguments_constrain_receiver(selected.method, ty)
-                .map_err(|error| self.error(node, error))?
-        {
-            // Associated item equality can constrain the receiver through
-            // another argument. The actual receiver still supplies the
-            // directed relation when the call's regions are proved.
-            match self.try_inferred_regions(node, converted)? {
-                Ok(inferred) => inferred,
-                Err(crate::types::infer::Error::Normalization) => converted,
-                Err(error) => return Err(self.error(node, error)),
-            }
-        } else {
+        let shape = if selected.from_bound {
             converted
+        } else {
+            self.refine_trait_receiver_regions(node, selected.method, ty, converted)?
         };
         self.shape_equation(node, shape, expected)?;
         self.state.call_types.methods.push((

@@ -1,7 +1,7 @@
 //! Selected impl arguments share the ordinary callable inference graph.
-use super::{Checker, DefId, Error, NodeId};
+use super::{Checker, DefId, Error, NodeId, TermId};
 use crate::types::{
-    Kind, TypeId,
+    GenericArgs, Kind, TypeId,
     infer::arguments::Argument,
     parameters::{
         ParameterId,
@@ -9,6 +9,7 @@ use crate::types::{
         predicates::{Bound as PredicateBound, Predicate},
         uses::Uses,
     },
+    projection::Application,
     substitute::Bound,
 };
 
@@ -135,34 +136,89 @@ impl Checker<'_> {
             .iter()
             .any(|parameter| arguments.parameters.contains(parameter)))
     }
-    pub(super) fn trait_arguments_constrain_receiver(
+    pub(super) fn refine_trait_receiver_regions(
+        &mut self,
+        node: NodeId,
+        method: DefId,
+        item_type: TypeId,
+        receiver: TermId,
+    ) -> Result<TermId, Error> {
+        let projections = self
+            .receiver_item_projections(method, item_type)
+            .map_err(|error| self.error(node, error))?;
+        if projections.is_empty() {
+            return Ok(receiver);
+        }
+        let subject = match self.state.infer.resolved(&mut self.facts.types, receiver) {
+            Ok(subject) => subject,
+            Err(
+                crate::types::infer::Error::Unresolved | crate::types::infer::Error::Normalization,
+            ) => {
+                return Ok(receiver);
+            }
+            Err(error) => return Err(self.error(node, error)),
+        };
+        if self.facts.types.has_free_regions(subject, 0) == Some(false) {
+            return Ok(receiver);
+        }
+        let mut constrained = false;
+        for mut projection in projections {
+            projection.subject = subject;
+            let projected = self
+                .facts
+                .types
+                .intern(Kind::Projection(projection))
+                .map_err(|error| self.error(node, error))?;
+            if self.projection_result_has_regions(node, projected)? {
+                constrained = true;
+                break;
+            }
+        }
+        if !constrained {
+            return Ok(receiver);
+        }
+
+        // The other argument can constrain this projected item's regions.
+        // The actual receiver supplies the directed relation to the call.
+        match self.try_inferred_regions(node, receiver)? {
+            Ok(inferred) => Ok(inferred),
+            Err(crate::types::infer::Error::Normalization) => Ok(receiver),
+            Err(error) => Err(self.error(node, error)),
+        }
+    }
+
+    fn receiver_item_projections(
         &self,
         method: DefId,
         item_type: TypeId,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<Vec<Application>, &'static str> {
+        let mut projections = Vec::new();
         let facts = &self.facts;
         let types = &facts.types;
         let predicates = facts.generics.declared_predicates(method);
         if predicates.is_empty() {
-            return Ok(false);
+            return Ok(projections);
         }
         let Some(receiver) = facts
             .associated
             .trait_owner(method)
             .and_then(|owner| facts.associated.schema(owner))
         else {
-            return Ok(false);
+            return Ok(projections);
         };
         let receiver = receiver.self_type;
         let Some(Kind::FunctionItem { signature, .. }) = types.kind(item_type) else {
-            return Ok(false);
+            return Ok(projections);
         };
         let Some(Kind::Function { parameters, .. }) = types.kind(signature) else {
-            return Ok(false);
+            return Ok(projections);
         };
         let inputs = types
             .list(parameters)
             .ok_or("missing selected trait method inputs")?;
+        if inputs.first() != Some(&receiver) {
+            return Ok(projections);
+        }
         let mut arguments = Uses::constraining();
         let mut collected = false;
         for predicate in predicates {
@@ -178,16 +234,23 @@ impl Checker<'_> {
             else {
                 continue;
             };
-            let other = if left.subject == receiver {
-                right.subject
+            let (projected, other) = if left.subject == receiver {
+                (left, right.subject)
             } else if right.subject == receiver {
-                left.subject
+                (right, left.subject)
             } else {
                 continue;
             };
             let Some(Kind::Parameter(parameter)) = types.kind(other) else {
                 continue;
             };
+            if projected.arguments != GenericArgs::EMPTY
+                || !types
+                    .trait_application(projected.trait_application)
+                    .is_some_and(|application| application.arguments == GenericArgs::EMPTY)
+            {
+                continue;
+            }
             if !collected {
                 for &input in inputs.iter().skip(1) {
                     arguments.collect(types, input)?;
@@ -195,10 +258,10 @@ impl Checker<'_> {
                 collected = true;
             }
             if arguments.parameters.contains(&parameter) {
-                return Ok(true);
+                projections.push(projected);
             }
         }
-        Ok(false)
+        Ok(projections)
     }
     fn bind_library_owner(
         &mut self,

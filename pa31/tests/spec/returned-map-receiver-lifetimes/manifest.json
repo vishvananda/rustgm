@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "returned-roots.rs": {
+      "sha256": "c535464ca01e6a4fa8ca3ef0d6ef22b9f907ce6d597c2cac7d04e8e3707617d1",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable source guest for the pinned original core profile."
+}

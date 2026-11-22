@@ -1,11 +1,40 @@
 //! Known declaration roots retain one projection cursor across exact library readiness.
 use super::{Checker, Error, NodeId, Obligations, ScopeId, TypeId};
+type KnownProjection = Result<(TypeId, Obligations), &'static str>;
+
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn normalize_known_projection(
         &mut self,
         node: NodeId,
         ty: TypeId,
     ) -> Result<TypeId, Error> {
+        let (ty, proof) = self
+            .query_known_projection(node, ty)?
+            .map_err(|error| self.error(node, error))?;
+        proof
+            .retain_body(self.facts, self.state.body, self.key(node))
+            .map_err(|e| self.error(node, e))?;
+        Ok(ty)
+    }
+
+    pub(in crate::sema::bodies) fn projection_result_has_regions(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+    ) -> Result<bool, Error> {
+        let result = self.query_known_projection(node, ty)?;
+        let types = &self.facts.types;
+        Ok(result.is_ok_and(|(ty, _)| {
+            types.contains_projections(ty) == Some(false)
+                && types.has_free_regions(ty, 0) == Some(true)
+        }))
+    }
+
+    fn query_known_projection(
+        &mut self,
+        node: NodeId,
+        ty: TypeId,
+    ) -> Result<KnownProjection, Error> {
         // A canonical declaration type already has determined inputs. Keep its
         // written body lifetimes while proving its complete nested binder tree;
         // replacing the whole type with caller aliases would change its return contract.
@@ -65,13 +94,12 @@ impl Checker<'_> {
                         .map_err(|e| self.error(node, e))?;
                 }
                 crate::sema::projections::Progress::Dependency(_) => {
-                    return Err(self.error(
-                        node,
+                    return Ok(Err(
                         "projection selection requires a prepared implementation header",
                     ));
                 }
                 crate::sema::projections::Progress::Definition(_) => {
-                    return Err(self.error(node, "missing completed associated type definition"));
+                    return Ok(Err("missing completed associated type definition"));
                 }
             }
         };
@@ -79,9 +107,6 @@ impl Checker<'_> {
             .infer
             .account_work(steps)
             .map_err(|e| self.error(node, e))?;
-        proof
-            .retain_body(self.facts, self.state.body, self.key(node))
-            .map_err(|e| self.error(node, e))?;
-        Ok(ty)
+        Ok(Ok((ty, proof)))
     }
 }
