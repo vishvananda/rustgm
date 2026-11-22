@@ -107,6 +107,31 @@ impl Checker<'_> {
         }
     }
 
+    /// A contextual closure checks its body in a separate inference state.
+    /// Consume ready goals in the caller before importing its unsettled inputs.
+    pub(in crate::sema::bodies) fn closure_argument_readiness(
+        &mut self,
+        node: NodeId,
+        expected: super::super::TermId,
+    ) -> Result<Option<Dependency>, Error> {
+        use crate::syntax::ast::Kind;
+        let mut closure = node;
+        while let Kind::Group(value) | Kind::Attributed { value, .. } = self.kind(closure) {
+            closure = value;
+        }
+        if !matches!(
+            self.kind(closure),
+            Kind::Closure { .. } | Kind::ConstClosure { .. }
+        ) || !self.contextual_closure_inputs_pending(closure, expected)?
+        {
+            return Ok(None);
+        }
+        match self.poll_trait_obligations(self.state.body.node, false)? {
+            Progress::Prepare(dependency) => Ok(Some(dependency)),
+            Progress::Ready(_) | Progress::Waiting => Ok(None),
+        }
+    }
+
     fn poll_trait_obligations(&mut self, body: NodeId, finishing: bool) -> Result<Progress, Error> {
         let Some(mut pending) = self.take_trait_goals(body)? else {
             return Ok(Progress::Ready(HashMap::default()));

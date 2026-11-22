@@ -175,6 +175,34 @@ impl Checker<'_> {
         node: NodeId,
         expected: TermId,
     ) -> Result<Option<TermId>, Error> {
+        let Some(hint) = self.generic_closure_hint(node, expected)? else {
+            return Ok(None);
+        };
+        self.contextual_signature(node, hint)
+    }
+
+    /// The result may remain open while the closure body establishes its type.
+    /// Only its input tuple needs the enclosing body's pending inference.
+    pub(in crate::sema::bodies) fn contextual_closure_inputs_pending(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<bool, Error> {
+        let Some(hint) = self.generic_closure_hint(node, expected)? else {
+            return Ok(false);
+        };
+        self.state
+            .infer
+            .inputs_fixed(&self.facts.types, hint.inputs)
+            .map(|fixed| !fixed)
+            .map_err(|e| self.error(node, e))
+    }
+
+    fn generic_closure_hint(
+        &mut self,
+        node: NodeId,
+        expected: TermId,
+    ) -> Result<Option<Hint>, Error> {
         self.state
             .call_types
             .closure_expectations
@@ -185,18 +213,14 @@ impl Checker<'_> {
             .infer
             .root(expected)
             .map_err(|e| self.error(node, e))?;
-        let Some(hint) = self
+        Ok(self
             .state
             .call_types
             .closure_expectations
             .data
             .as_ref()
             .and_then(|data| data.values.get(&expected))
-            .copied()
-        else {
-            return Ok(None);
-        };
-        self.contextual_signature(node, hint)
+            .copied())
     }
 
     fn contextual_signature(&mut self, node: NodeId, hint: Hint) -> Result<Option<TermId>, Error> {

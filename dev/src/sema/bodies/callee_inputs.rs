@@ -402,6 +402,9 @@ impl Checker<'_> {
         {
             return Ok(Some(dependency));
         }
+        if let Some(dependency) = self.closure_argument_readiness(argument, expected)? {
+            return Ok(Some(dependency));
+        }
         self.state.work.push(Work::Enter(argument, Some(expected)));
         Ok(None)
     }
