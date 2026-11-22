@@ -337,8 +337,8 @@ pub(in crate::sema) struct OwnedCaller {
 }
 
 /// The traits a source provider's language implements for these outer heads:
-/// a function pointer's address trait, and `Clone` for the tuples, closures and
-/// functions that have no written implementation.
+/// a function pointer's address trait and the built-in `Copy`/`Clone` rules
+/// for tuples, closures and functions.
 fn language_subject(
     facts: &Declarations,
     item: crate::types::ItemId,
@@ -354,13 +354,10 @@ fn language_subject(
             .language(role)
             .is_some_and(|role| role.definition.0 == item.0)
     };
+    let copying = || provides(LangItem::Copy) || provides(LangItem::Clone);
     match subject {
-        Subject::Rigid(Head::Function) => {
-            provides(LangItem::FnPtrTrait) || provides(LangItem::Clone)
-        }
-        Subject::Rigid(Head::Tuple | Head::Closure(_) | Head::FunctionItem(_)) => {
-            provides(LangItem::Clone)
-        }
+        Subject::Rigid(Head::Function) => provides(LangItem::FnPtrTrait) || copying(),
+        Subject::Rigid(Head::Tuple | Head::Closure(_) | Head::FunctionItem(_)) => copying(),
         _ => false,
     }
 }
