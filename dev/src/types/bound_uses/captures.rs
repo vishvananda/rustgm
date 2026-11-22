@@ -1,7 +1,7 @@
 //! Shared DAG folds for captured binders and the required local lifetime slot count.
 use crate::support::{hash::HashMap, retained::Growth};
 use crate::types::{
-    GenericArgs, Kind, ListId, RegionId, Store, TypeId,
+    GenericArgs, Kind, ListId, Property, RegionId, Store, TypeId,
     arguments::Argument,
     parameters::predicates::{Bound, Predicate},
     traits::ApplicationId,
@@ -31,6 +31,9 @@ pub(crate) trait Query {
     fn merge(a: Self::Value, b: Self::Value) -> Self::Value;
     fn decisive(value: Self::Value) -> bool;
     fn region(&self, region: RegionId, depth: u16) -> Self::Value;
+    fn witness_in_outermost_binder(&self, _escaping: u16) -> Option<Self::Value> {
+        None
+    }
 }
 impl Query for Surrounding {
     type Value = bool;
@@ -44,6 +47,9 @@ impl Query for Surrounding {
         region
             .bound_parts()
             .is_some_and(|(binder, _)| binder >= depth && binder - depth < self.count)
+    }
+    fn witness_in_outermost_binder(&self, escaping: u16) -> Option<bool> {
+        (escaping <= self.count).then_some(true)
     }
 }
 impl Query for LocalSlots {
@@ -286,12 +292,20 @@ impl<Q: Query> Occurrences<Q> {
         Ok(())
     }
     fn result(&self, store: &Store, key: Key) -> Result<Option<Q::Value>, &'static str> {
-        if store
-            .escaping_binders(key.0)
-            .ok_or("invalid capture type")?
-            <= key.1
-        {
+        let properties = store
+            .properties
+            .get(key.0.0 as usize)
+            .ok_or("invalid capture type")?;
+        if properties.escaping <= key.1 {
             return Ok(Some(Q::Value::default()));
+        }
+        // Future storage also counts physical captures, which this query does not visit.
+        if !properties.has(Property::FutureStorage)
+            && let Some(value) = self
+                .query
+                .witness_in_outermost_binder(properties.escaping - key.1)
+        {
+            return Ok(Some(value));
         }
         Ok(self.completed.get(&key).copied())
     }

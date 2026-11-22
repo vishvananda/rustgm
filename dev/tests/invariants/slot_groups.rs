@@ -76,3 +76,65 @@ fn callable_parameter_lists_share_summaries_but_never_scope_coordinates() -> Res
     assert!(slots.steps < 60);
     Ok(())
 }
+
+#[test]
+fn capture_queries_reuse_the_outermost_binder_and_keep_scope_gaps() -> Result {
+    let mut types = Store::default();
+    let mut captures = Captures::new(1);
+    for slot in 0..128 {
+        let ty = types.intern(Kind::Reference {
+            region: RegionId::bound(0, slot)?,
+            mutable: false,
+            referent: TypeId::UNIT,
+        })?;
+        assert!(captures.collect(&types, ty)?);
+    }
+    assert!(captures.steps <= 128);
+
+    let ty = types.intern(Kind::Reference {
+        region: RegionId::bound(2, 0)?,
+        mutable: false,
+        referent: TypeId::UNIT,
+    })?;
+    assert!(!captures.collect(&types, ty)?);
+    assert!(!captures.collect_inside(&types, ty, 1)?);
+    assert!(captures.collect_inside(&types, ty, 2)?);
+    Ok(())
+}
+
+#[test]
+fn physical_future_storage_does_not_supply_a_capture_witness() -> Result {
+    use crate::types::{GenericArgs, callable::Convention, opaque::Declaration};
+
+    let mut types = Store::default();
+    let identity = types.declare_opaque(Declaration {
+        trait_result: false,
+        sized: true,
+        copies: crate::types::copy::Properties::default(),
+    })?;
+    let arguments = GenericArgs::EMPTY;
+    let formal = types.intern(Kind::Opaque(identity, arguments))?;
+    let input = types.intern(Kind::Reference {
+        region: RegionId::bound(1, 0)?,
+        mutable: false,
+        referent: TypeId::UNIT,
+    })?;
+    let parameters = types.intern_list(&[input])?;
+    let signature = types.intern(Kind::Function {
+        bound_regions: 0,
+        parameters,
+        result: formal,
+        unsafe_: false,
+        convention: Convention::RUST,
+    })?;
+    types.declare_future_shape(identity, formal, signature, TypeId::UNIT, TypeId::UNIT)?;
+    let future = types.intern(Kind::Future {
+        identity,
+        arguments,
+    })?;
+    let fields = types.intern_list(&[future])?;
+    let tuple = types.intern(Kind::Tuple(fields))?;
+    assert_eq!(types.escaping_binders(tuple), Some(1));
+    assert!(!Captures::new(1).collect(&types, tuple)?);
+    Ok(())
+}

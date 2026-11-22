@@ -363,6 +363,7 @@ impl Store {
             );
         }
         self.argument_properties(arguments, &mut result)?;
+        result.set(Property::FutureStorage, true);
         result.set(Property::Sized, true);
         Ok(result)
     }
