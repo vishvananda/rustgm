@@ -139,7 +139,7 @@ pub(crate) fn collect_except(
     for function in &facts.functions {
         if let Some(source) = function.body {
             index.insert(source, bodies.len());
-            bodies.push(function_contract(facts, function, source)?);
+            bodies.push(function_contract(facts, function, source, &mut creators)?);
         }
     }
     for closure in facts.closures.all() {
@@ -296,6 +296,7 @@ fn function_contract(
     facts: &Declarations,
     function: &crate::sema::model::Function,
     source: NodeKey,
+    creators: &mut creator::Creators,
 ) -> Result<Contract, &'static str> {
     let owner = function.definition;
     let scheme = facts.lifetimes.functions.get(&owner);
@@ -306,6 +307,7 @@ fn function_contract(
     }
     contract.universals = scheme.map_or(0, |s| s.total);
     contract.assumptions = scheme.map_or_else(Vec::new, |s| s.bounds.clone());
+    creators.inherit_impl(facts, owner, &mut contract)?;
     super::defining_cleanups::mark_required(facts, function, &mut contract)?;
     Ok(contract)
 }
@@ -340,10 +342,12 @@ fn closure_contract(
                 .functions
                 .get(&owner)
                 .map_or(0, |scheme| scheme.total)
-        && let Some(implied) = creators.implied(facts, owner)?
     {
-        contract.assumptions.extend_from_slice(&implied.regions);
-        contract.type_assumptions.extend_from_slice(&implied.types);
+        creators.inherit_impl(facts, owner, &mut contract)?;
+        if let Some(implied) = creators.implied(facts, owner)? {
+            contract.assumptions.extend_from_slice(&implied.regions);
+            contract.type_assumptions.extend_from_slice(&implied.types);
+        }
     }
     Ok(contract)
 }

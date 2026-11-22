@@ -28,6 +28,28 @@ impl FunctionContext {
     }
 }
 impl Declarations {
+    /// A source member can inherit formation facts from its completed impl.
+    pub(crate) fn source_trait_impl(
+        &self,
+        member: DefId,
+    ) -> Option<&super::traits::implementations::Implementation> {
+        let owner = self.associated.get(self.associated.owner(member)?)?;
+        if !matches!(
+            owner.kind,
+            OwnerKind::Impl {
+                trait_type: Some(_),
+                ..
+            }
+        ) {
+            return None;
+        }
+        let registry = self.generics.implementations.as_deref()?;
+        if !registry.is_validated(owner.self_definition) {
+            return None;
+        }
+        registry.header(owner.self_definition)
+    }
+
     /// Authenticated source policy can defer defining const checks.
     /// The const declaration and every reached executable obligation remain.
     pub(crate) fn source_function_context(

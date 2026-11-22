@@ -23,11 +23,12 @@ pub(super) fn header(
             if let Some(scheme) = facts.lifetimes.functions.get(&owner) {
                 contract.assumptions.extend_from_slice(&scheme.bounds);
             }
-            if inline.universals >= facts.lifetimes.functions.get(&owner).map_or(0, |s| s.total)
-                && let Some(implied) = creators.implied(facts, owner)?
-            {
-                contract.assumptions.extend_from_slice(&implied.regions);
-                contract.type_assumptions.extend_from_slice(&implied.types);
+            if inline.universals >= facts.lifetimes.functions.get(&owner).map_or(0, |s| s.total) {
+                creators.inherit_impl(facts, owner, contract)?;
+                if let Some(implied) = creators.implied(facts, owner)? {
+                    contract.assumptions.extend_from_slice(&implied.regions);
+                    contract.type_assumptions.extend_from_slice(&implied.types);
+                }
             }
         }
     }

@@ -89,7 +89,8 @@ impl Collector {
             .body
             .ok_or("lifetime contract requires a function body")?;
         if !self.completed.contains_key(&source) {
-            let mut contract = super::function_contract(facts, function, source)?;
+            let mut contract =
+                super::function_contract(facts, function, source, &mut self.creators)?;
             self.populate(facts, &mut contract)?;
             super::clause_terms::collect(facts, function.definition, |source, kind| {
                 contract.obligations.push(Obligation { source, kind });

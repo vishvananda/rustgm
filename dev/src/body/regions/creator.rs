@@ -6,12 +6,14 @@
 //! bounds, so assuming them in the closure accepts the same programs. The
 //! nested body's leading slots are its creator's universals in order, as its
 //! inherited explicit bounds already require.
+use super::Contract;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{
         Kind, TypeId,
+        arguments::Argument,
         outlives::{Pair, Queries},
         parameters::{
             clauses::Clause,
@@ -33,6 +35,45 @@ pub(super) struct Creators {
     implied: HashMap<DefId, Implied>,
 }
 impl Creators {
+    pub(super) fn inherit_impl(
+        &mut self,
+        facts: &Declarations,
+        member: DefId,
+        contract: &mut Contract,
+    ) -> Result<(), &'static str> {
+        let Some(implementation) = facts.source_trait_impl(member) else {
+            return Ok(());
+        };
+        let predicate = implementation.predicate;
+        let Some((application, _)) = predicate.bound.trait_parts() else {
+            return Ok(());
+        };
+        let implied = match self.implied.entry(implementation.owner) {
+            Entry::Occupied(entry) => entry.into_mut(),
+            Entry::Vacant(entry) => {
+                let application = facts
+                    .types
+                    .trait_application(application)
+                    .ok_or("missing implementation trait application")?;
+                let arguments = facts
+                    .types
+                    .arguments(application.arguments)
+                    .ok_or("missing implementation trait arguments")?
+                    .filter_map(|argument| match argument {
+                        Argument::Type(ty) => Some(ty),
+                        _ => None,
+                    });
+                entry.insert(compute_inputs(
+                    facts,
+                    std::iter::once(predicate.ty).chain(arguments),
+                )?)
+            }
+        };
+        contract.assumptions.extend_from_slice(&implied.regions);
+        contract.type_assumptions.extend_from_slice(&implied.types);
+        Ok(())
+    }
+
     /// Projection requirements are not assumed; each nested body still proves them.
     /// An async creator's body has its own signature and contributes none.
     pub fn implied(
@@ -71,13 +112,21 @@ fn compute(facts: &Declarations, signature: TypeId) -> Result<Implied, &'static 
     let parameters = types
         .list(parameters)
         .ok_or("missing closure creator inputs")?;
+    compute_inputs(facts, parameters.iter().copied().chain([result]))
+}
+
+fn compute_inputs(
+    facts: &Declarations,
+    roots: impl Iterator<Item = TypeId>,
+) -> Result<Implied, &'static str> {
+    let types = &facts.types;
     let mut queries = Queries::new(
         types,
         &facts.lifetimes.nominal_requirements,
         &facts.lifetimes.callables,
     );
     let mut implied = Implied::default();
-    for &ty in parameters.iter().chain(std::iter::once(&result)) {
+    for ty in roots {
         let requirements = queries.symbolic_requirements(ty)?;
         implied
             .regions

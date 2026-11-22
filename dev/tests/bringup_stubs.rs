@@ -1566,6 +1566,31 @@ fn source_constructors_keep_the_nominals_trait_premises() -> Result {
     Ok(())
 }
 
+#[test]
+fn trait_impl_arguments_imply_member_lifetime_bounds() -> Result {
+    let source = crate::resolve::fixture("pa31/tests/spec/impl-input-outlives/iterator.rs")?;
+    let folder = folder_with("impl-input-outlives", &source)?;
+    let input = folder.join("main.rs");
+    let accepted = source_command(&folder, "impl_input_outlives", None)?
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(accepted.stderr)?;
+    assert!(accepted.status.success(), "{diagnostics}");
+    assert!(!diagnostics.contains("bringup-"), "{diagnostics}");
+
+    let rejected = source_command(&folder, "impl_input_outlives", None)?
+        .args(["--cfg", "missing_bound"])
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{diagnostics}");
+    assert!(
+        diagnostics.contains("required lifetime does not outlive its target"),
+        "{diagnostics}"
+    );
+    Ok(())
+}
+
 const CAPTURE_DEREFERENCES: &str = "pa31/tests/spec/capture-dereferences";
 /// A source Deref call borrows its operand; the closure captures that operand
 /// rather than projecting a built-in dereference through the wrapper.

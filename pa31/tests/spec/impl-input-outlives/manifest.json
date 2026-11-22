@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "iterator.rs": {
+      "sha256": "06bd9cb198daaefea9a3fd4e76fab63a6be02f4acb1c012e70ac2855b7ab4bd5",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0
+        },
+        {
+          "cfg": [
+            "missing_bound"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Mini-core language-item declarations copied from generic-pattern-storage/tuple.rs. See NOTICE and third_party/sources.json for upstream attribution."
+}
