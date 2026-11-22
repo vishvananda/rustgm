@@ -71,7 +71,7 @@ impl Lower<'_, '_, '_> {
             }
             "read_via_copy" | "write_via_move" | "write_box_via_move" | "black_box" | "forget"
             | "volatile_load" | "volatile_store" => self.unqualified_memory(call)?,
-            "copy_nonoverlapping" | "copy" | "write_bytes" | "compare_bytes" | "raw_eq" => {
+            "copy_nonoverlapping" | "copy" | "write_bytes" | "raw_eq" => {
                 self.unqualified_transfer(call)?
             }
             "assert_zero_valid" => self.unqualified_assertion(call)?,

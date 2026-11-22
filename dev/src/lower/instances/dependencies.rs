@@ -171,15 +171,11 @@ fn source_call(
             if let Some(name) = Reader::new(facts)
                 .source_bodiless_intrinsic(crate::resolve::model::DefId(item.0))? =>
         {
-            if name == "catch_unwind" {
+            if crate::sema::compiler_items::strict_bodiless_intrinsic(name) {
                 catalog.require_provider_report(report)?;
-                crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;
             }
-            if matches!(
-                name,
-                "size_of_val" | "align_of_val" | "bswap" | "bitreverse" | "offset"
-            ) {
-                catalog.require_provider_report(report)?;
+            if name == "catch_unwind" {
+                crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;
             }
             Ok(Some(kind))
         }

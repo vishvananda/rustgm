@@ -25,10 +25,8 @@ impl Reader<'_> {
             return Ok(None);
         };
         let name = identity.name();
-        if !matches!(
-            name,
-            "catch_unwind" | "size_of_val" | "align_of_val" | "bswap" | "bitreverse" | "offset"
-        ) && crate::support::bringup::selected().is_none()
+        if !crate::sema::compiler_items::strict_bodiless_intrinsic(name)
+            && crate::support::bringup::selected().is_none()
         {
             return Ok(None);
         }

@@ -1,4 +1,4 @@
-//! Bring-up only: shims for source intrinsics lowered without qualification.
+//! Memory shims for counted transfers, fills and byte comparisons.
 use super::{
     Builder, Context, Instance, Intrinsic, Operand, SymbolId, Terminator, Type, TypeId, Value,
 };
@@ -8,6 +8,22 @@ use crate::lowir::{
 };
 
 impl Context<'_> {
+    pub(in crate::lower) fn demand_compare_bytes(
+        &mut self,
+        instance: Instance,
+        signature: TypeId,
+    ) -> Result<SymbolId, &'static str> {
+        if let Some(&symbol) = self.intrinsic_symbols.get(&instance) {
+            return Ok(symbol);
+        }
+        self.install_memory_shim(
+            instance,
+            signature,
+            format!("rg.source.compare_bytes.t{}", instance.ty().0),
+            compared(None)?,
+        )
+    }
+
     /// A shim with the call's signature for an intrinsic over `element`: the
     /// bootstrap body of the same shape, or a bytewise comparison. `None`
     /// names an intrinsic without one. The caller waives the fence.
@@ -28,20 +44,33 @@ impl Context<'_> {
             )?,
             "copy" => Self::counted_memory_body(Intrinsic::Copy, self.memory_type(element)?)?,
             "write_bytes" => Self::fill_memory_body(self.memory_type(element)?)?,
-            "compare_bytes" => compared(None)?,
             "raw_eq" => compared(Some(self.layout(element)?.size))?,
             _ => return Ok(None),
         };
+        self.install_memory_shim(
+            instance,
+            signature,
+            format!("rg.unqualified.{name}.t{}", instance.ty().0),
+            body,
+        )
+        .map(Some)
+    }
+
+    fn install_memory_shim(
+        &mut self,
+        instance: Instance,
+        signature: TypeId,
+        name: String,
+        body: Function,
+    ) -> Result<SymbolId, &'static str> {
         self.reserve_shim()?;
         let signature = self.signature(signature)?;
-        let symbol = self.output.declare(
-            self.internal_name(format!("rg.unqualified.{name}.t{}", instance.ty().0)),
-            signature,
-            false,
-        )?;
+        let symbol = self
+            .output
+            .declare(self.internal_name(name), signature, false)?;
         self.output.define(symbol, body)?;
         self.intrinsic_symbols.insert(instance, symbol);
-        Ok(Some(symbol))
+        Ok(symbol)
     }
 }
 

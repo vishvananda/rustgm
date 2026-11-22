@@ -3,7 +3,7 @@ use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
-    types::{Kind, instance::Instance},
+    types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
 impl Lower<'_, '_, '_> {
@@ -56,6 +56,11 @@ impl Lower<'_, '_, '_> {
                 .source_inbounds_offset(signature, arguments, value.ty)
                 .map(Some);
         }
+        if name == "compare_bytes" {
+            return self
+                .source_compare_bytes(ty, signature, arguments, value.ty)
+                .map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }
@@ -66,5 +71,65 @@ impl Lower<'_, '_, '_> {
         let symbol = self.context.demand_trap(instance, signature, name)?;
         self.call_operand(signature, Operand::Symbol(symbol), arguments, result)
             .map(Some)
+    }
+    fn source_compare_bytes(
+        &mut self,
+        callee: TypeId,
+        signature: TypeId,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let types = self.context.types;
+        let Some(Kind::FunctionItem {
+            arguments: GenericArgs::EMPTY,
+            signature: declared,
+            ..
+        }) = types.kind(callee)
+        else {
+            return Err("source byte comparison requires its complete function item");
+        };
+        let Some(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result: declared_result,
+            unsafe_: true,
+            convention: Convention::RUST,
+        }) = types.kind(signature)
+        else {
+            return Err("source byte comparison requires its opened unsafe signature");
+        };
+        let Some(&[left, right, count]) = types.list(parameters) else {
+            return Err("source byte comparison requires three inputs");
+        };
+        let inputs = self
+            .body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+            .ok_or("missing source byte comparison arguments")?;
+        if declared != signature
+            || result != declared_result
+            || result != TypeId::primitive(Primitive::I32)
+            || count != TypeId::primitive(Primitive::Usize)
+            || left != right
+            || !matches!(
+                types.kind(left),
+                Some(Kind::Pointer { mutable: false, pointee })
+                    if pointee == TypeId::primitive(Primitive::U8)
+            )
+            || inputs.len() != 3
+            || inputs.iter().zip([left, right, count]).any(|(&id, ty)| {
+                self.body
+                    .values
+                    .get(id.0 as usize)
+                    .is_none_or(|v| v.ty != ty)
+            })
+        {
+            return Err("source byte comparison differs from its evaluated Call");
+        }
+        self.context
+            .require_reached_body(self.body_index, self.body)?;
+        let instance = self.body.callable_target(Instance::new(types, callee)?);
+        let symbol = self.context.demand_compare_bytes(instance, signature)?;
+        self.call_operand(signature, Operand::Symbol(symbol), arguments, result)
     }
 }

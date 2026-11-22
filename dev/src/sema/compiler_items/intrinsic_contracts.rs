@@ -14,6 +14,20 @@ pub(super) use open::{
     Error as OpeningError, Reference as OpeningReference, checked as checked_opening,
 };
 
+/// Native lowering is available for these completed bodyless declarations.
+pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
+    matches!(
+        name,
+        "catch_unwind"
+            | "size_of_val"
+            | "align_of_val"
+            | "bswap"
+            | "bitreverse"
+            | "offset"
+            | "compare_bytes"
+    )
+}
+
 /// A Body Call's roots are already opened into its caller, unlike an item signature.
 pub(super) fn opened_signature_matches(
     store: &crate::types::Store,

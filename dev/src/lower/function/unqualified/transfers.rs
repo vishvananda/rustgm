@@ -17,7 +17,6 @@ impl Lower<'_, '_, '_> {
         let (pointers, scalars, result): (usize, &[Primitive], TypeId) = match call.name {
             "copy_nonoverlapping" | "copy" => (2, &[Primitive::Usize], TypeId::UNIT),
             "write_bytes" => (1, &[Primitive::U8, Primitive::Usize], TypeId::UNIT),
-            "compare_bytes" => (2, &[Primitive::Usize], TypeId::primitive(Primitive::I32)),
             "raw_eq" => (2, &[], TypeId::primitive(Primitive::Bool)),
             _ => return Ok(None),
         };
@@ -43,9 +42,6 @@ impl Lower<'_, '_, '_> {
         let Some(element) = element else {
             return Ok(None);
         };
-        if call.name == "compare_bytes" && element != TypeId::primitive(Primitive::U8) {
-            return Ok(None);
-        }
         let instance = self
             .body
             .callable_target(Instance::new(self.context.types, call.callee)?);

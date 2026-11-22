@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "byte-order.rs": {
+      "sha256": "0696047048e9886d172be37935cf23705639a8dfb2712f53e5ff87376f12f564",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "66f82768d15fc4fbed5a637a6a3b8c5dac03da728fd09628fd504f061928cce4",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Executable source guests for the pinned original core profile."
+}
