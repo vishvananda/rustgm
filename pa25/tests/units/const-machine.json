@@ -1835,6 +1835,27 @@
       }
     },
     {
+      "path": "tests/spec/const-machine/repeats/declaration-repeat-count.rs",
+      "source_sha256": "966f68f809857047309a8303bd1809e998d290c842aadc3bfac5e8004559a7cd",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/const-machine/repeats/named-annotation-and-repeat.rs",
       "source_sha256": "da3c3a7d03c6a5180505bd65844886df4b6d0fdb4d80af4a7318296ba7d159da",
       "exit_status": 0,

@@ -280,6 +280,18 @@ impl Checker<'_> {
                 self.nest_local_body(key, inherited, context)?;
             }
             match kind {
+                Kind::Repeat { value, count } => {
+                    // A repeat count is an anonymous constant with its own
+                    // dependencies. Prepare it before typing the enclosing expression.
+                    let count = NodeKey { node: count, ..key };
+                    if !matches!(self.kind(count), Kind::Literal(_))
+                        && self.const_parameter(count).is_none()
+                    {
+                        self.work.push(Work::ArrayLength(count, context));
+                    }
+                    work.push((NodeKey { node: value, ..key }, context));
+                    continue;
+                }
                 Kind::Closure { .. } => {
                     self.work.push(Work::ClosureAnnotation(key, context, None));
                 }

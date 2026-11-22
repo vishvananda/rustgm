@@ -110,6 +110,7 @@ enum Work {
     InherentType(NodeKey, regions::Context),
     InherentTypeResult(NodeKey, DefId, regions::Context),
     InherentHeaders(ItemId, crate::resolve::names::NameId),
+    ArrayLength(NodeKey, regions::Context),
     EvaluateConstant(evaluation::Request, bool),
     InitializerReady(DefId),
     TraitCallable(NodeKey, trait_paths::Callable),
@@ -700,6 +701,7 @@ impl Checker<'_> {
             Work::InherentTypeResult(key, member, context) => {
                 self.complete_inherent_type_result(key, member, context)?;
             }
+            Work::ArrayLength(key, context) => self.schedule_array_length(key, context)?,
             Work::EvaluateConstant(request, resume) => {
                 self.evaluate_constant(request, resume)?;
             }
