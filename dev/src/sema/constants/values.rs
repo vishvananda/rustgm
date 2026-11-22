@@ -41,6 +41,8 @@ pub use structure::FieldTypes;
 mod array_storage;
 mod inline;
 mod promoted_calls;
+pub use promoted_calls::PromotedFunction;
+pub(crate) use promoted_calls::PromotionCaller;
 mod union_storage;
 mod validation;
 pub(crate) use super::instances::Completed;

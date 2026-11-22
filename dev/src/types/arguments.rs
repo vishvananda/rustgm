@@ -318,6 +318,18 @@ impl Store {
         Ok(properties.is_concrete())
     }
 
+    /// All type and const arguments are resolved, and bound regions are in scope.
+    /// Free region identities remain part of the selected instance.
+    pub(crate) fn arguments_are_resolved_at(
+        &self,
+        args: GenericArgs,
+        depth: u16,
+    ) -> Result<bool, &'static str> {
+        let mut properties = super::Properties::default();
+        self.argument_properties(args, &mut properties)?;
+        Ok(properties.is_resolved_at(depth))
+    }
+
     pub(crate) fn arguments_have_free_regions(
         &self,
         args: GenericArgs,

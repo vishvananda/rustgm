@@ -3,7 +3,10 @@ use super::*;
 use crate::{
     body::ir::Body,
     const_eval::{self, code::Catalog},
-    sema::model::Declarations,
+    sema::{
+        model::Declarations,
+        values::{PromotedFunction, PromotionCaller},
+    },
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn checked() -> TestResult<(crate::resolve::expansion::Report, Declarations, Vec<Body>)> {
@@ -192,7 +195,7 @@ fn generic_marked_promotions_do_not_open_ordinary_function_roots() -> TestResult
         let mut machine =
             const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
         if warm {
-            machine.begin_promoted(&report, index, target, &[])?;
+            machine.begin_promoted(&report, index, PromotedFunction::unscoped(target), &[])?;
             let crate::sema::values::execution::Progress::Complete(value) =
                 machine.advance().map_err(|error| error.message)?
             else {
@@ -277,7 +280,7 @@ fn promoted_roots_reject_open_unmarked_wrong_instances_and_argument_arity() -> T
         let mut machine =
             const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
         let error = machine
-            .begin_promoted(&report, index, instance, &[])
+            .begin_promoted(&report, index, PromotedFunction::unscoped(instance), &[])
             .err()
             .ok_or("invalid promoted root executed")?;
         assert!(error.message.contains(expected), "{error}");
@@ -287,13 +290,76 @@ fn promoted_roots_reject_open_unmarked_wrong_instances_and_argument_arity() -> T
         const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default());
     let argument = crate::sema::values::Constant::scalar(crate::sema::model::Scalar::Integer(1));
     let error = machine
-        .begin_promoted(&report, index, target, &[argument])
+        .begin_promoted(
+            &report,
+            index,
+            PromotedFunction::unscoped(target),
+            &[argument],
+        )
         .err()
         .ok_or("extra promoted argument executed")?;
     assert!(
         error
             .message
             .contains("constant call argument arity mismatch"),
+        "{error}"
+    );
+    Ok(())
+}
+
+#[test]
+fn scoped_promotions_reject_foreign_bound_slots() -> TestResult {
+    use crate::types::{
+        Kind, Primitive, RegionId, TypeId, arguments::Argument, instance::Instance,
+    };
+    let (report, mut facts, body) = promoted_generic()?;
+    let target = body.instance.ok_or("complete marked generic instance")?;
+    let Kind::FunctionItem {
+        item, signature, ..
+    } = facts.types.kind(target.ty()).ok_or("function item")?
+    else {
+        return Err("function item".into());
+    };
+    let foreign_reference = facts.types.intern(Kind::Reference {
+        mutable: false,
+        referent: TypeId::primitive(Primitive::U8),
+        region: RegionId::bound(0, 1)?,
+    })?;
+    let arguments = facts
+        .types
+        .intern_arguments(&[Argument::Type(foreign_reference)])?;
+    let foreign_type = facts.types.intern(Kind::FunctionItem {
+        item,
+        signature,
+        arguments,
+    })?;
+    let foreign = Instance::new(&facts.types, foreign_type)?;
+    let mut evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
+    let error = evaluator
+        .promoted_call(
+            foreign,
+            PromotionCaller {
+                body: body.source,
+                instance: body.instance,
+                signature: body.owner.signatures().map(|(_, execution)| execution),
+            },
+            Vec::new(),
+        )
+        .err()
+        .ok_or("foreign lifetime was accepted as a caller slot")?;
+    assert!(
+        error
+            .message
+            .contains("lifetime outside its caller's binder"),
+        "{error}"
+    );
+
+    let error = evaluator
+        .check_promoted_instance(PromotedFunction::unscoped(foreign))
+        .err()
+        .ok_or("unscoped promotion accepted a bound lifetime")?;
+    assert!(
+        error.message.contains("closed complete instance"),
         "{error}"
     );
     Ok(())

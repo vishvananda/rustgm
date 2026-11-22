@@ -26,7 +26,7 @@ pub enum Target {
     },
     Function(instance::Instance),
     /// A source-marked call, authenticated separately from ordinary function roots.
-    PromotedFunction(instance::Instance),
+    PromotedFunction(super::PromotedFunction),
     Initializer(DefId),
     SourceAssociated {
         source: SourceComputation,

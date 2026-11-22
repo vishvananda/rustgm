@@ -32,10 +32,11 @@ impl Machine<'_, '_> {
         &mut self,
         report: &crate::resolve::expansion::Report,
         index: usize,
-        instance: crate::types::instance::Instance,
+        target: crate::sema::values::PromotedFunction,
         arguments: &[super::Constant],
     ) -> Result<(), crate::resolve::package::Error> {
-        self.evaluator.check_promoted_instance(instance)?;
+        self.evaluator.check_promoted_instance(target)?;
+        let instance = target.instance();
         let checked = (|| -> Result<(), Failure> {
             let definition = self
                 .check_source_function_entry(index)?

@@ -331,8 +331,8 @@ impl Engine {
             })();
             checked.map_err(|e| Error::at(FileId(0), 0, e))?;
         }
-        if let Target::PromotedFunction(instance) = request.target {
-            Evaluator::new(report, facts).check_promoted_instance(instance)?;
+        if let Target::PromotedFunction(target) = request.target {
+            Evaluator::new(report, facts).check_promoted_instance(target)?;
         }
         if let Some(&value) = self.completed.get(request) {
             self.check_completed_expression(facts, request.target)
@@ -367,8 +367,8 @@ impl Engine {
             );
             if let Some(state) = session.state {
                 machine.restore(state);
-            } else if let Target::PromotedFunction(instance) = request.target {
-                machine.begin_promoted(report, root, instance, &request.arguments)?;
+            } else if let Target::PromotedFunction(target) = request.target {
+                machine.begin_promoted(report, root, target, &request.arguments)?;
             } else {
                 machine
                     .begin(root, &request.arguments)

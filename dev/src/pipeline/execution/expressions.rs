@@ -57,7 +57,12 @@ impl Engine {
             // source, type, kind and canonical Code before reusing proof.
             return self.initializer_root(report, facts, definition);
         }
-        if let Target::Function(instance) | Target::PromotedFunction(instance) = target {
+        let function = match target {
+            Target::Function(instance) => Some(instance),
+            Target::PromotedFunction(function) => Some(function.instance()),
+            _ => None,
+        };
+        if let Some(instance) = function {
             // A promoted call runs its checked const body with its arguments.
             let error = |message| Error::at(crate::resolve::unit::FileId(0), 0, message);
             if !self.function(report, facts, instance)? {

@@ -54,10 +54,13 @@ impl Default for Properties {
 }
 impl Properties {
     pub fn is_concrete(self) -> bool {
-        self.escaping == 0
+        self.is_resolved_at(0) && !self.has(Property::NonStaticFreeRegions)
+    }
+
+    pub(super) fn is_resolved_at(self, depth: u16) -> bool {
+        self.escaping <= depth
             && !self.has(Property::Parameters)
             && !self.has(Property::Projections)
-            && !self.has(Property::NonStaticFreeRegions)
     }
     pub fn has(self, property: Property) -> bool {
         self.flags & property.mask() != 0

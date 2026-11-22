@@ -464,7 +464,15 @@ impl Engine<'_, '_> {
         }
         let value = self
             .evaluator
-            .promoted_call(instance, values)
+            .promoted_call(
+                instance,
+                crate::sema::values::PromotionCaller {
+                    body: self.body.source,
+                    instance: self.body.instance,
+                    signature: self.body.owner.signatures().map(|(_, execution)| execution),
+                },
+                values,
+            )
             .map_err(Error::Constant)?
             .ok_or("promoted call awaits an incomplete declaration fact")?;
         Ok(Some(Evaluated::Constant(value)))
