@@ -728,7 +728,7 @@ pub(crate) fn check_schedule(
         &facts.ownership,
         &facts.storage,
         uses,
-        Some(plan),
+        Some((plan, drops)),
     )?
     .analysis;
     analysis.steps = analysis.steps.saturating_add(defining_steps);
@@ -787,7 +787,10 @@ fn finish<const RECORD: bool>(
     owned: &BodyFacts,
     storage: &storage::Analysis,
     uses: liveness::Analysis,
-    destruction: Option<super::destruction::schedule::Schedule<'_>>,
+    cleanup: Option<(
+        super::destruction::schedule::Schedule<'_>,
+        &crate::types::destruction::regions::Regions,
+    )>,
 ) -> Result<Report, Error> {
     let error = |message| Error {
         node: body.source.into(),
@@ -838,10 +841,10 @@ fn finish<const RECORD: bool>(
     let mut flow = Flow {
         types,
         body,
-        destruction,
+        destruction: cleanup.map(|(schedule, _)| schedule),
         owned,
         storage,
-        places: Index::new(body).map_err(error)?,
+        places: Index::new(body, cleanup.map(|(_, drops)| (types, drops))).map_err(error)?,
         loans: Vec::new(),
         generated: vec![(0, 0); body.values.len()],
         origins: vec![None; body.values.len()],

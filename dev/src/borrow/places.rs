@@ -4,6 +4,7 @@ use crate::body::ir::{
     Action, Body, LocalId, LocalKind, Place, ProjectionKind, Selection, ValueId,
 };
 use crate::support::hash::HashMap;
+use crate::types::{Kind, Store, destruction::regions::Regions};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct Id(pub usize);
@@ -15,9 +16,12 @@ enum Step {
     /// A box's owned content: reached by deep access to its box, as rustc's
     /// box dereference, but by no shallow or storage access.
     Boxed,
-    Field(Selection),
+    Field {
+        member: Selection,
+        union: bool,
+        custom_drop: bool,
+    },
     FutureField(u32),
-    UnionField(Selection),
     Element(u64),
     Range(u64, u64),
     FromEnd {
@@ -40,6 +44,7 @@ struct Path {
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Depth {
     Deep,
+    Drop,
     Shallow,
     Discriminant,
     Storage,
@@ -62,7 +67,7 @@ pub(super) struct Index {
     pub steps: usize,
 }
 impl Index {
-    pub fn new(body: &Body) -> Result<Self, &'static str> {
+    pub fn new(body: &Body, drops: Option<(&Store, &Regions)>) -> Result<Self, &'static str> {
         let mut this = Self {
             paths: Vec::new(),
             roots: HashMap::default(),
@@ -123,8 +128,11 @@ impl Index {
                     }
                     Step::FutureField(field)
                 }
-                ProjectionKind::Field(field) => Step::Field(field),
-                ProjectionKind::UnionField(field) => Step::UnionField(field),
+                ProjectionKind::Field(member) | ProjectionKind::UnionField(member) => Step::Field {
+                    member,
+                    union: matches!(projection.kind, ProjectionKind::UnionField(_)),
+                    custom_drop: field_has_destructor(body, projection.base, drops),
+                },
                 ProjectionKind::ConstantIndex(i) => Step::Element(i),
                 ProjectionKind::Subarray { start, end } => Step::Range(start, end),
                 ProjectionKind::FromEnd { offset, minimum } => Step::FromEnd { offset, minimum },
@@ -226,7 +234,24 @@ impl Index {
                 _ => {}
             }
         }
-        if let Some(&id) = self.children.get(&(base, step)) {
+        let identity = match step {
+            Step::Field { member, union, .. } => Step::Field {
+                member,
+                union,
+                custom_drop: false,
+            },
+            _ => step,
+        };
+        if let Some(&id) = self.children.get(&(base, identity)) {
+            if matches!(
+                step,
+                Step::Field {
+                    custom_drop: true,
+                    ..
+                }
+            ) {
+                self.paths[id.0].step = Some(step);
+            }
             return Ok(id);
         }
         self.capacity()?;
@@ -238,7 +263,7 @@ impl Index {
             step: Some(step),
             shared: path.shared || step == Step::Dereference { mutable: false },
         });
-        self.children.insert((base, step), id);
+        self.children.insert((base, identity), id);
         Ok(id)
     }
     fn recipe(&mut self, mut id: Id, left: bool) -> Result<Place, &'static str> {
@@ -344,7 +369,9 @@ impl Index {
             self.charge(1)?;
             match self.paths[id.0].step {
                 Some(Step::Dereference { .. }) => slot = Some(parent),
-                Some(Step::Field(_) | Step::FutureField(_) | Step::Element(_)) => {}
+                Some(
+                    Step::Field { union: false, .. } | Step::FutureField(_) | Step::Element(_),
+                ) => {}
                 _ if slot.is_some() => slot = Some(parent),
                 _ => {}
             }
@@ -424,32 +451,70 @@ impl Index {
             return Ok(false);
         }
         for (&a, &b) in self.left.iter().rev().zip(self.right.iter().rev()) {
-            if matches!((a, b), (Step::UnionField(a), Step::UnionField(b)) if a != b) {
+            if matches!((a, b), (Step::Field { member: a, union: true, .. }, Step::Field { member: b, union: true, .. }) if a != b)
+            {
                 return Ok(true);
             }
             if disjoint(a, b) {
                 return Ok(false);
             }
         }
-        if self.left.len() > self.right.len() {
-            let remaining = &self.left[..self.left.len() - self.right.len()];
-            if depth == Depth::Discriminant {
-                return Ok(false);
-            }
-            if depth != Depth::Deep
-                && remaining
-                    .iter()
-                    .any(|s| matches!(s, Step::Dereference { .. } | Step::Boxed))
-            {
-                return Ok(false);
-            }
+        let suffix = self.left.len().saturating_sub(self.right.len());
+        if suffix == 0 {
+            return Ok(true);
         }
-        Ok(true)
+        if depth == Depth::Drop {
+            self.charge(suffix)?;
+        }
+        Ok(reaches_descendant(depth, &self.left[..suffix]))
+    }
+}
+fn field_has_destructor(body: &Body, base: Place, drops: Option<(&Store, &Regions)>) -> bool {
+    drops.is_some_and(
+        |(types, drops)| match body.place_type(base).and_then(|ty| types.kind(ty)) {
+            Some(Kind::Adt(item, _)) => drops.has_destructor(item),
+            Some(Kind::Tuple(_) | Kind::Closure { .. }) => false,
+            // Keep the conservative depth if no concrete storage head is visible.
+            _ => true,
+        },
+    )
+}
+fn reaches_descendant(depth: Depth, suffix: &[Step]) -> bool {
+    match depth {
+        Depth::Deep => true,
+        Depth::Discriminant => false,
+        Depth::Shallow | Depth::Storage => !suffix
+            .iter()
+            .any(|step| matches!(step, Step::Dereference { .. } | Step::Boxed)),
+        // Structural glue follows owned storage. A user destructor met before
+        // the reference dereference can also access its referent.
+        Depth::Drop => suffix
+            .iter()
+            .rev()
+            .find_map(|step| match step {
+                Step::Field {
+                    custom_drop: true, ..
+                } => Some(true),
+                Step::Dereference { .. } => Some(false),
+                _ => None,
+            })
+            .unwrap_or(true),
     }
 }
 fn disjoint(a: Step, b: Step) -> bool {
     match (a, b) {
-        (Step::Field(a), Step::Field(b)) => a != b,
+        (
+            Step::Field {
+                member: a,
+                union: false,
+                ..
+            },
+            Step::Field {
+                member: b,
+                union: false,
+                ..
+            },
+        ) => a != b,
         (Step::FutureField(a), Step::FutureField(b)) => a != b,
         (Step::Element(i), Step::Range(a, b)) | (Step::Range(a, b), Step::Element(i)) => {
             i < a || i >= b

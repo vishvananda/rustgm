@@ -44,7 +44,7 @@ impl<'a> Proof<'a> {
                         Rvalue::Borrow { .. } | Rvalue::Reborrow { .. } | Rvalue::Address(_)
                     )
                 }) {
-                Some(Index::new(body)?)
+                Some(Index::new(body, None)?)
             } else {
                 None
             },

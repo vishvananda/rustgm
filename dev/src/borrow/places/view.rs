@@ -24,11 +24,21 @@ impl Index {
                 }
                 Some(Step::Boxed) => write!(out, " boxed")?,
                 Some(Step::FutureField(index)) => write!(out, " future-field={index}")?,
-                Some(Step::Field(Selection::Tuple(index))) => write!(out, " tuple-field={index}")?,
-                Some(Step::Field(Selection::Nominal(id))) => {
+                Some(Step::Field {
+                    member,
+                    union: true,
+                    ..
+                }) => write!(out, " union-field={member:?}")?,
+                Some(Step::Field {
+                    member: Selection::Tuple(index),
+                    ..
+                }) => write!(out, " tuple-field={index}")?,
+                Some(Step::Field {
+                    member: Selection::Nominal(id),
+                    ..
+                }) => {
                     write!(out, " nominal-field={}", id.0)?;
                 }
-                Some(Step::UnionField(field)) => write!(out, " union-field={field:?}")?,
                 Some(Step::Element(index)) => write!(out, " index={index}")?,
                 Some(Step::Range(start, end)) => write!(out, " range={start}..{end}")?,
                 Some(Step::FromEnd { offset, minimum }) => {

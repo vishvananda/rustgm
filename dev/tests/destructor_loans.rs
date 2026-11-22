@@ -179,6 +179,35 @@ fn counter_programs_qualify_the_destructor_loan_proof() -> Result<(), Box<dyn st
 }
 
 #[test]
+fn structural_cleanup_stops_at_reference_fields() -> Result<(), Box<dyn std::error::Error>> {
+    let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa18/tests/spec/structural-drop-loans/entry.rs");
+    for cfg in [None, Some("custom_drop"), Some("nested_drop")] {
+        let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_rustgm"));
+        command.args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"]);
+        if let Some(cfg) = cfg {
+            command.args(["--cfg", cfg]);
+        }
+        let output = command.arg(&source).output()?;
+        let diagnostics = String::from_utf8(output.stderr)?;
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(cfg.is_some())),
+            "{cfg:?}: {diagnostics}"
+        );
+        if cfg.is_some() {
+            assert!(
+                diagnostics.contains("access conflicts with a live reference loan"),
+                "{cfg:?}: {diagnostics}"
+            );
+        } else {
+            assert!(!output.stdout.is_empty());
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn replacement_ends_old_loans_only_when_every_live_holder_is_gone()
 -> Result<(), Box<dyn std::error::Error>> {
     let cases = [

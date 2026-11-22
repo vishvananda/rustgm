@@ -103,7 +103,7 @@ impl Flow<'_> {
                             state,
                             cleanup.candidate.place,
                             Mode::Mutable,
-                            Depth::Deep,
+                            Depth::Drop,
                             None,
                         )
                         .map_err(error)?;

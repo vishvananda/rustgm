@@ -40,6 +40,10 @@ pub struct Regions {
     pub steps: usize,
 }
 impl Regions {
+    pub(crate) fn has_destructor(&self, item: ItemId) -> bool {
+        self.custom.contains(&item)
+    }
+
     /// # Errors
     /// Rejects an oversized selected-destructor set.
     pub fn new(custom: impl IntoIterator<Item = ItemId>) -> Result<Self, &'static str> {

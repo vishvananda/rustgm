@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "entry.rs": {
+      "sha256": "1e5973da9cc022d565e2bf407db0fd8ca9400f3bd22511e968439d2f36eb36cf",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "custom_drop"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        },
+        {
+          "cfg": [
+            "nested_drop"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        }
+      ]
+    }
+  }
+}

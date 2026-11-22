@@ -8001,6 +8001,27 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/structural-drop-loans/entry.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "1e5973da9cc022d565e2bf407db0fd8ca9400f3bd22511e968439d2f36eb36cf",
+      "features": [
+        "pa18.templates"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "maintainer_origin": "dev/tests/destructor_loans.rs",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
