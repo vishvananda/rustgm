@@ -1,7 +1,10 @@
 //! Selected impl arguments share the ordinary callable inference graph.
 use super::{Checker, Error, NodeId};
 use crate::types::{
-    Kind, TypeId, infer::arguments::Argument, parameters::ParameterId, substitute::Bound,
+    Kind, TypeId,
+    infer::arguments::Argument,
+    parameters::{ParameterId, uses::Uses},
+    substitute::Bound,
 };
 
 impl Checker<'_> {
@@ -31,11 +34,10 @@ impl Checker<'_> {
             .associated
             .schema(implementation)
             .ok_or_else(|| self.error(node, "missing selected impl schema"))?;
-        let target = schema.self_type;
-        let slice = matches!(self.facts.types.kind(target), Some(Kind::Slice(_)));
+        let owner = schema.self_type;
         // A projected implementation header relates through the body's
         // normalizer, as an annotated projection does, never structurally.
-        let projected = self.facts.types.contains_projections(target) == Some(true);
+        let projected = self.facts.types.contains_projections(owner) == Some(true);
         let captures = schema.captures as usize;
         let mut regions = Vec::with_capacity(captures);
         for argument in arguments.iter().take(captures) {
@@ -48,7 +50,7 @@ impl Checker<'_> {
             return Err(self.error(node, "incomplete impl lifetime arguments"));
         }
         let target = Bound::new(regions)
-            .apply(&mut self.facts.types, target)
+            .apply(&mut self.facts.types, owner)
             .map_err(|e| self.error(node, e))?;
         let target = self
             .state
@@ -60,8 +62,11 @@ impl Checker<'_> {
         }
         if let Some((_, prefix)) = dot {
             let mut prefix = self.alias_argument(node, prefix)?;
-            if slice && self.arguments_constrain_slice(signature) {
-                // Leave element lifetimes open for the other arguments to
+            if self
+                .arguments_constrain_receiver(owner, signature)
+                .map_err(|e| self.error(node, e))?
+            {
+                // Leave receiver lifetimes open for the other arguments to
                 // constrain. The actual borrow proves the complete directed
                 // receiver relation, including mutable invariance.
                 prefix = match self.try_inferred_regions(node, prefix)? {
@@ -92,18 +97,38 @@ impl Checker<'_> {
         let prefix = self.alias_argument(node, prefix)?;
         self.equate(node, target, prefix)
     }
-    fn arguments_constrain_slice(&self, signature: Option<TypeId>) -> bool {
+    fn arguments_constrain_receiver(
+        &self,
+        owner: TypeId,
+        signature: Option<TypeId>,
+    ) -> Result<bool, &'static str> {
         let types = &self.facts.types;
+        if types.contains_parameters(owner) != Some(true) {
+            return Ok(false);
+        }
         let Some(Kind::Function { parameters, .. }) = signature.and_then(|ty| types.kind(ty))
         else {
-            return false;
+            return Ok(false);
         };
-        types.list(parameters).is_some_and(|inputs| {
-            inputs
-                .iter()
-                .skip(1)
-                .any(|&input| types.contains_parameters(input) == Some(true))
-        })
+        let inputs = types.list(parameters).ok_or("missing method inputs")?;
+        let mut constraining_inputs = inputs
+            .iter()
+            .copied()
+            .skip(1)
+            .filter(|&input| types.contains_parameters(input) == Some(true));
+        let Some(first) = constraining_inputs.next() else {
+            return Ok(false);
+        };
+        let mut receiver = Uses::constraining();
+        receiver.collect(types, owner)?;
+        let mut arguments = Uses::constraining();
+        for input in std::iter::once(first).chain(constraining_inputs) {
+            arguments.collect(types, input)?;
+        }
+        Ok(receiver
+            .parameters
+            .iter()
+            .any(|parameter| arguments.parameters.contains(parameter)))
     }
     fn bind_library_owner(
         &mut self,

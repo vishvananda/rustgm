@@ -12121,6 +12121,36 @@
       "maintainer_origin": "dev/tests/trait_bounds/receiver_contracts.rs"
     },
     {
+      "path": "tests/spec/receiver-contracts/receiver-shared-type-argument-cannot-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.receiver-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/receiver-contracts/receiver-shared-type-argument.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.receiver-contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/receiver-contracts/receiver-trait-capture.rs",
       "exit_status": 0,
       "features": [
