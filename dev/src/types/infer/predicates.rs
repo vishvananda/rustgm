@@ -295,7 +295,19 @@ impl Context {
         predicate: Canonical,
         substitution: &mut Instantiation,
     ) -> Result<Predicate, Error> {
-        let subject = self.instantiate_with(store, predicate.ty, substitution)?;
+        self.instantiate_predicate_inside(store, predicate, substitution, 0)
+    }
+
+    /// Move inserted caller terms past the predicate's surrounding binders.
+    /// Lifetimes already recorded in the predicate retain their declared depth.
+    pub(crate) fn instantiate_predicate_inside(
+        &mut self,
+        store: &mut Store,
+        predicate: Canonical,
+        substitution: &mut Instantiation,
+        depth: u16,
+    ) -> Result<Predicate, Error> {
+        let subject = self.instantiate_with_depth(store, predicate.ty, substitution, depth)?;
         let requirement = if let Some((id, constness)) = predicate.bound.trait_parts() {
             let application = store.trait_application(id).ok_or(Error::InvalidIdentity)?;
             let count = store
@@ -304,21 +316,22 @@ impl Context {
                 .len();
             self.account_work(count)?;
             // The canonical span stays valid as instantiation adds types to Store.
-            let mut instantiate_argument = |index| {
-                let argument = store
-                    .arguments(application.arguments)
-                    .and_then(|mut arguments| arguments.nth(index))
-                    .ok_or(Error::InvalidIdentity)?;
-                Ok::<_, Error>(match argument {
-                    CanonicalArgument::Lifetime(region) => Argument::Lifetime(region),
-                    CanonicalArgument::Type(ty) => {
-                        Argument::Type(self.instantiate_with(store, ty, substitution)?)
-                    }
-                    CanonicalArgument::Const(id) => {
-                        Argument::Const(self.instantiate_const(store, id, substitution)?)
-                    }
-                })
-            };
+            let mut instantiate_argument =
+                |index| {
+                    let argument = store
+                        .arguments(application.arguments)
+                        .and_then(|mut arguments| arguments.nth(index))
+                        .ok_or(Error::InvalidIdentity)?;
+                    Ok::<_, Error>(match argument {
+                        CanonicalArgument::Lifetime(region) => Argument::Lifetime(region),
+                        CanonicalArgument::Type(ty) => Argument::Type(
+                            self.instantiate_with_depth(store, ty, substitution, depth)?,
+                        ),
+                        CanonicalArgument::Const(id) => {
+                            Argument::Const(self.instantiate_const(store, id, substitution)?)
+                        }
+                    })
+                };
             if count == 1 {
                 Requirement::SingleTrait {
                     item: application.item,
@@ -333,7 +346,12 @@ impl Context {
                 Requirement::trait_application(application.item, constness, inferred)
             }
         } else if let Bound::ProjectionEqual(result) = predicate.bound {
-            Requirement::ProjectionEqual(self.instantiate_with(store, result, substitution)?)
+            Requirement::ProjectionEqual(self.instantiate_with_depth(
+                store,
+                result,
+                substitution,
+                depth,
+            )?)
         } else {
             Requirement::Builtin(predicate.bound)
         };

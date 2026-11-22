@@ -228,6 +228,16 @@ impl Context {
         template: TypeId,
         substitution: &mut Instantiation,
     ) -> Result<TermId, Error> {
+        self.instantiate_with_depth(store, template, substitution, 0)
+    }
+
+    pub(super) fn instantiate_with_depth(
+        &mut self,
+        store: &mut Store,
+        template: TypeId,
+        substitution: &mut Instantiation,
+        depth: u16,
+    ) -> Result<TermId, Error> {
         if substitution.parameters.is_empty() && substitution.opaques.is_empty() {
             // A rigid canonical graph needs no rebuilding when no parameter is
             // replaced. In particular, keep opaque projection inputs canonical
@@ -239,14 +249,14 @@ impl Context {
         let mut work = std::mem::take(&mut substitution.work);
         let mut children = std::mem::take(&mut substitution.children);
         work.clear();
-        work.push(((root, 0_u16), false));
+        work.push(((root, depth), false));
         let result = self.instantiate_graph(store, substitution, &mut work, &mut children);
         substitution.work = work;
         substitution.children = children;
         result?;
         substitution
             .completed
-            .get(&(root, 0))
+            .get(&(root, depth))
             .ok_or(Error::InvalidIdentity)
     }
     fn instantiate_graph(

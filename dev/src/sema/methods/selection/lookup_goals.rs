@@ -125,7 +125,7 @@ pub(super) fn quantified(
         .ok_or("invalid ordinary quantified method condition")?;
     Ok(Some(Goal {
         predicate: context
-            .instantiate_predicate(store, scoped.predicate, substitution)
+            .instantiate_predicate_inside(store, scoped.predicate, substitution, 1)
             .map_err(inference)?,
         bound_regions: Some(scoped.bound_regions),
     }))
