@@ -823,6 +823,18 @@
       }
     },
     {
+      "path": "tests/spec/control/else-if-postfix.rs",
+      "exit_status": 0,
+      "features": [
+        "pa4.control",
+        "pa4.postfix"
+      ],
+      "rustc": {
+        "kind": "expression",
+        "status": 0
+      }
+    },
+    {
       "path": "tests/spec/control/if-let.rs",
       "exit_status": 0,
       "features": [

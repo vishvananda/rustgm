@@ -274,7 +274,7 @@ impl<'source> Parser<'source, '_> {
             .map_err(|_| error(self.cursor.end(), "too many syntax edges"))?;
         Ok(List { start, end })
     }
-    fn expr(&mut self, minimum: u8, context: Context) -> Result<NodeId, LexError> {
+    fn enter_expression(&mut self) -> Result<(), LexError> {
         if self.depth >= self.nesting_limit() {
             return Err(self.error(if self.extended {
                 "crate syntax nesting exceeds 128"
@@ -283,6 +283,10 @@ impl<'source> Parser<'source, '_> {
             })?);
         }
         self.depth += 1;
+        Ok(())
+    }
+    fn expr(&mut self, minimum: u8, context: Context) -> Result<NodeId, LexError> {
+        self.enter_expression()?;
         let attrs = if self.extended {
             self.attributes(false)?
         } else {

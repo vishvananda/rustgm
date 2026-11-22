@@ -258,13 +258,12 @@ impl Parser<'_, '_> {
         let then = self.block(BlockFlavor::Plain)?;
         let otherwise = if self.eat_word(Word::Else)? {
             Some(if self.cursor.at_word(Word::If)? {
-                self.expr(
-                    0,
-                    Context {
-                        statement: true,
-                        ..NORMAL
-                    },
-                )?
+                // The Pratt parser attaches postfix operators to the entire
+                // conditional after the last else arm has been parsed.
+                self.enter_expression()?;
+                let branch = self.if_expression();
+                self.depth -= 1;
+                branch?
             } else {
                 self.block(BlockFlavor::Plain)?
             })
