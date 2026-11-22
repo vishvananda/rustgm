@@ -7,9 +7,11 @@ import subprocess
 import sys
 
 import backend
+import build_self_hosting as whole
 from compare_self_hosting import stage_receipt, unit_artifacts
 from host_process import DEFAULT_TIMEOUT, CommandLog, digest
 import native_links
+from stage1_run import measure
 from target_units import ENVIRONMENT
 
 REQUIRED = {'lowir', 'metadata', 'native_links'}
@@ -75,6 +77,16 @@ def inputs(folder, units):
     return result
 
 
+def stage_inputs(folder, target, selected):
+    if target.get('format') != whole.FORMAT:
+        return inputs(folder, closure(target, selected))
+    binary = whole.binary_unit(target['graph'])
+    if selected is not None and selected != binary:
+        raise ValueError('native stage link requires its selected binary target unit')
+    outputs = whole.stage_artifacts(folder, target, verify=True)
+    return [{'unit': binary, 'crate': 'app', 'artifacts': outputs}]
+
+
 def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOUT):
     folder = Path(folder).resolve(strict=True)
     output = Path(output).resolve()
@@ -85,8 +97,8 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
         raise ValueError('native linker differs from its declared pin')
     target_receipt = folder / 'receipt.json'
     target, target_sha256 = stage_receipt(folder)
-    units = closure(target, selected)
-    verified = inputs(folder, units)
+    source_graph = target.get('format') == whole.FORMAT
+    verified = stage_inputs(folder, target, selected)
     libraries = native_links.load(verified[0]['artifacts']['native_links']['path'])
     tools = backend.load_tools(('cppgm',))
     cppgm = Path(tools['cppgm']).resolve(strict=True)
@@ -94,17 +106,25 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
     lock = backend.ROOT / 'backend.lock.json'
     lock_sha256 = digest(lock)
     sources = {name: Path(backend.__file__).with_name(name) for name in SUPPORT}
+    if source_graph:
+        for name in ('build_self_hosting.py', 'stage1_run.py'):
+            sources[name] = Path(backend.__file__).with_name(name)
     sources[Path(__file__).name] = Path(__file__).resolve()
     implementation = {name: digest(path) for name, path in sources.items()}
+    tools = {'cppgm': {'path': str(cppgm), 'sha256': cppgm_sha256},
+             'linker': {'path': str(linker), 'sha256': linker_sha256},
+             'backend_lock_sha256': lock_sha256}
+    if source_graph and whole.link_pins(tools) != target['graph']['tools']:
+        raise ValueError('stage link tools differ from the frozen source graph')
+    if type(timeout) is not int or timeout <= 0:
+        raise ValueError('native stage link requires a positive whole-number timeout')
     output.mkdir(parents=True)
     receipt_path = output / 'receipt.json'
     receipt = {
         'state': 'linking', 'target_receipt': str(target_receipt),
         'target_sha256': target_sha256, 'units': verified, 'libraries': libraries,
         'implementation_sha256': implementation,
-        'tools': {'cppgm': {'path': str(cppgm), 'sha256': cppgm_sha256},
-                  'linker': {'path': str(linker), 'sha256': linker_sha256},
-                  'backend_lock_sha256': lock_sha256},
+        'tools': tools,
         'commands': [], 'objects': [],
     }
 
@@ -114,7 +134,14 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
     log = CommandLog(output, output, receipt['commands'], save)
 
     def run(name, command):
-        status = log.run(name, command, ENVIRONMENT, timeout)
+        if source_graph:
+            row = measure(command, cwd=output, stdout=output / f'{name}.stdout',
+                          stderr=output / f'{name}.stderr', limit=timeout, environment=ENVIRONMENT)
+            receipt['commands'].append({'name': name, **row})
+            save()
+            status = row['status'] if row['signal'] is None and not row['timed_out'] else -1
+        else:
+            status = log.run(name, command, ENVIRONMENT, timeout)
         if status:
             raise ValueError(f'{name} failed with status {status}')
 
@@ -124,17 +151,18 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
         for item in verified:
             unit = item['unit']
             source = Path(item['artifacts']['lowir']['path'])
-            target = output / f'unit-{unit}.o'
-            backend.emit_object(source, target, {'cppgm': cppgm},
+            object_path = output / f'unit-{unit}.o'
+            backend.emit_object(source, object_path, {'cppgm': cppgm},
                                 run=lambda command: run(f'unit-{unit}-object', command))
-            objects.append(target)
-            receipt['objects'].append({'unit': unit, 'path': str(target), 'sha256': digest(target)})
+            objects.append(object_path)
+            receipt['objects'].append({'unit': unit, 'path': str(object_path),
+                                       'sha256': digest(object_path)})
         pending = output / 'rustgm.incomplete'
         run('link', [linker, *objects, *native_links.arguments(libraries, ()), '-lm', '-o', pending])
         if (digest(target_receipt) != target_sha256 or digest(linker) != linker_sha256
                 or digest(cppgm) != cppgm_sha256 or digest(lock) != lock_sha256
                 or any(digest(path) != implementation[name] for name, path in sources.items())
-                or inputs(folder, units) != verified):
+                or stage_inputs(folder, target, selected) != verified):
             raise ValueError('stage link inputs changed during execution')
         if any(digest(Path(row['path'])) != row['sha256'] for row in receipt['objects']):
             raise ValueError('staged native objects changed during execution')
@@ -155,7 +183,7 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('target', type=Path)
-    parser.add_argument('--unit', type=int, required=True, help='binary target-unit index')
+    parser.add_argument('--unit', type=int, help='binary target index for a per-unit build')
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--linker', type=Path, required=True)
     parser.add_argument('--linker-sha256', required=True)

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sys
 
+import build_self_hosting as whole
 from host_process import digest
 from target_units import bringup_record
 
@@ -18,6 +19,9 @@ REQUIRED = {'lowir', 'metadata'}
 def stage_receipt(folder):
     content = (folder / 'receipt.json').read_bytes()
     receipt = json.loads(content)
+    if receipt.get('format') == whole.FORMAT:
+        whole.verify_stage(folder, receipt)
+        return receipt, hashlib.sha256(content).hexdigest()
     if (receipt['state'] != 'complete' or receipt['profile'] != 'strict'
             or type(receipt['bringup_records']) is not int or receipt['bringup_records'] != 0
             or receipt['failure'] is not None or receipt['blocked'] or receipt['not_run']):
@@ -91,7 +95,7 @@ def compiler_arguments(step, paths):
         previous = argument
 
 
-def link_receipt(folder, target_sha256, binary, artifact, steps):
+def link_receipt(folder, target_sha256, binary, artifact, steps, *, graph_row=None):
     """Bind the compared executable to this strict build's completed link."""
     receipt_path = binary.parent / 'receipt.json'
     receipt = json.loads(receipt_path.read_bytes())
@@ -105,10 +109,43 @@ def link_receipt(folder, target_sha256, binary, artifact, steps):
     if not units:
         raise ValueError(f'{binary} link receipt omits its binary target')
     selected = units[0]
+    if graph_row is not None and units != [graph_row]:
+        raise ValueError(f'{binary} does not link the recorded whole source graph')
     if not any(step['unit'] == selected['unit'] and step['crate_name'] == selected['crate']
                and step['library'] is False for step in steps):
         raise ValueError(f'{binary} link receipt omits its binary target')
     return selected['unit'], receipt['tools'], receipt['implementation_sha256']
+
+
+def compare_whole_graph(stages, receipts, receipt_hashes, binaries):
+    first, second = receipts
+    graph = first['graph']
+    if first['rustgm']['sha256'] != graph['stage0_sha256']:
+        raise ValueError('stage 1 did not use the frozen stage 0 compiler')
+    linked = compare_files(*binaries, 'linked RustGM compiler')
+    if linked['sha256'] != second['rustgm']['sha256']:
+        raise ValueError('stage 2 did not use the linked stage 1 compiler')
+    outputs = {}
+    for name in whole.OUTPUTS:
+        entries = [receipt['outputs'][name] for receipt in receipts]
+        result = compare_files(*(Path(row['path']) for row in entries), name)
+        if any(row[key] != value for row in entries for key, value in result.items()):
+            raise ValueError(f'{name} differs from its build receipt')
+        outputs[name] = result
+    selected = whole.binary_unit(graph)
+    steps = [{'unit': selected, 'crate_name': 'app', 'library': False}]
+    links = []
+    for folder, sha256, binary, receipt in zip(stages, receipt_hashes, binaries, receipts, strict=True):
+        if digest(folder / 'receipt.json') != sha256:
+            raise ValueError('a strict target receipt changed during comparison')
+        graph_row = {'unit': selected, 'crate': 'app', 'artifacts': receipt['outputs']}
+        link = link_receipt(folder, sha256, binary, linked, steps, graph_row=graph_row)
+        if whole.link_pins(link[1]) != graph['tools']:
+            raise ValueError('stage link tools differ from the frozen source graph')
+        links.append(link)
+    if links[0] != links[1]:
+        raise ValueError('the stages used different native link tools or implementations')
+    return {'outputs': outputs, 'linked_compiler': linked, 'bringup_records': 0}
 
 
 def compare(stage1, stage2, linked1, linked2):
@@ -122,6 +159,12 @@ def compare(stage1, stage2, linked1, linked2):
         raise ValueError('the stages used different frozen build graphs')
     if first['implementation_sha256'] != second['implementation_sha256']:
         raise ValueError('the stages used different target-unit executors')
+    graph = first.get('format') == whole.FORMAT
+    if graph != (second.get('format') == whole.FORMAT):
+        raise ValueError('the stages used different kinds of target build')
+    if graph:
+        return compare_whole_graph((stage1, stage2), (first, second),
+                                   (first_sha256, second_sha256), (linked1, linked2))
     input_hash = digest(linked1)
     if input_hash != second['rustgm']['sha256']:
         raise ValueError('stage 2 did not use the linked stage 1 compiler')
@@ -163,8 +206,8 @@ def compare(stage1, stage2, linked1, linked2):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('stage1', type=Path, help='stage 1 target-unit output directory')
-    parser.add_argument('stage2', type=Path, help='stage 2 target-unit output directory')
+    parser.add_argument('stage1', type=Path, help='stage 1 target output directory')
+    parser.add_argument('stage2', type=Path, help='stage 2 target output directory')
     parser.add_argument('--stage1-binary', required=True, type=Path)
     parser.add_argument('--stage2-binary', required=True, type=Path)
     args = parser.parse_args()

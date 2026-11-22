@@ -65,33 +65,46 @@ absolute paths, host randomness or unordered iteration may reach an output.
 `RUSTGM_TEST_APP` already selects the compiler under test for the course
 runner, so stage 1 needs no new test entry point.
 
-Link the binary target and its recorded dependency closure after each strict
-target build. Use the binary unit's index from the frozen plan and the host
-linker from its tool inventory.
+Put the original crate trees under one frozen source directory. Describe them
+in a configuration with a `core` object containing its relative `path`,
+`disambiguator` and `cfg` list. The ordered `guests` list contains each
+crate's `name`, `edition`, relative `path` and optional `cfg` list. An
+omitted guest cfg inherits the session cfg. An explicit list, including an
+empty list, replaces it. The last guest is the RustGM binary under the
+application name `app`.
+
+Freeze the source inventory and tool identities before building either stage.
 
 ```sh
-python3 scripts/link_self_hosting.py obj/stage1/target \
-    --unit "$BINARY_UNIT" --out obj/stage1/native \
+python3 scripts/build_self_hosting.py freeze "$CONFIGURATION" \
+    --sources "$SOURCES" --stage0 "$STAGE0" --linker "$LINKER" \
+    --out obj/stage45/graph.json
+```
+
+Build the graph with stage 0 and link its single LowIR artifact through the
+pinned CPPGM object backend.
+
+```sh
+python3 scripts/build_self_hosting.py build obj/stage45/graph.json \
+    --sources "$SOURCES" --compiler "$STAGE0" --compiler-sha256 "$STAGE0_SHA256" \
+    --out obj/stage1/target
+python3 scripts/link_self_hosting.py obj/stage1/target --out obj/stage1/native \
     --linker "$LINKER" --linker-sha256 "$LINKER_SHA256"
 ```
 
-The output directory contains the linked `rustgm`, its command log, the native
-objects and their hashes. Use the two target-unit output directories and linked
-executables for the stage comparison.
+Repeat both commands for stage 2 with the same graph and source directory.
+Use `obj/stage1/native/rustgm` and its recorded hash as the stage 2 compiler.
+Compare the independently built targets and their linked executables.
 
 ```sh
 python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
     --stage1-binary obj/stage1/native/rustgm --stage2-binary obj/stage2/native/rustgm
 ```
 
-The comparison checks the frozen graph, strict receipts, compiler diagnostics
-and stage 2 compiler pin. It reads the LowIR and then the linked compiler byte
-for byte. It uses the native-link receipt beside each compiler to verify the
-binary target, frozen link tools and exact target build.
-
-The linker and comparator above were written for per-unit target directories
-with metadata. Adapting both to the whole-graph build, and admitting source
-crates in a strict session, is part of this assignment's buildout.
+The comparison verifies the frozen source graph, the compiler chain, the
+strict diagnostics and the link receipts. It compares the LowIR, native link
+manifest and executable byte for byte. Target and link receipts record the
+output hashes, command time and peak resident memory.
 
 ## Tests to develop with the reference
 
