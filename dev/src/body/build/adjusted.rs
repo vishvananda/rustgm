@@ -100,19 +100,38 @@ impl Builder<'_> {
         {
             let mut cursor = access.path;
             for _ in 0..access.dereferences {
-                let (parent, Step::Dereference { mutable }) =
-                    environment.plan.parent(cursor).ok_or_else(|| {
-                        self.error(site, "adjusted capture lacks a dereference prefix")
-                    })?
-                else {
-                    return Err(self.error(site, "adjusted capture prefix is not a dereference"));
-                };
-                let parent_ty = environment.path_types.get(parent.index()).copied();
+                let (parent, step) = environment.plan.parent(cursor).ok_or_else(|| {
+                    self.error(site, "adjusted capture lacks a dereference prefix")
+                })?;
+                let parent_ty = *environment
+                    .path_types
+                    .get(parent.index())
+                    .ok_or_else(|| self.error(site, "adjusted capture lacks its parent type"))?;
                 let child_ty = environment.path_types.get(cursor.index()).copied();
-                if !matches!(parent_ty.and_then(|ty| facts.types.kind(ty)),
-                    Some(super::Type::Reference {referent, mutable: actual, ..})
-                        if Some(referent) == child_ty && actual == mutable)
-                {
+                let referent = match (step, facts.types.kind(parent_ty)) {
+                    (
+                        Step::Dereference { mutable },
+                        Some(super::Type::Reference {
+                            referent,
+                            mutable: actual,
+                            ..
+                        }),
+                    ) if actual == mutable => Some(referent),
+                    (Step::BoxDereference, _) if kind != AccessKind::Pattern => {
+                        crate::sema::compiler_items::boxes::content(
+                            &facts.types,
+                            &facts.aggregates,
+                            parent_ty,
+                        )
+                        .map_err(|error| self.error(site, error))?
+                    }
+                    _ => {
+                        return Err(
+                            self.error(site, "adjusted capture prefix is not a dereference")
+                        );
+                    }
+                };
+                if referent.is_none() || referent != child_ty {
                     return Err(self.error(
                         site,
                         "adjusted dereference differs from retained path types",

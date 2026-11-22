@@ -259,16 +259,13 @@ impl Collector<'_> {
         } else {
             work
         };
-        let mut remaining = work.dereferences;
-        while remaining != 0 && !self.places.boxed(checker, work.node, place)? {
+        for _ in 0..work.dereferences {
             place = self.places.dereference(checker, work.node, place)?;
-            remaining -= 1;
         }
-        let consumed = work.dereferences - remaining;
-        if consumed != 0
+        if work.dereferences != 0
             && let Some((site, kind)) = work.receiver
         {
-            self.remember_adjusted(checker, site, kind, place.path, consumed)?;
+            self.remember_adjusted(checker, site, kind, place.path, work.dereferences)?;
         }
         if matches!(work.usage, Use::Mention) {
             if self.mentioned.insert(place.path) {
@@ -283,22 +280,15 @@ impl Collector<'_> {
                 };
                 self.places
                     .graph
-                    .require(place.capture_path(self.moving), mode)
+                    .require(place.capture_path(self.moving, false), mode)
                     .map_err(|e| checker.error(work.node, e))?;
             }
             return Ok(true);
         }
-        let mut term = self.places.types[place.path.index()];
-        match work.usage {
-            Use::ValueOf(leaf) => term = leaf,
-            Use::Value => {
-                // Capture stops at the box, while Copy depends on the callee's value.
-                for _ in 0..remaining {
-                    term = checker.child(work.node, term, 0)?;
-                }
-            }
-            _ => {}
-        }
+        let term = match work.usage {
+            Use::ValueOf(leaf) => leaf,
+            _ => self.places.types[place.path.index()],
+        };
         let mut mode = if place.raw {
             Mode::Shared
         } else {
@@ -318,7 +308,7 @@ impl Collector<'_> {
                 Use::Mention => return Err(checker.error(work.node, "unexpected capture mention")),
             }
         };
-        let path = place.capture_path(self.moving);
+        let path = place.capture_path(self.moving, mode == Mode::Value);
         if self.moving {
             mode = Mode::Value;
         }

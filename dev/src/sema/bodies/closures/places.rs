@@ -19,11 +19,13 @@ pub(super) struct Place {
     pub path: PathId,
     pub shared: Option<PathId>,
     pub before_dereference: Option<PathId>,
+    /// A consuming use captures the owner of a boxed place.
+    before_box: Option<PathId>,
     precision: Option<PathId>,
     pub raw: bool,
 }
 impl Place {
-    pub(super) fn capture_path(self, moving: bool) -> PathId {
+    pub(super) fn capture_path(self, moving: bool, consuming: bool) -> PathId {
         // All candidates belong to this one ordered ancestor chain. Choosing
         // the smallest interned index is constant work, without ancestry scans.
         [
@@ -33,6 +35,7 @@ impl Place {
             } else {
                 self.shared
             },
+            if consuming { self.before_box } else { None },
         ]
         .into_iter()
         .flatten()
@@ -73,6 +76,7 @@ impl Places {
             path,
             shared: None,
             before_dereference: None,
+            before_box: None,
             precision: None,
             raw: false,
         }))
@@ -88,25 +92,15 @@ impl Places {
         if self.work > 1_000_000 {
             return Err(checker.error(node, "nested capture place work limit exceeded"));
         }
-        if matches!(step, Step::Dereference { .. } | Step::RawDereference { .. }) {
+        if matches!(
+            step,
+            Step::Dereference { .. } | Step::RawDereference { .. } | Step::BoxDereference
+        ) {
             let term = self.types[place.path.index()];
-            let valid = match (step, checker.head(node, term)?) {
-                (
-                    Step::Dereference { mutable },
-                    Some(Constructor::Reference {
-                        mutable: actual, ..
-                    }),
-                )
-                | (
-                    Step::RawDereference { mutable },
-                    Some(Constructor::Pointer { mutable: actual }),
-                ) => mutable == actual,
-                _ => false,
-            };
-            if !valid {
+            if Self::dereference_step(checker, node, term)? != step {
                 return Err(checker.error(node, "nested capture dereference capability changed"));
             }
-            return self.dereference(checker, node, place);
+            return self.project_dereference(checker, node, place, step);
         }
         let (Step::Field(selection) | Step::UnionField(selection)) = step else {
             return Err(checker.error(node, "missing nested capture field selection"));
@@ -213,6 +207,7 @@ impl Places {
                     path,
                     shared: None,
                     before_dereference: None,
+                    before_box: None,
                     precision: None,
                     raw: false,
                 }))
@@ -225,10 +220,9 @@ impl Places {
                 let Some(place) = self.cache[&operand] else {
                     return Ok(None);
                 };
-                // An overloaded dereference borrows its operand; Box also
-                // retains its existing owning capture boundary.
-                if self.boxed(checker, node, place)? || checker.language_dereference(node).is_some()
-                {
+                // An overloaded dereference borrows its operand and runs in
+                // the closure body. The built-in Box dereference is a place.
+                if checker.language_dereference(node).is_some() {
                     return Ok(None);
                 }
                 self.dereference(checker, node, place).map(Some)
@@ -250,9 +244,6 @@ impl Places {
                     .copied()
                     .unwrap_or(0);
                 for _ in 0..count {
-                    if self.boxed(checker, node, place)? {
-                        return Ok(None);
-                    }
                     place = self.dereference(checker, node, place)?;
                 }
                 let Some(Operation::Field { field, plan }) = checker
@@ -277,46 +268,47 @@ impl Places {
             _ => Ok(None),
         }
     }
-    /// A box's content is no capture projection here: as with a `Deref`
-    /// call, the capture stops at the box itself.
-    pub(super) fn boxed(
-        &self,
-        checker: &mut Checker<'_>,
-        node: NodeId,
-        place: Place,
-    ) -> Result<bool, Error> {
-        let term = self.types[place.path.index()];
-        let boxed = checker.facts.aggregates.owned_box();
-        Ok(matches!(
-            checker.head(node, term)?,
-            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _)) if boxed == Some(item)
-        ))
-    }
     pub(super) fn dereference(
         &mut self,
         checker: &mut Checker<'_>,
         node: NodeId,
-        mut place: Place,
+        place: Place,
     ) -> Result<Place, Error> {
         let term = self.types[place.path.index()];
-        let (step, mutable, raw) = match checker.head(node, term)? {
-            Some(Constructor::Reference { mutable, .. }) => {
-                (Step::Dereference { mutable }, mutable, false)
+        let step = Self::dereference_step(checker, node, term)?;
+        self.project_dereference(checker, node, place, step)
+    }
+    fn dereference_step(
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Step, Error> {
+        match checker.head(node, term)? {
+            Some(Constructor::Reference { mutable, .. }) => Ok(Step::Dereference { mutable }),
+            Some(Constructor::Pointer { mutable }) => Ok(Step::RawDereference { mutable }),
+            Some(Constructor::Adt(item, _) | Constructor::AdtArgs(item, _))
+                if checker.facts.aggregates.owned_box() == Some(item) =>
+            {
+                Ok(Step::BoxDereference)
             }
-            Some(Constructor::Pointer { mutable }) => {
-                (Step::RawDereference { mutable }, mutable, true)
-            }
-            _ => {
-                return Err(checker.error(
-                    node,
-                    "capture dereference requires a reference or raw pointer",
-                ));
-            }
-        };
-        if raw {
+            _ => Err(checker.error(node, "capture dereference requires a built-in pointer")),
+        }
+    }
+    fn project_dereference(
+        &mut self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        mut place: Place,
+        step: Step,
+    ) -> Result<Place, Error> {
+        if matches!(step, Step::RawDereference { .. }) {
             place.precision = place.precision.or(Some(place.path));
             place.raw = true;
         }
+        if step == Step::BoxDereference {
+            place.before_box = place.before_box.or(Some(place.path));
+        }
+        let term = self.types[place.path.index()];
         let ty = checker.child(node, term, 0)?;
         let path = self
             .graph
@@ -325,7 +317,7 @@ impl Places {
         self.retain(path, ty);
         place.before_dereference = place.before_dereference.or(Some(place.path));
         place.path = path;
-        if !raw && !mutable && place.precision.is_none() {
+        if step == (Step::Dereference { mutable: false }) && place.precision.is_none() {
             place.shared = Some(path);
         }
         Ok(place)

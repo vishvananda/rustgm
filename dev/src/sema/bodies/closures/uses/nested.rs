@@ -61,7 +61,7 @@ impl Collector<'_> {
                 }
                 Mode::Shared => Mode::Shared,
             };
-            let path = place.capture_path(self.moving);
+            let path = place.capture_path(self.moving, mode == Mode::Value);
             if self.moving {
                 mode = Mode::Value;
             }

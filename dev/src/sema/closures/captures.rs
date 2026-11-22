@@ -25,6 +25,7 @@ pub enum Step {
     Dereference {
         mutable: bool,
     },
+    BoxDereference,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PathId(u32);

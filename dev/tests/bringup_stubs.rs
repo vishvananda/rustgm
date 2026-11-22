@@ -1647,6 +1647,31 @@ fn normalized_iterator_inputs_keep_their_creator_lifetime_proof() -> Result {
 }
 
 const CAPTURE_DEREFERENCES: &str = "pa31/tests/spec/capture-dereferences";
+
+#[test]
+fn box_capture_keeps_sibling_fields_available_until_the_box_moves() -> Result {
+    let source = crate::resolve::fixture("pa31/tests/spec/box-capture-precision/disjoint.rs")?;
+    let folder = folder_with("box-capture-precision", &source)?;
+    let input = folder.join("main.rs");
+    let accepted = source_command(&folder, "box_capture_precision", None)?
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(accepted.stderr)?;
+    assert!(accepted.status.success(), "{diagnostics}");
+    assert!(!diagnostics.contains("bringup-"), "{diagnostics}");
+    let lowir = String::from_utf8(accepted.stdout)?;
+    assert!(lowir.contains("@run") && !lowir.contains("rg.trap."));
+
+    let rejected = source_command(&folder, "box_capture_precision", None)?
+        .args(["--cfg", "moving_box"])
+        .arg(&input)
+        .output()?;
+    let diagnostics = String::from_utf8(rejected.stderr)?;
+    assert_eq!(rejected.status.code(), Some(1), "{diagnostics}");
+    assert!(diagnostics.contains("moved"), "{diagnostics}");
+    Ok(())
+}
+
 /// A source Deref call borrows its operand; the closure captures that operand
 /// rather than projecting a built-in dereference through the wrapper.
 #[test]

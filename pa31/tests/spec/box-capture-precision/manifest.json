@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "disjoint.rs": {
+      "sha256": "ad6cb5e8ef1cc4f53c10b0b0e6c8c16307d06b48210b467b8b389923cd0d89e5",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0,
+          "stdout": "alloc 2\ndrop 7\ndrop 9\nfree\nvalue 7\n"
+        },
+        {
+          "cfg": [
+            "moving_box"
+          ],
+          "rustc_status": 1,
+          "rustc_error": "E0382",
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Miniature language-item provider from ../owned-boxes/borrowed-content.rs. Native observer from ../owned-boxes/observe.c."
+}

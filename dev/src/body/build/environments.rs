@@ -423,18 +423,16 @@ impl Builder<'_> {
                 }
                 self.projection(node, expected, base, ProjectionKind::Field(field))?
             }
-            Step::Dereference { mutable } | Step::RawDereference { mutable } => {
-                let raw = matches!(step, Step::RawDereference { .. });
+            Step::Dereference { .. } | Step::RawDereference { .. } | Step::BoxDereference => {
                 let capability = match self.facts.types.kind(self.place_type(node, base)?) {
-                    Some(Type::Pointer {
-                        mutable: actual, ..
-                    }) if raw => Some(actual),
-                    Some(Type::Reference {
-                        mutable: actual, ..
-                    }) if !raw => Some(actual),
+                    Some(Type::Pointer { mutable, .. }) => Some(Step::RawDereference { mutable }),
+                    Some(Type::Reference { mutable, .. }) => Some(Step::Dereference { mutable }),
+                    Some(Type::Adt(item, _)) if self.facts.aggregates.owned_box() == Some(item) => {
+                        Some(Step::BoxDereference)
+                    }
                     _ => None,
                 };
-                if capability != Some(mutable) {
+                if capability != Some(step) {
                     return Err(
                         self.error(node, "capture projection dereference capability changed")
                     );
