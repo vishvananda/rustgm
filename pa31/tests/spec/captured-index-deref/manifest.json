@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "custom.rs": {
+      "sha256": "dc8a5bc762f6ebc1965d09b7c69a770363be500be6be2b93cd0fe93877a972ff",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "wrong_index"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Miniature language-item declarations adapted from ../capture-dereferences/shared.rs and ../source-index-deref/slice-target.rs."
+}

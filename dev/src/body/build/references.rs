@@ -251,7 +251,11 @@ impl Builder<'_> {
             ..self.source
         };
         let count = self.facts.autoderefs.get(&key).copied().unwrap_or(0);
-        let count = if matches!(self.kind(node), super::Kind::Index { .. }) {
+        // An overloaded operand plan already consumes the captured prefix
+        // at its first Deref call. A built-in-only index consumes it here.
+        let count = if matches!(self.kind(node), super::Kind::Index { .. })
+            && self.index_operand_plan(node).is_none()
+        {
             self.remaining_receiver_dereferences(
                 node,
                 crate::sema::closures::AccessKind::Index,
