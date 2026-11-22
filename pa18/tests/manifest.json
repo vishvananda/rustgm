@@ -6295,6 +6295,23 @@
       "maintainer_origin": "PA18 public generic contract"
     },
     {
+      "path": "tests/spec/regions/array-call-borrow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.regions"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 inferred generic call argument",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
       "path": "tests/spec/regions/array-distinct-lengths.rs",
       "exit_status": 1,
       "features": [

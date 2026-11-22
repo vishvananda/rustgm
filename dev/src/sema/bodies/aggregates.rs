@@ -144,7 +144,8 @@ impl Checker<'_> {
                 });
             }
             if let Some(common) = common {
-                self.equate(node, element, common)?;
+                // An inferred element can already inhabit a generic call binder.
+                self.shape_equation(node, element, common)?;
             }
         }
         let mut reference_hint = false;
