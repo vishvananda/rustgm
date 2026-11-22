@@ -764,7 +764,6 @@ const STORED: &[&str] = &[
     "compare_bytes",
     "raw_eq",
     "volatile_load",
-    "size_of_val",
     "assert_zero_valid",
     "fabs",
     "forget",
