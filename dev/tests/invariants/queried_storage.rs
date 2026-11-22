@@ -146,7 +146,6 @@ fn structural_readiness_preserves_pending_fields_closedness_and_failed_work() ->
         element: TypeId::primitive(crate::types::Primitive::U8),
         length: 37,
     })?;
-    assert_eq!(layouts.pending_state_work(&types, ty), 0);
     let prepared = layouts.len();
     work = 0;
     assert!(
@@ -233,7 +232,6 @@ fn pending_field_publication() -> Result {
     definitions.prepare_storage_fields(&mut types, root)?;
     definitions.prepare(&mut types, root)?;
     let mut layouts = crate::abi::layout::Layouts::default();
-    assert_eq!(layouts.pending_state_work(&types, root), types.len());
     let mut work = 0;
     layouts.storage_readiness(&types, &definitions, root, &mut work, 100)?;
     let id = layouts.demand_bounded(&types, &definitions, root, 100)?;
@@ -408,6 +406,30 @@ fn exhausted_layout_budget_stops_before_projected_fields_are_materialized() -> R
             .ok_or("spent layout budget recovered")?,
         "source layout field preparation work budget exceeded",
     );
+    Ok(())
+}
+
+#[test]
+fn source_layout_work_depends_on_reached_types() -> Result {
+    use crate::types::{Kind, Primitive};
+    let report = crate::test_source::source_provider(&source("")?, "sparse_layout_state")?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    facts.layouts = crate::abi::layout::Layouts::default();
+    let ty = TypeId::primitive(Primitive::U16);
+    for length in 1..=4096 {
+        facts.types.intern(Kind::Array {
+            element: ty,
+            length,
+        })?;
+    }
+    let remaining = 256;
+    let mut budget = Work {
+        steps: crate::support::crates::MAX_COMPONENTS - remaining,
+    };
+    assert!(prepare_layout(&mut facts, ty, &mut budget)?.is_none());
+    let layout = facts.layouts.get(ty).ok_or("missing reached layout")?;
+    assert_eq!((layout.size, layout.align), (2, 2));
+    assert!(budget.remaining() > 0);
     Ok(())
 }
 

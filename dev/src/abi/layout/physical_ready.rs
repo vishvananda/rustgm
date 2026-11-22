@@ -20,21 +20,6 @@ pub(crate) struct StorageReadiness {
 }
 
 impl Layouts {
-    /// Prepay dense-state initialization and possible existing-buffer copying.
-    /// A prepared layout needs neither this setup nor another ABI demand.
-    pub(crate) fn pending_state_work(&self, types: &Store, ty: TypeId) -> usize {
-        if self.get(ty).is_some() {
-            return 0;
-        }
-        types
-            .len()
-            .saturating_sub(self.states.len())
-            .saturating_add(if types.len() > self.states.capacity() {
-                self.states.capacity()
-            } else {
-                0
-            })
-    }
     /// Check prepared fields before querying the stable ABI cache. Pending
     /// declarations must not become permanent failed-layout cache entries.
     /// The caller owns the counter, including a failed attempt's actual work.

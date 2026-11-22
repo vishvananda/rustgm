@@ -8,10 +8,12 @@ mod e_tags;
 mod niches;
 mod physical_ready;
 mod simd;
+mod states;
 mod zero_carriers;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
 pub(crate) use physical_ready::{PENDING_STORAGE_FIELDS, STORAGE_WORK_LIMIT, StorageReadiness};
+use states::States;
 pub use zero_carriers::Carrier;
 
 pub(super) const MAX_SIZE: u64 = i64::MAX as u64;
@@ -91,7 +93,7 @@ enum FieldStorage {
 /// Appending canonical types is allowed; changing an existing definition is not.
 #[derive(Default)]
 pub struct Layouts {
-    states: Vec<State>,
+    states: States,
     records: Vec<Layout>,
     variants: Vec<Variant>,
     offsets: Vec<u64>,
@@ -265,7 +267,7 @@ impl Layouts {
     }
     #[must_use]
     pub fn get(&self, ty: TypeId) -> Option<&Layout> {
-        let State::Ready(id) = self.states.get(ty.0 as usize)? else {
+        let State::Ready(id) = self.states.get(ty)? else {
             return None;
         };
         self.records.get(id.0 as usize)
@@ -324,13 +326,10 @@ impl Layouts {
         limit: usize,
     ) -> Result<LayoutId, Error> {
         let mut budget = Budget::new(limit);
-        if self.states.len() < types.len() {
-            self.states.resize(types.len(), State::Unseen);
-        }
-        if let Some(State::Ready(id)) = self.states.get(ty.0 as usize) {
+        if let Some(State::Ready(id)) = self.states.get(ty) {
             return Ok(*id);
         }
-        if let Some(State::Failed(error)) = self.states.get(ty.0 as usize) {
+        if let Some(State::Failed(error)) = self.states.get(ty) {
             return Err(*error);
         }
         self.work.push((ty, false));
@@ -341,33 +340,34 @@ impl Layouts {
                 } else {
                     self.steps += 1;
                 }
-                self.visit(types, definitions, next, finish, &mut budget)
+                self.visit::<LIMITED>(types, definitions, next, finish, &mut budget)
             })();
             if let Err(message) = result {
                 let error = Error { ty: next, message };
-                // Completed dependencies remain reusable. Only the failed query's
-                // unfinished records are rolled back by its construction boundary.
-                for state in &mut self.states {
-                    if matches!(state, State::Active) {
-                        *state = if budget.exhausted {
-                            State::Unseen
-                        } else {
-                            State::Failed(error)
-                        };
+                // Only pending finish entries and the current visit can still
+                // have active states. Completed dependencies remain reusable.
+                let failed = if budget.exhausted {
+                    State::Unseen
+                } else {
+                    State::Failed(error)
+                };
+                for pending in self
+                    .work
+                    .drain(..)
+                    .filter_map(|(entry, finish)| finish.then_some(entry))
+                    .chain(std::iter::once(next))
+                {
+                    if let Some(state @ State::Active) = self.states.get_mut(pending) {
+                        *state = failed;
                     }
                 }
-                if let Some(state) = self.states.get_mut(ty.0 as usize) {
-                    *state = if budget.exhausted {
-                        State::Unseen
-                    } else {
-                        State::Failed(error)
-                    };
+                if let Some(state) = self.states.get_mut(ty) {
+                    *state = failed;
                 }
-                self.work.clear();
                 return Err(error);
             }
         }
-        match self.states.get(ty.0 as usize) {
+        match self.states.get(ty) {
             Some(State::Ready(id)) => Ok(*id),
             _ => Err(Error {
                 ty,
@@ -375,7 +375,7 @@ impl Layouts {
             }),
         }
     }
-    fn visit(
+    fn visit<const LIMITED: bool>(
         &mut self,
         types: &Store,
         definitions: &Definitions,
@@ -383,10 +383,7 @@ impl Layouts {
         finish: bool,
         budget: &mut Budget,
     ) -> Result<(), &'static str> {
-        let state = *self
-            .states
-            .get(ty.0 as usize)
-            .ok_or("invalid layout type")?;
+        let state = self.states.get(ty).copied().unwrap_or_default();
         match state {
             State::Ready(_) => return Ok(()),
             State::Failed(error) => return Err(error.message),
@@ -415,11 +412,20 @@ impl Layouts {
                     return Err(error);
                 }
             };
+            let state = self
+                .states
+                .get_mut(ty)
+                .ok_or("missing active layout state")?;
             self.records.push(layout);
-            self.states[ty.0 as usize] = State::Ready(id);
+            *state = State::Ready(id);
             return Ok(());
         }
-        self.states[ty.0 as usize] = State::Active;
+        self.states
+            .prepare::<LIMITED>(ty, budget, &mut self.steps)?;
+        *self
+            .states
+            .get_mut(ty)
+            .ok_or("missing prepared layout state")? = State::Active;
         self.work.push((ty, true));
         match kind {
             Kind::Pattern { base, .. } => self.work.push((base, false)),

@@ -175,8 +175,6 @@ fn size(
         .storage_readiness(&facts.types, &facts.aggregates, ty, work, LIMIT);
     pay(facts, *work, paid)?;
     ready?;
-    charge(work, facts.layouts.pending_state_work(&facts.types, ty))?;
-    pay(facts, *work, paid)?;
     let before = facts.layouts.steps;
     let demanded = facts.layouts.demand_bounded(
         &facts.types,

@@ -235,12 +235,6 @@ fn prepare_layout(
     if let Some(item) = pending {
         return Ok(Some(item));
     }
-    let pending = facts.layouts.pending_state_work(&facts.types, element);
-    budget.charge(
-        facts,
-        pending,
-        "source layout state preparation work budget exceeded",
-    )?;
     let mut work = 0;
     let readiness = facts.layouts.storage_readiness(
         &facts.types,
