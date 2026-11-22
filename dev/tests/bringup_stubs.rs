@@ -682,8 +682,7 @@ impl<T:PointeeSized> LegacyReceiver for &T{}
 #[lang=\"clone\"]pub trait Clone:Sized{#[lang=\"clone_fn\"]fn clone(&self)->Self;}
 #[lang=\"copy\"]pub trait Copy:Clone{}
 ";
-/// Bodiless intrinsics that the bring-up profile lowers in place, each called
-/// with types the lowering handles.
+/// Runtime intrinsic calls through the supported pointer and scalar forms.
 const LOWERED: &str = "\
 #[rustc_intrinsic] const fn ctpop<T>(x:T)->u32;
 #[rustc_intrinsic] const unsafe fn offset<P,D>(dst:P,offset:D)->P;
@@ -769,7 +768,7 @@ struct Lowering {
     emitted: &'static [&'static str],
     trapped: Option<&'static str>,
 }
-const PLAIN: &[&str] = &["ctpop", "offset", "read_via_copy"];
+const PLAIN: &[&str] = &["ctpop", "read_via_copy"];
 const SCALAR: &[&str] = &["binary ushr", "index u8"];
 const STORED: &[&str] = &[
     "copy_nonoverlapping",
@@ -888,10 +887,14 @@ fn intrinsics_with_an_unqualified_lowering_are_named_and_stay_fenced_when_strict
         let stderr = String::from_utf8(passed.stderr)?;
         assert!(passed.status.success(), "{stderr}");
         let fences = waived(&stderr);
-        for intrinsic in case.lowered {
-            let fence = format!("{UNQUALIFIED}{intrinsic}");
-            assert!(fences.contains(&fence.as_str()), "{stderr}");
-        }
+        let mut lowered: Vec<_> = fences
+            .iter()
+            .filter_map(|fence| fence.strip_prefix(UNQUALIFIED))
+            .collect();
+        let mut expected = case.lowered.to_vec();
+        lowered.sort_unstable();
+        expected.sort_unstable();
+        assert_eq!(lowered, expected, "{stderr}");
         // Lowered calls need no trap; only the call left alone keeps one.
         let kept: Vec<_> = fences
             .iter()
