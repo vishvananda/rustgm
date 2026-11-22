@@ -26267,6 +26267,40 @@
       "maintainer_origin": "dev/tests/method_selection/possibility.rs"
     },
     {
+      "path": "tests/spec/receiver-associated-items/shared-item-region.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "e7f78f168479df2128b30b168ca6e7f91cc14f1280f81edd94c6fa0716eb70f1",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/receiver-associated-items/shared-item-region-cannot-escape.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 1,
+      "source_sha256": "5bb730687dc1870940debc153ddc099c1aa13b48e313e305559ae57ce1891126",
+      "input": "file",
+      "features": [
+        "pa20.projections"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
       "path": "tests/spec/late-method-properties/method-noncopy.rs",
       "source_sha256": "531e35afb2a5b992102faf1ff68adc8a4415056d0f08c101853f68a9e50e250c",
       "exit_status": 0,

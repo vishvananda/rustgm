@@ -1,9 +1,14 @@
 //! Selected impl arguments share the ordinary callable inference graph.
-use super::{Checker, Error, NodeId};
+use super::{Checker, DefId, Error, NodeId};
 use crate::types::{
     Kind, TypeId,
     infer::arguments::Argument,
-    parameters::{ParameterId, uses::Uses},
+    parameters::{
+        ParameterId,
+        clauses::Clause,
+        predicates::{Bound as PredicateBound, Predicate},
+        uses::Uses,
+    },
     substitute::Bound,
 };
 
@@ -129,6 +134,71 @@ impl Checker<'_> {
             .parameters
             .iter()
             .any(|parameter| arguments.parameters.contains(parameter)))
+    }
+    pub(super) fn trait_arguments_constrain_receiver(
+        &self,
+        method: DefId,
+        item_type: TypeId,
+    ) -> Result<bool, &'static str> {
+        let facts = &self.facts;
+        let types = &facts.types;
+        let predicates = facts.generics.declared_predicates(method);
+        if predicates.is_empty() {
+            return Ok(false);
+        }
+        let Some(receiver) = facts
+            .associated
+            .trait_owner(method)
+            .and_then(|owner| facts.associated.schema(owner))
+        else {
+            return Ok(false);
+        };
+        let receiver = receiver.self_type;
+        let Some(Kind::FunctionItem { signature, .. }) = types.kind(item_type) else {
+            return Ok(false);
+        };
+        let Some(Kind::Function { parameters, .. }) = types.kind(signature) else {
+            return Ok(false);
+        };
+        let inputs = types
+            .list(parameters)
+            .ok_or("missing selected trait method inputs")?;
+        let mut arguments = Uses::constraining();
+        let mut collected = false;
+        for predicate in predicates {
+            let Clause::Predicate(Predicate {
+                ty,
+                bound: PredicateBound::ProjectionEqual(result),
+            }) = predicate.value
+            else {
+                continue;
+            };
+            let (Some(Kind::Projection(left)), Some(Kind::Projection(right))) =
+                (types.kind(ty), types.kind(result))
+            else {
+                continue;
+            };
+            let other = if left.subject == receiver {
+                right.subject
+            } else if right.subject == receiver {
+                left.subject
+            } else {
+                continue;
+            };
+            let Some(Kind::Parameter(parameter)) = types.kind(other) else {
+                continue;
+            };
+            if !collected {
+                for &input in inputs.iter().skip(1) {
+                    arguments.collect(types, input)?;
+                }
+                collected = true;
+            }
+            if arguments.parameters.contains(&parameter) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
     fn bind_library_owner(
         &mut self,
