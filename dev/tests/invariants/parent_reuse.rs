@@ -310,6 +310,7 @@ fn copy_link(
         universals: link.universals,
         bridges: link.bridges.clone(),
         formation: link.formation.clone(),
+        creator_only_from: link.creator_only_from,
     }
 }
 

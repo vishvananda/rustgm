@@ -272,7 +272,7 @@ impl Checker<'_> {
         if inputs.is_empty() {
             return Ok(None);
         }
-        let callable_slots = self.formation_callable_slots(closure)?;
+        let callable_slots = self.callable_slots(closure)?;
         Ok(Some(Formation {
             identity: closure.identity,
             inputs: inputs.into_boxed_slice(),
@@ -281,19 +281,18 @@ impl Checker<'_> {
         }))
     }
 
-    /// Local slots of captured roots remain formation obligations. Only slots
-    /// visible in the sealed closure Self can also become caller conditions.
-    fn formation_callable_slots(
+    /// Only slots visible in the sealed callable type can become caller conditions.
+    fn callable_slots(
         &mut self,
         closure: crate::sema::closures::Body,
     ) -> Result<Box<[u16]>, Error> {
-        let Some(execution) = closure.execution else {
-            return Ok(Box::new([]));
-        };
         let mut observation = Bound::observe_regions();
-        observation
-            .apply(&mut self.facts.types, execution.self_ty)
-            .map_err(|e| self.error(closure.source.node, e))?;
+        if let Some(execution) = closure.execution {
+            observation.apply(&mut self.facts.types, execution.self_ty)
+        } else {
+            observation.signature(&mut self.facts.types, closure.signature, closure.universals)
+        }
+        .map_err(|e| self.error(closure.source.node, e))?;
         let mut slots: Vec<_> = observation
             .observed_regions()
             .filter_map(|region| match region.bound_parts() {
@@ -320,9 +319,28 @@ impl Checker<'_> {
         let formation = self.closure_formation(source)?;
         let captured = self.capture_input_ports(source, interface.outputs.is_none())?;
         let imported = interface.imported_inputs;
-        if interface.outputs.is_none() && formation.is_none() && captured.is_empty() && !imported {
-            return Ok(());
-        }
+        let inherited = interface
+            .inherited()
+            .map_err(|e| self.error(source.node, e))?;
+        let creator_only_from = if interface.outputs.is_none()
+            && formation.is_none()
+            && captured.is_empty()
+            && !imported
+        {
+            let Some(closure) = self.facts.closures.get(source).copied() else {
+                return Ok(());
+            };
+            if interface.opening.universal_count() <= inherited as usize
+                || !self.callable_slots(closure)?.is_empty()
+            {
+                return Ok(());
+            }
+            // A contextual projection can import parent variables before
+            // normalization removes them from the closure's callable types.
+            Some(inherited)
+        } else {
+            None
+        };
         let parent_body = parent;
         let mut bridges = Vec::new();
         let outputs: HashSet<_> = interface
@@ -340,13 +358,6 @@ impl Checker<'_> {
         let mut closing = interface
             .closing(&self.state.call_types, true)
             .map_err(|e| self.error(source.node, e))?;
-        let inherited = if captured.is_empty() {
-            0
-        } else {
-            interface
-                .inherited()
-                .map_err(|e| self.error(source.node, e))?
-        };
         for (parent, slot) in interface.opening.universal_pairs() {
             let (_, ordinal) = slot
                 .bound_parts()
@@ -354,7 +365,11 @@ impl Checker<'_> {
             let captured_slot = captured.contains(slot);
             // A relation on a captured input can name an enclosing universal
             // that appears only in the creator's generic premises.
-            if outputs.is_empty() && !imported && !captured_slot && u32::from(ordinal) >= inherited
+            if outputs.is_empty()
+                && !imported
+                && !captured_slot
+                && creator_only_from.is_none()
+                && (captured.is_empty() || u32::from(ordinal) >= inherited)
             {
                 continue;
             }
@@ -383,6 +398,13 @@ impl Checker<'_> {
             });
         }
         bridges.sort_unstable_by_key(|bridge| bridge.slot);
+        if creator_only_from.is_some_and(|first| {
+            bridges
+                .last()
+                .is_none_or(|bridge| u32::from(bridge.slot) < first)
+        }) {
+            return Ok(());
+        }
         let link = Link {
             source: source.into(),
             parent: parent.into(),
@@ -391,6 +413,7 @@ impl Checker<'_> {
             universals: self.state.body_binders,
             bridges: bridges.into_boxed_slice(),
             formation,
+            creator_only_from,
         };
         self.facts
             .nested_outputs

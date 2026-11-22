@@ -308,6 +308,33 @@ impl Checked<'_> {
         let &index = self.state.closures.get(&identity)?;
         Some((self.templates.get(index)?, &self.state.contracts[index]))
     }
+    /// These slots are absent from the callable type. Specialization keeps their
+    /// source identities and the proof paid by the exact checked creator.
+    pub(crate) fn creator_conditions(
+        &self,
+        input: &Contract,
+    ) -> Result<&[crate::types::outlives::Pair], &'static str> {
+        if input
+            .output
+            .as_ref()
+            .is_none_or(|link| link.creator_only_from.is_none())
+        {
+            return Ok(&[]);
+        }
+        let BodyKey::Closure(identity) = input.key else {
+            return Err("creator conditions require a closure template");
+        };
+        let index = *self
+            .state
+            .closures
+            .get(&identity)
+            .ok_or("missing checked closure")?;
+        self.state.regions.bodies[index]
+            .output
+            .as_ref()
+            .ok_or("creator conditions require the checked source interface")?
+            .creator_conditions(input)
+    }
     pub(super) fn contract(&self, body: &crate::body::ir::Body) -> Option<&regions::Body> {
         let &index = match body.key() {
             BodyKey::Declaration(definition) => self.state.index.get(&ItemId(definition.0)),

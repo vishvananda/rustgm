@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "stream.rs": {
+      "sha256": "7b4304185e7d75519b034177bd0f5c942f30290def68f3f138ad94a4c8b97a8f",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0
+        },
+        {
+          "cfg": [
+            "escaping"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1
+        }
+      ]
+    }
+  },
+  "provenance": "Mini-core language-item declarations copied from scoped-callback-lifetimes/scoped.rs. See NOTICE and third_party/sources.json for upstream attribution."
+}

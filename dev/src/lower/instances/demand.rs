@@ -986,6 +986,10 @@ pub(super) fn specialize(
         cleanup,
     )
     .map_err(error)?;
+    materialized
+        .contract
+        .assumptions
+        .extend_from_slice(templates.creator_conditions(request.input).map_err(error)?);
     // This demand selects native execution only after authenticating the exact
     // checked original, instance and caller above. Its ordinary cleanup still
     // needs the full materialized region/loan proof. The original template and

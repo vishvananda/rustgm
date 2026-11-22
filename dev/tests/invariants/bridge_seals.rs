@@ -11,6 +11,7 @@ fn copy_link(link: &Link) -> Link {
         universals: link.universals,
         bridges: link.bridges.clone(),
         formation: link.formation.clone(),
+        creator_only_from: link.creator_only_from,
     }
 }
 #[test]

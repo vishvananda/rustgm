@@ -45,6 +45,7 @@ fn uncaptured_specialization_retains_every_source_lifetime_debt()
             output: true,
         }]),
         formation: None,
+        creator_only_from: None,
     }));
     for unpaid in [false, true] {
         let mut source = original.clone();

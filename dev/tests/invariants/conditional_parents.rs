@@ -166,6 +166,7 @@ fn conditional_inline_originals_require_the_exact_complete_parent_component() ->
             universals: link.universals,
             bridges: link.bridges.clone(),
             formation: None,
+            creator_only_from: None,
         }));
         let error = verify(&component, &component.templates, contracts)
             .err()

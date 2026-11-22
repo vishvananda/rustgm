@@ -47,6 +47,14 @@ impl Registry {
                 .formation
                 .as_ref()
                 .is_some_and(|formation| !formation.valid_slots(link.universals))
+            || link.creator_only_from.is_some_and(|first| {
+                link.revision != 0
+                    || link.formation.is_some()
+                    || link
+                        .bridges
+                        .last()
+                        .is_none_or(|bridge| u32::from(bridge.slot) < first)
+            })
             || usize::try_from(link.revision).ok()
                 != Some(link.bridges.iter().filter(|bridge| bridge.output).count())
         {
@@ -116,6 +124,9 @@ pub struct Link {
     pub universals: u32,
     pub bridges: Box<[Bridge]>,
     pub formation: Option<Formation>,
+    /// Imported inference slots that have no occurrence in the sealed callable
+    /// signature or capture field types. Their private debts belong to the creator.
+    pub creator_only_from: Option<u32>,
 }
 #[derive(Clone)]
 pub struct Formation {
@@ -163,6 +174,7 @@ mod tests {
             universals: 0,
             bridges: Box::new([]),
             formation: None,
+            creator_only_from: None,
         }
     }
     #[test]

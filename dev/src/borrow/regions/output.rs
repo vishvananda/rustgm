@@ -20,6 +20,7 @@ pub struct Summary {
     pub(super) parent: BodyOrigin,
     pub(super) requirements: Vec<Obligation>,
     conditions: Option<std::sync::Arc<[crate::types::outlives::Pair]>>,
+    creator_only: bool,
     source: crate::body::ir::BodyOrigin,
     key: crate::body::ir::BodyKey,
     link: std::sync::Arc<crate::body::regions::OutputLink>,
@@ -35,7 +36,20 @@ impl Summary {
         if !self.matches(input) {
             return Err("execution conditions belong to another source proof");
         }
-        Ok(self.conditions.as_ref())
+        Ok(self.conditions.as_ref().filter(|_| !self.creator_only))
+    }
+    pub(crate) fn creator_conditions(
+        &self,
+        input: &Contract,
+    ) -> Result<&[crate::types::outlives::Pair], &'static str> {
+        if !self.matches(input) {
+            return Err("creator conditions belong to another source proof");
+        }
+        Ok(self
+            .conditions
+            .as_deref()
+            .filter(|_| self.creator_only)
+            .unwrap_or_default())
     }
     pub(crate) fn parent_goals(
         &self,
@@ -97,6 +111,7 @@ pub(super) fn finish(
                 .ok_or(region_graph::Error::Identity)
         }
     };
+    let creator_only = creator_only(link, &conditions);
     let formal = (!conditions.regions.is_empty())
         .then(|| conditions.regions.iter().map(|&(a, b, _)| (a, b)).collect());
     let source = input.source.into();
@@ -133,8 +148,23 @@ pub(super) fn finish(
             source: input.source,
             key: input.key,
             link: std::sync::Arc::clone(link),
+            creator_only,
         }),
     ))
+}
+
+fn creator_only(link: &crate::body::regions::OutputLink, conditions: &OutputConditions) -> bool {
+    // The creator pays every debt. A fully private group has no image to check
+    // at invocation. Keep the complete group if any condition names a visible
+    // region, since the relations can then constrain one another.
+    let Some(first) = link.creator_only_from else {
+        return false;
+    };
+    let private = |region: RegionId| matches!(region.bound_parts(), Some((0, slot)) if u32::from(slot) >= first);
+    conditions
+        .regions
+        .iter()
+        .all(|&(a, b, _)| private(a) && private(b))
 }
 
 struct Order {
