@@ -54,6 +54,18 @@ fn selected_generic_pattern_fields_keep_lifetime_and_move_checks() -> Result {
     Ok(())
 }
 #[test]
+fn closure_formation_prepares_parent_projection_storage() -> Result {
+    let source = crate::resolve::fixture("pa31/tests/spec/capture-formation-storage/overlay.rs")?;
+    let mut config = rustgm::expand::config::Config::default();
+    config.set_lint_cap(rustgm::support::diagnostics::LintCap::Allow);
+    let report =
+        crate::resolve::source_provider_config(&source, "capture_formation_storage", &config)?;
+    let facts = rustgm::pipeline::analyze_source(&report)?.facts;
+    rustgm::body::templates::build(&report, &facts)?;
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires the locked CPPGM object backend and a C compiler"]
 fn generic_reference_patterns_execute() -> Result {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");

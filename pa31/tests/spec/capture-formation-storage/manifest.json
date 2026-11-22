@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "overlay.rs": {
+      "sha256": "2823ab4dd5f4f05d540784f20563b690d901623dc3f946c1111087c84acbe35d",
+      "rustc_status": 0,
+      "template_status": 0
+    }
+  },
+  "provenance": "Mini-core language-item declarations copied from generic-pattern-storage/tuple.rs. See NOTICE and third_party/sources.json for upstream attribution."
+}

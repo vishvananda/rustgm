@@ -24,15 +24,20 @@ impl Checker<'_> {
             // from its contextual result. CFG projection reads the former place.
             for &node in &self.state.touched {
                 self.storage_visit(&mut work, 1)?;
-                if let Kind::Unary {
-                    op: Unary::Dereference,
-                    operand,
-                } = self.kind(node)
-                {
-                    let actual = solved.types[self.term(operand)?.0 as usize];
-                    if let Some(referent) = self.storage_referent(node, actual)? {
-                        roots.push(referent);
+                match self.kind(node) {
+                    Kind::Unary {
+                        op: Unary::Dereference,
+                        operand,
+                    } => {
+                        let actual = solved.types[self.term(operand)?.0 as usize];
+                        if let Some(referent) = self.storage_referent(node, actual)? {
+                            roots.push(referent);
+                        }
                     }
+                    Kind::Closure { .. } => {
+                        self.capture_formation_storage(node, &mut roots, &mut work)?;
+                    }
+                    _ => {}
                 }
             }
             self.pattern_storage(solved, &mut roots, &mut work)
@@ -42,6 +47,45 @@ impl Checker<'_> {
         result?;
         Ok(roots)
     }
+    // Closure construction projects selected captures in the parent's lifetime
+    // context. The closure environment may store only a reference to that place.
+    fn capture_formation_storage(
+        &self,
+        node: NodeId,
+        roots: &mut Vec<TypeId>,
+        work: &mut usize,
+    ) -> Result<(), Error> {
+        let Some(environment) = self
+            .facts
+            .closures
+            .get(self.key(node))
+            .and_then(|closure| self.facts.closures.environment(closure.identity))
+        else {
+            return Ok(());
+        };
+        let mut seen = HashSet::default();
+        for mut path in environment
+            .plan
+            .captures()
+            .iter()
+            .map(|capture| capture.path)
+            .chain(environment.mentions.iter().copied())
+        {
+            loop {
+                self.storage_visit(work, 1)?;
+                if !seen.insert(path) {
+                    break;
+                }
+                let Some((parent, _)) = environment.plan.parent(path) else {
+                    break;
+                };
+                roots.push(environment.formation_types[path.index()]);
+                path = parent;
+            }
+        }
+        Ok(())
+    }
+
     /// Local bodies reuse the header producer's input-graph bound. A staged
     /// consumer has no local header producer: its installed source-header owner
     /// pays these queries through the existing selected-work account instead.
