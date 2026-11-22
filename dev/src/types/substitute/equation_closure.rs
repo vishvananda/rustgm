@@ -242,7 +242,8 @@ impl Bound {
     /// Restore one immutable callable context using equations from its selected
     /// proof graph. Equations remain obligations; this fold does not prove them.
     /// # Errors
-    /// Rejects invalid caller frontiers and non-free alias identities.
+    /// Rejects invalid caller frontiers and replacement of bound identities.
+    /// Identity mappings pin a bound slot before consulting its equations.
     pub(crate) fn close_projection_regions(
         caller_end: u32,
         captures: u16,
@@ -250,7 +251,9 @@ impl Bound {
     ) -> Result<Self, &'static str> {
         if caller_end == 0
             || caller_end >= 0x8000_0000
-            || anchors.keys().any(|id| id.bound_parts().is_some())
+            || anchors
+                .iter()
+                .any(|(id, anchor)| id.bound_parts().is_some() && id != anchor)
         {
             return Err("invalid projection closure context");
         }

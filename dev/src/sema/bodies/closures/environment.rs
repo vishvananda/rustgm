@@ -275,9 +275,20 @@ impl Checker<'_> {
         let work = equations
             .extend(solved.region_equalities.iter().copied())
             .map_err(|e| self.error(source, e))?;
-        self.facts.body_work.canonical_steps += work;
-        let mut fold = Bound::close_projection_regions(1, 0, HashMap::default())
-            .map_err(|e| self.error(source, e))?;
+        // A captured slot comes from the creator. A use in this closure may
+        // require it to equal another region, including static, but the
+        // execution receiver still stores the creator's original input.
+        let mut anchors = HashMap::default();
+        for (slot, &alias) in self.state.call_types.universal_aliases().iter().enumerate() {
+            let slot = u16::try_from(slot)
+                .map_err(|_| self.error(source, "too many capture lifetimes"))?;
+            let slot = RegionId::bound(0, slot).map_err(|e| self.error(source, e))?;
+            anchors.insert(slot, slot);
+            anchors.insert(alias, slot);
+        }
+        self.facts.body_work.canonical_steps += work + anchors.len();
+        let mut fold =
+            Bound::close_projection_regions(1, 0, anchors).map_err(|e| self.error(source, e))?;
         fold.exchange_projection_equations(&mut equations)
             .map_err(|e| self.error(source, e))?;
         Ok(fold)

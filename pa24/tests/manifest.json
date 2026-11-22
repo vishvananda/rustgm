@@ -14989,6 +14989,40 @@
       },
       "maintainer_origin": "lane B-2 stage-1 census reductions; independently declared before oracle",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/captured-callback-reference/payment.rs",
+      "source_sha256": "a6a25f527c3aa476772a7aa8d84a64f3ef123f701bafcdecded31f981aec5722",
+      "exit_status": 0,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ],
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/captured-callback-reference/short-result.rs",
+      "source_sha256": "8f156920e3711bc0148a67d8438a0817391c2c067a5d40772dbe156479c3dcf5",
+      "exit_status": 1,
+      "input": "file",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "features": [
+        "pa24.closure-captures-and-calls"
+      ]
     }
   ]
 }
