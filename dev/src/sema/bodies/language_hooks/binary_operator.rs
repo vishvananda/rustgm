@@ -394,6 +394,10 @@ impl Checker<'_> {
         else {
             return Ok(false);
         };
+        // Str is a primitive type, but its comparisons use the selected trait.
+        if a == Primitive::Str || b == Primitive::Str {
+            return Ok(false);
+        }
         if !super::super::scalar::binary(op, a, b)
             || self.facts.types.kind(result) != Some(Type::Primitive(crate::types::Primitive::Bool))
         {
