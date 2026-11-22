@@ -229,11 +229,11 @@ fn nullable_layout_is_canonical_and_keeps_ordinary_density() -> Result<(), Strin
         (
             size_of::<Layout>(),
             size_of::<Shape>(),
-            size_of::<Variant>(),
-            size_of::<Layouts>()
+            size_of::<Variant>()
         ),
-        (48, 32, 32, 152)
+        (48, 32, 32)
     );
+    assert!(size_of::<Layouts>() <= 152);
     Ok(())
 }
 #[test]

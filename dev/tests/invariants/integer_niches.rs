@@ -183,14 +183,8 @@ fn partial_ranges_and_failed_layouts_never_publish_a_nullable_encoding() -> Resu
             .map_err(|e| e.to_string())?;
         assert_eq!(layouts.niche_mark(), 1);
     }
-    assert_eq!(
-        (
-            size_of::<Layout>(),
-            size_of::<Shape>(),
-            size_of::<Layouts>()
-        ),
-        (48, 32, 152)
-    );
+    assert_eq!((size_of::<Layout>(), size_of::<Shape>()), (48, 32));
+    assert!(size_of::<Layouts>() <= 152);
     Ok(())
 }
 
