@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "loop.rs": {
+      "sha256": "358e85423160b44d1daf0bc9aa6d3088e426a470064ef466f8b0e237ad65b62a",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "strict_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "escaping"
+          ],
+          "rustc_status": 1,
+          "strict_status": 1,
+          "diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  }
+}

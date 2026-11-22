@@ -2543,6 +2543,8 @@ impl Checker<'_> {
             self.known(frame.node, TypeId::NEVER)?
         };
         self.equate(frame.node, frame.result, common)?;
+        // The join can introduce fresh lifetime identities inside an aggregate.
+        // Coerce incoming values to the type of the frame's actual result slot.
         let reference = matches!(
             self.contextual_head(frame.node, common)?,
             Some(Constructor::Reference { .. })
@@ -2564,7 +2566,7 @@ impl Checker<'_> {
                 )?;
                 self.finish_reference_coercions()?;
             } else {
-                self.coerce(frame.node, if reference { frame.result } else { common })?;
+                self.coerce(frame.node, frame.result)?;
             }
         }
         let mut site = frame.breaks;
@@ -2572,7 +2574,7 @@ impl Checker<'_> {
             if let Some(value) = self.state.breaks[index].value {
                 self.coerce_one(
                     value,
-                    if reference { frame.result } else { common },
+                    frame.result,
                     identity_reborrow || self.state.reference_expected.contains(&value),
                 )?;
                 self.finish_reference_coercions()?;

@@ -8022,6 +8022,26 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/aggregate-loop-results/loop.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "input": "file",
+      "source_sha256": "358e85423160b44d1daf0bc9aa6d3088e426a470064ef466f8b0e237ad65b62a",
+      "features": [
+        "pa18.constructors"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": false
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
