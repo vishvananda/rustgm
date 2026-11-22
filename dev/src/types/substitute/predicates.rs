@@ -129,11 +129,17 @@ impl Bound {
                 let predicate =
                     self.predicate_observed::<CHARGED>(store, value.predicate, 1, charge)?;
                 let value = Quantified { predicate, ..value };
-                Clause::ForAll(if CHARGED {
-                    store.intern_quantified_charged(value, charge)?
-                } else {
-                    store.intern_quantified(value)?
-                })
+                // Both operations leave binders below the fold depth intact
+                // and shift inserted argument lifetimes outside those binders.
+                Clause::ForAll(
+                    if matches!(self.action, Action::Remove | Action::Shift(_)) {
+                        store.intern_quantified_with_preserved_slots::<CHARGED>(value, charge)?
+                    } else if CHARGED {
+                        store.intern_quantified_charged(value, charge)?
+                    } else {
+                        store.intern_quantified(value)?
+                    },
+                )
             }
         })
     }

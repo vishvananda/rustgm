@@ -154,3 +154,73 @@ fn slot_summary_checks_both_sides_and_does_not_depend_on_previous_binder_counts(
     })?;
     Ok(())
 }
+
+#[test]
+fn specializing_quantified_clauses_preserves_slots_without_rescanning() -> Result<(), &'static str>
+{
+    use crate::types::{
+        ItemId,
+        arguments::Argument,
+        parameters::{Parameter, ParameterKind},
+        substitute::Bound as Substitute,
+    };
+
+    let mut store = Store::default();
+    let parameter = store.intern_parameter(Parameter {
+        owner: ItemId(3),
+        index: 0,
+        kind: ParameterKind::Type { sized: true },
+    })?;
+    let referent = store.intern(Kind::Parameter(parameter))?;
+    let local = RegionId::bound(0, 0)?;
+    let ty = store.intern(Kind::Reference {
+        mutable: false,
+        region: local,
+        referent,
+    })?;
+    let source = store.intern_quantified(Quantified {
+        bound_regions: 1,
+        predicate: Predicate {
+            ty,
+            bound: Bound::Sized,
+        },
+    })?;
+    for slot in 0..128 {
+        let replacement = store.intern(Kind::Reference {
+            mutable: false,
+            region: RegionId::bound(0, slot)?,
+            referent: TypeId::UNIT,
+        })?;
+        let arguments = [(parameter, Argument::Type(replacement))];
+        for mut fold in [
+            Substitute::parameters(&store, &arguments)?,
+            Substitute::parameters_captured(&store, &arguments, Vec::new())?,
+        ] {
+            let Clause::ForAll(id) = fold.clause(&mut store, Clause::ForAll(source))? else {
+                return Err("substitution lost the quantified binder");
+            };
+            let value = store.quantified(id).ok_or("missing specialized clause")?;
+            assert_eq!(value.bound_regions, 1);
+            let shifted = store.intern(Kind::Reference {
+                mutable: false,
+                region: RegionId::bound(1, slot)?,
+                referent: TypeId::UNIT,
+            })?;
+            assert_eq!(
+                store.kind(value.predicate.ty),
+                Some(Kind::Reference {
+                    mutable: false,
+                    region: local,
+                    referent: shifted,
+                })
+            );
+        }
+    }
+    let storage = store
+        .arguments
+        .as_ref()
+        .and_then(|s| s.clauses.as_ref())
+        .ok_or("missing clauses")?;
+    assert!(storage.slots.steps <= 8);
+    Ok(())
+}

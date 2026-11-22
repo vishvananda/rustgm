@@ -275,16 +275,26 @@ impl Store {
     /// Rejects unknown children, unbound locals, exhausted occurrence work and
     /// counts or identities outside the compact representation.
     pub fn intern_quantified(&mut self, value: Quantified) -> Result<QuantifiedId, &'static str> {
-        self.intern_quantified_observed::<false>(value, &|_, _| Ok(()))
+        self.intern_quantified_observed::<false, true>(value, &|_, _| Ok(()))
     }
     pub(crate) fn intern_quantified_charged(
         &mut self,
         value: Quantified,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<QuantifiedId, &'static str> {
-        self.intern_quantified_observed::<true>(value, charge)
+        self.intern_quantified_observed::<true, true>(value, charge)
     }
-    fn intern_quantified_observed<const CHARGED: bool>(
+    /// Publish a rewrite of a validated clause whose local slot coordinates
+    /// the substitution preserved. The original clause is in this same store.
+    pub(in crate::types) fn intern_quantified_with_preserved_slots<const CHARGED: bool>(
+        &mut self,
+        value: Quantified,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<QuantifiedId, &'static str> {
+        self.intern_quantified_observed::<CHARGED, false>(value, charge)
+    }
+
+    fn intern_quantified_observed<const CHARGED: bool, const VALIDATE: bool>(
         &mut self,
         value: Quantified,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
@@ -300,12 +310,15 @@ impl Store {
         {
             return Ok(id);
         }
-        if value.bound_regions > u32::from(u16::MAX) + 1 {
-            return Err("too many quantified lifetime slots");
-        }
-        let (required, _) = self.clause_local_slots_observed::<CHARGED>(value.predicate, charge)?;
-        if required > value.bound_regions {
-            return Err("quantified predicate references an unbound lifetime");
+        if VALIDATE {
+            if value.bound_regions > u32::from(u16::MAX) + 1 {
+                return Err("too many quantified lifetime slots");
+            }
+            let (required, _) =
+                self.clause_local_slots_observed::<CHARGED>(value.predicate, charge)?;
+            if required > value.bound_regions {
+                return Err("quantified predicate references an unbound lifetime");
+            }
         }
         let storage = self
             .arguments
