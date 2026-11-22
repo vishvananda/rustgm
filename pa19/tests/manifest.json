@@ -16484,6 +16484,66 @@
       }
     },
     {
+      "path": "tests/spec/impl-lifetimes/inherent-self-implied-regions.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/inherent-self-qualified-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/inherent-self-short-borrow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/impl-lifetimes/inherent-self-unrelated-regions.rs",
+      "exit_status": 1,
+      "features": [
+        "pa19.impl-lifetimes"
+      ],
+      "mode": "--emit-lowir",
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
       "path": "tests/spec/call-argument-context/retained.rs",
       "exit_status": 0,
       "features": [

@@ -12,7 +12,7 @@ use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
     types::{
-        Kind, TypeId,
+        GenericArgs, Kind, TypeId,
         arguments::Argument,
         outlives::{Pair, Queries},
         parameters::{
@@ -41,23 +41,24 @@ impl Creators {
         member: DefId,
         contract: &mut Contract,
     ) -> Result<(), &'static str> {
-        let Some(implementation) = facts.source_trait_impl(member) else {
+        let Some((owner, self_type, application)) = facts.source_impl_inputs(member) else {
             return Ok(());
         };
-        let predicate = implementation.predicate;
-        let Some((application, _)) = predicate.bound.trait_parts() else {
-            return Ok(());
-        };
-        let implied = match self.implied.entry(implementation.owner) {
+        let implied = match self.implied.entry(owner) {
             Entry::Occupied(entry) => entry.into_mut(),
             Entry::Vacant(entry) => {
-                let application = facts
-                    .types
-                    .trait_application(application)
-                    .ok_or("missing implementation trait application")?;
+                let arguments = if let Some(application) = application {
+                    facts
+                        .types
+                        .trait_application(application)
+                        .ok_or("missing implementation trait application")?
+                        .arguments
+                } else {
+                    GenericArgs::EMPTY
+                };
                 let arguments = facts
                     .types
-                    .arguments(application.arguments)
+                    .arguments(arguments)
                     .ok_or("missing implementation trait arguments")?
                     .filter_map(|argument| match argument {
                         Argument::Type(ty) => Some(ty),
@@ -65,7 +66,7 @@ impl Creators {
                     });
                 entry.insert(compute_inputs(
                     facts,
-                    std::iter::once(predicate.ty).chain(arguments),
+                    std::iter::once(self_type).chain(arguments),
                 )?)
             }
         };

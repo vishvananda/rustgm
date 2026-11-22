@@ -1,9 +1,13 @@
 //! Defining const checking is distinct from executable function eligibility.
 use super::{associated::OwnerKind, model::Declarations};
 use crate::resolve::{body_origin::ProofSite, model::DefId, unit::NodeKey};
-use crate::types::parameters::{
-    clauses::Clause,
-    predicates::{Bound, Predicate},
+use crate::types::{
+    TypeId,
+    parameters::{
+        clauses::Clause,
+        predicates::{Bound, Predicate},
+    },
+    traits::ApplicationId,
 };
 mod abstract_uses;
 pub(in crate::sema) mod assumption_environment;
@@ -28,26 +32,27 @@ impl FunctionContext {
     }
 }
 impl Declarations {
-    /// A source member can inherit formation facts from its completed impl.
-    pub(crate) fn source_trait_impl(
+    /// A source member inherits the well-formed inputs of its completed impl.
+    pub(crate) fn source_impl_inputs(
         &self,
         member: DefId,
-    ) -> Option<&super::traits::implementations::Implementation> {
+    ) -> Option<(DefId, TypeId, Option<ApplicationId>)> {
         let owner = self.associated.get(self.associated.owner(member)?)?;
-        if !matches!(
-            owner.kind,
-            OwnerKind::Impl {
-                trait_type: Some(_),
-                ..
-            }
-        ) {
+        let OwnerKind::Impl { trait_type, .. } = owner.kind else {
             return None;
+        };
+        let definition = owner.self_definition;
+        if trait_type.is_none() {
+            let schema = self.associated.schema(member)?;
+            return Some((definition, schema.self_type, None));
         }
         let registry = self.generics.implementations.as_deref()?;
-        if !registry.is_validated(owner.self_definition) {
+        if !registry.is_validated(definition) {
             return None;
         }
-        registry.header(owner.self_definition)
+        let predicate = registry.header(definition)?.predicate;
+        let (application, _) = predicate.bound.trait_parts()?;
+        Some((definition, predicate.ty, Some(application)))
     }
 
     /// Authenticated source policy can defer defining const checks.
