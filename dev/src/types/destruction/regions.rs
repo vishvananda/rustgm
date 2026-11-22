@@ -1,4 +1,5 @@
 //! Drop checking follows owned fields; references do not own their referents.
+mod cycles;
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     GenericArgs, ItemId, Kind, RegionId, Store, TypeId,
@@ -110,25 +111,48 @@ impl Regions {
             Some(State::Ready(_) | State::Failed(_))
         ) {
             self.work.push((key, false));
-            if let Err(message) = self.run(types, definitions) {
-                for state in self.states.values_mut() {
-                    if matches!(state, State::Active) {
-                        *state = State::Failed(message);
-                    }
+            let result = self.run(types, definitions).and_then(|finished| {
+                if finished {
+                    Ok(())
+                } else {
+                    self.clear_active(None);
+                    self.resolve_cycles(types, definitions, key)
                 }
-                self.work.clear();
+            });
+            if let Err(message) = result {
+                self.clear_active(Some(message));
                 self.states.entry(key).or_insert(State::Failed(message));
                 return Err(message);
             }
         }
         self.result(key)
     }
-    fn result(&self, key: Key) -> Result<Parts<'_>, &'static str> {
+    fn clear_active(&mut self, failure: Option<&'static str>) {
+        for (key, finish) in self.work.drain(..) {
+            if finish && let Some(state @ State::Active) = self.states.get_mut(&key) {
+                if let Some(message) = failure {
+                    *state = State::Failed(message);
+                } else {
+                    self.states.remove(&key);
+                }
+            }
+        }
+    }
+    fn requirements<'a>(
+        &'a self,
+        key: Key,
+        cycle: Option<&'a cycles::Graph>,
+    ) -> Result<Parts<'a>, &'static str> {
         match self.states.get(&key) {
             Some(State::Ready(id)) => self.lists.get(*id).ok_or("invalid drop region list"),
             Some(State::Failed(message)) => Err(message),
-            _ => Err("missing drop region dependency"),
+            _ => cycle
+                .and_then(|graph| graph.parts(key))
+                .ok_or("missing drop region dependency"),
         }
+    }
+    fn result(&self, key: Key) -> Result<Parts<'_>, &'static str> {
+        self.requirements(key, None)
     }
     fn charge(&mut self, cost: usize) -> Result<(), &'static str> {
         self.steps = self
@@ -146,92 +170,37 @@ impl Regions {
             .ok_or("drop region query exceeds 64 MB budget")?;
         Ok(())
     }
-    fn run(&mut self, types: &Store, definitions: &Definitions) -> Result<(), &'static str> {
-        while let Some((key, finish)) = self.work.pop() {
+    fn run(&mut self, types: &Store, definitions: &Definitions) -> Result<bool, &'static str> {
+        while let Some(&(key, finish)) = self.work.last() {
             self.charge(1)?;
+            self.work.pop();
             match self.states.get(&key) {
                 Some(State::Ready(_)) => continue,
                 Some(State::Failed(message)) => return Err(message),
                 Some(State::Active) if !finish => {
-                    return Err("recursive owned drop region requirement");
+                    return Ok(false);
                 }
                 _ => {}
             }
-            if let Key::Type(ty) = key {
-                let kind = types.kind(ty).ok_or("invalid drop region type")?;
-                if let Some(environment) = &self.environment {
-                    let assumed = environment.assumed_with(types, ty, &mut self.builtins)?;
-                    let copy = if let Kind::Parameter(id) = kind {
-                        environment
-                            .abilities(id)
-                            .ok_or("drop parameter is outside its environment")?
-                            .copy
-                            || assumed.copy
-                    } else {
-                        assumed.copy
-                    };
-                    if copy || matches!(kind, Kind::Parameter(_)) {
-                        let mut values = Values::default();
-                        if !copy && let Kind::Parameter(id) = kind {
-                            values.parameters.push(id);
-                        }
-                        self.retain(2 * size_of::<(Key, State)>())?;
-                        self.publish(key, &mut values)?;
-                        continue;
-                    }
-                } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
-                    return Err("generic drop checking requires a parameter environment");
-                }
-                if matches!(kind, Kind::Adt(item, _) if !self.custom.contains(&item)
-                    && definitions.destruction(item) == Some(crate::types::aggregate::FieldDestruction::Suppressed))
-                {
-                    let mut values = Values::default();
-                    self.retain(2 * size_of::<(Key, State)>())?;
-                    self.publish(key, &mut values)?;
-                    continue;
-                }
-                let symbolic_result = match kind {
-                    Kind::Projection(application) => !types
-                        .projection_schema(application.item)
-                        .is_some_and(|schema| schema.copies.copy),
-                    Kind::Opaque(id, _) => {
-                        self.environment.is_some()
-                            && !types
-                                .opaque_declaration(id)
-                                .is_some_and(|declaration| declaration.copies.copy)
-                    }
-                    _ => false,
-                };
-                if symbolic_result {
-                    if let Some(environment) = &self.environment {
-                        let components = self.components.get_or_insert_with(Default::default);
-                        let parts = components.live_value(types, ty)?;
-                        if parts
-                            .parameters
-                            .iter()
-                            .any(|p| environment.abilities(*p).is_none())
-                        {
-                            return Err("drop projection input is outside its environment");
-                        }
-                        let mut values = Values::default();
-                        values.extend(parts);
-                        self.charge(values.parts().len())?;
-                        self.retain(2 * size_of::<(Key, State)>())?;
-                        self.publish(key, &mut values)?;
-                        continue;
-                    }
-                    return Err("associated type drop regions require normalization");
-                }
-            }
             if finish {
-                let mut values = self.finish(types, definitions, key)?;
+                let built = self
+                    .finish(types, definitions, key, None)
+                    .and_then(|mut values| self.publish(key, &mut values));
+                if built.is_err() {
+                    self.work.push((key, true));
+                }
+                built?;
+                continue;
+            }
+            if let Some(mut values) = self.terminal(types, definitions, key)? {
+                self.retain(2 * size_of::<(Key, State)>())?;
                 self.publish(key, &mut values)?;
                 continue;
             }
             self.retain(2 * size_of::<(Key, State)>())?;
             self.states.insert(key, State::Active);
             self.work.push((key, true));
-            dependencies(types, definitions, &self.custom, key, |child| {
+            dependencies(types, definitions, &self.custom, key, |child, _| {
                 self.steps = self
                     .steps
                     .checked_add(1)
@@ -241,7 +210,74 @@ impl Regions {
                 Ok(())
             })?;
         }
-        Ok(())
+        Ok(true)
+    }
+    fn terminal(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        key: Key,
+    ) -> Result<Option<Values>, &'static str> {
+        if let Key::Type(ty) = key {
+            let kind = types.kind(ty).ok_or("invalid drop region type")?;
+            if let Some(environment) = &self.environment {
+                let assumed = environment.assumed_with(types, ty, &mut self.builtins)?;
+                let copy = if let Kind::Parameter(id) = kind {
+                    environment
+                        .abilities(id)
+                        .ok_or("drop parameter is outside its environment")?
+                        .copy
+                        || assumed.copy
+                } else {
+                    assumed.copy
+                };
+                if copy || matches!(kind, Kind::Parameter(_)) {
+                    let mut values = Values::default();
+                    if !copy && let Kind::Parameter(id) = kind {
+                        values.parameters.push(id);
+                    }
+                    return Ok(Some(values));
+                }
+            } else if matches!(kind, Kind::Parameter(_) | Kind::ArrayTerm { .. }) {
+                return Err("generic drop checking requires a parameter environment");
+            }
+            if matches!(kind, Kind::Adt(item, _) if !self.custom.contains(&item)
+            && definitions.destruction(item) == Some(crate::types::aggregate::FieldDestruction::Suppressed))
+            {
+                return Ok(Some(Values::default()));
+            }
+            let symbolic_result = match kind {
+                Kind::Projection(application) => !types
+                    .projection_schema(application.item)
+                    .is_some_and(|schema| schema.copies.copy),
+                Kind::Opaque(id, _) => {
+                    self.environment.is_some()
+                        && !types
+                            .opaque_declaration(id)
+                            .is_some_and(|declaration| declaration.copies.copy)
+                }
+                _ => false,
+            };
+            if symbolic_result {
+                if let Some(environment) = &self.environment {
+                    let components = self.components.get_or_insert_with(Default::default);
+                    let parts = components.live_value(types, ty)?;
+                    if parts
+                        .parameters
+                        .iter()
+                        .any(|p| environment.abilities(*p).is_none())
+                    {
+                        return Err("drop projection input is outside its environment");
+                    }
+                    let mut values = Values::default();
+                    values.extend(parts);
+                    self.charge(values.parts().len())?;
+                    return Ok(Some(values));
+                }
+                return Err("associated type drop regions require normalization");
+            }
+        }
+        Ok(None)
     }
     fn argument_inputs(&mut self, types: &Store, ty: TypeId) -> Result<Values, &'static str> {
         let components = self.components.get_or_insert_with(Default::default);
@@ -288,6 +324,7 @@ impl Regions {
         types: &Store,
         definitions: &Definitions,
         key: Key,
+        cycle: Option<&cycles::Graph>,
     ) -> Result<Values, &'static str> {
         let mut values = Values::default();
         if let Key::Type(ty) = key
@@ -311,7 +348,7 @@ impl Regions {
                 if custom && relaxed.is_empty() {
                     return self.argument_inputs(types, ty);
                 }
-                self.collect(types, definitions, key, &mut values)?;
+                self.collect(types, definitions, key, cycle, &mut values)?;
                 return Ok(values);
             }
             let arguments = types
@@ -322,9 +359,9 @@ impl Regions {
                 values.regions.extend_from_slice(arguments);
                 return Ok(values);
             }
-            let count = self.result(Key::Nominal(item))?.len();
+            let count = self.requirements(Key::Nominal(item), cycle)?.len();
             self.charge(count)?;
-            let parts = self.result(Key::Nominal(item))?;
+            let parts = self.requirements(Key::Nominal(item), cycle)?;
             if !parts.parameters.is_empty() {
                 return Err("generic drop checking requires instantiated fields");
             }
@@ -339,7 +376,7 @@ impl Regions {
                 );
             }
         } else {
-            self.collect(types, definitions, key, &mut values)?;
+            self.collect(types, definitions, key, cycle, &mut values)?;
         }
         Ok(values)
     }
@@ -348,11 +385,12 @@ impl Regions {
         types: &Store,
         definitions: &Definitions,
         key: Key,
+        cycle: Option<&cycles::Graph>,
         values: &mut Values,
     ) -> Result<(), &'static str> {
         let mut cost = 0_usize;
-        dependencies(types, definitions, &self.custom, key, |child| {
-            let regions = self.result(child)?;
+        dependencies(types, definitions, &self.custom, key, |child, _| {
+            let regions = self.requirements(child, cycle)?;
             cost = cost
                 .checked_add(regions.len() + 1)
                 .filter(|n| *n <= 1_000_000)
@@ -391,7 +429,7 @@ fn dependencies(
     definitions: &Definitions,
     custom: &HashSet<ItemId>,
     key: Key,
-    mut visit: impl FnMut(Key) -> Result<(), &'static str>,
+    mut visit: impl FnMut(Key, bool) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     match key {
         Key::Nominal(item) => {
@@ -417,16 +455,16 @@ fn dependencies(
                     .list(types.future_application(identity, arguments)?.captures)
                     .ok_or("missing future drop captures")?
                 {
-                    visit(Key::Type(field))?;
+                    visit(Key::Type(field), false)?;
                 }
             }
-            Kind::Closure { environment, .. } => visit(Key::Type(environment))?,
+            Kind::Closure { environment, .. } => visit(Key::Type(environment), false)?,
             Kind::Opaque(id, _) => {
                 if !types
                     .opaque_declaration(id)
                     .is_some_and(|declaration| declaration.copies.copy)
                 {
-                    visit(Key::Type(types.storage_head(ty)?))?;
+                    visit(Key::Type(types.storage_head(ty)?), false)?;
                 }
             }
             Kind::Parameter(_) => {
@@ -442,14 +480,14 @@ fn dependencies(
                 let custom = custom.contains(&item);
                 if !custom || !definitions.drop_eyepatches(item).is_empty() {
                     if custom && let Some(content) = definitions.box_content(types, ty)? {
-                        visit(Key::Type(content))?;
+                        visit(Key::Type(content), true)?;
                     }
                     if let Some(target) = definitions.phantom_argument(types, ty)? {
-                        visit(Key::Type(target))?;
+                        visit(Key::Type(target), true)?;
                         return Ok(());
                     }
                     if types.region_args(args).is_some() {
-                        visit(Key::Nominal(item))?;
+                        visit(Key::Nominal(item), false)?;
                     } else {
                         fields(types, definitions.shape(types, ty)?.variants(), &mut visit)?;
                     }
@@ -459,10 +497,10 @@ fn dependencies(
             Kind::Array { element, .. }
             | Kind::ArrayTerm { element, .. }
             | Kind::Pattern { base: element, .. }
-            | Kind::Slice(element) => visit(Key::Type(element))?,
+            | Kind::Slice(element) => visit(Key::Type(element), false)?,
             Kind::Tuple(list) => {
                 for &ty in types.list(list).ok_or("invalid drop region tuple")? {
-                    visit(Key::Type(ty))?;
+                    visit(Key::Type(ty), false)?;
                 }
             }
             _ => {}
@@ -474,14 +512,14 @@ fn dependencies(
 fn fields(
     types: &Store,
     variants: impl Iterator<Item = crate::types::aggregate::Variant>,
-    visit: &mut impl FnMut(Key) -> Result<(), &'static str>,
+    visit: &mut impl FnMut(Key, bool) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     for variant in variants {
         for &ty in types
             .list(variant.fields)
             .ok_or("invalid drop region fields")?
         {
-            visit(Key::Type(ty))?;
+            visit(Key::Type(ty), false)?;
         }
     }
     Ok(())
