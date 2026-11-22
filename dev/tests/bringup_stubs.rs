@@ -773,7 +773,6 @@ const SCALAR: &[&str] = &["binary ushr", "index u8"];
 const STORED: &[&str] = &[
     "copy_nonoverlapping",
     "write_bytes",
-    "compare_bytes",
     "raw_eq",
     "volatile_load",
     "assert_zero_valid",
@@ -784,7 +783,7 @@ const STORED: &[&str] = &[
 const SHIMS: &[&str] = &[
     "rg.unqualified.copy_nonoverlapping.t",
     "rg.unqualified.write_bytes.t",
-    "rg.unqualified.compare_bytes.t",
+    "rg.source.compare_bytes.t",
     "rg.unqualified.raw_eq.t",
     "load volatile u32",
     "binary mul i64",
