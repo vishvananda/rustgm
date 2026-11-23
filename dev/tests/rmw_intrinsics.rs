@@ -119,7 +119,33 @@ fn rmw_order_encoding_and_widths_are_typed() -> Result<(), Box<dyn std::error::E
     let mut builder = Builder::default();
     let block = builder.block()?;
     builder.enter(block)?;
-    for ty in [Type::I8, Type::U16, Type::I64, Type::F32, Type::Ptr] {
+    for ty in [
+        Type::I8,
+        Type::U8,
+        Type::I16,
+        Type::U16,
+        Type::I32,
+        Type::U32,
+        Type::I64,
+    ] {
+        let value = Value {
+            ty,
+            operand: Operand::Parameter(1),
+        };
+        let swapped = builder.atomic_exchange(value, Operand::Parameter(0), RmwOrder::Relaxed)?;
+        let added = builder.atomic_add_fetch(value, Operand::Parameter(0), RmwOrder::Relaxed)?;
+        assert_eq!(swapped.ty, ty);
+        assert_eq!(added.ty, ty);
+    }
+    for ty in [
+        Type::Void,
+        Type::I1,
+        Type::I128,
+        Type::F32,
+        Type::F64,
+        Type::Ptr,
+        Type::V128,
+    ] {
         let value = Value {
             ty,
             operand: Operand::Parameter(1),
