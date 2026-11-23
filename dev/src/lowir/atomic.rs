@@ -66,6 +66,18 @@ pub enum RmwOrder {
 }
 impl RmwOrder {
     #[must_use]
+    pub(crate) const fn from_rust(order: crate::support::atomic_ordering::Ordering) -> Self {
+        use crate::support::atomic_ordering::Ordering;
+        match order {
+            Ordering::Relaxed => Self::Relaxed,
+            Ordering::Acquire => Self::Acquire,
+            Ordering::Release => Self::Release,
+            Ordering::AcquireRelease => Self::AcquireRelease,
+            Ordering::Sequential => Self::Sequential,
+        }
+    }
+
+    #[must_use]
     pub const fn encoding(self) -> u8 {
         match self {
             Self::Relaxed => 0,
@@ -86,6 +98,14 @@ impl CompareOrder {
     #[must_use]
     pub const fn new(success: RmwOrder, failure: LoadOrder) -> Self {
         Self { success, failure }
+    }
+    #[must_use]
+    pub(crate) const fn success(self) -> RmwOrder {
+        self.success
+    }
+    #[must_use]
+    pub(crate) const fn failure(self) -> LoadOrder {
+        self.failure
     }
     #[must_use]
     pub const fn success_encoding(self) -> u8 {

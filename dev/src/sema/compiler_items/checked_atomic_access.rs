@@ -4,7 +4,7 @@ use crate::{
     sema::{model::Declarations, values::Reader},
     support::atomic_ordering::Ordering,
     types::{
-        GenericArgs, Kind, TypeId,
+        GenericArgs, Kind, Store, TypeId,
         arguments::{Argument, ConstId, ConstKind, trees::Aggregate},
         callable::Convention,
         parameters::ParameterKind,
@@ -45,7 +45,7 @@ pub(crate) fn select(
     else {
         return Err("source atomic access requires its type and ordering argument");
     };
-    let Some(ordering) = ordering(facts, DefId(item.0), order)? else {
+    let Some(ordering) = ordering(facts, DefId(item.0), 1, order)? else {
         return Ok(None);
     };
     let valid_order = if storing {
@@ -56,14 +56,7 @@ pub(crate) fn select(
     if !valid_order {
         return Err("invalid source atomic access ordering");
     }
-    match types.kind(word) {
-        Some(Kind::Pointer { .. }) => {}
-        Some(Kind::Primitive(primitive))
-            if primitive
-                .integer()
-                .is_some_and(|(_, bits)| (8..=64).contains(&bits)) => {}
-        _ => return Err("source atomic access requires an integer or pointer word"),
-    }
+    word_kind(types, word)?;
     let Some(Kind::Function {
         bound_regions: 0,
         parameters,
@@ -94,17 +87,35 @@ pub(crate) fn select(
     }))
 }
 
-fn ordering(
+pub(super) enum Word {
+    Integer { signed: bool },
+    Pointer,
+}
+
+pub(super) fn word_kind(types: &Store, word: TypeId) -> Result<Word, &'static str> {
+    match types.kind(word) {
+        Some(Kind::Pointer { .. }) => Ok(Word::Pointer),
+        Some(Kind::Primitive(primitive)) => primitive
+            .integer()
+            .filter(|(_, bits)| (8..=64).contains(bits))
+            .map(|(signed, _)| Word::Integer { signed })
+            .ok_or("source atomic access requires a supported integer word"),
+        _ => Err("source atomic access requires an integer or pointer word"),
+    }
+}
+
+pub(super) fn ordering(
     facts: &Declarations,
     definition: DefId,
+    index: usize,
     order: ConstId,
 ) -> Result<Option<Ordering>, &'static str> {
     let types = &facts.types;
-    let Some([_, formal]) = facts
+    let Some(formal) = facts
         .generics
         .parameters
         .get(&definition)
-        .map(Vec::as_slice)
+        .and_then(|parameters| parameters.get(index))
     else {
         return Err("source atomic access lacks its checked ordering parameter");
     };

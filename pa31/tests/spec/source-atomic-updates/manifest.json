@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "updates.rs": {
+      "sha256": "9d85be4eb928fdcd2650ec0b5f163e37ac833a1296c09a19656977a8a66e83a8",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "atomic_orders": [
+            [
+              "atomic_add_fetch",
+              "u32",
+              0
+            ],
+            [
+              "atomic_exchange",
+              "i16",
+              2
+            ],
+            [
+              "atomic_add_fetch",
+              "i16",
+              3
+            ],
+            [
+              "atomic_compare_exchange",
+              "i16",
+              "4, 2"
+            ],
+            [
+              "atomic_compare_exchange",
+              "i16",
+              "0, 5"
+            ],
+            [
+              "atomic_compare_exchange",
+              "i16",
+              "2, 0"
+            ],
+            [
+              "atomic_compare_exchange",
+              "u8",
+              "3, 0"
+            ],
+            [
+              "atomic_compare_exchange",
+              "u8",
+              "0, 0"
+            ],
+            [
+              "atomic_add_fetch",
+              "i64",
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    "wrong-operand.rs": {
+      "sha256": "05ea68c6058793775cddb5d42fc01cec22dd9bd0a198d5156ef35fc9bada31aa",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0511"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "source atomic update has an incompatible operand type"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for pinned original core's atomic update intrinsics."
+}

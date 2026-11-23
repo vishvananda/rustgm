@@ -177,18 +177,8 @@ impl Context<'_> {
     }
 }
 fn orders(success: Ordering, failure: Ordering) -> Option<CompareOrder> {
-    let success = match success {
-        Ordering::Relaxed => RmwOrder::Relaxed,
-        Ordering::Release => RmwOrder::Release,
-        Ordering::Acquire => RmwOrder::Acquire,
-        Ordering::AcquireRelease => RmwOrder::AcquireRelease,
-        Ordering::Sequential => RmwOrder::Sequential,
-    };
-    let failure = match failure {
-        Ordering::Relaxed => LoadOrder::Relaxed,
-        Ordering::Acquire => LoadOrder::Acquire,
-        Ordering::Sequential => LoadOrder::Sequential,
-        Ordering::Release | Ordering::AcquireRelease => return None,
-    };
-    Some(CompareOrder::new(success, failure))
+    Some(CompareOrder::new(
+        RmwOrder::from_rust(success),
+        LoadOrder::from_rust(failure)?,
+    ))
 }

@@ -28,7 +28,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "atomic_load"
             | "atomic_store"
             | "black_box"
-    )
+    ) || crate::support::word_operation::Update::intrinsic(name).is_some()
 }
 
 /// A Body Call's roots are already opened into its caller, unlike an item signature.

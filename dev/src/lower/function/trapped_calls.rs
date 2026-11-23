@@ -3,6 +3,7 @@ use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
+    support::word_operation::Update,
     types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
@@ -64,6 +65,12 @@ impl Lower<'_, '_, '_> {
         if matches!(name, "atomic_load" | "atomic_store")
             && let Some(lowered) =
                 self.source_atomic_access(name, ty, signature, arguments, value.ty)?
+        {
+            return Ok(Some(lowered));
+        }
+        if let Some(operation) = Update::intrinsic(name)
+            && let Some(lowered) =
+                self.source_atomic_update(operation, ty, signature, arguments, value.ty)?
         {
             return Ok(Some(lowered));
         }

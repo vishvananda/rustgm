@@ -186,13 +186,7 @@ fn atomic_operation(
         let order = LoadOrder::from_rust(order).ok_or("invalid atomic load order")?;
         builder.atomic_load(Type::U32, pointer, order).map(Some)
     } else {
-        let order = match order {
-            Ordering::Relaxed => RmwOrder::Relaxed,
-            Ordering::Release => RmwOrder::Release,
-            Ordering::Acquire => RmwOrder::Acquire,
-            Ordering::AcquireRelease => RmwOrder::AcquireRelease,
-            Ordering::Sequential => RmwOrder::Sequential,
-        };
+        let order = RmwOrder::from_rust(order);
         let value = Value {
             ty: Type::U32,
             operand: Operand::Parameter(1),
