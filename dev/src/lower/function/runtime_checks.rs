@@ -1,7 +1,10 @@
 //! Checked source generation decisions and conditions for defined execution.
 use super::{Lower, Selected, ir};
 use crate::{
-    lowir::{program::Terminator, vocabulary::Type},
+    lowir::{
+        program::{Terminator, Value},
+        vocabulary::Type,
+    },
     support::runtime_checks::{RuntimeCheckBinding, RuntimeCheckConfig},
     types::{Kind, Primitive, TypeId, instance::Instance},
 };
@@ -49,6 +52,11 @@ impl Lower<'_, '_, '_> {
         if condition.ty != Type::I1 {
             return Err("source assume condition lost its native boolean");
         }
+        self.guard_assumption(condition)?;
+        Ok(Some(Selected::Unit))
+    }
+
+    pub(super) fn guard_assumption(&mut self, condition: Value) -> Result<(), &'static str> {
         let next = self.builder.block()?;
         let impossible = self.builder.block()?;
         self.builder.terminate(Terminator::Branch {
@@ -58,8 +66,7 @@ impl Lower<'_, '_, '_> {
         })?;
         self.builder.enter(impossible)?;
         self.builder.terminate(Terminator::Unreachable)?;
-        self.builder.enter(next)?;
-        Ok(Some(Selected::Unit))
+        self.builder.enter(next)
     }
 
     pub(super) fn runtime_check(

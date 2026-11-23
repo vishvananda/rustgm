@@ -116,11 +116,16 @@ impl Lower<'_, '_, '_> {
             return Err("source pointer distance requires matching thin pointers and result");
         }
         let size = self.context.layout(pointee)?.size;
-        if size == 0 {
-            return Err("source pointer distance requires a nonzero pointee size");
-        }
         let pointer = self.value(pointer)?.runtime()?;
         let base = self.value(base)?.runtime()?;
+        if size == 0 {
+            // The raw intrinsic has no defined result for a zero-sized pointee.
+            // Core's public wrappers panic before this edge. The impossible
+            // continuation keeps the original call's machine-word type.
+            let impossible = self.builder.integer(Type::I1, 0)?;
+            self.guard_assumption(impossible)?;
+            return self.builder.integer(Type::I64, 0).map(Selected::Runtime);
+        }
         let pointer = self.builder.copy(Type::I64, pointer)?;
         let base = self.builder.copy(Type::I64, base)?;
         let mut distance = self.builder.binary(Binary::Sub, pointer, base)?;

@@ -42,7 +42,65 @@
           "strict_diagnostic": "call to unsafe function requires an unsafe context"
         }
       ]
+    },
+    "public_wrappers.rs": {
+      "sha256": "e2a1ed85fc706c980c4eb8efea6820f9475fb7702c2eded587fe15425424e296",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_runs": [
+            {
+              "arguments": [],
+              "status": 0
+            },
+            {
+              "arguments": [
+                "signed"
+              ],
+              "status": 23
+            },
+            {
+              "arguments": [
+                "unsigned",
+                "run"
+              ],
+              "status": 23
+            }
+          ]
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_runs": [
+            {
+              "arguments": [],
+              "status": 0
+            },
+            {
+              "arguments": [
+                "signed"
+              ],
+              "status": 23
+            },
+            {
+              "arguments": [
+                "unsigned",
+                "run"
+              ],
+              "status": 23
+            }
+          ],
+          "lowir": [
+            "unreachable",
+            "binary div i64",
+            "binary udiv i64"
+          ]
+        }
+      ]
     }
   },
-  "provenance": "Authored executable guests for pinned original core's signed and unsigned pointer-distance intrinsics."
+  "provenance": "Authored executable guests for pinned original core's signed and unsigned pointer-distance intrinsics. The public wrappers preserve signed and unsigned distances for nonzero sizes and call the source panic hook for a zero-sized pointee."
 }
