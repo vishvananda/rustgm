@@ -512,9 +512,9 @@ require separate reviewed capability work.
 
 The strict whole-source graph now builds and links a native RustGM with zero
 bring-up records. The linked stage 1 passes every committed PA1–PA24 oracle.
-The [PA45 procedure](pa45/README.md#tool-surface) records the ordered graph and
-qualification commands. Stage 2 must reproduce the LowIR, native link manifest
-and linked compiler byte for byte before PA45 is ready for review.
+Stage 2 reproduces the LowIR, native link manifest and linked compiler byte for
+byte. The [PA45 procedure](pa45/README.md#tool-surface) records the ordered graph
+and qualification commands for independent review.
 
 The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)
 clears the authenticated const-closure overflow attribute frontier. The actual

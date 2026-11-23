@@ -127,6 +127,13 @@ python3 scripts/storage.py run --no-prune -- \
     python3 scripts/build_self_hosting.py build obj/stage45/graph.json \
     --sources "$SOURCES" --compiler obj/stage1/native/rustgm \
     --compiler-sha256 "$STAGE1_SHA256" --timeout 3600 --out obj/stage2/target
+```
+
+Compare the frontend outputs before spending time on the second native link.
+
+```sh
+cmp obj/stage1/target/program.lowir obj/stage2/target/program.lowir &&
+cmp obj/stage1/target/program.native-links.json obj/stage2/target/program.native-links.json &&
 python3 scripts/storage.py run --no-prune -- \
     python3 scripts/link_self_hosting.py obj/stage2/target --out obj/stage2/native \
     --linker "$LINKER" --linker-sha256 "$LINKER_SHA256" --optimization 1

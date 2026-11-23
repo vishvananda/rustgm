@@ -5,10 +5,10 @@
 The strict source graph builds and links a working RustGM from original core,
 alloc, std, the pinned registry dependencies and RustGM's own source. The
 `-O1` stage 1 passed every committed PA1–PA24 oracle with zero bring-up records.
-Use the [PA45 procedure](pa45/README.md#tool-surface) and its ordered
-configuration to replay the checkpoint. Stage 2 reached the whole-graph
-generic instance budget during demand traversal. The byte comparison and
-final maintainer integration check are pending.
+Stage 2 reproduced the LowIR, native link manifest and executable byte for
+byte under the same strict profile. Use the [PA45 procedure](pa45/README.md#tool-surface)
+and its ordered configuration to replay the checkpoint. The PA45 grading
+release requires independent review.
 
 ## Historical stop boundary · 2026-11-21
 
