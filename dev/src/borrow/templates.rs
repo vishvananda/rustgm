@@ -12,8 +12,8 @@ use super::{Environment, Error, loans, regions};
 use crate::support::hash::HashMap;
 use crate::{
     body::{
-        ir::{BodyKey, Owner},
-        regions::{Contract, Contracts},
+        ir::{BodyKey, BodyOrigin, Owner},
+        regions::{Contract, Contracts, NestedRequirements},
         templates::{Template, Templates},
     },
     types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
@@ -36,9 +36,30 @@ struct State {
     regions: regions::Analysis,
     loans: Vec<loans::Analysis>,
     contracts: Vec<Contract>,
+    nested_requirements: Option<Box<NestedRequirementsByParent>>,
 }
 #[cfg(test)]
-const _: [(); 176] = [(); size_of::<State>()];
+const _: [(); 184] = [(); size_of::<State>()];
+
+type NestedRequirementsByParent = HashMap<BodyOrigin, Vec<NestedRequirements>>;
+
+fn nested_requirements(regions: &regions::Analysis) -> Option<Box<NestedRequirementsByParent>> {
+    let mut by_parent = None::<Box<NestedRequirementsByParent>>;
+    for body in &regions.bodies {
+        if let BodyKey::Closure(_) = body.key
+            && let Some(output) = &body.output
+            && let Some((parent, requirements)) = output.parent_requirements()
+            && parent.source().is_some()
+        {
+            by_parent
+                .get_or_insert_with(Default::default)
+                .entry(parent)
+                .or_default()
+                .push(requirements.clone());
+        }
+    }
+    by_parent
+}
 
 impl State {
     fn require_current_store(&self, types: &crate::types::Store) -> Result<(), &'static str> {
@@ -308,6 +329,16 @@ impl Checked<'_> {
         let &index = self.state.closures.get(&identity)?;
         Some((self.templates.get(index)?, &self.state.contracts[index]))
     }
+    /// The original lexical body already checked these child requirements.
+    /// Native specialization transports them into its own ordinary proof scope.
+    pub(crate) fn nested_requirements(&self, parent: BodyOrigin) -> &[NestedRequirements] {
+        self.state
+            .nested_requirements
+            .as_ref()
+            .and_then(|all| all.get(&parent))
+            .map_or(&[], Vec::as_slice)
+    }
+
     /// Keep the conditions proved by the checked creator when native demand
     /// specializes its closure. A noncapturing closure's complete source type
     /// relates its signature invariantly. Its free signature slots retain the
@@ -415,6 +446,7 @@ pub fn verify<'a, S: BuildHasher>(
             index,
             closures,
             anonymous,
+            nested_requirements: nested_requirements(&regions),
             regions,
             loans: Vec::new(),
             contracts,

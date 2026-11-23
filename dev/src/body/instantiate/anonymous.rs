@@ -172,8 +172,12 @@ pub(crate) fn with_contract(
         return Err("anonymous specialized output interface is not implemented");
     }
     let mut inputs = anonymous_inputs(facts, instance, original)?;
-    let (substitution, contract) =
-        contracts::specialize(facts, original, &mut inputs, super::Premises::Required)?;
+    let (substitution, contract) = contracts::specialize(
+        facts,
+        (original, &[]),
+        &mut inputs,
+        super::Premises::Required,
+    )?;
     materialize_anonymous(facts, template, instance, substitution, contract)
 }
 

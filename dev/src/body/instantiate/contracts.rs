@@ -4,7 +4,7 @@
 mod tests;
 use super::{Bound, Declarations, Inputs};
 use crate::{
-    body::regions::{Contract, Kind},
+    body::regions::{Contract, Kind, NestedRequirements},
     types::{Kind as Type, RegionId, arguments::Argument, instance::Instance, outlives::Queries},
 };
 
@@ -16,13 +16,13 @@ enum ResultRequest {
 }
 pub(super) fn specialize(
     facts: &mut Declarations,
-    original: &Contract,
+    source: (&Contract, &[NestedRequirements]),
     inputs: &mut Inputs,
     premises: super::Premises,
 ) -> Result<(Bound, Contract), &'static str> {
     let (bound, contract, _, _) = prepare::<false>(
         facts,
-        original,
+        source,
         inputs,
         premises,
         ResultRequest::None,
@@ -39,7 +39,7 @@ pub(super) fn async_body(
 ) -> Result<(Bound, Contract, Bound), &'static str> {
     let (bound, contract, _, regions) = prepare::<true>(
         facts,
-        original,
+        (original, &[]),
         inputs,
         super::Premises::Required,
         ResultRequest::None,
@@ -60,7 +60,7 @@ pub(super) fn initializer(
             .all(|&region| region == RegionId::STATIC);
     let (bound, contract, _, _) = prepare::<false>(
         facts,
-        original,
+        (original, &[]),
         inputs,
         super::Premises::Required,
         ResultRequest::None,
@@ -77,7 +77,7 @@ pub(super) fn source_result(
 ) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
     let (bound, contract, imported, _) = prepare::<false>(
         facts,
-        original,
+        (original, &[]),
         inputs,
         super::Premises::Required,
         ResultRequest::Source(requested),
@@ -98,7 +98,7 @@ pub(super) fn conditional_result(
 ) -> Result<(Bound, Contract, crate::types::TypeId), &'static str> {
     let (bound, contract, imported, _) = prepare::<false>(
         facts,
-        original,
+        (original, &[]),
         inputs,
         super::Premises::Required,
         ResultRequest::Conditional(requested),
@@ -119,7 +119,7 @@ pub(super) fn rigid_initializer(
 ) -> Result<(Bound, Contract), &'static str> {
     let (bound, contract, _, _) = prepare::<false>(
         facts,
-        original,
+        (original, &[]),
         inputs,
         super::Premises::Required,
         ResultRequest::None,
@@ -130,7 +130,7 @@ pub(super) fn rigid_initializer(
 }
 fn prepare<const CAPTURES: bool>(
     facts: &mut Declarations,
-    original: &Contract,
+    (original, nested): (&Contract, &[NestedRequirements]),
     inputs: &mut Inputs,
     premises: super::Premises,
     request: ResultRequest,
@@ -143,6 +143,9 @@ fn prepare<const CAPTURES: bool>(
         ResultRequest::Source(ty) | ResultRequest::Conditional(ty) => Some(ty),
     };
     let mut contract = original.clone();
+    for requirements in nested {
+        contract.obligations.extend_from_slice(requirements);
+    }
     let closure = matches!(original.key, crate::body::ir::BodyKey::Closure(_));
     let checked_creator =
         matches!(premises, super::Premises::Declared) && inputs.connections.is_some();

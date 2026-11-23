@@ -65,7 +65,7 @@ fn uncaptured_specialization_retains_every_source_lifetime_debt()
         };
         let (_, contract) = specialize(
             &mut facts,
-            &source,
+            (&source, &[]),
             &mut inputs,
             super::super::Premises::Required,
         )?;

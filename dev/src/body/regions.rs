@@ -54,6 +54,8 @@ pub struct Obligation {
     pub source: ProofSite,
     pub kind: Kind,
 }
+
+pub(crate) type NestedRequirements = std::sync::Arc<[Obligation]>;
 #[derive(Clone)]
 pub struct Contract {
     pub key: super::ir::BodyKey,

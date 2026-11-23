@@ -4,7 +4,7 @@ use crate::support::hash::HashMap;
 use crate::{
     body::{
         ir::{Body as Cfg, BodyOrigin},
-        regions::{Contract, Contracts, Kind, Obligation},
+        regions::{Contract, Contracts, Kind, NestedRequirements, Obligation},
     },
     types::{
         RegionId, Store,
@@ -18,7 +18,7 @@ use std::collections::VecDeque;
 
 pub struct Summary {
     pub(super) parent: BodyOrigin,
-    pub(super) requirements: Vec<Obligation>,
+    pub(super) requirements: NestedRequirements,
     conditions: Option<std::sync::Arc<[crate::types::outlives::Pair]>>,
     creator_only: bool,
     source: crate::body::ir::BodyOrigin,
@@ -52,6 +52,12 @@ impl Summary {
             .filter(|_| self.creator_only || noncapturing)
             .unwrap_or_default())
     }
+    pub(in crate::borrow) fn parent_requirements(
+        &self,
+    ) -> Option<(BodyOrigin, &NestedRequirements)> {
+        (!self.requirements.is_empty()).then_some((self.parent, &self.requirements))
+    }
+
     pub(crate) fn parent_goals(
         &self,
         input: &Contract,
@@ -61,7 +67,7 @@ impl Summary {
         }
         Ok(self
             .requires_parent()
-            .then_some((self.parent, &self.requirements)))
+            .then_some((self.parent, self.requirements.as_ref())))
     }
     fn matches(&self, input: &Contract) -> bool {
         self.source == input.source
@@ -145,7 +151,7 @@ pub(super) fn finish(
         Some(Summary {
             conditions: formal,
             parent: link.parent,
-            requirements,
+            requirements: requirements.into(),
             source: input.source,
             key: input.key,
             link: std::sync::Arc::clone(link),

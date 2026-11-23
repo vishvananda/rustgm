@@ -988,7 +988,10 @@ pub(super) fn specialize(
         facts,
         request.template,
         request.instance,
-        request.input,
+        (
+            request.input,
+            templates.nested_requirements(request.input.source),
+        ),
         caller,
         cleanup,
     )

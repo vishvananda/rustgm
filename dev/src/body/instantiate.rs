@@ -195,7 +195,7 @@ pub fn with_contract(
         facts,
         template,
         instance,
-        original,
+        (original, &[]),
         Context {
             premises: Premises::Required,
             caller: None,
@@ -210,7 +210,10 @@ pub(crate) fn from_checked_caller(
     facts: &mut Declarations,
     template: &Template,
     instance: Instance,
-    original: &super::regions::Contract,
+    (original, nested): (
+        &super::regions::Contract,
+        &[super::regions::NestedRequirements],
+    ),
     caller: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     cleanup: &mut Cleanup,
 ) -> Result<Materialized, &'static str> {
@@ -218,7 +221,7 @@ pub(crate) fn from_checked_caller(
         facts,
         template,
         instance,
-        original,
+        (original, nested),
         Context {
             premises: Premises::Declared,
             caller,
@@ -231,7 +234,10 @@ fn with_premises(
     facts: &mut Declarations,
     template: &Template,
     instance: Instance,
-    original: &super::regions::Contract,
+    (original, nested): (
+        &super::regions::Contract,
+        &[super::regions::NestedRequirements],
+    ),
     context: Context<'_>,
 ) -> Result<Materialized, &'static str> {
     if original.key != template.body.key() || original.source != template.body.source {
@@ -250,7 +256,7 @@ fn with_premises(
         super::copy_requirements::materialized::capture(facts, &template.body, original, instance)?;
     let mut inputs = inputs::select(facts, instance)?;
     let (mut substitution, mut contract) =
-        contracts::specialize(facts, original, &mut inputs, context.premises)?;
+        contracts::specialize(facts, (original, nested), &mut inputs, context.premises)?;
     let (body, destruction) = materialize(
         facts,
         template,

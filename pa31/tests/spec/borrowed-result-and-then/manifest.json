@@ -59,7 +59,27 @@
           "diagnostic": "required lifetime does not outlive its target"
         }
       ]
+    },
+    "generic.rs": {
+      "sha256": "d1f91285a515c9646ce927b89fa343a40c7c727df0b986759b85c62e36a1c248",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
     }
   },
-  "provenance": "Authored original-core controls for a captured Result::and_then callback. They observe a checked view returned at the proven input lifetime, a deliberately shorter result lifetime, and rejection of a result that outlives its input."
+  "provenance": "Authored original-core controls for a captured Result::and_then callback. They observe a checked view returned at the proven input lifetime, a deliberately shorter result lifetime, and rejection of a result that outlives its input. The generic initializer verifies that specializing the parent retains constraints proved by the source closure."
 }

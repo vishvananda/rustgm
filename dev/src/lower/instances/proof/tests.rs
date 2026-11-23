@@ -107,7 +107,7 @@ fn instance_cleanup_shares_completed_types_across_distinct_callees() -> TestResu
                 &mut f.facts,
                 checked.get(item).ok_or("missing template")?,
                 instance,
-                checked.input(item).ok_or("missing contract")?,
+                (checked.input(item).ok_or("missing contract")?, &[]),
                 None,
                 &mut cleanup,
             )?;

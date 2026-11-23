@@ -165,6 +165,7 @@ fn prepare_using<'a, S: BuildHasher>(
             index,
             closures,
             anonymous,
+            nested_requirements: super::nested_requirements(&regions),
             regions,
             loans: Vec::new(),
             contracts: raw,
