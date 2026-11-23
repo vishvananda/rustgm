@@ -124,19 +124,33 @@ pub(crate) fn black_box_type(
     Ok(ty)
 }
 
+#[derive(Clone, Copy)]
+enum HeaderState {
+    Reserved,
+    Validated(TypeId),
+    SourceFallback(TypeId),
+}
+
+impl HeaderState {
+    const fn signature(self) -> Option<TypeId> {
+        match self {
+            Self::Reserved => None,
+            Self::Validated(signature) | Self::SourceFallback(signature) => Some(signature),
+        }
+    }
+}
+
 pub(super) struct Intrinsic {
     declaration: crate::resolve::bindings::Declaration,
     kind: SourceIntrinsic,
-    signature: Option<TypeId>,
-    source_fallback: bool,
+    header: HeaderState,
 }
 impl Intrinsic {
     pub(super) fn reserved(entry: crate::resolve::bindings::IntrinsicDeclaration) -> Self {
         Self {
             declaration: entry.declaration,
             kind: entry.kind,
-            signature: None,
-            source_fallback: false,
+            header: HeaderState::Reserved,
         }
     }
 }
@@ -162,7 +176,7 @@ pub(in crate::sema) fn validate(
         return Ok(());
     };
     let error = |message| Declarations::error(report, function.node, message);
-    if entry.signature.is_some()
+    if !matches!(entry.header, HeaderState::Reserved)
         || entry.declaration.origin != function.node
         || entry.declaration.parent.is_some()
     {
@@ -179,8 +193,11 @@ pub(in crate::sema) fn validate(
         .as_deref_mut()
         .and_then(|c| c.intrinsics.get_mut(&function.definition))
         .ok_or_else(|| error("source intrinsic reservation disappeared"))?;
-    completed.signature = Some(function.signature);
-    completed.source_fallback = source_fallback;
+    completed.header = if source_fallback {
+        HeaderState::SourceFallback(function.signature)
+    } else {
+        HeaderState::Validated(function.signature)
+    };
     Ok(())
 }
 
@@ -333,7 +350,8 @@ impl Catalog {
                     entry.declaration,
                     entry.kind,
                     entry
-                        .signature
+                        .header
+                        .signature()
                         .ok_or("source intrinsic declaration is not validated")?,
                 ))
             })
@@ -343,7 +361,7 @@ impl Catalog {
     pub(crate) fn uses_source_fallback(&self, definition: DefId) -> bool {
         self.intrinsics
             .get(&definition)
-            .is_some_and(|entry| entry.source_fallback)
+            .is_some_and(|entry| matches!(entry.header, HeaderState::SourceFallback(_)))
     }
 
     pub(crate) fn intrinsic(&self, definition: DefId) -> Result<bool, &'static str> {
@@ -356,7 +374,7 @@ impl Catalog {
         let Some(entry) = self.intrinsics.get(&definition) else {
             return Ok(None);
         };
-        if entry.signature.is_none() {
+        if matches!(entry.header, HeaderState::Reserved) {
             return Err("source intrinsic declaration is not validated");
         }
         Ok(Some(entry.kind))
@@ -379,7 +397,8 @@ impl Catalog {
             return Ok(None);
         };
         let original = entry
-            .signature
+            .header
+            .signature()
             .ok_or("source intrinsic declaration is not validated")?;
         if matches!(
             entry.kind,
