@@ -43,13 +43,17 @@ pub(crate) fn unchecked_operator(kind: SourceIntrinsic) -> Option<Punctuation> {
         SourceIntrinsic::Declaration(identity) => match identity.name() {
             "unchecked_add" => Some(Punctuation::Plus),
             "unchecked_mul" => Some(Punctuation::Star),
-            "unchecked_div" => Some(Punctuation::Slash),
+            "unchecked_div" | "exact_div" => Some(Punctuation::Slash),
             "unchecked_rem" => Some(Punctuation::Percent),
             _ => None,
         },
         _ => None,
     }
 }
+pub(crate) fn exact_division(kind: SourceIntrinsic) -> bool {
+    matches!(kind, SourceIntrinsic::Declaration(identity) if identity.name() == "exact_div")
+}
+
 pub(crate) fn unchecked_shift(kind: SourceIntrinsic) -> Option<Punctuation> {
     let SourceIntrinsic::Declaration(identity) = kind else {
         return None;

@@ -17,7 +17,6 @@ use crate::{
 pub(super) struct Integer {
     pub(super) ty: TypeId,
     pub(super) value: Value,
-    pub(super) signed: bool,
 }
 
 impl Lower<'_, '_, '_> {
@@ -80,14 +79,14 @@ impl Lower<'_, '_, '_> {
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(ty) else {
             return Ok(None);
         };
-        let Some((signed, bits)) = primitive.integer() else {
+        let Some((_, bits)) = primitive.integer() else {
             return Ok(None);
         };
         let value = self.value(id)?.runtime()?;
         if !value.ty.is_integer() || value.ty.bits() != u32::from(bits) {
             return Err("integer intrinsic input differs from its scalar width");
         }
-        Ok(Some(Integer { ty, value, signed }))
+        Ok(Some(Integer { ty, value }))
     }
 }
 

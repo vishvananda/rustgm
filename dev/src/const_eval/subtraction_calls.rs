@@ -1,6 +1,7 @@
 //! Reached subtraction consumes exact evaluated inputs and the actual source call.
 use super::{Constant, Failure, Frame, Machine, code::Code, executed_calls::Answer};
 use crate::{
+    lex::token::Punctuation,
     sema::{model::Scalar, values::Overflow},
     types::instance::Instance,
 };
@@ -69,6 +70,19 @@ impl Machine<'_, '_> {
         left: Constant,
         right: Constant,
     ) -> Result<Constant, Failure> {
+        if crate::sema::compiler_items::exact_division(selected.kind) {
+            self.charge(16)?;
+            let remainder = self.evaluator.binary(
+                Punctuation::Percent,
+                selected.input,
+                left,
+                right,
+                Overflow::Checked,
+            )?;
+            if !matches!(remainder.as_scalar()?, Scalar::Integer(0)) {
+                return Err(Failure::Fault("`exact_div` requires a zero remainder"));
+            }
+        }
         if let Some(operator) = crate::sema::compiler_items::unchecked_operator(selected.kind)
             .or_else(|| crate::sema::compiler_items::unchecked_shift(selected.kind))
         {

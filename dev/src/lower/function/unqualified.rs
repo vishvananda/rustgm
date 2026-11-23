@@ -58,7 +58,6 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "exact_div" => self.unqualified_arithmetic(call)?,
             "slice_get_unchecked" => self.unqualified_offset(call)?,
             "write_box_via_move" | "forget" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?

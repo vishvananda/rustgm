@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "divisions.rs": {
+      "sha256": "1135228d58234d1a8d8f262007bbc06cabc25ba34d52cb8300bc7d539a7d4fcf",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary div i64",
+            "binary udiv i64",
+            "binary udiv i128"
+          ]
+        }
+      ]
+    },
+    "inexact-constant.rs": {
+      "sha256": "c4593540c540216a7ca5d0039eb6e81ac5aa70efb45e264277a2f674c71f0982",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0080"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "`exact_div` requires a zero remainder"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable and constant-evaluation guests for the original core's exact integer division intrinsic."
+}
