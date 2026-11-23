@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "distance.rs": {
+      "sha256": "ba75c7a6522d14bc8b14a46079aecc0c1aca6bbddb9afeff72dd7c23c49b6826",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "rustc_environment": {
+            "RUSTC_BOOTSTRAP": "1"
+          },
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary div i64",
+            "binary udiv i64"
+          ]
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "dd369a7d9b125fe36ba637cce4adf2c639ea0bb02199b5322503ad651c31c074",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "call to unsafe function requires an unsafe context"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for pinned original core's signed and unsigned pointer-distance intrinsics."
+}

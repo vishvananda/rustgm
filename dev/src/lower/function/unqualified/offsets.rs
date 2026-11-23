@@ -1,15 +1,12 @@
-//! Element-scaled pointer arithmetic and distances over thin data pointers.
+//! Element indexing from the data address of the unqualified slice operation.
 use super::{
     super::{Context, Lower, Selected},
     Call,
 };
 use crate::{
     body::ir,
-    lowir::{
-        program::Value,
-        vocabulary::{Binary, Type},
-    },
-    types::{Kind, Primitive, TypeId},
+    lowir::{program::Value, vocabulary::Type},
+    types::{Kind, TypeId},
 };
 
 impl Lower<'_, '_, '_> {
@@ -20,9 +17,6 @@ impl Lower<'_, '_, '_> {
         let &[first, second] = call.inputs else {
             return Ok(None);
         };
-        if matches!(call.name, "ptr_offset_from" | "ptr_offset_from_unsigned") {
-            return self.unqualified_distance(call, first, second);
-        }
         let Some(count) = self.integer_input(second)? else {
             return Ok(None);
         };
@@ -62,38 +56,5 @@ impl Lower<'_, '_, '_> {
         };
         let data = self.builder.load(Type::Ptr, address.operand)?;
         Ok(Some((data, element)))
-    }
-    /// The byte difference divided by the pointee size, which divides it exactly.
-    fn unqualified_distance(
-        &mut self,
-        call: Call<'_>,
-        pointer: ir::ValueId,
-        base: ir::ValueId,
-    ) -> Result<Option<Selected>, &'static str> {
-        let unsigned = call.name == "ptr_offset_from_unsigned";
-        let word = if unsigned {
-            Primitive::Usize
-        } else {
-            Primitive::Isize
-        };
-        let (Some((pointer, element)), Some((base, origin))) =
-            (self.thin_input(pointer)?, self.thin_input(base)?)
-        else {
-            return Ok(None);
-        };
-        let size = self.context.layout(element)?.size;
-        // The distance between zero-sized pointees is not defined.
-        if element != origin || call.result != TypeId::primitive(word) || size == 0 {
-            return Ok(None);
-        }
-        let pointer = self.builder.copy(Type::I64, pointer)?;
-        let base = self.builder.copy(Type::I64, base)?;
-        let mut distance = self.builder.binary(Binary::Sub, pointer, base)?;
-        if size != 1 {
-            let size = self.builder.integer(Type::I64, u128::from(size))?;
-            let divide = if unsigned { Binary::Udiv } else { Binary::Div };
-            distance = self.builder.binary(divide, distance, size)?;
-        }
-        Ok(Some(Selected::Runtime(distance)))
     }
 }

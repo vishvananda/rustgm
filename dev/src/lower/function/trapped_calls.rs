@@ -57,6 +57,16 @@ impl Lower<'_, '_, '_> {
                 .source_inbounds_offset(signature, arguments, value.ty)
                 .map(Some);
         }
+        if matches!(name, "ptr_offset_from" | "ptr_offset_from_unsigned") {
+            return self
+                .source_pointer_distance(
+                    signature,
+                    arguments,
+                    value.ty,
+                    name == "ptr_offset_from_unsigned",
+                )
+                .map(Some);
+        }
         if name == "compare_bytes" {
             return self
                 .source_compare_bytes(ty, signature, arguments, value.ty)
