@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "filtered_rows.rs": {
+      "sha256": "8c322b758bf6610d56dcf5669f49901ae058592529ac462c1acd6da823c25bf0",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "std_hash.rs": {
+      "sha256": "09f0aff984b123a97805978fcaf08bd98bf678b1e5645fb8f6eb79de378c1c0a",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [],
+          "source_graph": "std",
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "escape.rs": {
+      "sha256": "d6b453a647a06dc4fda64b2db28cc6f56acbc788e9045a636a654f2e3621081e",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_diagnostic": "lifetime may not live long enough"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core and original-std controls for native iterator dispatch through an opaque result. The returned iterator captures a borrowed checker whose data lifetime outlives its receiver. The controls observe the forwarded size hint and the collected filtered rows. The negative control rejects an attempt to extend the resulting iterator and its borrowed reader to static."
+}

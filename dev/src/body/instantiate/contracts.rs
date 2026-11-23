@@ -238,7 +238,7 @@ fn prepare<const CAPTURES: bool>(
             connections.slots.iter().copied(),
         )?;
     }
-    argument_assumptions(facts, inputs, &mut contract)?;
+    argument_assumptions(facts, inputs, premises, &mut contract)?;
     Ok((bound, contract, requested, regions))
 }
 
@@ -246,18 +246,42 @@ fn prepare<const CAPTURES: bool>(
 fn argument_assumptions(
     facts: &mut Declarations,
     inputs: &Inputs,
+    premises: super::Premises,
     contract: &mut Contract,
 ) -> Result<(), &'static str> {
     // Instantiation sites have checked argument well-formedness. Retain those
     // structural relations as assumptions in this separate proof universe,
     // including arguments absent from the signature's runtime parameters.
-    for &(_, argument) in &inputs.bindings {
+    let arguments = inputs.bindings.iter().filter_map(|&(_, argument)| {
         if let Argument::Type(ty) = argument {
-            facts
-                .lifetimes
-                .nominal_requirements
-                .prepare(&mut facts.types, ty)?;
+            Some(ty)
+        } else {
+            None
         }
+    });
+    let mut storage = Vec::new();
+    if matches!(premises, super::Premises::Declared) {
+        // Native dispatch on an opaque value uses the selected representation
+        // at these same captures. Its reference fields are already formed by
+        // the defining body, even though the public type hides their bounds.
+        storage.extend(
+            arguments
+                .clone()
+                .filter(|&ty| matches!(facts.types.kind(ty), Some(Type::Opaque(..)))),
+        );
+        if !storage.is_empty() {
+            facts.prepare_opaque_storage()?;
+            for ty in &mut storage {
+                *ty = facts.types.storage_head(*ty).unwrap_or(*ty);
+            }
+        }
+    }
+    let roots = arguments.chain(storage.iter().copied());
+    for ty in roots.clone() {
+        facts
+            .lifetimes
+            .nominal_requirements
+            .prepare(&mut facts.types, ty)?;
     }
     let mut queries = Queries::new(
         &facts.types,
@@ -265,17 +289,15 @@ fn argument_assumptions(
         &facts.lifetimes.callables,
     );
     let mut projections = Vec::new();
-    for &(_, argument) in &inputs.bindings {
-        if let Argument::Type(ty) = argument {
-            let requirements = queries.symbolic_requirements(ty)?;
-            if !requirements.scalars.parameters.is_empty() {
-                return Err("instance contract retains generic argument requirements");
-            }
-            contract
-                .assumptions
-                .extend_from_slice(requirements.scalars.regions);
-            projections.extend_from_slice(requirements.projections);
+    for ty in roots {
+        let requirements = queries.symbolic_requirements(ty)?;
+        if !requirements.scalars.parameters.is_empty() {
+            return Err("instance contract retains generic argument requirements");
         }
+        contract
+            .assumptions
+            .extend_from_slice(requirements.scalars.regions);
+        projections.extend_from_slice(requirements.projections);
     }
     let mut folds = crate::support::hash::HashMap::default();
     for (projection, shorter) in projections {
