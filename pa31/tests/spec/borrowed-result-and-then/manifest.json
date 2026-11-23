@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "generated.rs": {
+      "sha256": "c0e4f0950a5cb1a2c0e8941d26b6d9f11ae92796293cf7c84d68e46afdb5dca6",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "shorter.rs": {
+      "sha256": "79b60011ddeb3b93f24a68247d625907e283aac68c7eabc3b733d96146934bab",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "escape.rs": {
+      "sha256": "436537186fc4825d581b94084fdd8ce31f93ef2e2c93fabb0cb7ed280205dc41",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_diagnostic": "lifetime may not live long enough"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core controls for a captured Result::and_then callback. They observe a checked view returned at the proven input lifetime, a deliberately shorter result lifetime, and rejection of a result that outlives its input."
+}

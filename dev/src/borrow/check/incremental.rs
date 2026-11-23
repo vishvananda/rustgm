@@ -31,7 +31,7 @@ pub(crate) struct Proved {
     destruction: bool,
     callable_targets: Option<Box<crate::types::substitute::Bound>>,
 }
-pub(crate) struct ConstructorCaller<'a> {
+pub(crate) struct NativeCaller<'a> {
     pub(crate) is_constructor: &'a dyn Fn(crate::types::ItemId) -> bool,
     pub(crate) proof: &'a regions::Body,
 }
@@ -40,25 +40,29 @@ impl Proved {
     pub(crate) fn resolve_callables(
         &mut self,
         types: &mut crate::types::Store,
-        constructor_caller: Option<ConstructorCaller<'_>>,
+        caller: Option<NativeCaller<'_>>,
     ) -> Result<(), &'static str> {
         let mut statics = self.callable_targets.take();
         let mut constructor_fold = None;
-        if let Some(caller) = &constructor_caller {
+        let mut captured_calls = None;
+        if let Some(caller) = &caller {
             constructor_fold = super::static_targets::prepare_constructors(
                 types,
                 &self.body,
                 caller.is_constructor,
                 caller.proof,
             )?;
+            captured_calls =
+                super::static_targets::prepare_captured_calls(types, &self.body, caller.proof)?;
         }
-        let constructors = constructor_caller
+        let constructors = caller
             .map(|caller| caller.is_constructor)
             .zip(constructor_fold.as_deref_mut());
-        if statics.is_some() || constructors.is_some() {
+        if statics.is_some() || constructors.is_some() || captured_calls.is_some() {
             let folds = super::static_targets::Folds {
                 statics: statics.as_deref_mut(),
                 constructors,
+                captured_calls: captured_calls.as_deref_mut(),
             };
             super::static_targets::resolve(types, &mut self.body, folds)?;
         }

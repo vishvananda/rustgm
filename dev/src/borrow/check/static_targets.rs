@@ -4,8 +4,8 @@ use crate::{
     body::ir::Body,
     borrow::regions,
     types::{
-        ItemId, Kind, RegionId, Store, instance::Instance, relations::RegionEqualities,
-        substitute::Bound,
+        ItemId, Kind, RegionId, Store, TypeId, arguments::Argument, instance::Instance,
+        relations::RegionEqualities, substitute::Bound,
     },
 };
 
@@ -33,8 +33,56 @@ pub(super) fn prepare_constructors(
     {
         return Ok(None);
     }
-    let equalities = RegionEqualities::proven::<false>(&proof.solution, &proof.identities)
-        .map_err(|_| "constructor lifetime equivalence proof exhausted")?;
+    prepare_equivalences::<false>(proof)
+}
+
+/// A proved invocation of a captured callback can use the same lifetime in its
+/// argument and result even where surface inference gave them different names.
+/// Preserve that identity when the native callee opens the call anew.
+pub(super) fn prepare_captured_calls(
+    types: &Store,
+    body: &Body,
+    proof: &regions::Body,
+) -> Result<Option<Box<Bound>>, &'static str> {
+    if proof.key != body.key() || proof.source != body.source || proof.instance != body.instance {
+        return Err("captured call proof belongs to another caller body or instance");
+    }
+    if proof.solution.obligations != 0 || proof.solution.assumption_count() != 0 {
+        for value in &body.values {
+            if captured_call(types, value.ty) {
+                return prepare_equivalences::<true>(proof);
+            }
+        }
+    }
+    Ok(None)
+}
+
+fn captured_call(types: &Store, ty: TypeId) -> bool {
+    let Some(Kind::FunctionItem { arguments, .. }) = types.kind(ty) else {
+        return false;
+    };
+    if types.contains_regions(ty) != Some(true) {
+        return false;
+    }
+    let Some(arguments) = types.arguments(arguments) else {
+        return false;
+    };
+    for argument in arguments {
+        if let Argument::Type(ty) = argument
+            && matches!(types.kind(ty), Some(Kind::Closure { environment, .. })
+                if environment != TypeId::UNIT)
+        {
+            return true;
+        }
+    }
+    false
+}
+
+fn prepare_equivalences<const INFERRED: bool>(
+    proof: &regions::Body,
+) -> Result<Option<Box<Bound>>, &'static str> {
+    let equalities = RegionEqualities::proven::<INFERRED>(&proof.solution, &proof.identities)
+        .map_err(|_| "callable lifetime equivalence proof exhausted")?;
     if equalities.is_empty() {
         return Ok(None);
     }
@@ -97,12 +145,17 @@ pub(super) type ConstructorFold<'a> = (&'a dyn Fn(ItemId) -> bool, &'a mut Bound
 pub(super) struct Folds<'a> {
     pub(super) statics: Option<&'a mut Bound>,
     pub(super) constructors: Option<ConstructorFold<'a>>,
+    pub(super) captured_calls: Option<&'a mut Bound>,
 }
 
 impl Folds<'_> {
-    fn for_item(&mut self, item: ItemId) -> Option<&mut Bound> {
+    fn for_item(&mut self, types: &Store, ty: TypeId, item: ItemId) -> Option<&mut Bound> {
         if let Some((is_constructor, fold)) = &mut self.constructors
             && is_constructor(item)
+        {
+            Some(fold)
+        } else if let Some(fold) = &mut self.captured_calls
+            && captured_call(types, ty)
         {
             Some(fold)
         } else {
@@ -157,6 +210,7 @@ pub(crate) fn solved<'body>(
     let folds = Folds {
         statics: Some(&mut fold),
         constructors: None,
+        captured_calls: None,
     };
     let targets = select(types, body, folds, bytes, work)?;
     Ok(Solved {
@@ -179,7 +233,7 @@ fn select(
         let Some(Kind::FunctionItem { item, .. }) = types.kind(value.ty) else {
             continue;
         };
-        let Some(fold) = folds.for_item(item) else {
+        let Some(fold) = folds.for_item(types, value.ty, item) else {
             continue;
         };
         let before = fold.steps;

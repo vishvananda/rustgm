@@ -944,7 +944,7 @@ impl Builder {
                 .constructor(crate::resolve::model::DefId(item.0))
                 .is_some()
         };
-        let constructor_caller = fold_constructors.then_some(incremental::ConstructorCaller {
+        let constructor_caller = fold_constructors.then_some(incremental::NativeCaller {
             is_constructor: &is_constructor,
             proof: &contract,
         });
