@@ -1,23 +1,26 @@
-# RustGM Programming Assignment 5: Items, types and patterns
+# RustGM Programming Assignment 5 — Items, types and patterns
 
-Status: **implemented-draft**. Prerequisite: PA4. The language profile remains
-Rust 1.98.0, edition 2024, Linux x86-64. This adds a crate entry point, typed item
-ownership and configuration-aware traversal. PA4's expression-fragment mode
-and its earlier oracles remain available unchanged.
+Build on the [PA4 parser](../pa4/README.md) to parse a crate, give each item
+a typed owner, and determine which syntax is active under the selected
+configuration. Use Rust 1.98.0, edition 2024, on Linux x86-64. Keep PA4's
+standalone expression mode.
 
-## Required implementation
+## Command-line interface
 
-```sh
+```text
 rustgm --emit-crate-ast [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
+
+Use PA1's input and output options and PA3's `--cfg` options.
+
+## Required implementation
 
 Parse a crate once with the ordinary bounded token cursor, reusing PA4's body
 parser. Retain typed identities, child ranges and source spans. Item payloads,
 generic parameters, function-pointer types, enum variants and use trees occupy
 separate dense arrays so uncommon syntax does not inflate ordinary expression
-nodes. No node recursively owns another node. The reference keeps ordinary
-nodes at 36 bytes on the pinned host. Do not implement syntax by delegating to
-rustc or by printing and reparsing another phase's output.
+nodes. No node recursively owns another node. Consume typed tokens and
+configuration data directly. Implement syntax parsing in your compiler.
 
 ### Items and ownership
 
@@ -26,9 +29,11 @@ parameters/defaults, where clauses, struct/tuple/unit declarations, enums,
 unions, constants/statics, type aliases, inline/external module declarations,
 use trees and aliases, extern crates/blocks, traits and implementations.
 Retain `final fn` as a distinct sparse method modifier with its actual keyword
-span; it is not a `default` implementation modifier. The later feature and
-trait-owner/body/override checks consume that fact. Ordinary item payloads and
-functions without either modifier keep their existing representation.
+span. Retain the actual keyword span and item identity for a `default`
+function, impl, constant, or type. Later phases check the feature gates,
+owners, bodies, and specialization or override rules. Preserve these facts
+through syntax copying and fragment transfer. Keep ordinary expression
+nodes and unmodified item payloads compact.
 
 Associated functions/types/constants, self parameters, explicit receiver
 lifetimes, ABI strings and variadic declarations have typed records. Functions
@@ -88,10 +93,9 @@ disabled constructs do not become later semantic work.
 
 Crate parsing initially records ordinary literal tokens as deferred syntax.
 Only active traversal decodes them through PA2 into typed literal values.
-This admits an arbitrary literal suffix in a disabled body without eagerly
-interpreting it. PA1's draft token/literal diagnostic boundary remains in
-force; this is not a claim that every malformed-token diagnostic occurs at
-rustc's exact phase. Macro captures stay opaque until PA7/PA8.
+A literal with an arbitrary suffix can appear in a disabled body. PA1
+still checks the token boundaries. Macro captures stay opaque until
+PA7 and PA8.
 
 Configuration effects retain the identity of their original attribute capture
 and their cfg_attr parent, even across different owners and capture forests.
@@ -149,13 +153,15 @@ Additional node tags and their fields:
 | `generic-method-call` | receiver, applied method node, call arguments |
 | `variadic` | no fields |
 
-An item node is immediately followed by:
+An item node is immediately followed by this record.
 
 ```text
 item ID NAME VISIBILITY GENERICS WHERE_CLAUSE KIND FIELDS
 ```
 
-NAME is quoted or `-`. Visibility is `private`, `public` or `restricted:PATH_ID`.
+When the item has a `final` or `default` modifier, insert
+`final START END` or `default START END` after ID and before NAME. START and
+END are the keyword's normalized byte offsets. NAME is quoted or `-`. Visibility is `private`, `public` or `restricted:PATH_ID`.
 Shapes are `Unit`, `Tuple`, `Record`. GENERICS and WHERE_CLAUSE are child lists.
 The item kind determines the remaining fields:
 
@@ -179,7 +185,7 @@ The item kind determines the remaining fields:
 
 After macro captures, write each attribute source capture as
 `attribute-capture ID outer|inner START END "SOURCE"`, before `root` and `eof`.
-An empty crate is exactly:
+An empty crate produces these records.
 
 ```text
 active [0]
@@ -191,32 +197,26 @@ eof 0
 Parse and configure completely before emitting output. Source errors return 1,
 empty stdout and `ERROR: OFFSET: MESSAGE` on stderr. The required fixtures own
 exact diagnostic bytes. Exit 86, panics, signals and timeouts are failures.
-Crate grammar has a diagnosed 128-call nesting budget, tested on the ordinary
-debug test-thread stack; the cursor retains at most three tokens. Long item
+Diagnose a crate grammar that exceeds the 128-call nesting budget. The cursor
+retains at most three tokens. Long item
 lists and captured groups build, walk and drop iteratively.
 
-## Boundary and validation
+## Later assignments
 
-PA6 loads external modules, normalizes/interns identifiers and resolves names.
-PA7/PA8 match and expand macros. PA9 onward checks types and semantic validity;
-PA11 begins Rust-to-LowIR lowering. No executable output or Rust library
-compatibility is claimed here. Planned later stages still fail explicitly.
-Full edition/attribute edge-case closure remains PA40; PA5 is an implemented
-draft of the concrete grammar/test contract above.
+PA6 loads external modules, interns normalized identifiers, and resolves
+names. PA7 and PA8 match and expand macros. PA9 onward checks types and
+semantic validity. PA11 begins lowering Rust to LowIR. PA40 covers the
+remaining edition and attribute behavior.
 
-`make test-pa5` runs all manifest fixtures against committed text oracles.
-`make test-rustc` checks their full-program outcomes independently, with explicit
-reasons for deliberate phase-boundary differences. Tests also assert selected
-configured-owner facts; structural tests verify child ordering, source spans,
-compact nodes, deferred work, recursion limits and large item lists. Run all
-prior suites, debug/release invariants, Clippy, file/architecture audits,
-harness/provenance checks and affected immutable A/B scaling measurements.
-`make perf-crate-ast` measures parsing plus configuration without rendering,
-while separately checking complete output equality.
+## Run the tests
 
-The `default` item modifier retains its exact keyword span and actual function,
-impl, constant or type item identity in sparse typed metadata. Fragment transfer
-and original-module copies preserve those facts without enlarging expression
-nodes or ordinary item payloads. Ordinary item text stays unchanged. This is
-syntax only: feature authority, legal owners and specialization remain later
-checks. `tests/spec/items/default-*` preserves independently observed sources.
+Run the PA5 test target from the repository root.
+
+```sh
+make -C pa5 test
+```
+
+[The test manifest](tests/manifest.json) covers item grammar, configuration,
+diagnostics, and the text format. Exercise nested syntax and long item lists
+when testing your parser. Rerun PA4 after changes to the shared syntax cursor
+or body parser.

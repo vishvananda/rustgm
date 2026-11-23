@@ -1,15 +1,19 @@
-# RustGM Programming Assignment 4: Expressions and statements
+# RustGM Programming Assignment 4 — Expressions and statements
 
-Status: **implemented-draft**. Prerequisite: PA3. The profile is Rust 1.98.0,
-edition 2024, Linux x86-64. This assignment parses one expression fragment,
-including a block containing statements. PA5 adds a separate crate/item entry
-point; PA4's fragment mode and its oracles remain stable.
+Build on [PA3](../pa3/README.md) to parse one Rust expression fragment,
+including a block containing statements. Use Rust 1.98.0, edition 2024, on
+Linux x86-64. PA5 adds a separate entry point for items and crates. Keep
+this expression mode available for the PA4 tests.
 
-## Required implementation
+## Command-line interface
 
-```sh
+```text
 rustgm --emit-ast [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
+
+Follow PA1's input and output options.
+
+## Required implementation
 
 Consume PA1 tokens through bounded lookahead, interpret demanded PA2 literals,
 and construct typed syntax. Do not retain a token forest for ordinary source,
@@ -50,7 +54,7 @@ It never invokes the lexer again.
 
 ### Precedence and boundaries
 
-From lowest to highest: assignment (right associative), ranges (nonassociative),
+From lowest to highest, the order is assignment (right associative), ranges (nonassociative),
 `||`, `&&`, comparisons (nonassociative), `|`, `^`, `&`, shifts, additive,
 multiplicative, casts, unary, postfix. Other binary operators associate left.
 Parentheses make explicit grouping nodes. Unparenthesized chained comparisons
@@ -172,19 +176,23 @@ eof 5
 
 Parse fully before writing any output. A source error returns 1, emits no stdout
 and prints `ERROR: OFFSET: MESSAGE` to stderr. Successful runs return 0 with
-empty stderr. Exact messages and offsets are frozen by the fixtures. Panics,
-signals, exit 86 and timeouts are implementation failures, never syntax rejection.
+empty stderr. The fixtures supply the expected messages and offsets. A panic, signal,
+timeout, or exit 86 is an implementation failure.
 Ordinary recursive syntax has a 256-call nesting budget; reaching it diagnoses
 an error. Flat left chains and captured delimiter trees do not consume that
 budget. The cursor retains at most three lookahead tokens.
 
-## Validation
+## Run the tests
 
-`make test-pa4` compares the manifest's committed text sidecars. Independent
-rustc checks wrap expressions in declared contexts; syntax-only differences
-must carry an explicit explanation. Hand-checked structural tests cover
-precedence, associativity, child-list ordering, calls, spans and statement
-boundaries. Adversarial tests exercise long chains, deep captures and diagnosed
-recursive nesting. `make lint audit-rust test-harness test-upstream test-rustc`
-and all prior suites are required. `make perf-ast` retains scaling/A/A evidence;
-changes to an existing hot path also require immutable A/B measurements.
+Run the PA4 test target from the repository root.
+
+```sh
+make -C pa4 test
+```
+
+[The test manifest](tests/manifest.json) covers precedence, associativity,
+child ordering, calls, spans, statement boundaries, and error handling.
+Check that long flat chains and deeply nested macro captures stay within
+the required space bounds, and that oversized recursive syntax receives
+a diagnostic. When changing a shared interface, rerun the affected earlier
+assignment suites.

@@ -1,8 +1,18 @@
-# RustGM Programming Assignment 6: Modules and names
+# RustGM Programming Assignment 6 — Modules and names
 
-Status: **implemented draft**. Prerequisite: PA5. The fixed language profile is
-Rust 1.98.0, edition 2024, Linux x86-64. This assignment produces name facts;
-type validity, macro expansion and executable lowering belong to later stages.
+Use the [PA5 crate parser](../pa5/README.md) to load modules and resolve names.
+The fixed profile is Rust 1.98.0, edition 2024, on Linux x86-64. Later
+assignments expand macros, check types, and lower executable code.
+
+## Command-line interface
+
+```text
+rustgm --emit-names [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA1's input and output options and PA3's `--cfg` options. When reading
+standard input, use a virtual root source in the current directory for module
+lookup.
 
 ## Required implementation
 
@@ -11,11 +21,9 @@ lexical references. A relative primitive-headed path first uses an actual module
 member when one exists. When ordinary module lookup is missing, use the canonical
 primitive and retain the remaining associated-member obligation. Nominal/alias
 shadows, imports, explicitly qualified modules, privacy and ambiguity keep their
-own lookup rules. Preserve PA1–PA5 views. `dev/rustgm --emit-names SOURCE`
-produces the view below; stdin uses a virtual source in the current directory.
-`--cfg` keeps PA3's explicit arguments. `--count-names` reports sizes for scaling
-measurements. No compiler-library code reads the environment or filesystem: the
-driver supplies source files through the loader's source-provider interface.
+own lookup rules. Keep the PA1–PA5 inspection modes. Use a source-provider
+interface to pass loaded files from the driver to the resolver. Keep
+filesystem and environment access in the driver.
 
 Names use Unicode 17 NFC, remove raw-identifier prefixes and distinguish type,
 value, macro, lifetime and label namespaces. Interned names occupy a shared byte
@@ -51,7 +59,7 @@ macro-generated copies remain separate items. Associated constants require a
 name. The ordinary type and constant-evaluation phases still check every
 retained initializer, including within unused functions. Public visibility does
 not give an unnamed constant an export name; its semantic lint is
-`unused_visibilities`. See [the checkpoint contract](../docs/unnamed-free-constants.md).
+`unused_visibilities`.
 
 An opaque external type contributes an ordinary type-namespace declaration,
 with its actual extern-block owner, visibility and source identity. Reexports
@@ -79,10 +87,9 @@ retaining each available namespace at its own effective visibility. A public
 type re-export keeps an available restricted constructor or same-named function
 at that narrower visibility; a public value can likewise retain a restricted
 type. At least one available namespace must permit the requested import
-visibility, and ordinary uses still enforce each name's privacy. See the
-[re-export controls](tests/spec/reexport-visibility/README.md).
-Imports preserve restrictions,
-including ancestor-restricted visibility and tuple-constructor field visibility.
+visibility, and ordinary uses still enforce each name's privacy. Imports
+preserve restrictions, including ancestor-restricted visibility and
+tuple-constructor field visibility.
 Direct trait members inherit the trait's visibility; items nested inside a
 default method retain their own visibility. Anonymous imports retain their final
 resolved type target and import identity without creating a binding named `_`.
@@ -96,16 +103,14 @@ Use the pinned Reference's [names](../doc/rust-reference/src/names.md),
 [modules](../doc/rust-reference/src/items/modules.md),
 [use declarations](../doc/rust-reference/src/items/use-declarations.md), and
 [visibility](../doc/rust-reference/src/visibility-and-privacy.md) chapters.
-Directory ownership also follows the pinned compiler's
-[module loader](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_expand/src/module.rs).
 
 ## Typed interface and exact text view
 
-The maintainer's `resolve::Package` owns source units and module instances.
-`resolve::analyze` returns `Resolution`: dense scopes/definitions, namespace
-bindings, imports, resolved references and pending expansion tasks. References
-store the definition visible at that source position, even after later shadowing.
-Later phases consume these records directly; the text view is never reparsed.
+Keep source files and module instances distinct. Return typed scopes,
+definitions, namespace bindings, imports, resolved references, and pending
+expansion tasks. Each reference retains the definition visible at its source
+position even if a later declaration shadows the name. Pass the typed records
+directly to later phases.
 
 IDs are decimal and zero-based. Source node IDs retain PA5 identities within a
 file. File/module IDs follow configured source traversal; root module/scope are
@@ -113,7 +118,7 @@ file. File/module IDs follow configured source traversal; root module/scope are
 lifetime and binding names in source order, including those in syntax that
 configuration later disables; other names follow as resolution first needs them
 (module loading, primitive names, declarations, then uses). Scope/definition IDs
-follow deterministic creation order. Emit:
+follow deterministic creation order. Write the records in this format.
 
 ```text
 name ID "NFC_NAME"
@@ -131,7 +136,7 @@ order; references follow semantic traversal. Name strings use Rust debug-string
 escaping. Namespaces are `type`, `value`, `macro`, `lifetime`, `label`. Kinds are
 `primitive`, `module`, `function`, `struct`, `constructor`, `enum`, `variant`,
 `trait`, `builtin-trait`, `alias`, `const`, `static`, `generic`, `local`, `parameter`, `self-type`,
-`macro`, `extern-crate`, `label`, `lifetime`. Access is `public` or `module:ID`.
+`macro`, `extern-crate`, `foreign-type`, `label`, `lifetime`. Access is `public` or `module:ID`.
 Origins are `Direct`, `Import(ID)`, `Glob(ID)`; import IDs follow flattened use
 leaf order. Targets are `def=ID`, `associated=ID`, `pending-expansion=SCOPE`.
 Optional fields are omitted. Boolean spelling is `true`/`false`. End every line,
@@ -144,7 +149,7 @@ import work budget of 1,000,000 plus 128 times the import count diagnoses excess
 retry work. Earlier parser budgets remain applicable. Long expression chains,
 module traversal and arena destruction do not consume proportional call stacks.
 
-## Boundary and validation
+## Later assignments
 
 Macro captures remain opaque. Invocation owners become explicit expansion tasks;
 missing ordinary references that depend on such a scope retain pending queries.
@@ -154,8 +159,7 @@ those queries. PA6 does not claim that an opaque invocation successfully expands
 Type-directed associated lookup retains its resolved base for later analysis.
 Field/method selection, type inhabitation, callable validity, pattern usefulness
 and borrow validity are later contracts. A variant can resolve in the type
-namespace while failing PA9's requirement to denote a type; the manifest records
-that deliberate rustc-acceptance difference. Lifetimes `'static` and `'_` keep
+namespace. PA9 checks whether a type-namespace name denotes a usable type. Lifetimes `'static` and `'_` keep
 their built-in meaning. Primitive scalar names are available. The supported
 external metadata is deliberately small: `core`/`std` provide `ops::Drop`,
 `marker::{Copy, Sized}` and `clone::Clone`. Trait modules are loaded on demand;
@@ -176,12 +180,16 @@ this view in deterministic creation order; loading these headers preserves
 existing source reference identities. The name view does not prove iterator
 applicability or execute a loop. PA26 owns those library contracts.
 
-The manifest declares every primary input and auxiliary module file. File cases
-run with their source path; stdin cases retain earlier harness behavior. Receipts
-hash auxiliary bytes as well as primary bytes and arguments. Independent rustc
-checks copy only the declared source package into a fresh case directory.
+## Run the tests
 
-Run `make test-pa6`, `make test-rustc`, all earlier suites, debug/release typed
-invariants, `make lint audit-rust test-harness test-upstream`, and `make perf-names`.
-Invariants check definition identity, scope boundaries, moved source ownership,
-NFC table growth, module caching, deterministic rendering and long chains.
+Run the PA6 test target from the repository root.
+
+```sh
+make -C pa6 test
+```
+
+[The test manifest](tests/manifest.json) includes cases read from standard
+input and cases run with a source file path. The latter can supply auxiliary
+module files. To reproduce a module lookup failure, keep the fixture in its
+directory and pass its path to `--emit-names`. Check that source files can be
+reused through distinct module instances and that output is deterministic.

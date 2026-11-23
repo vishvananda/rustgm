@@ -131,7 +131,7 @@ forest here is an authorized diagnostic/macro-fragment representation, not a
 mandatory intermediate for ordinary source parsing. PA4's ordinary parser must
 consume a bounded token cursor. Reuse typed attribute and configuration facts.
 
-From the repository root:
+Run the PA3 test target from the repository root.
 
 ```sh
 make -C pa3 test

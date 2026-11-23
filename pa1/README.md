@@ -45,8 +45,7 @@ to a legacy encoding.
 
 Write one line per token in the form `KIND START END "SPELLING"`. On success,
 finish with `eof LENGTH`, where LENGTH is the normalized byte length. Empty
-input produces `eof 0` followed by LF. For `fn x()` without a final newline,
-the output is:
+input produces `eof 0` followed by LF. `fn x()` without a final newline produces these records.
 
 ```text
 identifier 0 2 "fn"
@@ -90,15 +89,15 @@ retaining the entire token stream, or building per-character records. The text
 adapter formats the typed tokens. Tokenization and diagnostics depend on
 source bytes and compiler options.
 
-Run the assignment tests from the repository root:
+Use the PA1 test target from the repository root.
 
 ```sh
 make -C pa1 test
 ```
 
 The test runner compares each case's output, diagnostic, and exit status with
-its expected files. For a focused run after building with `make` in the student
-repository, select a path from the manifest:
+its expected files. After building with `make` in the student repository, pass a manifest path
+to `--case` to run one fixture.
 
 ```sh
 python3 scripts/course.py pa1 --app obj/student/release/rustgm \

@@ -127,7 +127,7 @@ dump between frontend phases. Use typed tokens and literal values instead.
 
 ## Run the tests
 
-From the repository root:
+Run the literal tests and rerun the lexer tests after lexer changes.
 
 ```sh
 make -C pa2 test
