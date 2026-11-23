@@ -124,7 +124,7 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
         &mut facts,
         template,
         instance,
-        input,
+        (input, checked.nested_requirements(input.source)),
         None,
         &mut cleanup,
     )
@@ -173,7 +173,7 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
         &mut facts,
         template,
         instance,
-        &unpaid,
+        (&unpaid, &[]),
         None,
         &mut cleanup,
     )?;

@@ -31,11 +31,12 @@ fn generic_entry(
         return Err("outer identity".into());
     };
     let mut cleanup = body::instantiate::Cleanup::new(facts);
+    let input = checked.input(item).ok_or("outer contract")?;
     let mut outer = body::instantiate::from_checked_caller(
         facts,
         checked.get(item).ok_or("outer template")?,
         outer,
-        checked.input(item).ok_or("outer contract")?,
+        (input, checked.nested_requirements(input.source)),
         None,
         &mut cleanup,
     )?;
@@ -79,7 +80,7 @@ fn specialized_sources(
             facts,
             template,
             entry.instance(),
-            input,
+            (input, checked.nested_requirements(input.source)),
             None,
             &mut cleanup,
         )?;
@@ -215,11 +216,12 @@ fn selected(
         return Err("missing selected caller".into());
     };
     let mut cleanup = body::instantiate::Cleanup::new(facts);
+    let input = checked.input(item).ok_or("caller contract")?;
     let mut materialized = body::instantiate::from_checked_caller(
         facts,
         checked.get(item).ok_or("caller template")?,
         instance,
-        checked.input(item).ok_or("caller contract")?,
+        (input, checked.nested_requirements(input.source)),
         None,
         &mut cleanup,
     )?;
@@ -469,7 +471,7 @@ fn only_the_sealed_caller_inherits_its_declared_output_equality() -> TestResult 
         &mut f.facts,
         template,
         instance,
-        input,
+        (input, checked.nested_requirements(input.source)),
         None,
         &mut cleanup,
     )?;
@@ -575,11 +577,12 @@ fn equal_projection_results_do_not_equate_their_inputs() -> TestResult {
         return Err("function item".into());
     };
     let mut cleanup = body::instantiate::Cleanup::new(&f.facts);
+    let input = checked.input(item).ok_or("input")?;
     let value = body::instantiate::from_checked_caller(
         &mut f.facts,
         checked.get(item).ok_or("template")?,
         instance,
-        checked.input(item).ok_or("input")?,
+        (input, checked.nested_requirements(input.source)),
         None,
         &mut cleanup,
     )?;
