@@ -264,11 +264,11 @@ fn argument_assumptions(
         // Native dispatch on an opaque value uses the selected representation
         // at these same captures. Its reference fields are already formed by
         // the defining body, even though the public type hides their bounds.
-        storage.extend(
-            arguments
-                .clone()
-                .filter(|&ty| matches!(facts.types.kind(ty), Some(Type::Opaque(..)))),
-        );
+        for ty in arguments.clone() {
+            if matches!(facts.types.kind(ty), Some(Type::Opaque(..))) {
+                storage.push(ty);
+            }
+        }
         if !storage.is_empty() {
             facts.prepare_opaque_storage()?;
             for ty in &mut storage {
