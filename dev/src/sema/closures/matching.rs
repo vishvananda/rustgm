@@ -121,6 +121,45 @@ pub(crate) fn bind_instance_counted(
 ) -> Result<(Bindings, usize), &'static str> {
     Matcher::new(types, universals, formal, actual).bindings_counted()
 }
+
+/// Match the checked callable's argument and result roots together with its
+/// hidden Self. The receiver borrow's own slot is local to the invocation.
+pub(crate) fn bind_callable_counted(
+    types: &Store,
+    formal: Execution,
+    actual: TypeId,
+    inputs: TypeId,
+    output: TypeId,
+) -> Result<(Bindings, usize), &'static str> {
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions,
+        ..
+    }) = types.kind(formal.signature)
+    else {
+        return Err("declared callable has no checked execution signature");
+    };
+    let Some(Kind::Tuple(inputs)) = types.kind(inputs) else {
+        return Err("declared callable arguments are not a tuple");
+    };
+    let Some([_, parameters @ ..]) = types.list(parameters) else {
+        return Err("declared callable execution has no receiver");
+    };
+    let inputs = types
+        .list(inputs)
+        .ok_or("missing declared callable inputs")?;
+    if bound_regions != formal.universals || parameters.len() != inputs.len() {
+        return Err("declared callable inputs differ from its checked execution");
+    }
+    let mut matcher = Matcher::new(types, bound_regions, formal.self_ty, actual);
+    let invalid = |_| "declared callable matching exceeds its work bound";
+    matcher.child(result, output, 0).map_err(invalid)?;
+    for (&parameter, &input) in parameters.iter().zip(inputs) {
+        matcher.child(parameter, input, 0).map_err(invalid)?;
+    }
+    matcher.bindings_counted()
+}
 impl Bindings {
     #[cfg(test)]
     pub(crate) fn prefix(self, actual: RegionId) -> Result<Prefix, &'static str> {

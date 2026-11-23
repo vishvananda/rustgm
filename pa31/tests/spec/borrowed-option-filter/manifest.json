@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "scoped_cache.rs": {
+      "sha256": "2b8e53e6508e1bf31b90e148ad59c9fe15652d9716146f22825a3c8dd71a9a83",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "filter_escape.rs": {
+      "sha256": "abcea6904e08fda37bc590ce19e63f27f62c87381e0c7f53bd22e3ac5db29949",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_diagnostic": "lifetime may not live long enough"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core inputs. Option::filter calls a higher-ranked closure that captures the loader configuration and package. The native program observes matching and mismatched cache scopes. Filtering a borrowed value cannot extend its lifetime to static."
+}

@@ -4,7 +4,7 @@
 mod tests;
 use super::{Bound, Declarations, Inputs};
 use crate::{
-    sema::closures::{Body, Execution},
+    sema::closures::{Body, Execution, actual},
     types::{Kind, instance::Instance},
 };
 
@@ -115,7 +115,7 @@ pub(super) fn private_inputs(
     let mut proof = Obligations::new(1);
     if facts.types.contains_projections(formal) == Some(true) {
         let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
-        formal = normalize_signature(facts, &mut session, formal)?;
+        formal = actual::normalize_signature(facts, &mut session, formal)?;
     }
     crate::sema::closures::matching::prepare_heads(facts, formal, actual)?;
     let (bindings, steps) = crate::sema::closures::matching::signature_bindings(
@@ -238,51 +238,10 @@ pub(crate) fn normalize(
     let (self_ty, steps) = session.normalize(facts, execution.self_ty)?;
     execution.self_ty = self_ty;
     facts.body_work.canonical_steps += steps;
-    execution.signature = normalize_signature(facts, &mut session, execution.signature)?;
+    execution.signature = actual::normalize_signature(facts, &mut session, execution.signature)?;
     Ok(Prepared {
         execution,
         proof: (!proof.is_empty()).then_some(proof),
-    })
-}
-
-/// These roots live inside an existing proof binder, unlike a nested callable.
-fn normalize_signature(
-    facts: &mut Declarations,
-    session: &mut crate::sema::projections::Concrete<'_>,
-    signature: crate::types::TypeId,
-) -> Result<crate::types::TypeId, &'static str> {
-    let Some(Kind::Function {
-        parameters,
-        result,
-        bound_regions,
-        unsafe_,
-        convention,
-    }) = facts.types.kind(signature)
-    else {
-        return Err("closure execution lacks its proof signature");
-    };
-    // This signature owns the existing execution universals. Normalize its
-    // roots at ROOT, preserving nested callable binders inside those roots.
-    let parameters = facts
-        .types
-        .list(parameters)
-        .ok_or("invalid execution inputs")?
-        .to_vec();
-    let mut normalized = Vec::with_capacity(parameters.len());
-    for parameter in parameters {
-        let (parameter, steps) = session.normalize(facts, parameter)?;
-        normalized.push(parameter);
-        facts.body_work.canonical_steps += steps;
-    }
-    let (result, steps) = session.normalize(facts, result)?;
-    facts.body_work.canonical_steps += steps;
-    let parameters = facts.types.intern_list(&normalized)?;
-    facts.types.intern(Kind::Function {
-        parameters,
-        result,
-        bound_regions,
-        unsafe_,
-        convention,
     })
 }
 

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "std.rs": {
+      "sha256": "abc138d248aecfe68fd02c21b267a3e293958bab80a410b8f090cc8656a551b2",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [],
+          "source_graph": "std",
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-std consumer of a nested flat_map collected into a hash map. The iterator fold invokes the closure returned by map_fold with an opaque callback argument. Its native observations verify the four keyed results."
+}

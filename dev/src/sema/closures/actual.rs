@@ -175,3 +175,44 @@ fn substitution(
     facts.body_work.canonical_steps += regions.steps;
     Ok((parameters, universals))
 }
+
+/// These roots live inside an existing proof binder, unlike a nested callable.
+pub(crate) fn normalize_signature(
+    facts: &mut Declarations,
+    session: &mut crate::sema::projections::Concrete<'_>,
+    signature: crate::types::TypeId,
+) -> Result<crate::types::TypeId, &'static str> {
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions,
+        unsafe_,
+        convention,
+    }) = facts.types.kind(signature)
+    else {
+        return Err("closure execution lacks its proof signature");
+    };
+    // This signature owns the existing execution universals. Normalize its
+    // roots at ROOT, preserving nested callable binders inside those roots.
+    let parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("invalid execution inputs")?
+        .to_vec();
+    let mut normalized = Vec::with_capacity(parameters.len());
+    for parameter in parameters {
+        let (parameter, steps) = session.normalize(facts, parameter)?;
+        normalized.push(parameter);
+        facts.body_work.canonical_steps += steps;
+    }
+    let (result, steps) = session.normalize(facts, result)?;
+    facts.body_work.canonical_steps += steps;
+    let parameters = facts.types.intern_list(&normalized)?;
+    facts.types.intern(Kind::Function {
+        parameters,
+        result,
+        bound_regions,
+        unsafe_,
+        convention,
+    })
+}
