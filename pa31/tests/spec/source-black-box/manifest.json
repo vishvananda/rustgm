@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "moved.rs": {
+      "sha256": "39d86c53868ea9c58c73f1ea3f630c5d7d4ebe0e35606e3efa9c4c69a4b99aa6",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "^assembly @asm0 intel readwrite 1 0 0 1 \\{\\n",
+            "^\\s+asm @asm0\\("
+          ]
+        }
+      ]
+    },
+    "same-name.rs": {
+      "sha256": "365c76fea710b976d00a5e31d5c30ae84679229118183970af441d3c1177bec9",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir_absent": [
+            "^assembly ",
+            "^\\s+asm "
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for pinned original core's runtime black_box."
+}

@@ -27,6 +27,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "compare_bytes"
             | "atomic_load"
             | "atomic_store"
+            | "black_box"
     )
 }
 
@@ -66,6 +67,53 @@ pub(super) fn item_roots<const N: usize>(
     // Lookup is bounded internally; failed work and failed payment publish no answer.
     charge(lookup.steps())?;
     result
+}
+
+/// A `black_box` instance retains one type and the checked opening of its identity signature.
+pub(crate) fn black_box_type(
+    facts: &Declarations,
+    callee: TypeId,
+    signature: TypeId,
+) -> Result<TypeId, &'static str> {
+    let types = &facts.types;
+    let Some(Kind::FunctionItem {
+        arguments,
+        signature: public,
+        ..
+    }) = types.kind(callee)
+    else {
+        return Err("source black_box requires its complete function item");
+    };
+    let mut arguments = types
+        .arguments(arguments)
+        .ok_or("source black_box lost its type argument")?;
+    let (Some(Argument::Type(ty)), None) = (arguments.next(), arguments.next()) else {
+        return Err("source black_box requires exactly one type argument");
+    };
+    let Some(Kind::Function {
+        bound_regions: 0,
+        parameters,
+        result,
+        unsafe_: false,
+        convention: Convention::RUST,
+    }) = types.kind(public)
+    else {
+        return Err("source black_box requires its public safe Rust signature");
+    };
+    let Some(&[input]) = types.list(parameters) else {
+        return Err("source black_box requires one public value input");
+    };
+    let roots = item_roots(types, [input, result], |work| {
+        crate::sema::header_attributes::charge_source_contract_query(facts, work)
+            .map_err(|_| "source black_box instance query work exhausted")
+    })?;
+    if roots != Some([ty; 2]) {
+        return Err("source black_box public signature does not open to its type argument");
+    }
+    if !opened_signature_matches(types, signature, &[ty], ty, false, Convention::RUST) {
+        return Err("source black_box opened signature differs from its type argument");
+    }
+    Ok(ty)
 }
 
 pub(super) struct Intrinsic {

@@ -64,6 +64,7 @@ pub(super) struct Context<'a> {
     pub object_callables: Option<Box<super::virtual_dispatch::Callables>>,
     pub table_symbols: HashMap<crate::sema::vtable_plans::TableId, crate::lowir::data::GlobalId>,
     pub table_queue: Vec<crate::sema::vtable_plans::TableId>,
+    pub(super) opaque_value_barrier: Option<crate::lowir::asm::AssemblyId>,
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
     /// The ledger whose demand scopes route demanded bodies' charges.
@@ -429,6 +430,7 @@ impl<'a> Context<'a> {
             object_callables: None,
             table_symbols: HashMap::default(),
             table_queue: Vec::new(),
+            opaque_value_barrier: None,
             abort: None,
             remainders: [None; 2],
             ledger: facts,

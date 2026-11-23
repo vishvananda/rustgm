@@ -46,16 +46,6 @@ impl Lower<'_, '_, '_> {
                 Ok(Some(Selected::Unit))
             }
             ("write_box_via_move", &[boxed, value]) => self.write_box(call, boxed, value),
-            ("black_box", &[value]) => {
-                if self.input_type(value)? != call.result {
-                    return Ok(None);
-                }
-                // The identity; an object result owns its own snapshot.
-                match self.value(value)? {
-                    Selected::Object(source) => self.loaded(source, call.result).map(Some),
-                    selected => Ok(Some(selected)),
-                }
-            }
             // The value was moved into the call; nothing drops it.
             ("forget", &[_]) => Ok((call.result == TypeId::UNIT).then_some(Selected::Unit)),
             ("volatile_load", &[pointer]) => {

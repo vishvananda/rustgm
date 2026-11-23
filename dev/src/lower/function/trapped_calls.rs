@@ -67,6 +67,11 @@ impl Lower<'_, '_, '_> {
         {
             return Ok(Some(lowered));
         }
+        if name == "black_box" {
+            return self
+                .source_black_box(ty, signature, arguments, value.ty)
+                .map(Some);
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

@@ -6,7 +6,6 @@ mod bit_intrinsics;
 mod c_boundary;
 mod callback_dispatch;
 mod catch_unwind;
-mod word_access;
 pub(super) use catch_unwind::checked_catch_unwind;
 #[path = "function/tracked_locations.rs"]
 mod caller_location;
@@ -17,6 +16,7 @@ mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
 mod logical_values;
+mod optimization_barrier;
 mod packed_lanes;
 mod pointed_layout;
 mod pointers;
@@ -34,6 +34,7 @@ mod text;
 mod trapped_calls;
 mod unqualified;
 mod vararg;
+mod word_access;
 mod wrapper_transfers;
 mod wrapping_runtime;
 use super::{

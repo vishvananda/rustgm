@@ -166,8 +166,8 @@ use crate::{
     },
     support::{bindings::LangItem, crates::CrateIdentity},
 };
-pub(crate) use intrinsic_contracts::strict_bodiless_intrinsic;
 pub(super) use intrinsic_contracts::validate as validate_intrinsic;
+pub(crate) use intrinsic_contracts::{black_box_type, strict_bodiless_intrinsic};
 pub(crate) use layout::Selection;
 pub(super) use layout::validate_member as validate_layout_member;
 pub(crate) use needs_drop::NeedsDropSelection;
