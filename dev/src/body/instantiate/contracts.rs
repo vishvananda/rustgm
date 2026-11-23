@@ -144,6 +144,8 @@ fn prepare<const CAPTURES: bool>(
     };
     let mut contract = original.clone();
     let closure = matches!(original.key, crate::body::ir::BodyKey::Closure(_));
+    let checked_creator =
+        matches!(premises, super::Premises::Declared) && inputs.connections.is_some();
     if !retain_output
         && (closure
             || requested.is_some()
@@ -152,7 +154,7 @@ fn prepare<const CAPTURES: bool>(
         // Reprove the complete child without assuming its conditional conclusion.
         // A closure's formation obligations are its own source facts, so they
         // move into a caller's namespace with the rest of its contract.
-        super::closures::formation(&mut contract);
+        super::closures::formation(facts, &mut contract, checked_creator);
     }
     if retain_output {
         super::caller_transport::conditional_contract(facts, &mut contract, inputs.caller)?;
@@ -166,7 +168,7 @@ fn prepare<const CAPTURES: bool>(
         Bound::parameters(&facts.types, &inputs.bindings)?
     };
     if closure && retain_output {
-        super::closures::formation(&mut contract);
+        super::closures::formation(facts, &mut contract, checked_creator);
     }
     if inputs.connections.is_some() && matches!(premises, super::Premises::Declared) {
         contract

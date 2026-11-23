@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "cache.rs": {
+      "sha256": "f129d0afa6c18e66513630d2ffb3bd2d60fd8abe74db5d7b03589f61c933a752",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "escape.rs": {
+      "sha256": "f4fc27500d39c618a1e79bcb061c94fee9aeffca2b19e5d5799bc9fdbd2959be",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0515"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guests covering a cache callback over a borrowed iterator and an invalid escaping item from original core Peekable."
+}

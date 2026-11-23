@@ -13,25 +13,44 @@ pub(crate) struct Prepared {
     pub proof: Option<crate::types::lifetime_proof::Obligations>,
 }
 
-/// Reprove the original output conditions under the selected complete Self.
-/// The instance keeps every child constraint and requires field/result formation;
-/// none of the source parent's conditional conclusions becomes an assumption.
-pub(super) fn formation(contract: &mut crate::body::regions::Contract) {
+/// Reprove field and result obligations under the selected complete Self.
+pub(super) fn formation(
+    facts: &Declarations,
+    contract: &mut crate::body::regions::Contract,
+    checked_creator: bool,
+) {
+    use crate::types::parameters::predicates::{Bound as PredicateBound, Predicate};
+
     let Some(link) = &contract.output else {
         return;
     };
     if let Some(formation) = &link.formation {
-        contract
-            .obligations
-            .extend(
-                formation
-                    .inputs
-                    .iter()
-                    .map(|input| crate::body::regions::Obligation {
-                        source: contract.source.into(),
-                        kind: crate::body::regions::Kind::WellFormed(input.child),
-                    }),
-            );
+        for input in &formation.inputs {
+            contract.obligations.push(crate::body::regions::Obligation {
+                source: contract.source.into(),
+                kind: crate::body::regions::Kind::WellFormed(input.child),
+            });
+            // The checked creator proved the original lexical input type. A
+            // dereference capture can leave its reference lifetime private to
+            // that creator, with no runtime field or signature naming it.
+            if checked_creator
+                && let Some(Kind::Reference {
+                    referent, region, ..
+                }) = facts.types.kind(input.child)
+                && region
+                    .bound_parts()
+                    .is_some_and(|(depth, slot)| depth == 0 && u32::from(slot) < link.universals)
+                && !formation.has_caller_slot(region)
+            {
+                contract.type_assumptions.push(
+                    Predicate {
+                        ty: referent,
+                        bound: PredicateBound::Outlives(region),
+                    }
+                    .into(),
+                );
+            }
+        }
     }
     contract.require_result_formation = true;
     contract.output = None;
