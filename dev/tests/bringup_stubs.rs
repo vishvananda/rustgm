@@ -1218,11 +1218,20 @@ const TYPE_NAMES: &str = "pa31/tests/spec/type-names";
 /// Compile a fixture as rustc's oracle names its crate, `minicore`, under the
 /// bring-up profile when `list` is given; the `LowIR` goes to a file.
 fn minicore(fixture: &str, case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
+    minicore_target(fixture, case, "lib", list)
+}
+
+fn minicore_target(
+    fixture: &str,
+    case: &str,
+    target: &str,
+    list: Option<&str>,
+) -> Result<(Output, PathBuf)> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
     let family = fixture.rsplit('/').next().ok_or("fixture family")?;
     let folder = root
         .join("obj/bringup-stubs")
-        .join(format!("{family}-{case}-{}", list.is_some()))
+        .join(format!("{family}-{case}-{target}-{}", list.is_some()))
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
     let lowir = folder.join(format!("{case}.lowir"));
@@ -1235,7 +1244,8 @@ fn minicore(fixture: &str, case: &str, list: Option<&str>) -> Result<(Output, Pa
     let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
     command
         .args(["--emit-lowir", "--cap-lints=allow", "--edition=2024"])
-        .args(["--crate-type=lib", "--crate-name", "minicore"])
+        .arg(format!("--crate-type={target}"))
+        .args(["--crate-name", "minicore"])
         .args(["--crate-disambiguator", &identity])
         .args(["--source-core", &format!("minicore@{identity}")]);
     if let Some(list) = list {
@@ -1322,41 +1332,31 @@ fn rows<'a>(stderr: &'a str, prefix: &str) -> Vec<&'a str> {
         .filter_map(|line| line.strip_prefix(prefix))
         .collect()
 }
-/// A closure created in a generic function and called through core's
-/// `and_then` lowers once its entry signatures' roots are prepared. Its
-/// creator still fails only a region proof that rustc accepts.
+/// Closures passed to core's `and_then` prepare signature roots and prove
+/// creator-dependent output lifetimes in the strict executable graph.
 #[test]
 fn generic_closure_entries_prepare_their_signature_roots() -> Result {
-    let (rejected, _) = minicore(ENTRY_ROOTS, "rejected", Some(""))?;
-    let stderr = String::from_utf8(rejected.stderr)?;
-    assert_eq!(rejected.status.code(), Some(1), "{stderr}");
-    assert!(stderr.contains("incompatible types"), "{stderr}");
-    for (case, unproven) in [
-        ("concrete", false),
-        ("generic-fn", true),
-        ("generic-method", true),
-    ] {
-        let (passed, lowir) = minicore(ENTRY_ROOTS, case, Some(""))?;
-        let stderr = String::from_utf8(passed.stderr)?;
-        assert!(passed.status.success(), "{case}: {stderr}");
-        assert!(
-            rows(&stderr, "bringup-blocker\t").is_empty(),
-            "{case}: {stderr}"
-        );
-        match rows(&stderr, "bringup-unproven\t").as_slice() {
-            [] => assert!(!unproven, "{case}: {stderr}"),
-            [row] => assert!(
-                unproven
-                    && row.contains("\tfirst\t")
-                    && row.ends_with("required lifetime does not outlive its target\tlifetimes"),
-                "{case}: {row}"
-            ),
-            _ => return Err(format!("{case}: more than one unproven body: {stderr}").into()),
+    for (target, list) in [("bin", None), ("lib", Some(""))] {
+        let (rejected, _) = minicore_target(ENTRY_ROOTS, "rejected", target, list)?;
+        let stderr = String::from_utf8(rejected.stderr)?;
+        assert_eq!(rejected.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("incompatible types"), "{stderr}");
+
+        for case in ["concrete", "generic-fn", "generic-method"] {
+            let (passed, lowir) = minicore_target(ENTRY_ROOTS, case, target, list)?;
+            let stderr = String::from_utf8(passed.stderr)?;
+            assert!(passed.status.success(), "{target} {case}: {stderr}");
+            assert!(
+                rows(&stderr, "bringup-blocker\t").is_empty()
+                    && rows(&stderr, "bringup-unproven\t").is_empty()
+                    && (list.is_some() || waived(&stderr).is_empty()),
+                "{target} {case}: {stderr}"
+            );
+            assert!(
+                !std::fs::read_to_string(lowir)?.contains("rg.trap."),
+                "{target} {case}"
+            );
         }
-        assert!(
-            !std::fs::read_to_string(lowir)?.contains("rg.trap."),
-            "{case}"
-        );
     }
     Ok(())
 }

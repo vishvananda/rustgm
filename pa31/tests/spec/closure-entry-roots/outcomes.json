@@ -10,6 +10,7 @@
    "sha256": "9237dc8593174e9fef472f136d97dc48ad0faad9597f820199d0daf0934a64fa",
    "declared": 0,
    "rustc_status": 0,
+   "rustgm_strict": "accepted in the executable graph; native stdout 41 59",
    "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
    "rustgm_before": "accepted"
   },
@@ -17,14 +18,18 @@
    "sha256": "d655b793ad2f32289c1a1ac4b11859da75b9c4768099bf14376e3bc01e1683c3",
    "declared": 0,
    "rustc_status": 0,
-   "rustgm_bringup": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
+   "rustgm_strict": "accepted in the executable graph; native stdout 41 59",
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_bringup_before_creator_proofs": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
    "rustgm_before": "bring-up blocker and_then: generic aggregate requires instantiated fields"
   },
   "generic-method.rs": {
    "sha256": "ca9adf33c25edc58c6f8fdc5ac9762536b1f3f4ba1f8641d553934ec602a2ad9",
    "declared": 0,
    "rustc_status": 0,
-   "rustgm_bringup": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
+   "rustgm_strict": "accepted in the executable graph; native stdout 41 59",
+   "rustgm_bringup": "accepted with no blocker or unproven body; native stdout 41 59",
+   "rustgm_bringup_before_creator_proofs": "accepted; first is the one unproven body (required lifetime does not outlive its target); native stdout 41 59",
    "rustgm_before": "bring-up blocker and_then: generic aggregate requires instantiated fields"
   },
   "rejected.rs": {
@@ -32,6 +37,7 @@
    "declared": 1,
    "rustc_status": 1,
    "rustc_error": "E0308",
+   "rustgm_strict": "rejected: incompatible types",
    "rustgm_bringup": "rejected: incompatible types",
    "rustgm_before": "rejected: incompatible types"
   }

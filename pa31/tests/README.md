@@ -1114,10 +1114,10 @@ a closure to core's `Option::and_then`, as pinned core's generic callers pass
 `|slot| slot.as_ref()`. A closure created in a generic body reads its public
 and specialized execution signatures at its entry, and their nominal roots
 are prepared with the instantiated closure body: concrete, generic-function
-and generic-method creators accept under the bring-up profile and run against
-a C observer, and returning the closure's input reference where an `Option` is
-expected rejects (E0308). The generic creators remain unproven bodies for a
-region proof rustc accepts. A maintainer integration test checks every case.
+and generic-method creators accept in the strict executable graph and run
+against a C observer. Returning the closure's input reference where an `Option`
+is expected rejects (E0308). A maintainer integration test checks both the
+strict executable and the bring-up library profiles.
 There is no graded manifest.
 
 `spec/opaque-capture-premises/` freezes three declared no_core programs that

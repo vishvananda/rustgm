@@ -1,4 +1,4 @@
-# Closure entry roots (source core, bring-up profile)
+# Closure entry roots (source core)
 
 Four no_core source-core libraries call core's `Option::and_then` with a
 closure, as pinned core's `option.rs` does when a generic caller passes
@@ -20,9 +20,9 @@ nominal roots (`Option<&u8>`) are prepared with the instantiated closure body,
 as a function's public roots are.
 
 Each accepted program exports `entry` and `probe`; `observe.c` prints `41 59`.
-Under the bring-up profile the generic creators still fail the region proof
-that rustc accepts ("required lifetime does not outlive its target") and are
-reported as unproven bodies; that borrow gap is outside this fixture.
+The strict executable graph proves both generic creators' output lifetimes.
+The bring-up library profile also proves them. It reports a source metadata
+export restriction for these declarations.
 Outcomes were declared before the frozen rustc 1.98.0 oracle; both are
 recorded in `outcomes.json` (4/4 agree). It keeps Rust's MIT/Apache-2.0
 attribution; see root NOTICE and `third_party/sources.json`.
