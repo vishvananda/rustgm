@@ -27,6 +27,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "ptr_offset_from_unsigned"
             | "slice_get_unchecked"
             | "compare_bytes"
+            | super::bytewise::NAME
             | "atomic_load"
             | "atomic_store"
             | "black_box"

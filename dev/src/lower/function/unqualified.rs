@@ -6,7 +6,6 @@ mod atomics;
 mod floats;
 mod layouts;
 mod memory;
-mod transfers;
 use super::{Lower, Selected, ir};
 use crate::{
     lowir::{program::Value, vocabulary::Type},
@@ -19,8 +18,6 @@ use crate::{
 struct Call<'body> {
     name: &'static str,
     callee: TypeId,
-    signature: TypeId,
-    arguments: ir::ValueList,
     inputs: &'body [ir::ValueId],
     result: TypeId,
 }
@@ -37,9 +34,7 @@ impl Lower<'_, '_, '_> {
             .get(id.0 as usize)
             .ok_or("unqualified intrinsic call disappeared")?;
         let ir::Rvalue::Call {
-            signature,
-            callee,
-            arguments,
+            callee, arguments, ..
         } = value.kind
         else {
             return Ok(None);
@@ -47,8 +42,6 @@ impl Lower<'_, '_, '_> {
         let call = Call {
             name,
             callee: self.input_type(callee)?,
-            signature,
-            arguments,
             inputs: self
                 .body
                 .arguments
@@ -60,7 +53,6 @@ impl Lower<'_, '_, '_> {
             "write_box_via_move" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?
             }
-            "raw_eq" => self.unqualified_raw_eq(call)?,
             "assert_zero_valid" => self.unqualified_assertion(call)?,
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,

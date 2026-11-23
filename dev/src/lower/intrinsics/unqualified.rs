@@ -54,7 +54,7 @@ impl Context<'_> {
         )
     }
 
-    pub(in crate::lower) fn demand_unqualified_raw_eq(
+    pub(in crate::lower) fn demand_source_raw_eq(
         &mut self,
         instance: Instance,
         signature: TypeId,
@@ -67,7 +67,7 @@ impl Context<'_> {
         self.install_memory_shim(
             instance,
             signature,
-            format!("rg.unqualified.raw_eq.t{}", instance.ty().0),
+            format!("rg.source.raw_eq.t{}", instance.ty().0),
             body,
         )
     }

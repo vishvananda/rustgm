@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "equal.rs": {
+      "sha256": "a398ec50ac9e2b83f582061e1e4caa234da9f4c67b5bc9b80b036c8d1955b9e9",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "rg.source.raw_eq.t",
+            "load u8"
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guest using original core bytewise array equality with independent shared references, zero-sized arrays, and differences at several byte positions."
+}

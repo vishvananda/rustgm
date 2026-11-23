@@ -9,11 +9,13 @@ mod c_boundary;
 mod callback_dispatch;
 mod catch_unwind;
 pub(super) use catch_unwind::checked_catch_unwind;
+mod bytewise_call;
 #[path = "function/tracked_locations.rs"]
 mod caller_location;
 mod cleanup;
 mod compare_values;
 mod coroutine;
+pub(super) use bytewise_call::checked as checked_raw_equality;
 mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
