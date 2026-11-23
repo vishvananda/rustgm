@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "replace.rs": {
+      "sha256": "080457d7df782d7adc20bea8bbbd9846df85d09d765d91a261375528d174b362",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "used-after-move.rs": {
+      "sha256": "00024387c8757447732c86a10f48b5a5a81898d1d36eba9634f78424eddf4b5d",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0382",
+          "rustc_environment": {
+            "RUSTC_BOOTSTRAP": "1"
+          }
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "local may be uninitialized at this read"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for pinned original core's pointer read and move intrinsics."
+}

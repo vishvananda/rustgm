@@ -28,6 +28,8 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "atomic_load"
             | "atomic_store"
             | "black_box"
+            | "read_via_copy"
+            | "write_via_move"
     ) || crate::support::word_operation::Update::intrinsic(name).is_some()
 }
 

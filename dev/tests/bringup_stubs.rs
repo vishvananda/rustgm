@@ -768,8 +768,8 @@ struct Lowering {
     emitted: &'static [&'static str],
     trapped: Option<&'static str>,
 }
-const PLAIN: &[&str] = &["ctpop", "read_via_copy"];
-const SCALAR: &[&str] = &["binary ushr", "index u8"];
+const PLAIN: &[&str] = &["ctpop"];
+const SCALAR: &[&str] = &["binary ushr", "index u8", "load u32"];
 const STORED: &[&str] = &[
     "copy_nonoverlapping",
     "write_bytes",

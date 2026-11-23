@@ -15,36 +15,6 @@ impl Lower<'_, '_, '_> {
         call: Call<'_>,
     ) -> Result<Option<Selected>, &'static str> {
         match (call.name, call.inputs) {
-            ("read_via_copy", &[pointer]) => {
-                let Some((pointer, target)) = self.thin_input(pointer)? else {
-                    return Ok(None);
-                };
-                if target != call.result {
-                    return Ok(None);
-                }
-                let source = Address {
-                    operand: pointer.operand,
-                    align: self.context.layout(target)?.align,
-                };
-                self.loaded(source, target).map(Some)
-            }
-            ("write_via_move", &[pointer, value]) => {
-                let Some((pointer, target)) = self.thin_input(pointer)? else {
-                    return Ok(None);
-                };
-                if target != self.input_type(value)? || call.result != TypeId::UNIT {
-                    return Ok(None);
-                }
-                let selected = self.value(value)?;
-                if matches!(selected, Selected::Runtime(_) | Selected::Object(_)) {
-                    let destination = Address {
-                        operand: pointer.operand,
-                        align: self.context.layout(target)?.align,
-                    };
-                    self.write(Some(destination), selected, target)?;
-                }
-                Ok(Some(Selected::Unit))
-            }
             ("write_box_via_move", &[boxed, value]) => self.write_box(call, boxed, value),
             // The value was moved into the call; nothing drops it.
             ("forget", &[_]) => Ok((call.result == TypeId::UNIT).then_some(Selected::Unit)),
@@ -133,23 +103,6 @@ impl Lower<'_, '_, '_> {
         match selected {
             Selected::Object(source) => self.loaded(source, ty).map(Some),
             selected => Ok(Some(selected)),
-        }
-    }
-    /// A fresh snapshot of the value of type `ty` stored at `source`.
-    fn loaded(&mut self, source: Address, ty: TypeId) -> Result<Selected, &'static str> {
-        match self.context.representation(ty)? {
-            Representation::Scalar(Type::Void) => Ok(Selected::Unit),
-            Representation::Scalar(scalar) => self
-                .builder
-                .load(scalar, source.operand)
-                .map(Selected::Runtime),
-            Representation::Object(_) | Representation::ScalarObject(_) => {
-                let destination = self
-                    .allocate(ty)?
-                    .ok_or("loaded object value has no snapshot storage")?;
-                self.write(Some(destination), Selected::Object(source), ty)?;
-                Ok(Selected::Object(destination))
-            }
         }
     }
 }

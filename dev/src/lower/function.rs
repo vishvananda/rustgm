@@ -16,6 +16,7 @@ mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
 mod logical_values;
+mod move_intrinsics;
 mod optimization_barrier;
 mod packed_lanes;
 mod pointed_layout;
