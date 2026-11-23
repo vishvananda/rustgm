@@ -143,8 +143,9 @@ fn prepare<const CAPTURES: bool>(
         ResultRequest::Source(ty) | ResultRequest::Conditional(ty) => Some(ty),
     };
     let mut contract = original.clone();
-    let child_requirements = nested.iter().flat_map(AsRef::as_ref);
-    contract.obligations.extend(child_requirements.copied());
+    for requirements in nested {
+        contract.obligations.extend_from_slice(requirements);
+    }
     let closure = matches!(original.key, crate::body::ir::BodyKey::Closure(_));
     let checked_creator =
         matches!(premises, super::Premises::Declared) && inputs.connections.is_some();
@@ -204,32 +205,7 @@ fn prepare<const CAPTURES: bool>(
         // Ordinary callable types visited below retain their nested binder.
         *signature = bound.signature(&mut facts.types, *signature, contract.universals)?;
     }
-    for clause in &mut contract.type_assumptions {
-        *clause = bound.clause(&mut facts.types, *clause)?;
-    }
-    for obligation in &mut contract.obligations {
-        match &mut obligation.kind {
-            Kind::Membership { captures, .. } => {
-                *captures = bound.apply_arguments(&mut facts.types, *captures)?;
-            }
-            Kind::Coercion {
-                actual, expected, ..
-            } => {
-                *actual = bound.apply(&mut facts.types, *actual)?;
-                *expected = bound.apply(&mut facts.types, *expected)?;
-            }
-            Kind::ScopedWellFormed { ty, .. } => {
-                *ty = bound.apply_inside(&mut facts.types, *ty, 1)?;
-            }
-            Kind::WellFormed(ty) | Kind::TypeOutlives { ty, .. } => {
-                *ty = bound.apply(&mut facts.types, *ty)?;
-            }
-            _ => {}
-        }
-    }
-    for evidence in &mut contract.proofs {
-        evidence.proof.substitute(&mut facts.types, &mut bound)?;
-    }
+    substitute_contract_types(&mut facts.types, &mut contract, &mut bound)?;
     if let Some(connections) = &mut inputs.connections
         && let Some(proof) = connections.proof.take()
     {
@@ -242,6 +218,41 @@ fn prepare<const CAPTURES: bool>(
     }
     argument_assumptions(facts, inputs, premises, &mut contract)?;
     Ok((bound, contract, requested, regions))
+}
+
+/// Apply the selected types to the contract's predicates and retained proofs.
+fn substitute_contract_types(
+    types: &mut crate::types::Store,
+    contract: &mut Contract,
+    bound: &mut Bound,
+) -> Result<(), &'static str> {
+    for clause in &mut contract.type_assumptions {
+        *clause = bound.clause(types, *clause)?;
+    }
+    for obligation in &mut contract.obligations {
+        match &mut obligation.kind {
+            Kind::Membership { captures, .. } => {
+                *captures = bound.apply_arguments(types, *captures)?;
+            }
+            Kind::Coercion {
+                actual, expected, ..
+            } => {
+                *actual = bound.apply(types, *actual)?;
+                *expected = bound.apply(types, *expected)?;
+            }
+            Kind::ScopedWellFormed { ty, .. } => {
+                *ty = bound.apply_inside(types, *ty, 1)?;
+            }
+            Kind::WellFormed(ty) | Kind::TypeOutlives { ty, .. } => {
+                *ty = bound.apply(types, *ty)?;
+            }
+            _ => {}
+        }
+    }
+    for evidence in &mut contract.proofs {
+        evidence.proof.substitute(types, bound)?;
+    }
+    Ok(())
 }
 
 /// Selected argument formation is caller evidence, including erased arguments.
