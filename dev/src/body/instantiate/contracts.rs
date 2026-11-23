@@ -143,9 +143,8 @@ fn prepare<const CAPTURES: bool>(
         ResultRequest::Source(ty) | ResultRequest::Conditional(ty) => Some(ty),
     };
     let mut contract = original.clone();
-    for requirements in nested {
-        contract.obligations.extend_from_slice(requirements);
-    }
+    let child_requirements = nested.iter().flat_map(AsRef::as_ref);
+    contract.obligations.extend(child_requirements.copied());
     let closure = matches!(original.key, crate::body::ir::BodyKey::Closure(_));
     let checked_creator =
         matches!(premises, super::Premises::Declared) && inputs.connections.is_some();

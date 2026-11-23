@@ -107,12 +107,11 @@ impl Lower<'_, '_, '_> {
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }
-        let result = value.ty;
         let instance = self
             .body
             .callable_target(Instance::new(self.context.types, ty)?);
         let symbol = self.context.demand_trap(instance, signature, name)?;
-        self.call_operand(signature, Operand::Symbol(symbol), arguments, result)
+        self.call_operand(signature, Operand::Symbol(symbol), arguments, value.ty)
             .map(Some)
     }
     fn source_compare_bytes(
