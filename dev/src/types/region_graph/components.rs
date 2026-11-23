@@ -22,7 +22,15 @@ impl Solution {
 
     /// Only a completed proof may add required edges to the equality relation.
     /// Their mutual reachability is evidence, not a choice of inference values.
-    pub(crate) fn established_classes(&self) -> Result<Vec<Region>, Error> {
+    /// Copy checks and native call targets reuse these classes.
+    pub(crate) fn established_classes(&self) -> Result<&[Region], Error> {
+        self.established
+            .get_or_init(|| self.compute_established_classes())
+            .as_deref()
+            .map_err(|&error| error)
+    }
+
+    fn compute_established_classes(&self) -> Result<Vec<Region>, Error> {
         let mut graph = Graph::new(self.graph.limit);
         graph.kinds.clone_from(&self.graph.kinds);
         graph.assumptions.clone_from(&self.graph.assumptions);

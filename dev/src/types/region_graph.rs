@@ -97,6 +97,7 @@ pub struct Solution {
     pub propagated: usize,
     pub steps: usize,
     graph: Graph,
+    established: std::sync::OnceLock<Result<Vec<Region>, Error>>,
 }
 /// A previously proved directed requirement: `longer` contains the queried
 /// shorter region. Source indexes still name the original typed obligation.
@@ -304,6 +305,7 @@ impl Graph {
             propagated,
             steps,
             graph: self,
+            established: std::sync::OnceLock::new(),
         })
     }
 }

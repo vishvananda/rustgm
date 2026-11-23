@@ -34,7 +34,7 @@ pub(crate) fn with_const_original(
         body,
         plan: completed.plan,
         destruction: true,
-        static_targets: completed.targets,
+        callable_targets: completed.targets,
     })
 }
 impl Verifier {

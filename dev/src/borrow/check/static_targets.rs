@@ -3,55 +3,124 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::ir::Body,
     borrow::regions,
-    types::{Kind, RegionId, Store, instance::Instance, substitute::Bound},
+    types::{
+        ItemId, Kind, RegionId, Store, instance::Instance, relations::RegionEqualities,
+        substitute::Bound,
+    },
 };
 
 pub(super) fn prepare(proof: &regions::Body) -> Result<Option<Box<Bound>>, &'static str> {
-    let required = proof
-        .solution
-        .required_static()
-        .map_err(|_| "static callable proof query exhausted")?;
-    if required.is_empty() {
+    prepare_targets(proof, None)
+}
+
+/// Preserve proven universal identities when a constructor opens its inputs.
+/// Other runtime targets use their individually selected identities.
+pub(super) fn prepare_constructors(
+    types: &Store,
+    body: &Body,
+    is_constructor: &dyn Fn(ItemId) -> bool,
+    proof: &regions::Body,
+) -> Result<Option<Box<Bound>>, &'static str> {
+    if proof.key != body.key() || proof.source != body.source || proof.instance != body.instance {
+        return Err("constructor proof belongs to another caller body or instance");
+    }
+    if proof.identities.universals().len() < 2
+        || (proof.solution.obligations == 0 && proof.solution.assumption_count() == 0)
+        || !body.values.iter().any(|value| {
+            matches!(types.kind(value.ty), Some(Kind::FunctionItem { item, .. })
+                if is_constructor(item))
+        })
+    {
         return Ok(None);
     }
-    let required: HashSet<_> = required.into_iter().collect();
+    let equalities = RegionEqualities::proven::<false>(&proof.solution, &proof.identities)
+        .map_err(|_| "constructor lifetime equivalence proof exhausted")?;
+    if equalities.is_empty() {
+        return Ok(None);
+    }
+    prepare_targets(proof, Some(&equalities))
+}
+
+fn prepare_targets(
+    proof: &regions::Body,
+    equalities: Option<&RegionEqualities>,
+) -> Result<Option<Box<Bound>>, &'static str> {
+    let required: HashSet<_> = proof
+        .solution
+        .required_static()
+        .map_err(|_| "static callable proof query exhausted")?
+        .into_iter()
+        .collect();
+    if required.is_empty() && equalities.is_none_or(RegionEqualities::is_empty) {
+        return Ok(None);
+    }
+    fold(proof, |original, region| {
+        if required.contains(&region) {
+            Ok(RegionId::STATIC)
+        } else if let Some(equalities) = equalities {
+            equalities
+                .canonical(original, 0)
+                .map_err(|_| "invalid callable lifetime representative")
+        } else {
+            Ok(original)
+        }
+    })
+}
+
+fn fold(
+    proof: &regions::Body,
+    replace: impl Fn(RegionId, regions::graph::Region) -> Result<RegionId, &'static str>,
+) -> Result<Option<Box<Bound>>, &'static str> {
     let mut replacements = HashMap::default();
     let mut changed = false;
-    for (original, region) in proof.identities.variables() {
-        let replacement = if required.contains(&region) {
-            changed = true;
-            RegionId::STATIC
-        } else {
-            original
-        };
+    let mut insert = |original, region| {
+        let replacement = replace(original, region)?;
+        changed |= replacement != original;
         replacements.insert(original, replacement);
+        Ok::<_, &'static str>(())
+    };
+    for (original, region) in proof.identities.variables() {
+        insert(original, region)?;
     }
     for (index, region) in proof.identities.universals().enumerate() {
         let original = RegionId::bound(
             0,
             u16::try_from(index).map_err(|_| "too many callable proof universals")?,
         )?;
-        let replacement = if required.contains(&region) {
-            changed = true;
-            RegionId::STATIC
-        } else {
-            original
-        };
-        replacements.insert(original, replacement);
+        insert(original, region)?;
     }
     Ok(changed.then(|| Box::new(Bound::restore_regions(replacements))))
+}
+
+pub(super) type ConstructorFold<'a> = (&'a dyn Fn(ItemId) -> bool, &'a mut Bound);
+
+pub(super) struct Folds<'a> {
+    pub(super) statics: Option<&'a mut Bound>,
+    pub(super) constructors: Option<ConstructorFold<'a>>,
+}
+
+impl Folds<'_> {
+    fn for_item(&mut self, item: ItemId) -> Option<&mut Bound> {
+        if let Some((is_constructor, fold)) = &mut self.constructors
+            && is_constructor(item)
+        {
+            Some(fold)
+        } else {
+            self.statics.as_deref_mut()
+        }
+    }
 }
 
 pub(super) fn resolve(
     types: &mut Store,
     body: &mut Body,
-    fold: &mut Bound,
+    folds: Folds<'_>,
 ) -> Result<(), &'static str> {
     if body.has_resolved_callables() {
         return Err("callable targets already belong to a completed proof");
     }
     let mut work = 0;
-    let targets = select(types, body, fold, usize::MAX, &mut work)?;
+    let targets = select(types, body, folds, usize::MAX, &mut work)?;
     if !targets.is_empty() {
         body.install_callable_targets(targets)?;
     }
@@ -85,7 +154,11 @@ pub(crate) fn solved<'body>(
     if body.has_resolved_callables() {
         return Err("callable targets already belong to a completed proof");
     }
-    let targets = select(types, body, &mut fold, bytes, work)?;
+    let folds = Folds {
+        statics: Some(&mut fold),
+        constructors: None,
+    };
+    let targets = select(types, body, folds, bytes, work)?;
     Ok(Solved {
         body,
         targets,
@@ -96,16 +169,19 @@ pub(crate) fn solved<'body>(
 fn select(
     types: &mut Store,
     body: &Body,
-    fold: &mut Bound,
+    mut folds: Folds<'_>,
     bytes: usize,
     work: &mut usize,
 ) -> Result<HashMap<Instance, Instance>, &'static str> {
     let mut targets = HashMap::default();
     for value in &body.values {
         *work = work.saturating_add(1);
-        if !matches!(types.kind(value.ty), Some(Kind::FunctionItem { .. })) {
+        let Some(Kind::FunctionItem { item, .. }) = types.kind(value.ty) else {
             continue;
-        }
+        };
+        let Some(fold) = folds.for_item(item) else {
+            continue;
+        };
         let before = fold.steps;
         let selected = fold.apply(types, value.ty);
         *work = work.saturating_add(fold.steps.saturating_sub(before));

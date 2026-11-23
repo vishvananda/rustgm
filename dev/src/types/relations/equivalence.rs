@@ -66,7 +66,10 @@ impl RegionEqualities {
         let classes = graph.assumption_classes()?;
         Ok(Self::from_classes(&classes, names))
     }
-    pub(crate) fn proven(solution: &Solution, identities: &Identities) -> Result<Self, Error> {
+    pub(crate) fn proven<const INCLUDE_INFERRED: bool>(
+        solution: &Solution,
+        identities: &Identities,
+    ) -> Result<Self, Error> {
         let mut names = vec![(RegionId::STATIC, Region::STATIC)];
         for (slot, region) in identities.universals().enumerate() {
             let slot = u16::try_from(slot).map_err(|_| Error::Budget)?;
@@ -75,8 +78,10 @@ impl RegionEqualities {
                 region,
             ));
         }
-        names.extend(identities.variables());
-        Ok(Self::from_classes(&solution.established_classes()?, &names))
+        if INCLUDE_INFERRED {
+            names.extend(identities.variables());
+        }
+        Ok(Self::from_classes(solution.established_classes()?, &names))
     }
     fn from_classes(classes: &[Region], names: &[(RegionId, Region)]) -> Self {
         let mut representatives = HashMap::<Region, RegionId>::default();

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "table_iter.rs": {
+      "sha256": "18b3ef0915622b1557dbc9757bc55458aa1b26cab0f906a573982ceee537d2a5",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core input. A borrowed flat-map iterator inside a nested chain passes through the generated Some constructor. The three execution paths cover present table and goals, table only, and empty optional iterators."
+}

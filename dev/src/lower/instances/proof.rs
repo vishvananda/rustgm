@@ -553,7 +553,7 @@ impl Builder {
                 message: message.into(),
             })?;
         proof
-            .resolve_callables(&mut facts.types)
+            .resolve_callables(&mut facts.types, None)
             .map_err(|message| borrow::Error {
                 node: Some(proof.body().source.into()),
                 message: message.into(),
@@ -883,7 +883,7 @@ impl Builder {
                 &mut self.recipes,
             )?;
             proof
-                .resolve_callables(&mut facts.types)
+                .resolve_callables(&mut facts.types, None)
                 .map_err(|message| borrow::Error {
                     node: Some(input.source.into()),
                     message: message.into(),
@@ -902,6 +902,7 @@ impl Builder {
             source_copy: facts.uses_source_copy(),
             copies: &mut facts.copies,
         };
+        let fold_constructors = matches!(original, Original::Ordinary(_));
         let proof = match original {
             Original::Adapter(index, template) => {
                 let source = self.bodies.get(index).ok_or_else(|| borrow::Error {
@@ -937,8 +938,18 @@ impl Builder {
             self.recipes = catalog.map(glue::Catalog::into_cache);
         }
         let mut proof = proof?;
+        let members = &facts.members;
+        let is_constructor = |item: crate::types::ItemId| {
+            members
+                .constructor(crate::resolve::model::DefId(item.0))
+                .is_some()
+        };
+        let constructor_caller = fold_constructors.then_some(incremental::ConstructorCaller {
+            is_constructor: &is_constructor,
+            proof: &contract,
+        });
         proof
-            .resolve_callables(&mut facts.types)
+            .resolve_callables(&mut facts.types, constructor_caller)
             .map_err(|message| borrow::Error {
                 node: Some(input.source.into()),
                 message: message.into(),

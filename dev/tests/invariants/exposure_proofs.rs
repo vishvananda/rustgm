@@ -14,7 +14,7 @@ fn fixture() -> Result<(Program, Vec<Proved>, glue::Recipes)> {
             body,
             plan: None,
             destruction: false,
-            static_targets: None,
+            callable_targets: None,
         })
         .collect();
     let cache = glue::Cache::exposed_empty(&mut facts.types, &mut facts.aggregates)?;

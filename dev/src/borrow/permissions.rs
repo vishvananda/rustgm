@@ -22,7 +22,7 @@ pub(super) fn check<S: BuildHasher>(
         .environment
         .as_ref()
         .map(|parameters| {
-            let equalities = RegionEqualities::proven(&proof.solution, &proof.identities)
+            let equalities = RegionEqualities::proven::<true>(&proof.solution, &proof.identities)
                 .map_err(|e| error(&e.to_string()))?;
             Ok::<_, Error>(Arc::new(
                 parameters
