@@ -91,7 +91,7 @@ impl Lower<'_, '_, '_> {
             .assertion
             .is_some_and(|assertion| assertion.message.is_some())
         {
-            return Err("runtime inhabited panic requires its reached statement");
+            return Err("runtime validity panic requires its reached statement");
         }
         if plan.result == crate::types::TypeId::UNIT {
             return Ok(Some(Selected::Unit));

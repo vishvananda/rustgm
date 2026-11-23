@@ -19,6 +19,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
     matches!(
         name,
         "catch_unwind"
+            | "assert_zero_valid"
             | "size_of_val"
             | "align_of_val"
             | "offset"

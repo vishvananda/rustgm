@@ -10,6 +10,7 @@ mod physical_ready;
 mod simd;
 mod states;
 mod zero_carriers;
+mod zero_initialization;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
 pub(crate) use physical_ready::{PENDING_STORAGE_FIELDS, STORAGE_WORK_LIMIT, StorageReadiness};

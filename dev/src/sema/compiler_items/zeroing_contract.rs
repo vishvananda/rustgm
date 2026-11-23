@@ -32,6 +32,18 @@ pub(crate) fn is_operation(kind: SourceIntrinsic) -> bool {
     selected(kind).is_some()
 }
 
+/// Old bring-up fixtures have no panic implementation; the source profile
+/// checks the installed hook even when this instance needs no runtime call.
+pub(crate) fn is_runtime_assertion(facts: &Declarations, kind: SourceIntrinsic) -> bool {
+    selected(kind) == Some(false)
+        && (crate::support::bringup::selected().is_none()
+            || facts.source_bindings.as_deref().is_some_and(|catalog| {
+                catalog
+                    .language(crate::support::bindings::LangItem::PanicNounwind)
+                    .is_some()
+            }))
+}
+
 pub(crate) struct Selection {
     definition: DefId,
     signature: TypeId,

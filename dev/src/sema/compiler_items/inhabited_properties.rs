@@ -1,5 +1,5 @@
 //! Shared concrete runtime properties are data; each reached operation proves its call.
-use super::{Catalog, nounwind};
+use super::{Catalog, nounwind, zeroing_contract::Operation};
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report},
     sema::{model::Declarations, text},
@@ -34,6 +34,33 @@ impl Catalog {
             .copied()
     }
 }
+enum Property {
+    Layout(LayoutIntrinsic),
+    Zero,
+}
+impl Property {
+    fn selection(
+        catalog: &Catalog,
+        facts: &Declarations,
+        instance: Instance,
+        origin: BodyOrigin,
+    ) -> Result<(Self, TypeId, TypeId), &'static str> {
+        if let Some(selected) = catalog.layout_selection(facts, instance)? {
+            return Ok((
+                Self::Layout(selected.kind),
+                selected.element,
+                selected.result_type(),
+            ));
+        }
+        let selected = catalog
+            .zeroing(facts, instance, origin)?
+            .ok_or("runtime layout lost its source intrinsic declaration")?;
+        let Operation::Assertion(element) = selected.operation() else {
+            return Err("runtime layout requires a checked validity assertion");
+        };
+        Ok((Self::Zero, element, TypeId::UNIT))
+    }
+}
 pub(crate) fn prepare(
     report: &Report,
     facts: &mut Declarations,
@@ -54,37 +81,39 @@ pub(crate) fn prepare(
     if let Some(plan) = existing {
         return Ok(plan);
     }
-    let selection = facts
-        .source_bindings
-        .as_deref()
-        .ok_or("runtime layout catalog disappeared")?
-        .layout_selection(facts, instance)?
-        .ok_or("runtime layout lost its source intrinsic declaration")?;
+    let (property, element, result) = Property::selection(catalog, facts, instance, origin)?;
     let Some(Kind::FunctionItem { signature, .. }) = facts.types.kind(instance.ty()) else {
         return Err("runtime layout lost its complete function item");
     };
     let id = facts
         .layouts
-        .demand(&facts.types, &facts.aggregates, selection.element)
+        .demand(&facts.types, &facts.aggregates, element)
         .map_err(|_| "runtime layout requires its completed physical type")?;
-    let layout = facts
+    let layout = *facts
         .layouts
         .at(id)
         .ok_or("runtime layout result disappeared")?;
-    let bits = match selection.kind {
-        LayoutIntrinsic::SizeOf => layout.size,
-        LayoutIntrinsic::AlignOf => u64::from(layout.align),
-        LayoutIntrinsic::AssertInhabited => u64::from(layout.inhabited),
+    let bits = match property {
+        Property::Layout(LayoutIntrinsic::SizeOf) => layout.size,
+        Property::Layout(LayoutIntrinsic::AlignOf) => u64::from(layout.align),
+        Property::Layout(LayoutIntrinsic::AssertInhabited) => u64::from(layout.inhabited),
+        Property::Zero => u64::from(facts.layouts.zero_initialization(
+            &facts.types,
+            &facts.aggregates,
+            element,
+        )?),
     };
-    let assertion = if selection.kind == LayoutIntrinsic::AssertInhabited {
-        // Pinned Rust collects the hook even when this concrete assertion is a NOP.
+    let assertion = if result == TypeId::UNIT {
+        // The source panic entry is a checked dependency even for a no-op.
         let panic = nounwind::prepare(report, facts)?;
         let message = if bits == 0 {
-            let name = super::inhabited_names::name(report, &facts.types, selection.element)?;
-            let message = facts
-                .texts
-                .intern(format!("attempted to instantiate uninhabited type `{name}`").as_bytes())?;
-            Some(message)
+            let name = super::inhabited_names::name(report, &facts.types, element)?;
+            let message = if layout.inhabited {
+                format!("attempted to zero-initialize type `{name}`, which is invalid")
+            } else {
+                format!("attempted to instantiate uninhabited type `{name}`")
+            };
+            Some(facts.texts.intern(message.as_bytes())?)
         } else {
             None
         };
@@ -94,7 +123,7 @@ pub(crate) fn prepare(
     };
     let plan = Ready {
         signature,
-        result: selection.result_type(),
+        result,
         bits,
         assertion,
     };

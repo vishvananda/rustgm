@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "inputs": {
+    "provider.rs": {
+      "sha256": "ac20122dcc4aa338d34f1a58a3023adea0c3e3c9d1d26f3f988d26b8bb0296e8"
+    },
+    "driver.rs": {
+      "sha256": "4a4e172e2fcddf197894af54208470f76e21eba5694ed34148e9d31ed0764c51"
+    }
+  },
+  "configurations": [
+    {
+      "compiler": "rustc",
+      "provider_cfg": [
+        "rustc_host"
+      ],
+      "guest": null,
+      "compile_status": 0
+    },
+    {
+      "compiler": "rustgm",
+      "provider_cfg": [],
+      "guest": "driver.rs",
+      "strict_status": 0
+    }
+  ],
+  "native_cases": [
+    {
+      "arguments": [],
+      "status": 0
+    },
+    {
+      "arguments": [
+        "reference"
+      ],
+      "status": 73
+    },
+    {
+      "arguments": [
+        "enum",
+        "tag"
+      ],
+      "status": 73
+    }
+  ],
+  "provenance": "Authored source provider and guest for zero initialization properties. The installed panic function reports its own exit status for a zero-invalid reference and enum tag."
+}

@@ -81,6 +81,14 @@ struct Discovered {
 #[cfg(test)]
 const _: [(); 256] = [(); size_of::<Discovered>()];
 
+fn runtime_layout_kind(
+    facts: &Declarations,
+    kind: crate::support::bindings::SourceIntrinsic,
+) -> bool {
+    matches!(kind, crate::support::bindings::SourceIntrinsic::Layout(_))
+        || crate::sema::compiler_items::zeroing_contract::is_runtime_assertion(facts, kind)
+}
+
 /// Classify only an actual direct operation, never a reified/Invoke target.
 /// Registry identity and signature data do not supply its later execution proof.
 fn source_call(
@@ -118,8 +126,8 @@ fn source_call(
         Some(kind @ (SourceIntrinsic::ConstEvalSelect | SourceIntrinsic::DiscriminantValue)) => {
             Ok(Some(kind))
         }
-        Some(kind @ SourceIntrinsic::Layout(_)) => {
-            layout_call(report, facts, body, value, ty, (signature, arguments))?;
+        Some(kind) if runtime_layout_kind(facts, kind) => {
+            layout_call(report, facts, body, value, ty, kind, (signature, arguments))?;
             Ok(Some(kind))
         }
         Some(kind) if crate::sema::compiler_items::scalar_arithmetic(kind) => {
@@ -254,17 +262,35 @@ fn layout_call(
     body: &Body,
     value: &crate::body::ir::Value,
     ty: TypeId,
+    kind: crate::support::bindings::SourceIntrinsic,
     (signature, arguments): (TypeId, crate::body::ir::ValueList),
 ) -> Result<(), &'static str> {
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("runtime layout lost its catalog")?;
-    let selected = catalog
-        .layout_selection(facts, Instance::new(&facts.types, ty)?)?
-        .ok_or("runtime layout lost its dependency descriptor")?;
     catalog.require_provider_report(report)?;
-    if value.ty != selected.result_type()
+    let instance = Instance::new(&facts.types, ty)?;
+    let result = if matches!(kind, crate::support::bindings::SourceIntrinsic::Layout(_)) {
+        catalog
+            .layout_selection(facts, instance)?
+            .ok_or("runtime layout lost its dependency descriptor")?
+            .result_type()
+    } else {
+        let selected = catalog
+            .zeroing(facts, instance, body.source)?
+            .ok_or("runtime zero validity lost its checked declaration")?;
+        catalog.require_zeroing_report(report, facts, &selected)?;
+        if !matches!(
+            selected.operation(),
+            crate::sema::compiler_items::zeroing_contract::Operation::Assertion(_)
+        ) || !selected.opened_matches(facts, signature)
+        {
+            return Err("source zero validity differs from its opened assertion");
+        }
+        TypeId::UNIT
+    };
+    if value.ty != result
         || !matches!(facts.types.kind(ty),Some(Kind::FunctionItem { signature: expected, .. }) if expected == signature)
         || !body
             .arguments
@@ -312,7 +338,7 @@ impl Discovered {
     ) -> Result<(), &'static str> {
         use crate::support::bindings::SourceIntrinsic;
         match source_call(report, facts, body, value, ty)? {
-            Some(SourceIntrinsic::Layout(_)) => {
+            Some(kind) if runtime_layout_kind(facts, kind) => {
                 self.layouts.push(crate::body::ir::ValueId(
                     u32::try_from(index).map_err(|_| "too many runtime layout values")?,
                 ));
