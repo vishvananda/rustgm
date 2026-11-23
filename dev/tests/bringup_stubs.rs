@@ -768,7 +768,6 @@ struct Lowering {
     emitted: &'static [&'static str],
     trapped: Option<&'static str>,
 }
-const PLAIN: &[&str] = &["ctpop"];
 const SCALAR: &[&str] = &["binary ushr", "index u8", "load u32"];
 const STORED: &[&str] = &[
     "copy_nonoverlapping",
@@ -794,7 +793,7 @@ const LOWERINGS: &[Lowering] = &[
         name: "lowered",
         source: [LOWERED, ""],
         fence: DECLARED,
-        lowered: PLAIN,
+        lowered: &[],
         emitted: SCALAR,
         trapped: None,
     },
@@ -802,7 +801,7 @@ const LOWERINGS: &[Lowering] = &[
         name: "unhandled",
         source: [LOWERED, UNHANDLED],
         fence: DECLARED,
-        lowered: PLAIN,
+        lowered: &[],
         emitted: SCALAR,
         trapped: Some("ctpop"),
     },

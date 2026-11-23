@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "counts.rs": {
+      "sha256": "993692055226452e0122d683f446bcdbff8fc061769e5989aea4316fd6c8c477",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "noninteger.rs": {
+      "sha256": "d98857ed04b651794b854121cfa1dc4f06b537f8de946d87327278afbee6ab29",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0511"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "source bit count execution requires a closed integer type"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for the original core's bit counts and permutations."
+}

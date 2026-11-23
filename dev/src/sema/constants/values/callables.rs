@@ -38,6 +38,18 @@ impl Reader<'_> {
             .is_some_and(|function| function.body.is_none());
         Ok(bodiless.then_some(name))
     }
+    pub(crate) fn source_bit_count(
+        self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::bit_counts::Selection>, &'static str> {
+        self.facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.bit_count(self.facts, instance, origin))
+            .transpose()
+            .map(Option::flatten)
+    }
     pub(crate) fn source_atomic_access(
         self,
         name: &str,

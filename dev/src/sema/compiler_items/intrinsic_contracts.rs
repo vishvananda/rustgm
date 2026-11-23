@@ -21,8 +21,6 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
         "catch_unwind"
             | "size_of_val"
             | "align_of_val"
-            | "bswap"
-            | "bitreverse"
             | "offset"
             | "ptr_offset_from"
             | "ptr_offset_from_unsigned"
@@ -33,7 +31,8 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "read_via_copy"
             | "write_via_move"
             | "unreachable"
-    ) || crate::support::word_operation::Update::intrinsic(name).is_some()
+    ) || super::bit_counts::named(name).is_some()
+        || crate::support::word_operation::Update::intrinsic(name).is_some()
 }
 
 /// A Body Call's roots are already opened into its caller, unlike an item signature.

@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Effect {
+pub(crate) enum Effect {
     Ones,
     LeadingZeros,
     TrailingZeros,
@@ -39,7 +39,11 @@ pub(crate) fn operation(kind: SourceIntrinsic) -> Option<Operation> {
     let SourceIntrinsic::Declaration(identity) = kind else {
         return None;
     };
-    let (effect, nonzero) = match identity.name() {
+    named(identity.name())
+}
+
+pub(crate) fn named(name: &str) -> Option<Operation> {
+    let (effect, nonzero) = match name {
         "ctpop" => (Effect::Ones, false),
         "ctlz" => (Effect::LeadingZeros, false),
         "ctlz_nonzero" => (Effect::LeadingZeros, true),
@@ -72,6 +76,9 @@ impl Selection {
     }
     pub(crate) const fn output(&self) -> TypeId {
         self.output
+    }
+    pub(crate) const fn effect(&self) -> Effect {
+        self.operation.effect
     }
     pub(crate) fn opened_matches(&self, facts: &Declarations, signature: TypeId) -> bool {
         super::intrinsic_contracts::opened_signature_matches(

@@ -3,6 +3,7 @@ use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
+    sema::compiler_items::bit_counts,
     support::word_operation::Update,
     types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
@@ -49,8 +50,10 @@ impl Lower<'_, '_, '_> {
                 .pointed_value_layout(value, arguments, name == "size_of_val")
                 .map(Some);
         }
-        if matches!(name, "bswap" | "bitreverse") {
-            return self.bit_permutation(name, arguments, value.ty).map(Some);
+        if bit_counts::named(name).is_some()
+            && let Some(lowered) = self.source_bit_count(ty, signature, arguments, value.ty)?
+        {
+            return Ok(Some(lowered));
         }
         if name == "offset" {
             return self

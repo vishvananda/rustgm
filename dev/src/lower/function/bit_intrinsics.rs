@@ -7,8 +7,9 @@ use crate::{
         program::Value,
         vocabulary::{Binary, Type, Unary},
     },
+    sema::compiler_items::bit_counts::Effect,
     support::llvm_symbols::Operation,
-    types::{Kind, Primitive, TypeId},
+    types::{Kind, TypeId, instance::Instance},
 };
 
 /// An evaluated integer input carried at its own width.
@@ -20,21 +21,57 @@ pub(super) struct Integer {
 }
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn bit_permutation(
+    pub(super) fn source_bit_count(
         &mut self,
-        name: &'static str,
+        callee: TypeId,
+        signature: TypeId,
         arguments: ir::ValueList,
         result: TypeId,
-    ) -> Result<Selected, &'static str> {
-        let Some(&[input]) = self
+    ) -> Result<Option<Selected>, &'static str> {
+        let Some(&[argument]) = self
             .body
             .arguments
             .get(arguments.start as usize..arguments.end as usize)
         else {
-            return Err("source bit permutation requires one checked integer input");
+            return Err("source bit count requires one evaluated integer input");
         };
-        self.runtime_bits(name, input, result)?
-            .ok_or("source bit permutation differs from its exact integer signature")
+        let Some(input) = self.integer_input(argument)? else {
+            if crate::support::bringup::selected().is_some() {
+                return Ok(None);
+            }
+            return Err("source bit count execution requires a closed integer type");
+        };
+        let instance = Instance::new(self.context.types, callee)?;
+        let selected = self
+            .context
+            .constants
+            .source_bit_count(instance, self.body.source)?
+            .ok_or("source bit count lost its validated instance")?;
+        if selected.input() != input.ty
+            || selected.output() != result
+            || !selected.opened_matches(self.context.ledger, signature)
+        {
+            return Err("source bit count differs from its evaluated Call");
+        }
+        self.context
+            .require_reached_body(self.body_index, self.body)?;
+        let effect = selected.effect();
+        let builder = &mut self.builder;
+        let word = casts::integer(builder, input.value, unsigned(input.value.ty)?, false)?;
+        let value = match effect {
+            Effect::Ones => bit_kernels::emit(builder, Operation::Population, word)?,
+            Effect::LeadingZeros => leading_zeros(builder, word)?,
+            Effect::TrailingZeros => trailing_zeros(builder, word)?,
+            Effect::SwappedBytes if word.ty.bits() == 8 => word,
+            Effect::SwappedBytes => bit_kernels::emit(builder, Operation::SwapBytes, word)?,
+            Effect::ReversedBits => bit_kernels::emit(builder, Operation::ReverseBits, word)?,
+        };
+        let target = if matches!(effect, Effect::SwappedBytes | Effect::ReversedBits) {
+            input.value.ty
+        } else {
+            Type::U32
+        };
+        casts::integer(builder, value, target, false).map(|value| Some(Selected::Runtime(value)))
     }
 
     /// The input when its type is an integer primitive.
@@ -51,39 +88,6 @@ impl Lower<'_, '_, '_> {
             return Err("integer intrinsic input differs from its scalar width");
         }
         Ok(Some(Integer { ty, value, signed }))
-    }
-    pub(super) fn runtime_bits(
-        &mut self,
-        name: &'static str,
-        input: ir::ValueId,
-        result: TypeId,
-    ) -> Result<Option<Selected>, &'static str> {
-        let Some(input) = self.integer_input(input)? else {
-            return Ok(None);
-        };
-        let counting = !matches!(name, "bswap" | "bitreverse");
-        let expected = if counting {
-            TypeId::primitive(Primitive::U32)
-        } else {
-            input.ty
-        };
-        if result != expected {
-            return Ok(None);
-        }
-        let builder = &mut self.builder;
-        let word = casts::integer(builder, input.value, unsigned(input.value.ty)?, false)?;
-        let result = match name {
-            "ctpop" => bit_kernels::emit(builder, Operation::Population, word)?,
-            // The nonzero forms may assume their input; the total forms are valid for it.
-            "ctlz" | "ctlz_nonzero" => leading_zeros(builder, word)?,
-            "cttz" | "cttz_nonzero" => trailing_zeros(builder, word)?,
-            "bswap" if word.ty.bits() == 8 => word,
-            "bswap" => bit_kernels::emit(builder, Operation::SwapBytes, word)?,
-            "bitreverse" => bit_kernels::emit(builder, Operation::ReverseBits, word)?,
-            _ => return Err("bit intrinsic lost its selected operation"),
-        };
-        let target = if counting { Type::U32 } else { input.value.ty };
-        casts::integer(builder, result, target, false).map(|value| Some(Selected::Runtime(value)))
     }
 }
 

@@ -59,10 +59,6 @@ impl Lower<'_, '_, '_> {
         };
         let lowered = match name {
             "exact_div" => self.unqualified_arithmetic(call)?,
-            "ctpop" | "ctlz" | "ctlz_nonzero" | "cttz" | "cttz_nonzero" => match call.inputs {
-                &[input] => self.runtime_bits(name, input, call.result)?,
-                _ => None,
-            },
             "slice_get_unchecked" => self.unqualified_offset(call)?,
             "write_box_via_move" | "forget" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?
