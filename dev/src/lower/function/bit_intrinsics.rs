@@ -14,9 +14,9 @@ use crate::{
 
 /// An evaluated integer input carried at its own width.
 #[derive(Clone, Copy)]
-pub(super) struct Integer {
-    pub(super) ty: TypeId,
-    pub(super) value: Value,
+struct Integer {
+    ty: TypeId,
+    value: Value,
 }
 
 impl Lower<'_, '_, '_> {
@@ -74,7 +74,7 @@ impl Lower<'_, '_, '_> {
     }
 
     /// The input when its type is an integer primitive.
-    pub(super) fn integer_input(&self, id: ir::ValueId) -> Result<Option<Integer>, &'static str> {
+    fn integer_input(&self, id: ir::ValueId) -> Result<Option<Integer>, &'static str> {
         let ty = self.input_type(id)?;
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(ty) else {
             return Ok(None);

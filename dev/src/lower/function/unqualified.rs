@@ -6,7 +6,6 @@ mod atomics;
 mod floats;
 mod layouts;
 mod memory;
-mod offsets;
 mod transfers;
 use super::{Lower, Selected, ir};
 use crate::{
@@ -58,7 +57,6 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "slice_get_unchecked" => self.unqualified_offset(call)?,
             "write_box_via_move" | "forget" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?
             }

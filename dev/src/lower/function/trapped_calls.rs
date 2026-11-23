@@ -60,6 +60,11 @@ impl Lower<'_, '_, '_> {
                 .source_inbounds_offset(signature, arguments, value.ty)
                 .map(Some);
         }
+        if name == "slice_get_unchecked" {
+            return self
+                .source_unchecked_index(ty, signature, arguments, value.ty)
+                .map(Some);
+        }
         if matches!(name, "ptr_offset_from" | "ptr_offset_from_unsigned") {
             return self
                 .source_pointer_distance(

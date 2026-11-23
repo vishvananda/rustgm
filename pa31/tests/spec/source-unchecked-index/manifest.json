@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "layout.rs": {
+      "sha256": "f78eb0ed0aa2b2bc94451581b9e771c4bd7f47daf9b5944313e07a15b2b14c26",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary mul i64"
+          ]
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "28c76efcd805dd41e64144938733276d68109cf64ba64b151e7b766ed1d5b547",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "call to unsafe function requires an unsafe context"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for original core's unchecked indexing. The pinned rustc execution uses public slice methods and the strict guest calls the intrinsic."
+}

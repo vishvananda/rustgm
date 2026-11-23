@@ -1,7 +1,9 @@
 //! Authenticated source pointer arithmetic uses byte addresses without accessing pointees.
 use super::{Lower, Selected, ir};
 use crate::lowir::vocabulary::{Binary, Type};
-use crate::types::{Kind, Primitive, TypeId, callable::Convention, instance::Instance};
+use crate::types::{
+    Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
+};
 impl Lower<'_, '_, '_> {
     pub(super) fn source_inbounds_offset(
         &mut self,
@@ -32,6 +34,58 @@ impl Lower<'_, '_, '_> {
         let result =
             super::Context::wrapping_offset_value(&mut self.builder, pointer, count, size)?;
         Ok(Selected::Runtime(result))
+    }
+
+    pub(super) fn source_unchecked_index(
+        &mut self,
+        callee: TypeId,
+        signature: TypeId,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let [(slice, slice_type), (index, index_type)] =
+            self.source_pointer_inputs(signature, arguments, result)?;
+        if index_type != TypeId::primitive(Primitive::Usize) {
+            return Err("source unchecked slice indexing requires a usize index");
+        }
+        let types = self.context.types;
+        let Some(Kind::FunctionItem { arguments, .. }) = types.kind(callee) else {
+            return Err("source unchecked slice indexing requires its complete function item");
+        };
+        let mut arguments = types
+            .arguments(arguments)
+            .ok_or("source unchecked slice indexing lost its type arguments")?;
+        let (
+            Some(Argument::Type(item)),
+            Some(Argument::Type(input)),
+            Some(Argument::Type(element)),
+            None,
+        ) = (
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
+        )
+        else {
+            return Err("source unchecked slice indexing requires its three type arguments");
+        };
+        let selected = slice_pointer(types, input, item, element)
+            .ok_or("source unchecked slice indexing lost its selected pointer kind or element")?;
+        // The checked Call's region proof accounts for caller lifetime adjustments.
+        if slice_pointer(types, slice_type, result, element) != Some(selected) {
+            return Err("source unchecked slice indexing changes its pointer kind or element");
+        }
+        let Selected::Object(address) = self.value(slice)? else {
+            return Err("source unchecked slice indexing lacks its wide pointer storage");
+        };
+        let index = self.value(index)?.runtime()?;
+        if index.ty != Type::I64 {
+            return Err("source unchecked slice indexing lost its native index word");
+        }
+        let data = self.builder.load(Type::Ptr, address.operand)?;
+        let size = self.context.layout(element)?.size;
+        super::Context::wrapping_offset_value(&mut self.builder, data, index, size)
+            .map(Selected::Runtime)
     }
 
     pub(super) fn source_pointer_distance(
@@ -179,4 +233,46 @@ impl Lower<'_, '_, '_> {
             super::Context::wrapping_offset_value(&mut self.builder, pointer, count, size)?;
         Ok(Some(Selected::Runtime(result)))
     }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SlicePointer {
+    Raw { mutable: bool },
+    Reference { mutable: bool },
+}
+
+fn slice_pointer(
+    types: &crate::types::Store,
+    slice: TypeId,
+    item: TypeId,
+    element: TypeId,
+) -> Option<SlicePointer> {
+    let (kind, referent, pointee) = match (types.kind(slice), types.kind(item)) {
+        (
+            Some(Kind::Pointer {
+                mutable: from,
+                pointee: slice,
+            }),
+            Some(Kind::Pointer {
+                mutable: to,
+                pointee: item,
+            }),
+        ) if from == to => (SlicePointer::Raw { mutable: from }, slice, item),
+        (
+            Some(Kind::Reference {
+                mutable: from,
+                referent: slice,
+                ..
+            }),
+            Some(Kind::Reference {
+                mutable: to,
+                referent: item,
+                ..
+            }),
+        ) if from == to => (SlicePointer::Reference { mutable: from }, slice, item),
+        _ => return None,
+    };
+    (pointee == element
+        && matches!(types.kind(referent), Some(Kind::Slice(actual)) if actual == element))
+    .then_some(kind)
 }
