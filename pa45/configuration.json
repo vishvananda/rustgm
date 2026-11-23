@@ -1,0 +1,101 @@
+{
+  "core": {
+    "path": "library/core/src/lib.rs",
+    "disambiguator": "core_1_98_88d9",
+    "cfg": [
+      "feature=\"nightly\"",
+      "feature=\"rustc-internal-api\"",
+      "backtrace_in_libstd"
+    ]
+  },
+  "guests": [
+    {
+      "name": "alloc",
+      "edition": "2024",
+      "path": "library/alloc/src/lib.rs"
+    },
+    {
+      "name": "cfg_if",
+      "edition": "2018",
+      "path": "library/vendor/cfg-if-1.0.4/src/lib.rs"
+    },
+    {
+      "name": "libc",
+      "edition": "2021",
+      "path": "library/vendor/libc-0.2.185/src/lib.rs"
+    },
+    {
+      "name": "unwind",
+      "edition": "2024",
+      "path": "library/unwind/src/lib.rs"
+    },
+    {
+      "name": "std_detect",
+      "edition": "2024",
+      "path": "library/std_detect/src/lib.rs"
+    },
+    {
+      "name": "hashbrown",
+      "edition": "2024",
+      "path": "library/vendor/hashbrown-0.17.1/src/lib.rs"
+    },
+    {
+      "name": "rustc_demangle",
+      "edition": "2015",
+      "path": "library/vendor/rustc-demangle-0.1.27/src/lib.rs"
+    },
+    {
+      "name": "panic_abort",
+      "edition": "2024",
+      "path": "library/panic_abort/src/lib.rs"
+    },
+    {
+      "name": "std",
+      "edition": "2024",
+      "path": "library/std/src/lib.rs"
+    },
+    {
+      "name": "unicode_ident",
+      "edition": "2021",
+      "path": "vendor/unicode-ident-1.0.24/src/lib.rs",
+      "cfg": []
+    },
+    {
+      "name": "tinyvec_macros",
+      "edition": "2018",
+      "path": "vendor/tinyvec_macros-0.1.1/src/lib.rs",
+      "cfg": []
+    },
+    {
+      "name": "tinyvec",
+      "edition": "2018",
+      "path": "vendor/tinyvec-1.10.0/src/lib.rs",
+      "cfg": [
+        "feature=\"alloc\"",
+        "feature=\"default\"",
+        "feature=\"tinyvec_macros\""
+      ]
+    },
+    {
+      "name": "unicode_normalization",
+      "edition": "2018",
+      "path": "vendor/unicode-normalization-0.1.25/src/lib.rs",
+      "cfg": [
+        "feature=\"default\"",
+        "feature=\"std\""
+      ]
+    },
+    {
+      "name": "rustgm",
+      "edition": "2024",
+      "path": "dev/src/lib.rs",
+      "cfg": []
+    },
+    {
+      "name": "app",
+      "edition": "2024",
+      "path": "dev/bin/rustgm.rs",
+      "cfg": []
+    }
+  ]
+}

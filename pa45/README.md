@@ -73,10 +73,21 @@ omitted guest cfg inherits the session cfg. An explicit list, including an
 empty list, replaces it. The last guest is the RustGM binary under the
 application name `app`.
 
+Use the [ordered configuration](configuration.json) for the Linux x86-64
+abort-profile build. Place the pinned Rust 1.98.0 library sources in `library/`,
+their locked registry packages in `library/vendor/`, and RustGM's locked registry
+packages in `vendor/`. Export `dev/` from the compiler revision under test into
+the same source directory. Preserve the original package bytes.
+
+Use a maintainer binary built with the [pinned Rust toolchain](../rust-toolchain.toml)
+for stage 0. Keep its bytes and SHA-256 so successive source batches can reuse it.
+Stage 1 and stage 2 use the same frozen target inputs.
+
 Freeze the source inventory and tool identities before building either stage.
 
 ```sh
-python3 scripts/build_self_hosting.py freeze "$CONFIGURATION" \
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/build_self_hosting.py freeze pa45/configuration.json \
     --sources "$SOURCES" --stage0 "$STAGE0" --linker "$LINKER" \
     --out obj/stage45/graph.json
 ```
@@ -85,26 +96,68 @@ Build the graph with stage 0 and link its single LowIR artifact through the
 pinned CPPGM object backend.
 
 ```sh
-python3 scripts/build_self_hosting.py build obj/stage45/graph.json \
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/build_self_hosting.py build obj/stage45/graph.json \
     --sources "$SOURCES" --compiler "$STAGE0" --compiler-sha256 "$STAGE0_SHA256" \
     --out obj/stage1/target
-python3 scripts/link_self_hosting.py obj/stage1/target --out obj/stage1/native \
-    --linker "$LINKER" --linker-sha256 "$LINKER_SHA256"
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/link_self_hosting.py obj/stage1/target --out obj/stage1/native \
+    --linker "$LINKER" --linker-sha256 "$LINKER_SHA256" --optimization 1
 ```
 
-Repeat both commands for stage 2 with the same graph and source directory.
-Use `obj/stage1/native/rustgm` and its recorded hash as the stage 2 compiler.
+Run all committed PA1–PA24 oracles with the linked compiler. The batch reports
+every suite even when one suite fails.
+
+```sh
+export RUSTGM_TEST_APP="$PWD/obj/stage1/native/rustgm"
+python3 scripts/storage.py run --prune-under obj/tests -- bash -c '
+    status=0
+    for ordinal in {1..24}; do
+        python3 scripts/course.py "pa${ordinal}" --app "$RUSTGM_TEST_APP" || status=1
+    done
+    exit "$status"
+'
+```
+
+Build stage 2 with the same graph and source directory. Read the stage 1
+compiler's SHA-256 from its native link receipt.
+
+```sh
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/build_self_hosting.py build obj/stage45/graph.json \
+    --sources "$SOURCES" --compiler obj/stage1/native/rustgm \
+    --compiler-sha256 "$STAGE1_SHA256" --timeout 3600 --out obj/stage2/target
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/link_self_hosting.py obj/stage2/target --out obj/stage2/native \
+    --linker "$LINKER" --linker-sha256 "$LINKER_SHA256" --optimization 1
+```
+
 Compare the independently built targets and their linked executables.
 
 ```sh
-python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
+python3 scripts/storage.py run --no-prune -- \
+    python3 scripts/compare_self_hosting.py obj/stage1/target obj/stage2/target \
     --stage1-binary obj/stage1/native/rustgm --stage2-binary obj/stage2/native/rustgm
 ```
 
 The comparison verifies the frozen source graph, the compiler chain, the
-strict diagnostics and the link receipts. It compares the LowIR, native link
-manifest and executable byte for byte. Target and link receipts record the
-output hashes, command time and peak resident memory.
+strict diagnostics and the link receipts, including the CPPGM optimization
+level. It compares the LowIR, native link manifest and executable byte for byte.
+Target and link receipts record the output hashes, command time and peak
+resident memory.
+
+### Focused reproduction
+
+Reuse the pinned stage compilers for diagnosis. Start with a small consumer
+and include only the source guests it needs. Compare `--count-types` to check
+analysis, then `--count-lowir` to exercise instance demand and typed LowIR
+construction without writing the full LowIR text or running CPPGM.
+
+The private test
+`lower::instances::proof::origins::ledger_tests::superlinear_instantiation_lowers_until_the_fixed_demand_cap`
+uses a small generic call chain and starts the demand ledger near its ceiling.
+Run it through `make fastcheck` when changing the whole-graph demand account.
+Use the frozen whole-graph build and byte comparison for qualification.
 
 ## Tests to develop with the reference
 

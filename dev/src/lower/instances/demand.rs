@@ -431,8 +431,9 @@ impl Budget {
         if self.instances > INSTANCES {
             return Err("generic instantiation exceeds its whole-graph runaway limit");
         }
+        // The proof vector pays for the inline body header when it grows.
         let bytes = body
-            .retained_bytes()
+            .allocation_bytes()
             .saturating_add(std::mem::size_of_val(input.obligations.as_slice()))
             .saturating_add(std::mem::size_of_val(input.assumptions.as_slice()))
             .saturating_add(std::mem::size_of_val(input.type_assumptions.as_slice()));

@@ -87,7 +87,7 @@ def stage_inputs(folder, target, selected):
     return [{'unit': binary, 'crate': 'app', 'artifacts': outputs}]
 
 
-def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOUT):
+def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOUT, *, optimization=0):
     folder = Path(folder).resolve(strict=True)
     output = Path(output).resolve()
     if output.is_relative_to(folder):
@@ -113,11 +113,13 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
     implementation = {name: digest(path) for name, path in sources.items()}
     tools = {'cppgm': {'path': str(cppgm), 'sha256': cppgm_sha256},
              'linker': {'path': str(linker), 'sha256': linker_sha256},
-             'backend_lock_sha256': lock_sha256}
+             'backend_lock_sha256': lock_sha256, 'object_optimization': optimization}
     if source_graph and whole.link_pins(tools) != target['graph']['tools']:
         raise ValueError('stage link tools differ from the frozen source graph')
     if type(timeout) is not int or timeout <= 0:
         raise ValueError('native stage link requires a positive whole-number timeout')
+    if type(optimization) is not int or optimization not in (0, 1):
+        raise ValueError('native stage link supports CPPGM optimization levels 0 and 1')
     output.mkdir(parents=True)
     receipt_path = output / 'receipt.json'
     receipt = {
@@ -134,6 +136,10 @@ def link(folder, selected, output, linker, linker_sha256, timeout=DEFAULT_TIMEOU
     log = CommandLog(output, output, receipt['commands'], save)
 
     def run(name, command):
+        if command[0] == cppgm:
+            if command[1:2] != ['-O0']:
+                raise ValueError('the object bridge changed its default optimization argument')
+            command = [cppgm, f'-O{optimization}', *command[2:]]
         if source_graph:
             row = measure(command, cwd=output, stdout=output / f'{name}.stdout',
                           stderr=output / f'{name}.stderr', limit=timeout, environment=ENVIRONMENT)
@@ -188,10 +194,12 @@ def main():
     parser.add_argument('--linker', type=Path, required=True)
     parser.add_argument('--linker-sha256', required=True)
     parser.add_argument('--timeout', type=int, default=DEFAULT_TIMEOUT)
+    parser.add_argument('--optimization', type=int, choices=(0, 1), default=0,
+                        help='CPPGM object optimization level recorded in the link receipt')
     args = parser.parse_args()
     try:
         receipt = link(args.target, args.unit, args.out, args.linker,
-                       args.linker_sha256, args.timeout)
+                       args.linker_sha256, args.timeout, optimization=args.optimization)
     except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
         print(f'strict native stage link failed: {error}', file=sys.stderr)
         return 1

@@ -94,6 +94,16 @@ class StrictSelfHosting(unittest.TestCase):
         self.assertEqual(result['linked_compiler']['sha256'], digest(self.links[0]))
         self.assertEqual(set(result['outputs']), {'lowir', 'native_links'})
 
+    def test_link_optimization_must_match_even_for_equal_artifacts(self):
+        self.stages_and_links()
+        for level, binary in enumerate(self.links):
+            path = binary.parent / 'receipt.json'
+            receipt = json.loads(path.read_bytes())
+            receipt['tools']['object_optimization'] = level
+            whole.save(path, receipt)
+        with self.assertRaisesRegex(ValueError, 'different native link tools'):
+            compare(*self.stages, *self.links)
+
     def test_changed_source_byte_breaks_frozen_inventory(self):
         (self.sources / 'dependency.rs').write_text('// changed source\n')
         with self.assertRaisesRegex(ValueError, 'source inventory differs'):

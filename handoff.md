@@ -1,6 +1,16 @@
 # RustGM handoff
 
-## Stop boundary · 2026-11-21
+## Current self-hosting checkpoint · 2026-11-23
+
+The strict source graph builds and links a working RustGM from original core,
+alloc, std, the pinned registry dependencies and RustGM's own source. The
+`-O1` stage 1 passed every committed PA1–PA24 oracle with zero bring-up records.
+Use the [PA45 procedure](pa45/README.md#tool-surface) and its ordered
+configuration to replay the checkpoint. Stage 2 reached the whole-graph
+generic instance budget during demand traversal. The byte comparison and
+final maintainer integration check are pending.
+
+## Historical stop boundary · 2026-11-21
 
 All work was stopped on 2026-11-21 at about 14:55 UTC at the user's request.
 No build, test, census or measurement is running and the resource controller
