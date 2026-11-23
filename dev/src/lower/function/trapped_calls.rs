@@ -87,7 +87,7 @@ impl Lower<'_, '_, '_> {
         {
             return Ok(Some(lowered));
         }
-        if matches!(name, "read_via_copy" | "write_via_move") {
+        if matches!(name, "read_via_copy" | "write_via_move" | "forget") {
             return self
                 .source_memory_move(name, ty, signature, arguments, value.ty)
                 .map(Some);

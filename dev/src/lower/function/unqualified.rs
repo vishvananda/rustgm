@@ -57,7 +57,7 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "write_box_via_move" | "forget" | "volatile_load" | "volatile_store" => {
+            "write_box_via_move" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?
             }
             "raw_eq" => self.unqualified_raw_eq(call)?,

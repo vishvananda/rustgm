@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "selection.rs": {
+      "sha256": "a956d4491f46e2d863ea725bd0efde88dd4b940034b287bf72219786daad7d2b",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guest checking the different destruction behavior of original core's public and intrinsic selection hints."
+}

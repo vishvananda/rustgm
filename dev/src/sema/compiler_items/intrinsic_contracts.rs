@@ -31,6 +31,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "black_box"
             | "read_via_copy"
             | "write_via_move"
+            | "forget"
             | "unreachable"
     ) || super::bit_counts::named(name).is_some()
         || crate::support::word_operation::Update::intrinsic(name).is_some()
@@ -126,6 +127,7 @@ pub(super) struct Intrinsic {
     declaration: crate::resolve::bindings::Declaration,
     kind: SourceIntrinsic,
     signature: Option<TypeId>,
+    source_fallback: bool,
 }
 impl Intrinsic {
     pub(super) fn reserved(entry: crate::resolve::bindings::IntrinsicDeclaration) -> Self {
@@ -133,6 +135,7 @@ impl Intrinsic {
             declaration: entry.declaration,
             kind: entry.kind,
             signature: None,
+            source_fallback: false,
         }
     }
 }
@@ -169,12 +172,23 @@ pub(in crate::sema) fn validate(
     } else {
         signature(facts, function, entry.kind).map_err(error)?;
     }
-    facts
+    let source_fallback = matches!(
+        entry.kind,
+        SourceIntrinsic::Declaration(identity) if identity.name() == "select_unpredictable"
+    ) && function.body.is_some()
+        && facts.is_const_function(function.definition)
+        && crate::sema::header_attributes::intrinsic_fallback_is_spec(
+            facts,
+            report,
+            function.definition,
+        )?;
+    let completed = facts
         .source_bindings
         .as_deref_mut()
         .and_then(|c| c.intrinsics.get_mut(&function.definition))
-        .ok_or_else(|| error("source intrinsic reservation disappeared"))?
-        .signature = Some(function.signature);
+        .ok_or_else(|| error("source intrinsic reservation disappeared"))?;
+    completed.signature = Some(function.signature);
+    completed.source_fallback = source_fallback;
     Ok(())
 }
 
@@ -308,6 +322,13 @@ impl Catalog {
             })
             .transpose()
     }
+    /// A source fallback sealed during header validation may follow normal body proofs.
+    pub(crate) fn uses_source_fallback(&self, definition: DefId) -> bool {
+        self.intrinsics
+            .get(&definition)
+            .is_some_and(|entry| entry.source_fallback)
+    }
+
     pub(crate) fn intrinsic(&self, definition: DefId) -> Result<bool, &'static str> {
         Ok(self.intrinsic_kind(definition)?.is_some())
     }

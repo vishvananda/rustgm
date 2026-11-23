@@ -64,28 +64,16 @@ fn require_source_body(
     // Actual helpers still follow ordinary original/materialized proofs.
     // The typed descriptor only gates their later cleanup adapter.
     crate::sema::compiler_items::source_drop_glue(facts, instance)?;
-    if let Some(kind) = facts
-        .source_bindings
-        .as_deref()
-        .map(|c| c.intrinsic_kind(DefId(item.0)))
-        .transpose()?
-        .flatten()
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(());
+    };
+    let definition = DefId(item.0);
+    if let Some(kind) = catalog.intrinsic_kind(definition)?
         && kind != crate::support::bindings::SourceIntrinsic::ColdPath
-        && !facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source intrinsic fallback catalog is missing")?
-            .guaranteed_fallback(facts, instance)?
-        && !facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source knowledge fallback catalog is missing")?
-            .knowledge_fallback(facts, instance)?
-        && !facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source vararg fallback catalog is missing")?
-            .vararg_fallback(facts, instance)?
+        && !catalog.uses_source_fallback(definition)
+        && !catalog.guaranteed_fallback(facts, instance)?
+        && !catalog.knowledge_fallback(facts, instance)?
+        && !catalog.vararg_fallback(facts, instance)?
     {
         // A fallback body is the declared behaviour of an intrinsic that the
         // compiler does not implement; the bring-up profile runs it and says so.

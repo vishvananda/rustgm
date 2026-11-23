@@ -34,6 +34,9 @@ impl Lower<'_, '_, '_> {
             .arguments
             .get(arguments.start as usize..arguments.end as usize)
             .ok_or("source memory move lost its actual inputs")?;
+        if name == "forget" {
+            return self.forget_value(signature, inputs, element, result);
+        }
         let (pointer, stored) = match (name, inputs) {
             ("read_via_copy", &[pointer]) if element == result => (pointer, None),
             ("write_via_move", &[pointer, stored])
@@ -80,6 +83,39 @@ impl Lower<'_, '_, '_> {
         } else {
             self.loaded(address, element)
         }
+    }
+
+    /// Consumption of the evaluated argument is already proved by the normal Call.
+    fn forget_value(
+        &self,
+        signature: TypeId,
+        inputs: &[ir::ValueId],
+        element: TypeId,
+        result: TypeId,
+    ) -> Result<Selected, &'static str> {
+        let types = self.context.types;
+        let &[input] = inputs else {
+            return Err("source forget requires one evaluated value");
+        };
+        if result != TypeId::UNIT
+            || self.input_type(input)? != element
+            || !matches!(
+                types.kind(signature),
+                Some(Kind::Function {
+                    bound_regions: 0,
+                    parameters,
+                    result: TypeId::UNIT,
+                    unsafe_: false,
+                    convention: Convention::RUST,
+                }) if types.list(parameters) == Some(&[element])
+            )
+        {
+            return Err("source forget differs from its opened signature and exact value");
+        }
+        self.context
+            .require_reached_body(self.body_index, self.body)?;
+        self.value(input)?;
+        Ok(Selected::Unit)
     }
 
     /// A fresh snapshot of the value of type `ty` stored at `source`.

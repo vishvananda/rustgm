@@ -16,8 +16,6 @@ impl Lower<'_, '_, '_> {
     ) -> Result<Option<Selected>, &'static str> {
         match (call.name, call.inputs) {
             ("write_box_via_move", &[boxed, value]) => self.write_box(call, boxed, value),
-            // The value was moved into the call; nothing drops it.
-            ("forget", &[_]) => Ok((call.result == TypeId::UNIT).then_some(Selected::Unit)),
             ("volatile_load", &[pointer]) => {
                 let Some((pointer, scalar)) = self.volatile_input(pointer, call.result)? else {
                     return Ok(None);
