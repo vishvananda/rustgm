@@ -1,15 +1,14 @@
-# RustGM Programming Assignment 2: literals
+# RustGM Programming Assignment 2 — Literals
 
-Status: **implemented draft**. Prerequisite: PA1. Implement literal-expression
-decoding and target numeric conversion in safe Rust. The language profile is
-Rust 1.98.0, edition 2024, with a fixed x86-64 target (64-bit `usize`/`isize`).
-The full [pinned Reference](../doc/README.md) is available offline; the owning
-rules are [tokens](../doc/rust-reference/src/tokens.md) and
+Build on the [PA1 lexer](../pa1/README.md) to decode literal expressions and
+convert numeric values in safe Rust. Use Rust 1.98.0, edition 2024, with a fixed
+x86-64 target and 64-bit `usize` and `isize`. The pinned Rust Reference describes
+[tokens](../doc/rust-reference/src/tokens.md) and
 [literal expressions](../doc/rust-reference/src/expressions/literal-expr.md).
 
 ## Interface and scope
 
-```sh
+```text
 rustgm --emit-literals [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
@@ -29,19 +28,21 @@ their grammar assignments. PA2 checks non-decimal numeric forms, including
 reserved period continuations such as `0x80.0`; `0x80..1` remains two integers
 separated by range punctuation. This diagnostic stream is not a syntax checker.
 
-Source normalization, offsets, stdin/files and `-o` follow PA1. Success exits
-0. The first error exits 1 with `ERROR: OFFSET: MESSAGE` and LF on stderr, where
-OFFSET is the start of the invalid literal (lexical/input errors retain PA1's
-location). Keep complete lines preceding the failed token; emit no failed
-literal line and no EOF line. Usage errors exit 2; unimplemented modes exit 86.
-The committed negative oracles freeze diagnostic wording.
+Follow PA1's source normalization, offsets, input, and output conventions.
+Success exits 0. A literal error exits 1 and writes `ERROR: OFFSET: MESSAGE`
+and LF to standard error. OFFSET is the start of the invalid literal. Lexical
+and input errors follow PA1's diagnostic format. Keep the complete output
+lines preceding the error. Omit the failed literal and EOF records. Usage
+errors exit 2. An unimplemented mode exits 86. The test cases provide the
+expected diagnostic wording.
 
 ## Typed representation and conversion
 
 Keep exact unsigned integer magnitudes up to `u128::MAX` and an optional typed
 suffix. Validate radix digits, required digits and suffixes; ignore separators
-when accumulating with checked arithmetic. A decimal integer token with `f32`
-or `f64` suffix is a float. Hex digits in `0x01_f32` belong to the integer,
+when accumulating with checked arithmetic. A decimal integer spelling with
+a floating-point suffix (`f16`, `f32`, `f64`, or `f128`) is a float. Hex
+digits in `0x01_f32` belong to the integer,
 whose value is 7986. Non-decimal floats are rejected.
 
 Retain unsuffixed integer magnitudes for inference. A suffix alone does not
@@ -56,13 +57,16 @@ belong to later semantic assignments. The conversion must expose overflow,
 not silently lose it or use host signed overflow. This stage does not implement
 the full constant evaluator.
 
-Floats retain validated decimal spelling without suffix/separators and their
-optional type. Convert directly to the demanded `f32` or `f64`, as the Reference
-specifies with `from_str`; do not round through f64 before f32. Preserve the
-spelling until inference, since eagerly choosing f64 can double-round. Suffixed
-float dumps contain IEEE bits. Overflow produces infinity bits; later semantics
-owns the overflow lint. Subnormal rounding and underflow to zero are supported.
-`NaN` and `inf` are identifiers, not literal tokens. Unary negative zero belongs
+Keep validated decimal spelling without its suffix or separators, and
+retain the optional type. Convert directly to the requested IEEE width with
+round-to-nearest, ties-to-even. For `f32` and `f64` you can parse directly into
+the destination type using `from_str`. Convert `f16` and `f128` from the
+retained decimal with bounded integer arithmetic. Preserve unsuffixed
+spellings until inference selects a width, since an intermediate rounding can
+change the result. Support subnormals, underflow to zero, and overflow to
+infinity. Later phases apply the overflow lint and enforce source-level
+feature gates for `f16` and `f128`. The PA2 inspection command decodes those
+suffixes directly. `NaN` and `inf` are identifiers. Unary negative zero belongs
 to expression evaluation.
 
 Character literals yield exactly one Unicode scalar; byte literals exactly one
@@ -82,7 +86,7 @@ Decode plain/raw contents as borrowed source slices; allocate only when escapes
 change bytes. The typed C-string content excludes its implicit terminator so a
 raw C string does not require an allocation merely to append zero.
 
-## Text oracle
+## Output format
 
 All fields are ASCII, with one space between fields and LF after each record.
 START and END are PA1's decimal normalized byte offsets (exclusive end).
@@ -91,7 +95,7 @@ START and END are PA1's decimal normalized byte offsets (exclusive end).
 | --- | --- |
 | Integer | `integer START END TYPE MAGNITUDE` |
 | Unsuffixed float | `float START END infer "DECIMAL"` |
-| Suffixed float | `float START END f32 0xXXXXXXXX` or `f64 0xXXXXXXXXXXXXXXXX` |
+| Suffixed float | `float START END TYPE 0xBITS` (4, 8, 16, or 32 hex digits for `f16`, `f32`, `f64`, or `f128`) |
 | Character | `character START END U+XXXXXX` (six uppercase hex digits) |
 | Byte | `byte START END 0xXX` (two lowercase hex digits) |
 | Boolean | `boolean START END true` or `false` |
@@ -121,32 +125,15 @@ Finish successful input with `eof NORMALIZED_BYTE_LENGTH` and LF, including
 empty input or input containing no literals. Never serialize then reparse this
 dump between frontend phases. Use typed tokens and literal values instead.
 
-## Validation and efficiency
+## Run the tests
 
-`make -C pa2 test` runs every manifest case against committed stdout/stderr/status
-sidecars. Cases cover numeric boundaries, rounding, escapes, suffixes, raw forms
-and complete-prefix failures. `make test-rustc` independently compiles selected
-fixture expressions and compares evaluated bytes/bits, and checks rejection
-cases. Overflow-only cases explicitly allow rustc's overflow lint because this
-stage decodes magnitude before contextual linting. Imported full-program tests
-retain their upstream bytes, revision and licenses.
+From the repository root:
 
-Rust integration tests check typed target conversion, inference preservation,
-borrowing, independent fixed vectors and large malformed inputs. Run all active
-earlier suites, `make lint audit-rust test-harness test-upstream`, and scaling
-measurements before updating the accepted report. `--count-literals` exercises
-the same interpretation and explicit float conversions without rendering.
-The reference implementation is in `dev/src/literal/`, with no frontend fallback.
+```sh
+make -C pa2 test
+make -C pa1 test
+```
 
-## Pending wide floating extension
-
-The LIB-024 maintainer slice adds exact `f16`/`f128` suffix facts alongside the
-existing widths. Its local candidate is unqualified. The private
-`tests/spec/floats/wide-bits.tsv` vectors retain 32 explicit IEEE hypotheses for
-independent exported-static observation; they are not generated text references.
-Wide output uses four or32 hexadecimal digits respectively. The existing f32/f64
-host conversion remains unchanged; wide conversion uses bounded integer rational
-rounding directly from the retained decimal, with nearest/ties-to-even.
-Actual crate feature and macro-origin gates belong to configured source consumers,
-not this context-free diagnostic literal decoder. Later wide CTFE operations, wire
-profiles, ABI and native lowering remain explicit unsupported requirements.
+[PA2's manifest](tests/manifest.json) covers numeric boundaries, IEEE rounding,
+escapes, suffixes, raw forms, and output written before an error. Run PA1 again
+after changing the lexer.

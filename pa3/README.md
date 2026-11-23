@@ -1,15 +1,18 @@
-# RustGM Programming Assignment 3: token trees and attributes
+# RustGM Programming Assignment 3 — Token trees and attributes
 
-Status: **implemented draft**. Prerequisite: PA2. The profile is Rust 1.98.0,
-edition 2024, x86_64-unknown-linux-gnu, baseline x86-64 features, panic=abort,
-debug assertions disabled, ordinary library/binary compilation (not test or
-proc-macro mode). Consult the pinned Reference's [macros](../doc/rust-reference/src/macros.md),
-[attributes](../doc/rust-reference/src/attributes.md), [comments](../doc/rust-reference/src/comments.md)
-and [conditional compilation](../doc/rust-reference/src/conditional-compilation.md).
+Build on [PA2](../pa2/README.md) to group tokens, read attributes, and evaluate
+conditional compilation predicates. Use Rust 1.98.0, edition 2024, with the
+`x86_64-unknown-linux-gnu` target, baseline x86-64 features, aborting panics,
+and disabled debug assertions. The profile covers ordinary libraries and
+binaries. Consult the pinned Rust Reference on
+[macros](../doc/rust-reference/src/macros.md),
+[attributes](../doc/rust-reference/src/attributes.md),
+[comments](../doc/rust-reference/src/comments.md), and
+[conditional compilation](../doc/rust-reference/src/conditional-compilation.md).
 
 ## Interface
 
-```sh
+```text
 rustgm --emit-token-trees [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
@@ -53,14 +56,12 @@ set the bare flag. Raw identifiers allow keyword-named custom options.
 Compiler-controlled flags and `target_*` keys cannot be overridden. Invalid
 command-line configuration is a usage error, not source rejection.
 
-The bootstrap-capable target retains bare `target_has_atomic` and
-`target_has_atomic_load_store`, separately from their 8/16/32/64/ptr width
-values (not 128). Bare `target_has_atomic_primitive_alignment` is false; its
-width values remain available. PA3 computes these facts. Demanded load/store
-predicates require the actual `cfg_target_has_atomic` source feature or macro
-allowance in PA8; bare `target_has_atomic` has no such source feature gate.
-These fixed course facts do not depend on the host's `RUSTC_BOOTSTRAP` environment.
-See [the atomic predicate controls](tests/spec/bare-atomic/README.md).
+The fixed course target includes the bare flags `target_has_atomic` and
+`target_has_atomic_load_store` as well as their width-valued options.
+`target_has_atomic_primitive_alignment` is false as a bare flag and has the
+stated width-valued options. The 128-bit width is absent. Compute these facts
+from the target profile. PA8 enforces source feature or macro allowances for
+load/store predicates. Bare `target_has_atomic` is available directly.
 
 `cfg_attr(predicate, attrs...)` validates attribute syntax and, if selected,
 expands its attributes in order. Expansion may produce more `cfg_attr` or `cfg`
@@ -74,7 +75,7 @@ retain opaque contents, so an attribute-looking sequence inside macro input is
 not eagerly processed. The reusable attribute API accepts a syntax-owned tree
 position, allowing the later parser to demand attributes on fields, statements,
 parameters and nested items. An attribute set is enabled only if all its cfg
-facts are true. PA5 attaches these facts to parsed constructs and omit disabled
+facts are true. PA5 attaches these facts to parsed constructs and omits disabled
 constructs from subsequent semantic work. Do not guess item boundaries by
 searching for braces or semicolons. PA7/PA8 own macro matching and expansion;
 PA40 closes the complete attribute/edition semantics.
@@ -118,9 +119,9 @@ eof 3
 ```
 
 Success exits 0 with empty stderr. Source errors exit 1 with
-`ERROR: OFFSET: MESSAGE` and LF, and **empty stdout**: unlike PA1/PA2, a forest
-view is published only after successful analysis. Error wording is frozen by
-the negative oracles. Usage exits 2; future modes still fail explicitly.
+`ERROR: OFFSET: MESSAGE` followed by LF, with **empty stdout**. Emit the
+forest only after analysis succeeds. The test fixtures give the expected
+wording. Usage errors exit 2. An unimplemented mode exits 86.
 
 ## Implementation and validation
 
@@ -130,11 +131,13 @@ forest here is an authorized diagnostic/macro-fragment representation, not a
 mandatory intermediate for ordinary source parsing. PA4's ordinary parser must
 consume a bounded token cursor. Reuse typed attribute and configuration facts.
 
-`make -C pa3 test` runs all required fixtures. `make test-rustc` independently
-checks complete programs and evaluates cfg predicates with the exact profile
-and custom flags. Stream fragments are explicitly classified. Unit checks cover
-30,000 nested groups, configuration limits, macro opacity, doc desugaring,
-expansion provenance, disabled attribute sets and atomic errors. Preserve all
-previous oracles, Clippy/file audits and harness checks. The count mode
-`--count-token-trees` performs the same analysis without rendering; scaling
-measurements retain full-output equality checks and raw observations.
+From the repository root:
+
+```sh
+make -C pa3 test
+```
+
+The [test manifest](tests/manifest.json) covers delimiter nesting, configuration
+limits, macro input, documentation comments, expansion provenance, disabled
+attributes, and atomic target facts. Run PA1 and PA2 again after changing their
+token or literal interfaces.

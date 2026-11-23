@@ -13,8 +13,8 @@ suite.
 ## Current export
 
 - [x] [PA1](../pa1/README.md)
-- [ ] [PA2](../pa2/README.md)
-- [ ] [PA3](../pa3/README.md)
+- [x] [PA2](../pa2/README.md)
+- [x] [PA3](../pa3/README.md)
 - [ ] [PA4](../pa4/README.md)
 - [ ] [PA5](../pa5/README.md)
 - [ ] [PA6](../pa6/README.md)
