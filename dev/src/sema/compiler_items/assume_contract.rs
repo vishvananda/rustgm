@@ -91,6 +91,24 @@ impl Catalog {
             signature,
         }))
     }
+    pub(crate) fn require_assume_call(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        origin: BodyOrigin,
+        callee: TypeId,
+        (signature, result): (TypeId, TypeId),
+    ) -> Result<(), &'static str> {
+        let selected = self
+            .assumption(facts, Instance::new(&facts.types, callee)?, origin)?
+            .ok_or("source assume lost its dependency descriptor")?;
+        self.require_assume_report(report, facts, &selected)?;
+        if signature != selected.signature() || result != TypeId::UNIT {
+            return Err("source assume dependency differs from its exact runtime Call");
+        }
+        Ok(())
+    }
+
     pub(crate) fn require_assume_report(
         &self,
         report: &Report,

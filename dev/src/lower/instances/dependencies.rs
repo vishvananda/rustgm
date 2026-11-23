@@ -128,6 +128,9 @@ fn source_call(
         Some(kind) if crate::sema::compiler_items::SimdOperation::of(kind).is_some() => {
             lane_dependencies::require(report, facts, body, value, ty).map(|()| Some(kind))
         }
+        Some(kind) if crate::sema::compiler_items::assume_contract::is_assumption(kind) => catalog
+            .require_assume_call(report, facts, body.source, ty, (signature, value.ty))
+            .map(|()| Some(kind)),
         Some(SourceIntrinsic::ArithOffset) => {
             wrapping_dependencies::require(report, facts, body, value, ty)
                 .map(|()| Some(SourceIntrinsic::ArithOffset))

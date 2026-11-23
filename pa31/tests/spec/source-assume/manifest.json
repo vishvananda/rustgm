@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "condition.rs": {
+      "sha256": "fa1abc5930347043c5dbabb63eb4effd2a19acb6099ea2ff09bcdff07f54e899",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": {
+            "function": "preserve_assumption",
+            "contains": [
+              "branch ",
+              "unreachable"
+            ]
+          },
+          "lowir_absent": [
+            "rg.trap.assume"
+          ]
+        }
+      ]
+    },
+    "false-constant.rs": {
+      "sha256": "9743493834ac115631a2f5edf3d6ec9296ae17634d90ded2e55097f16ef4a087",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0080"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "`assume` was executed with a false condition"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable and constant-evaluation guests for original core's assumption intrinsic."
+}

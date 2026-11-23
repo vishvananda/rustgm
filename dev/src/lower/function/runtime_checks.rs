@@ -1,7 +1,7 @@
-//! The actual checked source Call selects a boolean in this generation session.
+//! Checked source generation decisions and conditions for defined execution.
 use super::{Lower, Selected, ir};
 use crate::{
-    lowir::vocabulary::Type,
+    lowir::{program::Terminator, vocabulary::Type},
     support::runtime_checks::{RuntimeCheckBinding, RuntimeCheckConfig},
     types::{Kind, Primitive, TypeId, instance::Instance},
 };
@@ -17,6 +17,51 @@ struct Call<'body> {
 }
 
 impl Lower<'_, '_, '_> {
+    fn source_assume(
+        &mut self,
+        instance: Instance,
+        signature: TypeId,
+        arguments: ir::ValueList,
+    ) -> Result<Option<Selected>, &'static str> {
+        let Some(&[condition]) = self
+            .body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+        else {
+            return Ok(None);
+        };
+        if self.input_type(condition)? != TypeId::primitive(Primitive::Bool) {
+            return Ok(None);
+        }
+        let Some(selected) = self
+            .context
+            .constants
+            .source_assumption(instance, self.body.source)?
+        else {
+            return Ok(None);
+        };
+        if signature != selected.signature() {
+            return Err("source assume differs from its evaluated Call");
+        }
+        self.context
+            .require_reached_body(self.body_index, self.body)?;
+        let condition = self.value(condition)?.runtime()?;
+        if condition.ty != Type::I1 {
+            return Err("source assume condition lost its native boolean");
+        }
+        let next = self.builder.block()?;
+        let impossible = self.builder.block()?;
+        self.builder.terminate(Terminator::Branch {
+            condition: condition.operand,
+            yes: next,
+            no: impossible,
+        })?;
+        self.builder.enter(impossible)?;
+        self.builder.terminate(Terminator::Unreachable)?;
+        self.builder.enter(next)?;
+        Ok(Some(Selected::Unit))
+    }
+
     pub(super) fn runtime_check(
         &mut self,
         id: ir::ValueId,
@@ -44,6 +89,12 @@ impl Lower<'_, '_, '_> {
             return Ok(None);
         }
         let instance = Instance::new(self.context.types, ty)?;
+        if value.ty == TypeId::UNIT {
+            return self.source_assume(instance, signature, arguments);
+        }
+        if value.ty != TypeId::primitive(Primitive::Bool) {
+            return Ok(None);
+        }
         let Some((selection, binding, generation)) = self
             .context
             .constants
@@ -54,7 +105,6 @@ impl Lower<'_, '_, '_> {
         self.context
             .require_reached_body(self.body_index, self.body)?;
         if signature != selection.signature
-            || value.ty != TypeId::primitive(Primitive::Bool)
             || !self
                 .body
                 .arguments
