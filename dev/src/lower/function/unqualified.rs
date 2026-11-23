@@ -10,10 +10,7 @@ mod offsets;
 mod transfers;
 use super::{Lower, Selected, ir};
 use crate::{
-    lowir::{
-        program::{Operand, Value},
-        vocabulary::Type,
-    },
+    lowir::{program::Value, vocabulary::Type},
     types::{Kind, TypeId},
 };
 
@@ -75,7 +72,6 @@ impl Lower<'_, '_, '_> {
             }
             "assert_zero_valid" => self.unqualified_assertion(call)?,
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
-            "unreachable" => self.unqualified_unreachable(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
             _ => None,
         };
@@ -87,20 +83,6 @@ impl Lower<'_, '_, '_> {
             return Err("source intrinsic executable lowering is not implemented");
         }
         Ok(lowered)
-    }
-    /// Reaching `unreachable` is undefined; the program stops as at a trap.
-    fn unqualified_unreachable(
-        &mut self,
-        call: Call<'_>,
-    ) -> Result<Option<Selected>, &'static str> {
-        if !call.inputs.is_empty() || call.result != TypeId::NEVER {
-            return Ok(None);
-        }
-        let abort = self.context.abort()?;
-        let signature = self.context.output.symbols[abort.0 as usize].signature;
-        self.builder
-            .call(signature, Type::Void, Operand::Symbol(abort), &[])?;
-        Ok(Some(Selected::Unit))
     }
     pub(super) fn input_type(&self, id: ir::ValueId) -> Result<TypeId, &'static str> {
         self.body

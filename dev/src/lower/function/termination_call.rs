@@ -3,7 +3,8 @@ use super::{Lower, Selected, ir};
 use crate::{
     body::storage::Location,
     lowir::program::Terminator,
-    types::{Kind, TypeId, instance::Instance},
+    resolve::model::DefId,
+    types::{GenericArgs, Kind, TypeId, callable::Convention, instance::Instance},
 };
 
 /// No permission can outlive this actual body/call/statement borrow.
@@ -15,7 +16,7 @@ struct Call<'body> {
     location: Location,
 }
 impl Lower<'_, '_, '_> {
-    pub(super) fn source_abort(
+    pub(super) fn source_termination(
         &mut self,
         id: ir::ValueId,
         location: Location,
@@ -24,7 +25,7 @@ impl Lower<'_, '_, '_> {
             .body
             .values
             .get(id.0 as usize)
-            .ok_or("source abort lost its actual value")?;
+            .ok_or("source terminal operation lost its actual value")?;
         let ir::Rvalue::Call {
             signature,
             callee,
@@ -37,24 +38,60 @@ impl Lower<'_, '_, '_> {
             .body
             .values
             .get(callee.0 as usize)
-            .ok_or("source abort lost its actual callee")?
+            .ok_or("source terminal operation lost its actual callee")?
             .ty;
-        if !matches!(self.context.types.kind(ty), Some(Kind::FunctionItem { .. })) {
+        let types = self.context.types;
+        let Some(Kind::FunctionItem {
+            item,
+            arguments: substitutions,
+            signature: public,
+        }) = types.kind(ty)
+        else {
             return Ok(false);
-        }
-        let instance = Instance::new(self.context.types, ty)?;
-        let Some(selection) = self
+        };
+        let instance = Instance::new(types, ty)?;
+        let (expected, mismatch) = if let Some(selection) = self
             .context
             .constants
             .source_abort(instance, self.body.source)?
-        else {
+        {
+            let mismatch = "source abort differs from its evaluated exact runtime Call";
+            if self.body.const_context {
+                return Err(mismatch);
+            }
+            (selection.signature, mismatch)
+        } else if value.ty == TypeId::NEVER
+            && self
+                .context
+                .constants
+                .source_bodiless_intrinsic(DefId(item.0))?
+                == Some("unreachable")
+        {
+            if substitutions != GenericArgs::EMPTY
+                || !matches!(
+                    types.kind(public),
+                    Some(Kind::Function {
+                        bound_regions: 0,
+                        parameters,
+                        result: TypeId::NEVER,
+                        unsafe_: true,
+                        convention: Convention::RUST,
+                    }) if types.list(parameters) == Some(&[])
+                )
+            {
+                return Err("source unreachable requires its exact unsafe Rust declaration");
+            }
+            (
+                public,
+                "source unreachable differs from its evaluated terminal Call",
+            )
+        } else {
             return Ok(false);
         };
         self.context
             .require_reached_body(self.body_index, self.body)?;
-        if self.body.const_context
-            || value.ty != TypeId::NEVER
-            || signature != selection.signature
+        if value.ty != TypeId::NEVER
+            || signature != expected
             || !self
                 .body
                 .arguments
@@ -62,9 +99,9 @@ impl Lower<'_, '_, '_> {
                 .is_some_and(<[ir::ValueId]>::is_empty)
             || !matches!(self.value(callee)?, Selected::Item(actual) if actual == self.body.callable_target(instance))
         {
-            return Err("source abort differs from its evaluated exact runtime Call");
+            return Err(mismatch);
         }
-        self.consume_abort(Call {
+        self.consume_termination(Call {
             body: self.body,
             value: id,
             instance,
@@ -78,18 +115,18 @@ impl Lower<'_, '_, '_> {
         clippy::needless_pass_by_value,
         reason = "consume the non-clonable exact body/call witness once"
     )]
-    fn consume_abort(&mut self, call: Call<'_>) -> Result<(), &'static str> {
+    fn consume_termination(&mut self, call: Call<'_>) -> Result<(), &'static str> {
         terminal(call.body, call.value, call.location)?;
         let actual = self
             .body
             .values
             .get(call.value.0 as usize)
-            .ok_or("source abort lost its selected Call")?;
+            .ok_or("source terminal operation lost its selected Call")?;
         let ir::Rvalue::Call {
             signature, callee, ..
         } = actual.kind
         else {
-            return Err("source abort changed its operation");
+            return Err("source terminal operation changed its Call");
         };
         if !std::ptr::eq(call.body, self.body)
             || signature != call.signature
@@ -99,7 +136,7 @@ impl Lower<'_, '_, '_> {
                 .get(callee.0 as usize)
                 .is_none_or(|v| v.ty != call.instance.ty())
         {
-            return Err("source abort belongs to another body/call/instance");
+            return Err("source terminal operation belongs to another body, Call or instance");
         }
         // This terminates immediately, before post-call cleanup bookkeeping or
         // destructor emission. The ordinary false branch retains its timeline.
@@ -109,12 +146,12 @@ impl Lower<'_, '_, '_> {
 
 fn terminal(body: &ir::Body, value: ir::ValueId, location: Location) -> Result<(), &'static str> {
     let Location::At { block, before } = location else {
-        return Err("source abort requires its actual in-block statement");
+        return Err("source terminal operation requires its actual in-block statement");
     };
     let block = body
         .blocks
         .get(block.0 as usize)
-        .ok_or("source abort lost its original block")?;
+        .ok_or("source terminal operation lost its original block")?;
     if before < block.start
         || before.checked_add(1) != Some(block.end)
         || !matches!(block.terminator, ir::Terminator::Unreachable)
@@ -123,7 +160,7 @@ fn terminal(body: &ir::Body, value: ir::ValueId, location: Location) -> Result<(
             .get(before as usize)
             .is_some_and(|s| matches!(s.action, ir::Action::Evaluate(actual) if actual == value))
     {
-        return Err("source abort requires its original terminal Call and unreachable edge");
+        return Err("source terminal operation requires its original Call and unreachable edge");
     }
     Ok(())
 }

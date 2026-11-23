@@ -361,7 +361,7 @@ impl Lower<'_, '_, '_> {
             | Action::StorageDead(_)
             | Action::StorageEnd { .. } => {}
             Action::Evaluate(value) => {
-                if self.layout_panic(value)? || self.source_abort(value, location)? {
+                if self.layout_panic(value)? || self.source_termination(value, location)? {
                     return Ok(true);
                 }
                 let result = self.evaluate(value)?;

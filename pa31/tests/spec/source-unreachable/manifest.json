@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "direct.rs": {
+      "sha256": "379adda13af2da13bd92b7b4f54143045eaf4b73acf2702490baefd98950f691",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "rustc_environment": {
+            "RUSTC_BOOTSTRAP": "1"
+          },
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "unreachable",
+            "call void @_Exit("
+          ],
+          "lowir_absent": [
+            "rg.trap.unreachable"
+          ]
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "dbdeb345d8b16469ff7a52fa47e5d369ea3a09fa529a2a64c54937c2dc0f3acc",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "call to unsafe function requires an unsafe context"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for the original core's terminal intrinsic and ordinary diverging control."
+}

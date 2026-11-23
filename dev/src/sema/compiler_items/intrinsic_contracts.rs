@@ -32,6 +32,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "black_box"
             | "read_via_copy"
             | "write_via_move"
+            | "unreachable"
     ) || crate::support::word_operation::Update::intrinsic(name).is_some()
 }
 
