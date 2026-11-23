@@ -308,32 +308,45 @@ impl Checked<'_> {
         let &index = self.state.closures.get(&identity)?;
         Some((self.templates.get(index)?, &self.state.contracts[index]))
     }
-    /// These slots are absent from the callable type. Specialization keeps their
-    /// source identities and the proof paid by the exact checked creator.
+    /// Keep the conditions proved by the checked creator when native demand
+    /// specializes its closure. A noncapturing closure's complete source type
+    /// relates its signature invariantly. Its free signature slots retain the
+    /// creator's relations even when specialization models them as distinct
+    /// universals. Public call binders never enter the creator's interface.
     pub(crate) fn creator_conditions(
         &self,
         input: &Contract,
     ) -> Result<&[crate::types::outlives::Pair], &'static str> {
-        if input
-            .output
-            .as_ref()
-            .is_none_or(|link| link.creator_only_from.is_none())
-        {
+        let Some(link) = &input.output else {
             return Ok(&[]);
-        }
+        };
         let BodyKey::Closure(identity) = input.key else {
-            return Err("creator conditions require a closure template");
+            if link.creator_only_from.is_some() {
+                return Err("creator conditions require a closure template");
+            }
+            return Ok(&[]);
         };
         let index = *self
             .state
             .closures
             .get(&identity)
             .ok_or("missing checked closure")?;
+        let template = self
+            .templates
+            .get(index)
+            .ok_or("checked closure template index is stale")?;
+        let noncapturing = matches!(
+            template.body.owner,
+            Owner::Closure {
+                execution: None,
+                ..
+            }
+        );
         self.state.regions.bodies[index]
             .output
             .as_ref()
             .ok_or("creator conditions require the checked source interface")?
-            .creator_conditions(input)
+            .creator_conditions(input, noncapturing)
     }
     pub(super) fn contract(&self, body: &crate::body::ir::Body) -> Option<&regions::Body> {
         let &index = match body.key() {

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "decode.rs": {
+      "sha256": "6ab6404ce6a3202475b37146a08c408257f30e5579ae1d17770f69f0e6bffde7",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    },
+    "escape.rs": {
+      "sha256": "23a54b54b7bce0d562ee4f1851e9b4dd52568124d923d9de40de9092afe29a34",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0515"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guests for the conditional output of a slice-pattern callback passed through original core iterator adapters, with a temporary-reference escape control."
+}

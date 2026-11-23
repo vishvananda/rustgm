@@ -38,9 +38,10 @@ impl Summary {
         }
         Ok(self.conditions.as_ref().filter(|_| !self.creator_only))
     }
-    pub(crate) fn creator_conditions(
+    pub(in crate::borrow) fn creator_conditions(
         &self,
         input: &Contract,
+        noncapturing: bool,
     ) -> Result<&[crate::types::outlives::Pair], &'static str> {
         if !self.matches(input) {
             return Err("creator conditions belong to another source proof");
@@ -48,7 +49,7 @@ impl Summary {
         Ok(self
             .conditions
             .as_deref()
-            .filter(|_| self.creator_only)
+            .filter(|_| self.creator_only || noncapturing)
             .unwrap_or_default())
     }
     pub(crate) fn parent_goals(
