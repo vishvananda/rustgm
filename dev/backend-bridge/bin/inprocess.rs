@@ -29,6 +29,7 @@ mod modules;
 
 /// Where a lowered program leaves this binary: an object, or the text.
 mod emission {
+    use crate::crates::ExecutableMetadata;
     use rustgm::lowir::{program::Program, writer};
     use rustgm_backend_bridge::{Failure, Request};
     use std::{
@@ -57,7 +58,12 @@ mod emission {
     }
 
     /// Write the object of the program, or its text or record counts.
-    pub fn emit(program: &Program, count: bool, out: &mut impl Write) -> Result<(), String> {
+    pub fn emit(
+        program: &Program,
+        count: bool,
+        out: &mut impl Write,
+        metadata: Option<ExecutableMetadata<'_>>,
+    ) -> Result<(), String> {
         let start = Instant::now();
         let settings = SETTINGS.get();
         let emitted = match settings {
@@ -76,7 +82,11 @@ mod emission {
                 start.elapsed().as_nanos()
             );
         }
-        emitted
+        emitted?;
+        if let Some(metadata) = metadata {
+            metadata.publish(out)?;
+        }
+        Ok(())
     }
 
     fn object(program: &Program, settings: &Settings, out: &mut impl Write) -> Result<(), String> {
