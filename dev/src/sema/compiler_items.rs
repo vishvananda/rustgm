@@ -63,6 +63,7 @@ mod caller_location;
 pub(crate) use caller_location::CallerLocationSelection;
 pub(crate) mod assume_contract;
 pub(crate) mod bit_counts;
+pub(crate) mod checked_atomic_access;
 mod cold_fallback;
 pub(crate) mod guaranteed_compare;
 pub(crate) mod identity_words;

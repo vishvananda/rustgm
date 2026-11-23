@@ -38,6 +38,17 @@ impl Reader<'_> {
             .is_some_and(|function| function.body.is_none());
         Ok(bodiless.then_some(name))
     }
+    pub(crate) fn source_atomic_access(
+        self,
+        name: &str,
+        callee: TypeId,
+        signature: TypeId,
+    ) -> Result<Option<crate::sema::compiler_items::checked_atomic_access::Selection>, &'static str>
+    {
+        crate::sema::compiler_items::checked_atomic_access::select(
+            self.facts, name, callee, signature,
+        )
+    }
     pub(crate) fn require_source_future_assertion(self) -> Result<(), &'static str> {
         crate::sema::compiler_items::guard_panics::require_future_guard(self.facts)
     }

@@ -6,6 +6,7 @@ mod bit_intrinsics;
 mod c_boundary;
 mod callback_dispatch;
 mod catch_unwind;
+mod word_access;
 pub(super) use catch_unwind::checked_catch_unwind;
 #[path = "function/tracked_locations.rs"]
 mod caller_location;

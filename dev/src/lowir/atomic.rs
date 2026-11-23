@@ -13,6 +13,18 @@ pub enum StoreOrder {
 }
 impl LoadOrder {
     #[must_use]
+    pub(crate) const fn from_rust(
+        order: crate::support::atomic_ordering::Ordering,
+    ) -> Option<Self> {
+        use crate::support::atomic_ordering::Ordering;
+        match order {
+            Ordering::Relaxed => Some(Self::Relaxed),
+            Ordering::Acquire => Some(Self::Acquire),
+            Ordering::Sequential => Some(Self::Sequential),
+            _ => None,
+        }
+    }
+    #[must_use]
     pub const fn encoding(self) -> u8 {
         match self {
             Self::Relaxed => 0,
@@ -22,6 +34,18 @@ impl LoadOrder {
     }
 }
 impl StoreOrder {
+    #[must_use]
+    pub(crate) const fn from_rust(
+        order: crate::support::atomic_ordering::Ordering,
+    ) -> Option<Self> {
+        use crate::support::atomic_ordering::Ordering;
+        match order {
+            Ordering::Relaxed => Some(Self::Relaxed),
+            Ordering::Release => Some(Self::Release),
+            Ordering::Sequential => Some(Self::Sequential),
+            _ => None,
+        }
+    }
     #[must_use]
     pub const fn encoding(self) -> u8 {
         match self {

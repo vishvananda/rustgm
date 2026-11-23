@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "words.rs": {
+      "sha256": "a14002e7506b4b1367149f121b8af585f9364e90d0e30484211892c110872842",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "atomic_orders": [
+            [
+              "atomic_store",
+              "u8",
+              0
+            ],
+            [
+              "atomic_load",
+              "u8",
+              0
+            ],
+            [
+              "atomic_store",
+              "u16",
+              3
+            ],
+            [
+              "atomic_load",
+              "u16",
+              2
+            ],
+            [
+              "atomic_store",
+              "i64",
+              5
+            ],
+            [
+              "atomic_load",
+              "i64",
+              5
+            ],
+            [
+              "atomic_store",
+              "i64",
+              3
+            ],
+            [
+              "atomic_load",
+              "i64",
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "6ec2ac9440770653dbba2386a4986fbd4f98dd74cf257e9746933590b8f99c7f",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "call to unsafe function requires an unsafe context"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guests for the pinned original core atomic intrinsics."
+}

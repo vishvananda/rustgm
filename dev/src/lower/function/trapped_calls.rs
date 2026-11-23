@@ -61,6 +61,12 @@ impl Lower<'_, '_, '_> {
                 .source_compare_bytes(ty, signature, arguments, value.ty)
                 .map(Some);
         }
+        if matches!(name, "atomic_load" | "atomic_store")
+            && let Some(lowered) =
+                self.source_atomic_access(name, ty, signature, arguments, value.ty)?
+        {
+            return Ok(Some(lowered));
+        }
         if let Some(lowered) = self.unqualified_call(name, id)? {
             return Ok(Some(lowered));
         }

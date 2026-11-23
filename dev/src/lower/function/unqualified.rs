@@ -111,7 +111,10 @@ impl Lower<'_, '_, '_> {
             .ok_or("unqualified intrinsic input disappeared")
     }
     /// The input and its referent when it is a thin raw pointer or reference.
-    fn thin_input(&mut self, id: ir::ValueId) -> Result<Option<(Value, TypeId)>, &'static str> {
+    pub(super) fn thin_input(
+        &mut self,
+        id: ir::ValueId,
+    ) -> Result<Option<(Value, TypeId)>, &'static str> {
         let Some(
             Kind::Pointer { pointee, .. }
             | Kind::Reference {

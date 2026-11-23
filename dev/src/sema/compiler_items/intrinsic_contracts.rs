@@ -25,6 +25,8 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "bitreverse"
             | "offset"
             | "compare_bytes"
+            | "atomic_load"
+            | "atomic_store"
     )
 }
 

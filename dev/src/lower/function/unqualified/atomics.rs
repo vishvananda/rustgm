@@ -1,11 +1,13 @@
 //! Atomic accesses of one 8- to 64-bit integer or pointer word. Every access
 //! is sequentially consistent, which satisfies each weaker requested ordering.
 use super::{
-    super::{Lower, Representation, Selected, casts},
+    super::{
+        Lower, Selected, casts,
+        word_access::{Access, Word},
+    },
     Call,
 };
 use crate::{
-    body::ir,
     lowir::{
         atomic::{CompareOrder, LoadOrder, RmwOrder, StoreOrder},
         builder::Builder,
@@ -17,14 +19,6 @@ use crate::{
 
 const EXCHANGE: CompareOrder = CompareOrder::new(RmwOrder::Sequential, LoadOrder::Sequential);
 
-/// The accessed word: its type, its address and the integer that carries it.
-#[derive(Clone, Copy)]
-struct Word {
-    ty: TypeId,
-    address: Operand,
-    carrier: Type,
-    pointer: bool,
-}
 /// How a retried update derives the stored value from the observed one.
 #[derive(Clone, Copy)]
 enum Update {
@@ -50,16 +44,25 @@ impl Lower<'_, '_, '_> {
         let Some(word) = self.atomic_word(pointer)? else {
             return Ok(None);
         };
+        match (call.name, operands) {
+            ("atomic_load", []) if call.result == word.ty => {
+                return self.atomic_access(word, Access::Load(LoadOrder::Sequential));
+            }
+            ("atomic_store", &[value]) if call.result == TypeId::UNIT => {
+                return self.atomic_access(word, Access::Store(StoreOrder::Sequential, value));
+            }
+            ("atomic_load" | "atomic_store", _) => return Ok(None),
+            _ => {}
+        }
         let (count, paired) = match call.name {
-            "atomic_load" => (0, false),
             "atomic_cxchg" | "atomic_cxchgweak" => (2, true),
             _ => (1, false),
         };
         let update = update(call.name);
         let accepted = match call.name {
-            "atomic_store" => call.result == TypeId::UNIT,
-            "atomic_load" | "atomic_xchg" | "atomic_cxchg" | "atomic_cxchgweak" | "atomic_xadd"
-            | "atomic_xsub" => self.arithmetic_result(call.result, word.ty, paired),
+            "atomic_xchg" | "atomic_cxchg" | "atomic_cxchgweak" | "atomic_xadd" | "atomic_xsub" => {
+                self.arithmetic_result(call.result, word.ty, paired)
+            }
             _ => update.is_some() && call.result == word.ty,
         };
         if !accepted || operands.len() != count {
@@ -74,13 +77,6 @@ impl Lower<'_, '_, '_> {
         }
         let builder = &mut self.builder;
         let previous = match (call.name, values, update) {
-            ("atomic_load", ..) => {
-                builder.atomic_load(word.carrier, word.address, LoadOrder::Sequential)?
-            }
-            ("atomic_store", [Some(value), _], _) => {
-                builder.atomic_store(value, word.address, StoreOrder::Sequential)?;
-                return Ok(Some(Selected::Unit));
-            }
             ("atomic_xchg", [Some(value), _], _) => {
                 builder.atomic_exchange(value, word.address, RmwOrder::Sequential)?
             }
@@ -106,55 +102,6 @@ impl Lower<'_, '_, '_> {
         };
         self.atomic_value(word, previous)
             .map(|value| Some(Selected::Runtime(value)))
-    }
-    /// The word behind a thin pointer to an integer or pointer the backend's
-    /// atomic operations cover.
-    fn atomic_word(&mut self, pointer: ir::ValueId) -> Result<Option<Word>, &'static str> {
-        let Some((address, ty)) = self.thin_input(pointer)? else {
-            return Ok(None);
-        };
-        let (carrier, pointer) = match self.context.representation(ty)? {
-            Representation::Scalar(Type::Ptr) => (Type::I64, true),
-            Representation::Scalar(
-                scalar @ (Type::I8
-                | Type::U8
-                | Type::I16
-                | Type::U16
-                | Type::I32
-                | Type::U32
-                | Type::I64),
-            ) => (scalar, false),
-            _ => return Ok(None),
-        };
-        Ok(Some(Word {
-            ty,
-            address: address.operand,
-            carrier,
-            pointer,
-        }))
-    }
-    /// An operand in the word's carrier: the word's own type, or the machine
-    /// word that updates a pointer.
-    fn atomic_operand(
-        &mut self,
-        word: Word,
-        operand: ir::ValueId,
-    ) -> Result<Option<Value>, &'static str> {
-        let Selected::Runtime(mut value) = self.value(operand)? else {
-            return Ok(None);
-        };
-        if value.ty == Type::Ptr {
-            value = self.builder.copy(Type::I64, value)?;
-        }
-        Ok((value.ty == word.carrier).then_some(value))
-    }
-    /// A carried word as a value of the word's own type.
-    fn atomic_value(&mut self, word: Word, value: Value) -> Result<Value, &'static str> {
-        if word.pointer {
-            self.builder.copy(Type::Ptr, value)
-        } else {
-            Ok(value)
-        }
     }
     /// The observed word and whether the replacement was stored. The backend
     /// leaves the expected word in the scratch on success and the observed

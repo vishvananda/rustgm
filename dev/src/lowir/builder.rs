@@ -29,15 +29,12 @@ pub struct Builder {
 const fn unopened(range: Range) -> bool {
     range.start > range.end
 }
-/// Strict lowering emits only `u32` atomics. The bring-up profile also uses
-/// the other integer widths that the backend's atomic contract covers.
+/// The integer word widths supported by the pinned atomic backend.
 fn atomic_word(ty: Type) -> bool {
-    ty == Type::U32
-        || (crate::support::bringup::selected().is_some()
-            && matches!(
-                ty,
-                Type::I8 | Type::U8 | Type::I16 | Type::U16 | Type::I32 | Type::I64
-            ))
+    matches!(
+        ty,
+        Type::I8 | Type::U8 | Type::I16 | Type::U16 | Type::I32 | Type::U32 | Type::I64
+    )
 }
 impl Builder {
     /// Start a body in a recycled, emptied function whose capacity is reused.
@@ -278,7 +275,7 @@ impl Builder {
         ordering: super::atomic::LoadOrder,
     ) -> Result<Value, &'static str> {
         if !atomic_word(ty) {
-            return Err("atomic load currently requires u32");
+            return Err("atomic load requires a supported integer word");
         }
         self.value(
             ty,
@@ -298,7 +295,7 @@ impl Builder {
         ordering: super::atomic::StoreOrder,
     ) -> Result<(), &'static str> {
         if !atomic_word(value.ty) {
-            return Err("atomic store currently requires u32");
+            return Err("atomic store requires a supported integer word");
         }
         self.emit(
             Operation::AtomicStore {
@@ -319,7 +316,7 @@ impl Builder {
         ordering: super::atomic::CompareOrder,
     ) -> Result<Value, &'static str> {
         if !atomic_word(value.ty) {
-            return Err("atomic compare-exchange currently requires u32");
+            return Err("atomic compare-exchange requires a supported integer word");
         }
         self.value(
             Type::I64,
@@ -340,7 +337,7 @@ impl Builder {
         ordering: super::atomic::RmwOrder,
     ) -> Result<Value, &'static str> {
         if !atomic_word(value.ty) {
-            return Err("atomic exchange currently requires u32");
+            return Err("atomic exchange requires a supported integer word");
         }
         self.value(
             value.ty,
@@ -360,7 +357,7 @@ impl Builder {
         ordering: super::atomic::RmwOrder,
     ) -> Result<Value, &'static str> {
         if !atomic_word(value.ty) {
-            return Err("atomic add-fetch currently requires u32");
+            return Err("atomic add-fetch requires a supported integer word");
         }
         self.value(
             value.ty,

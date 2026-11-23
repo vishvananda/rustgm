@@ -172,12 +172,7 @@ fn atomic_operation(
 ) -> Result<Option<Value>, &'static str> {
     let pointer = Operand::Parameter(0);
     if intrinsic == Intrinsic::AtomicStore {
-        let order = match order {
-            Ordering::Relaxed => StoreOrder::Relaxed,
-            Ordering::Release => StoreOrder::Release,
-            Ordering::Sequential => StoreOrder::Sequential,
-            _ => return Err("invalid atomic store order"),
-        };
+        let order = StoreOrder::from_rust(order).ok_or("invalid atomic store order")?;
         builder.atomic_store(
             Value {
                 ty: Type::U32,
@@ -188,12 +183,7 @@ fn atomic_operation(
         )?;
         Ok(None)
     } else if intrinsic == Intrinsic::AtomicLoad {
-        let order = match order {
-            Ordering::Relaxed => LoadOrder::Relaxed,
-            Ordering::Acquire => LoadOrder::Acquire,
-            Ordering::Sequential => LoadOrder::Sequential,
-            _ => return Err("invalid atomic load order"),
-        };
+        let order = LoadOrder::from_rust(order).ok_or("invalid atomic load order")?;
         builder.atomic_load(Type::U32, pointer, order).map(Some)
     } else {
         let order = match order {
