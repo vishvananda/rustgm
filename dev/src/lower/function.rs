@@ -37,6 +37,7 @@ mod trapped_calls;
 mod unqualified;
 mod vararg;
 mod word_access;
+mod word_fences;
 mod word_updates;
 mod wrapper_transfers;
 mod wrapping_runtime;

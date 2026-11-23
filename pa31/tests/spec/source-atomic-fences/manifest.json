@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "orders.rs": {
+      "sha256": "f1e6b966bfe0e16c4ff6fd2023ccb0ba2ef55f67e67a78d6126e705c9a430111",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "readwrite 1 0 0 0",
+            "text \"mfence\""
+          ]
+        }
+      ]
+    },
+    "relaxed.rs": {
+      "sha256": "6dc67bee2c0aee7c8246498f16a4880731cd863662c66456a30b154c2599ad2e",
+      "configurations": [
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "an atomic fence cannot use Relaxed ordering"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guests for the original core thread and compiler fence intrinsics. The Relaxed intrinsic is a strict RustGM diagnostic control."
+}

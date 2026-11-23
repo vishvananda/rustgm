@@ -6,6 +6,8 @@ use crate::{
         program::{Operand, Value},
         vocabulary::Type,
     },
+    sema::compiler_items::checked_atomic_access::Fence,
+    support::word_operation::Update,
     types::TypeId,
 };
 
@@ -25,7 +27,26 @@ pub(super) struct Word {
 }
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn source_atomic_access(
+    pub(super) fn source_atomic_operation(
+        &mut self,
+        name: &str,
+        callee: TypeId,
+        signature: TypeId,
+        arguments: ir::ValueList,
+        result: TypeId,
+    ) -> Result<Option<Selected>, &'static str> {
+        if matches!(name, "atomic_load" | "atomic_store") {
+            self.source_atomic_access(name, callee, signature, arguments, result)
+        } else if let Some(operation) = Update::intrinsic(name) {
+            self.source_atomic_update(operation, callee, signature, arguments, result)
+        } else if let Some(scope) = Fence::named(name) {
+            self.source_fence(scope, callee, signature, arguments, result)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn source_atomic_access(
         &mut self,
         name: &str,
         callee: TypeId,

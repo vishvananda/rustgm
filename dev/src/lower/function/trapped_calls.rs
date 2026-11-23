@@ -4,7 +4,7 @@ use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
     sema::compiler_items::bit_counts,
-    support::{intrinsics::Intrinsic, word_operation::Update},
+    support::intrinsics::Intrinsic,
     types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
@@ -75,15 +75,8 @@ impl Lower<'_, '_, '_> {
                 .source_compare_bytes(ty, signature, arguments, value.ty)
                 .map(Some);
         }
-        if matches!(name, "atomic_load" | "atomic_store")
-            && let Some(lowered) =
-                self.source_atomic_access(name, ty, signature, arguments, value.ty)?
-        {
-            return Ok(Some(lowered));
-        }
-        if let Some(operation) = Update::intrinsic(name)
-            && let Some(lowered) =
-                self.source_atomic_update(operation, ty, signature, arguments, value.ty)?
+        if let Some(lowered) =
+            self.source_atomic_operation(name, ty, signature, arguments, value.ty)?
         {
             return Ok(Some(lowered));
         }

@@ -36,6 +36,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
     ) || super::bit_counts::named(name).is_some()
         || crate::support::word_operation::Update::intrinsic(name).is_some()
         || crate::support::intrinsics::Intrinsic::source_transfer(name).is_some()
+        || super::checked_atomic_access::Fence::named(name).is_some()
 }
 
 /// A Body Call's roots are already opened into its caller, unlike an item signature.

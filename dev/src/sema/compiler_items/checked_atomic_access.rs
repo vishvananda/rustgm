@@ -87,6 +87,59 @@ pub(crate) fn select(
     }))
 }
 
+#[derive(Clone, Copy)]
+pub(crate) enum Fence {
+    Thread,
+    Compiler,
+}
+
+impl Fence {
+    pub(crate) fn named(name: &str) -> Option<Self> {
+        match name {
+            "atomic_fence" => Some(Self::Thread),
+            "atomic_singlethreadfence" => Some(Self::Compiler),
+            _ => None,
+        }
+    }
+}
+
+pub(crate) fn fence_order(
+    facts: &Declarations,
+    callee: TypeId,
+    signature: TypeId,
+) -> Result<Option<Ordering>, &'static str> {
+    let types = &facts.types;
+    let Some(Kind::FunctionItem {
+        item, arguments, ..
+    }) = types.kind(callee)
+    else {
+        return Err("source atomic fence requires its function item");
+    };
+    let mut arguments = types
+        .arguments(arguments)
+        .ok_or("source atomic fence lost its ordering argument")?;
+    let (Some(Argument::Const(order)), None) = (arguments.next(), arguments.next()) else {
+        return Err("source atomic fence requires exactly one ordering argument");
+    };
+    let Some(order) = ordering(facts, DefId(item.0), 0, order)? else {
+        return Ok(None);
+    };
+    if order == Ordering::Relaxed {
+        return Err("an atomic fence cannot use Relaxed ordering");
+    }
+    if !super::intrinsic_contracts::opened_signature_matches(
+        types,
+        signature,
+        &[],
+        TypeId::UNIT,
+        true,
+        Convention::RUST,
+    ) {
+        return Err("source atomic fence requires its opened unsafe Rust () signature");
+    }
+    Ok(Some(order))
+}
+
 pub(super) enum Word {
     Integer { signed: bool },
     Pointer,
