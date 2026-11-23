@@ -1,29 +1,26 @@
-# RustGM Programming Assignment 13: Pattern semantics
+# RustGM Programming Assignment 13 — Pattern semantics
 
-Status: **implemented-draft**. This handout and its manifest define the grading contract.
-Prerequisite: PA12. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+Build on [PA12](../pa12/README.md) to select pattern bindings, check
+exhaustiveness and usefulness, and lower owned patterns. Use Rust 1.98.0,
+edition 2024, on Linux x86-64. PA34 adds edition 2021 and PA40 covers the
+remaining editions.
 
-## Required implementation
+## Command-line interface
 
-Binding modes, match lowering and exhaustiveness/usefulness.
+```text
+rustgm --emit-patterns [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+rustgm --emit-lowir [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
 
-The maintainer implements this responsibility in `dev/src/` and introduces its
-typed interface before generating text views. Consult `spec.md`, the pinned
-Rust Reference, and the existing CPPGM implementation for efficient algorithms.
-Do not introduce rendered text as transport between compiler phases.
-
-## Tool surface
-
-`dev/rustgm --emit-lowir -o OUTPUT SOURCE` compiles the owned execution profile.
-`--emit-patterns` inspects selected patterns and their pending reference proofs.
-The manifest chooses one of these modes for every case; earlier views remain
-available. LowIR follows PA11/PA12, and the pattern vocabulary is specified below.
+Use PA11's input, configuration, and output options. `--emit-patterns`
+shows selected patterns and pending reference obligations. Use PA11 and
+PA12's LowIR conventions for executable cases. Share the typed selection
+facts between both modes.
 
 ## Semantic and execution profile
 
-`--emit-patterns` and `--count-patterns` publish a sparse selected-pattern view.
-They do not claim lifetime or loan validity. Simple standalone value
+Use a sparse selected-pattern representation. PA15 and PA16 validate
+lifetime and loan obligations. Simple standalone value
 bindings and wildcards use the earlier direct path and have no selected root.
 The view covers irrefutable owned products/arrays, explicit reference patterns,
 edition-2024 binding modes, irrefutable borrowed slice rests, and owned match
@@ -111,19 +108,18 @@ pointer layout boundary; nominal fields containing sized byte-array references
 can be inspected. C-string values await the library type assignment. Text value
 execution does not bypass reference lowering, region or loan proofs.
 
-There is a pinned-rustc discrepancy in borrowed constant matching. The Reference's
-`patterns.ident.binding.non-reference` rule permits automatic dereferencing for
-constants of non-reference types. RustGM follows that rule; rustc 1.98.0 requires
-an explicit reference pattern such as `&C`. Tests record six such differences
-(scalar, unit, tuple, array, struct and enum), their explicit-reference controls,
-and a bare constructor control. Borrowed pattern inspection is still separate
-from executable loan/region proofs; these are not same-source rustc parity claims.
+Apply the Reference's automatic dereferencing rule when a constant's type
+is a non-reference type. For example, the course pattern view accepts a
+non-reference constant `C` when matching its corresponding reference input.
+Rust 1.98.0's compiler requires an explicit `&C` pattern for these cases.
 
-The current vocabulary is `selected-patterns 1`, the canonical type table,
+## Selected-pattern output
+
+Start with `selected-patterns 1`, the canonical type table,
 `root FILE:NODE pattern=ID`, and arena-ordered `pattern ID source=FILE:NODE
 input=TYPE KIND...` records. Roots sort by file/node; pattern and edge identities
 follow deterministic source traversal. A pattern's input type remains distinct
-from a binding's local type. Kinds are:
+from a binding's local type. Use the following pattern kinds.
 
 - `wildcard` (including a selected rest with no binding operation).
 - `range=ID` for a scalar literal, named constant or interval in the separate range arena.
@@ -182,6 +178,8 @@ Single-variant wildcard patterns need no tag read. An empty match retains a
 `validate PLACE` operation in body IR; an uninitialized empty-type local may pass
 pattern/body inspection but fails ownership checking before executable IR.
 
+## Coverage and diagnostics
+
 Composite coverage uses reduced binary decisions over normalized scalar and
 constructor ranks at sparse typed places.
 Union, intersection and difference queries are memoized; products and nested
@@ -196,18 +194,13 @@ control rejection of wholly unreachable arms. The default warning level does not
 reject them: default and explicit `warn` emit a typed
 `warning[unreachable_patterns]: file FILE: BYTE: unreachable pattern` for each
 wholly unreachable arm. Successful views can therefore have declared nonempty
-stderr while retaining their exit status and stdout. An accepted native program
-with such a warning declares `warnings: ["unreachable_patterns"]`. `allow`
-suppresses that diagnostic; nested allow/warn cannot weaken forbid. Individual
+stderr while retaining their exit status and stdout. Use `allow` to suppress the diagnostic. Nested `allow` or `warn` cannot
+weaken `forbid`. Individual
 redundant alternatives within an otherwise useful arm remain outside this
 producer.
 Item inheritance follows lexical policy independently of body and unsafe
 contexts. Warning contracts preserve exact code, count, order and source byte
 locations rather than discarding diagnostics during comparison.
-The [whole-arm warning outcomes](tests/unreachable-warning-outcomes.json) freeze
-the affected shipped fixtures' exact diagnostic bytes and preserve their stdout
-and acceptance/error contracts. Six rejected inputs retain these warnings before
-their unchanged initialization errors.
 
 Dynamic slices add a length variable to the same coverage graph. A query lazily
 collects tested start/end positions by canonical slice type from its own roots.
@@ -218,6 +211,8 @@ selects the same canonical start index as the matching prefix. This handles
 short slices without enumerating all lengths or element values. Collection,
 position pairs, branches and graph operations share the existing work budget.
 Diagnostics use `.len` for a length constraint and `[-N]` for an end offset.
+
+## Decisions and captures
 
 Decisions retain ordered alternatives, read the scrutinee only when the
 decision or capture requires it, and capture values after a successful decision.
@@ -266,13 +261,10 @@ Each subtree has first-match and resume continuations, so generated decisions
 stay proportional to the pattern rather than expanding products of alternatives.
 A product field with no first match rejects that product immediately.
 
-There is a known pinned-rustc discrepancy for opposite signed zeros in a guarded
-or-pattern. The Reference's `expr.match.guard.next` rule retries each matching
-alternative: `-0.0 | 0.0 if { count += 1; false }` therefore runs the guard twice
-for either zero. RustGM follows that rule; rustc 1.98.0 (`88d9e12ae`) runs it once.
-Both run twice for `0.0 | 0.0`. The maintainer tests preserve eight explicit
-Reference/rustc pairs across both widths, both orders and named constants.
-These pairs are documented differences, not same-source runtime parity claims.
+Retry every matching alternative when a guard fails. For either signed
+zero, `-0.0 | 0.0 if { count += 1; false }` increments `count` twice in this
+assignment, following the Reference's guard rule. The pinned Rust compiler
+increments it once for opposite signed zeros.
 
 Body IR records `guard-view`, `guard`, `guard-place`, `guard-start`, `bind-view`
 and `guard-use` facts. Shallow protection covers tested places across the match;
@@ -298,42 +290,23 @@ constructors and scalar intervals.
 pending` gives existential region provenance. IDs are globally allocated from
 one and do not alias `static` or signature `bound:DEPTH:INDEX` regions. Origins and pending `region-equal`/`region-coercion` records use PA9's vocabulary.
 A capture's fresh region is not itself a loan or outlives proof. PA15/PA16 own
-borrowed execution, including the former executable reference-boundary cases;
-this pattern view still does not claim those proofs.
+borrowed execution and its required proofs.
 
 The final line is `eof roots=N patterns=N fields=N alternatives=N ranges=N
 matches=N arms=N coverage-work=N region-vars=N region-equalities=N conditions=N
 chains=N`.
 `coverage-work` sums match queries; it does not count ordinary binding checks.
-Count mode emits that same line without `eof `, after the
-same checks. Diagnostics return 1 and emit no partial pattern view.
+Source errors exit 1 with a diagnostic and no partial pattern view.
 
-## Tests and completion
+## Run the tests
 
-`make test-pa13` compares all 802 manifest cases against committed stdout,
-stderr and exit-status sidecars. This includes 531 LowIR cases (364 executable
-programs and 167 rejections) and 271 pattern-inspection cases (173 acceptances
-and 98 rejections). Every source and auxiliary module is explicitly discovered.
+Run the PA13 test target from the repository root.
 
-`make test-rustc` includes all 802 independent acceptance checks. Eight
-manifest entries explicitly qualify phase or Reference/rustc differences:
-two inspection programs still need lifetime/loan rejection, and six non-reference
-constant patterns
-follow the Reference's automatic-dereference rule. Their explicit-reference
-controls are also graded.
+```sh
+make -C pa13 test
+```
 
-`make test-native-pa13` checks the 531 LowIR cases with pinned rustc and the
-qualified CPPGM backend. There are 348 programs with matching clean execution
-and eight signed-zero pairs (16 programs) with deliberately opposite pass/panic
-outcomes. Each pair asserts the Reference's count of two and rustc's count of
-one separately; every runtime difference has a manifest reason. A signal,
-timeout or other infrastructure failure never substitutes for an expected panic.
-Borrowed/text/slice inspection cases do not count as executable comparisons.
-
-The maintainer's invariant tests additionally check sparse arenas, pattern
-sharing, bounded coverage, deterministic witnesses, deep flat worklists,
-projection identity and atomic failure. `make lint audit-rust test-harness`
-checks safe Rust, Clippy, file/architecture constraints and fixture discovery.
-See [the validation record](../docs/pa13-validation.md) for the profile,
-independent evidence and measured performance. PA14–PA16 still own the remaining
-move/lifetime/loan contracts; no pending user-reference proof is erased here.
+[The manifest](tests/manifest.json) selects a mode for each case. It covers
+exhaustiveness and useful arms, binding and guard behavior, signed-zero
+matching, and borrowed patterns with obligations for later phases. For
+executable cases, use the [PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable).

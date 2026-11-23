@@ -1,9 +1,8 @@
-# RustGM Programming Assignment 12: Aggregates and layout
+# RustGM Programming Assignment 12 — Aggregates and layout
 
-Status: **implemented draft**. Prerequisite: PA11.
-The profile remains Rust 1.98.0, edition 2024, Linux x86-64, checked integer
-arithmetic and aborting panics. This assignment adds concrete owned aggregates
-and an explicit layout inspection view; it is not whole-Rust conformance.
+Extend [PA11](../pa11/README.md) with concrete aggregate types and a layout
+inspection command. Use Rust 1.98.0, edition 2024, on Linux x86-64 with
+checked integer arithmetic and aborting panics.
 
 ## Required implementation
 
@@ -34,10 +33,9 @@ Array repetition evaluates its operand once, including lengths zero and one.
 Larger repeats require a Copy operand or an eligible constant operand. Keep one
 operand and a canonical length, never one body-IR entry per repeated element.
 PA16 covers closed constant/static materialization and reference storage with
-their lifetime/loan proofs; general constant evaluation remains PA25. The earlier concrete array-length profile
-remains: lengths in annotations and repeats are usize-compatible integer literals
-or grouped literals. Nonliteral array-length queries belong to PA25; their
-positive fixtures live there once the cumulative maintainer supports them.
+their lifetime and loan proofs. PA12 supports array lengths written as
+usize-compatible integer literals or grouped literals. PA25 adds nonliteral
+lengths and general constant evaluation.
 
 Resolve `Self` to its enclosing concrete struct/enum in field annotations and
 discriminants. It does not cross a nested item's capture barrier. Enum members
@@ -55,11 +53,9 @@ permit huge lengths without expanding a field arena. Retain uninhabitedness and
 by-value reference footprints even when size is zero.
 
 For unspecified Rust tuple/struct layout, this course deliberately chooses source
-field order: align each field's offset, add its size, then pad total size to the
-maximum alignment. This is an allowed Rust layout, not a promise to reproduce
-rustc's field reordering or niche optimization. Empty types and zero-sized fields
-remain explicit semantic facts. The layout view's exact choices are the course
-oracle; compare rustc layout bytes only where the relevant guarantee applies.
+field order. Align each field's offset, add its size, and pad the total
+to the maximum alignment. Preserve empty types and zero-sized fields as
+explicit semantic facts. Use the course's layout choices for the text output.
 
 Honor `repr(C)`, `repr(Rust)`, `repr(transparent)`, `repr(packed)`/`packed(N)`,
 `repr(align(N))` and integer enum representations. Validate applicable owners,
@@ -77,8 +73,7 @@ retain integer ABI types; they grant no pointer provenance or dereference rights
 Explicit representations and unsupported scalar ranges retain their separate
 physical profiles or explicit wider-niche requirement. General Rust niche selection
 is not implied. Transparent ancillary zero-sized fields have offset zero in the
-course layout. See the [unsigned niche checkpoint](../docs/pa12-unsigned-niche-checkpoint.md)
-for source, CTFE, ABI and native qualification boundaries.
+course layout.
 
 Explicit discriminants have the declared integer representation type, or isize
 without one. Evaluate typed scalar constant expressions: integer and floating
@@ -103,13 +98,12 @@ Built-in unqualified `derive(Clone, Copy)` is supported for these concrete nomin
 types. Validate field obligations, Clone prerequisites and packed Clone restrictions.
 This is the closed built-in capability profile needed for aggregate operations;
 general trait selection, Clone calls and procedural derives remain later work.
-PA14 owns the complete move-path/partial-initialization grading contract. The
-maintainer checks owned-value uses before executable lowering; this assignment's
-native fixtures do not depend on PA14's partial-move exercises.
+PA14 adds move-path and partial-initialization checking. Keep the ownership
+obligations needed by that phase.
 
 ## Checked aggregate LowIR
 
-Continue `dev/rustgm --emit-lowir [-o OUTPUT] SOURCE` using PA11's deterministic
+Continue `rustgm --emit-lowir` using PA11's deterministic
 symbol/block/value ordering, scalar operations and panic convention. Construct
 positive-sized object slots as `obj<BYTESxALIGN>` and transfer objects with the
 existing `copyobj BYTESxALIGN` vocabulary. Derive actual address alignment for
@@ -139,8 +133,12 @@ The supported concrete functions still use the earlier declaration/body profile.
 
 ## Layout text contract
 
-`--emit-layouts` and `--count-layouts` are supplementary PA12 inspection modes.
-Complete declaration/body type checking and every fixed-sized canonical layout
+```text
+rustgm --emit-layouts [--cfg OPTION]... [--crate-name NAME] [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA11's input and output options. Complete declaration and body type
+checking and every fixed-sized canonical layout
 before emitting text. This view proves representation facts, not ownership or
 loan validity, and does not require a main function. Unsized canonical types are
 listed without inventing a size; unsupported sized representations such as a fat
@@ -150,7 +148,7 @@ layout failure is `ERROR: type TYPE: MESSAGE` followed by LF.
 
 The full view starts with `layouts 1 target=x86_64-unknown-linux-gnu`. Next emit
 PA9's shared `type ID ...` table in canonical ID order, then named type declarations
-in definition order (type namespace only, excluding variant pseudo-types):
+in definition order. Include type names and omit variant pseudo-types.
 
 ```text
 def DEF type=TYPE name="BYTE_ESCAPED_NAME" [source=FILE:NODE]
@@ -171,33 +169,28 @@ zero-sized types. A tag type uses its primitive spelling. Discriminants print
 unsigned decimal two's-complement bits at the explicit integer width or default
 isize width, even when a physical C tag is narrower. Struct/tuple groups print
 discriminant zero. Counts cover completed fixed layouts and their retained groups
-and offsets. Count mode prints only the footer without `eof `.
+and offsets.
 
 All numbers are decimal; booleans are `true`/`false`. Names quote ASCII printable
 bytes, escape quote/backslash and LF/CR/tab, and use lowercase `\xHH` for remaining
 UTF-8 bytes. Every line ends in LF. Hash iteration must not affect ordering.
 This is an output view of typed facts; no frontend phase reparses it.
 
-## Tests and completion evidence
+## Run the tests
 
-The manifest declares each input's mode and expected exit before reference
-generation. LowIR acceptance requires a declared clean-exit or panic-abort
-runtime outcome. Every such input is executed with both pinned rustc and the
-qualified CPPGM backend. A supplementary layout case cannot satisfy native
-execution requirements. Unsupported later-stage programs carry explicit rustc
-acceptance differences; they cannot silently masquerade as invalid Rust.
+Run the PA12 test target from the repository root.
 
-Layout fixtures declare sizes, alignment and selected offsets independently of
-text generation. The layout checker compares those declarations with the
-candidate and committed text, then executes rustc size/alignment/offset probes
-where guaranteed. Course-specific Rust ordering and transparent zero-sized-field
-offsets are explicit exceptions, not claims of rustc equality. Rejected layout
-or source programs must return exit 1 with diagnostics; signals, timeouts, exit 86
-and empty suites are failures.
+```sh
+make -C pa12 test
+```
 
-Run `make test-pa12 test-layouts test-native-pa12`, all earlier suites,
-`make lint audit-rust test-harness test-upstream test-rustc test-backend`, and
-debug/release invariants. The maintainer's scaling/equivalence evidence is in
-`docs/pa12-validation.md`; required course fixtures live here. Consult
-`doc/rust-reference/src/type-layout.md`, `items/enumerations.md`, `const_eval.md`
-and `paths.md`, plus the pinned CPPGM contract in `docs/cppgm-spec.md`.
+[The manifest](tests/manifest.json) includes both layout and LowIR cases.
+Use each case's named mode and check its expected output, including sizes,
+alignments, and offsets for layout cases. Use the [PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+to build and run your aggregate examples. Check that failures report a
+diagnostic with exit status 1 and no standard output.
+
+The pinned Rust Reference covers [type layout](../doc/rust-reference/src/type-layout.md),
+[enumerations](../doc/rust-reference/src/items/enumerations.md),
+[constant evaluation](../doc/rust-reference/src/const_eval.md), and
+[paths](../doc/rust-reference/src/paths.md).
