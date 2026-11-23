@@ -5,12 +5,13 @@ use super::{
 };
 use crate::{
     lowir::{
+        asm,
         builder::Builder,
         program::{SymbolId, Terminator},
     },
     sema::foreign::Function,
     support::llvm_symbols::{Intrinsic, Operation},
-    types::{Kind, TypeId, instance::Instance},
+    types::{Kind, TypeId, callable::Convention, instance::Instance},
 };
 impl Context<'_> {
     pub(super) fn demand_llvm(
@@ -71,8 +72,7 @@ impl Context<'_> {
         self.intrinsic_symbols.insert(instance, symbol);
         Ok(symbol)
     }
-    /// Bring-up only: the spin-wait hint has no effect a program can observe,
-    /// so its shim returns at once. Elsewhere the operation stays fenced.
+    /// The spin-wait instruction has no operands or architectural state clobbers.
     fn demand_pause(
         &mut self,
         instance: Instance,
@@ -80,20 +80,27 @@ impl Context<'_> {
     ) -> Result<SymbolId, &'static str> {
         let hint = matches!(
             self.types.kind(function.signature),
-            Some(Kind::Function { parameters, result: TypeId::UNIT, convention, .. })
-                if !convention.variadic && self.types.list(parameters).is_some_and(<[_]>::is_empty)
+            Some(Kind::Function {
+                bound_regions: 0,
+                parameters,
+                result: TypeId::UNIT,
+                convention: Convention::C | Convention::UNADJUSTED,
+                ..
+            }) if self.types.list(parameters) == Some(&[])
         );
-        if !hint
-            || !crate::support::bringup::waive(
-                "selected LLVM intrinsic uses unqualified lowering: x86.sse2.pause",
-            )
-        {
-            return Err("selected LLVM intrinsic operation is not implemented");
+        if !hint {
+            return Err(
+                "LLVM x86 pause requires a fixed foreign signature with no inputs or result",
+            );
         }
         self.reserve_shim()?;
         let mut builder = Builder::default();
         let entry = builder.block()?;
         builder.enter(entry)?;
+        let mut assembly = self.output.assembly()?;
+        assembly.text("pause")?;
+        let assembly = assembly.finish(asm::SIDE_EFFECT, 0, 0)?;
+        builder.asm(assembly, &[])?;
         builder.terminate(Terminator::Return(None))?;
         let signature = self.signature(function.signature)?;
         let symbol = self.output.declare(

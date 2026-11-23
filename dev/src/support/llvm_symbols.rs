@@ -10,7 +10,7 @@ pub enum Operation {
     Population,
     ReverseBits,
     SwapBytes,
-    /// The x86 spin-wait hint, which only the bring-up profile lowers.
+    /// The x86 spin-wait hint.
     Pause,
     Unsupported,
 }

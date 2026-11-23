@@ -1031,34 +1031,37 @@ fn main(){unsafe{pause()}}
 ";
 
 #[test]
-fn the_spin_wait_hint_returns_at_once_and_stays_fenced_when_strict() -> Result {
-    let fence = "selected LLVM intrinsic operation is not implemented";
+fn the_spin_wait_hint_emits_a_native_pause_in_both_profiles() -> Result {
     let folder = folder_with("pause", PAUSE)?;
     let strict = run(&folder, &[], &[])?;
     let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
     assert!(
-        stderr.contains(fence) && !stderr.contains("bringup-") && strict.stdout.is_empty(),
+        strict.status.success() && !stderr.contains("bringup-"),
         "{stderr}"
     );
-    let passed = run(&folder, &[""], &[])?;
-    let stderr = String::from_utf8(passed.stderr)?;
-    assert!(passed.status.success(), "{stderr}");
-    let waiver = "selected LLVM intrinsic uses unqualified lowering: x86.sse2.pause";
-    assert_eq!(waived(&stderr), [waiver], "{stderr}");
-    let text = std::str::from_utf8(&passed.stdout)?;
+    let bringup = run(&folder, &[""], &[])?;
+    let stderr = String::from_utf8(bringup.stderr)?;
     assert!(
-        text.contains("rg.llvm.pause.t") && !text.contains("@abort") && !text.contains("llvm.x86"),
+        bringup.status.success() && waived(&stderr).is_empty(),
+        "{stderr}"
+    );
+    assert_eq!(strict.stdout, bringup.stdout);
+    let text = std::str::from_utf8(&strict.stdout)?;
+    assert!(
+        text.contains("rg.llvm.pause.t")
+            && text.contains("text \"pause\"")
+            && !text.contains("@abort")
+            && !text.contains("llvm.x86"),
         "{text}"
     );
-    // A declaration with any other shape is not the hint and keeps the fence.
+
     let other = PAUSE.replace("fn pause();", "fn pause(x:u32);");
     let other = folder_with("pause-shape", &other.replace("pause()}", "pause(1u32)}"))?;
-    let failed = run(&other, &[""], &[])?;
+    let failed = run(&other, &[], &[])?;
     let stderr = String::from_utf8(failed.stderr)?;
     assert_eq!(failed.status.code(), Some(1), "{stderr}");
     assert!(
-        stderr.contains(fence) && waived(&stderr).is_empty(),
+        stderr.contains("LLVM x86 pause requires a fixed foreign signature"),
         "{stderr}"
     );
     Ok(())

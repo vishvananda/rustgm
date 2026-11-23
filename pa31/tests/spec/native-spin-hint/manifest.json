@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "pause.rs": {
+      "sha256": "9130b1f3cfc6bf2f82a441cb19c0a7ce68294be8f18118f421a6381f50074fa5",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "rg.llvm.pause.t",
+            "text \"pause\""
+          ],
+          "native_instruction": "f3 90"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guest using the original core spin-loop hint and the x86-64 stdarch intrinsic."
+}
