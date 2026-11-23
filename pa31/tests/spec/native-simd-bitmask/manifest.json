@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "masks.rs": {
+      "sha256": "1d98876aa67374a2356572d3f2a895353e09f3a663199b07295b68c28911133b",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary and u8",
+            "binary or i128",
+            "store u8"
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core SIMD bitmask inputs covering integer lane widths, unsigned integer results, byte-array padding, and the highest bit of a u128 carrier."
+}

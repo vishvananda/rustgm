@@ -1,9 +1,6 @@
-//! The SIMD intrinsics on 16-byte `repr(simd)` objects. Each loads its
-//! vectors as `v128`, applies the SSE2 operation rustc's LLVM lowering
-//! selects and stores the result object; `simd_shuffle` copies the lanes its
-//! constant indices name. rustc's monomorphization errors stay errors here.
-//! Any other accepted shape is fenced by name, and the bring-up profile
-//! calls its trap instead.
+//! Typed SIMD intrinsics use SSE2 operations or checked scalar lanes.
+//! Shuffle uses its constant indices. Scalar bitmasks preserve source lane
+//! order and zero the padding bits in their result.
 use super::{Address, Lower, Selected, ir};
 use crate::{
     lowir::{
@@ -15,7 +12,7 @@ use crate::{
         model::Scalar,
         values::View,
     },
-    types::{Kind, Primitive, TypeId, aggregate::SimdShape, instance::Instance},
+    types::{Kind, Primitive, TypeId, aggregate::SimdShape, instance::Instance, length::Length},
 };
 
 /// The lanes of a closed `repr(simd)` type.
@@ -24,8 +21,9 @@ struct Lanes {
     element: TypeId,
     count: u64,
 }
-/// What the 16-byte lowering does with one instance.
+/// The lowering selected for a validated instance.
 enum Plan {
+    Mask(Mask),
     /// One SSE2 sequence over the whole `v128`.
     Vector,
     /// Lanes of `bytes` each, copied by constant index.
@@ -35,6 +33,13 @@ enum Plan {
         outputs: u64,
     },
 }
+#[derive(Clone, Copy)]
+struct Mask {
+    lanes: u64,
+    stride: u64,
+    array: bool,
+}
+
 const NOT_VECTOR: &str = "invalid monomorphization of a SIMD intrinsic: expected a SIMD vector type, found a non-SIMD type";
 const LENGTH: &str =
     "invalid monomorphization of a SIMD intrinsic: expected a return type with the input's length";
@@ -58,7 +63,7 @@ const fn fence(operation: SimdOperation) -> &'static str {
         SimdOperation::Lt => "simd_lt lowering covers sixteen signed 8-bit lanes",
         SimdOperation::And => "simd_and lowering covers 16-byte integer vectors",
         SimdOperation::Or => "simd_or lowering covers 16-byte integer vectors",
-        SimdOperation::Bitmask => "simd_bitmask lowering covers sixteen 8-bit lanes to u16",
+        SimdOperation::Bitmask => "simd_bitmask scalar lowering covers up to 128 integer lanes",
         SimdOperation::ReduceAll => "simd_reduce_all lowering covers sixteen 8-bit lanes",
         SimdOperation::Shuffle => "simd_shuffle lowering covers integer lanes",
         SimdOperation::Splat => "simd_splat lowering covers sixteen 8-bit integer lanes",
@@ -223,23 +228,41 @@ impl Lower<'_, '_, '_> {
     fn bitmask_plan(&self, input: TypeId, output: TypeId) -> Result<Plan, Refusal> {
         let lanes = self.simd_lanes(input)?.ok_or(NOT_VECTOR)?;
         let (_, _, bits) = self.integer_lanes(input)?.ok_or(INTEGER_INPUT)?;
-        let width = lanes.count.max(8).next_power_of_two();
-        let returned = match self.context.types.kind(output) {
-            Some(Kind::Primitive(primitive)) => primitive
-                .integer()
-                .is_some_and(|(signed, bits)| !signed && u64::from(bits) == width),
-            Some(Kind::Array { element, length }) => {
-                element == TypeId::primitive(Primitive::U8) && length == lanes.count.div_ceil(8)
+        let width = lanes
+            .count
+            .max(8)
+            .checked_next_power_of_two()
+            .ok_or(BITMASK)?;
+        let array = match self.context.types.kind(output) {
+            Some(Kind::Primitive(primitive))
+                if primitive
+                    .integer()
+                    .is_some_and(|(signed, bits)| !signed && u64::from(bits) == width) =>
+            {
+                false
             }
-            _ => false,
+            Some(Kind::Array { element, .. } | Kind::ArrayTerm { element, .. })
+                if element == TypeId::primitive(Primitive::U8)
+                    && Length::of(self.context.types, output)?.known()
+                        == Some(lanes.count.div_ceil(8)) =>
+            {
+                true
+            }
+            _ => return Err(BITMASK.into()),
         };
-        if !returned {
-            return Err(BITMASK.into());
+        if lanes.count == 16 && bits == 8 && output == TypeId::primitive(Primitive::U16) {
+            return Ok(Plan::Vector);
         }
-        if lanes.count != 16 || bits != 8 || output != TypeId::primitive(Primitive::U16) {
+        // Bounded straight-line extraction covers the integer carriers and
+        // the portable SIMD mask sizes. Larger byte arrays need a loop.
+        if lanes.count > 128 {
             return Err(Refusal::Fenced);
         }
-        Ok(Plan::Vector)
+        Ok(Plan::Mask(Mask {
+            lanes: lanes.count,
+            stride: u64::from(bits / 8),
+            array,
+        }))
     }
     fn shuffle_plan(&self, selected: &SimdSelection) -> Result<Plan, Refusal> {
         let [input, _, index] = *selected.inputs() else {
@@ -291,7 +314,8 @@ impl Lower<'_, '_, '_> {
                     outputs,
                 },
             ) => self.shuffle(first, second, third, (bytes, inputs, outputs), output),
-            (SimdOperation::Bitmask, _) => {
+            (SimdOperation::Bitmask, Plan::Mask(mask)) => self.bitmask_scalar(first, output, mask),
+            (SimdOperation::Bitmask, Plan::Vector) => {
                 let mask = self.vector_input(first, Vector::Pmovmskb, None)?;
                 let ty = self.context.representation(output)?.result();
                 self.builder
@@ -328,6 +352,63 @@ impl Lower<'_, '_, '_> {
             }
         }
     }
+    fn bitmask_scalar(
+        &mut self,
+        id: ir::ValueId,
+        output: TypeId,
+        mask: Mask,
+    ) -> Result<Selected, &'static str> {
+        let input = self.input_type(id)?;
+        if self.context.layout(input)?.size < mask.lanes * mask.stride {
+            return Err("source SIMD mask lanes exceed their native storage");
+        }
+        let source = self.vector_address(id)?;
+        if !mask.array {
+            let carrier = self.context.representation(output)?.result();
+            return self
+                .mask_bits(source, mask.stride, 0..mask.lanes, carrier)
+                .map(Selected::Runtime);
+        }
+        let destination = self
+            .allocate(output)?
+            .ok_or("source SIMD bitmask has no byte array result storage")?;
+        for byte in 0..mask.lanes.div_ceil(8) {
+            let first = byte * 8;
+            let end = (first + 8).min(mask.lanes);
+            let bits = self.mask_bits(source, mask.stride, first..end, Type::U8)?;
+            let target = self.offset(destination, byte)?;
+            self.builder.store(bits, target.operand)?;
+        }
+        Ok(Selected::Object(destination))
+    }
+
+    fn mask_bits(
+        &mut self,
+        source: Address,
+        stride: u64,
+        lanes: std::ops::Range<u64>,
+        carrier: Type,
+    ) -> Result<Value, &'static str> {
+        let mut result = self.builder.integer(carrier, 0)?;
+        let one = self.builder.integer(Type::U8, 1)?;
+        for (index, lane) in (0_u64..).zip(lanes) {
+            // Valid mask lanes are either all zeroes or all ones. On this
+            // little-endian target their first byte supplies the low bit.
+            let address = self.offset(source, lane * stride)?;
+            let loaded = self.builder.load(Type::U8, address.operand)?;
+            let bit = self.builder.binary(Binary::And, loaded, one)?;
+            let bit = if carrier == Type::U8 {
+                bit
+            } else {
+                self.builder.convert(Convert::Zext, carrier, bit)?
+            };
+            let distance = self.builder.integer(carrier, u128::from(index))?;
+            let positioned = self.builder.binary(Binary::Shl, bit, distance)?;
+            result = self.builder.binary(Binary::Or, result, positioned)?;
+        }
+        Ok(result)
+    }
+
     fn vector_address(&mut self, id: ir::ValueId) -> Result<Address, &'static str> {
         match self.value(id)? {
             Selected::Object(address) => Ok(address),
