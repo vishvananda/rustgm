@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "carry_bits.rs": {
+      "sha256": "753d48416e7e51fd82d7634a15800d796cae52bee83bd9d53c51ac0c3939422d",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary or i1"
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core consumer of the disjoint bitwise-or fallback through carrying_add and borrowing_sub. Results cover either limb operation setting the final flag, ordinary carry-in and borrow-in, and the all-zero output."
+}

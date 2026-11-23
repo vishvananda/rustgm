@@ -217,13 +217,15 @@ fn source_fallback(
         return Ok(false);
     }
     match identity.name() {
-        "carrying_mul_add" | "select_unpredictable" | "rotate_left" | "rotate_right" => {
-            crate::sema::header_attributes::intrinsic_fallback_is_spec(
-                facts,
-                report,
-                function.definition,
-            )
-        }
+        "carrying_mul_add"
+        | "disjoint_bitor"
+        | "select_unpredictable"
+        | "rotate_left"
+        | "rotate_right" => crate::sema::header_attributes::intrinsic_fallback_is_spec(
+            facts,
+            report,
+            function.definition,
+        ),
         "type_id_eq" => facts
             .const_panic_markers(report, function.definition)
             .map(|(runtime_body, _)| runtime_body),
