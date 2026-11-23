@@ -42,6 +42,11 @@ impl Lower<'_, '_, '_> {
             bytewise::NAME => return self.source_raw_equality(id, ty).map(Some),
             swap_contract::NAME => return self.source_typed_swap(id, ty).map(Some),
             "catch_unwind" => return self.abort_profile_catch_unwind(id, ty).map(Some),
+            "fabs" | "copysignf32" | "copysignf64" => {
+                return self
+                    .source_float_sign(name, ty, signature, arguments, value.ty)
+                    .map(Some);
+            }
             _ => {}
         }
         if matches!(name, "size_of_val" | "align_of_val") {

@@ -3,7 +3,6 @@
 //! call whose actual types this module does not handle, keeps its trap.
 mod arithmetic;
 mod atomics;
-mod floats;
 mod layouts;
 mod memory;
 use super::{Lower, Selected, ir};
@@ -52,7 +51,6 @@ impl Lower<'_, '_, '_> {
         let lowered = match name {
             "volatile_load" | "volatile_store" => self.unqualified_memory(call)?,
             "assert_zero_valid" => self.unqualified_assertion(call)?,
-            "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
             _ => None,
         };

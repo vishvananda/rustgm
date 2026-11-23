@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "floating_sign.rs": {
+      "sha256": "9ea622f143b614b76f08b0a4a54f267f6b845ee99b0f47afa8aaedf142cc76b1",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "binary and u32",
+            "binary or u32",
+            "binary or i64"
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core consumer of f32 and f64 sign operations. It compares exact bits for quiet NaNs, sign transfer from negative zero and NaNs, and absolute value of negative zero."
+}

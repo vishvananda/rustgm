@@ -36,6 +36,9 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | super::boxed_write::NAME
             | "forget"
             | "unreachable"
+            | "fabs"
+            | "copysignf32"
+            | "copysignf64"
     ) || super::bit_counts::named(name).is_some_and(|op| !op.is_rotation())
         || crate::support::word_operation::Update::intrinsic(name).is_some()
         || crate::support::intrinsics::Intrinsic::source_transfer(name).is_some()

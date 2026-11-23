@@ -5,6 +5,7 @@ mod asm_invocations;
 mod assertions;
 mod bit_intrinsics;
 mod boxed_write_call;
+mod sign_bits;
 pub(super) use boxed_write_call::checked as checked_boxed_write;
 mod bulk_memory;
 mod c_boundary;
