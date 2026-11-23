@@ -1264,42 +1264,62 @@ fn type_names(case: &str, list: Option<&str>) -> Result<(Output, PathBuf)> {
     minicore(TYPE_NAMES, case, list)
 }
 
-/// `type_name` runs in constants under the bring-up profile only, and a type
-/// it does not spell stops the generic function whose constant names it.
+/// The exact existing fixture can also use the strict executable graph.
+fn strict_type_names(case: &str) -> Result<Output> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let source = std::fs::read_to_string(root.join(TYPE_NAMES).join(format!("{case}.rs")))?;
+    let folder = folder_with(
+        &format!("type-names-{case}-strict"),
+        &format!("{source}\nfn main() {{}}\n"),
+    )?;
+    Ok(source_command(&folder, "type_names", None)?
+        .arg(folder.join("main.rs"))
+        .output()?)
+}
+
+/// A supported type can be named under strict CTFE. The unsupported
+/// function-pointer case still fails at its actual inline constant.
 #[test]
-fn type_names_run_in_constants_and_stay_fenced_when_strict() -> Result {
-    let (strict, _) = type_names("names", None)?;
+fn type_names_run_in_checked_source_constants() -> Result {
+    const UNSPELLED: &str =
+        "type name of a function, closure, object, opaque or foreign type is not implemented";
+    let strict = strict_type_names("names")?;
     let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
     assert!(
-        stderr.contains("source intrinsic constant execution is not implemented")
-            && !stderr.contains("bringup-"),
+        strict.status.success() && !stderr.contains("bringup-"),
         "{stderr}"
     );
+    let lowered = String::from_utf8(strict.stdout)?;
+    assert!(!lowered.contains("rg.trap."));
+    assert!(lowered.contains("global @NAMES : obj<416x8>"), "{lowered}");
+
+    let strict_refused = strict_type_names("refused")?;
+    let stderr = String::from_utf8(strict_refused.stderr)?;
+    assert_eq!(strict_refused.status.code(), Some(1), "{stderr}");
+    assert!(
+        stderr.contains(UNSPELLED) && !stderr.contains("bringup-"),
+        "{stderr}"
+    );
+
     let (passed, lowir) = type_names("names", Some(""))?;
     let stderr = String::from_utf8(passed.stderr)?;
     assert!(passed.status.success(), "{stderr}");
     assert!(
         waived(&stderr)
-            .contains(&"source intrinsic uses unqualified constant evaluation: type_name"),
+            .iter()
+            .all(|reason| !reason.contains("type_name")),
         "{stderr}"
     );
     assert!(!std::fs::read_to_string(lowir)?.contains("rg.trap."));
     let (refused, _) = type_names("refused", Some(""))?;
     let stderr = String::from_utf8(refused.stderr)?;
     assert_eq!(refused.status.code(), Some(1), "{stderr}");
-    let rows = stderr
-        .lines()
-        .filter_map(|line| line.strip_prefix("bringup-blocker\t"))
-        .collect::<Vec<_>>();
+    let rows = rows(&stderr, "bringup-blocker\t");
     let &[row] = rows.as_slice() else {
         return Err(format!("expected one blocker: {stderr}").into());
     };
     assert!(
-        row.contains("\tname_of\t")
-            && row.contains(
-                "\ttype name of a function, closure, object, opaque or foreign type is not implemented\t"
-            ),
+        row.contains("\tname_of\t") && row.contains(UNSPELLED),
         "{row}"
     );
     Ok(())

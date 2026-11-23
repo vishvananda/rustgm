@@ -10,13 +10,15 @@
    "sha256": "f3c80c6c3ee255b2f43cf456953f887126766fd83dd61601e2ef515e1557d23c",
    "rustc_status": 0,
    "rustc_native_stdout": "names.stdout",
-   "rustgm_strict": "rejected: source intrinsic constant execution is not implemented",
+   "rustgm_strict": "accepted in the executable graph; native stdout is names.stdout",
+   "rustgm_strict_before": "rejected: source intrinsic constant execution is not implemented",
    "rustgm_bringup": "accepted; native stdout is names.stdout",
    "rustgm_before": "bring-up rejected: source intrinsic constant execution is not implemented"
   },
   "refused.rs": {
    "sha256": "47eebaec84c763343c60f75015482c90dc4b73a57090ce233def5cb61a3f41b5",
    "rustc_status": 0,
+   "rustgm_strict": "rejected at the unsupported function pointer name in the inline constant",
    "rustgm_bringup": "fails closed: name_of, whose inline constant names fn(u8) -> u8, is the one bring-up blocker",
    "rustgm_before": "bring-up rejected: source intrinsic constant execution is not implemented"
   }

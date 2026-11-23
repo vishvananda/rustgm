@@ -1101,13 +1101,11 @@ rustc's core `&F` and `&mut F` impls, the reference forwards to its referent's
 is no graded manifest.
 
 `spec/type-names/` freezes two declared no_core programs that call
-`type_name::<T>()` in statics and through a generic `const fn`'s inline
-constant, as core's `any::type_name` does. Under the bring-up profile the
-names are those rustc 1.98.0 prints, which a C observer compares, including
-`'_` for a path's lifetime argument and no lifetime for a reference; strict
-compilation stays fenced, and a function pointer's name fails closed as one
-bring-up blocker. A maintainer integration test checks every case. There is
-no graded manifest.
+`type_name::<T>()` directly in statics and through a generic function's inline
+constant, as core's `any::type_name` does. The strict executable graph evaluates
+the supported forms, including `'_` for a path's lifetime argument. A C
+observer compares its text with rustc 1.98.0. The function-pointer case rejects
+at the inline constant. A maintainer integration test checks both forms.
 
 `spec/closure-entry-roots/` freezes four declared no_core programs that pass
 a closure to core's `Option::and_then`, as pinned core's generic callers pass

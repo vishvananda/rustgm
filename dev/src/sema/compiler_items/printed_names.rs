@@ -1,4 +1,4 @@
-//! Type names in constants: bring-up only, waived by name, fenced otherwise.
+//! Type names are computed for checked source constant calls.
 //! `type_name::<T>()` is T's name as rustc 1.98.0 prints it. A nominal type
 //! is its declaration's crate and module path followed by its arguments, each
 //! lifetime erased to `'_`; a reference leaves its lifetime out. Every other
@@ -16,12 +16,8 @@ use crate::{
     },
 };
 
-const NAME: &str = "source intrinsic uses unqualified constant evaluation: type_name";
-
-/// Whether `kind` is the type name intrinsic, in the profile that waives it.
 pub(crate) fn is_operation(kind: SourceIntrinsic) -> bool {
     matches!(kind, SourceIntrinsic::Declaration(declared) if declared.name() == "type_name")
-        && crate::support::bringup::waive(NAME)
 }
 
 /// The name of a closed type, at most a bounded number of bytes long.
@@ -123,6 +119,7 @@ impl Catalog {
             || function.definition != definition
             || function.node != declaration.origin
             || function.signature != original
+            || function.body.is_some()
         {
             return Err("source type name completed declaration changed");
         }

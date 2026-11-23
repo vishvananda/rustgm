@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "crate_name": "app",
+  "rustc": "1.98.0",
+  "cases": {
+    "names.rs": {
+      "sha256": "3735f1e8790a15ce6d4dc7c94963a42a8107c5b1e02f37fcd62758eae736acee",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core guest checking type names across crate paths, unions, array lengths, const arguments and erased lifetimes."
+}
