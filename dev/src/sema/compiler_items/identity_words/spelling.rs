@@ -1,9 +1,7 @@
-//! A closed type's spelling for its identity. Every byte comes from the type's
-//! own structure and its declarations, never from an interning order, an
-//! address or a host table, so that every compilation of a crate spells one
-//! type alike. Each node writes a tag and explicit counts, so two different
-//! types never spell alike. Free lifetimes are erased; the lifetimes of a
-//! `for<..>` binder inside the type are numbered in their order of first use.
+//! Structural encoding of a closed type in a frozen source graph.
+//! Each node writes a tag and counts, and declarations use their resolved owner.
+//! Free lifetimes are erased. Lifetimes within a `for<..>` binder are numbered
+//! in their order of first use.
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,

@@ -1155,8 +1155,8 @@ const COMPARED: &[(&str, bool)] = &[
 const UNIT_WORDS: [&str; 2] = ["17862064836387286480", "17912235704883107879"];
 
 #[test]
-fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
-    let mut source = format!("{HEAD}{IDENTITIES}");
+fn type_identities_run_deterministically_in_strict_constants() -> Result {
+    let mut source = IDENTITIES.to_owned();
     for (index, (condition, _)) in COMPARED.iter().enumerate() {
         // Each comparison folds to its own number: 71.. when it holds, 72.. otherwise.
         let (yes, no) = (7_100_000 + index, 7_200_000 + index);
@@ -1175,24 +1175,20 @@ fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
             )?;
         }
     }
-    let (strict, _) = library("identities-strict", &source, "identities", None, false)?;
-    let stderr = String::from_utf8(strict.stderr)?;
-    assert_eq!(strict.status.code(), Some(1), "{stderr}");
+    let identity = "identities";
+    let passed = source_executable("identities-strict", &source, identity, None)?;
+    let stderr = String::from_utf8(passed.stderr)?;
     assert!(
-        stderr.contains("source intrinsic constant execution is not implemented")
-            && !stderr.contains("bringup-")
-            && strict.stdout.is_empty(),
+        passed.status.success() && !stderr.contains("bringup-"),
         "{stderr}"
     );
-    let identity = "identities_bringup";
-    let (passed, _) = library("identities", &source, identity, Some(""), false)?;
-    let stderr = String::from_utf8(passed.stderr)?;
-    assert!(passed.status.success(), "{stderr}");
-    let fences = waived(&stderr);
-    for name in ["type_id", "type_id_eq"] {
-        let fence = format!("source intrinsic uses unqualified constant evaluation: {name}");
-        assert!(fences.contains(&fence.as_str()), "{stderr}");
-    }
+    let bringup = source_executable("identities-bringup", &source, identity, Some(""))?;
+    let stderr = String::from_utf8(bringup.stderr)?;
+    assert!(
+        bringup.status.success() && waived(&stderr).is_empty(),
+        "{stderr}"
+    );
+    assert_eq!(bringup.stdout, passed.stdout);
     let text = std::str::from_utf8(&passed.stdout)?;
     for (index, &(condition, holds)) in COMPARED.iter().enumerate() {
         let (yes, no) = (7_100_000 + index, 7_200_000 + index);
@@ -1212,7 +1208,8 @@ fn type_identities_run_in_constants_and_stay_fenced_when_strict() -> Result {
     // A second compilation gives every type the same identity, including
     // the one of `Pair<u8,i8>`, which names a declaration of this crate.
     assert!(text.contains("global @PAIR"), "{text}");
-    let (again, _) = library("identities-again", &source, identity, Some(""), false)?;
+    let again = source_executable("identities-again", &source, identity, None)?;
+    assert!(again.status.success());
     assert_eq!(again.stdout, passed.stdout);
     Ok(())
 }

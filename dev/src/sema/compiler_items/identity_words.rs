@@ -1,4 +1,4 @@
-//! Type identities in constants: bring-up only, waived by name, fenced otherwise.
+//! The checked source `TypeId` declaration supplies the shape of reflected identities.
 //! `type_id::<T>()` is the reflected identity structure holding the 128-bit
 //! digest of T's spelling as two address words without provenance, low half
 //! first; `type_id_eq` compares those words. The words are plain numbers in
@@ -16,9 +16,6 @@ use crate::{
     },
 };
 
-const IDENTITY: &str = "source intrinsic uses unqualified constant evaluation: type_id";
-const EQUALITY: &str = "source intrinsic uses unqualified constant evaluation: type_id_eq";
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Operation {
     /// `type_id::<T>()`, with its closed subject T.
@@ -32,8 +29,8 @@ fn selected(kind: SourceIntrinsic) -> Option<bool> {
         return None;
     };
     match identity.name() {
-        "type_id" if crate::support::bringup::waive(IDENTITY) => Some(false),
-        "type_id_eq" if crate::support::bringup::waive(EQUALITY) => Some(true),
+        "type_id" => Some(false),
+        "type_id_eq" => Some(true),
         _ => None,
     }
 }

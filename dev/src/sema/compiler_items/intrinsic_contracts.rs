@@ -172,16 +172,7 @@ pub(in crate::sema) fn validate(
     } else {
         signature(facts, function, entry.kind).map_err(error)?;
     }
-    let source_fallback = matches!(
-        entry.kind,
-        SourceIntrinsic::Declaration(identity) if identity.name() == "select_unpredictable"
-    ) && function.body.is_some()
-        && facts.is_const_function(function.definition)
-        && crate::sema::header_attributes::intrinsic_fallback_is_spec(
-            facts,
-            report,
-            function.definition,
-        )?;
+    let source_fallback = source_fallback(report, facts, function, entry.kind)?;
     let completed = facts
         .source_bindings
         .as_deref_mut()
@@ -190,6 +181,31 @@ pub(in crate::sema) fn validate(
     completed.signature = Some(function.signature);
     completed.source_fallback = source_fallback;
     Ok(())
+}
+
+fn source_fallback(
+    report: &Report,
+    facts: &Declarations,
+    function: Function,
+    kind: SourceIntrinsic,
+) -> Result<bool, Error> {
+    let SourceIntrinsic::Declaration(identity) = kind else {
+        return Ok(false);
+    };
+    if function.body.is_none() || !facts.is_const_function(function.definition) {
+        return Ok(false);
+    }
+    match identity.name() {
+        "select_unpredictable" => crate::sema::header_attributes::intrinsic_fallback_is_spec(
+            facts,
+            report,
+            function.definition,
+        ),
+        "type_id_eq" => facts
+            .const_panic_markers(report, function.definition)
+            .map(|(runtime_body, _)| runtime_body),
+        _ => Ok(false),
+    }
 }
 
 fn signature(

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "identity.rs": {
+      "sha256": "904dab86d88197776c858daba0e8871bad93362774893321344cc3441593b2c7",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guest comparing original core TypeId values in constant and native execution."
+}
