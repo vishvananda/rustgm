@@ -1,5 +1,5 @@
 //! Owned snapshots and address projections use completed layouts and selected fields.
-use super::{Address, Arithmetic, Lower, Projected, Representation, Selected};
+use super::{Address, Lower, Projected, Representation, Selected};
 use crate::{
     abi::layout::{Layout, Shape},
     body::ir::{Place, ProjectionId, ProjectionKind, Selection, ValueId, ValueList},
@@ -298,12 +298,9 @@ impl Lower<'_, '_, '_> {
                 let index = self.value(index)?.runtime()?;
                 let limit = self.builder.integer(Type::I64, u128::from(length))?;
                 let fault = self.builder.compare(Predicate::Uge, index, limit)?;
-                Arithmetic {
-                    constants: self.context.constants,
-                    builder: &mut self.builder,
-                    panic: &mut self.panic,
-                }
-                .guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)?;
+                self.arithmetic(|arithmetic| {
+                    arithmetic.guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)
+                })?;
                 let Shape::Array {
                     stride,
                     length: actual,

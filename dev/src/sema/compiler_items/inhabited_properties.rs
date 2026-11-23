@@ -21,10 +21,13 @@ pub(crate) struct Ready {
 #[derive(Default)]
 pub(super) struct Plans {
     entries: HashMap<Instance, Ready>,
+    pub(super) arithmetic_guards: Option<Box<super::arithmetic_guards::Routes>>,
 }
 impl Catalog {
     pub(crate) fn has_runtime_layouts(&self) -> bool {
-        self.native_layouts.is_some()
+        self.native_layouts
+            .as_ref()
+            .is_some_and(|plans| !plans.entries.is_empty())
     }
     pub(crate) fn runtime_layout(&self, instance: Instance) -> Option<Ready> {
         self.native_layouts

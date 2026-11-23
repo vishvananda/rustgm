@@ -1,7 +1,7 @@
 //! A product flag never evaluates signed division or divides by a zero operand.
 use super::{Arithmetic, Binary, Convert, Predicate, Type, Value, casts};
 
-impl Arithmetic<'_, '_> {
+impl Arithmetic<'_> {
     pub(in crate::lower) fn multiply_overflow(
         &mut self,
         signed: bool,

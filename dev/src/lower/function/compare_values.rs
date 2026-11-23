@@ -1,5 +1,5 @@
 //! Actual Ordering layout receives the result of two typed scalar comparisons.
-use super::{Arithmetic, Lower, Selected, ir};
+use super::{Lower, Selected, ir};
 use crate::{
     abi::layout::Shape,
     lex::token::Punctuation,
@@ -74,18 +74,11 @@ impl Lower<'_, '_, '_> {
         let Some(Kind::Primitive(primitive)) = self.context.types.kind(selected.input) else {
             return Err("three_way_compare lost its selected scalar type");
         };
-        let less = Arithmetic {
-            constants: self.context.constants,
-            builder: &mut self.builder,
-            panic: &mut self.panic,
-        }
-        .binary(Punctuation::Less, primitive, left, right)?;
-        let greater = Arithmetic {
-            constants: self.context.constants,
-            builder: &mut self.builder,
-            panic: &mut self.panic,
-        }
-        .binary(Punctuation::Greater, primitive, left, right)?;
+        let (less, greater) = self.arithmetic(|arithmetic| {
+            let less = arithmetic.binary(Punctuation::Less, primitive, left, right)?;
+            let greater = arithmetic.binary(Punctuation::Greater, primitive, left, right)?;
+            Ok((less, greater))
+        })?;
         let less = super::super::casts::integer(&mut self.builder, less, Type::U8, false)?;
         let greater = super::super::casts::integer(&mut self.builder, greater, Type::U8, false)?;
         let bits = self.builder.binary(Binary::Sub, greater, less)?;

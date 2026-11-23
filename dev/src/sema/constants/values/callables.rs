@@ -3,6 +3,20 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn arithmetic_guard(
+        self,
+        role: crate::support::bindings::LangItem,
+    ) -> Option<crate::sema::compiler_items::arithmetic_guards::Route> {
+        self.facts.source_bindings.as_deref()?.guard_route(role)
+    }
+
+    pub(crate) fn arithmetic_guard_location(
+        self,
+        site: crate::resolve::unit::NodeKey,
+    ) -> Option<super::LocationId> {
+        self.facts.source_bindings.as_deref()?.guard_location(site)
+    }
+
     /// Actual guard emission retains source hook absence/completion distinctions.
     pub(crate) fn require_source_assertion(
         self,

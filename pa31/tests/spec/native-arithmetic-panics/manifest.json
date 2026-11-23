@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "add.rs": {
+      "sha256": "cbf5624bbde43e04e288fd2253560442561b715f671988a210b4e5725cb7f433",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0
+        }
+      ],
+      "native_cases": [
+        {
+          "arguments": [],
+          "status": 0
+        },
+        {
+          "arguments": [
+            "overflow"
+          ],
+          "status": 73
+        }
+      ]
+    },
+    "remainder.rs": {
+      "sha256": "bd1173d16f44dae59c28a9c6a264d0fd1f48fc901f8ebf8aac29844992da12b6",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0
+        }
+      ],
+      "native_cases": [
+        {
+          "arguments": [],
+          "status": 0
+        },
+        {
+          "arguments": [
+            "zero"
+          ],
+          "status": 73
+        },
+        {
+          "arguments": [
+            "a",
+            "b"
+          ],
+          "status": 75
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guests for checked integer arithmetic using the original source panic hooks and caller locations."
+}

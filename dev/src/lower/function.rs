@@ -2,6 +2,7 @@
 mod aggregate;
 mod argument_sources;
 mod asm_invocations;
+mod assertions;
 mod bit_intrinsics;
 mod bulk_memory;
 mod c_boundary;
@@ -846,12 +847,7 @@ impl Lower<'_, '_, '_> {
             } => {
                 let primitive = self.primitive(self.body.values[operand.0 as usize].ty)?;
                 let value = self.value(operand)?.runtime()?;
-                Arithmetic {
-                    constants: self.context.constants,
-                    builder: &mut self.builder,
-                    panic: &mut self.panic,
-                }
-                .unary(operator, primitive, value, literal)?
+                self.arithmetic(|arithmetic| arithmetic.unary(operator, primitive, value, literal))?
             }
             Rvalue::Binary {
                 operator,
@@ -879,12 +875,7 @@ impl Lower<'_, '_, '_> {
                         .call(signature, ty, Operand::Symbol(symbol), &[lhs, rhs])?
                         .ok_or("missing remainder result")?
                 } else {
-                    Arithmetic {
-                        constants: self.context.constants,
-                        builder: &mut self.builder,
-                        panic: &mut self.panic,
-                    }
-                    .binary(operator, primitive, lhs, rhs)?
+                    self.arithmetic(|arithmetic| arithmetic.binary(operator, primitive, lhs, rhs))?
                 }
             }
             Rvalue::Cast {

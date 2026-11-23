@@ -1,5 +1,6 @@
 //! Exact checked emitters retain their semantic causes; bookkeeping is not routing.
 use super::*;
+use crate::sema::values::Reader;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn source_facts(role: &str) -> Result<crate::sema::model::Declarations> {
@@ -9,6 +10,16 @@ fn source_facts(role: &str) -> Result<crate::sema::model::Declarations> {
     .replace("panic_bounds_check", role);
     let report = crate::test_source::source_provider(&text, "guard_emitter")?;
     Ok(crate::sema::declarations::analyze(&report)?)
+}
+
+fn unprepared<'a>(
+    facts: &'a crate::sema::model::Declarations,
+    panic: &'a mut Option<BlockId>,
+) -> impl FnMut(&mut Builder, Value, LangItem) -> std::result::Result<(), &'static str> + 'a {
+    move |builder, fault, cause| {
+        Reader::new(facts).require_source_assertion(cause)?;
+        abort_guard(builder, panic, fault)
+    }
 }
 
 #[test]
@@ -26,8 +37,7 @@ fn checked_wide_multiply_keeps_multiply_cause_for_auxiliary_division_guards() ->
         let mut panic = None;
         let result = Arithmetic {
             builder: &mut builder,
-            panic: &mut panic,
-            constants: Reader::new(&facts),
+            branch: &mut unprepared(&facts, &mut panic),
         }
         .binary(Punctuation::Star, Primitive::I128, lhs, rhs);
         assert_eq!(result.is_err(), blocked, "{role}");
@@ -57,20 +67,18 @@ fn flag_only_subtraction_and_literal_negation_emit_no_panic_guard() -> Result {
     let mut panic = None;
     Arithmetic {
         builder: &mut builder,
-        panic: &mut panic,
-        constants: Reader::new(&facts),
+        branch: &mut unprepared(&facts, &mut panic),
     }
     .subtract_overflow(false, lhs, rhs)?;
     assert_eq!(panic, None);
     let negation = source_facts("panic_const_neg_overflow")?;
     Arithmetic {
         builder: &mut builder,
-        panic: &mut panic,
-        constants: Reader::new(&negation),
+        branch: &mut unprepared(&negation, &mut panic),
     }
     .unary(ast::Unary::Negate, Primitive::I8, lhs, true)?;
     assert_eq!(panic, None);
-    assert_eq!(size_of::<Arithmetic<'_, '_>>(), 24);
+    assert_eq!(size_of::<Arithmetic<'_>>(), 24);
     assert_eq!(size_of::<Reader<'_>>(), 8);
     Ok(())
 }
@@ -88,8 +96,7 @@ fn flag_only_products_keep_bounded_work_and_never_acquire_a_panic_guard() -> Res
             let mut panic = None;
             let (result, flag) = Arithmetic {
                 builder: &mut builder,
-                panic: &mut panic,
-                constants: Reader::new(&facts),
+                branch: &mut unprepared(&facts, &mut panic),
             }
             .multiply_overflow(signed, lhs, rhs)?;
             assert_eq!(result.ty, ty);

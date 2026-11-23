@@ -1,6 +1,8 @@
 //! Caller data and the hidden runtime ABI never change the source signature.
 use super::{Lower, Operand, Selected, Type, Value, ir};
 use crate::{
+    lower::context::Context,
+    lowir::program::SignatureId,
     sema::values::LocationId,
     types::{Kind, instance::Instance},
 };
@@ -26,20 +28,8 @@ impl Lower<'_, '_, '_> {
         {
             return Err("caller site changed its actual callee");
         }
-        if let ir::Owner::Function { definition, .. } = self.body.owner
-            && self.context.constants.caller_tracking(definition)?
-        {
-            let parameters = self.context.output.parameters(self.native)?;
-            if parameters.last() != Some(&Type::Ptr) {
-                return Err("tracked body lost its hidden caller pointer");
-            }
-            return Ok(Value {
-                ty: Type::Ptr,
-                operand: Operand::Parameter(
-                    u32::try_from(parameters.len() - 1)
-                        .map_err(|_| "caller ABI parameter overflow")?,
-                ),
-            });
+        if let Some(value) = forwarded_caller(self.context, self.body, self.native)? {
+            return Ok(value);
         }
         let site = site.ok_or("tracked call lacks its actual sealed caller site")?;
         self.static_caller_pointer(site.location)
@@ -149,4 +139,27 @@ impl Lower<'_, '_, '_> {
         )
         .map(Some)
     }
+}
+
+pub(super) fn forwarded_caller(
+    context: &Context<'_>,
+    body: &ir::Body,
+    native: SignatureId,
+) -> Result<Option<Value>, &'static str> {
+    let ir::Owner::Function { definition, .. } = body.owner else {
+        return Ok(None);
+    };
+    if !context.constants.caller_tracking(definition)? {
+        return Ok(None);
+    }
+    let parameters = context.output.parameters(native)?;
+    if parameters.last() != Some(&Type::Ptr) {
+        return Err("tracked body lost its hidden caller pointer");
+    }
+    Ok(Some(Value {
+        ty: Type::Ptr,
+        operand: Operand::Parameter(
+            u32::try_from(parameters.len() - 1).map_err(|_| "caller ABI parameter overflow")?,
+        ),
+    }))
 }

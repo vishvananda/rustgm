@@ -1,5 +1,5 @@
 //! Actual scalar subtraction returns the existing tuple representation and flag.
-use super::{Arithmetic, Lower, Selected, ir};
+use super::{Lower, Selected, ir};
 use crate::{
     abi::layout::Shape,
     lex::token::Punctuation,
@@ -107,26 +107,23 @@ impl Lower<'_, '_, '_> {
         let saturation = crate::sema::compiler_items::saturating_operator(selected.kind);
         let operator =
             saturation.or_else(|| crate::sema::compiler_items::overflowing_operator(selected.kind));
-        let mut arithmetic = Arithmetic {
-            constants: self.context.constants,
-            builder: &mut self.builder,
-            panic: &mut self.panic,
-        };
-        let (result, overflow) = match operator {
-            Some(Punctuation::Minus) => arithmetic.subtract_overflow(signed, left, right)?,
-            Some(Punctuation::Star) => arithmetic.multiply_overflow(signed, left, right)?,
-            Some(Punctuation::Plus) => arithmetic.add_overflow(signed, left, right)?,
-            _ => return Err("source arithmetic lost its selected overflow operation"),
-        };
+        let (result, overflow) = self.arithmetic(|arithmetic| match operator {
+            Some(Punctuation::Minus) => arithmetic.subtract_overflow(signed, left, right),
+            Some(Punctuation::Star) => arithmetic.multiply_overflow(signed, left, right),
+            Some(Punctuation::Plus) => arithmetic.add_overflow(signed, left, right),
+            _ => Err("source arithmetic lost its selected overflow operation"),
+        })?;
         if let Some(operator) = saturation {
-            return arithmetic
-                .saturate(
-                    operator == Punctuation::Minus,
-                    signed,
-                    left,
-                    result,
-                    overflow,
-                )
+            return self
+                .arithmetic(|arithmetic| {
+                    arithmetic.saturate(
+                        operator == Punctuation::Minus,
+                        signed,
+                        left,
+                        result,
+                        overflow,
+                    )
+                })
                 .map(Selected::Runtime);
         }
         self.store_subtraction_tuple(result, overflow, selected.input, selected.output)

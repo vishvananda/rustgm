@@ -8,36 +8,98 @@ use crate::{
         program::{BlockId, Terminator, Value},
         vocabulary::{Binary, Convert, Predicate, Type, Unary},
     },
-    sema::values::Reader,
     support::bindings::LangItem,
     syntax::ast,
     types::Primitive,
 };
 
-pub(super) struct Arithmetic<'a, 'facts> {
+#[derive(Clone, Copy)]
+pub(in crate::lower) enum ArithmeticCheck {
+    Overflow(LangItem),
+    Division {
+        zero: LangItem,
+        overflow: Option<LangItem>,
+    },
+    Shift(LangItem),
+}
+
+impl ArithmeticCheck {
+    pub(in crate::lower) fn binary(operator: Punctuation, primitive: Primitive) -> Option<Self> {
+        let (signed, _) = primitive.integer()?;
+        Some(match operator {
+            Punctuation::Plus => Self::Overflow(LangItem::PanicAddOverflow),
+            Punctuation::Minus => Self::Overflow(LangItem::PanicSubOverflow),
+            Punctuation::Star => Self::Overflow(LangItem::PanicMulOverflow),
+            Punctuation::Slash => Self::Division {
+                zero: LangItem::PanicDivZero,
+                overflow: signed.then_some(LangItem::PanicDivOverflow),
+            },
+            Punctuation::Percent => Self::Division {
+                zero: LangItem::PanicRemZero,
+                overflow: signed.then_some(LangItem::PanicRemOverflow),
+            },
+            Punctuation::ShiftLeft => Self::Shift(LangItem::PanicShlOverflow),
+            Punctuation::ShiftRight => Self::Shift(LangItem::PanicShrOverflow),
+            _ => return None,
+        })
+    }
+
+    pub(in crate::lower) const fn roles(self) -> [Option<LangItem>; 2] {
+        match self {
+            Self::Overflow(cause) | Self::Shift(cause) => [Some(cause), None],
+            Self::Division { zero, overflow } => [Some(zero), overflow],
+        }
+    }
+}
+
+pub(in crate::lower) fn negation(primitive: Primitive, literal: bool) -> Option<u16> {
+    let (signed, bits) = primitive.integer()?;
+    (signed && !literal).then_some(bits)
+}
+
+pub(super) type GuardBranch<'a> =
+    dyn FnMut(&mut Builder, Value, LangItem) -> Result<(), &'static str> + 'a;
+
+pub(super) struct Arithmetic<'a> {
     pub builder: &'a mut Builder,
-    pub panic: &'a mut Option<BlockId>,
-    pub constants: Reader<'facts>,
+    pub branch: &'a mut GuardBranch<'a>,
 }
 #[cfg(test)]
-const _: [(); 24] = [(); size_of::<Arithmetic<'static, 'static>>()];
-impl Arithmetic<'_, '_> {
+const _: [(); 24] = [(); size_of::<Arithmetic<'static>>()];
+
+pub(super) fn abort_guard(
+    builder: &mut Builder,
+    panic: &mut Option<BlockId>,
+    fault: Value,
+) -> Result<(), &'static str> {
+    let panic = if let Some(block) = *panic {
+        block
+    } else {
+        let block = builder.block()?;
+        *panic = Some(block);
+        block
+    };
+    let next = guard_edge(builder, fault, panic)?;
+    builder.enter(next)
+}
+
+pub(super) fn guard_edge(
+    builder: &mut Builder,
+    fault: Value,
+    panic: BlockId,
+) -> Result<BlockId, &'static str> {
+    let next = builder.block()?;
+    builder.terminate(Terminator::Branch {
+        condition: fault.operand,
+        yes: panic,
+        no: next,
+    })?;
+    Ok(next)
+}
+
+impl Arithmetic<'_> {
     pub fn guard(&mut self, fault: Value, cause: LangItem) -> Result<(), &'static str> {
-        self.constants.require_source_assertion(cause)?;
-        let panic = if let Some(block) = *self.panic {
-            block
-        } else {
-            let block = self.builder.block()?;
-            *self.panic = Some(block);
-            block
-        };
-        let next = self.builder.block()?;
-        self.builder.terminate(Terminator::Branch {
-            condition: fault.operand,
-            yes: panic,
-            no: next,
-        })?;
-        self.builder.enter(next)
+        (self.branch)(self.builder, fault, cause)
     }
     pub fn unary(
         &mut self,
@@ -53,9 +115,7 @@ impl Arithmetic<'_, '_> {
             ast::Unary::Not if primitive == Primitive::Bool => Unary::Not,
             ast::Unary::Not => Unary::BitNot,
             ast::Unary::Negate => {
-                if let Some((true, bits)) = primitive.integer()
-                    && !literal
-                {
+                if let Some(bits) = negation(primitive, literal) {
                     let minimum = self.builder.integer(value.ty, 1_u128 << (bits - 1))?;
                     let fault = self.builder.compare(Predicate::Eq, value, minimum)?;
                     self.guard(fault, LangItem::PanicNegOverflow)?;
@@ -144,65 +204,41 @@ impl Arithmetic<'_, '_> {
             }
             return self.builder.binary(op, left, right);
         }
-        self.integer_binary(op, signed, left, right)
+        self.integer_binary(
+            op,
+            ArithmeticCheck::binary(operator, primitive),
+            signed,
+            left,
+            right,
+        )
     }
     fn integer_binary(
         &mut self,
         op: Binary,
+        check: Option<ArithmeticCheck>,
         signed: bool,
         left: Value,
         right: Value,
     ) -> Result<Value, &'static str> {
-        match op {
-            Binary::Add | Binary::Sub | Binary::Mul => {
-                let cause = match op {
-                    Binary::Add => LangItem::PanicAddOverflow,
-                    Binary::Sub => LangItem::PanicSubOverflow,
-                    Binary::Mul => LangItem::PanicMulOverflow,
-                    _ => return Err("checked arithmetic lost its actual operation"),
-                };
-                self.checked(op, cause, signed, left, right)
-            }
-            Binary::Div | Binary::Udiv | Binary::Mod | Binary::Umod => {
-                let zero = self.builder.integer(right.ty, 0)?;
-                let fault = self.builder.compare(Predicate::Eq, right, zero)?;
-                let division = matches!(op, Binary::Div | Binary::Udiv);
-                self.guard(
-                    fault,
-                    if division {
-                        LangItem::PanicDivZero
-                    } else {
-                        LangItem::PanicRemZero
-                    },
-                )?;
-                if signed {
-                    self.division_overflow(
-                        left,
-                        right,
-                        if division {
-                            LangItem::PanicDivOverflow
-                        } else {
-                            LangItem::PanicRemOverflow
-                        },
-                    )?;
+        match check {
+            Some(ArithmeticCheck::Overflow(cause)) => self.checked(op, cause, signed, left, right),
+            Some(ArithmeticCheck::Division { zero, overflow }) => {
+                let divisor = self.builder.integer(right.ty, 0)?;
+                let fault = self.builder.compare(Predicate::Eq, right, divisor)?;
+                self.guard(fault, zero)?;
+                if let Some(overflow) = overflow {
+                    self.division_overflow(left, right, overflow)?;
                 }
                 self.builder.binary(op, left, right)
             }
-            Binary::Shl | Binary::Shr | Binary::Ushr => {
+            Some(ArithmeticCheck::Shift(cause)) => {
                 let limit = self.builder.integer(right.ty, u128::from(left.ty.bits()))?;
                 let fault = self.builder.compare(Predicate::Uge, right, limit)?;
-                self.guard(
-                    fault,
-                    if matches!(op, Binary::Shl) {
-                        LangItem::PanicShlOverflow
-                    } else {
-                        LangItem::PanicShrOverflow
-                    },
-                )?;
+                self.guard(fault, cause)?;
                 let right = casts::integer(self.builder, right, left.ty, false)?;
                 self.builder.binary(op, left, right)
             }
-            _ => self.builder.binary(op, left, right),
+            None => self.builder.binary(op, left, right),
         }
     }
     fn division_overflow(

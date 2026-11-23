@@ -52,6 +52,7 @@ mod display_panics;
 mod personality;
 pub(in crate::sema) use personality::require_transport as require_personality_transport;
 pub(crate) use personality::{SYMBOL as PERSONALITY_SYMBOL, complete as complete_personality};
+pub(crate) mod arithmetic_guards;
 pub(in crate::sema) mod guard_panics;
 mod runtime_panics;
 pub(in crate::sema) use display_panics::require_begin_panic_transport;

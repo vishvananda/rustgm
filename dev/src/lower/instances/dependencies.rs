@@ -1,4 +1,5 @@
 //! Callable demands come from executable uses and typed constant storage graphs.
+mod arithmetic_guards;
 mod compare_dependencies;
 use crate::support::hash::HashSet;
 use crate::{
@@ -578,7 +579,8 @@ impl Dependencies {
         let mut layouts = std::mem::take(&mut facts.layouts);
         let result = self.run(report, facts, &mut layouts, body);
         facts.layouts = layouts;
-        let result = result?;
+        let mut result = result?;
+        self.arithmetic_guards(report, facts, body, &mut result.calls)?;
         self.prepared(report, facts, Some(body), result)
     }
     pub(super) fn global(
