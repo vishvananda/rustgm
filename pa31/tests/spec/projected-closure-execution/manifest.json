@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "chained_records.rs": {
+      "sha256": "b7ffb193caf007386c3d9d6a3a6b9e284b55150c5cc8fb39746a72d3aadabe73",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    },
+    "chained_escape.rs": {
+      "sha256": "47ddf094349fb7794fe291b35d65071b7d85607148ce766c0f806239610109f5",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_diagnostic": "lifetime may not live long enough"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "diagnostic": "required lifetime does not outlive its target"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core inputs. Nested flat-map and chain iterators exercise a capturing callable whose declared result is already concrete while its source execution type still projects the iterator item. The rejection keeps a borrowed item from escaping as static."
+}

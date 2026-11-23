@@ -1,4 +1,4 @@
-//! A checked declared Output premise retains its actual closure source conditions.
+//! A checked declared Output premise retains the actual closure execution requirements.
 use super::{Clause, Declarations, Obligations, PredicateBound, RegionId};
 use crate::{
     resolve::model::DefId,
@@ -47,18 +47,26 @@ pub(super) fn append(
         let Some(conditions) = facts.closures.conditions(identity) else {
             continue;
         };
-        if conditions.is_empty() {
+        let source = facts
+            .closures
+            .identity(identity)
+            .ok_or("declared callable premise has no closure source")?;
+        let Some(execution) = source.execution else {
+            if !conditions.is_empty() {
+                return Err("declared callable premise has no checked execution");
+            }
+            continue;
+        };
+        // The public Output may already be concrete. The authored closure's
+        // Self can still need projection evidence to establish that same type.
+        if conditions.is_empty()
+            && facts.types.contains_projections(execution.self_ty) == Some(false)
+            && facts.types.contains_projections(leaf) == Some(false)
+        {
             continue;
         }
         let conditions = conditions.to_vec();
         facts.body_work.canonical_steps += conditions.len();
-        let source = *facts
-            .closures
-            .identity(identity)
-            .ok_or("declared callable premise has no closure source")?;
-        let execution = source
-            .execution
-            .ok_or("declared callable premise has no checked execution")?;
         let instance = Instance::closure(&facts.types, leaf)?;
         let execution = actual::execution(facts, instance, execution)?;
         let bindings = bind(facts, execution, leaf, proof)?;
