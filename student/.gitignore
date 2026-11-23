@@ -1,0 +1,4 @@
+/obj/
+/target/
+/backend.local.json
+__pycache__/

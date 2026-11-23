@@ -1,9 +1,10 @@
 # Shared contracts
 
-`lowir.md` is copied unchanged from the CPPGM commit in `backend.lock.json`.
-It defines the temporary backend boundary. `CPPGM-NOTICE` retains inherited
-attribution. Rust lowering gets its own output conventions; C++-specific
-lowering conventions in this document do not silently become Rust semantics.
+[LowIR](lowir.md) is copied unchanged from the original CPPGM baseline
+`905bd7e4412a2d77d88694fe6abc7f3e1c27bce1`. It describes the text format.
+RustGM assignment handouts specify the Rust lowering conventions.
+`CPPGM-NOTICE` retains inherited attribution. The pinned release documents
+the [LowIR library API](https://github.com/vishvananda/cppgm/blob/v0.10.3/docs/lowir-library.md).
 
 A canonical Rust source grammar will be added while PA4/PA5 are implemented,
 following CPPGM's shared grammar approach. Do not publish an incomplete grammar

@@ -40,7 +40,7 @@
 #include <string.h>
 
 /* The one interface version this producer is written for. */
-#define RG_ABI_VERSION 4u
+#define RG_ABI_VERSION 5u
 _Static_assert(CPPGM_LOWIR_ABI_VERSION == RG_ABI_VERSION, "interface version");
 _Static_assert(sizeof(LowirValue) == 8, "value record");
 _Static_assert(sizeof(LowirInstruction) == 64, "instruction record");

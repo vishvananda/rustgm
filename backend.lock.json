@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "repository": "https://github.com/vishvananda/cppgm",
-  "release": "v0.9.3",
-  "commit": "41e06a23e91609dbf050866ef3a7de4848cf17ed",
+  "release": "v0.10.3",
+  "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
   "target": "x86_64-linux",
   "sha256": {
-    "lowir": "0d6aeb5482dc1402394ba907a7b3782dbd6396d6088f1ea66710815fefed71c1",
-    "lowir2native": "05af1fa6ff8bf961dde9f93d74453f7f1207b79df63fd9d51f526fec53745ed0"
+    "lowir": "5003bafeaf9169d139ba6f5ed20397ce3b73d1ac718455cb31da10c21eb3178b",
+    "lowir2native": "5122ce74470562f457d0c406f198938c96de9c52428ffdd88b06b0b41cc416f1"
   },
   "optional": {
     "object": {
-      "commit": "41e06a23e91609dbf050866ef3a7de4848cf17ed",
+      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
       "target": "x86_64-linux",
       "object_format": "elf64-x86-64",
       "capabilities": [
@@ -18,22 +18,22 @@
         "assembly"
       ],
       "sha256": {
-        "cppgm": "70e4168b0c631a0c996a2e0bc8fd27ab98aaac52c96b99eebdcdc7e0aad74f34"
+        "cppgm": "75f883d56f5fc8427d87b80458b6e398bf2d3973e26769e6cacda298d2284464"
       }
     },
     "library": {
-      "commit": "41e06a23e91609dbf050866ef3a7de4848cf17ed",
+      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
       "target": "x86_64-linux",
-      "abi_version": 4,
+      "abi_version": 5,
       "sha256": {
-        "ir_symbol_model.h": "feda1b6df64e2263f327889b4684074fd91e46a36b78bccda48d5f73cb7ba93b",
-        "lowir_c_vocabulary.h": "f4a3a55849d369f7fafd8e0442a34b3d0fc9f6ace0389cb11513c8976aea2542",
-        "lowir_interface.h": "01347720f8b3b57066a3138aa005bfe886ad0c21f6d8ad9aa392e99048f1c92e",
-        "lowir_local_model.h": "c6cbe9d4f485cf4fe7c567d07fda7c84d51dbde9581aad07b17218bf022743ae",
-        "lowir_model.h": "847a06baa6d92ca178f07698743e1b0a4f4080c30355640fdc3d3654193887bd",
+        "ir_symbol_model.h": "dc8f62387f431a2a2372ee59a3d44fdac9851192c1aac0bd855e6f48a3d46d80",
+        "lowir_c_vocabulary.h": "c0f515c865cc72b96258ea2d393ac345ddbc47c01d45611563378acec67e2db4",
+        "lowir_interface.h": "ccc1e067b04daea2215508516f611b9dd6b583358a352bba0b3bbffb80d64e85",
+        "lowir_local_model.h": "a63eac0ea953445bc072f713c1e15a5e7026b7a3780454cc17d03f032c77cd36",
+        "lowir_model.h": "b5d82b2d1391f5842b4492a6ccac7d3d2b17328aed72068a119c24b7b1b41c59",
         "lowir_records.h": "60f1d822476bd3b9bc38d9441ddb943e3f5bef2e97ab0891a5280154f0dc1910",
-        "libcppgm_lowir.a": "84fca38d4e63f47312c83c53cdcfcfe29516a6c0b1b4afd3e6f21090cf722925",
-        "libcppgm_lowir.so": "09284004ac2c5255e262278088526b82fa8ffabbb9b9c26ad08315dcf4867666"
+        "libcppgm_lowir.a": "d82f3ec0286564a5a9e96284c6c2e1173fb26f7ece92704d9b90cfcf94856b6b",
+        "libcppgm_lowir.so": "634d2f2b98c8021ceab8bb73e689b22fe9f7606ff02f9b3f641a5b6ac64a3faa"
       }
     }
   }

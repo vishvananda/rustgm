@@ -14,7 +14,7 @@ import native_links
 
 ROOT = Path(__file__).resolve().parents[1]
 # The one interface version of the in-process library that this bridge reviews.
-LIBRARY_ABI_VERSION = 4
+LIBRARY_ABI_VERSION = 5
 # What the library's text view of the handshake module must state: the
 # boundary forms of RustGM's writer. Interface version 2 carried only the
 # storage and the arity. The classes of rg_library_turn are the ones the
