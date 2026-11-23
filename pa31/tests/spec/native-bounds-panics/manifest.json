@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "bounds.rs": {
+      "sha256": "7543e7bc3f2dc3c7e616aa8f44fbfb5228bff0f2d322c0d43a7ae4d145340e7a",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0
+        }
+      ],
+      "native_cases": [
+        {
+          "arguments": [],
+          "status": 0,
+          "stdout": ""
+        },
+        {
+          "arguments": [
+            "array"
+          ],
+          "status": 73,
+          "stdout": "index out of bounds: the len is 3 but the index is 9"
+        },
+        {
+          "arguments": [
+            "slice",
+            "tracked"
+          ],
+          "status": 75,
+          "stdout": "index out of bounds: the len is 2 but the index is 6"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guest exercising the original array and slice bounds hook with indices, lengths and caller locations observed through PanicInfo."
+}

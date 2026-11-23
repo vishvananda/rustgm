@@ -1,4 +1,4 @@
-//! Generated arithmetic guards select checked source panic functions.
+//! Generated arithmetic and bounds guards select checked source panic functions.
 use super::{Catalog, inhabited_properties::Plans};
 use crate::{
     resolve::{expansion::Report, unit::NodeKey},
@@ -7,7 +7,7 @@ use crate::{
         values::{Evaluator, Failure, LocationId},
     },
     support::{bindings::LangItem, hash::HashMap, retained::Growth},
-    types::{Kind, TypeId, callable::Convention, instance::Instance},
+    types::{Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
 #[derive(Clone, Copy)]
@@ -52,7 +52,7 @@ pub(crate) fn prepare(
         return Ok(None);
     };
     if !super::guard_panics::ROLES.contains(&role) {
-        return Err("arithmetic guard requested a different language role".into());
+        return Err("source guard requested a different language role".into());
     }
     catalog.require_provider_report(report)?;
     let header = super::headers::functions::current(facts, declaration)?;
@@ -67,7 +67,13 @@ pub(crate) fn prepare(
     else {
         return Ok(None);
     };
-    if facts.types.list(parameters) != Some(&[])
+    let bounds = [TypeId::primitive(Primitive::Usize); 2];
+    let expected: &[TypeId] = if role == LangItem::PanicBoundsCheck {
+        &bounds
+    } else {
+        &[]
+    };
+    if facts.types.list(parameters) != Some(expected)
         || header.universals != 0
         || facts
             .generics

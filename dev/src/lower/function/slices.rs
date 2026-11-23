@@ -4,7 +4,7 @@ use crate::{
     body::ir::{Place, ProjectionId, ProjectionKind, ValueId},
     lowir::{
         program::{MemorySpan, Value},
-        vocabulary::{Binary, Predicate, Type},
+        vocabulary::{Binary, Type},
     },
     sema::vtable_plans::Upcast,
     types::{Kind, TypeId},
@@ -267,10 +267,7 @@ impl Lower<'_, '_, '_> {
         let leaf = self.context.layout(element)?;
         let index = self.value(index)?.runtime()?;
         let limit = self.slice_length(place)?;
-        let fault = self.builder.compare(Predicate::Uge, index, limit)?;
-        self.arithmetic(|arithmetic| {
-            arithmetic.guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)
-        })?;
+        self.bounds_check(index, limit)?;
         let address = if leaf.size != 0 || self.addresses.needs(Place::Projection(id)) {
             let base = self.place(place)?.ok_or("slice data has no address")?;
             Some(self.indexed(base, index, leaf.size, leaf.align)?)

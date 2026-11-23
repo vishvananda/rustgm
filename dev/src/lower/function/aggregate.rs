@@ -297,10 +297,7 @@ impl Lower<'_, '_, '_> {
             ProjectionKind::Index { index, length } => {
                 let index = self.value(index)?.runtime()?;
                 let limit = self.builder.integer(Type::I64, u128::from(length))?;
-                let fault = self.builder.compare(Predicate::Uge, index, limit)?;
-                self.arithmetic(|arithmetic| {
-                    arithmetic.guard(fault, crate::support::bindings::LangItem::PanicBoundsCheck)
-                })?;
+                self.bounds_check(index, limit)?;
                 let Shape::Array {
                     stride,
                     length: actual,

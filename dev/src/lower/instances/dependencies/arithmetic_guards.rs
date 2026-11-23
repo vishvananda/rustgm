@@ -1,7 +1,7 @@
-//! Demand source arithmetic panic bodies and their actual caller locations.
+//! Demand source panic bodies and caller locations for compiler-generated guards.
 use super::{Body, Declarations, Dependencies, Instance, Kind, Rvalue};
 use crate::{
-    body::ir::{Action, Owner},
+    body::ir::{Action, Owner, ProjectionKind},
     lower::arithmetic::{ArithmeticCheck, negation},
     resolve::expansion::Report,
     sema::compiler_items::arithmetic_guards,
@@ -24,14 +24,7 @@ impl Dependencies {
         let mut forwards = None;
         let mut targets = Vec::new();
         for statement in &body.statements {
-            let Action::Evaluate(id) = statement.action else {
-                continue;
-            };
-            let value = body
-                .values
-                .get(id.0 as usize)
-                .ok_or("arithmetic guard lost its typed value")?;
-            for role in roles(facts, body, value.kind).into_iter().flatten() {
+            for role in roles(facts, body, statement.action)?.into_iter().flatten() {
                 let Some(route) = arithmetic_guards::prepare(report, facts, role)? else {
                     continue;
                 };
@@ -60,7 +53,35 @@ impl Dependencies {
     }
 }
 
-fn roles(facts: &Declarations, body: &Body, operation: Rvalue) -> [Option<LangItem>; 2] {
+fn roles(
+    facts: &Declarations,
+    body: &Body,
+    action: Action,
+) -> Result<[Option<LangItem>; 2], &'static str> {
+    match action {
+        Action::Evaluate(id) => {
+            let value = body
+                .values
+                .get(id.0 as usize)
+                .ok_or("guard lost its typed value")?;
+            Ok(arithmetic_roles(facts, body, value.kind))
+        }
+        Action::Project(id) => {
+            let projection = body
+                .projections
+                .get(id.0 as usize)
+                .ok_or("guard lost its typed projection")?;
+            let checks_bounds = matches!(
+                projection.kind,
+                ProjectionKind::Index { .. } | ProjectionKind::SliceIndex { .. }
+            );
+            Ok([checks_bounds.then_some(LangItem::PanicBoundsCheck), None])
+        }
+        _ => Ok([None; 2]),
+    }
+}
+
+fn arithmetic_roles(facts: &Declarations, body: &Body, operation: Rvalue) -> [Option<LangItem>; 2] {
     let primitive = |id: crate::body::ir::ValueId| match body
         .values
         .get(id.0 as usize)
