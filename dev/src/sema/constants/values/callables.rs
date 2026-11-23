@@ -39,6 +39,9 @@ impl Reader<'_> {
             return Ok(None);
         };
         let name = identity.name();
+        if name == crate::sema::compiler_items::swap_contract::NAME {
+            return Ok(Some(name));
+        }
         if bit_counts::named(name).is_some_and(bit_counts::Operation::is_rotation)
             && catalog.uses_source_fallback(definition)
         {

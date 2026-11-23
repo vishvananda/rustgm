@@ -5,6 +5,7 @@ mod fill;
 mod memory;
 mod offsets;
 mod overlapping;
+mod swap_memory;
 mod trap;
 mod unqualified;
 use super::context::{Context, Representation};

@@ -72,7 +72,7 @@ impl Context<'_> {
         )
     }
 
-    fn install_memory_shim(
+    pub(super) fn install_memory_shim(
         &mut self,
         instance: Instance,
         signature: TypeId,

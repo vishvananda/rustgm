@@ -3,7 +3,7 @@ use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
-    sema::compiler_items::bit_counts,
+    sema::compiler_items::{bit_counts, swap_contract},
     support::intrinsics::Intrinsic,
     types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
@@ -37,6 +37,9 @@ impl Lower<'_, '_, '_> {
         else {
             return Ok(None);
         };
+        if name == swap_contract::NAME {
+            return self.source_typed_swap(id, ty).map(Some);
+        }
         if name == "catch_unwind" {
             return self.abort_profile_catch_unwind(id, ty).map(Some);
         }

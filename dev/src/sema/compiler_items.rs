@@ -72,6 +72,7 @@ pub(crate) mod knowledge;
 pub(crate) mod printed_names;
 mod simd_contract;
 mod subtraction_contract;
+pub(crate) mod swap_contract;
 pub(crate) mod update_contract;
 mod wrapping_contract;
 pub(crate) mod zeroing_contract;

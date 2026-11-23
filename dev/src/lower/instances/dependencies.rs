@@ -199,7 +199,7 @@ fn declared_intrinsic_call(
     ty: TypeId,
     name: &str,
 ) -> Result<(), &'static str> {
-    use crate::sema::compiler_items::bit_counts;
+    use crate::sema::compiler_items::{bit_counts, swap_contract};
     if crate::sema::compiler_items::strict_bodiless_intrinsic(name) {
         catalog.require_provider_report(report)?;
     }
@@ -208,6 +208,10 @@ fn declared_intrinsic_call(
             catalog.bit_count(facts, Instance::new(&facts.types, ty)?, body.source)?
     {
         catalog.require_bit_count_report(report, facts, &selected)?;
+    }
+    if name == swap_contract::NAME {
+        catalog.require_provider_report(report)?;
+        crate::lower::function::checked_typed_swap(facts, body, value, ty)?;
     }
     if name == "catch_unwind" {
         crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;

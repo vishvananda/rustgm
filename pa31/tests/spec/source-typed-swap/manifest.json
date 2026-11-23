@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "swap.rs": {
+      "sha256": "6f11dbf6cf7175086adb4078372088df595eae653bf43bbbfc887a5c445f37f9",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "rg.source.typed_swap_nonoverlapping.t",
+            "copyobj 64x1 ",
+            "copyobj 3x1 ",
+            "copyobj 64x8 ",
+            "copyobj 8x8 "
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored executable guest using original core::mem::swap for scalars, zero-sized values, arrays with partial final chunks, and owned records that borrow their destructor observers."
+}
