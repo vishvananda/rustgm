@@ -55,6 +55,21 @@ impl Selected<'_> {
         Ok(visited.insert(index).then_some(index))
     }
 }
+const UNLOWERED_INTRINSIC: &str = "source intrinsic executable lowering is not implemented";
+
+fn demand_message(facts: &Declarations, instance: Instance, message: &str) -> String {
+    if message == UNLOWERED_INTRINSIC
+        && let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+        && let Some(catalog) = facts.source_bindings.as_deref()
+        && let Ok(Some(crate::support::bindings::SourceIntrinsic::Declaration(identity))) =
+            catalog.intrinsic_kind(DefId(item.0))
+    {
+        format!("{message}: {}", identity.name())
+    } else {
+        message.into()
+    }
+}
+
 /// Source operation descriptors do not authorize an ordinary callable original.
 fn require_source_body(
     facts: &Declarations,
@@ -87,9 +102,7 @@ fn require_source_body(
             return Ok(());
         }
         return Err(match kind {
-            crate::support::bindings::SourceIntrinsic::Declaration(_) => {
-                "source intrinsic executable lowering is not implemented"
-            }
+            crate::support::bindings::SourceIntrinsic::Declaration(_) => UNLOWERED_INTRINSIC,
             crate::support::bindings::SourceIntrinsic::Layout(_) => {
                 "source layout intrinsic runtime lowering is not implemented"
             }
@@ -870,10 +883,16 @@ impl Traversal<'_> {
     ) -> Result<Option<usize>, Error> {
         let (instance, source, caller) = request;
         let error = |message: &str| diagnostic(report, Some(source), message.into());
-        let Some(selected) = self
-            .ordinary
-            .select(facts, templates, instance)
-            .map_err(error)?
+        let Some(selected) =
+            self.ordinary
+                .select(facts, templates, instance)
+                .map_err(|message| {
+                    diagnostic(
+                        report,
+                        Some(source),
+                        demand_message(facts, instance, message),
+                    )
+                })?
         else {
             return Ok(None);
         };

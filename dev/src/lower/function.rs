@@ -4,6 +4,8 @@ mod argument_sources;
 mod asm_invocations;
 mod assertions;
 mod bit_intrinsics;
+mod boxed_write_call;
+pub(super) use boxed_write_call::checked as checked_boxed_write;
 mod bulk_memory;
 mod c_boundary;
 mod callback_dispatch;

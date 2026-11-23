@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "boxed.rs": {
+      "sha256": "31626ed19c1776a4c8c622736b588b30e0a37808a88b97a958c4625cde0b9f1f",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "source_guests": [
+            "alloc"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guest using original alloc vec! with explicitly listed scalars, owned values with observed destruction, and zero-sized elements."
+}

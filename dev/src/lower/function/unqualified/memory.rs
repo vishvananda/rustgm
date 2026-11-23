@@ -1,6 +1,6 @@
 //! Typed loads, stores and value moves through the ordinary snapshot paths.
 use super::{
-    super::{Address, Lower, Representation, Selected},
+    super::{Lower, Representation, Selected},
     Call,
 };
 use crate::{
@@ -15,7 +15,6 @@ impl Lower<'_, '_, '_> {
         call: Call<'_>,
     ) -> Result<Option<Selected>, &'static str> {
         match (call.name, call.inputs) {
-            ("write_box_via_move", &[boxed, value]) => self.write_box(call, boxed, value),
             ("volatile_load", &[pointer]) => {
                 let Some((pointer, scalar)) = self.volatile_input(pointer, call.result)? else {
                     return Ok(None);
@@ -54,53 +53,5 @@ impl Lower<'_, '_, '_> {
         };
         let whole = self.context.layout(target)?.size == u64::from(scalar.bits() / 8);
         Ok((referent == target && scalar != Type::Void && whole).then_some((pointer, scalar)))
-    }
-    /// `write_box_via_move(b, x)`: move `x` into the content of the box `b`
-    /// of `MaybeUninit<X>`, through the pointer its leading fields hold, and
-    /// return `b`.
-    fn write_box(
-        &mut self,
-        call: Call<'_>,
-        boxed: ir::ValueId,
-        value: ir::ValueId,
-    ) -> Result<Option<Selected>, &'static str> {
-        let ty = self.input_type(boxed)?;
-        let stored = self.input_type(value)?;
-        let content = crate::sema::compiler_items::boxes::content(
-            self.context.types,
-            self.context.aggregates,
-            ty,
-        )?;
-        let uninit = content.and_then(|content| match self.context.types.kind(content) {
-            Some(crate::types::Kind::Adt(_, arguments)) => self
-                .context
-                .types
-                .arguments(arguments)
-                .and_then(|mut arguments| arguments.next()),
-            _ => None,
-        });
-        if ty != call.result || uninit != Some(crate::types::arguments::Argument::Type(stored)) {
-            return Ok(None);
-        }
-        let offset = self.context.box_pointer_offset(ty)?;
-        let selected = self.value(boxed)?;
-        let pointer = match selected {
-            Selected::Object(address) => {
-                let field = self.offset(address, offset)?;
-                self.builder.load(Type::Ptr, field.operand)?
-            }
-            Selected::Runtime(pointer) if pointer.ty == Type::Ptr && offset == 0 => pointer,
-            _ => return Ok(None),
-        };
-        let moved = self.value(value)?;
-        let destination = Address {
-            operand: pointer.operand,
-            align: self.context.layout(stored)?.align,
-        };
-        self.write(Some(destination), moved, stored)?;
-        match selected {
-            Selected::Object(source) => self.loaded(source, ty).map(Some),
-            selected => Ok(Some(selected)),
-        }
     }
 }

@@ -50,9 +50,7 @@ impl Lower<'_, '_, '_> {
             result: value.ty,
         };
         let lowered = match name {
-            "write_box_via_move" | "volatile_load" | "volatile_store" => {
-                self.unqualified_memory(call)?
-            }
+            "volatile_load" | "volatile_store" => self.unqualified_memory(call)?,
             "assert_zero_valid" => self.unqualified_assertion(call)?,
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,

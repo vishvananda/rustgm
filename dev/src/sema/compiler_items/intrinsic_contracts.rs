@@ -33,6 +33,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "black_box"
             | "read_via_copy"
             | "write_via_move"
+            | super::boxed_write::NAME
             | "forget"
             | "unreachable"
     ) || super::bit_counts::named(name).is_some_and(|op| !op.is_rotation())

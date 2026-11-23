@@ -199,7 +199,7 @@ fn declared_intrinsic_call(
     ty: TypeId,
     name: &str,
 ) -> Result<(), &'static str> {
-    use crate::sema::compiler_items::{bit_counts, bytewise, swap_contract};
+    use crate::sema::compiler_items::{bit_counts, boxed_write, bytewise, swap_contract};
     if crate::sema::compiler_items::strict_bodiless_intrinsic(name) {
         catalog.require_provider_report(report)?;
     }
@@ -208,6 +208,9 @@ fn declared_intrinsic_call(
             catalog.bit_count(facts, Instance::new(&facts.types, ty)?, body.source)?
     {
         catalog.require_bit_count_report(report, facts, &selected)?;
+    }
+    if name == boxed_write::NAME {
+        crate::lower::function::checked_boxed_write(facts, body, value, ty)?;
     }
     if name == bytewise::NAME {
         crate::lower::function::checked_raw_equality(facts, body, value, ty)?;
