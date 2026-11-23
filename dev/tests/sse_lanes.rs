@@ -152,6 +152,8 @@ pub mod simd {
     #[repr(simd)]
     pub struct f32x4(pub [f32; 4]);
     #[repr(simd)]
+    pub struct i32x4(pub [i32; 4]);
+    #[repr(simd)]
     pub struct Idx16(pub [u32; 16]);
     impl crate::Clone for i8x16 {
         fn clone(&self) -> Self {
@@ -482,14 +484,13 @@ fn shapes_rustc_rejects_are_rejected() {
     }
 }
 
-/// rustc accepts both (`eq-i16x8`, `gt-unsigned`); outside the 16-byte
-/// lowering they keep their named fences.
+/// Float equality and unsigned ordering keep their named fences.
 #[test]
 fn shapes_outside_the_sixteen_byte_lowering_keep_named_fences() {
     for (body, fence) in [
         (
-            "    pub extern \"C\" fn fenced(a: i16x8, b: i16x8) -> i16x8 {\n        unsafe { simd_eq(a, b) }\n    }\n",
-            "simd_eq lowering covers sixteen 8-bit integer lanes",
+            "    pub extern \"C\" fn fenced(a: f32x4, b: f32x4) -> i32x4 {\n        unsafe { simd_eq(a, b) }\n    }\n",
+            "simd_eq scalar lowering covers up to 128 integer lanes",
         ),
         (
             "    pub extern \"C\" fn fenced(a: u8x16) -> u8x16 {\n        unsafe { simd_gt(a, a) }\n    }\n",

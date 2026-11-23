@@ -14,6 +14,8 @@ use crate::{
     },
     types::{Kind, Primitive, TypeId, aggregate::SimdShape, instance::Instance, length::Length},
 };
+mod mask_lanes;
+use mask_lanes::ScalarLanes;
 
 /// The lanes of a closed `repr(simd)` type.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -24,6 +26,7 @@ struct Lanes {
 /// The lowering selected for a validated instance.
 enum Plan {
     Mask(Mask),
+    Scalar(ScalarLanes),
     /// One SSE2 sequence over the whole `v128`.
     Vector,
     /// Lanes of `bytes` each, copied by constant index.
@@ -58,15 +61,17 @@ const SHUFFLE_CONSTANT: &str = "3rd argument of `simd_shuffle` is required to be
 /// The named fence of each operation outside the 16-byte lowering.
 const fn fence(operation: SimdOperation) -> &'static str {
     match operation {
-        SimdOperation::Eq => "simd_eq lowering covers sixteen 8-bit integer lanes",
+        SimdOperation::Eq => "simd_eq scalar lowering covers up to 128 integer lanes",
         SimdOperation::Gt => "simd_gt lowering covers sixteen signed 8-bit lanes",
         SimdOperation::Lt => "simd_lt lowering covers sixteen signed 8-bit lanes",
-        SimdOperation::And => "simd_and lowering covers 16-byte integer vectors",
-        SimdOperation::Or => "simd_or lowering covers 16-byte integer vectors",
+        SimdOperation::And => "simd_and scalar lowering covers up to 128 integer lanes",
+        SimdOperation::Or => "simd_or scalar lowering covers up to 128 integer lanes",
         SimdOperation::Bitmask => "simd_bitmask scalar lowering covers up to 128 integer lanes",
-        SimdOperation::ReduceAll => "simd_reduce_all lowering covers sixteen 8-bit lanes",
+        SimdOperation::ReduceAll => {
+            "simd_reduce_all scalar lowering covers up to 128 integer lanes"
+        }
         SimdOperation::Shuffle => "simd_shuffle lowering covers integer lanes",
-        SimdOperation::Splat => "simd_splat lowering covers sixteen 8-bit integer lanes",
+        SimdOperation::Splat => "simd_splat scalar lowering covers up to 128 integer lanes",
     }
 }
 /// The rejected and fenced outcomes of one instance.
@@ -177,9 +182,6 @@ impl Lower<'_, '_, '_> {
             return Err("source SIMD intrinsic has no input".into());
         };
         let output = selected.output;
-        let bytes = |lanes: Option<(Lanes, bool, u16)>| {
-            lanes.filter(|(lanes, _, bits)| lanes.count == 16 && *bits == 8)
-        };
         match selected.operation {
             SimdOperation::Eq | SimdOperation::Gt | SimdOperation::Lt => {
                 let source = self.simd_lanes(input)?.ok_or(NOT_VECTOR)?;
@@ -190,29 +192,32 @@ impl Lower<'_, '_, '_> {
                 let Some((_, _, result_bits)) = self.integer_lanes(output)? else {
                     return Err(INTEGER_RESULT.into());
                 };
-                let Some((_, signed, _)) = bytes(self.integer_lanes(input)?) else {
+                let Some((_, signed, bits)) = self.integer_lanes(input)? else {
                     return Err(Refusal::Fenced);
                 };
-                let ordered = selected.operation != SimdOperation::Eq;
-                if result_bits != 8 || (ordered && !signed) {
-                    return Err(Refusal::Fenced);
+                match selected.operation {
+                    SimdOperation::Eq => {
+                        ScalarLanes::with_byte_vector(source.count, bits, result_bits)
+                    }
+                    _ if source.count == 16 && bits == 8 && result_bits == 8 && signed => {
+                        Ok(Plan::Vector)
+                    }
+                    _ => Err(Refusal::Fenced),
                 }
-                Ok(Plan::Vector)
             }
             SimdOperation::And | SimdOperation::Or => {
                 self.simd_lanes(input)?.ok_or(NOT_VECTOR)?;
                 let (lanes, _, bits) = self.integer_lanes(input)?.ok_or(INTEGER_INPUT)?;
-                if lanes.count * u64::from(bits) != 128 {
-                    return Err(Refusal::Fenced);
+                if lanes.count * u64::from(bits) == 128 {
+                    return Ok(Plan::Vector);
                 }
-                Ok(Plan::Vector)
+                ScalarLanes::plan(lanes.count, bits, bits)
             }
             SimdOperation::Bitmask => self.bitmask_plan(input, output),
             SimdOperation::ReduceAll => {
                 self.simd_lanes(input)?.ok_or(NOT_VECTOR)?;
-                let lanes = self.integer_lanes(input)?.ok_or(INTEGER_INPUT)?;
-                bytes(Some(lanes)).ok_or(Refusal::Fenced)?;
-                Ok(Plan::Vector)
+                let (lanes, _, bits) = self.integer_lanes(input)?.ok_or(INTEGER_INPUT)?;
+                ScalarLanes::with_byte_vector(lanes.count, bits, bits)
             }
             SimdOperation::Shuffle => self.shuffle_plan(selected),
             SimdOperation::Splat => {
@@ -220,8 +225,8 @@ impl Lower<'_, '_, '_> {
                 if lanes.element != input {
                     return Err(SPLAT.into());
                 }
-                bytes(self.integer_lanes(output)?).ok_or(Refusal::Fenced)?;
-                Ok(Plan::Vector)
+                let (_, _, bits) = self.integer_lanes(output)?.ok_or(Refusal::Fenced)?;
+                ScalarLanes::with_byte_vector(lanes.count, bits, bits)
             }
         }
     }
@@ -297,6 +302,9 @@ impl Lower<'_, '_, '_> {
     ) -> Result<Selected, &'static str> {
         let output = selected.output;
         match (selected.operation, plan) {
+            (operation, Plan::Scalar(lanes)) => {
+                self.scalar_lanes(operation, output, &lanes, first, second)
+            }
             (SimdOperation::Splat, _) => {
                 let lane = self.value(first)?.runtime()?;
                 let wide = self.builder.convert(Convert::Zext, Type::I32, lane)?;

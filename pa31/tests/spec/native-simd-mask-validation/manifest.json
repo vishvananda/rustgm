@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "mask_validation.rs": {
+      "sha256": "f7f26bd724e6f68386b734f477159737d9e4f74f63159949528adc738208ce92",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "cmp eq i16",
+            "vector por ",
+            "binary or i64",
+            "binary and i32"
+          ]
+        }
+      ]
+    },
+    "mixed_width.rs": {
+      "sha256": "9b2ab06c69b8fe4db45099f8e53a1ac89bd657f525062aa319627821d94a06ca",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "cmp eq i16",
+            "store i8"
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored original-core mask consumers. Integer equality, splat, bitwise and, bitwise or and reduce-all observe 16-, 32- and 64-bit source lanes. A live rustc 1.98.0 comparison recognizes the equal-count result whose integer mask lanes are narrower than the operands."
+}
