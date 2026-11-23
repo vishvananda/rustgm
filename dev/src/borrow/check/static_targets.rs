@@ -36,9 +36,9 @@ pub(super) fn prepare_constructors(
     prepare_equivalences::<false>(proof)
 }
 
-/// A proved invocation of a captured callback can use the same lifetime in its
-/// argument and result even where surface inference gave them different names.
-/// Preserve that identity when the native callee opens the call anew.
+/// A captured callback can use the same lifetime in its explicit input and
+/// result even where inference gave them different names. Preserve that identity
+/// when the native callee opens the call anew.
 pub(super) fn prepare_captured_calls(
     types: &Store,
     body: &Body,
@@ -69,8 +69,14 @@ fn captured_call(types: &Store, ty: TypeId) -> bool {
     };
     for argument in arguments {
         if let Argument::Type(ty) = argument
-            && matches!(types.kind(ty), Some(Kind::Closure { environment, .. })
-                if environment != TypeId::UNIT)
+            && let Some(Kind::Closure {
+                environment,
+                signature,
+                ..
+            }) = types.kind(ty)
+            && environment != TypeId::UNIT
+            && matches!(types.kind(signature), Some(Kind::Function { parameters, .. })
+                if types.list(parameters).is_some_and(|inputs| !inputs.is_empty()))
         {
             return true;
         }
