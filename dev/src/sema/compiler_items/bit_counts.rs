@@ -16,6 +16,13 @@ pub(crate) enum Effect {
     TrailingZeros,
     SwappedBytes,
     ReversedBits,
+    RotateLeft,
+    RotateRight,
+}
+impl Effect {
+    pub(crate) const fn is_rotation(self) -> bool {
+        matches!(self, Self::RotateLeft | Self::RotateRight)
+    }
 }
 /// The `_nonzero` declarations are unsafe and leave a zero input undefined.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -24,10 +31,21 @@ pub(crate) struct Operation {
     nonzero: bool,
 }
 impl Operation {
-    /// A count is a `u32`; a reversal keeps its input's type.
+    pub(crate) const fn is_rotation(self) -> bool {
+        self.effect.is_rotation()
+    }
+
+    const fn arity(self) -> usize {
+        if self.is_rotation() { 2 } else { 1 }
+    }
+
+    /// Counts return `u32`; permutations keep the input's type.
     const fn output(self, input: TypeId) -> TypeId {
         match self.effect {
-            Effect::SwappedBytes | Effect::ReversedBits => input,
+            Effect::SwappedBytes
+            | Effect::ReversedBits
+            | Effect::RotateLeft
+            | Effect::RotateRight => input,
             Effect::Ones | Effect::LeadingZeros | Effect::TrailingZeros => {
                 TypeId::primitive(Primitive::U32)
             }
@@ -51,6 +69,8 @@ pub(crate) fn named(name: &str) -> Option<Operation> {
         "cttz_nonzero" => (Effect::TrailingZeros, true),
         "bswap" => (Effect::SwappedBytes, false),
         "bitreverse" => (Effect::ReversedBits, false),
+        "rotate_left" => (Effect::RotateLeft, false),
+        "rotate_right" => (Effect::RotateRight, false),
         _ => return None,
     };
     Some(Operation { effect, nonzero })
@@ -80,18 +100,22 @@ impl Selection {
     pub(crate) const fn effect(&self) -> Effect {
         self.operation.effect
     }
+    pub(crate) const fn arity(&self) -> usize {
+        self.operation.arity()
+    }
     pub(crate) fn opened_matches(&self, facts: &Declarations, signature: TypeId) -> bool {
+        let inputs = [self.input, TypeId::primitive(Primitive::U32)];
         super::intrinsic_contracts::opened_signature_matches(
             &facts.types,
             signature,
-            &[self.input],
+            &inputs[..self.arity()],
             self.output,
             self.operation.nonzero,
             Convention::RUST,
         )
     }
-    /// Evaluate an exact integer value of the selected width. `None` is the
-    /// undefined zero input of a `_nonzero` declaration.
+    /// Evaluate one selected integer input at its declared width. Rotations
+    /// have a separate distance. A `_nonzero` declaration forbids zero.
     pub(crate) fn evaluate(&self, bits: u128) -> Option<u128> {
         let width = u32::from(self.width);
         let bits = bits & (u128::MAX >> (128 - width));
@@ -104,6 +128,7 @@ impl Selection {
             Effect::TrailingZeros => u128::from(bits.trailing_zeros().min(width)),
             Effect::SwappedBytes => bits.swap_bytes() >> (128 - width),
             Effect::ReversedBits => bits.reverse_bits() >> (128 - width),
+            Effect::RotateLeft | Effect::RotateRight => return None,
         })
     }
 }
@@ -130,6 +155,9 @@ impl Catalog {
         let Some(operation) = operation(kind) else {
             return Ok(None);
         };
+        if operation.is_rotation() && !self.uses_source_fallback(definition) {
+            return Ok(None);
+        }
         crate::sema::header_attributes::charge_source_contract_query(facts, 16)
             .map_err(|_| "source bit count selection work budget exhausted")?;
         if origin.source().is_none()
@@ -163,12 +191,14 @@ impl Catalog {
             return Err("source bit count execution requires a closed integer type");
         };
         let output = operation.output(input);
+        let parameters = [input, TypeId::primitive(Primitive::U32)];
+        let inputs = &parameters[..operation.arity()];
         if !matches!(facts.types.kind(signature), Some(Kind::Function {
             bound_regions: 0, parameters, result, unsafe_, convention: Convention::RUST,
         }) if unsafe_ == operation.nonzero && result == output
-            && facts.types.list(parameters) == Some(&[input]))
+            && facts.types.list(parameters) == Some(inputs))
         {
-            return Err("source bit intrinsic changed its exact one-integer Rust signature");
+            return Err("source bit intrinsic changed its exact integer Rust signature");
         }
         let roots =
             super::intrinsic_contracts::item_roots(&facts.types, [input, output], |work| {

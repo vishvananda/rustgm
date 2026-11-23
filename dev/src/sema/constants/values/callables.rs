@@ -1,6 +1,6 @@
 //! Reification keeps callable identity distinct from a zero-sized closure value.
 use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
-use crate::types::instance::Instance;
+use crate::{sema::compiler_items::bit_counts, types::instance::Instance};
 
 impl Reader<'_> {
     pub(crate) fn arithmetic_guard(
@@ -24,9 +24,9 @@ impl Reader<'_> {
     ) -> Result<(), &'static str> {
         crate::sema::compiler_items::guard_panics::require_guard(self.facts, role)
     }
-    /// The completed bodyless declaration of a supported runtime intrinsic.
-    /// The bring-up profile also admits unsupported declarations for trapping.
-    pub(crate) fn source_bodiless_intrinsic(
+    /// A checked source declaration whose intrinsic call is emitted in place.
+    /// The bring-up profile also admits unsupported bodyless declarations for trapping.
+    pub(crate) fn source_direct_intrinsic(
         self,
         definition: crate::resolve::model::DefId,
     ) -> Result<Option<&'static str>, &'static str> {
@@ -39,6 +39,11 @@ impl Reader<'_> {
             return Ok(None);
         };
         let name = identity.name();
+        if bit_counts::named(name).is_some_and(bit_counts::Operation::is_rotation)
+            && catalog.uses_source_fallback(definition)
+        {
+            return Ok(Some(name));
+        }
         if !crate::sema::compiler_items::strict_bodiless_intrinsic(name)
             && crate::support::bringup::selected().is_none()
         {

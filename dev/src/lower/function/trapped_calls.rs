@@ -1,4 +1,4 @@
-//! Bodyless source intrinsics dispatch from their completed declarations.
+//! Direct source intrinsic calls dispatch from their completed declarations.
 use super::{Lower, Selected, ir};
 use crate::{
     lowir::program::Operand,
@@ -9,7 +9,7 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn bodiless_intrinsic(
+    pub(super) fn registered_intrinsic(
         &mut self,
         id: ir::ValueId,
     ) -> Result<Option<Selected>, &'static str> {
@@ -33,7 +33,7 @@ impl Lower<'_, '_, '_> {
         let Some(name) = self
             .context
             .constants
-            .source_bodiless_intrinsic(DefId(item.0))?
+            .source_direct_intrinsic(DefId(item.0))?
         else {
             return Ok(None);
         };

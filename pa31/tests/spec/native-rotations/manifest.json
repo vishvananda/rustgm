@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "rotate.rs": {
+      "sha256": "04a880fbe0880b37d7fe0b243fc8cb7b271df220fc9fe4649d9c4f25b9a7a4c0",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored runtime rotations through original core integer methods with zero, word-sized and oversized distances."
+}

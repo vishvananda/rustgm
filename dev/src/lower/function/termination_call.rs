@@ -64,7 +64,7 @@ impl Lower<'_, '_, '_> {
             && self
                 .context
                 .constants
-                .source_bodiless_intrinsic(DefId(item.0))?
+                .source_direct_intrinsic(DefId(item.0))?
                 == Some("unreachable")
         {
             if substitutions != GenericArgs::EMPTY

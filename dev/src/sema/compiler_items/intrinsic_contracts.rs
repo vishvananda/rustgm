@@ -34,7 +34,7 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "write_via_move"
             | "forget"
             | "unreachable"
-    ) || super::bit_counts::named(name).is_some()
+    ) || super::bit_counts::named(name).is_some_and(|op| !op.is_rotation())
         || crate::support::word_operation::Update::intrinsic(name).is_some()
         || crate::support::intrinsics::Intrinsic::source_transfer(name).is_some()
         || super::checked_atomic_access::Fence::named(name).is_some()
@@ -215,11 +215,13 @@ fn source_fallback(
         return Ok(false);
     }
     match identity.name() {
-        "select_unpredictable" => crate::sema::header_attributes::intrinsic_fallback_is_spec(
-            facts,
-            report,
-            function.definition,
-        ),
+        "select_unpredictable" | "rotate_left" | "rotate_right" => {
+            crate::sema::header_attributes::intrinsic_fallback_is_spec(
+                facts,
+                report,
+                function.definition,
+            )
+        }
         "type_id_eq" => facts
             .const_panic_markers(report, function.definition)
             .map(|(runtime_body, _)| runtime_body),

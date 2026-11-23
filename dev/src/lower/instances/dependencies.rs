@@ -181,18 +181,38 @@ fn source_call(
         }
         Some(kind @ SourceIntrinsic::Declaration(_))
             if let Some(name) = Reader::new(facts)
-                .source_bodiless_intrinsic(crate::resolve::model::DefId(item.0))? =>
+                .source_direct_intrinsic(crate::resolve::model::DefId(item.0))? =>
         {
-            if crate::sema::compiler_items::strict_bodiless_intrinsic(name) {
-                catalog.require_provider_report(report)?;
-            }
-            if name == "catch_unwind" {
-                crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;
-            }
+            declared_intrinsic_call(catalog, report, facts, body, value, ty, name)?;
             Ok(Some(kind))
         }
         _ => Ok(None),
     }
+}
+
+fn declared_intrinsic_call(
+    catalog: &crate::sema::compiler_items::Catalog,
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    ty: TypeId,
+    name: &str,
+) -> Result<(), &'static str> {
+    use crate::sema::compiler_items::bit_counts;
+    if crate::sema::compiler_items::strict_bodiless_intrinsic(name) {
+        catalog.require_provider_report(report)?;
+    }
+    if bit_counts::named(name).is_some_and(bit_counts::Operation::is_rotation)
+        && let Some(selected) =
+            catalog.bit_count(facts, Instance::new(&facts.types, ty)?, body.source)?
+    {
+        catalog.require_bit_count_report(report, facts, &selected)?;
+    }
+    if name == "catch_unwind" {
+        crate::lower::function::checked_catch_unwind(&facts.types, body, value, ty)?;
+    }
+    Ok(())
 }
 
 fn caller_location_call(

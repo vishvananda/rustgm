@@ -27,12 +27,13 @@ impl Lower<'_, '_, '_> {
         arguments: ir::ValueList,
         result: TypeId,
     ) -> Result<Option<Selected>, &'static str> {
-        let Some(&[argument]) = self
+        let inputs = self
             .body
             .arguments
             .get(arguments.start as usize..arguments.end as usize)
-        else {
-            return Err("source bit count requires one evaluated integer input");
+            .ok_or("source bit operation lost its arguments")?;
+        let Some((&argument, rest)) = inputs.split_first() else {
+            return Err("source bit operation needs an evaluated integer input");
         };
         let Some(input) = self.integer_input(argument)? else {
             if crate::support::bringup::selected().is_some() {
@@ -41,12 +42,15 @@ impl Lower<'_, '_, '_> {
             return Err("source bit count execution requires a closed integer type");
         };
         let instance = Instance::new(self.context.types, callee)?;
-        let selected = self
+        let Some(selected) = self
             .context
             .constants
             .source_bit_count(instance, self.body.source)?
-            .ok_or("source bit count lost its validated instance")?;
-        if selected.input() != input.ty
+        else {
+            return Ok(None);
+        };
+        if selected.arity() != inputs.len()
+            || selected.input() != input.ty
             || selected.output() != result
             || !selected.opened_matches(self.context.ledger, signature)
         {
@@ -55,6 +59,14 @@ impl Lower<'_, '_, '_> {
         self.context
             .require_reached_body(self.body_index, self.body)?;
         let effect = selected.effect();
+        let distance = if let [id] = *rest {
+            if self.input_type(id)? != TypeId::primitive(crate::types::Primitive::U32) {
+                return Err("source rotation distance is not its evaluated u32 input");
+            }
+            Some(self.value(id)?.runtime()?)
+        } else {
+            None
+        };
         let builder = &mut self.builder;
         let word = casts::integer(builder, input.value, unsigned(input.value.ty)?, false)?;
         let value = match effect {
@@ -64,8 +76,16 @@ impl Lower<'_, '_, '_> {
             Effect::SwappedBytes if word.ty.bits() == 8 => word,
             Effect::SwappedBytes => bit_kernels::emit(builder, Operation::SwapBytes, word)?,
             Effect::ReversedBits => bit_kernels::emit(builder, Operation::ReverseBits, word)?,
+            Effect::RotateLeft | Effect::RotateRight => rotate(
+                builder,
+                word,
+                distance.ok_or("source rotation lost its distance")?,
+                effect == Effect::RotateLeft,
+            )?,
         };
-        let target = if matches!(effect, Effect::SwappedBytes | Effect::ReversedBits) {
+        let target = if effect.is_rotation()
+            || matches!(effect, Effect::SwappedBytes | Effect::ReversedBits)
+        {
             input.value.ty
         } else {
             Type::U32
@@ -123,4 +143,25 @@ fn trailing_zeros(builder: &mut Builder, word: Value) -> Result<Value, &'static 
     let clear = builder.unary(Unary::BitNot, word)?;
     let trailing = builder.binary(Binary::And, clear, below)?;
     bit_kernels::emit(builder, Operation::Population, trailing)
+}
+
+fn rotate(
+    builder: &mut Builder,
+    word: Value,
+    distance: Value,
+    left: bool,
+) -> Result<Value, &'static str> {
+    let distance = casts::integer(builder, distance, word.ty, false)?;
+    let mask = builder.integer(word.ty, u128::from(word.ty.bits() - 1))?;
+    let distance = builder.binary(Binary::And, distance, mask)?;
+    let negative = builder.unary(Unary::Neg, distance)?;
+    let complement = builder.binary(Binary::And, negative, mask)?;
+    let (left, right) = if left {
+        (distance, complement)
+    } else {
+        (complement, distance)
+    };
+    let left = builder.binary(Binary::Shl, word, left)?;
+    let right = builder.binary(Binary::Ushr, word, right)?;
+    builder.binary(Binary::Or, left, right)
 }

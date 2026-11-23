@@ -43,7 +43,8 @@ impl Machine<'_, '_> {
         match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
             Some(kind)
                 if crate::sema::compiler_items::scalar_arithmetic(kind)
-                    || crate::sema::compiler_items::bit_counts::operation(kind).is_some()
+                    || crate::sema::compiler_items::bit_counts::operation(kind)
+                        .is_some_and(|op| !op.is_rotation())
                     || crate::sema::compiler_items::identity_words::is_operation(kind)
                     || crate::sema::compiler_items::printed_names::is_operation(kind)
                     || crate::sema::compiler_items::zeroing_contract::is_operation(kind)

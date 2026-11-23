@@ -16,6 +16,11 @@ impl Evaluator<'_> {
         let Some(selected) = catalog.bit_count(self.facts(), instance, origin)? else {
             return Ok(None);
         };
+        if selected.effect().is_rotation() {
+            // The constant call still needs the conditional intrinsic
+            // payment that its source trait bounds require.
+            return Ok(None);
+        }
         catalog.require_bit_count_report(self.queries.report, self.facts(), &selected)?;
         Ok(Some(selected))
     }
