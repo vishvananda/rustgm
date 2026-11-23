@@ -173,6 +173,15 @@ impl Intrinsic {
                 | Self::WriteBytes
         )
     }
+    /// Source declarations that fill or transfer a counted range of raw storage.
+    pub(crate) fn source_transfer(name: &str) -> Option<Self> {
+        match name {
+            "copy_nonoverlapping" => Some(Self::CopyNonoverlapping),
+            "copy" => Some(Self::Copy),
+            "write_bytes" => Some(Self::WriteBytes),
+            _ => None,
+        }
+    }
     #[must_use]
     pub const fn is_counted_memory(self) -> bool {
         matches!(self, Self::CopyNonoverlapping | Self::Copy)

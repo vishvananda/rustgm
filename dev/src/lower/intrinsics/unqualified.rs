@@ -1,9 +1,10 @@
 //! Memory shims for counted transfers, fills and byte comparisons.
 use super::{
-    Builder, Context, Instance, Intrinsic, Operand, SymbolId, Terminator, Type, TypeId, Value,
+    Builder, Context, Instance, Intrinsic, Operand, Representation, SymbolId, Terminator, Type,
+    TypeId, Value,
 };
 use crate::lowir::{
-    program::Function,
+    program::{Function, MemorySpan},
     vocabulary::{Binary, Convert, Predicate},
 };
 
@@ -24,36 +25,51 @@ impl Context<'_> {
         )
     }
 
-    /// A shim with the call's signature for an intrinsic over `element`: the
-    /// bootstrap body of the same shape, or a bytewise comparison. `None`
-    /// names an intrinsic without one. The caller waives the fence.
-    pub(in crate::lower) fn demand_unqualified(
+    pub(in crate::lower) fn demand_source_transfer(
         &mut self,
         instance: Instance,
         signature: TypeId,
-        name: &str,
+        operation: Intrinsic,
         element: TypeId,
-    ) -> Result<Option<SymbolId>, &'static str> {
+    ) -> Result<SymbolId, &'static str> {
         if let Some(&symbol) = self.intrinsic_symbols.get(&instance) {
-            return Ok(Some(symbol));
+            return Ok(symbol);
         }
-        let body = match name {
-            "copy_nonoverlapping" => Self::counted_memory_body(
-                Intrinsic::CopyNonoverlapping,
-                self.memory_type(element)?,
-            )?,
-            "copy" => Self::counted_memory_body(Intrinsic::Copy, self.memory_type(element)?)?,
-            "write_bytes" => Self::fill_memory_body(self.memory_type(element)?)?,
-            "raw_eq" => compared(Some(self.layout(element)?.size))?,
-            _ => return Ok(None),
+        let layout = self.layout(element)?;
+        // Source transfers are bytewise even when the addressed type is scalar.
+        let storage = Representation::Object(MemorySpan {
+            bytes: layout.size,
+            align: layout.align,
+        });
+        let body = if operation.is_fill() {
+            Self::fill_memory_body(storage)?
+        } else {
+            Self::counted_memory_body(operation, storage)?
         };
         self.install_memory_shim(
             instance,
             signature,
-            format!("rg.unqualified.{name}.t{}", instance.ty().0),
+            format!("rg.source.{}.t{}", operation.name(), instance.ty().0),
             body,
         )
-        .map(Some)
+    }
+
+    pub(in crate::lower) fn demand_unqualified_raw_eq(
+        &mut self,
+        instance: Instance,
+        signature: TypeId,
+        element: TypeId,
+    ) -> Result<SymbolId, &'static str> {
+        if let Some(&symbol) = self.intrinsic_symbols.get(&instance) {
+            return Ok(symbol);
+        }
+        let body = compared(Some(self.layout(element)?.size))?;
+        self.install_memory_shim(
+            instance,
+            signature,
+            format!("rg.unqualified.raw_eq.t{}", instance.ty().0),
+            body,
+        )
     }
 
     fn install_memory_shim(

@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "rustc_environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": {
+    "transfer.rs": {
+      "sha256": "d21e179a0bbbb8d6e4d6cc6aa2b5115fa09537aa93168386e07684fb34ea197a",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "rg.source.write_bytes.t",
+            "rg.source.copy_nonoverlapping.t",
+            "rg.source.copy.t",
+            "copyobj 1x1"
+          ]
+        }
+      ]
+    },
+    "unsafe-call.rs": {
+      "sha256": "2e33387d2533a93d02ae6fa93877b7704585cf9f2aff790a793e6b61d03224b4",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 1,
+          "rustc_error": "E0133"
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 1,
+          "strict_diagnostic": "call to unsafe function requires an unsafe context"
+        }
+      ]
+    }
+  },
+  "provenance": "Authored guests for original core counted fill, overlapping copy and nonoverlapping raw copy."
+}

@@ -4,7 +4,7 @@ use crate::{
     lowir::program::Operand,
     resolve::model::DefId,
     sema::compiler_items::bit_counts,
-    support::word_operation::Update,
+    support::{intrinsics::Intrinsic, word_operation::Update},
     types::{GenericArgs, Kind, Primitive, TypeId, callable::Convention, instance::Instance},
 };
 
@@ -26,12 +26,7 @@ impl Lower<'_, '_, '_> {
         else {
             return Ok(None);
         };
-        let ty = self
-            .body
-            .values
-            .get(callee.0 as usize)
-            .ok_or("trapped callee disappeared")?
-            .ty;
+        let ty = self.input_type(callee)?;
         let Some(Kind::FunctionItem { item, .. }) = self.context.types.kind(ty) else {
             return Ok(None);
         };
@@ -95,6 +90,11 @@ impl Lower<'_, '_, '_> {
         if matches!(name, "read_via_copy" | "write_via_move") {
             return self
                 .source_memory_move(name, ty, signature, arguments, value.ty)
+                .map(Some);
+        }
+        if let Some(transfer) = Intrinsic::source_transfer(name) {
+            return self
+                .source_counted_transfer(transfer, ty, signature, arguments, value.ty)
                 .map(Some);
         }
         if name == "black_box" {

@@ -1,4 +1,4 @@
-//! Counted transfers, fills and byte comparisons call one shim per instance.
+//! The bring-up implementation of fixed-size raw equality calls one shim per instance.
 use super::{
     super::{Lower, Selected},
     Call,
@@ -9,48 +9,30 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn unqualified_transfer(
+    pub(super) fn unqualified_raw_eq(
         &mut self,
         call: Call<'_>,
     ) -> Result<Option<Selected>, &'static str> {
-        // The leading thin pointers to one element type, then the scalars.
-        let (pointers, scalars, result): (usize, &[Primitive], TypeId) = match call.name {
-            "copy_nonoverlapping" | "copy" => (2, &[Primitive::Usize], TypeId::UNIT),
-            "write_bytes" => (1, &[Primitive::U8, Primitive::Usize], TypeId::UNIT),
-            "raw_eq" => (2, &[], TypeId::primitive(Primitive::Bool)),
-            _ => return Ok(None),
-        };
-        if call.inputs.len() != pointers + scalars.len() || call.result != result {
-            return Ok(None);
-        }
-        let (addressed, counted) = call.inputs.split_at(pointers);
-        let mut element = None;
-        for &pointer in addressed {
-            let Some((_, referent)) = self.thin_input(pointer)? else {
-                return Ok(None);
-            };
-            if element.is_some_and(|element| element != referent) {
-                return Ok(None);
-            }
-            element = Some(referent);
-        }
-        for (&input, &scalar) in counted.iter().zip(scalars) {
-            if self.input_type(input)? != TypeId::primitive(scalar) {
-                return Ok(None);
-            }
-        }
-        let Some(element) = element else {
+        let &[left, right] = call.inputs else {
             return Ok(None);
         };
-        let instance = self
-            .body
-            .callable_target(Instance::new(self.context.types, call.callee)?);
-        let Some(symbol) =
-            self.context
-                .demand_unqualified(instance, call.signature, call.name, element)?
+        if call.result != TypeId::primitive(Primitive::Bool) {
+            return Ok(None);
+        }
+        let (Some((_, element)), Some((_, other))) =
+            (self.thin_input(left)?, self.thin_input(right)?)
         else {
             return Ok(None);
         };
+        if element != other {
+            return Ok(None);
+        }
+        let instance = self
+            .body
+            .callable_target(Instance::new(self.context.types, call.callee)?);
+        let symbol = self
+            .context
+            .demand_unqualified_raw_eq(instance, call.signature, element)?;
         self.call_operand(
             call.signature,
             Operand::Symbol(symbol),

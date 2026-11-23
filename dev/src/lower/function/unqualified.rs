@@ -60,9 +60,7 @@ impl Lower<'_, '_, '_> {
             "write_box_via_move" | "forget" | "volatile_load" | "volatile_store" => {
                 self.unqualified_memory(call)?
             }
-            "copy_nonoverlapping" | "copy" | "write_bytes" | "raw_eq" => {
-                self.unqualified_transfer(call)?
-            }
+            "raw_eq" => self.unqualified_raw_eq(call)?,
             "assert_zero_valid" => self.unqualified_assertion(call)?,
             "fabs" | "copysignf32" | "copysignf64" => self.unqualified_float(call)?,
             _ if name.starts_with("atomic_") => self.unqualified_atomic(call)?,
