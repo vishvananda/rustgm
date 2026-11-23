@@ -75,6 +75,11 @@ setup-audit:
 audit-rust:
 	obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
 	obj/audit-venv/bin/python scripts/rust_audit.py --root .
+.PHONY: audit-test-placement
+AUDIT_PLACEMENT_ARGS ?=
+audit-test-placement:
+	obj/audit-venv/bin/python scripts/audit_pa_feature_placement.py --fail-on-early \
+		--json-out obj/parallel/assignment-placement/audit.json $(AUDIT_PLACEMENT_ARGS)
 test-harness:
 	$(PYTHON) -m unittest discover -s scripts/tests -v
 	$(PYTHON) scripts/maintainer_suites.py check

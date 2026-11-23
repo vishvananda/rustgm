@@ -98,6 +98,28 @@ reordered prerequisites declare `work_units` from their actual owning units;
 only those units' transitive dependency owners and the active PA1–PA24 foundation
 are admitted. Legacy cases retain numeric placement checks.
 
+### Test placement audit
+
+Run `make setup-audit` once to install the pinned Rust parser for
+`make audit-test-placement`. Use `AUDIT_PLACEMENT_ARGS='--pa pa20'` for a
+single assignment. The audit writes its inventory and evidence to
+`obj/parallel/assignment-placement/audit.json`.
+
+The audit reads whole-assignment and declared unit manifests, including their
+auxiliary modules, preludes and providers. The inspection mode establishes the
+earliest possible assignment. Declared features and recognized LowIR operations
+in committed oracles can establish a later requirement. The strict target
+fails when that evidence falls outside the case's numeric or work-unit
+prerequisites. Rust syntax matches are review leads because an earlier phase
+can parse a spelling and a later assignment can test an interaction.
+
+Review suggested earlier placements and cross-assignment groups that share
+source bytes, stdin settings and complete oracle bytes. The report also
+inventories fixture inputs outside the course manifests, including draft
+specification suites with their own records. Source and LowIR matches in
+those inputs are review leads. Preserve provenance, companion files and
+oracles when deciding where a case belongs.
+
 Finite components use the same runner, whether the parent PA is planned or
 closed at a finite contract. A closed parent runs its units' cases as one
 whole-assignment suite, so `--released-units` schedules only the releases of
