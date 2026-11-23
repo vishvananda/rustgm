@@ -1,29 +1,52 @@
-# RustGM Programming Assignment 1: source and tokens
+# RustGM Programming Assignment 1 — Source and tokens
 
-Status: **implemented draft**. Build the initial lexer and its text adapter.
-This is a lexical boundary exercise, not full Rust syntax/semantic acceptance.
-The target source profile is Rust 1.98.0, edition 2024.
+Implement a lexer for the Rust 1.98.0 source profile, edition 2024. It reads
+source bytes and emits tokens with their original spelling and byte spans.
+Later assignments interpret the tokens as Rust syntax and literal values.
+The pinned Rust Reference describes [input format](../doc/rust-reference/src/input-format.md)
+and [tokens](../doc/rust-reference/src/tokens.md).
 
-## Interface
+## Command-line interface
 
-```sh
+```text
 rustgm --emit-tokens [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
-Read one source file, or stdin if omitted. Success exits 0. Lexical/input failure
-exits 1 and writes `ERROR: OFFSET: MESSAGE` on stderr (encoding failures state
-the invalid raw byte offset). Invocation errors exit 2. An unimplemented future
-mode exits 86 and never counts as a valid rejection.
+Read a single source file, or read standard input when `SOURCE` is omitted or
+is `-`. Write token records to standard output by default. With `-o OUTPUT`,
+write them to that file.
 
-## Source and representation
+| Result | Exit status | Diagnostic on standard error |
+| --- | --- | --- |
+| Success | 0 | Empty |
+| Lexical error | 1 | `ERROR: OFFSET: MESSAGE` |
+| Invalid UTF-8 | 1 | `ERROR: invalid UTF-8 at byte OFFSET` |
+| Other input or output error | 1 | `ERROR: MESSAGE` |
+| Invalid invocation | 2 | `USAGE: MESSAGE` |
+| Unimplemented mode | 86 | Implementation is required |
 
-Reject invalid UTF-8. Normalize CRLF once, remove a leading BOM from tokenization
-and ignore a qualifying shebang. Do not append a newline, splice lines, process
-trigraphs or permit a legacy encoding fallback. Offsets are zero-based bytes in
-the normalized file; BOM and shebang bytes occupy offsets even though no tokens
-are emitted for them. The end is exclusive. Empty input emits `eof 0`.
+Diagnostics end with a newline. The invalid UTF-8 offset is in the original
+input bytes. Lexical errors use the normalized source offsets described below.
+On a lexical error, retain the complete token records emitted before the error
+and omit the EOF record.
 
-One line per token:
+## Source and token records
+
+Validate UTF-8, then normalize each CRLF pair to LF in one pass. Keep lone CR
+bytes. Tokenization skips a leading UTF-8 BOM and a qualifying shebang. After
+the optional BOM, an initial `#!` starts a shebang if there is no next token
+after whitespace and ordinary comments, or if that token differs from `[`. Skip the
+shebang through the end of its text and leave its LF for tokenization.
+
+Spans use zero-based byte offsets in the normalized source. The end is
+exclusive. The normalized offsets include the skipped BOM and shebang bytes.
+Do not append a final newline, splice lines, interpret trigraphs, or fall back
+to a legacy encoding.
+
+Write one line per token in the form `KIND START END "SPELLING"`. On success,
+finish with `eof LENGTH`, where LENGTH is the normalized byte length. Empty
+input produces `eof 0` followed by LF. For `fn x()` without a final newline,
+the output is:
 
 ```text
 identifier 0 2 "fn"
@@ -34,43 +57,50 @@ punctuation 5 6 ")"
 eof 6
 ```
 
-The spelling is ASCII quoted bytes: escape quote/backslash as `\"`/`\\`,
-newline/carriage-return/tab as `\n`/`\r`/`\t`; every other non-printable or
-non-ASCII UTF-8 byte is lower-case `\xNN`. Retain whitespace and comments. Text
-rendering is a tool adapter; later compiler phases consume typed tokens.
+Quote spellings as ASCII bytes. Use `\"`, `\\`, `\n`, `\r`, and `\t` for
+quote, backslash, LF, CR, and tab. Encode every other nonprintable byte and
+every byte above ASCII as lowercase `\xNN`. Retain whitespace and comments.
 
-## Owned behavior
+## Lexical boundaries
 
-The vocabulary in `dev/src/lex/token.rs` distinguishes ordinary/doc comments,
-identifiers/raw identifiers, lifetimes/raw lifetimes, integer/float tokens,
-character/byte/string/byte-string/C-string and their raw forms, punctuation and
-unknown literal prefixes. Compound punctuation uses maximal munch. Underscore
-and keywords are identifier-like at this stage. Nest block comments iteratively.
-Raw strings support at most 255 delimiter hashes. Keep suffix spelling inside
-literal tokens. Return already emitted complete tokens before a lexical error.
+Distinguish ordinary and documentation comments, identifiers and raw
+identifiers, lifetimes and raw lifetimes, integer and float tokens, character
+and byte literals, string, byte-string and C-string tokens and their raw forms,
+punctuation, and unknown literal prefixes. The expected output in
+[the tests](tests/manifest.json) gives the exact token kind labels.
 
-Literals here are **boundaries**, not interpreted values: `0b9`, `0x`, `'ab'`,
-unknown suffixes and a lifetime beginning with a digit may tokenize successfully
-but must fail the later assignment owning validation. Identifier spelling is
-retained; NFC semantic identity is introduced with interning at PA6. Reserved
-prefix validation and edition-specific token rejection must be specified before
-promoting the corresponding grammar/edition assignments. The current lexer is
-the first buildout slice, not a substitute for the complete Rust token grammar.
+Use the longest available compound punctuation token. Treat keywords and
+`_` as identifier-like at this stage. Handle nested block comments iteratively.
+Raw strings support up to 255 delimiter hashes. Keep suffix spelling inside
+literal tokens. Diagnose unterminated quoted and raw literals, unterminated
+block comments, excessive raw delimiter hashes, and unknown token-start
+characters.
 
-Unterminated quoted/raw literals or block comments, invalid UTF-8, raw strings
-with too many hashes and unknown token-start characters are diagnosed here.
-No reference output may depend on filenames or contain fixture recognition.
+PA1 establishes token boundaries. Spellings such as `0b9`, `0x`, `'ab'`,
+unknown suffixes, and lifetimes beginning with a digit can reach the next
+phase as tokens. PA2 validates literal expressions. Later assignments handle
+reserved prefixes and edition-specific syntax. Preserve identifier spelling
+for PA6's NFC name interning.
 
-## Implementation and tests
+## Implementation and testing
 
-Use a pull lexer over immutable source with compact offsets. Do not allocate a
-String per token, retain the whole token stream, or make per-character records.
-`make -C pa1 test` runs every manifest-listed fixture. `make ref-test-pa1`
-regenerates text only through the maintainer tool after outcome validation.
-Keep `make lint audit-rust test-harness test-upstream test-rustc` green.
-`make perf` measures the same lexer without token rendering; retain full-dump
-correctness checks separately so throughput optimization cannot omit work.
+Use a pull lexer over immutable source with compact offsets. Store spans in
+typed tokens for later phases. Avoid allocating a new string per token,
+retaining the entire token stream, or building per-character records. The text
+adapter formats the typed tokens. Tokenization and diagnostics depend on
+source bytes and compiler options.
 
-Before declaring PA1 release-ready, expand the grammar-edge matrix, reconcile
-the deferred-invalid-token boundary with PA2/PA3, and independently audit the
-reference. The initial checked-in suite establishes the development loop.
+Run the assignment tests from the repository root:
+
+```sh
+make -C pa1 test
+```
+
+The test runner compares each case's output, diagnostic, and exit status with
+its expected files. For a focused run after building with `make` in the student
+repository, select a path from the manifest:
+
+```sh
+python3 scripts/course.py pa1 --app obj/student/release/rustgm \
+    --case tests/spec/100-empty.rs
+```
