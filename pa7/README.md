@@ -1,18 +1,20 @@
-# RustGM Programming Assignment 7: Macro matching
+# RustGM Programming Assignment 7 — Macro matching
 
-Status: **implemented-draft**. Prerequisite: PA6. Profile: Rust 1.98.0,
-edition 2024, Linux x86-64.
+Build on [PA6](../pa6/README.md) to check `macro_rules!` definitions, match
+rules in order, and transcribe one expansion step. Use Rust 1.98.0, edition
+2024, on Linux x86-64.
+
+## Command-line interface
+
+```text
+rustgm --emit-expanded [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+The input is a configured crate source file. Use PA1's input and output
+options and PA3's configuration options. Pass `--cfg test` to enable
+`cfg(test)` filtering. PA31 covers test harness generation.
 
 ## Responsibility and boundary
-
-Implement `macro_rules!` definition checking, ordered matching, parser fragment
-callbacks and typed transcription. `dev/rustgm --emit-expanded [-o OUTPUT]
-[SOURCE|-]` reports one matching/transcription step for source-written calls.
-The input is a configured crate source image. Earlier views remain available.
-`--cfg=test` enables ordinary `cfg(test)` filtering and is repeatable. It does
-not request a generated test harness; compiler/library Test bindings and their
-owner-removal behavior are separate PA31 responsibilities. Other compiler-owned
-target and profile configuration keys remain protected.
 
 PA7 does not parse the transcription as a new item, expression, type or pattern,
 recursively invoke generated macros, load generated modules, resolve qualified
@@ -66,31 +68,28 @@ for a capture needing generated doc tokens; never lex that generated image.
 Definition matcher comments remain literal doc nodes, while template comments
 remain typed documentation pieces awaiting expansion. Do not stringify ASTs.
 
-The pinned compiler has several observable details beyond the Reference's
-prose: a trailing `$` is a literal matcher/template token; unseparated repetitions
-do not add a follow-set check across their iteration boundary; `*` captures may drive `+` (when nonempty)
-or `?` templates; `$crate:ident` denotes a crate marker followed by literal
-`: ident`, rather than a binder. Tests pin these behaviors. Documentation in a
-matcher cannot match an invocation comment after its attribute desugaring.
+Treat a trailing `$` as a literal matcher or template token. For repetitions
+without separators, skip the follow-set check across iteration boundaries.
+A capture from `*` may drive a `+` template when nonempty, or a `?` template
+when it has at most one iteration. Read `$crate:ident` as the crate marker
+followed by the literal tokens `: ident`. A documentation comment in a matcher
+cannot match a comment already desugared into an invocation attribute.
 
 See the pinned [macros-by-example chapter](../doc/rust-reference/src/macros-by-example.md)
 and [macro ambiguity chapter](../doc/rust-reference/src/macro-ambiguity.md).
-The pinned compiler's [fragment dispatch](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_parse/src/parser/nonterminal.rs)
-informs conservative token eligibility; this frontend calls its own parser.
 
 ## Typed interface and exact text view
 
-`expand::macros::compile` builds definitions; `matcher::Compiled` lazily caches
-rule control graphs. `Matched` owns memoized captures and the winning linked
-trace. `bindings::Bindings` gives flat repetition instances. `Transcription`
-contains origin-tagged tokens, opaque capture IDs, doc pieces and crate markers.
-`session::analyze` returns definitions and source invocations in traversal order.
-Later phases consume these records directly.
+Return typed definitions, source invocations, and transcriptions in traversal
+order. Keep the compiled matcher graph reusable across invocations. Preserve
+memoized captures, the winning trace, and flat repetition instances. A
+transcription contains origin-tagged tokens, opaque capture IDs, documentation
+pieces, and crate markers. PA8 consumes these records directly.
 
 IDs and positions are zero-based decimal. Invocation token positions are
 `INDEX:BYTE_OFFSET`; the offset represents a remainder inside one classified
 compound token. Definition spans and invocation spans use normalized source
-offsets. Quoting follows PA1. Emit all definitions first, then all invocations:
+offsets. Quote as in PA1. Emit the definitions first, then the invocations.
 
 ```text
 macro-matching 1
@@ -116,20 +115,16 @@ diagnosed: definition nesting 128, matcher work 1,000,000 plus 128 per input
 token, and transcription work 1,000,000. Internal failures cannot become empty
 successful output.
 
-`--count-expanded` runs the same work and reports definition, invocation, capture,
-piece and input-byte counts for measurement; it is not the grading view.
+## Run the tests
 
-## Validation
+Run the PA7 test target from the repository root.
 
 ```sh
-make test-pa7
-python3 scripts/check_syntax.py pa7
-make test lint audit-rust test-harness test-upstream
+make -C pa7 test
 ```
 
-Tests declare acceptance before reference generation. All complete fixtures are
-checked with pinned rustc; the manifest explains the two cases whose generated
-syntax is intentionally left to PA8. Rust invariants check fragment reuse,
-typed-token input without relexing, opacity, nesting/cardinality, textual scope,
-doc origins and bounded work on a 10,000-element invocation. Measure both new
-matching throughput and regressions in ordinary parsing against frozen binaries.
+[The test manifest](tests/manifest.json) covers rule ordering, parser fragments,
+opaque captures, nested repetitions, textual scope, and documentation
+origins. Check that repeated failed alternatives share fragment parsing and
+that long invocations finish within the work budget. PA8 tests the grammar
+and expansion of generated output.

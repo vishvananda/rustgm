@@ -1,9 +1,19 @@
-# RustGM Programming Assignment 8: Expansion and hygiene
+# RustGM Programming Assignment 8 — Expansion and hygiene
 
-Status: **implemented-draft**. Prerequisite: PA7. The source profile is Rust
-1.98.0, edition 2024, Linux x86-64. This stage completes expansion and ordinary
-name resolution; type inference begins at PA9. Core/std library hooks, procedural
-macros, older editions and final attribute/lint closure retain their later owners.
+Build on [PA7](../pa7/README.md) to expand macros throughout a crate and
+resolve ordinary names after expansion. The profile is Rust 1.98.0, edition
+2024, on Linux x86-64. PA9 begins type inference. Later assignments cover
+library hooks, procedural macros, older editions, and the remaining
+attribute and lint behavior.
+
+## Command-line interface
+
+```text
+rustgm --emit-expanded-crate [--cfg OPTION]... [--crate-name NAME] [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA1's input and output options and PA3's configuration options. Keep
+the earlier inspection modes available.
 
 ## Required implementation
 
@@ -21,7 +31,7 @@ Forwarded opaque fragments are installed from their typed facts. Eager builtins
 wait for expanded argument facts; source includes cache parsed fragments. Keep
 source provenance, expansion ancestry and syntax hygiene distinct. Every library
 I/O or environment dependency is an explicit provider input at the driver boundary.
-Read `spec.md` and the pinned Rust Reference before changing these contracts.
+See [Macros by example](../doc/rust-reference/src/macros-by-example.md) in the pinned Rust Reference.
 
 Source diagnostic attribute values also use this worklist. PA31 owns their
 source-provider authority and exact identity data; PA40 owns complete attribute
@@ -29,28 +39,11 @@ form closure. Retain the original attribute and one demanded expression root,
 including opaque forwarding. Resolve actual macro definitions and aliases in
 the proper module scope. An external-module declaration keeps its source file
 while lookup uses the child module. Do not treat arbitrary constant expressions
-as literal metadata or enter ordinary body scopes for invalid values. The
-[source packet](../pa31/tests/spec/diagnostic-values/README.md) records this
-consumer without changing the whole assignment's completion status.
-
-## Tool surface and tests
-
-`dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE` emits the deterministic view
-below. Earlier modes remain available. Omit SOURCE or use `-` for stdin.
-`--count-expanded-crate` reports counts for measurements. Source failures emit no partial stdout.
-
-`make -C pa8 test` runs the manifest cases against committed stdout, stderr
-and exit-status text. `make test-rustc` independently checks every PA8 program.
-See [tests/README.md](tests/README.md) for fixture ownership and
-[the validation record](../docs/pa8-validation.md) for typed invariants and
-measurements. The [small cfg fixture](tests/spec/builtins/cfg.rs) and its
-[complete output](tests/spec/builtins/cfg.rs.ref) are a compact worked example.
-Expected outcomes are declared before reference generation; missing sidecars,
-empty suites, timeouts, panics and not-implemented exits cannot pass.
+as literal metadata or enter ordinary body scopes for invalid values.
 
 ## Text view
 
-The view begins with `expanded-crate 1`. Its sections are:
+The view begins with `expanded-crate 1` and writes the following records in order.
 
 ```text
 macro ID name=NAME module=MODULE context=CONTEXT introduction=CONTEXT source=FILE:NODE|builtin rules=COUNT local-inner=BOOL
@@ -111,11 +104,7 @@ including when the invalid file has not yet entered the source registry. These
 are RustGM diagnostic messages; rustc's wording and note layout are not an oracle
 contract.
 
-The count mode emits just the footer's counts, without `end-expanded-crate`.
-`make perf-expanded-crate` measures independent functions whose macro matcher
-rejects its first rule, retains an expression capture, duplicates its typed
-syntax and resolves the generated body. It verifies full output hashes as well
-as counts, freezes binaries/inputs, and retains A/A and paired observations.
+## Built-in macros
 
 This assignment implements `cfg!`, `line!`, `column!`, `file!` and `module_path!`
 using typed literals. Location builtins accept no arguments. `file!` follows the
@@ -146,10 +135,8 @@ The pinned stringification layout uses a 78-byte target width, with at least
 60 bytes available after indentation, consistent brace edges and independently
 wrapping contents. Long individual tokens may exceed that target. The iterative
 walker diagnoses more than 1,000,000 token visits or 4,096 nested continuation
-frames. These formatting decisions follow the pinned compiler's observable
-[token printer](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_pretty/src/pprust/state.rs)
-and are checked with independent runtime values. Rendered output remains a
-builtin value and diagnostic view, never a syntax transport.
+frames. Use the resulting string as the builtin's value. The typed input
+remains the source of syntax and provenance.
 
 `concat!` and `compile_error!` use eager argument expansion. The ordinary parser
 reads the comma-separated argument list once. Nested invocations enter the same
@@ -190,9 +177,8 @@ raw-byte reads separately from normalized Rust source reads.
 ordinary source normalization and a bounded cursor. It supplies module items or
 one expression; statement-position includes still require one expression. Type,
 pattern, trait/impl/foreign-item positions and inner file attributes are rejected.
-An item include strips a shebang; an expression include does not. Trailing tokens
-after an included expression are rejected, matching rustc's default lint setting.
-The independent fixture selects that setting rather than suppressing the lint.
+An item include strips a shebang. An expression include keeps it. Reject
+trailing tokens after an included expression.
 
 Canonical file identity plus grammar context keys the syntax cache. Requested
 aliases retain their own observable paths while reusing parsed facts. Repeated
@@ -203,17 +189,19 @@ start beside the included file; directory ownership is restored after that
 subtree. Recursive includes use the same bounded expansion worklist. Inactive
 includes perform no reads. Source reads remain injected provider operations.
 
-The [derived constant-subtree checkpoint](../docs/pa8-derived-constants-checkpoint.md)
-records typed field copying, selected literal/pending ownership and paid growth.
-Clone/Copy and source/SIMD consumers remain in PA26/31/41; copied syntax never
-grants their semantic or runtime permissions. Wider field expressions remain
-required work.
-
-The [typed-call checkpoint](../docs/pa8-derived-calls-checkpoint.md) extends that
-selected traversal to call callees/arguments and generic types. Real const/body
-checking remains mandatory; copied function spelling is never an implementation
-of size_of or another library helper.
-
 `option_env!`, formatting/assertion facilities and other expansions that need
 library identities belong to PA26's language/library hooks. PA8 does not invent
 external core/std definitions to make those calls resolve.
+
+## Run the tests
+
+Run the PA8 test target from the repository root.
+
+```sh
+make -C pa8 test
+```
+
+The [cfg fixture](tests/spec/builtins/cfg.rs) and its
+[expected output](tests/spec/builtins/cfg.rs.ref) show one complete
+expanded-crate record. The full [manifest](tests/manifest.json) also covers
+hygiene, generated items, expansion diagnostics, and source includes.
