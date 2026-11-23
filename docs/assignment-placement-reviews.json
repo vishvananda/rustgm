@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "reviews": [
+    {
+      "case": "pa20/tests/spec/custom-auto-source/ordinary.rs",
+      "case_sha256": "424875bf06f693958a57b735931b18d02a2472833386e1e873a4403f9d5938ce",
+      "path": "pa20/tests/spec/custom-auto-source/structural-positive.rs",
+      "feature": "union semantics",
+      "input_sha256": "a62228c389b5d92d4ce18bdff623080fc31fc012920c25be93e6c04a7b13b301",
+      "reason": "The course primary inspects automatic trait selection. The structural companion checks whether a union type satisfies the auto trait bound, without constructing a union or accessing a field."
+    },
+    {
+      "path": "pa25/tests/spec/const-try-calls/unpaid-residual-drop.rs",
+      "feature": "Try protocol",
+      "input_sha256": "53f8507755555cc995fe916106d812cb776be00d1dd99298b190708f16b14fc2",
+      "contract": "pa31/tests/spec/const-try-calls/manifest.json",
+      "contract_sha256": "7b62e7e21f108c954057790894378c8bbafb22fbc9a4472b21c0dc54735c7ea3",
+      "reason": "The declared PA25 rejection checks missing const destruction permission on the residual path. It exercises the const effect contract."
+    },
+    {
+      "path": "pa25/tests/spec/const-inherent/async-member.rs",
+      "feature": "async lowering",
+      "input_sha256": "2f8396de5612784045b86199d04e42e4baf1deaab511ec0342f6419d66c9a8f5",
+      "contract": "pa25/tests/spec/const-inherent/contract-v2.json",
+      "contract_sha256": "ad6aa1c1c7b4877707e95db3cde185950cd3e425900afa4f653d67c019d49ad4",
+      "reason": "The declared PA25 rejection checks an async signature inside a const implementation. The const declaration rejects it before async lowering."
+    },
+    {
+      "path": "pa25/tests/spec/const-inherent/upstream/ice-149083-async-in-const-impl.rs",
+      "feature": "async lowering",
+      "input_sha256": "8f04cd7c1c2e0f37a53a3091275fe35d1672928e1d0cb130cd44a44cb0ee0ebb",
+      "contract": "pa25/tests/spec/const-inherent/contract-v2.json",
+      "contract_sha256": "ad6aa1c1c7b4877707e95db3cde185950cd3e425900afa4f653d67c019d49ad4",
+      "reason": "This upstream PA25 regression requires the const implementation diagnostic on an async member. The body never reaches async lowering."
+    },
+    {
+      "path": "pa31/tests/spec/source-cold/async-block.rs",
+      "feature": "async lowering",
+      "input_sha256": "cf3f2966328162053398114dd49e28e4e4bdef7c70674e9e66a77f136b7a04ea",
+      "contract": "pa31/tests/spec/source-cold/manifest.json",
+      "contract_sha256": "4897d789640e66ce258b32a4c4783997d277ff10a2fedc9e1aa178174652d63e",
+      "reason": "The PA31 packet uses an async block to check the cold attribute target. The packet records async body qualification as a separate requirement."
+    },
+    {
+      "path": "pa34/tests/spec/legacy-stdlib-editions/async-fn.rs",
+      "feature": "async lowering",
+      "input_sha256": "e6fed62246e370005d03358ae4d43ebb32a3dd6bdf8358fb6d07a09a8f574aae",
+      "contract": "pa34/tests/legacy-edition-outcomes.json",
+      "contract_sha256": "22080a4f2cf3c8159e992585a5423d998270cb49599348bc6c5543dabc05fb99",
+      "reason": "The PA34 probe compares edition fencing and agreement with the 2021 inspection path. Its runner stops at the loan view and checks no generated future."
+    }
+  ]
+}

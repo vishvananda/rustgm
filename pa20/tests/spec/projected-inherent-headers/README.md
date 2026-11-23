@@ -9,7 +9,10 @@ relates through the body's normalizer, never structurally.
 
 Seven executable positives check returned values: generic, bound, concrete,
 explicit-path, inferred-path (a baseline control), call-result and by-reference
-receivers. A concrete output mismatch and a missing `Try` implementation reject
+receivers. The call-result case uses an ordinary generic function. The
+[PA24 counterpart](../../../../pa24/tests/spec/projected-inherent-headers/)
+gets the receiver from a closure call. A concrete output mismatch and a missing
+`Try` implementation reject
 because no inherent method applies. `pending.json` keeps an unbound-output
 rejection whose RustGM cause is still the generic normalization failure. See
 [the checkpoint](../../../../docs/pa20-projected-inherent-headers.md).

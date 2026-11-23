@@ -16,19 +16,21 @@ fallback, readonly mutation, layout substitution, new cache/dense field, quota,
 backend, storage, ABI or wire change. Lifetime/formation/trait/safety/borrow/cleanup
 and actual executable Code obligations remain separate.
 
-[PA20 ordinary counterparts](../pa20/tests/spec/nominal-residuals/manifest.json) and
-[PA31 source roles](../pa31/tests/spec/nominal-residuals/manifest.json) each declare17
-Rust outcomes:13 accept/4 reject, independently confirmed by Rust1.98. All17 complete
+[The PA20 ordinary control](../pa20/tests/spec/nominal-residuals/manifest.json)
+and [the PA26 question-mark counterparts](../pa26/tests/spec/nominal-residuals/manifest.json)
+together declare 17 Rust outcomes, mirrored by the
+[PA31 source roles](../pa31/tests/spec/nominal-residuals/manifest.json).
+Rust 1.98 independently confirmed 13 acceptances and four rejections. All 17 complete
 source outcomes qualify, including direct/delegated values, references and slices,
 associated-output methods, no-question control, actual borrowed execution and
 scaling. Wrong output/associated output, escaped lifetime and moved value remain
 semantic rejections. The ordinary no-question generic/associated control qualifies;
 other16 ordinary question-mark attempts remain UNQUALIFIED at their required
 provider-catalog boundary, including independently rejecting inputs. They are
-retained auxiliary requirements, never expected bootstrap failures.
+retained PA26 requirements, never expected bootstrap failures.
 
-PA20's active manifest registers one primary control and the other16 inputs plus
-observer as auxiliaries. The no-question primary retains its original free generic
+PA20's active manifest registers the no-question control. PA26's draft packet
+records the other 16 inputs and their observer. The no-question primary retains its original free generic
 control and adds the paired actual associated-output delegation, making PA20 its
 owning minimum. Its independently accepted object and ten-line main-only LowIR
 oracle are checked; codegen-only classification explicitly claims no runtime feature

@@ -16,6 +16,7 @@ from assignment_plan import fixture_owners, validate as load_plan
 from case_inputs import support_files
 from course import ROOT, SIDECARS, check_relative_path
 from course_suites import check_publishers
+from reference_batches import case_digest
 from rust_audit import PARSER
 
 
@@ -51,6 +52,7 @@ ORACLE_RULES = (
 FEATURE_OWNER = re.compile(r"pa([1-9][0-9]*)\..+")
 PA_PATH = re.compile(r"pa[1-9][0-9]*")
 SOURCE_MODES = frozenset().union(*(rule.modes for rule in SOURCE_RULES.values()))
+REVIEW_PATH = Path("docs/assignment-placement-reviews.json")
 
 
 @dataclass(frozen=True, order=True)
@@ -153,9 +155,58 @@ def declared_evidence(case, mode_owner, numbers):
     return evidence
 
 
-def case_row(path, case, inputs, evidence, admitted, explicit_units):
+def load_reviews(root):
+    path = root / REVIEW_PATH
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_bytes())
+    if data["schema"] != 1:
+        raise ValueError(f"{REVIEW_PATH}: unknown review schema")
+    reviews = {}
+    for entry in data["reviews"]:
+        case = entry.get("case")
+        key = (case, entry["path"], entry["feature"])
+        required = {"case", "case_sha256"} if case else {"contract", "contract_sha256"}
+        if (key in reviews or not entry["reason"].strip()
+                or set(entry) != {"path", "feature", "input_sha256", "reason"} | required):
+            raise ValueError(f"{REVIEW_PATH}: invalid or duplicate review: {key}")
+        check_relative_path(case or entry["contract"], REVIEW_PATH)
+        check_relative_path(entry["path"], REVIEW_PATH)
+        for field in ("input_sha256", "case_sha256" if case else "contract_sha256"):
+            if not re.fullmatch(r"[a-f0-9]{64}", entry[field]):
+                raise ValueError(f"{REVIEW_PATH}: invalid {field}: {key}")
+        reviews[key] = entry
+    return reviews
+
+
+def review_reason(root, reviews, item, *, case_path=None, case=None):
+    if item.kind != "source":
+        return None
+    decision = reviews.get((case_path, item.path, item.feature))
+    if decision is None or sha256(read_input(root, PurePosixPath(item.path))).hexdigest() != decision["input_sha256"]:
+        return None
+    if case is not None:
+        if case_digest(case.entry, case.mode) != decision["case_sha256"]:
+            return None
+    else:
+        contract = (root / decision["contract"]).resolve()
+        if (not contract.is_relative_to(root) or not contract.is_file()
+                or sha256(contract.read_bytes()).hexdigest() != decision["contract_sha256"]):
+            return None
+    return decision["reason"]
+
+
+def case_row(root, path, case, inputs, evidence, admitted, explicit_units, reviews):
     current = int(path.parts[0][2:])
-    early = [item for item in evidence if item.owner not in admitted]
+    early, reviewed = [], []
+    for item in sorted(set(evidence)):
+        if item.owner in admitted:
+            continue
+        reason = review_reason(root, reviews, item, case_path=path.as_posix(), case=case)
+        if reason is None:
+            early.append(item)
+        else:
+            reviewed.append({**asdict(item), "reason": reason})
     observed = [item for item in evidence if item.kind != "source"]
     strongest = max(item.owner for item in observed)
     suggestion = max(item.owner for item in evidence)
@@ -163,6 +214,8 @@ def case_row(path, case, inputs, evidence, admitted, explicit_units):
         status = "early"
     elif early:
         status = "review"
+    elif reviewed:
+        status = "reviewed"
     elif (not explicit_units and suggestion < current
           and any(item.kind in {"manifest", "oracle"} for item in evidence)):
         status = "move-candidate"
@@ -174,7 +227,8 @@ def case_row(path, case, inputs, evidence, admitted, explicit_units):
         "evidence_floor": f"pa{strongest}",
         "suggested_pa": f"pa{suggestion}" if status == "move-candidate" else None,
         "evidence": [asdict(item) for item in sorted(set(evidence))],
-        "early_evidence": [asdict(item) for item in sorted(set(early))],
+        "early_evidence": [asdict(item) for item in early],
+        **({"reviewed_evidence": reviewed} if reviewed else {}),
     }
 
 
@@ -216,6 +270,7 @@ def audit(root, stages, units, requirements, inventory, pas):
         for mode in [stage["mode"], *stage.get("additional_modes", [])]:
             mode_owners.setdefault(mode, stage["number"])
     cases = load_cases(root, stages, units.values(), pas)
+    reviews = load_reviews(root)
     claimed = set()
     results = []
 
@@ -245,7 +300,7 @@ def audit(root, stages, units, requirements, inventory, pas):
             oracle = PurePosixPath(f"{path}.ref")
             if case.mode in LOWIR and oracle in inventory:
                 evidence.extend(oracle_markers(read_input(root, oracle), oracle.as_posix()))
-        results.append(case_row(path, case, inputs, evidence, admitted, owners is not None))
+        results.append(case_row(root, path, case, inputs, evidence, admitted, owners is not None, reviews))
 
     source_only = sorted(path for path in inventory - claimed
                          if path.parts[0] in pas and path.suffix in {".rs", ".c", ".lowir"})
@@ -258,11 +313,18 @@ def audit(root, stages, units, requirements, inventory, pas):
         if path.suffix == ".lowir":
             uses = oracle_markers(read_input(root, path), path.as_posix())
             draft_review.extend(item for item in uses if item.owner > current)
+    open_draft, reviewed_draft = [], []
+    for item in sorted(draft_review):
+        if reason := review_reason(root, reviews, item):
+            reviewed_draft.append({**asdict(item), "reason": reason})
+        else:
+            open_draft.append(asdict(item))
     return {
         "summary": dict(Counter(row["status"] for row in results)),
         "cases": results,
         "outside_course_manifests": [path.as_posix() for path in source_only],
-        "outside_course_manifest_review": [asdict(item) for item in sorted(draft_review)],
+        "outside_course_manifest_review": open_draft,
+        "outside_course_manifest_reviewed": reviewed_draft,
         "duplicate_contracts": duplicates(root, cases, inventory),
     }
 
@@ -271,9 +333,11 @@ def print_summary(report):
     counts = report["summary"]
     print(f"Placement audit: {len(report['cases'])} cases, {counts.get('early', 0)} early, "
           f"{counts.get('review', 0)} source findings to review, "
-          f"{counts.get('move-candidate', 0)} possible earlier placements")
+          f"{counts.get('move-candidate', 0)} possible earlier placements, "
+          f"{counts.get('reviewed', 0)} reviewed")
     print(f"Inputs outside course manifests: {len(report['outside_course_manifests'])}")
     print(f"Feature observations in those inputs to review: {len(report['outside_course_manifest_review'])}")
+    print(f"Reviewed observations in those inputs: {len(report['outside_course_manifest_reviewed'])}")
     print(f"Cross-assignment groups with matching inputs and oracles: {len(report['duplicate_contracts'])}")
     for row in report["cases"]:
         if row["status"] == "early":

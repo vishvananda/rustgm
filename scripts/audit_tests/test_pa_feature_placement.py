@@ -1,5 +1,6 @@
 """Placement evidence is scoped to a case's actual mode, inputs and ownership."""
 
+from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
@@ -10,6 +11,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from audit_pa_feature_placement import audit, fixture_inventory, source_markers
 from course import SIDECARS
+from reference_batches import case_digest
 
 
 class Placement(unittest.TestCase):
@@ -93,6 +95,38 @@ async fn later() {}
             "foreign": {"id": "foreign", "owner": "pa30", "depends_on": []},
         }
         self.assertEqual([row["status"] for row in self.report(units)["cases"]], ["ok", "early"])
+
+    def test_review_decisions_require_current_source_and_contract(self):
+        self.suite(11, "--emit-lowir", {"early": {}})
+        source = "pa11/tests/early.rs"
+        draft = "pa11/tests/spec/draft.rs"
+        contract = "pa11/tests/spec/contract.json"
+        text = "union U { value: u32 }"
+        self.write(source, text)
+        self.write(draft, text)
+        self.write(contract, "{}\n")
+        self.write("docs/assignment-placement-reviews.json", json.dumps({"schema": 1, "reviews": [
+            {"case": source, "case_sha256": case_digest({"path": "tests/early.rs", "exit_status": 0},
+                                                        "--emit-lowir"),
+             "path": source, "feature": "union semantics", "reason": "Structural eligibility only.",
+             "input_sha256": sha256(text.encode()).hexdigest()},
+            {"contract": contract, "contract_sha256": sha256(b"{}\n").hexdigest(),
+             "path": draft, "feature": "union semantics", "reason": "Declaration-only draft.",
+             "input_sha256": sha256(text.encode()).hexdigest()},
+        ]}))
+        reviewed = self.report()
+        self.assertEqual(reviewed["cases"][0]["status"], "reviewed")
+        self.assertEqual(reviewed["cases"][0]["reviewed_evidence"][0]["reason"],
+                         "Structural eligibility only.")
+        self.assertEqual(len(reviewed["outside_course_manifest_reviewed"]), 1)
+        self.write("pa11/tests/early.rs.ref", "    atomic_store u32 %p0, %p1, 0\n")
+        self.assertEqual(self.report()["cases"][0]["status"], "early")
+        self.files.remove(Path("pa11/tests/early.rs.ref"))
+        self.write(source, text + "\n")
+        self.write(contract, '{"changed": true}\n')
+        reopened = self.report()
+        self.assertEqual(reopened["cases"][0]["status"], "review")
+        self.assertEqual(len(reopened["outside_course_manifest_review"]), 1)
 
     def test_equal_stdin_cases_require_the_same_mode_settings_and_oracles(self):
         self.suite(11, "--emit-lowir", {"first": {"features": ["pa11.lowir"]}})

@@ -15023,6 +15023,29 @@
       "features": [
         "pa24.closure-captures-and-calls"
       ]
+    },
+    {
+      "path": "tests/spec/projected-inherent-headers/call-result.rs",
+      "mode": "--emit-lowir",
+      "exit_status": 0,
+      "source_sha256": "6219efd1b16d8779895dde02538a82016cd834b7f80343225934043e2f72f796",
+      "input": "file",
+      "features": [
+        "pa20.selection",
+        "pa20.projections",
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "maintainer_origin": "Original closure-driven projected call-result control from PA20.",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

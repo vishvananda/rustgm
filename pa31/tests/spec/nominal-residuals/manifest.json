@@ -5,35 +5,35 @@
  "cases": {
   "value-direct.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/value-direct.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/value-direct.rs"
   },
   "borrow-direct.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/borrow-direct.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/borrow-direct.rs"
   },
   "slice-direct.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/slice-direct.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/slice-direct.rs"
   },
   "value-delegated.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/value-delegated.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/value-delegated.rs"
   },
   "borrow-delegated.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/borrow-delegated.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/borrow-delegated.rs"
   },
   "slice-delegated.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/slice-delegated.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/slice-delegated.rs"
   },
   "associated-delegated.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/associated-delegated.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/associated-delegated.rs"
   },
   "associated-direct.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/associated-direct.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/associated-direct.rs"
   },
   "without-question.rs": {
    "expected": "accept",
@@ -41,37 +41,37 @@
   },
   "wrong-output.rs": {
    "expected": "reject",
-   "ordinary": "pa20/tests/spec/nominal-residuals/wrong-output.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/wrong-output.rs"
   },
   "escaped-borrow.rs": {
    "expected": "reject",
-   "ordinary": "pa20/tests/spec/nominal-residuals/escaped-borrow.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/escaped-borrow.rs"
   },
   "moved-output.rs": {
    "expected": "reject",
-   "ordinary": "pa20/tests/spec/nominal-residuals/moved-output.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/moved-output.rs"
   },
   "wrong-associated-output.rs": {
    "expected": "reject",
-   "ordinary": "pa20/tests/spec/nominal-residuals/wrong-associated-output.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/wrong-associated-output.rs"
   },
   "native-runtime.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/native-runtime.rs",
+   "ordinary": "pa26/tests/spec/nominal-residuals/native-runtime.rs",
    "native_stdout": "41 59 23\n",
    "observer": "observe.c"
   },
   "scaling-8.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-8.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/scaling-8.rs"
   },
   "scaling-32.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-32.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/scaling-32.rs"
   },
   "scaling-128.rs": {
    "expected": "accept",
-   "ordinary": "pa20/tests/spec/nominal-residuals/scaling-128.rs"
+   "ordinary": "pa26/tests/spec/nominal-residuals/scaling-128.rs"
   }
  },
  "files": {

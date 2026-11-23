@@ -112,6 +112,12 @@ in committed oracles can establish a later requirement. The strict target
 fails when that evidence falls outside the case's numeric or work-unit
 prerequisites. Rust syntax matches are review leads because an earlier phase
 can parse a spelling and a later assignment can test an interaction.
+Record a resolved lead in
+[assignment-placement-reviews.json](docs/assignment-placement-reviews.json).
+Each decision names its source and feature, records why the earlier
+assignment owns the test, and binds the source bytes and current contract.
+The report retains reviewed evidence, and a source or contract change
+reopens it for review. Manifest and committed oracle violations stay strict.
 
 Review suggested earlier placements and cross-assignment groups that share
 source bytes, stdin settings and complete oracle bytes. The report also

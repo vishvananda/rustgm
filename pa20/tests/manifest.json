@@ -26490,7 +26490,7 @@
       "path": "tests/spec/projected-inherent-headers/call-result.rs",
       "mode": "--emit-lowir",
       "exit_status": 0,
-      "source_sha256": "6219efd1b16d8779895dde02538a82016cd834b7f80343225934043e2f72f796",
+      "source_sha256": "82a64c744ff8709d2ac9a1cead8695309f5101e109388b97a0b2a63b5e161902",
       "input": "file",
       "features": [
         "pa20.selection",
@@ -26502,7 +26502,7 @@
         "emit": "obj",
         "default_lints": true
       },
-      "maintainer_origin": "dev/tests/associated_declarations.rs",
+      "maintainer_origin": "Projected receiver call-result control using an ordinary generic function.",
       "native": {
         "kind": "execute",
         "outcome": "pass"
@@ -27031,31 +27031,12 @@
         "default_lints": true,
         "emit": "obj"
       },
-      "maintainer_origin": "Independently declared generic residual-result field packet; direct generic/associated delegation control. Auxiliary question-mark cases retain pending ordinary provider-catalog requirements.",
+      "maintainer_origin": "Independently declared generic residual-result field packet; direct generic/associated delegation control. Question-mark cases belong to PA26.",
       "mode": "--emit-lowir",
       "native": {
         "kind": "codegen",
         "reason": "Generic defining-body and associated-output control has no concrete feature consumer; actual source native observer remains independently required."
-      },
-      "auxiliary": [
-        "tests/spec/nominal-residuals/value-direct.rs",
-        "tests/spec/nominal-residuals/borrow-direct.rs",
-        "tests/spec/nominal-residuals/slice-direct.rs",
-        "tests/spec/nominal-residuals/value-delegated.rs",
-        "tests/spec/nominal-residuals/borrow-delegated.rs",
-        "tests/spec/nominal-residuals/slice-delegated.rs",
-        "tests/spec/nominal-residuals/associated-delegated.rs",
-        "tests/spec/nominal-residuals/associated-direct.rs",
-        "tests/spec/nominal-residuals/wrong-output.rs",
-        "tests/spec/nominal-residuals/escaped-borrow.rs",
-        "tests/spec/nominal-residuals/moved-output.rs",
-        "tests/spec/nominal-residuals/wrong-associated-output.rs",
-        "tests/spec/nominal-residuals/native-runtime.rs",
-        "tests/spec/nominal-residuals/scaling-8.rs",
-        "tests/spec/nominal-residuals/scaling-32.rs",
-        "tests/spec/nominal-residuals/scaling-128.rs",
-        "tests/spec/nominal-residuals/observe.c"
-      ]
+      }
     },
     {
       "path": "tests/spec/projections/definition-readiness/lowir/storage-indirect-projection-holder.rs",
