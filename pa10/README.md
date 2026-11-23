@@ -1,7 +1,7 @@
-# RustGM Programming Assignment 10: Typed bodies
+# RustGM Programming Assignment 10 — Typed bodies
 
-Status: **implemented draft**. Prerequisite: PA9.
-The profile is Rust 1.98.0, edition 2024, Linux x86-64.
+Build on [PA9](../pa9/README.md) to construct typed control-flow bodies.
+Use Rust 1.98.0, edition 2024, on Linux x86-64.
 
 ## Required implementation
 
@@ -81,29 +81,25 @@ a region proof. A labeled block's fallthrough may diverge while a break produces
 a value; its fallthrough-only never adjustment must preserve the merged result.
 
 PA11 consumes this model for typed LowIR, target representations, checked
-procedural arithmetic and an entry shim. The builder invokes no external
-frontend/backend. The integer CFG executor under `dev/tests/` is independent
-test instrumentation; it is not linked into the reference frontend.
+procedural arithmetic and an entry shim. Construct bodies within your
+compiler from the typed PA9 facts.
 
-## Tool surface
+## Command-line interface
 
-```sh
-dev/rustgm --emit-body-ir [-o OUTPUT] [SOURCE|-]
-dev/rustgm --count-body-ir [SOURCE|-]
-make test-pa10
+```text
+rustgm --emit-body-ir [--cfg OPTION]... [--crate-name NAME] [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
-Both modes perform identical expansion, resolution, type checking and body
-construction. Files, includes, `--cfg` and `--crate-name` follow PA8. Complete
-semantic/body work before stdout starts. Success is exit 0/empty stderr;
-diagnosed rejection is exit 1/empty stdout with the existing projected
-`ERROR: file ...` diagnostic. Panics, signals and exit 86 cannot count as
-rejection. As earlier, `-o` opens/truncates its destination before compilation.
+Files, includes, `--cfg`, and `--crate-name` follow PA8. Complete type
+checking and body construction before writing output. Success exits 0 with
+empty standard error. A source error exits 1 with empty standard output and
+PA8's `ERROR: file FILE: OFFSET: MESSAGE` diagnostic. With `-o`, open the
+destination before compilation.
 
 ## Deterministic text vocabulary
 
 Start with `body-crate 1`, then PA9's `type` table and `region-equal` records.
-Functions precede initializer bodies, each in semantic order. Body headers are:
+Functions precede initializer bodies, each in semantic order. Use these body headers.
 
 ```text
 body ID function def=DEFINITION signature=TYPE result=TYPE source=FILE:NODE
@@ -114,7 +110,7 @@ Each body resets local (`lN`), evaluated-value (`vN`) and block (`bN`) IDs to
 zero. IDs follow deterministic construction; `b0` is entry. Print locals then
 blocks in ID order. Statements within a block execute in order; block ID order
 does not imply execution order. Records have LF, decimal IDs and no trailing
-spaces. Local/block lines use two spaces; statements/terminators four:
+spaces. Indent local and block records by two spaces and block contents by four.
 
 ```text
   local lN type=TYPE parameter=INDEX|binding|merge [def=DEFINITION] mutable=BOOL storage-parent=lN|- source=NODE
@@ -131,7 +127,7 @@ spaces. Local/block lines use two spaces; statements/terminators four:
 ```
 
 Optional `def` omits brackets. PLACE is `lN` or `static:DEFINITION`. Source
-nodes belong to the body's file. RVALUE forms are:
+nodes belong to the body's file. Use the following value forms.
 
 ```text
 unit
@@ -157,16 +153,17 @@ statements; a never call ends its block with `unreachable`.
 
 End each body with `end-body`. The footer is
 `eof bodies=N locals=N values=N statements=N blocks=N`, summing its arenas.
-Count mode omits `eof `. Empty crates are valid bodies=0 inputs; the assignment
-suite itself must never be empty.
+An empty crate produces a footer with zero bodies and zero counts.
 
-## Validation
+## Run the tests
 
-The 47 declared fixtures cover evaluation order, short circuit, nested/labeled
-control, divergence, calls, storage, scalar values, expansions and packages.
-All outcomes are independently checked with pinned rustc. The 32 execution
-fixtures also declare scalar results: a test-only CFG executor verifies dynamic
-storage state and compares results with rustc. Deep-body and deterministic-view
-invariants exercise iterative construction/count output. A late-error fixture
-checks empty stdout. All earlier suites, Clippy, architecture/size audits,
-harness checks and scaling measurements remain required.
+Run the PA10 test target from the repository root.
+
+```sh
+make -C pa10 test
+```
+
+[The manifest](tests/manifest.json) covers evaluation order, short circuiting,
+nested control flow, storage, calls, and failure before output. Include long
+bodies and repeated runs when checking your implementation's construction
+cost and output order.

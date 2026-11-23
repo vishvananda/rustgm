@@ -1,7 +1,7 @@
-# RustGM Programming Assignment 9: Types and inference
+# RustGM Programming Assignment 9 — Types and inference
 
-Status: **implemented draft**. Prerequisite: PA8.
-The source profile is Rust 1.98.0, edition 2024, Linux x86-64.
+Build on [PA8](../pa8/README.md) to elaborate types and infer the types of
+scalar expressions and bodies. Use Rust 1.98.0, edition 2024, on Linux x86-64.
 
 ## Required implementation
 
@@ -64,8 +64,10 @@ check the signature. Other pointer casts and unsafe operations arrive later.
 Materialize scalar literal bits using the inferred target type. The course
 profile uses the default rejection of out-of-range integer/float literals.
 Grouped negative signed-minimum literals are valid; retain their unary-literal
-exception for later overflow lowering. Round floating literals directly to the
-inferred f32/f64 format. Preserve selected operations, call signatures,
+exception for later overflow lowering. Round floating literals directly to
+their selected IEEE width. Uses of `f16` and `f128` require their source
+feature or an actual macro allowance for the literal. Preserve selected
+operations, call signatures,
 coercion targets, directed region requirements and initializer identities as typed facts
 for later phases.
 
@@ -74,9 +76,9 @@ for later phases.
 This view checks types, not complete Rust program validity. PA14 owns definite
 initialization and binding write permissions; PA15/PA16 own lifetime contracts
 and borrow/region proofs; PA25 owns constant-expression validity; PA27 owns
-unsafe access. Their deferred obligations must not be silently treated as
-proved. The three `boundary/` fixtures deliberately differ from rustc's final
-acceptance and declare the owning later phase in their manifests.
+unsafe access. Retain the facts those phases need and leave their obligations pending.
+The `boundary/` fixtures show programs that can pass this type inspection
+and later receive a diagnostic in the phase that owns the check.
 
 Directed region coercions and genuine equality obligations are retained with
 the body identity. A coercion must not equate unrelated signature lifetimes. Reference borrowing,
@@ -84,26 +86,21 @@ dereferencing, coercion variance and lifetime-polymorphic calls require later
 contracts. Text literals and aggregate expressions require their later value
 and layout semantics. Foreign/async signatures, generic types, associated
 methods and general lint-attribute interpretation are outside this profile.
-PA9 does not require constant evaluation. The cumulative maintainer now checks
-required constant initializers; the former non-const-call acceptance boundary
-moved unchanged to PA25, which owns that rejection.
-PA11 owns procedural runtime arithmetic checks; PA25 owns constant evaluation.
+PA11 adds runtime arithmetic checks. PA25 checks constant expressions,
+including whether an initializer may call a particular function.
 
-## Tool surface and error contract
+## Command-line interface
 
-```sh
-dev/rustgm --emit-types [-o OUTPUT] [SOURCE|-]
-dev/rustgm --count-types [SOURCE|-]
-make test-pa9
+```text
+rustgm --emit-types [--cfg OPTION]... [--crate-name NAME] [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
-File loading, `--cfg`, `--crate-name`, expansion, hygiene, includes and name
-resolution use PA8's ordinary pipeline. Both modes run identical semantics.
-On success stderr is empty and exit status is 0. On a diagnosed failure stdout
-is empty, stderr contains the existing `ERROR: file ...` diagnostic with PA8's
-expansion/source projection, and exit status is 1. Exit 86, signals and panics
-cannot stand for rejection. `-o` opens its destination before compilation; it
-is not an atomic replacement protocol.
+Use the PA8 pipeline for file loading, configuration, expansion, hygiene,
+includes, and name resolution. A successful run exits 0 with empty standard
+error. On a source error, exit 1 with empty standard output and PA8's
+`ERROR: file FILE: OFFSET: MESSAGE` diagnostic, including expansion
+locations where applicable. With `-o`, the compiler opens the destination
+before compilation.
 
 ## Text vocabulary
 
@@ -118,7 +115,8 @@ record; equivalent spelling does not create another type.
 
 The first type records are `type 0 never`, `type 1 tuple []`, then primitives
 in this order: bool, char, str, i8, i16, i32, i64, i128, isize, u8, u16, u32,
-u64, u128, usize, f32, f64. Subsequent forms are:
+u64, u128, usize, f32, f64, f16, f128. Use `type ID primitive NAME` for
+these types. The records below describe subsequent types.
 
 ```text
 type ID tuple [CHILD,...]
@@ -159,8 +157,9 @@ These are obligations, not successful lifetime proofs; PA15 checks them.
 Bracketed optional fields above omit their brackets in actual output.
 Initializer kinds are `const`, `static`, `static-mut`. Scalar forms are
 `integer bits=0xHEX` (32 lowercase hex digits, zero-extended target bits),
-`f32 bits=0xHEX` (8 digits), `f64 bits=0xHEX` (16 digits), `bool true|false`,
-or `char U+HEX` (6 uppercase digits). Unary signs remain operations.
+`f16/f32/f64/f128 bits=0xHEX` (4/8/16/32 lowercase hex digits at the
+selected width), `bool true|false`, or `char U+HEX` (6 uppercase digits).
+Unary signs remain operations.
 
 Operations are `unary NAME operand=TYPE literal=BOOL`,
 `binary OP left=TYPE right=TYPE`, `cast KIND source=TYPE target=TYPE`,
@@ -173,19 +172,17 @@ assignment. Cast kinds are `IntegerToInteger`, `IntegerToFloat`,
 and `FunctionPointer`. Adjustment kinds are `never`, `function-pointer` and
 `equality`. An `equality` adjustment records the destination type when equality
 depends on pending region obligations; it does not prove those obligations.
-The count mode emits just the footer fields, without the `eof ` prefix.
 
-## Validation
+## Run the tests
 
-The manifest declares every outcome before reference generation. Its full
-programs are independently checked with pinned rustc, including default literal
-lints. Fixture families cover scalar inference, constraints, aliases, control
-flow, demanded well-formedness, lifetime elision, source packages and explicit
-phase boundaries. The occurs-check fixture constrains a function-pointer
-parameter to contain its own type. Typed Rust invariants additionally verify
-canonical sharing, retained operation/control facts, deep iterative algorithms
-and unresolved/cyclic constraints.
+Run the PA9 test target from the repository root.
 
-Read `spec.md`, the pinned Reference and CPPGM architecture guidance. Later
-body and LowIR construction must consume these facts without repeating lookup,
-parsing, inference, cast selection or literal conversion.
+```sh
+make -C pa9 test
+```
+
+[The manifest](tests/manifest.json) covers scalar inference, constraints,
+aliases, control flow, lifetime elision, and phase boundaries. It includes an
+occurs-check case that constrains a function-pointer parameter to contain
+its own type. Keep canonical types and operation facts available to PA10
+and PA11 so they can build bodies and LowIR without repeating this work.

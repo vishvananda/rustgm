@@ -1,9 +1,9 @@
-# RustGM Programming Assignment 11: Procedural LowIR
+# RustGM Programming Assignment 11 — Procedural LowIR
 
-Status: **implemented draft**. Prerequisite: PA10.
-The profile is Rust 1.98.0, edition 2024, Linux x86-64, checked integer
-arithmetic and aborting panics. This is the first executable Rust frontend
-milestone; it is not whole-Rust conformance.
+Build on [PA10](../pa10/README.md) to lower scalar Rust programs to
+[LowIR](../shared/lowir.md) and run them through the CPPGM backend.
+Use Rust 1.98.0, edition 2024, on Linux x86-64 with checked integer
+arithmetic and aborting panics.
 
 ## Required implementation
 
@@ -34,12 +34,9 @@ This scalar check is the executable prerequisite. PA14 extends it to moves,
 projections, partial initialization and non-Copy values; PA15–PA17 own regions,
 loans and destruction. Pending region conversions cannot become native casts.
 Aggregates need PA12 layouts. Closed constant/static materialization and reference erasure are exercised
-with their required proofs in PA16. General const functions and mutable constant
-memory remain PA25. Their former executable boundary fixtures now live with
-the owning proof assignment. Unused later-stage
-constructs do not acquire a validity proof through a PA11 pass. Const validity,
-full lint parity, unreachable ownership diagnostics and general Rust acceptance
-remain outside this profile.
+with their required proofs in PA16. PA25 covers const validity, general const
+functions, and mutable constant memory. Keep obligations for later constructs
+pending, even when those constructs are unused.
 
 ## Arithmetic and casts
 
@@ -59,13 +56,10 @@ floating remainder instruction: emit a demanded typed helper that reduces
 binary significands, not a rounded floating quotient. Share one helper per
 float width. The pinned backend supplies its existing 128-bit runtime helpers.
 
-On checked failure call the backend's declared `abort` and end in `unreachable`.
-An unreachable terminator alone is not a trap. The pinned CPPGM runtime's abort
-exits 134 with empty streams; rustc with `panic=abort` raises SIGABRT and prints
-a panic diagnostic. The independent harness qualifies those outcomes explicitly.
-All other compiler/runtime signals, exit 86, timeouts or unexplained failures
-fail the suite. No implicit `nowrap`, `typed`, alias or alignment facts are
-permitted without Rust evidence.
+On checked failure call the backend's declared `abort` and end in
+`unreachable`. The pinned CPPGM runtime's `abort` exits 134 with empty
+output streams. Emit `nowrap`, `typed`, alias, or alignment facts only
+when the Rust program supplies the required proof.
 
 ## Entry, representation and deterministic text
 
@@ -93,33 +87,44 @@ bits at their width; floats print 17-place scientific decimals or `nan`/`inf`/
 any other NaN is stored as its integer bits in a slot and loaded as the float.
 The serializer never becomes an input to another frontend phase.
 
-## Tools and tests
+## Command-line interface
 
-```sh
-dev/rustgm --emit-lowir [-o OUTPUT] [SOURCE|-]
-dev/rustgm --count-lowir [SOURCE|-]
-make test-pa11
-make test-native
-python3 scripts/backend.py output.lowir -o obj/program
+```text
+rustgm --emit-lowir [--cfg OPTION]... [--crate-name NAME] [--edition=2024] [-o OUTPUT] [SOURCE|-]
 ```
 
-Input, cfg, source packages and diagnostics follow PA8. Both modes complete
-semantic checks and typed lowering before stdout starts. Success is exit 0
-with empty stderr; rejection is exit 1 with empty stdout and projected `ERROR:`
-text. As before, `-o` opens/truncates its destination before compilation.
-Count mode reports `symbols`, `functions`, `blocks`, `instructions`, `slots`
-and `temporaries` from the already constructed program.
+Input files, configuration, and diagnostics follow PA8. Complete semantic
+checks and typed lowering before writing output. Success exits 0 with empty
+standard error. A source error exits 1 with empty standard output and
+the projected diagnostic on standard error. With `-o`, open the destination
+before compilation.
 
-The manifest declares outcomes before `make ref-test-pa11` creates text
-oracles. `make test-native` additionally compiles each full program with pinned
-rustc, validates LowIR with the pinned CPPGM tools, and executes both programs
-against declared success/panic outcomes. Positive programs check full scalar
-values internally; comparing only low exit-status bits is insufficient. Native
-evidence stays in `obj/native/pa11/`, separate from byte-exact text grading.
+## Run the tests and an executable
 
-Lowering must be linear in emitted IR, with iterative demand/CFG traversal.
-The scalar initialization analysis uses a bounded monotone worklist and packed
-bitsets per body: at most 4,000,000 16-byte state cells and 32,000,000 charged
-word/statement steps. Exceeding either is a diagnosed resource limit. Measure
-frozen binaries with A/A calibration, ABBA blocks and full-output equality.
-Run all previous suites, strict Clippy/rustfmt and architecture/file audits.
+Use the PA11 test target from the repository root.
+
+```sh
+make -C pa11 test
+```
+
+[The manifest](tests/manifest.json) defines the expected LowIR, diagnostics,
+and exit statuses. To run the assignment's empty `main` fixture in the
+student repository, install the pinned backend and use the build below.
+
+```sh
+make
+make setup-backend
+obj/student/release/rustgm --emit-lowir -o obj/program.lowir pa11/tests/spec/entry/empty.rs
+python3 scripts/backend.py obj/program.lowir -o obj/program
+./obj/program
+```
+
+The empty program exits 0. For your own nontrivial examples, check the
+program's scalar results and any expected abort behavior. The optional
+[C example](../examples/lowir-library/return42.c) shows how to construct
+LowIR with the CPPGM library and link its object output.
+
+Lowering must be linear in emitted IR, with iterative demand and CFG
+traversal. Use a bounded monotone worklist and packed bitsets for the
+initialization analysis. Diagnose exceeding 4,000,000 16-byte state cells
+or 32,000,000 charged word and statement steps per body.
