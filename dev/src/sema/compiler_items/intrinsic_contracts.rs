@@ -217,7 +217,7 @@ fn source_fallback(
         return Ok(false);
     }
     match identity.name() {
-        "select_unpredictable" | "rotate_left" | "rotate_right" => {
+        "carrying_mul_add" | "select_unpredictable" | "rotate_left" | "rotate_right" => {
             crate::sema::header_attributes::intrinsic_fallback_is_spec(
                 facts,
                 report,

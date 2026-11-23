@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "edition": "2024",
+  "rustc": "1.98.0",
+  "cases": {
+    "wide_carry.rs": {
+      "sha256": "346f618a83ce99ceabee57494565fdfc150e60a09e0094e7d22a29d808753243",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0,
+          "lowir": [
+            "function "
+          ]
+        }
+      ]
+    }
+  },
+  "provenance": "Authored native consumer of original core carrying_mul_add. It observes both halves of the full-width result for u8, u64, u128 and usize, including the largest possible unsigned result and carry across both u128 limbs."
+}
