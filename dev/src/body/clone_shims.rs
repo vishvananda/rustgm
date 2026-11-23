@@ -135,6 +135,7 @@ pub(crate) fn build(
             .map_err(|message| report.body_error(selected.source, message))?;
     }
     validate(facts, selected, &body, &input).map_err(error)?;
+    super::instantiate::prepare_signature(facts, body.owner).map_err(error)?;
     Ok((body, input))
 }
 

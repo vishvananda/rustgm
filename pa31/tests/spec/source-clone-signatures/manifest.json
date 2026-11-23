@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0",
+  "cases": {
+    "opaque.rs": {
+      "sha256": "a9773d6cfd4ce0d3ce43fcacc0b105607041f49161ec18818d782cb465caa7ee",
+      "configurations": [
+        {
+          "cfg": [],
+          "rustc_status": 0,
+          "native_status": 0
+        },
+        {
+          "cfg": [
+            "guest_probe"
+          ],
+          "strict_status": 0,
+          "native_status": 0
+        }
+      ]
+    }
+  },
+  "provenance": "Authored regression for original core FromFn and its derived Clone. The closure captures borrowed generic iterators and the cloned iterator advances independently."
+}
