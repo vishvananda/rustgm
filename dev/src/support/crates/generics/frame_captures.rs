@@ -41,20 +41,22 @@ pub(super) fn method(
     if implementation.self_definition != parent
         || implementation.constant != (effect == Constness::Const)
         || !implementation.polarity.is_positive()
-        || implementation.unsafe_
-        || !implementation
-            .region_bounds
-            .slice(&rows.region_bounds)?
-            .is_empty()
+        || (!trait_impls && implementation.unsafe_)
+        || (!trait_impls
+            && !implementation
+                .region_bounds
+                .slice(&rows.region_bounds)?
+                .is_empty())
         || function.constness == Constness::Conditional
         || effect == Constness::Const && function.constness != effect
         || function.regions.captures != implementation.region_captures
-        || !function.regions.early.slice(&rows.region_slots)?.is_empty()
-        || !function
-            .regions
-            .bounds
-            .slice(&rows.region_bounds)?
-            .is_empty()
+        || (!trait_impls && !function.regions.early.slice(&rows.region_slots)?.is_empty())
+        || (!trait_impls
+            && !function
+                .regions
+                .bounds
+                .slice(&rows.region_bounds)?
+                .is_empty())
         || scopes
             .complete_slots(implementation.scope, work)?
             .checked_sub(scopes.complete_type_slots(implementation.scope, work)?)

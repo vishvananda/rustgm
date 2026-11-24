@@ -288,6 +288,12 @@ fn formal_cells(
     for (index, slot) in rows.slots.iter().enumerate() {
         budget.charge(1)?;
         if let Some(binding) = slot.definition {
+            if slot.kind == s::ParameterKind::Region
+                && !mapped_source::slot_bindings::template_lifetime(&rows.declarations, slot)
+                && context.descriptor.profile().declaration_policies()
+            {
+                continue;
+            }
             let index =
                 u32::try_from(index).map_err(|_| error("source formal slot reference overflow"))?;
             let ty = match graph.slot(s::SlotRef(index))? {

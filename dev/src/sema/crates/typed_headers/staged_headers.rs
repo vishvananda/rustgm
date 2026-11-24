@@ -553,7 +553,7 @@ impl Walk<'_, '_> {
                 context,
                 self.graph,
                 facts,
-                raw.owner,
+                raw,
                 inputs,
                 &environment,
                 budget,

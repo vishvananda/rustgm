@@ -238,7 +238,21 @@ fn registered_callable(
     template: crate::types::callable::Template,
 ) -> bool {
     use crate::types::Kind;
-    if function.regions.captures == 0 {
+    let early = function
+        .regions
+        .early
+        .end
+        .saturating_sub(function.regions.early.start);
+    let late = function
+        .regions
+        .late
+        .end
+        .saturating_sub(function.regions.late.start);
+    if function.regions.captures == 0
+        && early == 0
+        && function.regions.bounds.start == function.regions.bounds.end
+        && late == function.regions.total
+    {
         return template.signature == callable && template.parameters == 0;
     }
     let (
@@ -259,10 +273,12 @@ fn registered_callable(
     else {
         return false;
     };
-    view.rows().is_ok_and(|rows| {
-        super::staged_headers::scheme_ports::associated_captures(rows.descriptor(), &function)
-    }) && template.parameters == function.regions.captures
-        && bound_regions == function.regions.total - function.regions.captures
+    (function.regions.captures == 0
+        || view.rows().is_ok_and(|rows| {
+            super::staged_headers::scheme_ports::associated_captures(rows.descriptor(), &function)
+        }))
+        && template.parameters == function.regions.captures.saturating_add(early)
+        && bound_regions == late
         && store.list(parameters).map(<[_]>::len) == store.list(public).map(<[_]>::len)
         && unsafe_ == public_unsafe
         && convention == public_convention

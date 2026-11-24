@@ -170,10 +170,19 @@ struct DynamicShape {
     markers: Vec<s::DynamicMarker>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum MappedSlot {
+    Unused,
+    Early(u32),
+    Late(u32),
+}
+
 pub(super) struct Arena {
     pub nodes: Vec<Node>,
     facts: Vec<NodeFacts>,
     pub relocations: Vec<u32>,
+    pub fn_slot_base: Vec<u32>,
+    pub slot_map: Vec<MappedSlot>,
     pub nominal_arguments: HashMap<NodeId, Vec<NodeId>>,
     pub nominal_regions: HashMap<NodeId, Vec<Region>>,
     pub nominal_argument_bytes: usize,
@@ -210,6 +219,8 @@ impl Arena {
             nodes: Vec::new(),
             facts: Vec::new(),
             relocations: Vec::new(),
+            fn_slot_base: Vec::new(),
+            slot_map: Vec::new(),
             nominal_arguments: HashMap::default(),
             nominal_regions: HashMap::default(),
             nominal_argument_bytes: 0,
@@ -518,6 +529,8 @@ impl Arena {
             retained::vector(&self.nodes),
             retained::vector(&self.facts),
             retained::vector(&self.relocations),
+            retained::vector(&self.fn_slot_base),
+            retained::vector(&self.slot_map),
             retained::map(&self.nominal_arguments),
             retained::map(&self.nominal_regions),
             self.nominal_argument_bytes,

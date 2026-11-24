@@ -3,7 +3,6 @@ use super::{Declarations, Error, Header, Headers, Parameter, error, mapped_sourc
 use crate::{
     resolve::body_origin::DeclarationOrigin,
     sema::declaration_inputs::Input,
-    support::crates::owner_catalog::DeclarationRef,
     types::{arguments::Argument, parameters::environment::Environment},
 };
 use std::sync::Arc;
@@ -40,6 +39,13 @@ pub(super) fn parameters(
             }
             continue;
         };
+        // Function lifetimes live in FunctionRegions, never in generics.parameters.
+        if slot.kind == s::ParameterKind::Region
+            && !mapped_source::slot_bindings::template_lifetime(&rows.declarations, slot)
+            && context.descriptor.profile().declaration_policies()
+        {
+            continue;
+        }
         let binding = context.definition(binding, budget)?;
         let ordinal = scope
             .declared
@@ -84,11 +90,12 @@ pub(super) fn header(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
     facts: &mut Declarations,
-    owner: DeclarationRef,
+    scope: &s::ParameterScope,
     inputs: &Arc<[Input]>,
     environment: &Arc<Environment>,
     budget: &mut Headers,
 ) -> Result<Option<Callable>, Error> {
+    let owner = scope.owner;
     budget.charge(1)?;
     let rows = context.descriptor.rows();
     let Some(s::HeaderRef::Function(index)) = rows.header(owner).map_err(error)? else {
@@ -149,7 +156,7 @@ pub(super) fn header(
             "source declaration input prefix exceeds its actual full assumptions",
         ));
     }
-    let regions = super::scheme_ports::prepare(context, graph, raw, budget)?;
+    let regions = super::scheme_ports::prepare(context, graph, raw, scope, budget)?;
     let receiver = super::scheme_ports::receiver(graph, facts, raw, signature, budget)?;
     let header = Header {
         declaration: DeclarationOrigin::Imported(declaration),

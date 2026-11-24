@@ -495,7 +495,7 @@ impl Arena {
             ))
     }
 
-    fn same_region(
+    pub(super) fn same_region(
         &self,
         domains: &DomainIndex<'_, '_>,
         (expected, actual): (Region, Region),

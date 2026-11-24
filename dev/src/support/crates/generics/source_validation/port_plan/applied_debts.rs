@@ -18,21 +18,21 @@ impl Arena {
         let target = domains.target(applied.declaration.declaration, work)?;
         // DomainIndex already checked exact full arity and the actual caller's
         // scope. Visiting every argument retains unused formal formation debts.
-        // A captured method's leading region arguments are its impl's lifetimes.
-        let captures = match target {
-            super::super::Target::Function(header) => header.regions.captures as usize,
+        // Captured and early region arguments lead the type/const arguments.
+        let regions = match target {
+            super::super::Target::Function(header) => (header.regions.captures as usize)
+                .saturating_add(header.regions.early.slice(&rows.region_slots)?.len()),
             super::super::Target::Constructor { .. } => 0,
         };
         for (index, argument) in applied.arguments.slice(&rows.arguments)?.iter().enumerate() {
             work.charge(1)?;
             let root = match *argument {
                 s::Argument::Type(root) => root,
-                // A lifetime-generic enum constructor's or captured method's
-                // leading region has no formation root; its domain was
-                // checked with the caller.
+                // Leading lifetime arguments have no formation root; their
+                // domain was checked with the caller.
                 s::Argument::Region(_)
                     if matches!(target, super::super::Target::Constructor { .. })
-                        || index < captures =>
+                        || index < regions =>
                 {
                     continue;
                 }
@@ -76,9 +76,10 @@ impl Arena {
         let rows = domains.headers.rows();
         for clause in range.slice(&rows.clauses)? {
             work.charge(1)?;
-            if clause
-                .binder
-                .is_some_and(|binder| rows.binders[binder.0 as usize].count != 0)
+            if !domains.declaration_policies
+                && clause
+                    .binder
+                    .is_some_and(|binder| rows.binders[binder.0 as usize].count != 0)
             {
                 return Err(
                     "source quantified applied debts require their complete binder-opening profile",
@@ -92,18 +93,28 @@ impl Arena {
                     self.applied_root(domains, application, caller, goal.subject, work)?;
                     for argument in goal.arguments.slice(&rows.arguments)? {
                         work.charge(1)?;
-                        let s::Argument::Type(root) = *argument else {
-                            return Err(
-                                "source regional trait debt requires a complete wider profile",
-                            );
-                        };
-                        self.applied_root(domains, application, caller, root, work)?;
+                        match *argument {
+                            s::Argument::Type(root) => {
+                                self.applied_root(domains, application, caller, root, work)?;
+                            }
+                            s::Argument::Region(_) | s::Argument::Const(_)
+                                if domains.declaration_policies => {}
+                            _ => {
+                                return Err(
+                                    "source regional trait debt requires a complete wider profile",
+                                );
+                            }
+                        }
                     }
                 }
                 s::Requirement::ProjectionEqual { projection, value } => {
                     self.applied_root(domains, application, caller, *projection, work)?;
                     self.applied_root(domains, application, caller, *value, work)?;
                 }
+                s::Requirement::TypeOutlives { subject, .. } if domains.declaration_policies => {
+                    self.applied_root(domains, application, caller, *subject, work)?;
+                }
+                s::Requirement::Outlives(_) if domains.declaration_policies => {}
                 s::Requirement::TypeOutlives { .. } | s::Requirement::Outlives(_) => {
                     return Err(
                         "source applied lifetime debts require a complete wider opening profile",

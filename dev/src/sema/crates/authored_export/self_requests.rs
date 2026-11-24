@@ -117,34 +117,70 @@ impl Stage {
             .callables
             .get(item)
             .ok_or("source method callable header is absent")?;
-        if template.parameters != 0 {
+        let (regions, subject) = self.method_subject(
+            facts,
+            formals,
+            arguments,
+            self_parameter,
+            template.parameters,
+        )?;
+        if count == 0 {
+            self.trait_application(facts, subject, application, context)
+        } else {
+            self.applied_method_request(
+                facts,
+                subject,
+                application,
+                (formals, arguments, regions),
+                context,
+            )
+        }
+        .map(Some)
+    }
+
+    fn method_subject(
+        &mut self,
+        facts: &Declarations,
+        formals: &[ParameterId],
+        arguments: GenericArgs,
+        self_parameter: ParameterId,
+        early: u32,
+    ) -> Result<(usize, TypeId), &'static str> {
+        if early != 0 && !self.declaration_policies() {
             return Err("source method early arguments require a wider complete request profile");
         }
-        let supplied = facts
+        let regions = early as usize;
+        let mut supplied = facts
             .types
             .arguments(arguments)
             .ok_or("source method application inputs are absent")?;
-        if supplied.len() != formals.len() {
+        if supplied.len() != regions.saturating_add(formals.len()) {
             return Err("source method application changed its complete formal count");
+        }
+        for argument in supplied.by_ref().take(regions) {
+            self.charge(1)?;
+            if !matches!(argument, Argument::Lifetime(_)) {
+                return Err("source method early argument is not a lifetime");
+            }
         }
         let mut subject = None;
         for (&formal, argument) in formals.iter().zip(supplied) {
             self.charge(1)?;
-            let Argument::Type(ty) = argument else {
-                return Err("source method formal kind is outside the supported type domain");
-            };
-            if formal == self_parameter && subject.replace(ty).is_some() {
-                return Err("source method repeats its actual Self formal");
+            match argument {
+                Argument::Type(ty) => {
+                    if formal == self_parameter && subject.replace(ty).is_some() {
+                        return Err("source method repeats its actual Self formal");
+                    }
+                }
+                Argument::Const(_) if self.declaration_policies() => {}
+                _ => {
+                    return Err("source method formal kind is outside the supported type domain");
+                }
             }
         }
         let subject =
             subject.ok_or("source method application omitted its exact actual Self parameter")?;
-        if count == 0 {
-            self.trait_application(facts, subject, application, context)
-        } else {
-            self.applied_method_request(facts, subject, application, (formals, arguments), context)
-        }
-        .map(Some)
+        Ok((regions, subject))
     }
 
     fn selected_request(
@@ -185,31 +221,50 @@ impl Stage {
         facts: &Declarations,
         subject: TypeId,
         application: ApplicationId,
-        supplied: (&[ParameterId], GenericArgs),
+        supplied: (&[ParameterId], GenericArgs, usize),
         context: Context,
     ) -> Result<s::TraitApplicationRef, &'static str> {
-        let (formals, arguments) = supplied;
-        self.reserve(retained::new_map::<ParameterId, TypeId>(formals.len()))?;
-        let mut mapped = HashMap::default();
-        for (&formal, argument) in formals.iter().zip(
-            facts
-                .types
-                .arguments(arguments)
-                .ok_or("source method inputs disappeared")?,
-        ) {
-            self.charge(3)?;
-            let Argument::Type(ty) = argument else {
-                return Err("source method argument is outside its actual type formal domain");
+        let (formals, arguments, regions) = supplied;
+        let mut all = facts
+            .types
+            .arguments(arguments)
+            .ok_or("source method inputs disappeared")?;
+        self.reserve(
+            retained::new_map::<ParameterId, Argument>(formals.len())
+                .saturating_add(regions.saturating_mul(size_of::<crate::types::RegionId>())),
+        )?;
+        let mut leading = Vec::with_capacity(regions);
+        for argument in all.by_ref().take(regions) {
+            self.charge(1)?;
+            let Argument::Lifetime(region) = argument else {
+                return Err("source method early argument is not a lifetime");
             };
-            if !facts
-                .types
-                .parameter(formal)
-                .is_some_and(|parameter| matches!(parameter.kind, ParameterKind::Type { .. }))
-                || facts.types.kind(ty).is_none()
-            {
+            leading.push(region);
+        }
+        let mut mapped = HashMap::default();
+        for (&formal, argument) in formals.iter().zip(all) {
+            self.charge(3)?;
+            let valid = match (
+                argument,
+                facts
+                    .types
+                    .parameter(formal)
+                    .map(|parameter| parameter.kind),
+            ) {
+                (Argument::Type(ty), Some(ParameterKind::Type { .. })) => {
+                    facts.types.kind(ty).is_some()
+                }
+                (Argument::Const(term), Some(ParameterKind::Const { .. }))
+                    if self.declaration_policies() =>
+                {
+                    facts.types.const_kind(term).is_some()
+                }
+                _ => false,
+            };
+            if !valid {
                 return Err("source method changed its actual type formal or argument identity");
             }
-            if mapped.insert(formal, ty).is_some() {
+            if mapped.insert(formal, argument).is_some() {
                 return Err("source method repeats an actual callable formal");
             }
         }
@@ -225,16 +280,7 @@ impl Stage {
         let mut completed = Vec::with_capacity(arguments.len());
         for argument in arguments {
             self.charge(3)?;
-            let Argument::Type(ty) = argument else {
-                return Err("source method inherited non-type arguments require wider transport");
-            };
-            let Some(Kind::Parameter(parameter)) = facts.types.kind(ty) else {
-                return Err("source method implicit trait argument is not an actual formal");
-            };
-            let ty = *mapped
-                .get(&parameter)
-                .ok_or("source method omitted an inherited trait formal")?;
-            completed.push(Argument::Type(ty));
+            completed.push(self.substitute_method_argument(facts, argument, &leading, &mapped)?);
         }
         let declaration = self.address(DefId(actual.item.0))?;
         let subject = self.ty(facts, subject, context)?;
@@ -244,5 +290,51 @@ impl Stage {
             subject,
             arguments,
         })
+    }
+
+    fn substitute_method_argument(
+        &self,
+        facts: &Declarations,
+        argument: Argument,
+        leading: &[crate::types::RegionId],
+        mapped: &HashMap<ParameterId, Argument>,
+    ) -> Result<Argument, &'static str> {
+        match argument {
+            Argument::Type(ty) => {
+                let Some(Kind::Parameter(parameter)) = facts.types.kind(ty) else {
+                    return Err("source method implicit trait argument is not an actual formal");
+                };
+                mapped
+                    .get(&parameter)
+                    .copied()
+                    .ok_or("source method omitted an inherited trait formal")
+            }
+            Argument::Lifetime(region) if self.declaration_policies() => {
+                if region == crate::types::RegionId::STATIC {
+                    return Ok(Argument::Lifetime(region));
+                }
+                let Some((0, slot)) = region.bound_parts() else {
+                    return Err("source method inherited lifetime is outside its trait binder");
+                };
+                leading
+                    .get(usize::from(slot))
+                    .copied()
+                    .map(Argument::Lifetime)
+                    .ok_or("source method omitted an inherited trait lifetime")
+            }
+            Argument::Const(term) if self.declaration_policies() => {
+                if let Some(crate::types::arguments::ConstKind::Parameter(parameter)) =
+                    facts.types.const_kind(term)
+                {
+                    mapped
+                        .get(&parameter)
+                        .copied()
+                        .ok_or("source method omitted an inherited trait const formal")
+                } else {
+                    Ok(Argument::Const(term))
+                }
+            }
+            _ => Err("source method inherited non-type arguments require wider transport"),
+        }
     }
 }

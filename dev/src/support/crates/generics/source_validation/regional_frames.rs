@@ -99,7 +99,7 @@ impl<'a> BinderIndex<'a> {
         )?;
         index.walk(root, &children, &queries, work)?;
         index.complete(headers, work)?;
-        late_slots::validate(headers, work)?;
+        late_slots::validate(headers, profile, work)?;
         Ok(index)
     }
 

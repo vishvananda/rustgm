@@ -530,14 +530,17 @@ impl Builder<'_, '_> {
                 return Err("source application target has no actual function header");
             };
             let header = &rows.functions[index as usize];
-            if !header.regions.early.slice(&rows.region_slots)?.is_empty() {
+            let early = header.regions.early.slice(&rows.region_slots)?;
+            if !early.is_empty() && !self.profile.declaration_policies() {
                 return Err(
                     "source early/captured function applications require a wider complete profile",
                 );
             }
-            // Version thirteen: an inherent method's captured region arguments
-            // lead its type arguments; validation admitted no other capture.
-            (header.scope, header.regions.captures as usize)
+            // Captured and early region arguments lead type/const arguments.
+            (
+                header.scope,
+                (header.regions.captures as usize).saturating_add(early.len()),
+            )
         };
         let arguments = application.arguments.slice(&rows.arguments)?;
         if regions == 0

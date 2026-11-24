@@ -61,6 +61,7 @@ impl Stage {
         ty: TypeId,
         parent: Context,
         public: bool,
+        regions: Option<u32>,
     ) -> Result<(g::Signature, Context), &'static str> {
         self.signature_for(
             facts,
@@ -71,6 +72,7 @@ impl Stage {
             } else {
                 Purpose::Original
             },
+            regions,
         )
     }
 
@@ -128,7 +130,7 @@ impl Stage {
         } else {
             (context, Purpose::Call { body, value })
         };
-        let (signature, _) = self.signature_for(facts, ty, parent, purpose)?;
+        let (signature, _) = self.signature_for(facts, ty, parent, purpose, None)?;
         self.reserve(4 * size_of::<s::Type>() + retained::new_map::<super::Key, g::TypeRef>(1))?;
         let id = g::TypeRef(
             u32::try_from(self.rows.types.len()).map_err(|_| "source call type table overflow")?,
@@ -147,6 +149,7 @@ impl Stage {
         ty: TypeId,
         parent: Context,
         purpose: Purpose,
+        regions: Option<u32>,
     ) -> Result<(g::Signature, Context), &'static str> {
         self.charge(1)?;
         self.graph.require_arena(&facts.types)?;
@@ -159,6 +162,13 @@ impl Stage {
             return Ok(completed);
         }
         let parts = Parts::actual(facts, ty)?;
+        let count = match regions {
+            Some(total) if total >= parts.bound_regions => total,
+            Some(_) => {
+                return Err("source original signature differs from its actual lifetime scheme");
+            }
+            None => parts.bound_regions,
+        };
         let kind = match purpose {
             Purpose::Public => s::BinderKind::PublicFunction,
             Purpose::Original => s::BinderKind::OriginalFunction,
@@ -167,7 +177,7 @@ impl Stage {
         };
         let context = Context {
             body: parent.body,
-            ..self.frame(parent.owner, parent.frame, kind, parts.bound_regions)?
+            ..self.frame(parent.owner, parent.frame, kind, count)?
         };
         let signature = self.signature_roots(facts, parts, context, Roots::Demand)?;
         self.reserve(retained::new_map::<Key, (g::Signature, Context)>(1))?;

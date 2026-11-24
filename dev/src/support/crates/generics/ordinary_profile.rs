@@ -497,7 +497,7 @@ fn associated_method(
                 rows,
                 headers,
                 header,
-                roles.languages,
+                (roles.languages, roles.definition_policies != 0),
                 Constness::Ordinary,
                 roles.drop.zip(roles.pin),
                 work,
@@ -557,11 +557,16 @@ fn trait_const_method(
     let Some(owner) = roles.const_trait_impl(rows, headers, implementation, work)? else {
         return Ok(false);
     };
-    Ok(
-        conversions::method(rows, headers, header, false, Constness::Const, None, work)?
-            || roles.dereferences.contains(&Some(owner))
-                && captured::method(rows, headers, header, (true, Constness::Const), work)?,
-    )
+    Ok(conversions::method(
+        rows,
+        headers,
+        header,
+        (false, roles.definition_policies != 0),
+        Constness::Const,
+        None,
+        work,
+    )? || roles.dereferences.contains(&Some(owner))
+        && captured::method(rows, headers, header, (true, Constness::Const), work)?)
 }
 
 /// Version thirteen: an inherent method may be `const`. Its original is then
@@ -652,13 +657,14 @@ fn functions(
         {
             return Err("source provided associated bodies require a wider explicit profile");
         }
-        let late_free = bodies
+        let free_regions = bodies
             && header.parent.is_none()
             && header.regions.captures == 0
-            && header.regions.early.start == header.regions.early.end;
+            && (roles.definition_policies != 0
+                || header.regions.early.start == header.regions.early.end);
         if matches!(header.body, FunctionBody::Original(_))
             && header.regions.total != 0
-            && !(profile.conversions() && (associated || late_free))
+            && !(profile.conversions() && (associated || free_regions))
         {
             return Err("source original region formals require their complete wider body profile");
         }

@@ -234,14 +234,19 @@ fn callable(
             &facts.types,
             work,
         )?;
-        staged_headers::scheme_ports::from_rows(rows, raw, work, |reference, work| {
-            match port.region(reference, work)? {
+        staged_headers::scheme_ports::from_rows(
+            rows,
+            raw,
+            None,
+            work,
+            |reference, work| match port.region(reference, work)? {
                 Demand::Ready(region) => Ok(region),
                 Demand::Blocked(_) => Err(error(
                     "selected callable scheme requires its actual pending region producer",
                 )),
-            }
-        })?
+            },
+            |declaration, work| view.definition(declaration, work),
+        )?
     };
     let receiver = staged_headers::scheme_ports::receiver_from(
         &facts.types,

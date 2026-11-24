@@ -87,6 +87,11 @@ reification, pointer calls, and fresh client invariance enforcement.
 struct array statics (const and runtime), promoted byte-array reference statics,
 slice-bearing struct statics, function-owned cyclic vtable statics in `const fn`,
 and private-static access rejection in fresh clients.
+`spec/source-early-lifetime-transport/outcomes.json` checks early-bound function
+lifetimes, function and impl region outlives bounds, interleaved late/early
+lifetimes, unused declared lifetimes, captured-plus-early inherent and trait
+methods (const and runtime), provider-to-provider early applications, and fresh
+client outlives rejection.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

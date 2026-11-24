@@ -61,6 +61,9 @@ pub(super) fn signature(
         .late
         .slice(&rows.region_slots)
         .map_err(error)?;
+    if late.len() != header.regions.total as usize {
+        return Ok(false);
+    }
     work.charge(late.len())?;
     for reference in late {
         let slot = rows

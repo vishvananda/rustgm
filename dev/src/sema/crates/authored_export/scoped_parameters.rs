@@ -84,6 +84,7 @@ impl Stage {
             let declaration = owners[index];
             let owner = admitted[declaration.0 as usize].0;
             let declared = self.declared_scope_slots(
+                report,
                 facts,
                 owner,
                 declaration,
@@ -183,6 +184,7 @@ impl Stage {
 
     fn declared_scope_slots(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         owner: DefId,
         declaration: DeclarationRef,
@@ -225,7 +227,7 @@ impl Stage {
             && kind == DefKind::TypeAlias
             && facts.associated.owner(owner).is_some();
         if leading != Leading::Declaration && !trait_self && !associated_result {
-            self.region_slots(facts, owner, declaration, start)?;
+            self.region_slots(report, facts, owner, declaration, start)?;
         }
         let end = u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
         Ok(g::Range { start, end })
@@ -463,6 +465,7 @@ impl Stage {
 
     fn region_slots(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         owner: DefId,
         declaration: DeclarationRef,
@@ -492,6 +495,11 @@ impl Stage {
             if binding.replace(definition).is_some() {
                 return Err("source lifetime slot has duplicate declarations");
             }
+        }
+        if self.declaration_policies()
+            && let Some(scheme) = facts.lifetimes.functions.get(&owner)
+        {
+            self.function_region_bindings(report, facts, owner, scheme, first, &mut bindings)?;
         }
         for index in first..total {
             self.charge(1)?;
@@ -525,6 +533,90 @@ impl Stage {
         drop(bindings);
         if binding_bytes != 0 {
             self.release_temporary(binding_bytes)?;
+        }
+        Ok(())
+    }
+
+    fn function_region_bindings(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+        scheme: &crate::sema::lifetimes::FunctionRegions,
+        first: u32,
+        bindings: &mut [Option<DefId>],
+    ) -> Result<(), &'static str> {
+        use crate::{
+            resolve::unit::NodeKey,
+            syntax::{ast::Kind as Syntax, item::GenericFlavor},
+        };
+        for &(definition, index) in &scheme.early {
+            self.charge(1)?;
+            if u32::from(index) < first {
+                return Err("source early lifetime overlaps a captured slot");
+            }
+            let binding = bindings
+                .get_mut(usize::from(index))
+                .ok_or("source early lifetime exceeds its function header")?;
+            if binding.replace(definition).is_some() {
+                return Err("source early lifetime slot has duplicate declarations");
+            }
+        }
+        if !scheme.has_declared_late {
+            return Ok(());
+        }
+        let Some(source) = report
+            .resolution
+            .definitions
+            .get(owner.0 as usize)
+            .and_then(|definition| definition.node)
+        else {
+            return Ok(());
+        };
+        let unit = report.package.unit(source.file);
+        let ast = &unit.configured.ast;
+        let Syntax::Item(item) = ast.node(source.node).kind else {
+            return Ok(());
+        };
+        for &raw in ast.list(ast.items[item as usize].generics) {
+            self.charge(1)?;
+            if !unit.configured.active[raw.get() as usize] {
+                continue;
+            }
+            let mut node = raw;
+            while let Syntax::Attributed { value, .. } = ast.node(node).kind {
+                self.charge(1)?;
+                node = value;
+            }
+            let Syntax::Generic(index) = ast.node(node).kind else {
+                continue;
+            };
+            if ast.generics[index as usize].flavor != GenericFlavor::Lifetime {
+                continue;
+            }
+            let Some(definition) = facts
+                .node(NodeKey { node, ..source })
+                .and_then(|node| node.binding)
+            else {
+                continue;
+            };
+            let Some((0, slot)) = facts
+                .lifetimes
+                .named
+                .get(&definition)
+                .copied()
+                .and_then(crate::types::RegionId::bound_parts)
+            else {
+                continue;
+            };
+            if u32::from(slot) < first {
+                continue;
+            }
+            if let Some(cell) = bindings.get_mut(usize::from(slot))
+                && cell.is_none()
+            {
+                *cell = Some(definition);
+            }
         }
         Ok(())
     }

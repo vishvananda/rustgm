@@ -52,25 +52,49 @@ impl Arena {
         if expected.declaration != actual.declaration || left.len() != right.len() {
             return Err("source selected method changed its complete trait application");
         }
-        let roots = std::iter::once(Ok((expected.subject, actual.subject))).chain(
-            left.iter().zip(right).map(|(&a, &b)| match (a, b) {
-                (s::Argument::Type(a), s::Argument::Type(b)) => Ok((a, b)),
-                _ => Err("source selected method requires actual type-only trait arguments"),
-            }),
-        );
-        for roots in roots {
+        let rewrite = Rewrite::Application(request.target);
+        self.goal_root(
+            domains,
+            (expected.subject, actual.subject),
+            rewrite,
+            caller,
+            opening,
+            work,
+        )?;
+        for (&a, &b) in left.iter().zip(right) {
             work.charge(1)?;
-            let (left, right) = roots?;
-            self.goal_root(
-                domains,
-                (left, right),
-                Rewrite::Application(request.target),
-                caller,
-                opening,
-                work,
-            )?;
+            self.goal_argument(domains, (a, b), rewrite, caller, opening, work)?;
         }
         Ok(())
+    }
+    fn goal_argument(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        (left, right): (s::Argument, s::Argument),
+        rewrite: Rewrite,
+        caller: Context,
+        opening: Opening,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match (left, right) {
+            (s::Argument::Type(a), s::Argument::Type(b)) => {
+                self.goal_root(domains, (a, b), rewrite, caller, opening, work)
+            }
+            (s::Argument::Region(a), s::Argument::Region(b)) if domains.declaration_policies => {
+                let left = uses::region(domains, self, a, rewrite, work)?;
+                let right = uses::region(domains, self, b, Rewrite::Original, work)?;
+                if !self.same_region(domains, (left, right), opening, work)? {
+                    return Err("source selected method changed a trait lifetime argument");
+                }
+                Ok(())
+            }
+            (s::Argument::Const(a), s::Argument::Const(b)) if domains.declaration_policies => {
+                let left = self.const_node(domains, a, rewrite, work)?;
+                let right = self.const_node(domains, b, Rewrite::Original, work)?;
+                self.same(domains, left, right, opening, work)
+            }
+            _ => Err("source selected method requires actual type-only trait arguments"),
+        }
     }
     fn trait_goal(
         &mut self,
@@ -97,6 +121,10 @@ impl Arena {
         let actual = &rows.trait_applications[method.0 as usize];
         let arguments = actual.arguments.slice(&rows.arguments)?;
         let applied = application.arguments.slice(&rows.arguments)?;
+        let regions = applied
+            .iter()
+            .take_while(|argument| matches!(argument, s::Argument::Region(_)))
+            .count();
         let range = domains
             .headers
             .scopes()
@@ -109,24 +137,45 @@ impl Arena {
                     + u32::try_from(offset)
                         .map_err(|_| "source method trait slot ordinal overflow")?,
             );
+            if slot.kind == s::ParameterKind::Region {
+                if !domains.declaration_policies {
+                    return Err("source method target lost its actual trait type formal");
+                }
+                let Some(&expected) = applied.get(slot.index as usize) else {
+                    return Err("source method target omitted its actual trait lifetime formal");
+                };
+                let Some(&actual) = arguments.get(argument) else {
+                    return Err("source method goal omitted its actual trait lifetime argument");
+                };
+                argument += 1;
+                self.goal_argument(
+                    domains,
+                    (expected, actual),
+                    Rewrite::Original,
+                    caller,
+                    opening,
+                    work,
+                )?;
+                continue;
+            }
             let position =
                 domains
                     .headers
                     .scopes()
                     .type_argument_position(target.scope, reference, work)?;
-            let Some(&s::Argument::Type(expected)) = applied.get(position as usize) else {
+            let Some(&expected) = applied.get(regions.saturating_add(position as usize)) else {
                 return Err("source method target lost its actual trait type formal");
             };
             let actual = if slot.definition == Some(trait_.self_definition) {
-                actual.subject
+                s::Argument::Type(actual.subject)
             } else {
-                let Some(&s::Argument::Type(root)) = arguments.get(argument) else {
+                let Some(&actual) = arguments.get(argument) else {
                     return Err("source method goal omitted its actual trait type argument");
                 };
                 argument += 1;
-                root
+                actual
             };
-            self.goal_root(
+            self.goal_argument(
                 domains,
                 (expected, actual),
                 Rewrite::Original,

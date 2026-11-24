@@ -170,13 +170,20 @@ impl Arena {
             .declaration
             .declaration;
         let (late, binder) = match domains.target(declaration, work)? {
-            Target::Function(header) => (
-                rows.binders[header.callable.binder.0 as usize]
-                    .count
-                    .checked_sub(header.regions.captures)
-                    .ok_or("source reified target captures exceed its public frame")?,
-                Some(header.callable.binder),
-            ),
+            Target::Function(header) => {
+                if header.regions.captures > rows.binders[header.callable.binder.0 as usize].count {
+                    return Err("source reified target captures exceed its public frame");
+                }
+                (
+                    header
+                        .regions
+                        .late
+                        .end
+                        .checked_sub(header.regions.late.start)
+                        .ok_or("source reified target late slot range is invalid")?,
+                    Some(header.callable.binder),
+                )
+            }
             Target::Constructor { .. } => (0, None),
         };
         let actual = Flags::of(target);

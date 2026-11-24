@@ -45,18 +45,41 @@ pub(in crate::sema::crates::typed_headers) fn require_regions(
         return Err("imported method scheme lacks its complete actual function row");
     };
     let raw = &rows.functions[index as usize];
+    let wide = descriptor.profile().declaration_policies();
     if scheme.total != raw.regions.total
         || scheme.captures != raw.regions.captures
-        || !scheme.early.is_empty()
-        || raw.regions.early.start != raw.regions.early.end
-        || scheme.has_declared_late
+        || (!wide
+            && (!scheme.early.is_empty()
+                || raw.regions.early.start != raw.regions.early.end
+                || scheme.has_declared_late))
     {
         return Err("imported method changed its exact supported callable region scheme");
     }
+    let early = raw.regions.early.slice(&rows.region_slots)?;
     let late = raw.regions.late.slice(&rows.region_slots)?;
     let bounds = raw.regions.bounds.slice(&rows.region_bounds)?;
-    if late.len() != scheme.late.len() || bounds.len() != scheme.bounds.len() {
+    if early.len() != scheme.early.len()
+        || late.len() != scheme.late.len()
+        || bounds.len() != scheme.bounds.len()
+    {
         return Err("imported method omitted actual late lifetime or region-bound inputs");
+    }
+    for (&slot, &(actual_def, actual_index)) in early.iter().zip(&scheme.early) {
+        *steps = steps.saturating_add(1);
+        let slot = rows
+            .slots
+            .get(slot.0 as usize)
+            .ok_or("imported method early slot is outside its actual formal table")?;
+        let binding = slot
+            .definition
+            .ok_or("imported method early slot omitted its actual lifetime definition")?;
+        if slot.owner != row
+            || slot.kind != s::ParameterKind::Region
+            || slot.index != u32::from(actual_index)
+            || catalog.definition_at(owner, binding)? != actual_def
+        {
+            return Err("imported method early slot changed its actual owner/kind/ordinal");
+        }
     }
     for (&slot, &actual) in late.iter().zip(&scheme.late) {
         *steps = steps.saturating_add(1);

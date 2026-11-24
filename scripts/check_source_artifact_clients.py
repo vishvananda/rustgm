@@ -52,7 +52,8 @@ def main():
                                  "source-dynamic-transport",
                                  "source-enum-policy-and-dyn-inherent",
                                  "source-fn-lifetime-transport",
-                                 "source-static-aggregate-transport"))
+                                 "source-static-aggregate-transport",
+                                 "source-early-lifetime-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

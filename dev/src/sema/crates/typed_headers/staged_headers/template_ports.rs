@@ -85,6 +85,7 @@ pub(super) fn prepare(
                 &mut callables,
                 (&owners, &parameters),
                 callable,
+                context.descriptor.profile().declaration_policies(),
                 budget,
             )?;
             let ty = facts
@@ -254,21 +255,26 @@ impl Constructor<'_> {
     }
 }
 
-/// A callable without captured slots registers its public signature. Version
-/// thirteen: an inherent method's captured slots become its template's leading
-/// early parameters and its own late slots its public late frame, exactly as a
-/// local method template relocates them. That template is rebuilt here from
-/// the method's original signature and region scheme.
+/// A callable without captured, early, bounded or omitted slots registers its
+/// public signature. Otherwise its template is rebuilt from the original
+/// signature and region scheme, relocating captured and early lifetimes into
+/// the template's leading parameters and keeping only used late slots in its
+/// public binder frame.
 fn registration(
     types: &mut crate::types::Store,
     callables: &mut Templates,
     formals: (&[ItemId], &[ParameterId]),
     callable: &super::formal_headers::Callable,
+    declaration_policies: bool,
     budget: &mut Headers,
 ) -> Result<(), Error> {
     let (owners, parameters) = formals;
     let (signature, regions) = (callable.header.signature, &callable.regions);
-    if regions.captures == 0 {
+    let needs_template = regions.captures != 0
+        || !regions.early.is_empty()
+        || !regions.bounds.is_empty()
+        || regions.late.len() != regions.total as usize;
+    if !needs_template {
         return register(
             types,
             callables,
@@ -277,7 +283,7 @@ fn registration(
             callable.header.callable,
         );
     }
-    if !regions.bounds.is_empty() {
+    if !declaration_policies && !regions.bounds.is_empty() {
         return Err(error(
             "source captured method region bounds require their wider callable profile",
         ));
@@ -292,20 +298,58 @@ fn registration(
     budget.reserve(
         (regions.total as usize)
             .saturating_mul(size_of::<crate::types::RegionId>())
+            .saturating_add(
+                regions
+                    .bounds
+                    .len()
+                    .saturating_mul(2 * size_of::<crate::types::outlives::Pair>()),
+            )
             .saturating_add(types.node_allocation_bound(inputs.saturating_add(2)))
             .saturating_add(callables.registration_allocation_bound(parameters.len(), 1)),
     )?;
     let mut work = 0;
     let mapping = regions.callable_mapping(&mut work).map_err(error)?;
-    budget.charge(work)?;
+    budget.charge(work.saturating_add(regions.bounds.len()))?;
+    let bounds = template_bounds(&regions.bounds, &mapping)?;
+    let early = u32::try_from((regions.captures as usize).saturating_add(regions.early.len()))
+        .map_err(|_| error("source callable has too many early slots"))?;
     let late = u32::try_from(regions.late.len())
         .map_err(|_| error("source captured method has too many late slots"))?;
     let template = crate::types::substitute::Bound::new(mapping)
         .signature(types, signature, late)
         .map_err(error)?;
+    if early == 0 && bounds.is_empty() {
+        return register(types, callables, owners, parameters, template);
+    }
     callables
-        .insert_scoped(types, owners, template, regions.captures, &[], parameters)
+        .insert_scoped(types, owners, template, early, &bounds, parameters)
         .map_err(error)
+}
+
+fn template_bounds(
+    bounds: &[crate::types::outlives::Pair],
+    mapping: &[crate::types::RegionId],
+) -> Result<Vec<crate::types::outlives::Pair>, Error> {
+    let map = |region: crate::types::RegionId| -> Result<crate::types::RegionId, Error> {
+        if region == crate::types::RegionId::STATIC {
+            return Ok(region);
+        }
+        let Some((0, index)) = region.bound_parts() else {
+            return Err(error("source callable bound parameter is invalid"));
+        };
+        let Some((1, early)) = mapping
+            .get(usize::from(index))
+            .and_then(|mapped| mapped.bound_parts())
+        else {
+            return Err(error("source callable bounds require early parameters"));
+        };
+        crate::types::RegionId::bound(0, early).map_err(error)
+    };
+    let mut result = Vec::with_capacity(bounds.len());
+    for &(longer, shorter) in bounds {
+        result.push((map(longer)?, map(shorter)?));
+    }
+    Ok(result)
 }
 
 /// Both private preparation owners supply their already authenticated complete

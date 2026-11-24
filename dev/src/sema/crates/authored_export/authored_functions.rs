@@ -38,16 +38,22 @@ impl Stage {
             .get(index as usize)
             .ok_or("source callable header index is stale")?;
         let binder = header.callable.binder;
-        // Version thirteen: an inherent method's captured public slots come
-        // from its application, so a Call opens only the slots after them.
-        let count = self
+        // Captured and early slots come from the application; a Call opens
+        // only the callable's late-bound slots.
+        let frame = self
             .rows
             .binders
             .get(binder.0 as usize)
-            .ok_or("source callable frame is unknown")?
-            .count
-            .checked_sub(header.regions.captures)
-            .ok_or("source callable captures exceed its public frame")?;
+            .ok_or("source callable frame is unknown")?;
+        if header.regions.captures > frame.count {
+            return Err("source callable captures exceed its public frame");
+        }
+        let count = header
+            .regions
+            .late
+            .end
+            .checked_sub(header.regions.late.start)
+            .ok_or("source callable late slot range is invalid")?;
         Ok((binder, count))
     }
     pub(super) fn functions(
@@ -174,7 +180,9 @@ impl Stage {
                     declared_captures(facts, owner, self.declaration_policies())
                         == Some(scheme.captures)
                 });
-        if scheme.captures != 0 && !captured || !scheme.early.is_empty() {
+        if scheme.captures != 0 && !captured
+            || (!scheme.early.is_empty() && !self.declaration_policies())
+        {
             return Err(
                 "source function early/captured callable frame transport is not implemented",
             );
@@ -184,7 +192,9 @@ impl Stage {
             frame: None,
             body: None,
         };
-        let (original, context) = self.signature(facts, function.signature, parent, false)?;
+        let regions = self.declaration_policies().then_some(scheme.total);
+        let (original, context) =
+            self.signature(facts, function.signature, parent, false, regions)?;
         if self.rows.binders[original.binder.0 as usize].count != scheme.total {
             return Err("source original signature differs from its actual lifetime scheme");
         }
@@ -202,7 +212,7 @@ impl Stage {
         if item.0 != function.definition.0 {
             return Err("source public callable belongs to another declaration");
         }
-        let (callable, _) = self.signature(facts, signature, parent, true)?;
+        let (callable, _) = self.signature(facts, signature, parent, true, regions)?;
         let regions = self.function_regions(scheme, context)?;
         let inputs = self.function_inputs(facts, function.definition, context)?;
         let (formals, receiver) = self.formals(report, facts, function, context)?;
@@ -408,14 +418,37 @@ impl Stage {
         scheme: &crate::sema::lifetimes::FunctionRegions,
         context: Context,
     ) -> Result<s::RegionScheme, &'static str> {
-        let start = u32::try_from(self.rows.region_slots.len())
+        let early_start = u32::try_from(self.rows.region_slots.len())
             .map_err(|_| "source function slot table overflow")?;
         self.reserve(
             scheme
-                .late
+                .early
                 .len()
+                .saturating_add(scheme.late.len())
                 .saturating_mul(4 * size_of::<s::SlotRef>()),
         )?;
+        for &(definition, index) in &scheme.early {
+            self.charge(1)?;
+            let slot = self
+                .inputs
+                .regions
+                .get(&(context.owner, u32::from(index)))
+                .copied()
+                .ok_or("source callable early slot is not declared by this original")?;
+            let expected = Some(self.declaration(definition)?);
+            if self
+                .rows
+                .slots
+                .get(slot.0 as usize)
+                .is_none_or(|row| row.definition != expected)
+            {
+                return Err("source callable early slot lost its declared lifetime identity");
+            }
+            self.rows.region_slots.push(slot);
+        }
+        let early_end = u32::try_from(self.rows.region_slots.len())
+            .map_err(|_| "source function slot table overflow")?;
+        let late_start = early_end;
         for &index in &scheme.late {
             self.charge(1)?;
             let slot = self
@@ -426,16 +459,19 @@ impl Stage {
                 .ok_or("source callable late slot is not declared by this original")?;
             self.rows.region_slots.push(slot);
         }
-        let late = g::Range {
-            start,
-            end: u32::try_from(self.rows.region_slots.len())
-                .map_err(|_| "source function slot table overflow")?,
-        };
+        let late_end = u32::try_from(self.rows.region_slots.len())
+            .map_err(|_| "source function slot table overflow")?;
         Ok(s::RegionScheme {
             total: scheme.total,
             captures: scheme.captures,
-            early: g::Range { start, end: start },
-            late,
+            early: g::Range {
+                start: early_start,
+                end: early_end,
+            },
+            late: g::Range {
+                start: late_start,
+                end: late_end,
+            },
             bounds: self.region_bounds(&scheme.bounds, context)?,
         })
     }

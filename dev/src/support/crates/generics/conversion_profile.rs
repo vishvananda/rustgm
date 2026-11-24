@@ -74,7 +74,7 @@ pub(super) fn method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
-    unsafe_impls: bool,
+    (unsafe_impls, declaration_policies): (bool, bool),
     impl_effect: Constness,
     pin_drop: Option<(DeclarationRef, DeclarationRef)>,
     work: &mut Work,
@@ -92,13 +92,14 @@ pub(super) fn method(
         || !implementation.polarity.is_positive()
         || implementation.unsafe_ && !unsafe_impls
         || implementation.region_captures != 0
-        || !implementation
-            .region_bounds
-            .slice(&rows.region_bounds)?
-            .is_empty()
+        || (!declaration_policies
+            && !implementation
+                .region_bounds
+                .slice(&rows.region_bounds)?
+                .is_empty())
         || function.constness == Constness::Conditional
         || function.regions.captures != 0
-        || function.regions.early.start != function.regions.early.end
+        || (!declaration_policies && function.regions.early.start != function.regions.early.end)
     {
         return Ok(false);
     }

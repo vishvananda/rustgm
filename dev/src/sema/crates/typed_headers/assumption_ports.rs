@@ -152,7 +152,7 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
         if args.is_empty() {
             return Ok(GenericArgs::EMPTY);
         }
-        let consts = self
+        let wide = self
             .port
             .rows()
             .descriptor()
@@ -160,8 +160,7 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
             .declaration_policies();
         if args.iter().any(|argument| match argument {
             Argument::Type(_) => false,
-            Argument::Const(_) => !consts,
-            Argument::Lifetime(_) => true,
+            Argument::Const(_) | Argument::Lifetime(_) => !wide,
         }) {
             return Err(error(
                 "private assumption arguments require their later regional profile",

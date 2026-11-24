@@ -348,7 +348,10 @@ fn header_port(
 ) -> Result<Demand<(ImportedDeclarationId, Option<ImportedBodyId>)>, Error> {
     let rows = port.rows();
     let declaration = port.declaration(owner, work)?;
-    if raw.regions.captures != 0 || raw.regions.early.start != raw.regions.early.end {
+    if raw.regions.captures != 0
+        || raw.regions.early.start != raw.regions.early.end
+        || raw.regions.late.end.saturating_sub(raw.regions.late.start) != raw.regions.total
+    {
         let dependency = Dependency::DeclaredLifetime(declaration);
         return Ok(Demand::Blocked(dependency));
     }

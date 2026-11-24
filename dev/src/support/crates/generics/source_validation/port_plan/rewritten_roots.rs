@@ -247,7 +247,7 @@ impl Arena {
     /// Version thirteen: a const argument's node. A value is canonical by
     /// validation; a rigid term follows its slot's rewrite as a type
     /// parameter does, and an applied term is its caller's original term.
-    fn const_node(
+    pub(super) fn const_node(
         &mut self,
         domains: &DomainIndex<'_, '_>,
         term: s::ConstRef,

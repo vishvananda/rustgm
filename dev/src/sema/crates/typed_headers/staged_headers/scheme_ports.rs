@@ -10,11 +10,18 @@ pub(super) fn prepare(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
     raw: &s::FunctionHeader,
+    scope: &s::ParameterScope,
     budget: &mut Headers,
 ) -> Result<FunctionRegions, Error> {
-    let scheme = from_rows(context.descriptor.rows(), raw, budget, |reference, _| {
-        graph.region(reference)
-    })?;
+    let scheme = from_rows(
+        context.descriptor.rows(),
+        raw,
+        Some(scope),
+        budget,
+        |reference, _| graph.region(reference),
+        |declaration, budget| context.definition(declaration, budget),
+    )?;
+    budget.observed.vector(&scheme.early);
     budget.observed.vector(&scheme.late);
     budget.observed.vector(&scheme.bounds);
     Ok(scheme)
@@ -22,17 +29,24 @@ pub(super) fn prepare(
 pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_cursor::Budget>(
     rows: s::ValidatedView<'_>,
     raw: &s::FunctionHeader,
+    scope: Option<&s::ParameterScope>,
     budget: &mut B,
     mut region: impl FnMut(s::RegionRef, &mut B) -> Result<crate::types::RegionId, Error>,
+    mut definition: impl FnMut(
+        crate::support::crates::owner_catalog::DeclarationRef,
+        &mut B,
+    ) -> Result<crate::resolve::model::DefId, Error>,
 ) -> Result<FunctionRegions, Error> {
     let captures = raw.regions.captures;
+    let wide = rows.descriptor().profile().declaration_policies();
     if captures != 0 && !associated_captures(rows.descriptor(), raw)
-        || raw.regions.early.start != raw.regions.early.end
+        || (!wide && raw.regions.early.start != raw.regions.early.end)
     {
         return Err(error(
             "source callable requires its wider captured/early region scheme",
         ));
     }
+    let early = raw.regions.early.slice(&rows.region_slots).map_err(error)?;
     let late = raw.regions.late.slice(&rows.region_slots).map_err(error)?;
     let bounds = raw
         .regions
@@ -40,37 +54,30 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
         .slice(&rows.region_bounds)
         .map_err(error)?;
     budget.reserve(
-        late.len().saturating_mul(size_of::<u16>()).saturating_add(
-            bounds
-                .len()
-                .saturating_mul(size_of::<crate::types::outlives::Pair>()),
-        ),
+        early
+            .len()
+            .saturating_mul(size_of::<(crate::resolve::model::DefId, u16)>())
+            .saturating_add(late.len().saturating_mul(size_of::<u16>()))
+            .saturating_add(
+                bounds
+                    .len()
+                    .saturating_mul(size_of::<crate::types::outlives::Pair>()),
+            ),
     )?;
     let mut scheme = FunctionRegions {
         total: raw.regions.total,
         captures,
-        early: Vec::new(),
+        early: Vec::with_capacity(early.len()),
         late: Vec::with_capacity(late.len()),
         has_declared_late: false,
         bounds: Vec::with_capacity(bounds.len()),
     };
+    decode_early(rows, raw, early, &mut scheme, budget, &mut definition)?;
     for slot in late {
         budget.charge(1)?;
-        let slot = rows
-            .slots
-            .get(slot.0 as usize)
-            .ok_or_else(|| error("source callable late slot is outside its actual table"))?;
-        if slot.owner != raw.declaration
-            || slot.kind != s::ParameterKind::Region
-            || slot.index < captures
-            || slot.index >= scheme.total
-        {
-            return Err(error(
-                "source callable late slot changed actual owner/kind/ordinal",
-            ));
-        }
+        let slot = checked_region_slot(rows, raw, *slot, captures, scheme.total)?;
         if slot.definition.is_some() {
-            if !rows.descriptor().profile().declaration_policies() {
+            if !wide {
                 return Err(error(
                     "source named late lifetime requires its wider callable profile",
                 ));
@@ -81,6 +88,16 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
             error("source callable late slot exceeds canonical lifetime identity space")
         })?);
     }
+    if wide
+        && !scheme.has_declared_late
+        && (captures as usize)
+            .saturating_add(early.len())
+            .saturating_add(late.len())
+            < scheme.total as usize
+        && let Some(scope) = scope
+    {
+        scheme.has_declared_late = has_unused_declared_late(rows, scope, &scheme, budget)?;
+    }
     for bound in bounds {
         budget.charge(1)?;
         scheme.bounds.push((
@@ -89,6 +106,81 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
         ));
     }
     Ok(scheme)
+}
+
+fn checked_region_slot(
+    rows: s::ValidatedView<'_>,
+    raw: &s::FunctionHeader,
+    reference: s::SlotRef,
+    captures: u32,
+    total: u32,
+) -> Result<s::ParameterSlot, Error> {
+    let slot = rows
+        .slots
+        .get(reference.0 as usize)
+        .copied()
+        .ok_or_else(|| error("source callable late slot is outside its actual table"))?;
+    if slot.owner != raw.declaration
+        || slot.kind != s::ParameterKind::Region
+        || slot.index < captures
+        || slot.index >= total
+    {
+        return Err(error(
+            "source callable late slot changed actual owner/kind/ordinal",
+        ));
+    }
+    Ok(slot)
+}
+
+fn decode_early<B: super::super::recipe_cursor::Budget>(
+    rows: s::ValidatedView<'_>,
+    raw: &s::FunctionHeader,
+    early: &[s::SlotRef],
+    scheme: &mut FunctionRegions,
+    budget: &mut B,
+    definition: &mut impl FnMut(
+        crate::support::crates::owner_catalog::DeclarationRef,
+        &mut B,
+    ) -> Result<crate::resolve::model::DefId, Error>,
+) -> Result<(), Error> {
+    for &reference in early {
+        budget.charge(1)?;
+        let slot = checked_region_slot(rows, raw, reference, scheme.captures, scheme.total)?;
+        let binding = slot
+            .definition
+            .ok_or_else(|| error("source callable early slot omitted its declared lifetime"))?;
+        let index = u16::try_from(slot.index).map_err(|_| {
+            error("source callable early slot exceeds canonical lifetime identity space")
+        })?;
+        scheme.early.push((definition(binding, budget)?, index));
+    }
+    Ok(())
+}
+
+fn has_unused_declared_late<B: super::super::recipe_cursor::Budget>(
+    rows: s::ValidatedView<'_>,
+    scope: &s::ParameterScope,
+    scheme: &FunctionRegions,
+    budget: &mut B,
+) -> Result<bool, Error> {
+    for slot in scope.declared.slice(&rows.slots).map_err(error)? {
+        budget.charge(1)?;
+        if slot.kind != s::ParameterKind::Region
+            || slot.index < scheme.captures
+            || slot.definition.is_none()
+        {
+            continue;
+        }
+        budget.charge(scheme.early.len())?;
+        if !scheme
+            .early
+            .iter()
+            .any(|&(_, index)| u32::from(index) == slot.index)
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// A captured callable opens the verified leading slots from its true owner.
@@ -170,7 +262,8 @@ pub(super) fn callable_effect(
             || (descriptor.profile().declaration_policies()
                 && matches!(raw.body, s::FunctionBody::Original(_))));
     if raw.regions.captures != 0 && !associated_captures(descriptor, raw)
-        || raw.regions.early.start != raw.regions.early.end
+        || (raw.regions.early.start != raw.regions.early.end
+            && !descriptor.profile().declaration_policies())
         || (raw.constness != Constness::Ordinary
             && !conditional
             && !(constant

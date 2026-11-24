@@ -251,12 +251,17 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        // Version thirteen: an inherent method's captured public slots are its
-        // application's leading region arguments; the opening binds the rest.
-        let count = rows.binders[target.callable.binder.0 as usize]
-            .count
-            .checked_sub(target.regions.captures)
-            .ok_or("source Call target captures exceed its public frame")?;
+        // Captured and early slots are supplied by the application; the
+        // opening binds the callable's late-bound slots.
+        if target.regions.captures > rows.binders[target.callable.binder.0 as usize].count {
+            return Err("source Call target captures exceed its public frame");
+        }
+        let count = target
+            .regions
+            .late
+            .end
+            .checked_sub(target.regions.late.start)
+            .ok_or("source Call target late slot range is invalid")?;
         match request.opening {
             None if count == 0 => Ok(()),
             Some(opening) if count > 0 && opening.binder == target.callable.binder => {
@@ -328,13 +333,16 @@ impl DomainIndex<'_, '_> {
                     self.headers
                         .scopes()
                         .type_argument_position(target.scope, *slot, work)?;
+                let regions = (target.regions.captures as usize)
+                    .saturating_add(target.regions.early.slice(&rows.region_slots)?.len());
                 let arguments = application.arguments.slice(&rows.arguments)?;
                 if method.declaration
                     != (s::DeclarationAddress {
                         artifact: s::ArtifactRef(0),
                         declaration: parent,
                     })
-                    || arguments.get(position as usize) != Some(&s::Argument::Type(method.subject))
+                    || arguments.get(regions.saturating_add(position as usize))
+                        != Some(&s::Argument::Type(method.subject))
                 {
                     return Err(
                         "source method request lost its exact declared Self argument mapping",
