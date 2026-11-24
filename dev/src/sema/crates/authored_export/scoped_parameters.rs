@@ -1,7 +1,7 @@
 //! Actual generic ancestry stays shared; lifetime slots retain their own indices.
 use super::{DeclarationRef, Declarations, DefId, DefKind, Report, Stage, g, s};
 use crate::{
-    support::bindings::LangItem,
+    support::{bindings::LangItem, retained},
     types::{
         Kind,
         arguments::{Argument, ConstKind},
@@ -22,13 +22,19 @@ impl Stage {
             .definitions
             .len()
             .saturating_mul(size_of::<Option<NonZeroU32>>());
-        let owner_bytes = admitted.len().saturating_mul(size_of::<DefId>());
+        let owner_bytes = admitted.len().saturating_mul(size_of::<DeclarationRef>());
         self.reserve(index_bytes.saturating_add(owner_bytes))?;
         let mut indices = vec![None; self.definitions.len()];
         let mut owners = Vec::with_capacity(admitted.len());
-        for &(owner, kind) in admitted {
+        let mut slots = ScopeSlots::default();
+        // Admission assigns each declaration its position in this inventory.
+        for (declaration, &(owner, kind)) in admitted.iter().enumerate() {
             self.charge(1)?;
             if self.has_scope(report, facts, owner, kind) {
+                let declaration = DeclarationRef(
+                    u32::try_from(declaration)
+                        .map_err(|_| "source scope owner exceeds its declaration range")?,
+                );
                 let position = u32::try_from(owners.len().saturating_add(1))
                     .ok()
                     .and_then(NonZeroU32::new)
@@ -36,12 +42,15 @@ impl Stage {
                 if indices[owner.0 as usize].replace(position).is_some() {
                     return Err("source generic scope repeats an owner");
                 }
-                owners.push(owner);
+                owners.push(declaration);
+                slots.include(facts, owner);
             }
         }
         let owner_count = owners.len();
-        let forest_bytes = owner_count
-            .saturating_mul(2 * size_of::<Option<NonZeroU32>>() + size_of::<(NonZeroU32, u32)>());
+        let forest_bytes = owner_count.saturating_mul(
+            2 * size_of::<Option<NonZeroU32>>()
+                + size_of::<(NonZeroU32, u32, Option<NonZeroU32>)>(),
+        );
         self.reserve(owner_count.saturating_mul(size_of::<s::ParameterScope>()))?;
         self.reserve(forest_bytes)?;
         self.rows.scopes.reserve_exact(owner_count);
@@ -49,8 +58,9 @@ impl Stage {
         let mut next_sibling = vec![None; owner_count];
         let mut pending = Vec::with_capacity(owner_count);
         // Prepending while visiting increasing IDs keeps siblings in stack order.
-        for &owner in &owners {
+        for &declaration in &owners {
             self.charge(1)?;
+            let owner = admitted[declaration.0 as usize].0;
             let position = indices[owner.0 as usize].ok_or("source scope lost its position")?;
             if let Some(&parent) = facts.generics.parents.get(&owner) {
                 let parent = indices
@@ -61,29 +71,25 @@ impl Stage {
                 next_sibling[scope_index(position)] =
                     first_child[scope_index(parent)].replace(position);
             } else {
-                pending.push((position, 0_u32));
+                pending.push((position, 0_u32, None));
             }
         }
         drop(indices);
         self.release_temporary(index_bytes)?;
+        self.reserve_scope_slots(&slots)?;
         pending.reverse();
-        while let Some((position, captures)) = pending.pop() {
+        while let Some((position, captures, parent)) = pending.pop() {
             self.charge(1)?;
             let index = scope_index(position);
-            let owner = owners[index];
-            let declaration = self.declaration(owner)?;
+            let declaration = owners[index];
+            let owner = admitted[declaration.0 as usize].0;
             let declared = self.declared_scope_slots(
                 facts,
                 owner,
                 declaration,
                 report.resolution.definitions[owner.0 as usize].kind,
             )?;
-            let parent = facts
-                .generics
-                .parents
-                .get(&owner)
-                .map(|&parent| self.declaration(parent))
-                .transpose()?;
+            let parent = parent.map(|position| owners[scope_index(position)]);
             self.rows.scopes.push(s::ParameterScope {
                 owner: declaration,
                 parent,
@@ -94,9 +100,9 @@ impl Stage {
                 .checked_add(declared.end - declared.start)
                 .ok_or("source scope parameter count overflow")?;
             let mut child = first_child[index];
-            while let Some(position) = child {
-                pending.push((position, total));
-                child = next_sibling[scope_index(position)];
+            while let Some(child_position) = child {
+                pending.push((child_position, total, Some(position)));
+                child = next_sibling[scope_index(child_position)];
             }
         }
         if self.rows.scopes.len() != owner_count {
@@ -104,6 +110,50 @@ impl Stage {
         }
         drop((pending, first_child, next_sibling, owners));
         self.release_temporary(owner_bytes.saturating_add(forest_bytes))
+    }
+
+    fn reserve_scope_slots(&mut self, slots: &ScopeSlots) -> Result<(), &'static str> {
+        use crate::types::parameters::ParameterId;
+        let count = slots.parameters.saturating_add(slots.regions);
+        self.reserve(count.saturating_mul(size_of::<s::ParameterSlot>()))?;
+        self.rows
+            .slots
+            .try_reserve_exact(count)
+            .map_err(|_| "source generic slot column allocation failed")?;
+
+        let parameters = retained::new_map::<ParameterId, s::SlotRef>(slots.parameters);
+        self.reserve(parameters)?;
+        self.graph
+            .parameters
+            .try_reserve(slots.parameters)
+            .map_err(|_| "source generic parameter index allocation failed")?;
+        let retained = retained::map(&self.graph.parameters);
+        self.release_temporary(
+            parameters
+                .checked_sub(retained)
+                .ok_or("source generic parameter index exceeded its preflight")?,
+        )?;
+
+        let regions = retained::new_map::<(DeclarationRef, u32), s::SlotRef>(slots.regions);
+        self.reserve(regions)?;
+        self.inputs
+            .regions
+            .try_reserve(slots.regions)
+            .map_err(|_| "source generic region index allocation failed")?;
+        let retained = retained::map(&self.inputs.regions);
+        self.release_temporary(
+            regions
+                .checked_sub(retained)
+                .ok_or("source generic region index exceeded its preflight")?,
+        )
+    }
+
+    fn emit_scope_slot(&mut self, row: s::ParameterSlot) -> Result<(), &'static str> {
+        if self.rows.slots.len() == self.rows.slots.capacity() {
+            return Err("source generic slot column exceeded its preflight");
+        }
+        self.rows.slots.push(row);
+        Ok(())
     }
 
     fn has_scope(
@@ -330,16 +380,11 @@ impl Stage {
         let slot = s::SlotRef(
             u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?,
         );
-        self.reserve(crate::support::retained::new_map::<
-            crate::types::parameters::ParameterId,
-            s::SlotRef,
-        >(1))?;
         if self.graph.parameters.insert(id, slot).is_some() {
             return Err("source parameter identity has duplicate slot rows");
         }
-        self.reserve(4 * size_of::<s::ParameterSlot>())?;
         let ordinal = u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?;
-        self.rows.slots.push(s::ParameterSlot {
+        self.emit_scope_slot(s::ParameterSlot {
             owner: declaration,
             ordinal: if leading == Leading::Implementation {
                 ordinal - regions
@@ -352,8 +397,7 @@ impl Stage {
             definition,
             kind,
             default: None,
-        });
-        Ok(())
+        })
     }
 
     pub(super) fn nominal_parameter_defaults(
@@ -476,10 +520,6 @@ impl Stage {
             let slot = s::SlotRef(
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source region slot overflow")?,
             );
-            self.reserve(
-                4 * size_of::<s::ParameterSlot>()
-                    + crate::support::retained::new_map::<(DeclarationRef, u32), s::SlotRef>(1),
-            )?;
             if self
                 .inputs
                 .regions
@@ -489,14 +529,14 @@ impl Stage {
                 return Err("source lifetime has duplicate actual slot identities");
             }
             let definition = Some(self.declaration(definition)?);
-            self.rows.slots.push(s::ParameterSlot {
+            self.emit_scope_slot(s::ParameterSlot {
                 owner: declaration,
                 ordinal,
                 index,
                 definition,
                 kind: s::ParameterKind::Region,
                 default: None,
-            });
+            })?;
         }
         Ok(())
     }
@@ -508,18 +548,12 @@ impl Stage {
         declaration: DeclarationRef,
         start: u32,
     ) -> Result<(), &'static str> {
-        let captures = facts
-            .associated
-            .schema(owner)
-            .map_or(0, |schema| schema.captures);
-        let (first, total) = facts
-            .lifetimes
-            .functions
-            .get(&owner)
-            .map_or((0, captures), |scheme| (scheme.captures, scheme.total));
+        let (first, total) = region_interval(facts, owner);
         let named = facts.lifetimes.parameters.get(&owner);
         let binding_bytes = (total as usize).saturating_mul(size_of::<Option<DefId>>());
-        self.reserve(binding_bytes)?;
+        if binding_bytes != 0 {
+            self.reserve(binding_bytes)?;
+        }
         let mut bindings = vec![None; total as usize];
         for &definition in named.into_iter().flatten() {
             self.charge(1)?;
@@ -548,14 +582,9 @@ impl Stage {
                 .map_err(|_| "source region slot overflow")?
                 .checked_sub(start)
                 .ok_or("source region slot changed owner range")?;
-            self.reserve(4 * size_of::<s::ParameterSlot>())?;
             let slot = s::SlotRef(
                 u32::try_from(self.rows.slots.len()).map_err(|_| "source region slot overflow")?,
             );
-            self.reserve(crate::support::retained::new_map::<
-                (DeclarationRef, u32),
-                s::SlotRef,
-            >(1))?;
             if self
                 .inputs
                 .regions
@@ -564,18 +593,50 @@ impl Stage {
             {
                 return Err("source lifetime has duplicate actual slot identities");
             }
-            self.rows.slots.push(s::ParameterSlot {
+            self.emit_scope_slot(s::ParameterSlot {
                 owner: declaration,
                 ordinal,
                 index,
                 definition,
                 kind: s::ParameterKind::Region,
                 default: None,
-            });
+            })?;
         }
         drop(bindings);
-        self.release_temporary(binding_bytes)
+        if binding_bytes != 0 {
+            self.release_temporary(binding_bytes)?;
+        }
+        Ok(())
     }
+}
+
+#[derive(Default)]
+struct ScopeSlots {
+    parameters: usize,
+    regions: usize,
+}
+impl ScopeSlots {
+    fn include(&mut self, facts: &Declarations, owner: DefId) {
+        let parameters = facts.generics.parameters.get(&owner).map_or(0, Vec::len);
+        let named = facts.lifetimes.parameters.get(&owner).map_or(0, Vec::len);
+        let (first, total) = region_interval(facts, owner);
+        self.parameters = self.parameters.saturating_add(parameters);
+        self.regions = self
+            .regions
+            .saturating_add(named.max(total.saturating_sub(first) as usize));
+    }
+}
+
+fn region_interval(facts: &Declarations, owner: DefId) -> (u32, u32) {
+    let captures = facts
+        .associated
+        .schema(owner)
+        .map_or(0, |schema| schema.captures);
+    facts
+        .lifetimes
+        .functions
+        .get(&owner)
+        .map_or((0, captures), |scheme| (scheme.captures, scheme.total))
 }
 
 fn scope_index(position: NonZeroU32) -> usize {
