@@ -66,6 +66,7 @@ impl Columns {
             || !cold.associated_definition_inputs.is_empty()
             || !cold.enums.is_empty()
             || !cold.pattern_ranges.is_empty()
+            || !cold.dynamics.is_empty()
             || !cold.diagnostics.is_empty()
             || !cold.consts.is_empty()
             || !cold.array_lengths.is_empty()
@@ -83,6 +84,7 @@ impl Columns {
                 associated_definition_inputs: cold.associated_definition_inputs.clone(),
                 enums: cold.enums.clone(),
                 pattern_ranges: cold.pattern_ranges.clone(),
+                dynamics: cold.dynamics.clone(),
                 diagnostics: cold.diagnostics.clone(),
                 consts: cold.consts.clone(),
                 array_lengths: cold.array_lengths.clone(),

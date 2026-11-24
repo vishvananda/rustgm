@@ -1,7 +1,7 @@
 //! A source client pays each imported auto marker's application from its
 //! installed header budget, exactly the work and bytes that the observed
 //! interning attempted, and a repeated application pays only its lookup.
-use super::{AutoTrait, Bound, Declarations, bound, imported_application, role};
+use super::{AutoTrait, Bound, Declarations, bound, imported_application};
 use crate::{
     lower::instances::SourcePublication,
     resolve::body_origin::DeclarationOrigin,
@@ -64,7 +64,7 @@ fn imported_marker_bounds_pay_the_header_budget_once_per_marker() -> Result {
                 .source_bindings
                 .as_deref()
                 .ok_or("source client catalog")?
-                .auto_marker(role(marker), true)?
+                .auto_marker(marker.lang_item(), true)?
                 .ok_or("imported marker")?;
             assert!(
                 matches!(declaration.origin, DeclarationOrigin::Imported(_)),
@@ -109,7 +109,7 @@ fn imported_applications_pay_their_attempted_growth_once() -> Result {
         .source_bindings
         .as_deref()
         .ok_or("source client catalog")?
-        .auto_marker(role(AutoTrait::Send), true)?
+        .auto_marker(AutoTrait::Send.lang_item(), true)?
         .ok_or("imported Send")?;
     let arguments = facts
         .types

@@ -266,11 +266,9 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
                 depth,
                 slot,
             } => {
-                let frame = self
-                    .rows
-                    .binders
-                    .get(binder.0 as usize)
-                    .ok_or_else(|| error("reserved region lost its actual binder"))?;
+                let frame = slot_bindings::bound_target(&self.rows.binders, binder, depth, || {
+                    budget.charge(1)
+                })?;
                 self.view.definition(frame.owner, budget)?;
                 slot_bindings::bound(depth, slot, frame.count)?
             }

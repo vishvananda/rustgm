@@ -11,6 +11,10 @@ pub(super) struct NodeId(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum Region {
     Static,
+    ObjectBound {
+        depth: u16,
+        slot: u32,
+    },
     Bound {
         binder: g::BinderRef,
         slot: u32,
@@ -33,6 +37,14 @@ pub(super) enum Node {
         arguments: NodeId,
     },
     NominalEnd,
+    Dynamic {
+        bounds: NodeId,
+        region: Region,
+    },
+    DynamicBounds {
+        recipe: s::DynamicTypeRef,
+        arguments: NodeId,
+    },
     /// A declared result stays structural: its member names one trait, and the
     /// argument chain is its Self followed by that trait's complete arguments.
     /// Its own family parameters are a second chain. Selection still normalizes
@@ -146,6 +158,15 @@ pub(super) struct Key {
     pub caller: Option<Context>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct DynamicShape {
+    principal: Option<s::DeclarationAddress>,
+    principal_arguments: u32,
+    bound_regions: u32,
+    bindings: Vec<s::DynamicBinding>,
+    markers: Vec<s::DynamicMarker>,
+}
+
 pub(super) struct Arena {
     pub nodes: Vec<Node>,
     facts: Vec<NodeFacts>,
@@ -153,6 +174,8 @@ pub(super) struct Arena {
     pub nominal_arguments: HashMap<NodeId, Vec<NodeId>>,
     pub nominal_regions: HashMap<NodeId, Vec<Region>>,
     pub nominal_argument_bytes: usize,
+    dynamic_shapes: HashMap<DynamicShape, s::DynamicTypeRef>,
+    dynamic_shape_bytes: usize,
     interned: HashMap<Node, NodeId>,
     pub completed: HashMap<Key, NodeId>,
     pub matched: HashSet<Pair>,
@@ -186,6 +209,8 @@ impl Arena {
             nominal_arguments: HashMap::default(),
             nominal_regions: HashMap::default(),
             nominal_argument_bytes: 0,
+            dynamic_shapes: HashMap::default(),
+            dynamic_shape_bytes: 0,
             interned: HashMap::default(),
             completed: HashMap::default(),
             matched: HashSet::default(),
@@ -304,7 +329,14 @@ impl Arena {
     fn node_facts(&self, node: Node, work: &mut Work) -> Result<NodeFacts, &'static str> {
         work.charge(1)?;
         Ok(match node {
-            Node::Nominal { arguments, .. } => {
+            Node::Dynamic { bounds, region } => {
+                let mut facts = self.facts_of(bounds, work)?;
+                if region != Region::Static {
+                    facts.0 |= NodeFacts::REGIONAL;
+                }
+                facts
+            }
+            Node::Nominal { arguments, .. } | Node::DynamicBounds { arguments, .. } => {
                 let mut facts = self.facts_of(arguments, work)?;
                 facts.0 &= !NodeFacts::FORMED;
                 facts
@@ -427,6 +459,50 @@ impl Arena {
             self.peak,
         );
     }
+    /// Intern a trait object's structural bounds so two declarations naming the
+    /// same principal, equalities, auto traits and inner binder share one node.
+    pub(super) fn canonical_dynamic(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        reference: s::DynamicTypeRef,
+        work: &mut Work,
+    ) -> Result<s::DynamicTypeRef, &'static str> {
+        work.charge(1)?;
+        let rows = domains.headers.rows();
+        let columns = &rows.cold().dynamics;
+        let row = columns
+            .objects
+            .get(reference.0 as usize)
+            .ok_or("source dynamic shape is unknown")?;
+        let bindings = row.bindings.slice(&columns.bindings)?;
+        let markers = row.markers.slice(&columns.markers)?;
+        work.charge(bindings.len().saturating_add(markers.len()))?;
+        let key = DynamicShape {
+            principal: row.principal,
+            principal_arguments: row.principal_arguments,
+            bound_regions: rows
+                .binders
+                .get(row.binder.0 as usize)
+                .ok_or("source dynamic shape lost its inner binder")?
+                .count,
+            bindings: bindings.to_vec(),
+            markers: markers.to_vec(),
+        };
+        if let Some(&canonical) = self.dynamic_shapes.get(&key) {
+            self.hits = self.hits.saturating_add(1);
+            return Ok(canonical);
+        }
+        let extra = retained::vector(&key.bindings).saturating_add(retained::vector(&key.markers));
+        self.reserve(
+            retained::new_map::<DynamicShape, s::DynamicTypeRef>(1).saturating_add(extra),
+            0,
+            work,
+        )?;
+        self.dynamic_shape_bytes = self.dynamic_shape_bytes.saturating_add(extra);
+        self.dynamic_shapes.insert(key, reference);
+        Ok(reference)
+    }
+
     pub(super) fn retained_bytes(&self, domains: &DomainIndex<'_, '_>, base: usize) -> usize {
         retained::sum([
             domains.retained_bytes(),
@@ -438,6 +514,8 @@ impl Arena {
             retained::map(&self.nominal_arguments),
             retained::map(&self.nominal_regions),
             self.nominal_argument_bytes,
+            retained::map(&self.dynamic_shapes),
+            self.dynamic_shape_bytes,
             retained::map(&self.interned),
             retained::map(&self.completed),
             retained::map(&self.templates),

@@ -159,11 +159,14 @@ pub(super) fn region(
             s::Region::Parameter { .. } => {
                 return Err("source signature early-region transport is unsupported");
             }
-            s::Region::Bound { slot, .. } => {
+            s::Region::Bound { slot, depth, .. } => {
                 let binder = domains
                     .binders
                     .target(reference, work)?
                     .ok_or("source signature bound region has no actual ancestor")?;
+                if rows.binders[binder.0 as usize].kind == s::BinderKind::DynamicType {
+                    return Ok(Region::ObjectBound { depth, slot });
+                }
                 match rewrite {
                     Rewrite::Nominal { .. } => {
                         return Err(

@@ -154,6 +154,14 @@ impl Checker<'_> {
         if owner != other {
             return Ok(false);
         }
+        if !self
+            .state
+            .infer
+            .unsizing_mismatch(&self.facts.types, actual, expected)
+            .map_err(|e| self.error(node, e))?
+        {
+            return Ok(false);
+        }
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(false);
         };
@@ -175,14 +183,6 @@ impl Checker<'_> {
         catalog
             .require_provider_report(self.report)
             .map_err(|e| self.error(node, e))?;
-        if !self
-            .state
-            .infer
-            .unsizing_mismatch(&self.facts.types, actual, expected)
-            .map_err(|e| self.error(node, e))?
-        {
-            return Ok(false);
-        }
         // A quantified argument can trigger the unsizing probe even when the
         // operands still have compatible shapes for ordinary coercion.
         let assumptions = self.trait_assumptions(node)?;

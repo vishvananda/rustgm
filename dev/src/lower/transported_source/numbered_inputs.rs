@@ -23,14 +23,7 @@ pub(super) fn emit(
     if facts.body_regions.unit_of(source) != source {
         return Err("nested source numbering requires complete parent/unit transport");
     }
-    let mut frontier = facts.body_regions.frontier(source)?;
-    for proof in &input.proofs {
-        for range in proof.proof.owned_regions() {
-            stage.charge(1)?;
-            frontier = frontier.max(range.end);
-        }
-    }
-    let count = frontier
+    let count = frontier(stage, facts, source, input)?
         .checked_sub(1)
         .ok_or("source numbering frontier precedes its domain")? as usize;
     if count != variables {
@@ -69,6 +62,11 @@ pub(super) fn emit(
         // by obligation_rows, which independently rejects quantified proofs.
         join(stage, owner, id, &mut order)?;
     }
+    for obligation in &input.obligations {
+        if let crate::body::regions::Kind::Variable { id, .. } = obligation.kind {
+            join(stage, owner, id, &mut order)?;
+        }
+    }
     for proof in &input.proofs {
         for range in proof.proof.owned_regions() {
             for id in range {
@@ -104,6 +102,31 @@ pub(super) fn emit(
         allocation_order: order,
         aliases,
     })
+}
+
+fn frontier(
+    stage: &mut Stage,
+    facts: &Declarations,
+    source: crate::resolve::unit::NodeKey,
+    input: &Contract,
+) -> Result<u32, &'static str> {
+    let mut next = facts.body_regions.frontier(source)?;
+    for obligation in &input.obligations {
+        if let crate::body::regions::Kind::Variable { id, .. } = obligation.kind {
+            stage.charge(1)?;
+            next = next.max(
+                id.0.checked_add(1)
+                    .ok_or("source numbering frontier exceeds its identity space")?,
+            );
+        }
+    }
+    for proof in &input.proofs {
+        for range in proof.proof.owned_regions() {
+            stage.charge(1)?;
+            next = next.max(range.end);
+        }
+    }
+    Ok(next)
 }
 
 fn join(

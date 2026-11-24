@@ -7,6 +7,15 @@ const OUTSIDE_APPLICATIONS: &str =
     "source const arguments outside nominal and function applications require a wider profile";
 
 impl Builder<'_, '_> {
+    /// An application's arguments, pushed so the first is visited first.
+    fn push_arguments(&mut self, arguments: g::Range, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        for argument in arguments.slice(&rows.arguments)?.iter().rev() {
+            self.push_argument(*argument, work)?;
+        }
+        Ok(())
+    }
+
     pub(super) fn dependencies(
         &mut self,
         node: usize,
@@ -16,10 +25,9 @@ impl Builder<'_, '_> {
         let rows = self.headers.rows();
         if node < self.result.type_count {
             match rows.types[node] {
-                s::Type::Nominal { arguments, .. } => {
-                    for argument in arguments.slice(&rows.arguments)?.iter().rev() {
-                        self.push_argument(*argument, work)?;
-                    }
+                s::Type::Nominal { arguments, .. } => self.push_arguments(arguments, work)?,
+                s::Type::Dynamic(reference) => {
+                    self.push_arguments(self.dynamic_row(reference)?.arguments, work)?;
                 }
                 s::Type::Projection(reference) => {
                     let row = rows
@@ -154,6 +162,7 @@ impl Builder<'_, '_> {
         Ok(match rows.types[node] {
             s::Type::Projection(reference) => self.projection_summary(reference, work)?,
             s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
+            s::Type::Dynamic(reference) => self.dynamic_summary(reference, work)?,
             s::Type::Scalar(_) | s::Type::Str | s::Type::Never => Summary::default(),
             s::Type::F16 | s::Type::F128 => {
                 if !self.profile.declaration_policies() {
@@ -200,7 +209,12 @@ impl Builder<'_, '_> {
             s::Type::Slice(element) => {
                 if matches!(
                     rows.types.get(element.0 as usize),
-                    Some(s::Type::Str | s::Type::Slice(_) | s::Type::Foreign(_))
+                    Some(
+                        s::Type::Str
+                            | s::Type::Slice(_)
+                            | s::Type::Foreign(_)
+                            | s::Type::Dynamic(_)
+                    )
                 ) {
                     return Err("source slice element requires a sized type");
                 }
@@ -285,7 +299,7 @@ impl Builder<'_, '_> {
         let rows = self.headers.rows();
         if matches!(
             rows.types.get(element.0 as usize),
-            Some(s::Type::Str | s::Type::Slice(_) | s::Type::Foreign(_))
+            Some(s::Type::Str | s::Type::Slice(_) | s::Type::Foreign(_) | s::Type::Dynamic(_))
         ) {
             return Err("source array element requires a sized type");
         }
@@ -600,16 +614,30 @@ impl Builder<'_, '_> {
             return Err("source trait application has no actual trait header");
         };
         let header = &rows.traits[index as usize];
+        let arguments = application.arguments.slice(&rows.arguments)?;
+        self.trait_arguments(
+            header.scope,
+            arguments,
+            self.child(application.subject, work)?,
+            work,
+        )
+    }
+    pub(super) fn trait_arguments(
+        &self,
+        scope: DeclarationRef,
+        arguments: &[s::Argument],
+        mut summary: Summary,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
         let declared = self
             .headers
             .scopes()
-            .declared_slots(header.scope, work)?
+            .declared_slots(scope, work)?
             .slice(&rows.slots)?;
-        let arguments = application.arguments.slice(&rows.arguments)?;
         if declared.len() != arguments.len() {
             return Err("source trait application changed its complete own formal count");
         }
-        let mut summary = self.child(application.subject, work)?;
         for (argument, formal) in arguments.iter().zip(declared) {
             work.charge(1)?;
             let child = match (*argument, formal.kind) {

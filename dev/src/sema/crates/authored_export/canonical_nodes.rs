@@ -1,4 +1,5 @@
 //! Canonical summaries select actual ownership keys; graph traversal is memoized.
+mod existential_recipes;
 mod memo_owner;
 mod recipe_emission;
 mod regional_roots;
@@ -215,7 +216,8 @@ impl Stage {
         for argument in actual {
             self.charge(1)?;
             if let crate::types::arguments::Argument::Type(ty) = argument
-                && facts.types.contains_callables(ty) != Some(false)
+                && (facts.types.contains_function_items(ty) != Some(false)
+                    || facts.types.contains_anonymous_callables(ty) != Some(false))
             {
                 return Err("nested callable source arguments require a wider transport profile");
             }

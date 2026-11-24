@@ -316,26 +316,78 @@ impl Checker<'_> {
 
     pub(super) fn validate_objects(&mut self) -> Result<(), Error> {
         let mut queries = crate::sema::dyn_compat::Queries::default();
-        let mut checked = crate::support::hash::HashSet::default();
-        let uses = std::mem::take(&mut self.object_syntax.uses);
-        for (source, ty, principal) in uses {
-            let Some(Type::Dynamic {
-                shape,
-                arguments,
-                bound_regions,
-                ..
-            }) = self.facts.types.kind(ty)
-            else {
-                return Err(self.error(source, "missing object formation type"));
-            };
-            if !checked.insert((shape, arguments, bound_regions)) {
+        let mut checked = CheckedObjects::default();
+        for (source, ty, principal) in std::mem::take(&mut self.object_syntax.uses) {
+            self.validate_object(source, ty, principal, &mut queries, &mut checked)?;
+        }
+        if self.facts.crates.is_some() && self.facts.types.has_dynamic_shapes() {
+            self.validate_imported_objects(&mut queries, &mut checked)?;
+        }
+        Ok(())
+    }
+
+    fn validate_imported_objects(
+        &mut self,
+        queries: &mut crate::sema::dyn_compat::Queries,
+        checked: &mut CheckedObjects,
+    ) -> Result<(), Error> {
+        let module =
+            self.report.package.modules.first().ok_or_else(|| {
+                Error::unlocated("missing crate root for imported object validation")
+            })?;
+        let source = NodeKey {
+            file: module.file,
+            node: module.root,
+        };
+        for index in 0..self.facts.types.len() {
+            let ty = TypeId(
+                u32::try_from(index)
+                    .map_err(|_| self.error(source, "imported object type index overflow"))?,
+            );
+            let Some(Type::Dynamic { shape, .. }) = self.facts.types.kind(ty) else {
                 continue;
+            };
+            let actual = self
+                .facts
+                .types
+                .dynamic_shape(shape)
+                .ok_or_else(|| self.error(source, "imported object has no actual bounds"))?;
+            if let Some(principal) = actual.principal {
+                self.validate_object(source, ty, DefId(principal.0), queries, checked)?;
             }
+        }
+        Ok(())
+    }
+
+    fn validate_object(
+        &mut self,
+        source: NodeKey,
+        ty: TypeId,
+        principal: DefId,
+        queries: &mut crate::sema::dyn_compat::Queries,
+        checked: &mut CheckedObjects,
+    ) -> Result<(), Error> {
+        let Some(Type::Dynamic {
+            shape,
+            arguments,
+            bound_regions,
+            ..
+        }) = self.facts.types.kind(ty)
+        else {
+            return Err(self.error(source, "missing object formation type"));
+        };
+        if checked.insert((shape, arguments, bound_regions)) {
             queries
                 .demand(self.report, &mut self.facts, principal)
                 .map_err(|e| self.error(source, e.to_string()))?;
-            self.check_object_bindings(source, ty, principal, &mut queries)?;
+            self.check_object_bindings(source, ty, principal, queries)?;
         }
         Ok(())
     }
 }
+
+type CheckedObjects = crate::support::hash::HashSet<(
+    crate::types::dynamic::ShapeId,
+    crate::types::GenericArgs,
+    u32,
+)>;

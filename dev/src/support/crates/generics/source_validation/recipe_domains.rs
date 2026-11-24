@@ -1,4 +1,6 @@
 //! Shared type/application summaries retain exact parameter, binder and body owners.
+#[path = "type_domains/existential_bounds.rs"]
+mod existential_bounds;
 #[path = "type_domains/node_rows.rs"]
 mod node_rows;
 #[path = "type_domains/recipe_queries.rs"]
@@ -39,6 +41,7 @@ struct Builder<'a, 'rows> {
     binders: &'a BinderIndex<'rows>,
     profile: s::Profile,
     result: Types,
+    dynamic_markers: existential_bounds::Markers,
     colours: Vec<u8>,
     pending: Vec<(usize, bool)>,
 }
@@ -76,6 +79,7 @@ impl Types {
             headers,
             binders,
             profile,
+            dynamic_markers: existential_bounds::Markers::new(rows, work)?,
             result: Self {
                 summaries: vec![Summary::default(); count],
                 type_count: rows.types.len(),
@@ -88,9 +92,14 @@ impl Types {
             colours: vec![0; count],
             pending: Vec::new(),
         };
+        let mut objects = existential_bounds::Inventory::default();
         for root in 0..count {
+            if let Some(s::Type::Dynamic(object)) = rows.types.get(root) {
+                objects.record(&rows.cold().dynamics, *object, work)?;
+            }
             builder.root(root, work)?;
         }
+        objects.finish(&rows.cold().dynamics)?;
         Ok(builder.result)
     }
     fn summary(&self, ty: g::TypeRef, work: &mut Work) -> Result<Summary, &'static str> {

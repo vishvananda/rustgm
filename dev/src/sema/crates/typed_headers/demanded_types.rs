@@ -13,6 +13,8 @@ use crate::{
     types::{Kind, RegionId, Store, TypeId, arena::Identity, arguments::Argument},
 };
 
+#[path = "existential_types.rs"]
+mod dynamics;
 #[path = "demanded_ports.rs"]
 mod reserved;
 pub(super) use reserved::{Maps, Reserved};
@@ -365,10 +367,16 @@ impl<M: Storage> Worklist<M> {
                         .ok_or_else(|| error("source application argument cursor overflow"))?;
                 }
             }
-            let child = next(row, self.children[index], port.rows())?;
-            self.children[index] = self.children[index]
-                .checked_add(1)
-                .ok_or_else(|| error("source recipe cursor overflow"))?;
+            let cursor = &mut self.children[index];
+            let child = if let s::Type::Dynamic(reference) = row {
+                dynamics::next(port.rows(), reference, cursor, budget)?
+            } else {
+                let child = next(row, *cursor, port.rows())?;
+                *cursor = cursor
+                    .checked_add(1)
+                    .ok_or_else(|| error("source recipe cursor overflow"))?;
+                child
+            };
             if let Some(child) = child {
                 self.counters.edges = self.counters.edges.saturating_add(1);
                 let child = child.0 as usize;
@@ -542,6 +550,9 @@ impl<M: Storage> Worklist<M> {
         budget: &mut B,
     ) -> Result<Demand<TypeId>, Error> {
         let kind = match row {
+            s::Type::Dynamic(reference) => {
+                return self.dynamic_type(port, store, reference, budget);
+            }
             s::Type::OpaqueFuture(reference) => {
                 return self.opaque_type(port, store, reference, budget);
             }
@@ -764,6 +775,13 @@ impl Worklist<Vec<Option<TypeId>>> {
             .collect()
     }
 }
+/// The type recipe of an argument; regions and constants have none.
+const fn type_child(argument: s::Argument) -> Option<g::TypeRef> {
+    match argument {
+        s::Argument::Type(ty) => Some(ty),
+        s::Argument::Region(_) | s::Argument::Const(_) => None,
+    }
+}
 fn next(
     row: s::Type,
     cursor: usize,
@@ -771,6 +789,9 @@ fn next(
 ) -> Result<Option<g::TypeRef>, Error> {
     use s::Type::{F16, F128, Never, Parameter, Str};
     Ok(match row {
+        s::Type::Dynamic(_) => {
+            return Err(error("dynamic input traversal requires its actual cursor"));
+        }
         s::Type::OpaqueFuture(reference) => {
             let row = rows
                 .opaque_futures
@@ -780,13 +801,8 @@ fn next(
                 .slice(&rows.arguments)
                 .map_err(error)?
                 .iter()
-                .filter_map(|arg| {
-                    if let s::Argument::Type(ty) = arg {
-                        Some(*ty)
-                    } else {
-                        None
-                    }
-                })
+                .copied()
+                .filter_map(type_child)
                 .chain(std::iter::once(row.output))
                 .nth(cursor)
         }
@@ -805,13 +821,8 @@ fn next(
                 .map_err(error)?
                 .iter()
                 .chain(row.arguments.slice(&rows.arguments).map_err(error)?)
-                .filter_map(|arg| {
-                    if let s::Argument::Type(ty) = arg {
-                        Some(*ty)
-                    } else {
-                        None
-                    }
-                });
+                .copied()
+                .filter_map(type_child);
             std::iter::once(row.subject).chain(args).nth(cursor)
         }
         s::Type::Scalar(_) | s::Type::Foreign(_) | F16 | F128 | Never | Parameter(_) | Str => None,
@@ -819,10 +830,8 @@ fn next(
             .slice(&rows.arguments)
             .map_err(error)?
             .iter()
-            .filter_map(|argument| match argument {
-                s::Argument::Type(ty) => Some(*ty),
-                s::Argument::Region(_) | s::Argument::Const(_) => None,
-            })
+            .copied()
+            .filter_map(type_child)
             .nth(cursor),
         s::Type::Reference {
             referent: child, ..

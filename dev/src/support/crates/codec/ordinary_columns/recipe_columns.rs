@@ -1,5 +1,7 @@
 //! Header recipes retain separate type/region/binder and actual trait identities.
-use super::{Input, Writer, address_read, address_write, g, id, option, range, s};
+use super::{
+    Input, Writer, address_read, address_write, existential_wire, g, id, option, range, s,
+};
 use crate::support::{constness::Constness, crates::owner_catalog::DeclarationRef};
 
 /// Version thirteen's pattern constraint kinds after tag 16 and its base.
@@ -12,6 +14,7 @@ const ARRAY: u8 = 14;
 pub(super) struct TypeColumns<'a> {
     pub ranges: &'a [s::PatternRange],
     pub lengths: &'a [s::ConstTerm],
+    pub dynamics: &'a s::DynamicColumns,
 }
 /// Every type row, with each range pattern's endpoints and each array's
 /// length term written in place. Both columns are dense in type-row order,
@@ -24,6 +27,7 @@ pub(super) fn types_write(
     out.u32(rows.len())?;
     let mut next = 0_usize;
     let mut lengths = 0_usize;
+    let mut dynamics = existential_wire::Encoder::default();
     for row in rows {
         if let s::Type::Array { element, length } = *row {
             let term = columns
@@ -52,6 +56,8 @@ pub(super) fn types_write(
                     next += 1;
                 }
             }
+        } else if let s::Type::Dynamic(reference) = *row {
+            dynamics.row(out, reference, columns.dynamics)?;
         } else {
             type_write(out, row)?;
         }
@@ -62,7 +68,7 @@ pub(super) fn types_write(
     if lengths != columns.lengths.len() {
         return Err("source array length has no type row");
     }
-    Ok(())
+    dynamics.finish(columns.dynamics)
 }
 fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
     match *row {
@@ -130,6 +136,7 @@ fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
             id(out, application.0)
         }
         s::Type::Pattern { .. } => Err("source pattern type requires its range table"),
+        s::Type::Dynamic(_) => Err("source dynamic type requires its bound columns"),
         s::Type::Array { .. } => Err("source array type requires its length table"),
     }
 }
@@ -138,6 +145,7 @@ fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
 pub(super) struct TypeTables {
     pub ranges: Vec<s::PatternRange>,
     pub lengths: Vec<s::ConstTerm>,
+    pub dynamics: s::DynamicColumns,
 }
 /// One type row. A range pattern's endpoints and an array's length term are
 /// appended to their tables, and the row names them by position.
@@ -146,6 +154,9 @@ pub(super) fn type_read(
     tables: &mut TypeTables,
 ) -> Result<s::Type, &'static str> {
     Ok(match read.reader.u8()? {
+        existential_wire::TAG if read.profile.declaration_policies() => {
+            existential_wire::read(read, &mut tables.dynamics)?
+        }
         ARRAY if read.profile.body_nodes() => {
             let element = g::TypeRef(read.id()?);
             let term = const_term_read(read)?;

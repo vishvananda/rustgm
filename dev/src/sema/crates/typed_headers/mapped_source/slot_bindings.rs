@@ -97,14 +97,8 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
                 depth,
                 slot,
             } => {
-                let frame = rows
-                    .binders
-                    .get(binder.0 as usize)
-                    .ok_or_else(|| error("source region lost its exact binder"))?;
+                let frame = bound_target(&rows.binders, binder, depth, || budget.charge(1))?;
                 context.definition(frame.owner, budget)?;
-                if slot >= frame.count {
-                    return Err(error("source region exceeds its actual binder count"));
-                }
                 bound(depth, slot, frame.count)?
             }
             s::Region::Parameter { slot, depth } => {
@@ -268,6 +262,26 @@ pub(in crate::sema::crates::typed_headers) fn intern_const(
         .intern_const(crate::types::arguments::ConstKind::Parameter(id))
         .map(Argument::Const)
         .map_err(error)
+}
+pub(in crate::sema::crates::typed_headers) fn bound_target(
+    binders: &[s::Binder],
+    mut binder: crate::support::crates::generics::BinderRef,
+    depth: u16,
+    mut charge: impl FnMut() -> Result<(), Error>,
+) -> Result<&s::Binder, Error> {
+    let mut frame = binders
+        .get(binder.0 as usize)
+        .ok_or_else(|| error("source region lost its exact binder"))?;
+    for _ in 0..depth {
+        charge()?;
+        binder = frame
+            .parent
+            .ok_or_else(|| error("source region escaped its enclosing binder"))?;
+        frame = binders
+            .get(binder.0 as usize)
+            .ok_or_else(|| error("source region lost its enclosing binder"))?;
+    }
+    Ok(frame)
 }
 pub(in crate::sema::crates::typed_headers) fn bound(
     depth: u16,

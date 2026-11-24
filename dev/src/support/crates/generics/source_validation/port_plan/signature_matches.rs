@@ -91,6 +91,44 @@ impl Arena {
         }
         Ok(())
     }
+    /// A trait object keeps its outer lifetime in the enclosing frame; its
+    /// bounds compare declaration identities before their inner-binder inputs.
+    fn dynamic_children(
+        &self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        nodes: (Node, Node),
+        work: &mut Work,
+    ) -> Result<(NodeId, NodeId), &'static str> {
+        match nodes {
+            (
+                Node::Dynamic {
+                    bounds: ac,
+                    region: ar,
+                },
+                Node::Dynamic {
+                    bounds: bc,
+                    region: br,
+                },
+            ) => {
+                if !self.same_region(domains, (ar, br), pair.opening, work)? {
+                    return Err("source dynamic type changed its outer lifetime");
+                }
+                Ok((ac, bc))
+            }
+            (
+                Node::DynamicBounds {
+                    recipe: a,
+                    arguments: ac,
+                },
+                Node::DynamicBounds {
+                    recipe: b,
+                    arguments: bc,
+                },
+            ) if a == b => Ok((ac, bc)),
+            _ => Err("source signature changed its trait object bounds"),
+        }
+    }
     /// Compare a nominal's complete argument spine after opening its actual lifetimes.
     /// A type argument can itself contain a reference to an opened slot.
     fn children(
@@ -118,6 +156,9 @@ impl Arena {
                     return Err("source signature reference mutability or exact lifetime differs");
                 }
                 ((ac, bc), None)
+            }
+            (Node::Dynamic { .. } | Node::DynamicBounds { .. }, _) => {
+                (self.dynamic_children(domains, pair, nodes, work)?, None)
             }
             (Node::RawPointer { .. } | Node::Slice(_) | Node::Pattern { .. }, _) => {
                 (single_child(domains, nodes)?, None)
@@ -175,13 +216,12 @@ impl Arena {
                     family: bf,
                 },
             ) if a == b => ((ac, bc), Some((af, bf))),
-            (Node::Scalar(crate::support::crates::Scalar::Usize), projection)
-            | (projection, Node::Scalar(crate::support::crates::Scalar::Usize))
-                if self.slice_metadata(domains, projection, work)? =>
+            (a, b) if a == b => return Ok(()),
+            (Node::Projection { .. }, _) | (_, Node::Projection { .. })
+                if self.projection_match(domains, pair, nodes, pending, work)? =>
             {
                 return Ok(());
             }
-            (a, b) if a == b => return Ok(()),
             _ => {
                 return Err("source signature differs after complete application and late opening");
             }
@@ -198,6 +238,201 @@ impl Arena {
             )?;
         }
         Ok(())
+    }
+    fn projection_match(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        nodes: (Node, Node),
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        if let (Node::Scalar(crate::support::crates::Scalar::Usize), projection)
+        | (projection, Node::Scalar(crate::support::crates::Scalar::Usize)) = nodes
+            && self.slice_metadata(domains, projection, work)?
+        {
+            return Ok(true);
+        }
+        if self.match_dynamic_binding(domains, pair, (nodes.0, pair.actual, true), pending, work)? {
+            return Ok(true);
+        }
+        self.match_dynamic_binding(
+            domains,
+            pair,
+            (nodes.1, pair.expected, false),
+            pending,
+            work,
+        )
+    }
+    fn match_dynamic_binding(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        (projection, other, expected_projection): (Node, NodeId, bool),
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Node::Projection {
+            member,
+            arguments,
+            family,
+        } = projection
+        else {
+            return Ok(false);
+        };
+        if self.nodes.get(family.0 as usize) != Some(&Node::NominalEnd) {
+            return Ok(false);
+        }
+        let Some(&Node::NominalArgument {
+            ty: subject,
+            next: proj_args,
+        }) = self.nodes.get(arguments.0 as usize)
+        else {
+            return Ok(false);
+        };
+        let Some(&Node::Dynamic { bounds, .. }) = self.nodes.get(subject.0 as usize) else {
+            return Ok(false);
+        };
+        let Some(&Node::DynamicBounds {
+            recipe,
+            arguments: mut cursor,
+        }) = self.nodes.get(bounds.0 as usize)
+        else {
+            return Ok(false);
+        };
+        let rows = domains.headers.rows();
+        let columns = &rows.cold().dynamics;
+        let row = columns
+            .objects
+            .get(recipe.0 as usize)
+            .ok_or("source dynamic shape is unknown")?;
+        if rows.binders[row.binder.0 as usize].count != 0 {
+            return Ok(false);
+        }
+        cursor = self.skip_arguments(cursor, row.principal_arguments, work)?;
+        for binding in row.bindings.slice(&columns.bindings)? {
+            work.charge(1)?;
+            let binding_args = cursor;
+            cursor = self.skip_arguments(cursor, binding.arguments, work)?;
+            let Some(&Node::NominalArgument { ty: result, next }) =
+                self.nodes.get(cursor.0 as usize)
+            else {
+                return Err("source dynamic binding lost its associated result node");
+            };
+            cursor = next;
+            if binding.member != member {
+                continue;
+            }
+            let saved = pending.len();
+            if !self.queue_binding_arguments(
+                domains,
+                pair,
+                (
+                    binding_args,
+                    proj_args,
+                    binding.arguments,
+                    expected_projection,
+                ),
+                pending,
+                work,
+            )? {
+                pending.truncate(saved);
+                return Ok(false);
+            }
+            let (expected, actual) = if expected_projection {
+                (result, other)
+            } else {
+                (other, result)
+            };
+            self.push_pair(
+                pending,
+                Task::Enter(Pair {
+                    expected,
+                    actual,
+                    ..pair
+                }),
+                work,
+            )?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
+    fn queue_binding_arguments(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        (mut binding_args, mut proj_args, count, expected_projection): (NodeId, NodeId, u32, bool),
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        for _ in 0..count {
+            work.charge(1)?;
+            let (Some(&left), Some(&right)) = (
+                self.nodes.get(binding_args.0 as usize),
+                self.nodes.get(proj_args.0 as usize),
+            ) else {
+                return Ok(false);
+            };
+            match (left, right) {
+                (
+                    Node::NominalArgument { ty: a, next: an },
+                    Node::NominalArgument { ty: b, next: bn },
+                ) => {
+                    let (expected, actual) = if expected_projection { (a, b) } else { (b, a) };
+                    self.push_pair(
+                        pending,
+                        Task::Enter(Pair {
+                            expected,
+                            actual,
+                            ..pair
+                        }),
+                        work,
+                    )?;
+                    binding_args = an;
+                    proj_args = bn;
+                }
+                (
+                    Node::NominalRegion {
+                        region: ar,
+                        next: an,
+                    },
+                    Node::NominalRegion {
+                        region: br,
+                        next: bn,
+                    },
+                ) => {
+                    let regions = if expected_projection {
+                        (ar, br)
+                    } else {
+                        (br, ar)
+                    };
+                    if !self.same_region(domains, regions, pair.opening, work)? {
+                        return Ok(false);
+                    }
+                    binding_args = an;
+                    proj_args = bn;
+                }
+                _ => return Ok(false),
+            }
+        }
+        Ok(self.nodes.get(proj_args.0 as usize) == Some(&Node::NominalEnd))
+    }
+    fn skip_arguments(
+        &self,
+        mut cursor: NodeId,
+        count: u32,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        for _ in 0..count {
+            work.charge(1)?;
+            cursor = match self.nodes.get(cursor.0 as usize) {
+                Some(&Node::NominalArgument { next, .. } | &Node::NominalRegion { next, .. }) => {
+                    next
+                }
+                _ => return Err("source dynamic argument spine ended early"),
+            };
+        }
+        Ok(cursor)
     }
     fn slice_metadata(
         &self,

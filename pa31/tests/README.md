@@ -73,6 +73,10 @@ associated equality and an owned associated-type bound in one fresh client.
 lifetime bound and rejects a short-lived implementation of a `'static` trait.
 `spec/source-field-transport/outcomes.json` checks the pinned `Field`
 selection and `OFFSET` default using a structure from the fresh client.
+`spec/source-dynamic-transport/outcomes.json` checks transported trait objects
+with a generic principal, associated result equality, auto-trait markers, outer
+lifetime, provider dispatch, higher-ranked object bounds, and rejection of an
+unsatisfied `Send` obligation in a fresh client.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

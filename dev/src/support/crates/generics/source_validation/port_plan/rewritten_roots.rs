@@ -34,9 +34,22 @@ enum Recipe {
         child: Key,
     },
     Function(g::Signature),
-    Nominal(s::DeclarationAddress, g::Range),
+    Application(ArgumentOwner, g::Range),
     Projection(s::ProjectionRef),
     Tuple(g::Range),
+}
+#[derive(Clone, Copy)]
+enum ArgumentOwner {
+    Nominal(s::DeclarationAddress),
+    Dynamic(s::DynamicTypeRef),
+}
+impl ArgumentOwner {
+    const fn regions(self) -> Regions {
+        match self {
+            Self::Nominal(declaration) => Regions::of(declaration),
+            Self::Dynamic(_) => Regions::Local,
+        }
+    }
 }
 #[derive(Clone, Copy)]
 enum Task {
@@ -87,9 +100,15 @@ impl Arena {
                         | Recipe::Pattern { child, .. } => {
                             self.push(pending, Task::Enter(child), work)?;
                         }
-                        Recipe::Nominal(declaration, arguments) => {
-                            let regions = Regions::of(declaration);
-                            self.nominal_children(domains, key, arguments, regions, pending, work)?;
+                        Recipe::Application(owner, arguments) => {
+                            self.nominal_children(
+                                domains,
+                                key,
+                                arguments,
+                                owner.regions(),
+                                pending,
+                                work,
+                            )?;
                         }
                         Recipe::Projection(reference) => {
                             self.projection_children(domains, key, reference, pending, work)?;
@@ -121,17 +140,8 @@ impl Arena {
                         | Recipe::Pattern { .. } => {
                             self.single_child(domains, key, recipe, work)?
                         }
-                        Recipe::Nominal(declaration, arguments) => {
-                            let regions = Regions::of(declaration);
-                            let arguments =
-                                self.argument_chain(domains, key, arguments, regions, work)?;
-                            self.intern(
-                                Node::Nominal {
-                                    declaration,
-                                    arguments,
-                                },
-                                work,
-                            )?
+                        Recipe::Application(owner, arguments) => {
+                            self.finish_application(domains, key, owner, arguments, work)?
                         }
                         Recipe::Projection(reference) => {
                             self.finish_projection(domains, key, reference, work)?
@@ -296,6 +306,37 @@ impl Arena {
             Rewrite::Original | Rewrite::Public(_) => self.intern(Node::Parameter(slot), work),
         }
     }
+    fn finish_application(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        owner: ArgumentOwner,
+        arguments: g::Range,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let arguments = self.argument_chain(domains, key, arguments, owner.regions(), work)?;
+        let node = match owner {
+            ArgumentOwner::Nominal(declaration) => Node::Nominal {
+                declaration,
+                arguments,
+            },
+            ArgumentOwner::Dynamic(reference) => {
+                let recipe = dynamic_recipe(domains, reference)?;
+                let canonical = self.canonical_dynamic(domains, reference, work)?;
+                let bounds = self.intern(
+                    Node::DynamicBounds {
+                        recipe: canonical,
+                        arguments,
+                    },
+                    work,
+                )?;
+                let region = self.rewritten_region(domains, recipe.region, key.rewrite, work)?;
+                Node::Dynamic { bounds, region }
+            }
+        };
+        self.intern(node, work)
+    }
+
     fn finish_tuple(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -352,7 +393,11 @@ impl Arena {
                 s::Type::Nominal {
                     declaration,
                     arguments,
-                } => Recipe::Nominal(declaration, arguments),
+                } => Recipe::Application(ArgumentOwner::Nominal(declaration), arguments),
+                s::Type::Dynamic(reference) => Recipe::Application(
+                    ArgumentOwner::Dynamic(reference),
+                    dynamic_recipe(domains, reference)?.arguments,
+                ),
                 s::Type::Projection(reference) => Recipe::Projection(reference),
                 s::Type::OpaqueFuture(_) => {
                     return Err(
@@ -701,6 +746,20 @@ impl Regions {
             Self::Rejected
         }
     }
+}
+fn dynamic_recipe(
+    domains: &DomainIndex<'_, '_>,
+    reference: s::DynamicTypeRef,
+) -> Result<s::DynamicType, &'static str> {
+    domains
+        .headers
+        .rows()
+        .cold()
+        .dynamics
+        .objects
+        .get(reference.0 as usize)
+        .copied()
+        .ok_or("source type port lost its checked dynamic recipe")
 }
 fn nominal_child(
     domains: &DomainIndex<'_, '_>,

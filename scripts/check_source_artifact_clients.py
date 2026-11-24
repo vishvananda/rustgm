@@ -48,7 +48,8 @@ def main():
                                  "source-poll-transport", "source-cstr-transport",
                                  "source-into-future-transport", "source-async-generator-helpers",
                                  "source-async-fn-transport", "source-trait-prefix-transport",
-                                 "source-trait-lifetime-transport", "source-field-transport"))
+                                 "source-trait-lifetime-transport", "source-field-transport",
+                                 "source-dynamic-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

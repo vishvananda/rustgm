@@ -161,6 +161,7 @@ pub enum BinderKind {
     PublicFunction,
     Clause,
     CallableType,
+    DynamicType,
     CallSignature {
         body: BodyRef,
         value: u32,
@@ -244,6 +245,7 @@ pub enum Type {
     ApplicationSignature(FunctionApplicationRef),
     Projection(ProjectionRef),
     OpaqueFuture(OpaqueFutureRef),
+    Dynamic(DynamicTypeRef),
     /// Version thirteen: a non-unit tuple whose element types are `roots`
     /// entries, in order. Unit keeps its scalar row.
     Tuple(Range),
@@ -275,6 +277,44 @@ pub enum Type {
         constraint: PatternConstraint,
     },
 }
+/// A trait object names its actual declarations. Its inputs use the inner
+/// trait binder, while the object's lifetime belongs to the surrounding frame.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct DynamicTypeRef(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DynamicType {
+    pub principal: Option<DeclarationAddress>,
+    pub principal_arguments: u32,
+    pub arguments: Range,
+    pub bindings: Range,
+    pub markers: Range,
+    pub binder: BinderRef,
+    pub region: RegionRef,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct DynamicBinding {
+    pub member: DeclarationAddress,
+    pub owner: DeclarationAddress,
+    pub arguments: u32,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct DynamicMarker {
+    pub marker: crate::support::marker_traits::AutoTrait,
+    pub declaration: DeclarationAddress,
+}
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct DynamicColumns {
+    pub objects: Vec<DynamicType>,
+    pub bindings: Vec<DynamicBinding>,
+    pub markers: Vec<DynamicMarker>,
+}
+impl DynamicColumns {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.objects.is_empty() && self.bindings.is_empty() && self.markers.is_empty()
+    }
+}
+
 /// A transported pattern constraint. A range's endpoints are held out of line
 /// in [`ColdColumns::pattern_ranges`], so a type row stays small.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -738,6 +778,7 @@ pub struct ColdColumns {
     pub enums: EnumColumns,
     /// Version thirteen: each range pattern's endpoints, in type-row order.
     pub pattern_ranges: Vec<PatternRange>,
+    pub dynamics: DynamicColumns,
     /// Version thirteen: diagnostic identities, after the language roles.
     pub diagnostics: Vec<DiagnosticBinding>,
     /// Version thirteen: each const argument's term, in argument-row order.
@@ -766,6 +807,11 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
         names: Vec::new(),
     },
     pattern_ranges: Vec::new(),
+    dynamics: DynamicColumns {
+        objects: Vec::new(),
+        bindings: Vec::new(),
+        markers: Vec::new(),
+    },
     diagnostics: Vec::new(),
     consts: Vec::new(),
     array_lengths: Vec::new(),
@@ -797,6 +843,7 @@ impl ColdColumns {
             && self.associated_definition_inputs.is_empty()
             && self.enums.is_empty()
             && self.pattern_ranges.is_empty()
+            && self.dynamics.is_empty()
             && self.diagnostics.is_empty()
             && self.consts.is_empty()
             && self.array_lengths.is_empty()

@@ -282,11 +282,9 @@ fn declaration(
 }
 
 fn reject_foreign_value(rows: &SourceRows, root: super::TypeRef) -> Result<(), &'static str> {
-    if matches!(
-        rows.types.get(root.0 as usize),
-        Some(super::Type::Foreign(_))
-    ) {
-        return Err("source callable cannot pass a foreign type by value");
+    match rows.types.get(root.0 as usize) {
+        Some(super::Type::Foreign(_)) => Err("source callable cannot pass a foreign type by value"),
+        Some(super::Type::Dynamic(_)) => Err("source callable cannot pass a trait object by value"),
+        _ => Ok(()),
     }
-    Ok(())
 }

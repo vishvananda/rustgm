@@ -8,6 +8,7 @@ enum Task {
     Nominal(Key, Context),
     Function(Key, Context, signatures::Parts),
     Tuple(Key, Context, crate::types::ListId),
+    Dynamic(Key, Context, Context),
 }
 
 impl Stage {
@@ -32,7 +33,8 @@ impl Stage {
                 | Task::Reference(key, context)
                 | Task::Nominal(key, context)
                 | Task::Function(key, context, _)
-                | Task::Tuple(key, context, _) => (key, context),
+                | Task::Tuple(key, context, _)
+                | Task::Dynamic(key, context, _) => (key, context),
             };
             if self.graph.types.contains_key(&key) {
                 self.graph.hits = self.graph.hits.saturating_add(1);
@@ -43,55 +45,9 @@ impl Stage {
                 .kind(key.ty)
                 .ok_or("source type graph has an unknown child")?;
             let row = match task {
-                Task::Enter(_, _) => match kind {
-                    Kind::Reference {
-                        referent: child, ..
-                    }
-                    | Kind::Pointer { pointee: child, .. }
-                    | Kind::Slice(child)
-                    | Kind::Array { element: child, .. }
-                    | Kind::ArrayTerm { element: child, .. }
-                    | Kind::Pattern { base: child, .. }
-                        if matches!(kind, Kind::Reference { .. }) || self.body_nodes() =>
-                    {
-                        // A pointer, slice, array or pattern row, like a
-                        // reference, follows its one completed child.
-                        self.type_work(&mut pending, Task::Reference(key, context))?;
-                        let child = self.type_key(facts, child, context)?;
-                        self.type_work(&mut pending, Task::Enter(child, context))?;
-                        continue;
-                    }
-                    Kind::Adt(_, arguments) if self.nominal_transport() => {
-                        self.type_work(&mut pending, Task::Nominal(key, context))?;
-                        let arguments = facts
-                            .types
-                            .arguments(arguments)
-                            .ok_or("source nominal argument list is unknown")?;
-                        for argument in arguments {
-                            if let crate::types::arguments::Argument::Type(ty) = argument {
-                                let child = self.type_key(facts, ty, context)?;
-                                self.type_work(&mut pending, Task::Enter(child, context))?;
-                            }
-                        }
-                        continue;
-                    }
-                    Kind::Function { .. } => {
-                        self.enter_function(facts, key, context, &mut pending)?;
-                        continue;
-                    }
-                    Kind::Tuple(elements) if key.ty != TypeId::UNIT && self.body_nodes() => {
-                        self.type_work(&mut pending, Task::Tuple(key, context, elements))?;
-                        let elements = facts
-                            .types
-                            .list(elements)
-                            .ok_or("source tuple element list is unknown")?;
-                        for &element in elements.iter().rev() {
-                            let child = self.type_key(facts, element, context)?;
-                            self.type_work(&mut pending, Task::Enter(child, context))?;
-                        }
-                        continue;
-                    }
-                    _ => self.type_row(facts, key, kind, context)?,
+                Task::Enter(_, _) => match self.enter(facts, key, kind, context, &mut pending)? {
+                    Some(row) => row,
+                    None => continue,
                 },
                 Task::Reference(_, _) | Task::Nominal(_, _) => {
                     self.type_row(facts, key, kind, context)?
@@ -103,6 +59,7 @@ impl Stage {
                     signatures::Roots::Completed,
                 )?),
                 Task::Tuple(_, _, elements) => self.tuple_row(facts, elements, context)?,
+                Task::Dynamic(_, _, inner) => self.dynamic_recipe(facts, kind, context, inner)?,
             };
             self.reserve(4 * size_of::<s::Type>() + retained::new_map::<Key, g::TypeRef>(1))?;
             let id = g::TypeRef(
@@ -119,6 +76,76 @@ impl Stage {
             .get(&root)
             .copied()
             .ok_or("source type root did not complete")
+    }
+
+    /// Enter one type: push the children a composite row needs and report
+    /// `None`, or complete a leaf row at once.
+    fn enter(
+        &mut self,
+        facts: &Declarations,
+        key: Key,
+        kind: Kind,
+        context: Context,
+        pending: &mut Vec<Task>,
+    ) -> Result<Option<s::Type>, &'static str> {
+        match kind {
+            Kind::Reference {
+                referent: child, ..
+            }
+            | Kind::Pointer { pointee: child, .. }
+            | Kind::Slice(child)
+            | Kind::Array { element: child, .. }
+            | Kind::ArrayTerm { element: child, .. }
+            | Kind::Pattern { base: child, .. }
+                if matches!(kind, Kind::Reference { .. }) || self.body_nodes() =>
+            {
+                // A pointer, slice, array or pattern row, like a
+                // reference, follows its one completed child.
+                self.type_work(pending, Task::Reference(key, context))?;
+                let child = self.type_key(facts, child, context)?;
+                self.type_work(pending, Task::Enter(child, context))?;
+                Ok(None)
+            }
+            Kind::Adt(_, arguments) if self.nominal_transport() => {
+                self.type_work(pending, Task::Nominal(key, context))?;
+                let arguments = facts
+                    .types
+                    .arguments(arguments)
+                    .ok_or("source nominal argument list is unknown")?;
+                for argument in arguments {
+                    if let crate::types::arguments::Argument::Type(ty) = argument {
+                        let child = self.type_key(facts, ty, context)?;
+                        self.type_work(pending, Task::Enter(child, context))?;
+                    }
+                }
+                Ok(None)
+            }
+            Kind::Dynamic {
+                arguments,
+                bound_regions,
+                ..
+            } if self.declaration_policies() => {
+                self.enter_dynamic(facts, key, context, arguments, bound_regions, pending)?;
+                Ok(None)
+            }
+            Kind::Function { .. } => {
+                self.enter_function(facts, key, context, pending)?;
+                Ok(None)
+            }
+            Kind::Tuple(elements) if key.ty != TypeId::UNIT && self.body_nodes() => {
+                self.type_work(pending, Task::Tuple(key, context, elements))?;
+                let elements = facts
+                    .types
+                    .list(elements)
+                    .ok_or("source tuple element list is unknown")?;
+                for &element in elements.iter().rev() {
+                    let child = self.type_key(facts, element, context)?;
+                    self.type_work(pending, Task::Enter(child, context))?;
+                }
+                Ok(None)
+            }
+            _ => self.type_row(facts, key, kind, context).map(Some),
+        }
     }
 
     /// Completed element recipes become one contiguous run of `roots`.
@@ -163,6 +190,38 @@ impl Stage {
             )?;
         }
         pending.push(value);
+        Ok(())
+    }
+
+    fn enter_dynamic(
+        &mut self,
+        facts: &Declarations,
+        key: Key,
+        context: Context,
+        arguments: crate::types::GenericArgs,
+        bound_regions: u32,
+        pending: &mut Vec<Task>,
+    ) -> Result<(), &'static str> {
+        let binder = Context {
+            body: context.body,
+            ..self.frame(
+                context.owner,
+                context.frame,
+                s::BinderKind::DynamicType,
+                bound_regions,
+            )?
+        };
+        self.type_work(pending, Task::Dynamic(key, context, binder))?;
+        let arguments = facts
+            .types
+            .arguments(arguments)
+            .ok_or("source trait object lost its actual arguments")?;
+        for argument in arguments {
+            if let crate::types::arguments::Argument::Type(ty) = argument {
+                let child = self.type_key(facts, ty, binder)?;
+                self.type_work(pending, Task::Enter(child, binder))?;
+            }
+        }
         Ok(())
     }
 

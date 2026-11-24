@@ -14,8 +14,9 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // variants' field names live in the enum columns' name column: one Vec more.
 // The v14 type and trait alias vectors and optional static table live outside
 // the hot rows. Written nominal lifetime bounds add one cold Vec.
-// Closed const defaults add one more cold Vec.
-const _: [(); 424] = [(); size_of::<s::ColdColumns>()];
+// Closed const defaults add one more cold Vec. Trait object bounds add
+// three: objects, associated equalities and auto-trait markers.
+const _: [(); 496] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -72,6 +73,7 @@ fn types_written(rows: &[s::Type], lengths: &[s::ConstTerm]) -> Result<Vec<u8>> 
             &recipe_columns::TypeColumns {
                 ranges: &[],
                 lengths,
+                dynamics: &s::DynamicColumns::default(),
             },
         )
     })

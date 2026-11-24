@@ -1,4 +1,6 @@
 //! Shared identities for builtin marker names and typed obligations.
+use super::bindings::LangItem;
+
 /// Stable auto traits in the course's language profile.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum AutoTrait {
@@ -20,6 +22,18 @@ impl AutoTrait {
         Self::UnwindSafe,
         Self::RefUnwindSafe,
     ];
+
+    pub(crate) const fn lang_item(self) -> LangItem {
+        match self {
+            Self::Send => LangItem::Send,
+            Self::Sync => LangItem::Sync,
+            Self::Unpin => LangItem::Unpin,
+            Self::UnwindSafe => LangItem::UnwindSafe,
+            Self::RefUnwindSafe => LangItem::RefUnwindSafe,
+            Self::Freeze => LangItem::Freeze,
+            Self::UnsafeUnpin => LangItem::UnsafeUnpin,
+        }
+    }
 
     #[must_use]
     pub const fn name(self) -> &'static str {

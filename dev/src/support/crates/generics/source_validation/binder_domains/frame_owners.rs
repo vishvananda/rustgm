@@ -114,6 +114,13 @@ impl BinderIndex<'_> {
                     return Err("source shared call type requires an actual closed callable frame");
                 }
             }
+            s::BinderKind::DynamicType => {
+                if !profile.declaration_policies()
+                    || parent.is_some_and(|parent| parent.owner != frame.owner)
+                {
+                    return Err("source dynamic type requires its actual enclosing binder");
+                }
+            }
             s::BinderKind::CallSignature { body, value } => {
                 self.call_frame(headers, reference, frame, body, value)?;
             }

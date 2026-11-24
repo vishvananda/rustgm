@@ -12,6 +12,7 @@ mod constant_tests;
 mod contract_columns;
 mod enums_wire;
 mod exemption_wire;
+mod existential_wire;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/enabled_headers.rs"]
 mod feature_tests;
@@ -420,6 +421,7 @@ fn encode_profile(
         &recipe_columns::TypeColumns {
             ranges: rows.pattern_ranges(),
             lengths: rows.array_lengths(),
+            dynamics: &rows.cold().dynamics,
         },
     )?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
@@ -634,12 +636,14 @@ fn decode_profile_with(
     };
     if !tables.ranges.is_empty()
         || !tables.lengths.is_empty()
+        || !tables.dynamics.is_empty()
         || !diagnostics.is_empty()
         || !consts.is_empty()
     {
         let cold = read.cold(&mut rows)?;
         cold.pattern_ranges = tables.ranges;
         cold.array_lengths = tables.lengths;
+        cold.dynamics = tables.dynamics;
         cold.diagnostics = diagnostics;
         cold.consts = consts;
     }

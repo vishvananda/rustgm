@@ -206,6 +206,7 @@ pub(super) fn binder_write(out: &mut Writer, row: &s::Binder) -> Result<(), &'st
         s::BinderKind::Clause => 3,
         s::BinderKind::CallableType => 4,
         s::BinderKind::CallSignature { .. } => 5,
+        s::BinderKind::DynamicType => 6,
     })?;
     if let s::BinderKind::CallSignature { body, value } = row.kind {
         id(out, body.0)?;
@@ -229,6 +230,7 @@ pub(super) fn binder_read(read: &mut Input<'_, '_>) -> Result<s::Binder, &'stati
                 value: read.id()?,
             }
         }
+        6 if read.profile.declaration_policies() => s::BinderKind::DynamicType,
         _ => return Err("unsupported source binder kind"),
     };
     Ok(s::Binder {
