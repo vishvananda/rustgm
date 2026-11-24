@@ -305,7 +305,7 @@ class Wiring(unittest.TestCase):
     ORDER = "| 4 | PA27 | Places (`places`) | implemented | unpublished |\n"
     ROADMAP = "| Unit | PA | Cases | Deferred | Release record |\n| --- | --- | --- | --- | --- |\n" \
               "| `earlier` | 26 | 7 | 1 | [record](docs/earlier.md) |\n\ntext\n"
-    README = "| Component | Manifest | Cases | Deferred list |\n| --- | --- | --- | --- |\n" \
+    MAINTAINER = "| Component | Manifest | Cases | Deferred list |\n| --- | --- | --- | --- |\n" \
              "| `earlier` | [earlier.json](tests/units/earlier.json) | 7 | [1 fixture](../docs/earlier.md#deferred-list) |\n"
 
     def tree(self, directory):
@@ -314,7 +314,8 @@ class Wiring(unittest.TestCase):
         quiet(unit_release.run_declare, tree.root, "places")
         (tree.root / "docs/assignment-order.md").write_text(self.ORDER)
         (tree.root / "ROADMAP.md").write_text(self.ROADMAP)
-        (tree.root / "pa27/README.md").write_text(self.README)
+        (tree.root / "pa27/README.md").write_text("# PA27 student handout\n")
+        (tree.root / "pa27/MAINTAINER.md").write_text(self.MAINTAINER)
         (tree.root / "docs/places.md").write_text("record")
         return tree
 
@@ -329,12 +330,22 @@ class Wiring(unittest.TestCase):
             self.assertIn("| `earlier` | 26 | 7 | 1 | [record](docs/earlier.md) |\n"
                           "| `places` | 27 | 3 | 2 (1 needs a provider) | [record](docs/places.md) |\n", roadmap)
             self.assertIn("| `places` | [places.json](tests/units/places.json) | 3 | "
-                          "[2 fixtures](../docs/places.md#deferred-list) |", (tree.root / "pa27/README.md").read_text())
+                          "[2 fixtures](../docs/places.md#deferred-list) |", (tree.root / "pa27/MAINTAINER.md").read_text())
             quiet(unit_release.run_wire, tree.root, "places", "docs/places.md", 1)
             roadmap = (tree.root / "ROADMAP.md").read_text()
             self.assertEqual(roadmap.count("`places`"), 1)
             self.assertIn("| `places` | 27 | 3 | 1 | [record](docs/places.md) |", roadmap)
-            self.assertIn("[1 fixture](../docs/places.md#deferred-list)", (tree.root / "pa27/README.md").read_text())
+            self.assertIn("[1 fixture](../docs/places.md#deferred-list)", (tree.root / "pa27/MAINTAINER.md").read_text())
+
+    def test_first_release_creates_maintainer_notes_and_preserves_the_handout(self):
+        with tempfile.TemporaryDirectory() as name:
+            tree = self.tree(name)
+            notes = tree.root / "pa27/MAINTAINER.md"
+            notes.unlink()
+            quiet(unit_release.run_wire, tree.root, "places", "docs/places.md", 2)
+            self.assertIn("## Released components", notes.read_text())
+            self.assertIn("| `places` | [places.json](tests/units/places.json) | 3 |", notes.read_text())
+            self.assertEqual((tree.root / "pa27/README.md").read_text(), "# PA27 student handout\n")
 
     def test_wiring_needs_a_record_and_cannot_change_a_released_record(self):
         with tempfile.TemporaryDirectory() as name:

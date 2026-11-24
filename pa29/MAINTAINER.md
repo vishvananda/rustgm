@@ -1,0 +1,251 @@
+# RustGM Programming Assignment 29: Crates and metadata
+
+The [student handout](README.md) gives the course instructions.
+
+Status: **closed at its finite contract.** What is graded is the contract under
+[Graded contract](#graded-contract). The rest of this brief is buildout guidance
+for the work that contract defers, which
+[PA44 carries](../pa44/MAINTAINER.md#carried-requirements). Checkpoint notes below
+that say the assignment remains planned predate the closure and describe that
+deferred work.
+Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
+2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+
+## Graded contract
+
+PA29 is graded as a finite contract: the published manifest of each released
+component, less the fixtures on that component's deferred list. A fixture that
+no released manifest claims is not graded, whatever this brief says about it.
+
+| Component | Manifest | Cases | Deferred list |
+| --- | --- | --- | --- |
+| `declarations` | [declarations.json](tests/units/declarations.json) | 30 | [0 fixtures](../docs/pa29-declarations-release.md#deferred-list) |
+
+From the repository root, `python3 scripts/course.py pa29 --app BIN` runs the whole
+contract and `--unit declarations` selects one component. `make test`,
+`make test-rustc` and `make test-native` include PA29.
+
+Its cases are crate graphs: a case lists its provider crates and binds the
+consumer's aliases, and the runner builds each provider's metadata artifact
+before the consumer. See the [release record](../docs/pa29-declarations-release.md#crate-graph-cases).
+
+Not released: `provided-profile` is implemented but unpublished. Its fixtures
+live under `pa31/tests/spec/source-header-transport`, its independent oracle
+needs unstable compiler declarations, its native consumers exit with status 7,
+and it waits on the partial `source-declarations`. `value-metadata` and
+`generic-transport` are partial.
+
+PA29 is closed at this contract. [tests/manifest.json](tests/manifest.json) is
+exactly the union of the released manifests above and runs against their
+references; `python3 scripts/finite_contracts.py compose pa29` rewrites it when a
+component is released. Closing waives nothing. Each unreleased unit and each
+[requirement row](../docs/assignment-requirements.json) a released unit does not
+cover is deferred to [PA44](../pa44/MAINTAINER.md#carried-requirements), which cannot
+be complete while one of them is unreleased. Everything the self-hosting corpus
+needs stays required through PA32–PA36, PA44 and PA45.
+
+| Deferred to PA44 | Still owed |
+| --- | --- |
+| `value-metadata` | Completed constant and foreign value metadata (partial) |
+| `provided-profile` | Provided-body public artifact profile (implemented, unpublished) |
+| `generic-transport` | Generic and source body transport closure (partial) |
+| Row 29.2 | Closed interface/value/namespace codecs0–8 |
+| Row 29.3 | Ordinary generic executable body/const transport9 |
+| Row 29.4 | Source Functions/attributes/namespace profiles10 |
+| Row 29.5 | Provided source artifact→fresh named body/instance/native consumer11v1 |
+| Row 29.6 | Full generic/source metadata closure and allocation/proof replay |
+
+## Required implementation
+
+Separate compilation, crate identities, metadata and generic body exports.
+
+The explicit `module-nominals-v10` profile now transports actual named structs,
+their generic inputs, owner-ordered fields and visibility, plus typed constructor
+and field operations. A serialized provider and fresh generic client execute
+through the ordinary ownership/proof/lowering path. The
+[checkpoint](../docs/parallel/source-nominals-v10.md) retains independent
+opponents, legacy wire compatibility and remaining shape/policy requirements.
+This finite profile does not complete PA29 or original core transport.
+
+Current source conversion work uses the explicit `module-conversions-v9`
+capability, retaining actual From ownership, generic originals and body-local
+lifetime numbering. The [implementation and qualification plan](../docs/pa31-source-from-plan.md)
+records the qualified finite source/native/fresh-store profile and remaining
+transport requirements. The [call-input repair](../docs/pa29-call-input-profile-ci-repair.md)
+keeps ordinary parent-header inputs separate from the selected Provided reader,
+preserving actual bounds, source ownership and executable proof. This does not
+release PA29 or widen earlier metadata profiles.
+
+The [const allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
+adds an optional versioned availability extension for actual implicit const-body
+proof and exact lexical feature grants. API availability remains separate.
+Genuine provider/codec/fresh-consumer const and native controls pass; old packets
+retain their bytes and cannot invent absent body authority. Broader cross-crate
+body, value, macro and original library transport remain required.
+
+The maintainer implements this responsibility in `dev/src/` and introduces its
+typed interface before generating text views. Consult `spec.md`, the pinned
+Rust Reference, and the existing CPPGM implementation for efficient algorithms.
+Do not introduce rendered text as transport between compiler phases.
+
+## Tool surface
+
+The current maintainer scalar checkpoint supports separate RustGM libraries:
+
+```sh
+dev/rustgm --emit-lowir --crate-type=lib --crate-name shared \
+  --crate-disambiguator first --metadata-output first.rgm -o first.lowir first.rs
+dev/rustgm --emit-lowir --extern one=first.rgm -o client.lowir client.rs
+python3 scripts/backend.py first.lowir client.lowir -o client
+```
+
+Multi-unit native linking requires the explicitly configured reviewed ELF object
+backend profile. Ordinary single-unit builds retain the existing executable
+bridge. Supply metadata for every dependency. `--extern ALIAS=FILE` introduces a
+direct source-visible alias; `--dependency-metadata FILE` supplies transitive
+metadata without adding a name to the extern prelude. Both options share one
+canonical-path decoder and combined count/byte budgets. For a client depending
+only on the second library of a chain, use `--extern renamed=second.rgm
+--dependency-metadata first.rgm`; the first library remains required for linkage
+but its name and the second library's dependency alias remain inaccessible.
+Metadata is written only after the ordinary semantic, body,
+ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
+
+Native dependencies have a separate output: add `--native-links-output links.json`
+and pass `--native-links links.json` to `scripts/backend.py`, with repeated
+`--native-search DIRECTORY` and `--native-object FILE` arguments as needed.
+Conditional `#[link(..., cfg(PREDICATE))]` requires the actual `link_cfg` crate
+feature. The condition selects only the library dependency; foreign declarations
+remain visible and retain their safety. Dynamic dependencies have a versioned
+metadata envelope, while static archive bundling/publication remains explicitly
+unfinished. See [the conditional-link packet](tests/spec/conditional-native-links/README.md).
+
+`tests/transitive-metadata-outcomes.json` declares the three-crate source/native
+controls. `scripts/check_transitive_metadata.py` qualifies direct aliases,
+inventory-only failures, duplicate/reordered inputs, missing and malformed
+artifacts, and combined argument budgets. Supplying an inventory grants no extra
+source-core role, generic-body permission or library implementation.
+See [the development checkpoint](../docs/pa29-transitive-metadata.md) for exact
+evidence and the remaining release gate.
+
+Profiles zero and one export public nongeneric, nonconst Rust functions with scalar
+parameters/results, nested public module paths and explicit unsafe permission,
+and completed closed scalar named constants. Constant values retain exact integer
+and floating bits, without imported initializer bodies or runtime global storage.
+Profile two additionally transports scalar/reference function signatures with
+explicit late-bound lifetime slots, nested shared/mutable references and static
+output references. It retains ordinary unsafe permission and call/borrow checks;
+it exports no function bodies or const-call permission. Private checked generic
+instances remain local to each crate. Profiles zero through two reject exposed
+nominals. Early lifetime bounds,
+type/const-generic or const/async functions, target-feature contracts, other ABIs,
+public reexports and empty public modules diagnose profile boundaries. Generic
+body exports, aggregate/reference constant values and allocation graphs, and the full
+assignment contract remain unfinished. See `docs/pa29-scalar-metadata.md`,
+`docs/pa29-import-remapping.md`,
+`docs/pa29-scalar-linking.md`, `docs/pa29-scalar-values.md` and
+`docs/pa29-borrowed-signatures.md`. The assignment remains planned.
+
+Profile three additionally transports closed nongeneric named records with the
+default Rust representation. Supported fields contain scalars, other closed
+records or static shared references. Public declarations and private reachable
+layouts share one artifact type graph. Imports preserve nominal identity,
+field visibility, ordinary sizedness, moves, patterns and layout without
+inventing source nodes or constructor bodies. Private layout transport grants
+no public type access. Unsupported representation, generic, derive, trait,
+method and destruction contracts remain explicit profile errors. See
+`docs/pa29-closed-records.md` for the independent source/native qualification
+and remaining assignment work.
+
+Local `#[non_exhaustive]` contracts accept word form on structs, enums and enum
+variants. Construction and complete matching within the defining crate retain
+their ordinary rules. Closed record artifacts still reject these validated
+contracts; foreign construction and exhaustiveness transport remain required.
+
+Profile four additionally retains fixed C callable conventions using the same
+signature-local or shared nominal type graphs. Safety, late-bound lifetime slots
+and exact linkage stay independent. Rust-only artifacts retain profiles zero
+through three byte-for-byte. This PA30 extension grants no const or generic-body
+permission and adds no static or C aggregate transport. See
+`docs/pa30-foreign-metadata.md`.
+
+Profile five adds named storage and completed scalar/record/reference values.
+Hidden backing remains private; self-referential static addresses retain real
+global identity across object boundaries. The source and native controls in
+`tests/storage-metadata-outcomes.json` also vary shared roots at 8/32/128 sizes.
+Foreign-storage extensions belong to PA30. See
+`docs/pa30-storage-metadata.md` for validation and the remaining graph boundaries.
+
+Profile six adds a public namespace independently of defining identities.
+Renamed local and external reexports, module aliases, empty public modules and
+resolved module-alias cycles retain one owned declaration per defining crate.
+Imports reserve every target before installing bindings; hidden canonical paths
+and private fields remain inaccessible. Function and static aliases keep their
+original symbols and addresses. Earlier payload profiles keep their exact bytes
+when an explicit namespace is unnecessary. Source and native qualification is in
+`tests/public-name-outcomes.json`; `scripts/check_public_names.py` runs its original
+sources and checks repeated publication and dependency order. The combined
+checkpoint is qualified in `docs/iteration-storage-checkpoint.md`. Generic bodies and the other
+unfinished metadata contracts remain required. See `docs/pa29-public-names.md`.
+
+Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
+available. Freeze the exact text vocabulary, deterministic ordering, error
+contract and example outputs before declaring this assignment active.
+
+Profile seven retains fixed-array element types and lengths, plus the actual
+default Rust or plain C representation of closed records. It wraps the earlier
+payload and optional public namespace only when these facts are present.
+Imports reuse ordinary type interning, moves, borrow checks, layout and ABI
+classification. Array lengths never become decoder allocation counts.
+`tests/array-metadata-outcomes.json` and PA30's
+`tests/aggregate-metadata-outcomes.json` cover separate compilation and native
+execution. The stored-array extension retains ordinary products, compressed
+repeats, byte payloads and typed field/element reference paths through actual
+static identities. Its 13 source cases include seven native clients, hidden
+backing, nested arrays, repeated references and full-width zero-sized indices.
+Generic bodies and additional representation/value contracts remain required;
+see `docs/pa29-aggregate-metadata.md` and `docs/pa29-array-storage.md`.
+
+The source-independent [original body ownership table](../docs/pa29-body-ownership.md)
+is a typed prerequisite for generic transport. It validates defining artifact,
+declaration, parent and ordinal relationships with bounded linear work. It does
+not yet encode/import bodies, provide executable permission or activate a new
+wire profile. The full generic-body and contract transport remains required.
+
+The first executable generic checkpoint adds envelope nine, row version zero,
+for defining Rust 2024 and the legacy language-role policy. An actual checked
+`const fn id<T: Copy>(value: T) -> T` survives export/import and normal runtime
+and constant instantiation; Copy debts are re-proved for each actual instance.
+Artifacts contain typed original operations rather than proof tokens. The
+narrow operation/type family rejects unsupported source-role, trait, lifetime,
+call and other body contracts explicitly. Profiles zero through eight retain
+their encodings. This does not activate PA29 or replace the full generic-body
+requirement; see [the checkpoint](../docs/pa29-executable-generics.md) and the
+unchanged complete `tests/generic-contract-outcomes.json` inventory.
+
+## Tests to develop with the reference
+
+multi-crate dependencies; symbol identity; visibility; deterministic exports.
+
+Add spec fixtures, positive/negative controls and cross-feature regressions in
+the earliest owning assignment. Use the course reference for text oracles and
+pinned rustc for independent language checks. From PA11, execute emitted LowIR
+with the configured CPPGM backend. Do not require new future-stage behavior
+implicitly. An empty suite or a not-implemented result cannot pass.
+
+## Completion and review
+
+Publish the semantic and lowering boundary, tests/manifest.json and reference
+sidecars together. Run all active earlier suites, lint, file/architecture audits,
+and affected scaling measurements. Record independent checks before setting
+status active in `assignments.json` and adding the stage to the root report.
+Student export is a later operation: this repository owns the full solution.
+
+General source nominal declaration transport is now an explicit artifact priority.
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) qualifies
+local behavior, but the library CLI stops at the existing general declaration-kind
+boundary. Extend one typed struct/enum/union model with real fields, variants,
+generics, constructors, visibility and policies. Emit, validate, reload and remap
+it before qualifying actual wrapper identities and native/const behavior in a
+fresh consumer. Source-role recognition and entry-free native programs leave this
+requirement open. No new wrapper-specific export profile is needed.

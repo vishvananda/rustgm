@@ -1,7 +1,8 @@
 # RustGM Programming Assignment 33 — Allocator and alloc bootstrap
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The strict self-hosting graph has built the original `alloc` from source.
+This assignment qualifies its separate artifact and fresh consumers.
+The graded suite is pending.
 
 Build the original Rust 1.98.0 `alloc` crate against the
 [`core` artifact from PA32](../pa32/README.md). Use the same pinned source

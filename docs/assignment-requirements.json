@@ -146,7 +146,7 @@
         "dev/tests/invariants/gated_callable_syntax.rs"
       ],
       "evidence": [
-        "pa25/README.md"
+        "pa25/MAINTAINER.md"
       ],
       "publication": "unpublished; deferred by the PA25 finite contract and carried by PA44",
       "units": [
@@ -520,7 +520,7 @@
         "dev/tests/invariants/safety_diagnostics.rs"
       ],
       "evidence": [
-        "pa27/README.md",
+        "pa27/MAINTAINER.md",
         "docs/unsafe-policy-warning-gap.md"
       ],
       "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); in the closed PA27 finite contract",
@@ -544,7 +544,7 @@
         "dev/tests/unsafe_precision.rs"
       ],
       "evidence": [
-        "pa27/README.md"
+        "pa27/MAINTAINER.md"
       ],
       "publication": "unsafe-places component released (docs/pa27-unsafe-places-release.md); in the closed PA27 finite contract",
       "units": [
@@ -714,7 +714,7 @@
         "dev/tests/intrinsic_backend.rs"
       ],
       "evidence": [
-        "pa28/README.md"
+        "pa28/MAINTAINER.md"
       ],
       "publication": "runtime-memory component released (docs/pa28-runtime-memory-release.md); in the closed PA28 finite contract",
       "units": [

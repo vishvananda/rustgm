@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 43 — Async ownership
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Extend [PA42](../pa42/README.md)'s suspension state machines with borrowed
 storage, pinning, cancellation, and async destruction. Reuse the ownership

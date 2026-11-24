@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 40 — Editions and attributes
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Complete Rust 2015, 2018, 2021, and 2024 behavior beyond the subset used
 by [PA34](../pa34/README.md)'s selected crate graph. Extend the typed

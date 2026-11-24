@@ -84,7 +84,7 @@ bodies and their contracts must cross crate boundaries.
 | 43 | Async ownership | Pinning, suspension loans, cancellation and advanced async forms |
 | 44 | Frontend acceptance | Full language/library census, cross-feature corpus, debug locations, reproducibility and scaling |
 
-Reproducible self-hosting is the required [PA45](../pa45/README.md) capstone as
+Reproducible self-hosting is the required [PA45](../pa45/README.md) milestone as
 of 2026-11-15. It builds on the upstream library bootstrap goal.
 
 Panic-abort support needed by core/alloc is required in PA31–PA33; full unwinding

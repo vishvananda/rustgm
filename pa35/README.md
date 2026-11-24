@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 35 — Upstream crate acceptance
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Use the [PA34 build graph](../pa34/README.md) to compile original upstream
 packages with RustGM's source-built sysroot. Build separate consumers and
@@ -34,4 +33,4 @@ Run consumer checks for parsing and serialization, integer and floating
 boundaries, escaping, malformed input, nesting, and round trips. Complete
 both milestones with their original dependency graphs. Record whole-build
 time and memory and check the result of each executed consumer.
-[PA38](../pa38/README.md) adds procedural Serialize and Deserialize derives.
+Procedural Serialize and Deserialize derives belong to the follow-on track.

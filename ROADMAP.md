@@ -5,8 +5,9 @@ current execution path: a faster validation loop, algorithmic frontend
 performance work taken from the CPPGM port, and self-hosting through a strict
 whole-graph build. It supersedes the execution order of the
 [self-hosting plan](docs/self-hosting-plan.md), whose milestone ladder stands.
-PA45 self-hosting is the required capstone. Assignment statuses below are
-unchanged.
+In the [student course order](student/README.md#course-order), PA45 is the
+self-hosting milestone after the library bootstrap and PA44 is final
+frontend acceptance.
 
 The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
 prepares exact solved protocol results before readonly drop queries.17 source
@@ -92,7 +93,7 @@ assignments.json. The other PA1–PA20 stages retain implemented-draft; the
 lists what each record lacks. PA25–PA30 are closed at their finite contracts:
 each manifest is the union of its released unit manifests, and the unreleased
 units and requirement rows it defers are carried by
-[PA44](pa44/README.md#carried-requirements). PA31–PA45 remain planned as whole
+[PA44](pa44/MAINTAINER.md#carried-requirements). PA31–PA45 remain planned as whole
 assignments. No planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
@@ -507,13 +508,13 @@ core, alloc and std and execute independent real-crate consumers. Actual active
 source determines required language/runtime/target capabilities; a later number
 never excuses a failed library path. Full unwinding and async remain separate
 from the initial abort-profile graph. PA45 reproducible self-hosting is the
-required capstone as of 2026-11-15. CPPGM is the explicit LowIR backend; backend extensions
-require separate reviewed capability work.
+required milestone after the library bootstrap. CPPGM is the explicit LowIR
+backend. Backend extensions require separate reviewed capability work.
 
 The strict whole-source graph now builds and links a native RustGM with zero
 bring-up records. The linked stage 1 passes every committed PA1–PA24 oracle.
 Stage 2 reproduces the LowIR, native link manifest and linked compiler byte for
-byte. The [PA45 procedure](pa45/README.md#tool-surface) records the ordered graph
+byte. The [PA45 procedure](pa45/MAINTAINER.md#tool-surface) records the ordered graph
 and qualification commands for independent review.
 
 The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)

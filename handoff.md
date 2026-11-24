@@ -7,7 +7,7 @@ alloc, std, the pinned registry dependencies and RustGM's own source. The
 `-O1` stage 1 passed every committed PA1–PA24 oracle with zero bring-up records.
 Stage 2 reproduced the LowIR, native link manifest and executable byte for
 byte under the same strict profile. This checkpoint used CPPGM v0.9.3 as
-locked at `2460f2dde`. Use the [PA45 procedure](pa45/README.md#tool-surface)
+locked at `2460f2dde`. Use the [PA45 procedure](pa45/MAINTAINER.md#tool-surface)
 and its ordered configuration to replay that revision. The PA45 grading
 release requires independent review.
 

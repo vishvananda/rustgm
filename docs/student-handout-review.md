@@ -4,26 +4,19 @@ Review the handouts in order. Check off a PA after reading the full handout,
 confirming the student requirements and examples, and checking links and
 commands against the exported tree. Keep implementation history, internal
 paths, reference generation and release procedures in maintainer documentation.
-Where release tooling uses the original README, link to the separate student
-handout. It becomes the exported README.
+Each assignment uses `README.md` for the student handout. Assignment-specific
+release notes and implementation history use `MAINTAINER.md`.
 
-PA1–PA30 are available in the current preview. PA31–PA45 are planned and
-outside the preview. A checked planned handout means its instructions and
-prerequisites have been reviewed as a draft.
+The initial export track includes PA1–PA36 and PA45. PA1–PA30 have
+available grading suites. A check for PA31–PA45 records review of the
+instructions, requirements, and prerequisites. Their grading suites
+remain pending. PA37–PA44 are the follow-on track.
 
-## Bootstrap sequence
+The [student course order](../student/README.md#course-order) places
+self-hosting after the library bootstrap and frontend acceptance after
+the advanced feature assignments.
 
-Build on the PA25–PA30 course contracts and complete PA31's source bindings
-and runtime integration. Before starting PA32, teach the required crate
-build work from PA34, the core-specific target and assembly work from PA41,
-and the source and generic-body transport beyond PA29's declared profile.
-
-Build original `core`, then run PA35's core-only crate milestone. Build
-`alloc` in PA33 and run PA35's allocation-dependent graph. Build `std` in
-PA36. The broader target work and the remaining advanced features stay in
-their owning assignments. PA45 remains the self-hosting capstone.
-
-## Current export
+## Handouts with grading suites
 
 - [x] [PA1](../pa1/README.md)
 - [x] [PA2](../pa2/README.md)
@@ -49,16 +42,16 @@ their owning assignments. PA45 remains the self-hosting capstone.
 - [x] [PA22](../pa22/README.md)
 - [x] [PA23](../pa23/README.md)
 - [x] [PA24](../pa24/README.md)
-- [x] [PA25](../pa25/STUDENT.md)
-- [x] [PA26](../pa26/STUDENT.md)
-- [x] [PA27](../pa27/STUDENT.md)
-- [x] [PA28](../pa28/STUDENT.md)
-- [x] [PA29](../pa29/STUDENT.md)
-- [x] [PA30](../pa30/STUDENT.md)
+- [x] [PA25](../pa25/README.md)
+- [x] [PA26](../pa26/README.md)
+- [x] [PA27](../pa27/README.md)
+- [x] [PA28](../pa28/README.md)
+- [x] [PA29](../pa29/README.md)
+- [x] [PA30](../pa30/README.md)
 
-## Planned assignments
+## Handouts with grading suites pending
 
-- [x] [PA31](../pa31/STUDENT.md)
+- [x] [PA31](../pa31/README.md)
 - [x] [PA32](../pa32/README.md)
 - [x] [PA33](../pa33/README.md)
 - [x] [PA34](../pa34/README.md)
@@ -71,5 +64,5 @@ their owning assignments. PA45 remains the self-hosting capstone.
 - [x] [PA41](../pa41/README.md)
 - [x] [PA42](../pa42/README.md)
 - [x] [PA43](../pa43/README.md)
-- [x] [PA44](../pa44/STUDENT.md)
-- [x] [PA45](../pa45/STUDENT.md)
+- [x] [PA44](../pa44/README.md)
+- [x] [PA45](../pa45/README.md)

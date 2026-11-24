@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 41 — Target features and assembly
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Implement the typed target-feature, vector layout, and assembly rules
 for the course's Linux x86-64 target. Use the pinned CPPGM backend and

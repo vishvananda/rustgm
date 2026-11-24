@@ -1,7 +1,8 @@
 # RustGM Programming Assignment 32 — Pinned core bootstrap
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The strict self-hosting graph has built the original `core` from source.
+This assignment qualifies its separate artifact and fresh consumers.
+The graded suite is pending.
 
 Build the complete upstream `core` crate for Rust 1.98.0 on Linux x86-64
 with aborting panics. Use the original sources at
@@ -17,8 +18,22 @@ Complete the following parts of the bootstrap path.
   introduces the declaration format.
 - [PA34](../pa34/README.md)'s crate-build preparation, including the selected
   edition, target configuration, and generated inputs.
-- [PA41](../pa41/README.md)'s core prerequisites for layout, target features,
-  and assembly. Complete that subset before attempting the original library.
+- The core prerequisites for layout, target features, and assembly below.
+
+## Required target support for core
+
+Compile the active stdarch and portable SIMD source as part of the crate.
+Implement its `repr(simd)` layout, selected ABI and real target-feature
+requirements. Qualify the original `_mm_stream_ps` path through CPPGM
+with its generated template, full-width vector input and typed memory
+effects. Check the resulting non-temporal store's instruction and its
+effect on all 128 input bits and the surrounding bytes.
+
+Retain typed assembly operands, effect and safety facts across expansion,
+lowering, and any library artifact consumed by a separate crate. Evaluate
+operands in source order. Check target features, alignment and register
+classes before lowering the selected operations. Keep the broader
+target features and assembly forms for the follow-on track.
 
 ## Build the library
 

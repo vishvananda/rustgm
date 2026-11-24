@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 34 — Editions and crate builds
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Implement reproducible crate builds for the course's Rust 1.98.0 graph.
 Start with small library and client graphs using [PA29](../pa29/README.md)'s
@@ -15,8 +14,8 @@ artifact and dependency identities. Use the build preparation needed by
   expansion, and metadata.
 - Support the selected 2021 and 2024 crates. The original standard-library
   graph also uses a 2015 `rustc-demangle` and a 2018 `cfg-if` package.
-  Support the edition behavior they require. [PA40](../pa40/README.md)
-  covers the remaining edition rules.
+  Support the edition behavior they require. The follow-on track covers
+  the remaining edition rules.
 - Preserve the edition of a method identifier from its source or macro
   origin. Edition-sensitive dispatch for arrays and boxed slices uses
   that identifier and the adjusted receiver.

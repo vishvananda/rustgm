@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 39 — Panic and unwinding
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Extend [PA36](../pa36/README.md)'s panic-abort profile with unwinding.
 Reuse [PA17](../pa17/README.md)'s cleanup plans and

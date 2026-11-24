@@ -42,12 +42,14 @@ def git_json(commit, name):
 
 def selection(assignments, through):
     stages = assignments["stages"]
+    if through is None:
+        # The initial student track ends at the strict self-hosting milestone.
+        paths = [f"pa{number}" for number in range(1, 37)] + ["pa45"]
+        by_path = {stage["path"]: stage for stage in stages}
+        return [by_path[path] for path in paths]
     for index, stage in enumerate(stages):
         if stage["path"] == through:
-            prefix = stages[:index + 1]
-            if any(entry["status"] not in ("implemented", "implemented-draft") for entry in prefix):
-                raise ValueError(f"{through}: every selected assignment needs a complete test manifest")
-            return prefix
+            return stages[:index + 1]
     raise ValueError(f"unknown assignment: {through}")
 
 
@@ -64,13 +66,14 @@ def fixture_files(stage, manifest):
     return paths
 
 
-def extract(commit, stages, public, handouts, tree):
+def extract(commit, stages, public, handout_paths, tree):
     overlays = {f"student/{path}": path for path in STUDENT_FILES}
     overlays["student/assignment.mk"] = "scripts/student-assignment.mk"
-    wanted = {**dict.fromkeys(public), **overlays, **handouts}
+    wanted = {**dict.fromkeys(public), **overlays}
     fixture_roots = {(stage, "tests") for stage in stages}
     command = ["git", "-C", str(ROOT), "archive", commit, "--", *stages, "doc",
                "scripts", "student", "shared", "third_party"]
+    command.extend(handout_paths)
     command.extend(sorted(path for path in PUBLIC_FILES if "/" not in path))
     with subprocess.Popen(command, stdout=subprocess.PIPE) as process, process.stdout as stream:
         with tarfile.open(fileobj=stream, mode="r|") as archive:
@@ -119,32 +122,32 @@ def validate(tree, stages, public):
     return counts
 
 
-def export(revision, through, destination):
+def export(revision, through, destination, *, include_pending=False):
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(f"destination already exists: {destination}")
     commit = git("rev-parse", "--verify", "--end-of-options", f"{revision}^{{commit}}").decode().strip()
     assignments = git_json(commit, "assignments.json")
-    prefix = selection(assignments, through)
-    stages = [entry["path"] for entry in prefix]
+    selected = selection(assignments, through)
+    pending = [entry["path"] for entry in selected if entry["status"] == "planned"]
+    if pending and not include_pending:
+        raise ValueError(f"grading suites are pending for {', '.join(pending)}")
+    stages = [entry["path"] for entry in selected if entry["status"] in ("implemented", "implemented-draft")]
+    if len(stages) + len(pending) != len(selected):
+        raise ValueError("unknown assignment status in export selection")
+    handout_paths = [f"{stage}/README.md" for stage in pending]
     public = PUBLIC_FILES | set(git("ls-tree", "-rz", "--name-only", commit, "--", "doc").decode().split("\0")[:-1])
+    public.update(handout_paths)
     for stage in stages:
         public.update(fixture_files(stage, git_json(commit, f"{stage}/tests/manifest.json")))
-    student_paths = [f"{stage}/STUDENT.md" for stage in stages]
-    tracked_handouts = git("ls-tree", "-z", "--name-only", commit, "--", *student_paths)
-    handouts = {}
-    for name in tracked_handouts.decode().split("\0")[:-1]:
-        readme = str(Path(name).with_name("README.md"))
-        public.remove(readme)
-        handouts[name] = readme
     sources = git_json(commit, "third_party/sources.json")
     sources["files"] = [entry for entry in sources["files"] if entry["destination"] in public]
     assignments["stages"] = [
-        {key: value for key, value in entry.items() if key != "release_evidence"} for entry in prefix
+        {key: value for key, value in entry.items() if key != "release_evidence"} for entry in selected
     ]
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".rustgm-export-", dir=destination.parent) as scratch:
         tree = Path(scratch) / "tree"
-        extract(commit, stages, public, handouts, tree)
+        extract(commit, stages, public, handout_paths, tree)
         write_json(tree / "assignments.json", assignments)
         write_json(tree / "third_party/sources.json", sources)
         for stage in stages:
@@ -155,19 +158,27 @@ def export(revision, through, destination):
             "source_commit": commit,
             "backend_lock_sha256": hashlib.sha256((tree / "backend.lock.json").read_bytes()).hexdigest(),
             "cases": counts,
+            "handouts_only": pending,
         })
         tree.rename(destination)
-    print(f"Exported {stages[0]}–{stages[-1]} ({sum(counts.values())} cases) from {commit[:12]} to {destination}")
+    print(f"Exported {len(selected)} handouts and {sum(counts.values())} cases from {commit[:12]} to {destination}")
+    if pending:
+        print(f"Handouts with grading suites pending: {', '.join(pending)}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--revision", default="HEAD", help="committed source revision (default: HEAD)")
-    parser.add_argument("--through", required=True, help="last assignment in the export prefix, e.g. pa11")
+    track = parser.add_mutually_exclusive_group(required=True)
+    track.add_argument("--through", help="last assignment in the export prefix, e.g. pa11")
+    track.add_argument("--self-hosting", action="store_true", help="select PA1–PA36 and PA45")
+    parser.add_argument("--include-pending-handouts", action="store_true",
+                        help="preview planned handouts without their grading suites")
     parser.add_argument("destination", type=Path, help="new output directory")
     args = parser.parse_args()
     try:
-        export(args.revision, args.through, args.destination.absolute())
+        export(args.revision, args.through, args.destination.absolute(),
+               include_pending=args.include_pending_handouts)
     except (OSError, ValueError, KeyError, RuntimeError, tarfile.TarError, subprocess.CalledProcessError) as error:
         print(f"export error: {error}", file=sys.stderr)
         return 1

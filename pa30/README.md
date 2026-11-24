@@ -1,195 +1,85 @@
-# RustGM Programming Assignment 30: Foreign interfaces
+# RustGM Programming Assignment 30 — Foreign interfaces
 
-The [student handout](STUDENT.md) describes the exported assignment.
+Use [PA27](../pa27/README.md)'s unsafe checking and
+[PA29](../pa29/README.md)'s declaration identities to call C code and make
+Rust declarations available to it. Use Rust 1.98.0, edition 2024, on
+Linux x86-64 with checked arithmetic and aborting panics.
 
-Status: **closed at its finite contract.** What is graded is the contract under
-[Graded contract](#graded-contract). The rest of this brief is buildout guidance
-for the work that contract defers, which
-[PA44 carries](../pa44/README.md#carried-requirements). Checkpoint notes below
-that say the assignment remains planned predate the closure and describe that
-deferred work.
-Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+[The PA30 manifest](tests/manifest.json) covers the local C ABI, foreign
+imports, exact linkage, exported storage, callbacks, and calls with
+variadic arguments. PA44 carries the broader foreign representation and
+cross-crate metadata contracts.
 
-## Graded contract
+## Callable signatures and safety
 
-PA30 is graded as a finite contract: the published manifest of each released
-component, less the fixtures on that component's deferred list. A fixture that
-no released manifest claims is not graded, whatever this brief says about it.
+Retain a function's ABI, safety, and variadic status as separate typed facts.
+An explicit `extern` without an ABI string selects C. Foreign items inherit
+their block's ABI and default safety, with the explicit safety permitted by
+their declaration. Check calls and function-pointer coercions with the selected
+ABI, signature, safety, and lifetime constraints. A C method or pointer does
+not gain const-call permission from its spelling.
 
-| Component | Manifest | Cases | Deferred list |
-| --- | --- | --- | --- |
-| `c-abi` | [c-abi.json](tests/units/c-abi.json) | 143 | [15 fixtures](../docs/pa30-c-abi-release.md#deferred-list) |
+For variadic C calls, apply normal coercions to fixed parameters and check
+extra arguments independently. Require the applicable C promotions at the
+source boundary. For example, pass an `f64` in place of an `f32` variadic
+argument. Preserve left-to-right evaluation, borrow and move obligations,
+and the argument classification for direct and indirect calls.
 
-From the repository root, `python3 scripts/course.py pa30 --app BIN` runs the whole
-contract and `--unit c-abi` selects one component. `make test`,
-`make test-rustc` and `make test-native` include PA30.
+## Symbols and storage
 
-Not released: `ffi-closure` is partial.
+Use typed symbol identities for foreign imports and Rust definitions. Apply
+`link_name`, `unsafe(no_mangle)`, and `unsafe(export_name)` to select exact
+linker names. Compatible declarations can refer to the same symbol. Reject
+incompatible signatures, conflicting bodies, and function/global kind
+collisions. An exported definition remains a lowering root even when
+ordinary Rust calls do not reach it.
 
-PA30 is closed at this contract. [tests/manifest.json](tests/manifest.json) is
-exactly the union of the released manifests above and runs against their
-references; `python3 scripts/finite_contracts.py compose pa30` rewrites it when a
-component is released. Closing waives nothing. Each unreleased unit and each
-[requirement row](../docs/assignment-requirements.json) a released unit does not
-cover is deferred to [PA44](../pa44/README.md#carried-requirements), which cannot
-be complete while one of them is unreleased. Everything the self-hosting corpus
-needs stays required through PA32–PA36, PA44 and PA45.
+Retain a foreign static's type, mutability, and access safety. An imported
+object is a declaration of external storage. Exported storage keeps its
+initializer and the callbacks or other symbols it reaches. Forming an
+address and loading a foreign value keep their distinct checks.
 
-| Deferred to PA44 | Still owed |
-| --- | --- |
-| `ffi-closure` | Foreign representation and callable closure (partial) |
-| `value-metadata` (PA29) | Completed constant and foreign value metadata (partial) |
-| `generic-transport` (PA29) | Generic and source body transport closure (partial) |
-| Row 30.5 | Foreign signature/storage/array/variadic metadata |
-| Row 30.6 | Opaque external types and full repr/ABI closure |
+## Aggregate calls
 
-## Required implementation
+For supported nonempty `repr(C)` records, classify arguments and results
+using the Linux x86-64 C calling convention. Use the checked layout to
+classify fields and fixed arrays, including nested fields, by their actual
+eightbyte positions. Preserve INTEGER, SSE, and memory classes as
+applicable. Keep the classification for imported calls, exports, and
+callbacks. Check source types, initialization, Copy and Move behavior,
+and lifetime constraints before using any ABI transfer.
 
-C ABI, repr attributes, linkage and imported/exported declarations.
+## Build and run a C interoperation example
 
-The [VaArgSafe/VaList source checkpoint](../docs/parallel/source-va-declarations.md)
-completes actual ordinary declaration owners and preserves their real trait,
-field, ownership and argument-ABI rules. Its two native observers exercise
-ordinary role-bearing declarations; the genuine standard cursor observer and
-complete marker/module source remain separate required contracts. Actual
-c_variadic feature admission, variadic definition/init/read/copy/end/cleanup,
-source unsafe/const proof and metadata must be implemented before claiming the
-full standard VaList runtime.
+The [Rust fixture](tests/spec/aggregate-abi/interop.rs) calls a
+[C provider](tests/spec/aggregate-abi/interop.c) and participates in a
+callback through the C ABI. Build your compiler and install the pinned
+backend with `make` and `make setup-backend`, then run these commands from
+the student repository root.
 
-The local implementation now supports
-`rustc_pass_indirectly_in_non_rustic_abis` on the local repr(C) struct in
-ffi/va_list.rs416 (LIB-111). This is a semantic argument ABI contract, not an
-advisory marker. Validate its actual struct/feature/representation authority and
-implement forced indirect non-Rustic arguments, transparent-wrapper propagation
-and real copy/pointer behavior while preserving Rust ABI and return rules.
-All 28 frozen source outcomes, five independent C observers and four freshly
-built pinned Rust native comparisons pass. The original-core attempt clears this
-marker. Older metadata profiles reject its unencoded policy; authenticated
-transport and wider actual VaList/runtime consumers remain required. See the
-[qualified checkpoint](../docs/pa30-indirect-arguments-checkpoint.md). This finite
-family does not complete the assignment.
+```sh
+compiler=obj/student/release/rustgm
+src=pa30/tests/spec/aggregate-abi
+out=obj/pa30-example
+mkdir -p "$out"
 
-Opaque external types require genuine declaration identity and exact
-`extern_types` feature/token authority. Their value size and alignment remain
-unknown. Thin pointer metadata does not make the pointee Sized or MetaSized;
-PointeeSized and metadata normalization are distinct source contracts. Do not
-substitute an empty struct, fabricate fields or publish an unsupported foreign
-type through an older metadata profile. See [the source design](../docs/foreign-type-source-design.md)
-for the unqualified successor and independently observed contracts.
+"$compiler" --emit-lowir -o "$out/interop.lowir" "$src/interop.rs"
+cc -std=c11 -O0 -c "$src/interop.c" -o "$out/provider.o"
+python3 scripts/backend.py "$out/interop.lowir" --native-object "$out/provider.o" \
+    -o "$out/interop"
+"$out/interop"
+```
 
-The maintainer callable checkpoint retains `Abi::{Rust,C}` and a variadic bit
-independently of function safety and constant eligibility. Omitted `extern`
-remains distinct syntax and selects C. Fixed-arity scalar C definitions and
-function pointers use ordinary selected calls. Top-level safe-to-unsafe
-coercions retain a checked lifetime proof view; nested callable equality and
-calling-convention identity remain strict. Draft source outcomes are in
-`tests/convention-outcomes.json`; this does not activate the assignment.
+The program checks its results and exits 0. Only LowIR and the host object
+enter the backend link.
 
-The maintainer scalar-import checkpoint retains actual foreign-block ownership
-through macro expansion, inherits ABI and default unsafe permission, and emits
-real declarations for selected imports. Five C-linked native controls cover
-scalar imports, callbacks and ordinary/generic/constant pointer demand paths.
-Draft outcomes are in `tests/import-outcomes.json`.
+## Run the tests
 
-The maintainer exact-function-linkage checkpoint consumes retained `link_name`,
-`unsafe(no_mangle)` and `unsafe(export_name)` attributes through typed registry
-records. Shared roots retain otherwise unused exports; compatible exact import
-and export aliases share one canonical LowIR symbol. Collision controls prevent
-multiple bodies from replacing each other, including generated helper names.
-Draft outcomes are in `tests/linkage-outcomes.json`; qualification and boundaries
-are recorded in `docs/pa30-linkage-checkpoint.md`.
+Run the PA30 test target from the repository root.
 
-The maintainer foreign-static checkpoint retains separate safety and mutability,
-real imported global declarations, exact exported storage and constant foreign
-addresses. A single typed function/global namespace validates aliases and kind
-collisions. Global export roots retain actual initializer and generic callback
-dependencies in executable and entry-free modes. Draft outcomes are in
-`tests/static-outcomes.json`; qualification and boundaries are recorded in
-`docs/pa30-static-checkpoint.md`.
+```sh
+make -C pa30 test
+```
 
-The maintainer aggregate-callable checkpoint classifies nonempty aligned
-`repr(C)` structs once and retains INTEGER/SSE/none/MEMORY classes
-for imports, exports and callbacks. Sparse object temporaries preserve ordinary
-scalar record sizes. Native controls exercise mixed results, register rollback,
-large values, padding and Drop. The nested-aggregate checkpoint adds recursively
-validated `repr(C)` struct and fixed-array fields, including placement-aware mixed
-eightbytes and MEMORY validation. Draft outcomes are in
-`tests/aggregate-outcomes.json` and `tests/composite-outcomes.json`; see
-`docs/pa30-aggregate-abi.md` and `docs/pa30-composite-abi.md` for the profile
-and explicit boundaries. The variadic checkpoint adds direct and indirect C
-calls with independently inferred extra arguments, explicit source promotion
-checks, and actual scalar/record ABI classes. Fixed parameters retain ordinary
-coercions; all arguments retain move, borrow and evaluation-order checks.
-`tests/variadic-outcomes.json` and `tests/variadic-tail-outcomes.json` declare
-42 source outcomes and 23 native comparisons. See
-`docs/pa30-variadic-calls.md` for the typed transport, qualification and retained
-boundaries. The fixed-callable metadata checkpoint preserves C ABI separately
-from safety, linkage and lifetime slots across separately compiled crates.
-Profile four reuses the existing scalar/reference and closed-record graphs;
-`tests/foreign-metadata-outcomes.json` declares its independent source and native
-controls. See `docs/pa30-foreign-metadata.md`. The named-storage checkpoint adds
-owned/foreign static identity, safety, mutability and completed scalar/record/
-reference values through profile five. Its source and native contracts are in
-`tests/storage-metadata-outcomes.json`; see `docs/pa30-storage-metadata.md` for
-validation and the remaining storage boundaries. The profile-seven checkpoint
-now transports fixed arrays and plain C record representation across crate
-boundaries, including mixed and MEMORY-class aggregate calls and function pointers.
-`tests/aggregate-metadata-outcomes.json` includes a separate C caller; see
-`docs/pa29-aggregate-metadata.md`. Profile eight now transports actual foreign
-variadic declarations, aliases and compatible function pointers while retaining
-the same call checks. `tests/variadic-metadata-outcomes.json` declares 21 source
-outcomes and ten executable comparisons; see `docs/pa30-variadic-metadata.md`.
-Additional record representations and the other unfinished contracts remain required.
-The reviewed optional object backend
-profile is selected explicitly; its native tests are always registered and run
-with `--ignored` through the grouped maintainer suites. They fail if the profile
-is missing. PA30's
-release target and CI must configure that profile and run those tests before
-activation. See `docs/pa30-import-checkpoint.md` and
-`docs/pa30-callable-checkpoint.md` for qualification and remaining boundaries.
-
-The maintainer implements this responsibility in `dev/src/` and introduces its
-typed interface before generating text views. Consult `spec.md`, the pinned
-Rust Reference, and the existing CPPGM implementation for efficient algorithms.
-Do not introduce rendered text as transport between compiler phases.
-
-The [borrowed-wrapper coercion reductions](../docs/pa26-borrow-coercion-reductions.md)
-freeze the reached RefCell::replace conversion gap. The
-[implementation checkpoint](../docs/pa26-borrow-coercions.md) qualifies39 actual
-source checked-body outcomes and4 real source native/CTFE programs. Ordinary hooks
-belong to PA26, the C ABI observers to PA30 and actual source roles to PA31.
-Ordinary imports/native parity, complete composition and transport remain required;
-this packet does not activate a whole assignment.
-
-## Tool surface
-
-Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier stage views remain
-available. Freeze the exact text vocabulary, deterministic ordering, error
-contract and example outputs before declaring this assignment active.
-
-## Tests to develop with the reference
-
-repr(C); aggregate ABI; callbacks; exported globals; C interoperability.
-
-Add spec fixtures, positive/negative controls and cross-feature regressions in
-the earliest owning assignment. Use the course reference for text oracles and
-pinned rustc for independent language checks. From PA11, execute emitted LowIR
-with the configured CPPGM backend. Do not require new future-stage behavior
-implicitly. An empty suite or a not-implemented result cannot pass.
-
-## Completion and review
-
-Publish the semantic and lowering boundary, tests/manifest.json and reference
-sidecars together. Run all active earlier suites, lint, file/architecture audits,
-and affected scaling measurements. Record independent checks before setting
-status active in `assignments.json` and adding the stage to the root report.
-Student export is a later operation: this repository owns the full solution.
-
-The [unsized source observer](tests/spec/unsized-parameters/README.md) executes
-a real ?Sized original, sized specialization and automatic destructor through
-ordinary C observations7 then9, independently compared with Rust. Concrete
-unsized parameter ABI, owned allocation handoff and cross-crate transport remain
-required; PA26 owns the source permission and ownership rules.
-
-The [source Deref/Clone checkpoint](../docs/pa26-deref-clone.md) fixes proof ownership at shared call sites and retains all ordinary, source and native contracts in `tests/spec/deref-clone/manifest.json`. This remains a finite development checkpoint; the whole assignment is planned.
+The manifest declares expected LowIR and diagnostics, and names any C sources
+needed by executable cases in `native.providers`.

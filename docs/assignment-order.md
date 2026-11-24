@@ -135,7 +135,7 @@ atomic/intrinsic families; body/policy transport; and broader FFI representation
 remain explicit requirements. Closing cannot remove them: every unreleased unit
 and every requirement row a released unit does not cover is on the assignment's
 deferred list in `assignments.json` and is carried by
-[PA44](../pa44/README.md#carried-requirements). PA31 has no released unit and
+[PA44](../pa44/MAINTAINER.md#carried-requirements). PA31 has no released unit and
 stays planned.
 
 `implementation=implemented` on a work unit means its named finite profile has

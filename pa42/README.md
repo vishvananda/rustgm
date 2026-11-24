@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 42 — Async lowering
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Use [PA31](../pa31/README.md)'s actual source callable and coroutine
 declarations to lower async functions, async blocks, and generated

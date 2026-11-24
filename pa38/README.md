@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 38 — Derive and attribute macros
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Extend the [PA37 host interface](../pa37/README.md) to expand procedural
 derives and attribute macros. Use ordinary typed expansion and name

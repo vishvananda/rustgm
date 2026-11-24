@@ -18,6 +18,27 @@ case list and input options. Each fixture's `.ref`, `.ref.stderr`, and
 Test reports are written to `obj/tests/`. Set
 `RUSTGM_TEST_APP=/absolute/path/to/rustgm` to test an existing executable.
 
+
+## Course order
+
+1. Work through PA1–PA30 in order.
+2. Complete PA31's source bindings and runtime integration. Before building
+   original `core` in PA32, complete the required crate-build work from PA34,
+   the core-specific target, SIMD, and assembly work described in PA32, and the
+   generic-body metadata needed by fresh library consumers.
+3. Build `core` in PA32, then run PA35's core-only crate milestone. Build
+   `alloc` in PA33, run PA35's allocation-dependent crate milestone, and
+   build `std` in PA36.
+4. Complete **self-hosting (PA45)** using that library profile. Stage 1 runs
+   the earlier assignment suites and stage 2 must reproduce stage 1.
+The initial track ends at PA45. Procedural macros, unwinding, the remaining
+edition and target work, and async are a separate track. PA44 integrates
+the broader course profile after those features.
+
+Each exported assignment folder has a `README.md`. Available suites have
+a test manifest and a `make test` target in their PA directory. A preview
+may also contain handouts whose grading suites are pending.
+
 ## CPPGM backend
 
 Starting with PA11, RustGM emits [LowIR](shared/lowir.md). The Python driver

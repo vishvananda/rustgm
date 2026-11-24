@@ -1,7 +1,22 @@
 # RustGM student export
 
-Preview the assignments from a committed RustGM revision. Choose the last
-assignment in the prefix being prepared for release.
+The initial release for `rustgm-assignments` includes PA1–PA36 and the
+PA45 self-hosting milestone. The follow-on assignments are developed and
+released separately. The [course order](../student/README.md#course-order)
+explains which parts of crate building and target support precede `core`.
+
+Build a preview from a committed revision to review all of the handouts
+on the self-hosting track.
+
+```sh
+python3 scripts/export_assignments.py --self-hosting --include-pending-handouts obj/self-hosting-preview
+```
+
+Use `--self-hosting` alone for a release candidate. The exporter requires
+a grading manifest for each assignment in that track. The explicit preview
+option includes the README for a planned assignment and records it in
+`export.json` under `handouts_only`. Choose `--through` to produce an ordinary
+assignment prefix for focused checks.
 
 ```sh
 python3 scripts/export_assignments.py --revision HEAD --through pa11 obj/student-preview
@@ -25,9 +40,9 @@ Follow CPPGM's two-part release process for `rustgm-assignments`. Qualify the
 chosen maintainer revision with the assignment release checks and run the
 exported suites against the same immutable reference executable. Use the
 export's backend installer and run its library example as part of that check.
-Review links and commands from a fresh export. When a PA has a `STUDENT.md`,
-the exporter uses it as that PA's `README.md`. See the
-[handout review tracker](student-handout-review.md).
+Review links and commands from a fresh export. Every assignment's
+`README.md` is its student handout. `MAINTAINER.md` and fixture ownership notes
+stay in this repository. See the [handout review tracker](student-handout-review.md).
 
 Publish the qualified Linux x86-64 reference executable as a separate release
 asset. Pin its URL, archive and executable digests, source commit,

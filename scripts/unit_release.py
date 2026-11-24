@@ -9,7 +9,7 @@ The recipe, in order (state is kept under obj/publication/UNIT):
   declare UNIT                passing candidates -> the unit manifest; everything else -> deferred.json
   checks UNIT --app BIN       metadata, independent rustc, references, layout, text and native checks
   summary UNIT                family and deferred tables for the release record
-  wire UNIT --record DOC ...  plan, order table, ROADMAP and handout rows
+  wire UNIT --record DOC ...  plan, order table, ROADMAP and maintainer rows
   ledger ID=TEXT ...          requirement-row publication strings
 
 A candidate is published only when its independently declared outcome is what both
@@ -320,7 +320,7 @@ def table_row(text, pattern, row, label):
 
 
 def run_wire(root, unit, record, deferred, note=None):
-    """Publish the release in the plan, the order table, ROADMAP and the owning handout."""
+    """Publish the release in the plan, roadmap and assignment maintainer notes."""
     stage = load_config(root, unit)[0]
     if not (root / record).is_file() or not record.startswith("docs/"):
         raise ValueError(f"missing release record under docs/: {record}")
@@ -351,13 +351,20 @@ def run_wire(root, unit, record, deferred, note=None):
         roadmap_path.read_text(), r"^\| `[a-z0-9-]+` \| \d+ \| .*\[record\]\(docs/.*\) \|$",
         f"| `{unit}` | {stage.removeprefix('pa')} | {cases:,} | {cell} | [record]({record}) |", "ROADMAP"))
     fixtures = "1 fixture" if deferred == 1 else f"{deferred} fixtures"
-    readme_path = root / stage / "README.md"
-    readme_path.write_text(table_row(
-        readme_path.read_text(), r"^\| `[a-z0-9-]+` \| \[[a-z0-9-]+\.json\]\(tests/units/.*\) \|$",
-        f"| `{unit}` | [{unit}.json](tests/units/{unit}.json) | {cases:,} | [{fixtures}](../{record}#deferred-list) |",
-        f"{stage}/README.md"))
+    notes_path = root / stage / "MAINTAINER.md"
+    text = notes_path.read_text() if notes_path.is_file() else f"# {stage.upper()} maintainer notes\n"
+    pattern = r"^\| `[a-z0-9-]+` \| \[[a-z0-9-]+\.json\]\(tests/units/.*\) \|$"
+    row = (f"| `{unit}` | [{unit}.json](tests/units/{unit}.json) | "
+           f"{cases:,} | [{fixtures}](../{record}#deferred-list) |")
+    if re.search(pattern, text, re.M):
+        text = table_row(text, pattern, row, f"{stage}/MAINTAINER.md")
+    else:
+        text = (f"{text.rstrip()}\n\n## Released components\n\n"
+                "| Component | Manifest | Cases | Deferred list |\n"
+                f"| --- | --- | --- | --- |\n{row}\n")
+    notes_path.write_text(text)
     print(f"{unit}: {cases} cases and {deferred} deferred wired into the plan, order table, ROADMAP and "
-          f"{stage}/README.md")
+          f"{stage}/MAINTAINER.md")
 
 
 def run_ledger(root, items):

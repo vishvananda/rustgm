@@ -38,7 +38,7 @@ core (alloc, std, consumer instantiation, the backend at scale) was exercised.
    publication. They use the three existing worktrees under
    `/mnt/vizier/rustgm-scratch`. No new worktrees. The shared controller runs
    three heavy jobs.
-5. **PA45 self-hosting is the required capstone.**
+5. **PA45 self-hosting is the required milestone.**
 
 ## Phase 0: make the frontier visible
 

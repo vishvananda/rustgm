@@ -1,7 +1,6 @@
 # RustGM Programming Assignment 37 — Procedural macro host
 
-This is a draft handout. The assignment's grading suite will accompany
-its release.
+The graded suite for this assignment is pending.
 
 Extend [PA34](../pa34/README.md)'s host and target build split to run
 procedural macros. Build against the [standard-library profile](../pa36/README.md)
