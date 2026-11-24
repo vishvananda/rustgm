@@ -31,6 +31,7 @@ Test reports are written to `obj/tests/`. Set
    build `std` in PA36.
 4. Complete **self-hosting (PA45)** using that library profile. Stage 1 runs
    the earlier assignment suites and stage 2 must reproduce stage 1.
+
 The initial track ends at PA45. Procedural macros, unwinding, the remaining
 edition and target work, and async are a separate track. PA44 integrates
 the broader course profile after those features.

@@ -7,10 +7,11 @@ paths, reference generation and release procedures in maintainer documentation.
 Each assignment uses `README.md` for the student handout. Assignment-specific
 release notes and implementation history use `MAINTAINER.md`.
 
-The initial export track includes PA1–PA36 and PA45. PA1–PA30 have
-available grading suites. A check for PA31–PA45 records review of the
-instructions, requirements, and prerequisites. Their grading suites
-remain pending. PA37–PA44 are the follow-on track.
+The initial export track includes PA1–PA36 and self-hosting, which the
+exporter numbers student PA37. This tracker uses maintainer numbers for
+its links. PA1–PA30 have available grading suites. A check for PA31–PA45
+records review of the instructions, requirements, and prerequisites. Their
+grading suites remain pending. Maintainer PA37–PA44 are the follow-on track.
 
 The [student course order](../student/README.md#course-order) places
 self-hosting after the library bootstrap and frontend acceptance after

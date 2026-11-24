@@ -1,9 +1,11 @@
 # RustGM student export
 
-The initial release for `rustgm-assignments` includes PA1–PA36 and the
-PA45 self-hosting milestone. The follow-on assignments are developed and
-released separately. The [course order](../student/README.md#course-order)
-explains which parts of crate building and target support precede `core`.
+The initial release for `rustgm-assignments` includes PA1–PA37, ending
+with self-hosting. The exporter assigns student PA37 to maintainer PA45.
+Maintainer PA37–PA44 appear as student PA38–PA45 in the follow-on track.
+Existing fixture ownership and qualification records use the maintainer
+numbers. The [course order](../student/README.md#course-order) explains
+which parts of crate building and target support precede `core`.
 
 Build a preview from a committed revision to review all of the handouts
 on the self-hosting track.
@@ -15,8 +17,9 @@ python3 scripts/export_assignments.py --self-hosting --include-pending-handouts 
 Use `--self-hosting` alone for a release candidate. The exporter requires
 a grading manifest for each assignment in that track. The explicit preview
 option includes the README for a planned assignment and records it in
-`export.json` under `handouts_only`. Choose `--through` to produce an ordinary
-assignment prefix for focused checks.
+`export.json` under `handouts_only`. Choose `--through` with a student
+assignment number to produce a prefix. `--through pa37` selects the same
+track as `--self-hosting`.
 
 ```sh
 python3 scripts/export_assignments.py --revision HEAD --through pa11 obj/student-preview
