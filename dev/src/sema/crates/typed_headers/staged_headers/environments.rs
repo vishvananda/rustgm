@@ -226,7 +226,7 @@ fn assumption(
         .arguments(application.arguments)
         .ok_or_else(|| error("source environment lost its full trait arguments"))?;
     budget.charge(arguments.len().saturating_add(1))?;
-    let roots = arguments.len().saturating_add(1);
+    let mut roots = arguments.len().saturating_add(1);
     for argument in arguments {
         let ty = match argument {
             Argument::Type(ty) => ty,
@@ -256,11 +256,61 @@ fn assumption(
                     leaf(facts, element)?;
                 }
             }
-            _ => leaf(facts, ty)?,
+            _ => {
+                roots = roots.saturating_add(projected_argument(facts, leaves, ty, budget)?);
+            }
         }
     }
     Ok(roots)
 }
+
+/// A declaration projection in a v14 trait argument keeps its actual input roots.
+/// The enclosing clause still cannot use an unsupported projected subject.
+fn projected_argument(
+    facts: &Declarations,
+    leaves: &impl LeafClauses,
+    ty: TypeId,
+    budget: &mut impl Accounting,
+) -> Result<usize, Error> {
+    let Some(Kind::Projection(projection)) =
+        facts.types.kind(ty).filter(|_| leaves.regional_arguments())
+    else {
+        leaf(facts, ty)?;
+        return Ok(0);
+    };
+    leaf(facts, projection.subject)?;
+    let application = facts
+        .types
+        .trait_application(projection.trait_application)
+        .ok_or_else(|| error("source projected trait argument lost its actual declaring trait"))?;
+    let mut additional_roots = 1;
+    for arguments in [application.arguments, projection.arguments] {
+        let arguments = facts
+            .types
+            .arguments(arguments)
+            .ok_or_else(|| error("source projected trait argument lost its complete inputs"))?;
+        additional_roots += arguments.len();
+        budget.charge(arguments.len().saturating_add(1))?;
+        for argument in arguments {
+            match argument {
+                Argument::Type(ty) => leaf(facts, ty)?,
+                Argument::Lifetime(_) => {}
+                Argument::Const(constant) if leaves.const_arguments() => {
+                    facts.types.const_type(constant).ok_or_else(|| {
+                        error("source projected trait argument lost its const input")
+                    })?;
+                }
+                Argument::Const(_) => {
+                    return Err(error(
+                        "projected environment argument requires its actual scope",
+                    ));
+                }
+            }
+        }
+    }
+    Ok(additional_roots)
+}
+
 fn leaf(facts: &Declarations, ty: TypeId) -> Result<(), Error> {
     if ty != TypeId::UNIT
         && !matches!(

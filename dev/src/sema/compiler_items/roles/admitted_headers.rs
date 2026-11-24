@@ -301,6 +301,7 @@ fn trait_headers(
             }
             role if GROUPED.contains(&role)
                 || LangItem::FORMAT_PANICS.contains(&role)
+                || LangItem::TRY_PROTOCOL.contains(&role)
                 || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
@@ -421,6 +422,11 @@ fn grouped_roles(
                 return Err("imported formatting panic requires its completed format Arguments");
             }
             super::super::runtime_panics::imported(report, facts, declaration, role, steps)?;
+            complete.insert(role);
+        }
+    }
+    if super::super::try_protocol::imported(report, facts, catalog, steps)? {
+        for role in LangItem::TRY_PROTOCOL {
             complete.insert(role);
         }
     }

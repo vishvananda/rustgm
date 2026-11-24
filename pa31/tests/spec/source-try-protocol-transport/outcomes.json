@@ -1,0 +1,10 @@
+{
+  "source_attribution": "Authored reduction of core/ops/try_trait.rs and core/ops/control_flow.rs. The provider uses the role signatures and frame from PA31's nominal-residuals native fixture.",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "41 23\n",
+  "wire_variant": "imported Try requires its exact checked callable and variant declarations",
+  "old_reader": "source role has a different actual declaration/header kind",
+  "const_provider": "const-provider.rs"
+}

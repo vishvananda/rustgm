@@ -144,7 +144,7 @@ impl Checker<'_> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
         let members = &plan.members;
-        self.check_imported_results(owner, predicate, &members.types)?;
+        self.check_imported_results(owner, predicate, &members.types, plan.declaration_policies)?;
         let definitions = crate::sema::traits::conformance::Definitions::new(
             &self.facts,
             predicate,
@@ -182,25 +182,22 @@ impl Checker<'_> {
         self.check_imported_constant_links(owner, predicate, &members.constants, &definitions)
     }
     /// Re-prove every imported declared-result definition in the impl's own
-    /// rebuilt environment: well formed, region-free and meeting each direct
-    /// promise of its trait declaration. The provider's conformance is unused.
+    /// rebuilt environment. A v14 result promise is instantiated with the
+    /// actual impl's Self and trait inputs before it is proved.
     fn check_imported_results(
         &mut self,
         owner: DefId,
         predicate: Predicate,
         types: &[(DefId, DefId)],
+        declaration_policies: bool,
     ) -> Result<(), Error> {
         if types.is_empty() {
             return Ok(());
         }
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
+        let mut substitution = None;
         for &(expected, actual) in types {
-            let contract = self
-                .facts
-                .associated
-                .type_contract(expected)
-                .ok_or_else(|| Error::unlocated("imported associated result lacks its contract"))?;
             let ty = self.facts.definitions[actual.0 as usize]
                 .filter(|_| self.facts.associated.type_definition(owner, expected) == Some(actual))
                 .ok_or_else(|| {
@@ -217,33 +214,18 @@ impl Checker<'_> {
                     "imported regional or family associated definitions require their wider profile",
                 ));
             }
-            let mut required = Vec::with_capacity(contract.bounds.len());
-            for &clause in &contract.bounds {
-                let Clause::Predicate(Predicate { ty: subject, bound }) = clause else {
-                    return Err(Error::unlocated(
-                        "imported quantified associated bounds require their wider profile",
-                    ));
-                };
-                // A direct bound naming no trait argument needs no impl-frame
-                // substitution; every other form keeps its source-only mapping.
-                let closed = match bound {
-                    Bound::Sized | Bound::Copy | Bound::Clone => true,
-                    Bound::Trait(application) => self
-                        .facts
-                        .types
-                        .trait_application(application)
-                        .is_some_and(|application| {
-                            application.arguments == crate::types::GenericArgs::EMPTY
-                        }),
-                    _ => false,
-                };
-                if subject != contract.projection || !closed {
-                    return Err(Error::unlocated(
-                        "imported indirect associated bounds require their wider profile",
-                    ));
-                }
-                required.push(Clause::Predicate(Predicate { ty, bound }));
-            }
+            let required = if declaration_policies {
+                super::super::associated_types::mapped_result_bounds(
+                    &mut self.facts,
+                    predicate,
+                    expected,
+                    ty,
+                    &mut substitution,
+                )
+                .map_err(Error::unlocated)?
+            } else {
+                self.direct_imported_result_bounds(expected, ty)?
+            };
             if !proof
                 .check(&mut self.facts, ty)
                 .map_err(Error::unlocated)?
@@ -254,6 +236,14 @@ impl Checker<'_> {
                 ));
             }
             for requirement in required {
+                if requirement
+                    .is_outlives(&self.facts.types)
+                    .map_err(Error::unlocated)?
+                {
+                    return Err(Error::unlocated(
+                        "imported associated result lifetime bounds require their wider profile",
+                    ));
+                }
                 if !proof
                     .prove_clause(&mut self.facts, requirement)
                     .map_err(Error::unlocated)?
@@ -291,6 +281,45 @@ impl Checker<'_> {
                 .map_err(|e| Error::unlocated(e.to_string()))?;
         }
         Ok(())
+    }
+    fn direct_imported_result_bounds(
+        &self,
+        expected: DefId,
+        ty: crate::types::TypeId,
+    ) -> Result<Vec<Clause>, Error> {
+        let contract = self
+            .facts
+            .associated
+            .type_contract(expected)
+            .ok_or_else(|| Error::unlocated("imported associated result lacks its contract"))?;
+        let mut required = Vec::with_capacity(contract.bounds.len());
+        for &clause in &contract.bounds {
+            let Clause::Predicate(Predicate { ty: subject, bound }) = clause else {
+                return Err(Error::unlocated(
+                    "imported quantified associated bounds require their wider profile",
+                ));
+            };
+            // A direct bound naming no trait argument needs no impl-frame
+            // substitution; every other form keeps its source-only mapping.
+            let closed = match bound {
+                Bound::Sized | Bound::Copy | Bound::Clone => true,
+                Bound::Trait(application) => self
+                    .facts
+                    .types
+                    .trait_application(application)
+                    .is_some_and(|application| {
+                        application.arguments == crate::types::GenericArgs::EMPTY
+                    }),
+                _ => false,
+            };
+            if subject != contract.projection || !closed {
+                return Err(Error::unlocated(
+                    "imported indirect associated bounds require their wider profile",
+                ));
+            }
+            required.push(Clause::Predicate(Predicate { ty, bound }));
+        }
+        Ok(required)
     }
     fn validate_imported_requirements(
         &mut self,

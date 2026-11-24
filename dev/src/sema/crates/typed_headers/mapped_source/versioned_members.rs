@@ -28,6 +28,7 @@ pub(in crate::sema) struct ImportedMemberPlan {
     owner: DefId,
     predicate: Predicate,
     pub members: ImplMembers,
+    pub declaration_policies: bool,
 }
 impl ImportedMemberPlan {
     pub(in crate::sema) fn require(
@@ -152,6 +153,7 @@ impl Graph {
             owner: owner.self_definition,
             predicate,
             members,
+            declaration_policies: descriptor.profile().declaration_policies(),
         }))
     }
 

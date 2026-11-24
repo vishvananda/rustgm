@@ -1,14 +1,14 @@
 //! Protocol signatures borrow the ordinary canonical header and member tables.
-use super::{Declaration, DefId, Error, ItemId, LangItem, Query, TypeId};
+use super::{DefId, Error, ItemId, LangItem, Query, Role, TypeId};
 use crate::{
-    resolve::model::DefKind,
+    resolve::{body_origin::DeclarationOrigin, model::DefKind},
     sema::compiler_items::headers,
     syntax::{ast::Kind as Syntax, item::ItemKind},
     types::{Kind, arguments::Argument, callable::Convention},
 };
 
 pub(super) struct Method {
-    pub declaration: Declaration,
+    pub declaration: Role,
     pub input: TypeId,
     pub result: TypeId,
 }
@@ -22,12 +22,14 @@ impl Query<'_> {
             .get(declaration.definition.0 as usize)
             .ok_or_else(|| self.error("source Try method lost its actual definition"))?;
         if actual.kind != DefKind::Function
-            || actual.node != Some(declaration.origin)
+            || actual.node != declaration.origin.source()
             || self.facts.associated.trait_owner(declaration.definition) != declaration.parent
         {
             return Err(self.error("source Try method changed its actual owner or declaration"));
         }
-        self.current_header(declaration.definition, declaration.origin)?;
+        if let Some(origin) = declaration.origin.source() {
+            self.current_header(declaration.definition, origin)?;
+        }
         let header = self
             .facts
             .declaration_header(declaration.definition)
@@ -46,7 +48,7 @@ impl Query<'_> {
         let Some([input]) = self.facts.types.list(parameters) else {
             return Err(self.error("source Try method requires exactly one actual input"));
         };
-        if header.declaration.source() != Some(declaration.origin)
+        if header.declaration != declaration.origin
             || header.universals != 0
             || !matches!(self.facts.definitions.get(declaration.definition.0 as usize)
                 .copied().flatten().and_then(|ty| self.facts.types.kind(ty)),
@@ -68,23 +70,35 @@ impl Query<'_> {
             .definitions
             .get(definition.0 as usize)
             .ok_or_else(|| self.error("source Try protocol lost its actual trait parent"))?;
-        let origin = actual
-            .node
-            .ok_or_else(|| self.error("imported Try protocol contracts are not transported"))?;
-        self.current_header(definition, origin)?;
-        let header = headers::Trait::source(
+        let origin = if let Some(source) = actual.node {
+            self.current_header(definition, source)?;
+            source.into()
+        } else {
+            let catalog = self
+                .facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::origin_catalog)
+                .ok_or_else(|| {
+                    self.error("imported Try requires its actual trait declaration catalog")
+                })?;
+            DeclarationOrigin::Imported(
+                catalog
+                    .declaration(definition)
+                    .map_err(|error| self.error(error))?,
+            )
+        };
+        let header = headers::Trait::current(
             self.report,
             self.facts,
-            Declaration {
+            Role {
                 definition,
                 parent: None,
                 origin,
             },
+            &mut 0,
         )
-        .map_err(|e| self.error(e))?;
-        header
-            .validate_self(&self.facts.types)
-            .map_err(|e| self.error(e))?;
+        .map_err(|error| self.error(error))?;
         if header.flags.unsafe_ || header.flags.auto_ || header.captures != 0 {
             return Err(
                 self.error("source Try protocol requires its actual nonauto safe trait parent")
@@ -95,8 +109,8 @@ impl Query<'_> {
     pub(super) fn trait_members(
         &self,
         trait_: DefId,
-        output_method: Declaration,
-        branch_method: Declaration,
+        output_method: Role,
+        branch_method: Role,
     ) -> Result<(DefId, DefId, TypeId), Error> {
         let header = self.trait_header(trait_)?;
         crate::sema::header_attributes::charge_source_contract_query(
@@ -116,29 +130,10 @@ impl Query<'_> {
             if member == output_method.definition || member == branch_method.definition {
                 continue;
             }
-            let definition = &self.report.resolution.definitions[member.0 as usize];
-            let origin = definition
-                .node
-                .ok_or_else(|| self.error("source Try type lost its source origin"))?;
-            if definition.kind != DefKind::TypeAlias
-                || self.facts.associated.trait_owner(member) != Some(trait_)
-            {
-                return Err(self.error("source Try associated type has a different actual owner"));
-            }
-            let unit = self.report.package.unit(origin.file);
-            let Syntax::Item(index) = unit.configured.ast.node(origin.node).kind else {
-                return Err(self.error("source Try type lost its actual declaration"));
-            };
-            let item = unit.configured.ast.items[index as usize];
-            if !matches!(item.kind, ItemKind::TypeAlias { ty: None, .. })
-                || !unit.configured.ast.list(item.generics).is_empty()
-            {
-                return Err(self.error("source Try requires nongeneric required associated types"));
-            }
-            let name = item.name.and_then(|span| unit.spelling(span).ok());
+            let name = self.required_type_name(trait_, member)?;
             let slot = match name {
-                Some("Output") => &mut output,
-                Some("Residual") => &mut residual,
+                "Output" => &mut output,
+                "Residual" => &mut residual,
                 _ => {
                     return Err(
                         self.error("source Try lost its actual Output or Residual declaration")
@@ -154,6 +149,41 @@ impl Query<'_> {
             residual.ok_or_else(|| self.error("source Try has no actual Residual"))?,
             header.self_type,
         ))
+    }
+    fn required_type_name(&self, trait_: DefId, member: DefId) -> Result<&str, Error> {
+        let definition = self
+            .report
+            .resolution
+            .definitions
+            .get(member.0 as usize)
+            .ok_or_else(|| self.error("source Try type lost its actual declaration"))?;
+        if definition.kind != DefKind::TypeAlias
+            || self.facts.associated.trait_owner(member) != Some(trait_)
+        {
+            return Err(self.error("source Try associated type has a different actual owner"));
+        }
+        if let Some(origin) = definition.node {
+            let unit = self.report.package.unit(origin.file);
+            let Syntax::Item(index) = unit.configured.ast.node(origin.node).kind else {
+                return Err(self.error("source Try type lost its actual declaration"));
+            };
+            let item = unit.configured.ast.items[index as usize];
+            if !matches!(item.kind, ItemKind::TypeAlias { ty: None, .. })
+                || !unit.configured.ast.list(item.generics).is_empty()
+            {
+                return Err(self.error("source Try requires nongeneric required associated types"));
+            }
+        } else if !self.facts.associated.types.contains_key(&member)
+            || self
+                .facts
+                .generics
+                .parameters
+                .get(&member)
+                .is_some_and(|slots| !slots.is_empty())
+        {
+            return Err(self.error("imported Try requires its actual nongeneric associated type"));
+        }
+        Ok(self.report.package.names.get(definition.name))
     }
     pub(super) fn projection(&self, definition: DefId) -> Result<TypeId, Error> {
         self.facts
@@ -198,7 +228,7 @@ impl Query<'_> {
     pub(super) fn residual_conversion(
         &self,
         method: &Method,
-        from_residual: Declaration,
+        from_residual: Role,
     ) -> Result<(), Error> {
         if method.declaration.parent.is_some()
             || !matches!(self.facts.types.kind(method.input),

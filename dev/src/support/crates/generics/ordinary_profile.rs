@@ -341,10 +341,16 @@ fn trait_headers(
             conversions::trait_header(rows, headers, header, work)?;
         }
         let drop = roles.drop == Some(header.declaration);
+        let try_protocol = roles.try_traits.contains(&Some(header.declaration));
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion && !operator && !range && !drop
+            || flags & TraitFlags::CONST != 0
+                && !conversion
+                && !operator
+                && !range
+                && !drop
+                && !try_protocol
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -927,6 +933,9 @@ pub(super) struct Bindings {
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::RUNTIME_FORMAT_BODIES.len()],
     drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::REQUIRED_TRY_METHODS.len()],
+    try_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         Profile::CONST_BINARY_ROLES.len()],
@@ -993,10 +1002,13 @@ impl Bindings {
 
     fn conditional_role_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {
         let [deref, deref_mut] = self.dereferences;
+        let [try_, from_residual] = self.try_traits;
         let target = if Some(input.owner) == self.drop_glue {
             self.destruct
         } else if Some(input.owner) == deref_mut {
             deref
+        } else if Some(input.owner) == try_ {
+            from_residual
         } else {
             return false;
         };
@@ -1021,8 +1033,17 @@ impl Bindings {
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        if self.drop.is_some() && function.parent == self.drop {
-            return conversions::required_member(rows, headers, function, self.drop, true, work);
+        if self.drop.is_some() && function.parent == self.drop
+            || self.try_methods.contains(&Some(function.declaration))
+        {
+            return conversions::required_member(
+                rows,
+                headers,
+                function,
+                function.parent,
+                true,
+                work,
+            );
         }
         if self
             .range
@@ -1075,6 +1096,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
+        || LangItem::TRY_PROTOCOL.contains(&role)
         || role.is_runtime_import()
     {
         return profile == BindingProfile::BodyOperations;
@@ -1182,11 +1204,8 @@ pub(super) fn bindings(
     let declarations = binding_declarations(rows, headers, work, profile)?;
     let send = diagnostic_bindings(rows, headers, work, profile, &declarations)?;
     owned_role_members(rows, headers, work, &declarations)?;
-    let sizing = [
-        declarations[LangItem::Sized.index()],
-        declarations[LangItem::MetaSized.index()],
-        declarations[LangItem::PointeeSized.index()],
-    ];
+    let bound = |role: LangItem| declarations[role.index()];
+    let sizing = [LangItem::Sized, LangItem::MetaSized, LangItem::PointeeSized].map(bound);
     if sizing.contains(&None) {
         return Err("source functions require the real complete sizing trio");
     }
@@ -1199,19 +1218,14 @@ pub(super) fn bindings(
                 LangItem::FnMut,
                 LangItem::Fn,
             ]
-            .map(|role| declarations[role.index()]),
+            .map(bound),
         )
     } else {
         callable_roles::Roles::default()
     };
     let languages = profile.languages();
     let range = if profile == BindingProfile::BodyOperations {
-        interval_roles::family(
-            rows,
-            headers,
-            interval_roles::ROLES.map(|role| declarations[role.index()]),
-            work,
-        )?
+        interval_roles::family(rows, headers, interval_roles::ROLES.map(bound), work)?
     } else {
         None
     };
@@ -1227,18 +1241,22 @@ pub(super) fn bindings(
         languages,
         range,
         drop: (profile == BindingProfile::BodyOperations)
-            .then_some(declarations[LangItem::Drop.index()])
+            .then_some(bound(LangItem::Drop))
             .flatten(),
-        drop_glue: declarations[LangItem::DropGlue.index()],
-        runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES
-            .map(|role| declarations[role.index()]),
+        drop_glue: bound(LangItem::DropGlue),
+        try_methods: LangItem::REQUIRED_TRY_METHODS.map(bound),
+        try_traits: [
+            bound(LangItem::TryTrait),
+            required_method_owner(rows, headers, bound(LangItem::TryFromResidual), work)?,
+        ],
+        runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES.map(bound),
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
                 send,
-                declarations[LangItem::Sync.index()],
-                declarations[LangItem::Unpin.index()],
-                declarations[LangItem::UnsafeUnpin.index()],
+                bound(LangItem::Sync),
+                bound(LangItem::Unpin),
+                bound(LangItem::UnsafeUnpin),
             ]
         } else {
             [None; 4]
@@ -1250,26 +1268,22 @@ pub(super) fn bindings(
                 | BindingProfile::Languages
                 | BindingProfile::BodyOperations
         ))
-        .then_some(declarations[LangItem::From.index()])
+        .then_some(bound(LangItem::From))
         .flatten(),
         binary_operators: if profile == BindingProfile::BodyOperations {
-            Profile::CONST_BINARY_ROLES.map(|role| declarations[role.index()])
+            Profile::CONST_BINARY_ROLES.map(bound)
         } else {
             [None; Profile::CONST_BINARY_ROLES.len()]
         },
         dereferences: if profile == BindingProfile::BodyOperations {
-            Profile::CONST_DEREF_ROLES.map(|role| declarations[role.index()])
+            Profile::CONST_DEREF_ROLES.map(bound)
         } else {
             [None; Profile::CONST_DEREF_ROLES.len()]
         },
         sizing,
-        destruct: marker_traits
-            .then_some(declarations[LangItem::Destruct.index()])
-            .flatten(),
-        no_drop: declarations[LangItem::BikeshedGuaranteedNoDrop.index()],
-        freeze: marker_traits
-            .then_some(declarations[LangItem::Freeze.index()])
-            .flatten(),
+        destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
+        no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
+        freeze: marker_traits.then_some(bound(LangItem::Freeze)).flatten(),
     })
 }
 
@@ -1409,6 +1423,9 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
+    if LangItem::TRY_PROTOCOL.contains(&role) {
+        return try_role_header(rows, role, header);
+    }
     match (role, header) {
         (role, header)
             if role == LangItem::DropGlue
@@ -1501,6 +1518,56 @@ fn role_header(
     }
     Ok(())
 }
+fn required_method_owner(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    declaration: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    work: &mut Work,
+) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+    let Some(declaration) = declaration else {
+        return Ok(None);
+    };
+    let Some(super::super::HeaderRef::Function(index)) = headers.header(declaration, work)? else {
+        return Err("source required method lost its actual header");
+    };
+    rows.functions[index as usize]
+        .parent
+        .map(Some)
+        .ok_or("source required method lost its actual trait owner")
+}
+
+fn try_role_header(
+    rows: &SourceRows,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    use super::super::HeaderRef;
+    match (role, header) {
+        (LangItem::TryTrait, Some(HeaderRef::Trait(_)))
+        | (
+            LangItem::ControlFlowContinue | LangItem::ControlFlowBreak,
+            Some(HeaderRef::Variant(_)),
+        ) => Ok(()),
+        (
+            LangItem::TryFromOutput | LangItem::TryBranch | LangItem::TryFromResidual,
+            Some(HeaderRef::Function(index)),
+        ) if rows.functions.get(index as usize).is_some_and(|function| {
+            function.parent.is_some() && matches!(function.body, FunctionBody::Absent)
+        }) =>
+        {
+            Ok(())
+        }
+        (LangItem::IntoTryType, Some(HeaderRef::Function(index)))
+            if rows.functions.get(index as usize).is_some_and(|function| {
+                function.parent.is_none() && matches!(function.body, FunctionBody::Original(_))
+            }) =>
+        {
+            Ok(())
+        }
+        _ => Err("source Try role has a different actual declaration header"),
+    }
+}
+
 fn wrapper_header(
     rows: &SourceRows,
     kind: super::super::DefinitionKind,

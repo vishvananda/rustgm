@@ -1,9 +1,11 @@
 //! Real tagged declarations supply protocol identities, never synthetic bodies.
 mod declared_calls;
 mod flow_variants;
+use super::{Catalog, Role};
 use crate::{
     resolve::{
-        bindings::Declaration, expansion::Report, model::DefId, package::Error, unit::NodeKey,
+        body_origin::DeclarationOrigin, expansion::Report, model::DefId, package::Error,
+        unit::NodeKey,
     },
     sema::{header_attributes, members::VariantId, model::Declarations},
     support::bindings::LangItem,
@@ -23,13 +25,16 @@ pub(in crate::sema) struct Protocol {
 struct Query<'a> {
     report: &'a Report,
     facts: &'a Declarations,
-    site: NodeKey,
+    site: Option<NodeKey>,
 }
 impl Query<'_> {
     fn error(&self, message: &'static str) -> Error {
-        Declarations::error(self.report, self.site, message)
+        self.site.map_or_else(
+            || Error::unlocated(message),
+            |site| Declarations::error(self.report, site, message),
+        )
     }
-    fn claimed(&self, role: LangItem) -> Result<Declaration, Error> {
+    fn claimed(&self, role: LangItem) -> Result<Role, Error> {
         let catalog = self
             .facts
             .source_bindings
@@ -39,16 +44,21 @@ impl Query<'_> {
         catalog
             .require_provider_report(self.report)
             .map_err(|e| self.error(e))?;
-        let declaration = catalog.language(role).ok_or_else(|| {
-            self.error("source Try requires its actual tagged protocol declarations")
-        })?;
-        if self
-            .report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .and_then(|reserved| reserved.language(role))
-            != Some(declaration)
+        let declaration = catalog
+            .role(role)
+            .map_err(|error| self.error(error))?
+            .ok_or_else(|| {
+                self.error("source Try requires its actual tagged protocol declarations")
+            })?;
+        if matches!(declaration.origin, DeclarationOrigin::Source(_))
+            && self
+                .report
+                .resolution
+                .source_bindings
+                .as_deref()
+                .and_then(|reserved| reserved.language(role))
+                .map(Role::from)
+                != Some(declaration)
         {
             return Err(self.error("source Try claim changed its actual reserved declaration"));
         }
@@ -68,6 +78,14 @@ pub(in crate::sema) fn source(
     facts: &Declarations,
     site: NodeKey,
 ) -> Result<Protocol, Error> {
+    checked(report, facts, Some(site))
+}
+
+fn checked(
+    report: &Report,
+    facts: &Declarations,
+    site: Option<NodeKey>,
+) -> Result<Protocol, Error> {
     let query = Query {
         report,
         facts,
@@ -85,7 +103,10 @@ pub(in crate::sema) fn source(
     if let Some(tagged) = facts
         .source_bindings
         .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::TryTrait))
+        .map(|catalog| catalog.role(LangItem::TryTrait))
+        .transpose()
+        .map_err(|error| query.error(error))?
+        .flatten()
         && tagged.definition != trait_
     {
         return Err(query.error("source Try tag disagrees with its actual method parent"));
@@ -110,4 +131,34 @@ pub(in crate::sema) fn source(
         continue_: variants.1,
         break_: variants.2,
     })
+}
+
+/// Source headers and imported headers use the same typed protocol check.
+pub(super) fn completed(report: &Report, facts: &Declarations, catalog: &Catalog) -> bool {
+    catalog
+        .language(LangItem::TryTrait)
+        .is_some_and(|trait_| source(report, facts, trait_.origin).is_ok())
+}
+
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    let mut count = 0;
+    for role in LangItem::TRY_PROTOCOL {
+        *steps = steps.saturating_add(1);
+        count += usize::from(catalog.role(role)?.is_some());
+    }
+    if count == 0 {
+        return Ok(false);
+    }
+    if count != LangItem::TRY_PROTOCOL.len() {
+        return Err("imported Try requires its complete actual protocol roles");
+    }
+    *steps = steps.saturating_add(48);
+    checked(report, facts, None)
+        .map_err(|_| "imported Try requires its exact checked callable and variant declarations")?;
+    Ok(true)
 }

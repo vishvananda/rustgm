@@ -157,6 +157,8 @@ impl Stage {
     /// A non-trait role row carries only its declaration address.
     fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
         match kind {
+            DefKind::Function | DefKind::Variant
+                if self.declaration_policies() && LangItem::TRY_PROTOCOL.contains(&role) => {}
             DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
             DefKind::Function
                 if self.declaration_policies()
@@ -283,6 +285,12 @@ impl Stage {
             && catalog.language(role).is_some()
         {
             return Err("source formatting panic declarations require version fourteen");
+        }
+        if LangItem::TRY_PROTOCOL.contains(&role)
+            && !self.declaration_policies()
+            && catalog.language(role).is_some()
+        {
+            return Err("source Try declarations require version fourteen");
         }
         if role == LangItem::DropGlue
             && !self.declaration_policies()

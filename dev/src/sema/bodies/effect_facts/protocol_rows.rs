@@ -202,11 +202,7 @@ impl Checker<'_> {
                     "Try canonicalization storage overflow",
                 )
             })?;
-        crate::sema::header_attributes::charge_source_retention(
-            self.facts,
-            count.saturating_add(copy_work),
-            bytes,
-        )?;
+        self.pay_protocol_retention(count.saturating_add(copy_work), bytes)?;
         let mut plans = Vec::new();
         plans.try_reserve_exact(count).map_err(|_| {
             self.error(

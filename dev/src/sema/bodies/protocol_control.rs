@@ -272,11 +272,7 @@ impl Checker<'_> {
         } else {
             0
         };
-        crate::sema::header_attributes::charge_source_retention(
-            self.facts,
-            1 + usize::from(growing) * plans.len(),
-            bytes,
-        )?;
+        self.pay_protocol_retention(1 + usize::from(growing) * plans.len(), bytes)?;
         let additional = capacity - plans.len();
         if growing {
             self.state
@@ -294,6 +290,17 @@ impl Checker<'_> {
         self.state.call_types.protocol_plans.push(plan);
         Ok(index)
     }
+    pub(super) fn pay_protocol_retention(&self, steps: usize, bytes: usize) -> Result<(), Error> {
+        use crate::sema::header_attributes;
+        if self.report.package.source_client().is_some() {
+            // The plans are owned by the fresh client's local body and budget.
+            // They do not consume the imported provider's header ledger.
+            header_attributes::charge_attribute_retention(self.facts, steps, bytes)
+        } else {
+            header_attributes::charge_source_retention(self.facts, steps, bytes)
+        }
+    }
+
     pub(super) fn enter_try_block(
         &mut self,
         node: NodeId,

@@ -821,6 +821,26 @@ pub(super) fn complete_reflection_member(
     record_completion(facts, role, declaration)
 }
 
+/// Seal the related callables and constructors only after their typed protocol agrees.
+pub(in crate::sema) fn complete_try_protocol(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(());
+    };
+    if !super::try_protocol::completed(report, facts, catalog) {
+        return Ok(());
+    }
+    let declarations = LangItem::TRY_PROTOCOL.map(|role| catalog.language(role));
+    for (role, declaration) in LangItem::TRY_PROTOCOL.into_iter().zip(declarations) {
+        let declaration = declaration
+            .ok_or_else(|| Error::unlocated("completed source Try role lost its actual binding"))?;
+        record_completion(facts, role, declaration)?;
+    }
+    Ok(())
+}
+
 fn record_completion(
     facts: &mut Declarations,
     role: LangItem,

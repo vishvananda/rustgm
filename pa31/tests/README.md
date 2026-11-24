@@ -90,6 +90,10 @@ location. A fresh const function also calls the independent checked formatting
 helper. The const-evaluation cases cover a reached string panic and an
 inadmissible non-string payload. Run `scripts/check_panic_display_transport.py`
 with pinned Rust.
+`spec/source-try-protocol-transport/outcomes.json` checks both branches of a
+fresh client's `?` operation against ordinary and const trait declarations,
+including the associated bounds on the residual. Run
+`scripts/check_try_protocol_transport.py` with the prebuilt compilers.
 `spec/source-nominal-const-formals/outcomes.json` checks fresh applications of
 imported enum and record const parameters and rejects a different nominal
 type. Run `scripts/check_nominal_const_formals.py` with the prebuilt compilers.

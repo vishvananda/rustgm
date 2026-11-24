@@ -1,7 +1,8 @@
 //! Branching consumes two real single-field variants of one canonical enum.
 use super::{DefId, Error, ItemId, LangItem, Query, TypeId, VariantId};
 use crate::{
-    sema::header_attributes,
+    resolve::{bindings::Declaration, body_origin::DeclarationOrigin},
+    sema::{header_attributes, members::Origin},
     syntax::item::Shape,
     types::{Kind, arguments::Argument},
 };
@@ -71,7 +72,18 @@ impl Query<'_> {
         field_type: TypeId,
     ) -> Result<VariantId, Error> {
         let declaration = self.claimed(role)?;
-        header_attributes::require_protocol_variant(self.facts, self.report, declaration, role)?;
+        if let DeclarationOrigin::Source(origin) = declaration.origin {
+            header_attributes::require_protocol_variant(
+                self.facts,
+                self.report,
+                Declaration {
+                    definition: declaration.definition,
+                    parent: declaration.parent,
+                    origin,
+                },
+                role,
+            )?;
+        }
         let id = self
             .facts
             .members
@@ -86,10 +98,14 @@ impl Query<'_> {
         let Some([field]) = self.facts.members.fields(id) else {
             return Err(self.error("source control-flow variant requires its actual single field"));
         };
+        let expected_origin = match declaration.origin {
+            DeclarationOrigin::Source(origin) => Origin::Source(origin),
+            DeclarationOrigin::Imported(_) => Origin::External(DefId(owner.0)),
+        };
         if variant.owner != owner
             || variant.shape != Shape::Tuple
             || variant.ordinal >= 2
-            || variant.origin.source() != Some(declaration.origin)
+            || variant.origin != expected_origin
             || field.ty != field_type
             || self
                 .facts

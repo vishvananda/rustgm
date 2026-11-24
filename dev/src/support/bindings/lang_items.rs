@@ -63,6 +63,19 @@ macro_rules! language_items {
 // The appended rows follow rustc_hir/lang_items.rs at 88d9e12ae178fab0fb5cc050a94da85685d449ea;
 // weak-only foreign targets additionally follow rustc_hir/weak_lang_items.rs.
 impl LangItem {
+    pub(crate) const TRY_PROTOCOL: [Self; 7] = [
+        Self::TryTrait,
+        Self::TryFromOutput,
+        Self::TryBranch,
+        Self::TryFromResidual,
+        Self::IntoTryType,
+        Self::ControlFlowContinue,
+        Self::ControlFlowBreak,
+    ];
+
+    pub(crate) const REQUIRED_TRY_METHODS: [Self; 3] =
+        [Self::TryFromOutput, Self::TryBranch, Self::TryFromResidual];
+
     pub(crate) const FORMAT_PANICS: [Self; 4] = [
         Self::PanicFmt,
         Self::PanicNounwind,

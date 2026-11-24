@@ -339,7 +339,7 @@ impl crate::sema::declarations::comparisons::LibraryContracts<'_> {
     }
 }
 
-pub(super) fn mapped_result_bounds(
+pub(in crate::sema::declarations::traits) fn mapped_result_bounds(
     facts: &mut Declarations,
     predicate: Predicate,
     expected: DefId,

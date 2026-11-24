@@ -21,7 +21,7 @@ use crate::{
         projection,
     },
 };
-pub(super) use conformance::Members;
+pub(super) use conformance::{Members, mapped_result_bounds};
 
 pub(in crate::sema::declarations) struct Bounds {
     builtin: Vec<Bound>,
