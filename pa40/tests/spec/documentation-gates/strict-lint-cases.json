@@ -1,0 +1,11 @@
+{
+  "bootstrap": true,
+  "cases": [
+    {"path": "cfg-auto-hide.rs", "status": 0, "lint": null},
+    {"path": "cfg-false.rs", "status": 0, "lint": null},
+    {"path": "notable-trait.rs", "status": 0, "lint": null},
+    {"path": "strict-auto-cfg.rs", "status": 0, "lint": null},
+    {"path": "strict-auto-cfg.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "invalid_doc_attributes", "diagnostic": "doc(auto_cfg) accepts only hide and show"}
+  ]
+}

@@ -8,6 +8,7 @@ use crate::{
         unit::NodeKey,
     },
     sema::model::Declarations,
+    support::diagnostics::WarningCode,
     syntax::{
         attribute::{Attribute, Input},
         configuration::CfgGate,
@@ -138,15 +139,26 @@ impl Draft {
                 for used in uses {
                     self.require_query(report, key, used, allowances)?;
                 }
+            } else if !report.package.lint_cap().suppresses_lints() {
+                let invalid = if name == Some("auto_cfg") {
+                    hide_show::invalid(forest, source, start, end)
+                } else {
+                    (end != start + 1).then_some("doc(notable_trait) takes no arguments")
+                };
+                if let Some(message) = invalid {
+                    facts.must_use_diagnostic(
+                        report,
+                        owner,
+                        attribute.span.start,
+                        start,
+                        WarningCode::InvalidDocAttributes,
+                        message.into(),
+                    )?;
+                }
             }
         }
         if gated {
             facts.require_lint_context(report)?;
-            if !report.package.lint_cap().suppresses_lints() {
-                return Err(error(
-                    "uncapped documentation option diagnostics are not implemented",
-                ));
-            }
         }
         Ok(())
     }
@@ -258,4 +270,5 @@ fn predicate(forest: &Forest, start: u32, end: u32) -> Result<TreeRange, &'stati
         .ok_or("missing documentation predicate")
 }
 
+mod hide_show;
 mod origins;

@@ -139,19 +139,13 @@ fn repeated_documentation_headers_share_paid_macro_allowance_work() -> Result {
     Ok(())
 }
 #[test]
-fn uncapped_documentation_diagnostics_remain_an_explicit_boundary() -> Result {
+fn uncapped_valid_documentation_options_preserve_the_independent_outcomes() -> Result {
     for name in ["cfg-false", "cfg-auto-hide", "notable-trait"] {
         let source =
             crate::test_source::fixture(&format!("pa40/tests/spec/documentation-gates/{name}.rs"))?;
         let report = report(&source, &Config::default())?;
-        let Err(error) = crate::sema::declarations::analyze(&report) else {
-            return Err("uncapped documentation profile unexpectedly accepted".into());
-        };
-        assert!(
-            error
-                .to_string()
-                .contains("uncapped documentation option diagnostics")
-        );
+        let facts = crate::sema::declarations::analyze(&report)?;
+        assert!(facts.warnings().next().is_none(), "{name}");
     }
     Ok(())
 }

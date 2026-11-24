@@ -13,7 +13,7 @@ def diagnostics(stderr):
             if (row := json.loads(line)).get("code")]
 
 
-def check_case(check, manifest, case, index, *, source_core, edition, oracle_only):
+def check_case(check, manifest, case, index, *, source_core, edition, bootstrap, oracle_only):
     name = f"{manifest.parent.name}-{index}"
     source = manifest.parent / case["path"]
     if not source.resolve().is_relative_to(manifest.parent.resolve()) or not source.is_file():
@@ -28,7 +28,7 @@ def check_case(check, manifest, case, index, *, source_core, edition, oracle_onl
              "--emit=metadata", "--error-format=json", "-Cpanic=abort",
              "-o", check.folder / f"{name}.rmeta", *cfg, source]
     reference = check.run(f"{name}-rustc", rustc, status, timeout=15,
-                          environment={"RUSTC_BOOTSTRAP": "1"} if source_core else None)
+                          environment={"RUSTC_BOOTSTRAP": "1"} if bootstrap else None)
     if diagnostics(reference.stderr) != ([lint] if lint else []):
         raise ValueError(f"{name}: independent lint verdict differs\n"
                          + reference.stderr.decode(errors="replace"))
@@ -66,6 +66,7 @@ def main():
             try:
                 check_case(check, manifest, case, index, source_core=source_core,
                            edition=plan.get("edition", "2024"),
+                           bootstrap=source_core or plan.get("bootstrap", False),
                            oracle_only=args.oracle_only)
             except ValueError as error:
                 failures.append(str(error))

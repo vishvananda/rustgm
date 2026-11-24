@@ -23,10 +23,10 @@ version/compact-target syntax remains part of the owning cfg assignment work.
 Malformed cfg predicates and string suffixes remain hard errors. In contrast,
 malformed auto_cfg and notable_trait options produce optional documentation lints
 under the pinned compiler. Their rendering, full target checks, documentation
-output and imported metadata remain required. RustGM's uncapped active option
-profile currently stops explicitly; required strict successes are preserved as
-unfinished boundaries, not reclassified as invalid Rust. Whole PA40 and original
-core/alloc/std artifacts are not established by this packet.
+output and imported metadata remain required. `strict-lint-cases.json` covers
+uncapped valid options and scoped `invalid_doc_attributes` expectations and
+rejections. Run these cases with `scripts/check_bootstrap_lints.py` against a
+prebuilt compiler.
 
 The C observer calls a function annotated with false documentation predicates and
 an actual notable-trait implementation. It must print `7 9`; documentation must
