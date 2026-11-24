@@ -8,6 +8,7 @@ use crate::{
         parameters::ParameterKind,
     },
 };
+use std::num::NonZeroU32;
 
 impl Stage {
     pub(super) fn scopes(
@@ -17,60 +18,59 @@ impl Stage {
         admitted: &[(DefId, s::DefinitionKind)],
     ) -> Result<(), &'static str> {
         self.nominal_lifetime_bounds(facts)?;
-        let count = self.definitions.len();
-        let workspace = count
-            .saturating_mul(
-                size_of::<bool>() + 2 * size_of::<Option<DefId>>() + size_of::<Option<u32>>(),
-            )
-            .saturating_add(admitted.len().saturating_mul(size_of::<DefId>()));
-        self.reserve(workspace)?;
-        let mut active = vec![false; count];
+        let index_bytes = self
+            .definitions
+            .len()
+            .saturating_mul(size_of::<Option<NonZeroU32>>());
+        let owner_bytes = admitted.len().saturating_mul(size_of::<DefId>());
+        self.reserve(index_bytes.saturating_add(owner_bytes))?;
+        let mut indices = vec![None; self.definitions.len()];
         let mut owners = Vec::with_capacity(admitted.len());
-        for &(id, kind) in admitted {
+        for &(owner, kind) in admitted {
             self.charge(1)?;
-            if self.has_scope(report, facts, id, kind) {
-                active[id.0 as usize] = true;
-                owners.push(id);
+            if self.has_scope(report, facts, owner, kind) {
+                let position = u32::try_from(owners.len().saturating_add(1))
+                    .ok()
+                    .and_then(NonZeroU32::new)
+                    .ok_or("source scope position exceeds its compact range")?;
+                if indices[owner.0 as usize].replace(position).is_some() {
+                    return Err("source generic scope repeats an owner");
+                }
+                owners.push(owner);
             }
         }
         let owner_count = owners.len();
-        let pending_bytes = owner_count.saturating_mul(size_of::<DefId>());
-        self.reserve(
-            owner_count
-                .saturating_mul(size_of::<s::ParameterScope>())
-                .saturating_add(pending_bytes),
-        )?;
+        let forest_bytes = owner_count
+            .saturating_mul(2 * size_of::<Option<NonZeroU32>>() + size_of::<(NonZeroU32, u32)>());
+        self.reserve(owner_count.saturating_mul(size_of::<s::ParameterScope>()))?;
+        self.reserve(forest_bytes)?;
         self.rows.scopes.reserve_exact(owner_count);
-        // Prepending while visiting increasing IDs keeps siblings in stack order.
-        let mut first_child = vec![None; count];
-        let mut next_sibling = vec![None; count];
+        let mut first_child = vec![None; owner_count];
+        let mut next_sibling = vec![None; owner_count];
         let mut pending = Vec::with_capacity(owner_count);
-        for id in owners {
+        // Prepending while visiting increasing IDs keeps siblings in stack order.
+        for &owner in &owners {
             self.charge(1)?;
-            if let Some(&parent) = facts.generics.parents.get(&id) {
-                if active.get(parent.0 as usize) != Some(&true) {
-                    return Err("source generic scope parent is not an actual retained owner");
-                }
-                next_sibling[id.0 as usize] = first_child[parent.0 as usize].replace(id);
+            let position = indices[owner.0 as usize].ok_or("source scope lost its position")?;
+            if let Some(&parent) = facts.generics.parents.get(&owner) {
+                let parent = indices
+                    .get(parent.0 as usize)
+                    .copied()
+                    .flatten()
+                    .ok_or("source generic scope parent is not an actual retained owner")?;
+                next_sibling[scope_index(position)] =
+                    first_child[scope_index(parent)].replace(position);
             } else {
-                pending.push(id);
+                pending.push((position, 0_u32));
             }
         }
-        drop(active);
-        let mut totals = vec![None::<u32>; count];
+        drop(indices);
+        self.release_temporary(index_bytes)?;
         pending.reverse();
-        while let Some(owner) = pending.pop() {
+        while let Some((position, captures)) = pending.pop() {
             self.charge(1)?;
-            if totals[owner.0 as usize].is_some() {
-                return Err("source generic scope repeats an owner");
-            }
-            let parent = facts.generics.parents.get(&owner).copied();
-            let captures = parent
-                .map(|parent| {
-                    totals[parent.0 as usize].ok_or("source generic scope parent is not completed")
-                })
-                .transpose()?
-                .unwrap_or(0);
+            let index = scope_index(position);
+            let owner = owners[index];
             let declaration = self.declaration(owner)?;
             let declared = self.declared_scope_slots(
                 facts,
@@ -78,29 +78,32 @@ impl Stage {
                 declaration,
                 report.resolution.definitions[owner.0 as usize].kind,
             )?;
-            let parent = parent.map(|parent| self.declaration(parent)).transpose()?;
+            let parent = facts
+                .generics
+                .parents
+                .get(&owner)
+                .map(|&parent| self.declaration(parent))
+                .transpose()?;
             self.rows.scopes.push(s::ParameterScope {
                 owner: declaration,
                 parent,
                 declared,
                 captures,
             });
-            totals[owner.0 as usize] = Some(
-                captures
-                    .checked_add(declared.end - declared.start)
-                    .ok_or("source scope parameter count overflow")?,
-            );
-            let mut child = first_child[owner.0 as usize];
-            while let Some(id) = child {
-                pending.push(id);
-                child = next_sibling[id.0 as usize];
+            let total = captures
+                .checked_add(declared.end - declared.start)
+                .ok_or("source scope parameter count overflow")?;
+            let mut child = first_child[index];
+            while let Some(position) = child {
+                pending.push((position, total));
+                child = next_sibling[scope_index(position)];
             }
         }
         if self.rows.scopes.len() != owner_count {
             return Err("source generic scope graph is cyclic or incomplete");
         }
-        drop((pending, totals, first_child, next_sibling));
-        self.release_temporary(workspace.saturating_add(pending_bytes))
+        drop((pending, first_child, next_sibling, owners));
+        self.release_temporary(owner_bytes.saturating_add(forest_bytes))
     }
 
     fn has_scope(
@@ -515,7 +518,8 @@ impl Stage {
             .get(&owner)
             .map_or((0, captures), |scheme| (scheme.captures, scheme.total));
         let named = facts.lifetimes.parameters.get(&owner);
-        self.reserve((total as usize).saturating_mul(size_of::<Option<DefId>>()))?;
+        let binding_bytes = (total as usize).saturating_mul(size_of::<Option<DefId>>());
+        self.reserve(binding_bytes)?;
         let mut bindings = vec![None; total as usize];
         for &definition in named.into_iter().flatten() {
             self.charge(1)?;
@@ -569,8 +573,13 @@ impl Stage {
                 default: None,
             });
         }
-        Ok(())
+        drop(bindings);
+        self.release_temporary(binding_bytes)
     }
+}
+
+fn scope_index(position: NonZeroU32) -> usize {
+    (position.get() - 1) as usize
 }
 
 /// Where an owner's lifetimes stand among its template arguments.
