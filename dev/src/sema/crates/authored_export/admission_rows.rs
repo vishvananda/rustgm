@@ -132,6 +132,7 @@ impl Stage {
         facts: &mut Declarations,
         mode: ExportMode,
     ) -> Result<DeclarationLeaves, &'static str> {
+        let admission = self.declaration_inventory(report, facts, mode)?;
         let mut leaves = DeclarationLeaves::default();
         let mut features =
             non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
@@ -149,17 +150,15 @@ impl Stage {
                 .resolution
                 .definitions
                 .len()
-                .saturating_mul(size_of::<u32>() + size_of::<Option<DefId>>()),
+                .saturating_mul(size_of::<u32>())
+                .saturating_add(admission.len().saturating_mul(size_of::<Option<DefId>>())),
         )?;
         let mut ordinals = vec![0_u32; report.resolution.definitions.len()];
-        let mut parents = Vec::with_capacity(report.resolution.definitions.len());
-        for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        let mut parents = Vec::with_capacity(admission.len());
+        for (id, kind) in admission {
             self.charge(1)?;
-            let id =
-                DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            let Some(kind) = self.exported_kind(report, facts, id, mode)? else {
-                continue;
-            };
+            let index = id.0 as usize;
+            let definition = &report.resolution.definitions[index];
             features.observe(report, facts, id, self)?;
             if !mode.module_contracts()
                 && definition.kind == DefKind::Trait
@@ -187,7 +186,7 @@ impl Stage {
             } else {
                 report.package.names.get(definition.name)
             };
-            self.reserve(4 * size_of::<s::Declaration>() + name.len())?;
+            self.reserve(name.len())?;
             let row = DeclarationRef(
                 u32::try_from(self.rows.declarations.len())
                     .map_err(|_| "source declaration table overflow")?,
@@ -216,5 +215,27 @@ impl Stage {
         }
         features.finish()?;
         Ok(leaves)
+    }
+
+    fn declaration_inventory(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        mode: ExportMode,
+    ) -> Result<Vec<(DefId, s::DefinitionKind)>, &'static str> {
+        let count = report.resolution.definitions.len();
+        self.reserve(count.saturating_mul(size_of::<(DefId, s::DefinitionKind)>()))?;
+        let mut admitted = Vec::with_capacity(count);
+        for index in 0..count {
+            self.charge(1)?;
+            let id =
+                DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
+            if let Some(kind) = self.exported_kind(report, facts, id, mode)? {
+                admitted.push((id, kind));
+            }
+        }
+        self.reserve(admitted.len().saturating_mul(size_of::<s::Declaration>()))?;
+        self.rows.declarations.reserve_exact(admitted.len());
+        Ok(admitted)
     }
 }

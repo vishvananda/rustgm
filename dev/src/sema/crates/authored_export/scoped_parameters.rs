@@ -18,8 +18,8 @@ impl Stage {
         let count = self.definitions.len();
         self.reserve(count.saturating_mul(
             size_of::<bool>()
-                + size_of::<Vec<DefId>>()
-                + 8 * size_of::<DefId>()
+                + 2 * size_of::<Option<DefId>>()
+                + size_of::<DefId>()
                 + size_of::<Option<u32>>(),
         ))?;
         self.nominal_lifetime_bounds(facts)?;
@@ -50,8 +50,10 @@ impl Stage {
                             .is_some_and(|parameters| !parameters.is_empty());
             }
         }
-        let mut children = vec![Vec::new(); count];
-        let mut roots = Vec::new();
+        // Prepending while visiting increasing IDs keeps siblings in stack order.
+        let mut first_child = vec![None; count];
+        let mut next_sibling = vec![None; count];
+        let mut pending = Vec::with_capacity(count);
         for (index, &enabled) in active.iter().enumerate() {
             self.charge(1)?;
             if !enabled {
@@ -62,13 +64,12 @@ impl Stage {
                 if active.get(parent.0 as usize) != Some(&true) {
                     return Err("source generic scope parent is not an actual retained owner");
                 }
-                children[parent.0 as usize].push(id);
+                next_sibling[index] = first_child[parent.0 as usize].replace(id);
             } else {
-                roots.push(id);
+                pending.push(id);
             }
         }
         let mut totals = vec![None::<u32>; count];
-        let mut pending = roots;
         pending.reverse();
         while let Some(owner) = pending.pop() {
             self.charge(1)?;
@@ -102,7 +103,11 @@ impl Stage {
                     .checked_add(declared.end - declared.start)
                     .ok_or("source scope parameter count overflow")?,
             );
-            pending.extend(children[owner.0 as usize].iter().rev().copied());
+            let mut child = first_child[owner.0 as usize];
+            while let Some(id) = child {
+                pending.push(id);
+                child = next_sibling[id.0 as usize];
+            }
         }
         for (index, enabled) in active.into_iter().enumerate() {
             self.charge(1)?;
