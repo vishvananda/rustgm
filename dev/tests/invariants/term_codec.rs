@@ -13,8 +13,8 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // An array's length term lives in its own cold column: one Vec, 24 B. Record
 // variants' field names live in the enum columns' name column: one Vec more.
 // The v14 type and trait alias vectors and optional static table live outside
-// the hot rows.
-const _: [(); 352] = [(); size_of::<s::ColdColumns>()];
+// the hot rows. Written nominal lifetime bounds add one cold Vec.
+const _: [(); 376] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
