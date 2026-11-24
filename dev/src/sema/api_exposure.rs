@@ -44,9 +44,10 @@ impl PublicBudget for Budget {
         self.cost.steps = self.cost.steps.saturating_add(steps);
         self.cost.bytes = self.cost.bytes.saturating_add(bytes);
         if self.cost.steps > self.steps || self.cost.bytes > self.bytes {
-            return Err(Error::unlocated(
-                "library interface reachability exceeds work or storage budget",
-            ));
+            return Err(Error::unlocated(format!(
+                "library interface reachability exceeds its budget with {} of {} steps and {} of {} bytes",
+                self.cost.steps, self.steps, self.cost.bytes, self.bytes,
+            )));
         }
         Ok(())
     }
@@ -75,9 +76,12 @@ pub(super) fn check_declarations(report: &Report, facts: &mut Declarations) -> R
     let unreachable = facts.safety_policies.checks_unreachable_pub();
     let debug = facts.safety_policies.checks_missing_debug();
     let docs = facts.safety_policies.checks_missing_docs();
-    let lint = unreachable || debug || docs;
-    if let Some(mut reached) = collect(report, facts, lint, docs, STEPS, BYTES)?
-        && lint
+    let lint_walks = usize::from(unreachable) + usize::from(debug) + usize::from(docs);
+    // The original allowance covers the shared interface walk. Each enabled
+    // diagnostic makes its own bounded sweep over checked language records.
+    let steps = STEPS * (1 + lint_walks);
+    if let Some(mut reached) = collect(report, facts, lint_walks != 0, docs, steps, BYTES)?
+        && lint_walks != 0
     {
         if unreachable {
             reached.lint_unreachable_pub(report, facts)?;
