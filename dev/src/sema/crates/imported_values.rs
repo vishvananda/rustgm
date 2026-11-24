@@ -23,6 +23,11 @@ enum NamedValue<'rows> {
     },
 }
 
+struct SourceValues<'rows> {
+    constants: Vec<(DefId, NamedValue<'rows>)>,
+    promotions: Vec<super::promotions::Imported<'rows>>,
+}
+
 impl NamedValue<'_> {
     fn decode(value: ScalarValue) -> Result<Self, Error> {
         if value.ty() == Scalar::Unit {
@@ -37,8 +42,11 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
-    let source = source_constants(imported)?;
-    if imported.constants().next().is_none() && source.is_empty() {
+    let SourceValues {
+        constants: source,
+        promotions,
+    } = source_constants(imported)?;
+    if imported.constants().next().is_none() && source.is_empty() && promotions.is_empty() {
         return Ok(());
     }
     for (definition, value) in imported.constants() {
@@ -50,7 +58,11 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
             .insert(definition);
     }
     // A source constant's cell is already its installed header type.
-    for &(definition, _) in &source {
+    for definition in source
+        .iter()
+        .map(|(definition, _)| *definition)
+        .chain(promotions.iter().map(|promotion| promotion.definition))
+    {
         if facts.associated.owner(definition).is_none() {
             facts
                 .crates
@@ -70,14 +82,15 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
     for (definition, value) in source {
         complete(&mut evaluator, definition, value)?;
     }
-    Ok(())
+    super::promotions::seed(report, facts, &promotions)
 }
 /// Each source artifact's constant rows retain canonical bits of their
 /// declared types. Wide floats use source recipes instead of ABI scalar tags.
 fn source_constants(
     imported: &crate::resolve::crates::Imported,
-) -> Result<Vec<(DefId, NamedValue<'_>)>, Error> {
+) -> Result<SourceValues<'_>, Error> {
     let mut constants = Vec::new();
+    let mut promotions = Vec::new();
     for artifact in imported.dependencies().artifacts() {
         let Some(descriptor) = artifact.source_descriptor() else {
             continue;
@@ -86,14 +99,23 @@ fn source_constants(
         for (declaration, row) in rows.constant_rows() {
             // Associated declarations and their templates have no completed
             // value to seed. Evaluation receives their selected owner later.
-            if !matches!(row.body, s::ConstantBody::Evaluated(_))
-                && descriptor.profile().declaration_policies()
-            {
+            if !row.body.evaluated() && descriptor.profile().declaration_policies() {
                 continue;
             }
             let definition = imported
                 .generic_definition(descriptor.identity(), declaration)
                 .map_err(error)?;
+            if let s::ConstantBody::PromotedReference { anchor, handlers } = row.body {
+                promotions.push(super::promotions::Imported {
+                    provider: artifact.identity(),
+                    rows,
+                    definition,
+                    declaration,
+                    anchor,
+                    handlers,
+                });
+                continue;
+            }
             let s::ConstantBody::Evaluated(s::ConstTerm::Value(value)) = row.body else {
                 return Err(error("source constant seed lost its validated value"));
             };
@@ -120,7 +142,10 @@ fn source_constants(
             constants.push((definition, value));
         }
     }
-    Ok(constants)
+    Ok(SourceValues {
+        constants,
+        promotions,
+    })
 }
 /// A unit value is its typed empty aggregate; every other value is its scalar.
 fn complete(
@@ -138,6 +163,14 @@ fn complete(
             super::statics::decode_scalar_aggregate(evaluator, rows, value.ty, &bytes[..width])?
         }
     };
+    complete_value(evaluator, definition, value)
+}
+
+pub(super) fn complete_value(
+    evaluator: &mut Evaluator<'_>,
+    definition: DefId,
+    value: Constant,
+) -> Result<(), Error> {
     if let Some(id) = evaluator.facts().associated.owner(definition) {
         let facts = evaluator.facts();
         if !facts

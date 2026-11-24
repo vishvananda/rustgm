@@ -29,7 +29,7 @@ mod inputs;
 mod nominal_contracts;
 #[path = "sum_contracts.rs"]
 mod sum_contracts;
-pub use free_constants::{ConstantBody, ConstantHeader};
+pub use free_constants::{ConstantBody, ConstantHeader, PromotedHandler};
 pub(crate) use free_constants::{inline_scalar_width, inline_tuple_width};
 pub use sum_contracts::{
     Constructor, ConstructorPayload, EnumColumns, EnumHeader, VariantField, VariantHeader,
@@ -600,6 +600,7 @@ pub struct ColdColumns {
     /// Version thirteen: one header row per constant declaration, in
     /// declaration order. Each row holds its own term in place.
     pub constants: Vec<ConstantHeader>,
+    pub promoted_handlers: Vec<PromotedHandler>,
     pub type_aliases: Vec<TypeAliasHeader>,
     pub alias_normalizations: Vec<AliasNormalization>,
     pub trait_aliases: Vec<TraitAliasHeader>,
@@ -619,6 +620,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     consts: Vec::new(),
     array_lengths: Vec::new(),
     constants: Vec::new(),
+    promoted_handlers: Vec::new(),
     type_aliases: Vec::new(),
     alias_normalizations: Vec::new(),
     trait_aliases: Vec::new(),
@@ -638,6 +640,7 @@ impl ColdColumns {
             && self.consts.is_empty()
             && self.array_lengths.is_empty()
             && self.constants.is_empty()
+            && self.promoted_handlers.is_empty()
             && self.type_aliases.is_empty()
             && self.alias_normalizations.is_empty()
             && self.trait_aliases.is_empty()

@@ -69,6 +69,7 @@ impl Columns {
             || !cold.consts.is_empty()
             || !cold.array_lengths.is_empty()
             || !cold.constants.is_empty()
+            || !cold.promoted_handlers.is_empty()
             || !cold.type_aliases.is_empty()
             || !cold.alias_normalizations.is_empty()
             || !cold.trait_aliases.is_empty()
@@ -82,6 +83,7 @@ impl Columns {
                 consts: cold.consts.clone(),
                 array_lengths: cold.array_lengths.clone(),
                 constants: cold.constants.clone(),
+                promoted_handlers: cold.promoted_handlers.clone(),
                 type_aliases: cold.type_aliases.clone(),
                 alias_normalizations: cold.alias_normalizations.clone(),
                 trait_aliases: cold.trait_aliases.clone(),

@@ -2,7 +2,7 @@
 //! exactly when the declaration table names a constant. It has no count and
 //! no declaration field: row `k` belongs to the `k`-th constant declaration.
 use super::{Input, Writer, g, id, recipe_columns, s};
-use crate::support::crates::owner_catalog::BodyRef;
+use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
 
 /// Presence and length are functions of rows already decoded, never of
 /// trailing bytes: a packet without constants keeps its exact earlier bytes.
@@ -34,6 +34,19 @@ pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(),
                 out.u8(2)?;
                 id(out, body.0)?;
             }
+            s::ConstantBody::PromotedReference { anchor, handlers } => {
+                if !rows.descriptor().profile().declaration_policies() {
+                    return Err("source promoted reference requires the version-fourteen profile");
+                }
+                out.u8(3)?;
+                id(out, anchor.0)?;
+                let targets = handlers.slice(&rows.cold().promoted_handlers)?;
+                out.u32(targets.len())?;
+                for target in targets {
+                    id(out, target.identity)?;
+                    id(out, target.signature.0)?;
+                }
+            }
         }
     }
     Ok(())
@@ -49,6 +62,7 @@ pub(super) fn decode(
     }
     read.reserve(count.saturating_mul(size_of::<s::ConstantHeader>()))?;
     let mut constants = Vec::with_capacity(count);
+    let mut handlers = Vec::new();
     for _ in 0..count {
         let ty = g::TypeRef(read.id()?);
         let body = match read.reader.u8()? {
@@ -57,10 +71,44 @@ pub(super) fn decode(
             2 if read.profile.declaration_policies() => {
                 s::ConstantBody::Original(BodyRef(read.id()?))
             }
+            3 if read.profile.declaration_policies() => promotion(read, &mut handlers)?,
             _ => return Err("invalid source constant value presence"),
         };
         constants.push(s::ConstantHeader { ty, body });
     }
-    read.cold(rows)?.constants = constants;
+    let cold = read.cold(rows)?;
+    cold.constants = constants;
+    cold.promoted_handlers = handlers;
     Ok(())
+}
+
+fn promotion(
+    read: &mut Input<'_, '_>,
+    handlers: &mut Vec<s::PromotedHandler>,
+) -> Result<s::ConstantBody, &'static str> {
+    let anchor = DeclarationRef(read.id()?);
+    let start = offset(handlers.len())?;
+    let targets = read.list(crate::support::crates::MAX_COMPONENTS, 8, |read| {
+        Ok(s::PromotedHandler {
+            identity: read.id()?,
+            signature: g::TypeRef(read.id()?),
+        })
+    })?;
+    read.reserve(
+        targets
+            .len()
+            .saturating_mul(4 * size_of::<s::PromotedHandler>()),
+    )?;
+    handlers.extend(targets);
+    Ok(s::ConstantBody::PromotedReference {
+        anchor,
+        handlers: g::Range {
+            start,
+            end: offset(handlers.len())?,
+        },
+    })
+}
+
+fn offset(length: usize) -> Result<u32, &'static str> {
+    u32::try_from(length).map_err(|_| "source promoted handler ordinal overflow")
 }

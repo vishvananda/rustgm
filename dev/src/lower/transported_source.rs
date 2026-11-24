@@ -464,6 +464,36 @@ impl Source {
                     })
             }))
     }
+    fn checked_linked_handler(
+        facts: &Declarations,
+        body: &Body,
+        input: &Contract,
+    ) -> Result<bool, &'static str> {
+        let Owner::Closure {
+            identity,
+            signature,
+            ..
+        } = body.owner
+        else {
+            return Ok(false);
+        };
+        let Some(binding) = facts
+            .crates
+            .as_deref()
+            .and_then(|linkage| linkage.promoted_closure(identity))
+        else {
+            return Ok(false);
+        };
+        if binding.source != body.source.source()
+            || binding.signature != signature
+            || body.key() != input.key
+            || body.source != input.source
+        {
+            return Err("source promoted handler changed its actual checked body");
+        }
+        Ok(true)
+    }
+
     fn collect_body(
         &mut self,
         facts: &mut Declarations,
@@ -473,6 +503,9 @@ impl Source {
         // Validate before any operation/input row or collected bit can change.
         if let Some(collector) = self.collector.as_deref() {
             collector.require_store(facts, &mut self.stage)?;
+        }
+        if Self::checked_linked_handler(facts, body, input)? {
+            return Ok(());
         }
         // Version thirteen: a const argument travels as its evaluated term,
         // so the anonymous body its value was folded from is not an original.

@@ -31,12 +31,7 @@ pub(super) fn validate(
     ledger.finish(work)?;
     let constants = rows.constants();
     work.charge(constants.len())?;
-    if !constants.is_empty()
-        && (inherent
-            || constants
-                .iter()
-                .any(|row| !matches!(row.body, s::ConstantBody::Evaluated(_))))
-    {
+    if !constants.is_empty() && (inherent || constants.iter().any(|row| !row.body.evaluated())) {
         ledger.constants(work)?;
     }
     Ok(())
@@ -62,10 +57,7 @@ impl<'a> Members<'a> {
                         Some(self.rows.associated_types[index as usize].parent)
                     }
                     Some(HeaderRef::Constant(index))
-                        if !matches!(
-                            self.rows.constants()[index as usize].body,
-                            s::ConstantBody::Evaluated(_)
-                        ) =>
+                        if !self.rows.constants()[index as usize].body.evaluated() =>
                     {
                         self.rows.declarations[member.0 as usize].definition.parent
                     }
@@ -259,7 +251,7 @@ impl<'a> Members<'a> {
                 implementation.trait_application.is_some()
                     || implementation.inherent_constant_owner(&self.rows.types)
             }
-            s::ConstantBody::Evaluated(_) => {
+            s::ConstantBody::Evaluated(_) | s::ConstantBody::PromotedReference { .. } => {
                 implementation.closed_inherent_constant_owner(&self.rows.types)
             }
             s::ConstantBody::Required => false,

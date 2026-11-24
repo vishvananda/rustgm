@@ -35,10 +35,8 @@ impl Graph {
                 Some(rows.trait_aliases()[index as usize].self_definition)
             }
             Some(s::HeaderRef::Constant(index))
-                if !matches!(
-                    rows.constants()[index as usize].body,
-                    s::ConstantBody::Evaluated(_)
-                ) && (actual.is_some() || !legacy_range_bound(rows, row)) =>
+                if !rows.constants()[index as usize].body.evaluated()
+                    && (actual.is_some() || !legacy_range_bound(rows, row)) =>
             {
                 raw.definition.parent
             }

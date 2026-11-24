@@ -223,16 +223,12 @@ impl DomainIndex<'_, '_> {
         }
         let rows = self.headers.rows();
         work.charge(rows.constants().len())?;
-        if !rows
-            .constants()
-            .iter()
-            .any(|row| !matches!(row.body, s::ConstantBody::Evaluated(_)))
-        {
+        if !rows.constants().iter().any(|row| !row.body.evaluated()) {
             return Ok(());
         }
         work.charge(rows.declarations.len())?;
         for (owner, constant) in rows.constant_rows() {
-            if matches!(constant.body, s::ConstantBody::Evaluated(_)) {
+            if constant.body.evaluated() {
                 continue;
             }
             let frame = self.binders.declaration_frame(owner, work)?;

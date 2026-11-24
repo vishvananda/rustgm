@@ -134,10 +134,7 @@ impl BinderIndex<'_> {
                 self.rows.implementations[index as usize].region_captures
             }
             Some(HeaderRef::Constant(index))
-                if !matches!(
-                    self.rows.constants()[index as usize].body,
-                    s::ConstantBody::Evaluated(_)
-                ) =>
+                if !self.rows.constants()[index as usize].body.evaluated() =>
             {
                 let parent = self.rows.declarations[frame.owner.0 as usize]
                     .definition

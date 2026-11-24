@@ -457,7 +457,8 @@ impl Stage {
     pub(super) fn constant_headers(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
+        identity: &super::CrateIdentity,
     ) -> Result<(), &'static str> {
         // Every declaration row was paid when it was pushed; a provider
         // without constants pays nothing more here.
@@ -502,50 +503,74 @@ impl Stage {
                 reader.definition(id)
             }
             .ok_or("source constant export requires its completed value")?;
-            let bits = match codec {
-                ValueType::Scalar(scalar) => {
-                    super::super::export::value_bits(scalar, reader.view(value)?)
-                        .map(ScalarValue::bits)
-                        .map_err(|_| "source constant value disagrees with its declared type")?
-                }
-                ValueType::WideFloat => reader
-                    .encode_primitive(ty, value)
-                    .map(|(bits, _)| bits)
-                    .map_err(|_| "source constant value disagrees with its declared type")?,
-                ValueType::InlineTuple => {
-                    let mut bytes = Vec::new();
-                    self.scalar_aggregate_bytes(facts, ty, value, &mut bytes)?;
-                    let mut payload = [0; size_of::<u128>()];
-                    payload
-                        .get_mut(..bytes.len())
-                        .ok_or("source tuple constant exceeds its inline payload")?
-                        .copy_from_slice(&bytes);
-                    u128::from_le_bytes(payload)
-                }
-            };
-            let ty = self.ty(
-                facts,
-                ty,
-                Context {
-                    owner: declaration,
-                    frame: None,
-                    body: None,
-                },
-            )?;
+            let body = self.completed_constant(facts, identity, (declaration, ty), codec, value)?;
             self.reserve(size_of::<s::ConstantHeader>())?;
-            self.cold()?.constants.push(s::ConstantHeader {
-                ty,
-                body: s::ConstantBody::Evaluated(s::ConstTerm::Value(s::ConstValue { ty, bits })),
-            });
+            self.cold()?.constants.push(body);
         }
         Ok(())
     }
+
+    fn completed_constant(
+        &mut self,
+        facts: &mut Declarations,
+        identity: &super::CrateIdentity,
+        (declaration, ty): (DeclarationRef, TypeId),
+        codec: ValueType,
+        value: crate::sema::values::Constant,
+    ) -> Result<s::ConstantHeader, &'static str> {
+        let raw_ty = self.ty(
+            facts,
+            ty,
+            Context {
+                owner: declaration,
+                frame: None,
+                body: None,
+            },
+        )?;
+        let reader = Reader::new(facts);
+        let bits = match codec {
+            ValueType::Scalar(scalar) => {
+                super::super::export::value_bits(scalar, reader.view(value)?)
+                    .map(ScalarValue::bits)
+                    .map_err(|_| "source constant value disagrees with its declared type")?
+            }
+            ValueType::WideFloat => reader
+                .encode_primitive(ty, value)
+                .map(|(bits, _)| bits)
+                .map_err(|_| "source constant value disagrees with its declared type")?,
+            ValueType::InlineTuple => {
+                let mut bytes = Vec::new();
+                self.scalar_aggregate_bytes(facts, ty, value, &mut bytes)?;
+                let mut payload = [0; size_of::<u128>()];
+                payload
+                    .get_mut(..bytes.len())
+                    .ok_or("source tuple constant exceeds its inline payload")?
+                    .copy_from_slice(&bytes);
+                u128::from_le_bytes(payload)
+            }
+            ValueType::PromotedReference => {
+                return Ok(s::ConstantHeader {
+                    ty: raw_ty,
+                    body: self.promoted_reference(facts, identity, declaration, ty, value)?,
+                });
+            }
+        };
+        Ok(s::ConstantHeader {
+            ty: raw_ty,
+            body: s::ConstantBody::Evaluated(s::ConstTerm::Value(s::ConstValue {
+                ty: raw_ty,
+                bits,
+            })),
+        })
+    }
 }
 /// Wide named values use the source recipe and the existing payload width.
+#[derive(Clone, Copy)]
 enum ValueType {
     Scalar(Scalar),
     WideFloat,
     InlineTuple,
+    PromotedReference,
 }
 
 fn value_type(facts: &Declarations, ty: TypeId, v14: bool) -> Result<ValueType, &'static str> {
@@ -569,6 +594,11 @@ fn value_type(facts: &Declarations, ty: TypeId, v14: bool) -> Result<ValueType, 
                 width = s::inline_scalar_width(ty, width)?;
             }
             Ok(ValueType::InlineTuple)
+        }
+        Some(Kind::Reference { .. })
+            if v14 && super::promoted_references::referent(facts, ty).is_some() =>
+        {
+            Ok(ValueType::PromotedReference)
         }
         Some(Kind::Reference { .. }) => {
             Err("source reference const value requires its wider profile")

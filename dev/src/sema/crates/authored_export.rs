@@ -26,6 +26,7 @@ mod nominal_headers;
 mod non_type_sources;
 mod operation_exports;
 mod payments;
+mod promoted_references;
 mod scoped_parameters;
 mod self_requests;
 mod statics;
@@ -481,14 +482,14 @@ impl Stage {
         }
         let provided_constants = stage.provided_constants(report, facts)?;
         if stage.body_nodes() && provided_constants.is_empty() {
-            stage.constant_headers(report, facts)?;
+            stage.constant_headers(report, facts, identity)?;
         }
         stage.alias_headers(facts, leaves.aliases)?;
         stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
         stage.static_headers(facts, identity, leaves.statics)?;
         stage.functions(report, facts, identity, &provided_constants)?;
         if !provided_constants.is_empty() {
-            stage.constant_headers(report, facts)?;
+            stage.constant_headers(report, facts, identity)?;
         }
         stage.implementations(report, facts)?;
         stage.diagnostic_roles(report)?;

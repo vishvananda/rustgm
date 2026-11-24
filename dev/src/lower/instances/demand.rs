@@ -11,7 +11,7 @@ use crate::{
     borrow::templates::Checked,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
-    types::{ItemId, Kind, instance::Instance},
+    types::{ItemId, Kind, TypeId, instance::Instance},
 };
 mod current_caller;
 mod paid_owners;
@@ -214,11 +214,21 @@ impl Ordinary {
                     ordinary: self.functions.get(&item).copied(),
                 }
             }
-            Some(Kind::Closure { identity, .. }) => Selected {
-                family: BodyKey::Closure(identity),
-                template: templates.closure(identity),
-                ordinary: self.closures.get(&identity).copied(),
-            },
+            Some(Kind::Closure { identity, .. }) => {
+                if facts
+                    .crates
+                    .as_deref()
+                    .and_then(|linkage| linkage.promoted_handler(instance.ty()))
+                    .is_some_and(|handler| handler.source.is_none())
+                {
+                    return Ok(None);
+                }
+                Selected {
+                    family: BodyKey::Closure(identity),
+                    template: templates.closure(identity),
+                    ordinary: self.closures.get(&identity).copied(),
+                }
+            }
             _ => return Err("invalid demanded instance"),
         }))
     }
@@ -1102,6 +1112,22 @@ fn initial_work(
             )
             .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
     }
+    if let Some(linkage) = facts.crates.as_deref() {
+        let count = linkage.exported_handlers().len();
+        for index in (0..count).rev() {
+            let (ty, source) = promoted_root(facts, index)
+                .map_err(|message| diagnostic(report, None, message.into()))?;
+            let instance = Instance::closure(&facts.types, ty)
+                .map_err(|message| diagnostic(report, Some(source.into()), message.into()))?;
+            budget
+                .push_work(
+                    facts,
+                    &mut work,
+                    Work::Enter(instance, source.into(), Caller::ROOT),
+                )
+                .map_err(|message| diagnostic(report, Some(source.into()), message.into()))?;
+        }
+    }
     let mut dependencies =
         Dependencies::roots(report, facts, program, roots.globals, &mut work, budget)?;
     if let Some(startup) = roots.startup {
@@ -1110,6 +1136,25 @@ fn initial_work(
             .map_err(|message| diagnostic(report, Some(startup.source), message.into()))?;
     }
     Ok((work, dependencies))
+}
+
+fn promoted_root(
+    facts: &Declarations,
+    index: usize,
+) -> Result<(TypeId, crate::resolve::unit::NodeKey), &'static str> {
+    let linkage = facts
+        .crates
+        .as_deref()
+        .ok_or("missing source promotion linkage")?;
+    let ty = *linkage
+        .exported_handlers()
+        .get(index)
+        .ok_or("missing source promoted handler root")?;
+    let source = linkage
+        .promoted_handler(ty)
+        .and_then(|handler| handler.source)
+        .ok_or("missing source promoted handler owner")?;
+    Ok((ty, source))
 }
 
 #[derive(Clone, Copy)]

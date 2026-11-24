@@ -14,7 +14,7 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // variants' field names live in the enum columns' name column: one Vec more.
 // The v14 type and trait alias vectors and optional static table live outside
 // the hot rows.
-const _: [(); 328] = [(); size_of::<s::ColdColumns>()];
+const _: [(); 352] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;

@@ -353,10 +353,8 @@ impl Walk<'_, '_> {
                 Ok(Inputs::Definition)
             }
             Some(s::HeaderRef::Constant(index))
-                if !matches!(
-                    rows.constants()[index as usize].body,
-                    s::ConstantBody::Evaluated(_)
-                ) && raw.parent == rows.declarations[raw.owner.0 as usize].definition.parent =>
+                if !rows.constants()[index as usize].body.evaluated()
+                    && raw.parent == rows.declarations[raw.owner.0 as usize].definition.parent =>
             {
                 Ok(Inputs::Definition)
             }
