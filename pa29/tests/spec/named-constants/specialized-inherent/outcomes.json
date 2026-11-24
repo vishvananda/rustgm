@@ -1,0 +1,35 @@
+{
+  "foundation": "pa29/tests/spec/named-constants/provider.rs",
+  "prefix_marker": "// Authored module-constant transport controls",
+  "provider": "provider.rs",
+  "cases": [
+    {
+      "source": "observed.rs",
+      "status": 0,
+      "lowir": {
+        "return u8 37": 2,
+        "return u16 1500": 1,
+        "return u8 8": 1,
+        "return u8 16": 1
+      }
+    },
+    {
+      "source": "private.rs",
+      "status": 1,
+      "diagnostic": "private",
+      "rustc_diagnostic": "error[E0624]"
+    },
+    {
+      "source": "wrong-owner.rs",
+      "status": 1,
+      "diagnostic": "no applicable inherent method for this prefix",
+      "rustc_diagnostic": "error[E0599]"
+    },
+    {
+      "source": "wrong-type.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "error[E0308]"
+    }
+  ]
+}
