@@ -123,7 +123,7 @@ impl Machine<'_, '_> {
             header
                 .body
                 .unwrap_or(crate::resolve::body_origin::BodyOrigin::Source(local))
-        } else if facts.imported_const_default(definition)? {
+        } else if facts.is_const_function(definition) || facts.imported_const_default(definition)? {
             header
                 .body
                 .ok_or("selected const default lost its actual imported body")?

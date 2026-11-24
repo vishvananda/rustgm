@@ -201,16 +201,33 @@ pub(super) struct DefaultTraits {
     pub(super) iterator_defaults:
         [Option<DeclarationRef>; LangItem::PROVIDED_ITERATOR_METHODS.len()],
     pub(super) comparisons: [Option<DeclarationRef>; LangItem::COMPARISON_TRAITS.len()],
+    pub(super) general: bool,
 }
 impl DefaultTraits {
-    pub(super) fn provided(self, header: &s::FunctionHeader) -> bool {
-        header.parent.is_some_and(|owner| {
-            self.drop == Some(owner)
-                || self.comparisons.contains(&Some(owner))
-                || self.clone_from == Some(header.declaration)
-                || self.iterator_defaults.contains(&Some(header.declaration))
-        }) && header.constness == Constness::Conditional
-            && matches!(header.body, s::FunctionBody::Original(_))
+    pub(super) fn provided(
+        self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        header: &s::FunctionHeader,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Some(owner) = header.parent.filter(|_| {
+            header.constness == Constness::Conditional
+                && matches!(header.body, s::FunctionBody::Original(_))
+        }) else {
+            return Ok(false);
+        };
+        if self.general {
+            return Ok(matches!(
+                headers.header(owner, work)?,
+                Some(s::HeaderRef::Trait(index))
+                    if rows.traits[index as usize].flags.bits() & s::TraitFlags::CONST != 0
+            ));
+        }
+        Ok(self.drop == Some(owner)
+            || self.comparisons.contains(&Some(owner))
+            || self.clone_from == Some(header.declaration)
+            || self.iterator_defaults.contains(&Some(header.declaration)))
     }
 }
 
@@ -228,9 +245,9 @@ pub(super) fn original_context(
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
             let function = &rows.functions[index as usize];
-            defining_default = function
-                .parent
-                .filter(|_| default_traits.provided(function));
+            if default_traits.provided(rows, headers, function, work)? {
+                defining_default = function.parent;
+            }
             if (function.constness == Constness::Const
                 && !runtime_format_bodies.contains(&Some(body.declaration)))
                 || defining_default.is_some()
@@ -286,6 +303,8 @@ fn constant_calls(
                 let target = &rows.functions[index as usize];
                 if target.constness != Constness::Const
                     && !conditional_default_call(rows, headers, target, request, default, work)?
+                    && !(constructors
+                        && conditional_trait_call(rows, headers, target, request, work)?)
                 {
                     return Err("source const-definition call requires its actual const target");
                 }
@@ -303,6 +322,25 @@ fn constant_calls(
         }
     }
     Ok(())
+}
+
+fn conditional_trait_call(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    target: &s::FunctionHeader,
+    request: &s::CallRequest,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(owner) = target.parent.filter(|_| {
+        target.constness == Constness::Conditional && request.effect != Constness::Ordinary
+    }) else {
+        return Ok(false);
+    };
+    Ok(matches!(
+        headers.header(owner, work)?,
+        Some(s::HeaderRef::Trait(index))
+            if rows.traits[index as usize].flags.bits() & s::TraitFlags::CONST != 0
+    ))
 }
 
 fn conditional_default_call(

@@ -84,7 +84,10 @@ impl DomainIndex<'_, '_> {
             self.assembly(context, original, header.unsafe_function(), work)?;
             self.input_ports(context, original, input, work)?;
             if snapshots || tested_temporary {
-                let scope = super::snapshots::Scope::for_body(branching, tested_temporary);
+                let scope = super::snapshots::Scope::for_body(
+                    branching,
+                    tested_temporary || self.declaration_policies,
+                );
                 self.scratch(super::snapshots::allocation(original, scope), work)?;
                 super::snapshots::validate(original, work, scope)?;
             }
@@ -101,7 +104,9 @@ impl DomainIndex<'_, '_> {
         if runtime_format_bodies.contains(&Some(header.declaration)) {
             return Ok(s::CallContext::Runtime);
         }
-        if let Some(parent) = header.parent
+        if (!self.declaration_policies
+            || header.constness == crate::support::constness::Constness::Conditional)
+            && let Some(parent) = header.parent
             && let Some(HeaderRef::Trait(index)) = self.headers.header(parent, work)?
             && self.headers.rows().traits[index as usize].flags.bits() & s::TraitFlags::CONST != 0
         {

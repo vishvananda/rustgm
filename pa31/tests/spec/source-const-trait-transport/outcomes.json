@@ -1,0 +1,11 @@
+{
+  "features": ["auto_traits"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "5 10 11 8 7 4 12 9 18 105 109\n",
+  "older_profile": "source function early/captured callable frame transport is not implemented",
+  "restricted_client": {
+    "path": "non_const_in_const.rs",
+    "rustc": "cannot call non-const method",
+    "rustgm": "non-const trait methods cannot be called in const contexts"
+  }
+}

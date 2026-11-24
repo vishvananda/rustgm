@@ -278,13 +278,23 @@ impl Declarations {
             .and_then(|&index| self.functions.get(index))
             .filter(|function| function.definition == definition)
         else {
-            // These roles reject a written non-const marker before publishing
-            // the conditional member row.
+            // Imported const trait members encode conditional eligibility in
+            // their validated header; an ordinary row on a const trait marks a
+            // runtime-only (`#[rustc_non_const_trait_method]`) member.
             if self
                 .imported_conditional_member_trait(definition)?
                 .is_some()
             {
                 return Ok(false);
+            }
+            if self
+                .declaration_header(definition)?
+                .is_some_and(|header| header.declaration.source().is_none())
+            {
+                return Ok(self
+                    .associated
+                    .trait_owner(definition)
+                    .is_some_and(|owner| self.associated.constant_trait(owner) == Some(true)));
             }
             return Err("trait member constness lacks its actual function");
         };

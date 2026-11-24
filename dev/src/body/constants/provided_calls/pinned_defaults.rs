@@ -23,10 +23,18 @@ pub(super) fn defining(
     let header = facts
         .declaration_header(definition)?
         .ok_or("imported provided body lost its canonical declaration")?;
-    if header.body != Some(body.source)
-        || facts
-            .imported_conditional_member_trait(definition)?
-            .is_none()
+    if header.body != Some(body.source) {
+        return Err("imported provided body changed its actual conditional owner");
+    }
+    if facts.nonconst_trait_member(definition)? {
+        if body.const_context {
+            return Err("non-const trait methods cannot be called in const contexts");
+        }
+        return Ok(false);
+    }
+    if facts
+        .imported_conditional_member_trait(definition)?
+        .is_none()
     {
         return Err("imported provided body changed its actual conditional owner");
     }
@@ -140,8 +148,8 @@ impl Calls {
     }
 }
 
-/// An instantiated imported const default may call another const default;
-/// runtime execution and CTFE still re-prove the reached target's const impl.
+/// An imported const function or const default may call a conditional const
+/// trait member; runtime execution and CTFE still re-prove the selected impl.
 pub(in crate::body::constants) fn check_instance(
     facts: &Declarations,
     body: &Body,
@@ -152,25 +160,29 @@ pub(in crate::body::constants) fn check_instance(
     let Owner::Function {
         definition,
         signature,
-        execution: Some(_),
+        execution,
     } = body.owner
     else {
         return Err("imported provided instance lost its callable owner");
     };
-    let Some(instance) = body.instance else {
-        return Err("imported provided instance lost its concrete specialization");
-    };
     let header = facts
         .declaration_header(definition)?
         .ok_or("imported provided instance lost its canonical declaration")?;
+    let matched = match body.instance {
+        Some(instance) => {
+            execution.is_some()
+                && matches!(
+                    facts.types.kind(instance.ty()),
+                    Some(Kind::FunctionItem { item, signature: actual, .. })
+                        if item.0 == definition.0 && actual == signature
+                )
+        }
+        None => execution.is_none() && header.signature == signature,
+    };
     if !body.const_context
         || header.body != Some(body.source)
-        || !facts.imported_const_default(definition)?
-        || !matches!(
-            facts.types.kind(instance.ty()),
-            Some(Kind::FunctionItem { item, signature: actual, .. })
-                if item.0 == definition.0 && actual == signature
-        )
+        || !(facts.is_const_function(definition) || facts.imported_const_default(definition)?)
+        || !matched
     {
         return Err("imported provided instance changed its authenticated const default");
     }
@@ -196,22 +208,21 @@ pub(in crate::body::constants) fn check_instance(
     let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(target.ty) else {
         return Err("imported provided call requires its actual direct member");
     };
-    if !matches!(target.kind, Rvalue::Function(actual) if actual.0 == item.0)
+    let target_definition = DefId(item.0);
+    if !matches!(target.kind, Rvalue::Function(actual) if actual == target_definition)
+        || facts.nonconst_trait_member(target_definition)?
         || facts
-            .const_default_member(crate::types::instance::Instance::new(
-                &facts.types,
-                target.ty,
-            )?)?
+            .imported_conditional_member_trait(target_definition)?
             .is_none()
     {
         return Err("imported provided instance call requires an actual const default target");
     }
     let Some(Kind::Function {
         bound_regions: 0,
-        unsafe_: false,
         convention: crate::types::callable::Convention::RUST,
         parameters,
         result,
+        ..
     }) = facts.types.kind(call_signature)
     else {
         return Err("imported provided call lost its opened safe Rust signature");

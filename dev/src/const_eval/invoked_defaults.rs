@@ -13,24 +13,28 @@ fn imported_caller(facts: &Declarations, body: &Code) -> Result<(), &'static str
     let crate::body::ir::Owner::Function {
         definition,
         signature,
-        execution: Some(_),
+        execution,
     } = body.owner
     else {
         return Err("imported const default caller lost its materialized function owner");
     };
-    let Some(instance) = body.instance else {
-        return Err("imported const default caller lost its concrete instance");
-    };
     let header = facts
         .declaration_header(definition)?
         .ok_or("imported const default caller lost its canonical declaration")?;
+    let matched = match body.instance {
+        Some(instance) => {
+            execution.is_some()
+                && matches!(
+                    facts.types.kind(instance.ty()),
+                    Some(Kind::FunctionItem { item, signature: actual, .. })
+                        if item.0 == definition.0 && actual == signature
+                )
+        }
+        None => execution.is_none() && header.signature == signature,
+    };
     if header.body != Some(body.source)
-        || !facts.imported_const_default(definition)?
-        || !matches!(
-            facts.types.kind(instance.ty()),
-            Some(Kind::FunctionItem { item, signature: actual, .. })
-                if item.0 == definition.0 && actual == signature
-        )
+        || !(facts.is_const_function(definition) || facts.imported_const_default(definition)?)
+        || !matched
     {
         return Err("imported const default caller changed its authenticated body or instance");
     }

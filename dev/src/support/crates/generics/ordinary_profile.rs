@@ -206,12 +206,14 @@ fn validate_with(
             member_safety(rows, headers, header, work)?;
         }
     }
+    let modern = binding == BindingProfile::BodyOperations;
     for clause in &rows.clauses {
         work.charge(1)?;
-        let qualified = roles.callables.callable(clause.owner)
+        let qualified = modern
+            || roles.callables.callable(clause.owner)
             || roles.conditional_role_input(rows, clause)
             || roles.conditional_iterator_input(rows, headers, clause, work)?;
-        ordinary(&clause.requirement, qualified)?;
+        ordinary(&clause.requirement, qualified, modern)?;
     }
     originals(rows, headers, work, profile, binding, features, &roles)?;
     body_inputs(
@@ -352,6 +354,7 @@ fn trait_headers(
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
             || flags & TraitFlags::CONST != 0
+                && roles.definition_policies == 0
                 && !conversion
                 && !operator
                 && !range
@@ -557,16 +560,33 @@ fn trait_const_method(
     let Some(owner) = roles.const_trait_impl(rows, headers, implementation, work)? else {
         return Ok(false);
     };
+    let modern = roles.definition_policies != 0;
     Ok(conversions::method(
         rows,
         headers,
         header,
-        (false, roles.definition_policies != 0),
+        (modern && roles.languages, modern),
         Constness::Const,
         None,
         work,
-    )? || roles.dereferences.contains(&Some(owner))
+    )? || (modern || roles.dereferences.contains(&Some(owner)))
         && captured::method(rows, headers, header, (true, Constness::Const), work)?)
+}
+
+fn ordinary_trait_default(
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = header.parent.filter(|_| {
+        header.constness == Constness::Ordinary && matches!(header.body, FunctionBody::Original(_))
+    }) else {
+        return Ok(false);
+    };
+    Ok(matches!(
+        headers.header(parent, work)?,
+        Some(super::super::HeaderRef::Trait(_))
+    ))
 }
 
 /// Version thirteen: an inherent method may be `const`. Its original is then
@@ -650,6 +670,7 @@ fn functions(
         require_public_callable(header, free_effects, bodies)?;
         let associated = provided_default
             || trait_const
+            || (roles.definition_policies != 0 && ordinary_trait_default(headers, header, work)?)
             || associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
@@ -890,7 +911,9 @@ fn defining_default(
         && let Some(super::super::HeaderRef::Function(index)) = headers.header(member, work)?
     {
         let function = &rows.functions[index as usize];
-        if function.parent == Some(trait_.declaration) && defaults.provided(function) {
+        if function.parent == Some(trait_.declaration)
+            && defaults.provided(rows, headers, function, work)?
+        {
             return Ok(());
         }
     }
@@ -915,12 +938,12 @@ fn body_inputs(
             defining_default(rows, headers, builtins.environment, defaults, work)?;
             for request in &builtins.predicates {
                 work.charge(1)?;
-                ordinary(&request.value, false)?;
+                ordinary(&request.value, declaration_policies, declaration_policies)?;
             }
         }
         for request in &input.type_assumptions {
             work.charge(1)?;
-            ordinary(&request.value, false)?;
+            ordinary(&request.value, false, false)?;
         }
         normalization_ownership(input, work, regional, declaration_policies)?;
         for obligation in &input.obligations {
@@ -1004,13 +1027,24 @@ fn recipes(
     }
     Ok(())
 }
-/// `callable` admits the conditional hierarchy of an actual callable role.
-fn ordinary(request: &super::super::Requirement, callable: bool) -> Result<(), &'static str> {
+/// `conditional` admits `[const]` bounds; `unconditional` admits v14 `const` bounds.
+fn ordinary(
+    request: &super::super::Requirement,
+    conditional: bool,
+    unconditional: bool,
+) -> Result<(), &'static str> {
     if matches!(request, super::super::Requirement::Outlives(_)) {
         return Err("standalone regional clauses require their explicit wider header consumer");
     }
-    if matches!(request, super::super::Requirement::Trait { effect, .. } if *effect != Constness::Ordinary && !(callable && *effect == Constness::Conditional))
-    {
+    let allowed = match request {
+        super::super::Requirement::Trait { effect, .. } => match effect {
+            Constness::Ordinary => true,
+            Constness::Conditional => conditional,
+            Constness::Const => unconditional,
+        },
+        _ => true,
+    };
+    if !allowed {
         return Err("source qualified body request requires a wider source profile");
     }
     Ok(())
@@ -1103,6 +1137,7 @@ impl Bindings {
             clone_from: self.clone_from,
             iterator_defaults: self.iterator_defaults,
             comparisons: self.comparisons,
+            general: self.definition_policies != 0,
         }
     }
 
@@ -1125,16 +1160,18 @@ impl Bindings {
         let Some(application) = implementation.trait_application else {
             return Ok(None);
         };
+        let modern = self.definition_policies != 0;
         if !implementation.constant
-            || implementation.unsafe_
+            || (implementation.unsafe_ && !(modern && self.languages))
             || !implementation.polarity.is_positive()
-            || self.for_traits[1].is_none()
+            || (!modern
+                && self.for_traits[1].is_none()
                 && self
                     .binary_operators
                     .iter()
                     .chain(&self.dereferences)
                     .chain(&self.comparisons)
-                    .all(Option::is_none)
+                    .all(Option::is_none))
         {
             return Ok(None);
         }
@@ -1147,14 +1184,15 @@ impl Bindings {
         if declaration.artifact.0 != 0 {
             return Ok(None);
         }
-        if let Some(iteration) = self.iterator_blanket()
+        if !modern
+            && let Some(iteration) = self.iterator_blanket()
             && declaration.declaration == iteration.into_trait
         {
             return iteration
                 .check(rows, headers, implementation, work)
                 .map(|valid| valid.then_some(declaration.declaration));
         }
-        if !self.const_operator(declaration.declaration) {
+        if !modern && !self.const_operator(declaration.declaration) {
             return Ok(None);
         }
         let Some(super::super::HeaderRef::Trait(index)) =
@@ -1252,10 +1290,13 @@ impl Bindings {
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        let Some(owner) = function
-            .parent
-            .filter(|_| self.default_traits().provided(function))
-        else {
+        if !self
+            .default_traits()
+            .provided(rows, headers, function, work)?
+        {
+            return Ok(false);
+        }
+        let Some(owner) = function.parent else {
             return Ok(false);
         };
         if !matches!(headers.header(owner, work)?, Some(super::super::HeaderRef::Trait(index))
@@ -1294,14 +1335,30 @@ impl Bindings {
             return Ok(true);
         }
         let operator = function.parent.filter(|&owner| self.const_operator(owner));
-        conversions::required_member(
+        if conversions::required_member(
             rows,
             headers,
             function,
             operator.or(self.conversion),
             operator.is_some(),
             work,
-        )
+        )? {
+            return Ok(true);
+        }
+        if self.definition_policies == 0
+            || function.body != FunctionBody::Absent
+            || function.constness != Constness::Conditional
+        {
+            return Ok(false);
+        }
+        let Some(owner) = function.parent else {
+            return Ok(false);
+        };
+        Ok(matches!(
+            headers.header(owner, work)?,
+            Some(super::super::HeaderRef::Trait(index))
+                if rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0
+        ))
     }
 
     fn marker(

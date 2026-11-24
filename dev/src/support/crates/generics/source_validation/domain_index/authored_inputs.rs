@@ -1,7 +1,7 @@
 //! Raw original inputs retain complete ownership; they are requests for reproof.
 #[path = "input_ports/obligation_ports.rs"]
 mod obligations;
-use super::{Context, DomainIndex, HeaderRef, Work, s};
+use super::{Context, DomainIndex, HeaderRef, OriginalHeader, Work, s};
 
 impl DomainIndex<'_, '_> {
     pub(super) fn input_ports(
@@ -124,7 +124,13 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let header = self.original_header(context.owner, work)?;
-        let default = if let Some(parent) = header.parent() {
+        let conditional = !self.declaration_policies
+            || matches!(
+                header,
+                OriginalHeader::Function(function)
+                    if function.constness == crate::support::constness::Constness::Conditional
+            );
+        let default = if conditional && let Some(parent) = header.parent() {
             match self.headers.header(parent, work)? {
                 Some(HeaderRef::Trait(index))
                     if self.headers.rows().traits[index as usize].flags.bits()

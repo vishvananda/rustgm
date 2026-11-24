@@ -219,15 +219,17 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<(), Error> {
-        self.reject_profiled_advisory_transport(report, definition, false)
+        self.reject_profiled_advisory_transport(report, definition, false, false)
     }
-    /// `cold_rows` is true exactly when the selected profile carries the
-    /// version-thirteen cold advisory column bit.
+    /// `cold_rows` is true for version-thirteen cold advisory rows;
+    /// `nonconst_members` is true for version-fourteen const-trait member
+    /// constness transport.
     pub(crate) fn reject_profiled_advisory_transport(
         &self,
         report: &Report,
         definition: DefId,
         cold_rows: bool,
+        nonconst_members: bool,
     ) -> Result<(), Error> {
         let actual = report
             .resolution
@@ -248,10 +250,11 @@ impl Declarations {
                 "always-comptime source contracts require a wider transport profile",
             ));
         }
-        if self
-            .associated
-            .trait_owner(definition)
-            .is_some_and(|parent| self.associated.constant_trait(parent) == Some(true))
+        if !nonconst_members
+            && self
+                .associated
+                .trait_owner(definition)
+                .is_some_and(|parent| self.associated.constant_trait(parent) == Some(true))
             && matches!(
                 self.source_non_const_trait_method_contract(report, definition)?,
                 ContractKnowledge::KnownPresent(_)

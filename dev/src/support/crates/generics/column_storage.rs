@@ -302,8 +302,11 @@ impl<'a> ValidatedView<'a> {
             ),
             Some(HeaderRef::Function(index)) => {
                 let function = &self.functions[index as usize];
-                function.constness == crate::support::constness::Constness::Conditional
-                    && matches!(function.body, FunctionBody::Original(_))
+                matches!(
+                    function.constness,
+                    crate::support::constness::Constness::Conditional
+                        | crate::support::constness::Constness::Ordinary
+                ) && matches!(function.body, FunctionBody::Original(_))
             }
             _ => false,
         }

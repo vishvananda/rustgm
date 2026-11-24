@@ -55,15 +55,16 @@ impl LeafClauses for Ordinary<'_> {
     fn const_arguments(&self) -> bool {
         self.1.is_some_and(s::Profile::declaration_policies)
     }
-    /// This consumer's row validation admits a conditional effect only on an
-    /// actual callable role's own hierarchy (`Fn: [const] FnMut<Args>`).
+    /// Version thirteen admits conditional bounds on callable roles; version
+    /// fourteen admits conditional and unconditional const trait bounds.
     fn application(&self, bound: Bound) -> Result<ApplicationId, Error> {
-        let (Bound::Trait(id) | Bound::MaybeConstTrait(id)) = bound else {
-            return Err(error(
+        match bound {
+            Bound::Trait(id) | Bound::MaybeConstTrait(id) => Ok(id),
+            Bound::ConstTrait(id) if self.1.is_some_and(s::Profile::declaration_policies) => Ok(id),
+            _ => Err(error(
                 "source assumption is outside the ordinary actual trait profile",
-            ));
-        };
-        Ok(id)
+            )),
+        }
     }
 }
 

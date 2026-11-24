@@ -237,7 +237,8 @@ impl Declarations {
         Ok(None)
     }
 
-    /// Imported conditional methods come from witnessed language roles.
+    /// Imported conditional methods come from validated conditional headers or
+    /// witnessed language roles.
     pub(crate) fn imported_conditional_member_trait(
         &self,
         definition: DefId,
@@ -251,6 +252,14 @@ impl Declarations {
         else {
             return Ok(None);
         };
+        if self.associated.constant_trait(owner) == Some(true)
+            && self
+                .crates
+                .as_deref()
+                .is_some_and(|linkage| linkage.original_conditional(definition))
+        {
+            return Ok(Some(owner));
+        }
         if header.body.is_none() && self.imported_const_operator_role(owner)?.is_some() {
             return Ok(Some(owner));
         }
@@ -303,7 +312,13 @@ impl Declarations {
                 definition,
                 LangItem::Iterator,
                 &LangItem::PROVIDED_ITERATOR_METHODS,
-            )?)
+            )?
+            || (self
+                .imported_conditional_member_trait(definition)?
+                .is_some()
+                && self.declaration_header(definition)?.is_some_and(|header| {
+                    header.declaration.source().is_none() && header.body.is_some()
+                })))
     }
 
     pub(crate) fn imported_iterator_fold(&self, definition: DefId) -> Result<bool, &'static str> {

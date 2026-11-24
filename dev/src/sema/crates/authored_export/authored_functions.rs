@@ -572,14 +572,6 @@ fn effective_impl_constness(
         .as_deref()
         .ok_or("source effective const method lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let roles = s::Profile::CONST_BINARY_ROLES
-        .into_iter()
-        .chain(s::Profile::CONST_DEREF_ROLES)
-        .chain(LangItem::COMPARISON_TRAITS)
-        .map(|role| catalog.language(role));
-    if catalog.language(LangItem::IntoIter).is_none() && roles.clone().all(|role| role.is_none()) {
-        return Ok(false);
-    }
     let implementations = facts
         .generics
         .implementations
@@ -599,19 +591,19 @@ fn effective_impl_constness(
     if implementation.source != owner.source {
         return Ok(false);
     }
-    if roles
-        .flatten()
-        .any(|role| role.definition.0 == target.item.0)
-    {
-        return Ok(true);
-    }
-    crate::sema::compiler_items::for_roles::source_blanket_member(
+    if matches!(
+        facts.types.kind(implementation.predicate.ty),
+        Some(Kind::Parameter(_))
+    ) && crate::sema::compiler_items::for_roles::source_blanket_member(
         facts,
         catalog,
         implementation,
         target.item,
         definition,
-    )
+    )? {
+        return Ok(true);
+    }
+    Ok(facts.associated.constant_trait(DefId(target.item.0)) == Some(true))
 }
 
 /// The actual const trait supplies the declaration's conditional effect. The
@@ -642,38 +634,10 @@ fn conditional_trait_member(
         .as_deref()
         .ok_or("conversion member lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let mut selected = if roles.declaration_policies {
-        // The exact language role owns this member's unwritten effect.
-        s::Profile::CONST_BINARY_ROLES
-            .into_iter()
-            .chain(s::Profile::CONST_DEREF_ROLES)
-            .find_map(|role| {
-                catalog
-                    .language(role)
-                    .filter(|role| role.definition == definition)
-            })
-    } else {
-        None
-    };
-    let comparison = if roles.declaration_policies {
-        comparison_trait(catalog, definition)?
-    } else {
-        None
-    };
-    selected = selected.or(comparison);
-    if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
-        return Err("source non-const operator method requires its actual policy transport");
+    if roles.declaration_policies {
+        return policy_conditional_member(report, facts, function, owner_id, owner, definition);
     }
-    if roles.declaration_policies
-        && let Some((parent, [_, _, subtract])) =
-            crate::sema::compiler_items::source_range_headers(facts)
-        && subtract.definition == function.definition
-    {
-        if facts.nonconst_trait_member(function.definition)? {
-            return Err("source RangeSub requires its actual conditional method effect");
-        }
-        selected = Some(parent);
-    }
+    let mut selected = None;
     if roles.callables {
         for role in [LangItem::FnOnce, LangItem::FnMut, LangItem::Fn] {
             if let Some(found) = catalog.header_role(role)?
@@ -682,17 +646,6 @@ fn conditional_trait_member(
                 selected = Some(found);
             }
         }
-    }
-    let defining = if roles.declaration_policies {
-        conditional_definition_trait(report, facts, function, definition)?
-    } else {
-        None
-    };
-    selected = selected.or(defining);
-    if roles.declaration_policies
-        && let Some(role) = required_protocol_trait(facts, function, owner)?
-    {
-        selected = Some(role);
     }
     let role = match selected {
         Some(role) => role,
@@ -703,7 +656,7 @@ fn conditional_trait_member(
     if role.definition != definition {
         return Err("conditional member belongs to another actual trait");
     }
-    if function.body.is_some() && defining.is_none() && comparison.is_none() {
+    if function.body.is_some() {
         return Err("conversion trait defaults require their actual body transport");
     }
     if role.parent.is_some()
@@ -712,6 +665,53 @@ fn conditional_trait_member(
     {
         return Err("conversion member changed its actual source trait owner");
     }
+    require_trait_function_header(report, function)?;
+    Ok(true)
+}
+
+fn policy_conditional_member(
+    report: &Report,
+    facts: &Declarations,
+    function: &crate::sema::model::Function,
+    owner_id: crate::sema::associated::OwnerId,
+    owner: &crate::sema::associated::Owner,
+    definition: DefId,
+) -> Result<bool, &'static str> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("conversion member lost its actual language catalog")?;
+    let operator = s::Profile::CONST_BINARY_ROLES
+        .into_iter()
+        .chain(s::Profile::CONST_DEREF_ROLES)
+        .any(|role| {
+            catalog
+                .language(role)
+                .is_some_and(|actual| actual.definition == definition)
+        })
+        || comparison_trait(catalog, definition)?.is_some();
+    if operator && facts.nonconst_trait_member(function.definition)? {
+        return Err("source non-const operator method requires its actual policy transport");
+    }
+    if let Some((_, [_, _, subtract])) = crate::sema::compiler_items::source_range_headers(facts)
+        && subtract.definition == function.definition
+        && facts.nonconst_trait_member(function.definition)?
+    {
+        return Err("source RangeSub requires its actual conditional method effect");
+    }
+    let _ = conditional_definition_trait(report, facts, function, definition)?;
+    let _ = required_protocol_trait(facts, function, owner)?;
+    if owner.source.is_none() || facts.associated.owner(definition) != Some(owner_id) {
+        return Err("conversion member changed its actual source trait owner");
+    }
+    require_trait_function_header(report, function)?;
+    Ok(!facts.nonconst_trait_member(function.definition)?)
+}
+
+fn require_trait_function_header(
+    report: &Report,
+    function: &crate::sema::model::Function,
+) -> Result<(), &'static str> {
     let actual = report
         .resolution
         .definitions
@@ -721,7 +721,7 @@ fn conditional_trait_member(
     {
         return Err("conversion member changed its actual source function header");
     }
-    Ok(true)
+    Ok(())
 }
 
 fn conditional_definition_trait(

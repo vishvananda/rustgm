@@ -138,7 +138,7 @@ impl<'a> ProvidedCalls<'a> {
                 .ok_or("missing imported defining member context")?
                 .check(facts, body, statement, work);
         }
-        if body.source.source().is_none() && body.const_context && body.instance.is_some() {
+        if body.source.source().is_none() && body.const_context {
             return provided_calls::pinned_defaults::check_instance(facts, body, statement, work);
         }
         if defining_default && self.local.is_none() {

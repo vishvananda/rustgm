@@ -168,6 +168,7 @@ pub(super) fn header(
         declared,
         universals: raw.regions.total,
         constant,
+        conditional: raw.constness == crate::support::constness::Constness::Conditional,
     };
     Ok(Some(Callable {
         header,

@@ -168,7 +168,10 @@ impl<'a, 'b> Expected<'a, 'b> {
                     if profile.declaration_policies()
                         && matches!(
                             scoped.predicate.bound,
-                            Bound::Trait(_) | Bound::ProjectionEqual(_)
+                            Bound::Trait(_)
+                                | Bound::MaybeConstTrait(_)
+                                | Bound::ConstTrait(_)
+                                | Bound::ProjectionEqual(_)
                         )
                     {
                         return Ok(None);
@@ -187,7 +190,10 @@ impl<'a, 'b> Expected<'a, 'b> {
         };
         let header_premise = match predicate.bound {
             Bound::ProjectionEqual(_) => body_nodes,
-            Bound::Trait(_) | Bound::Outlives(_) => profile.declaration_policies(),
+            Bound::Trait(_)
+            | Bound::MaybeConstTrait(_)
+            | Bound::ConstTrait(_)
+            | Bound::Outlives(_) => profile.declaration_policies(),
             _ => false,
         };
         // The checked defining header owns these trait assumptions, and the

@@ -102,18 +102,24 @@ impl Checker<'_> {
             .imported_const_operator_role(definition)
             .map_err(Error::unlocated)?;
         let role = if operator.is_none() && declaration_policies {
-            // The v14 validator admitted only the exact generic iterator
-            // blanket at this checked role's parent.
+            // Keep validating the exact IntoIterator role when present, while
+            // v14 also admits general const trait implementations.
             crate::sema::compiler_items::for_roles::imported_into_trait(&self.facts, definition)
                 .map_err(Error::unlocated)?
         } else {
             operator
         };
-        let role = role.ok_or_else(unsupported)?;
-        self.facts
-            .associated
-            .require_imported_role(role)
-            .map_err(Error::unlocated)
+        if let Some(role) = role {
+            return self
+                .facts
+                .associated
+                .require_imported_role(role)
+                .map_err(Error::unlocated);
+        }
+        if declaration_policies {
+            return Ok(());
+        }
+        Err(unsupported())
     }
 
     fn require_imported_receiver_trait(&self, definition: DefId) -> Result<(), Error> {
@@ -166,11 +172,12 @@ impl Checker<'_> {
         .map_err(Error::unlocated)?;
         for &(expected, actual) in &members.methods {
             let Some(actual) = actual else {
-                if self
-                    .facts
-                    .imported_conditional_member_trait(expected)
-                    .map_err(Error::unlocated)?
-                    .is_some()
+                if (plan.declaration_policies
+                    || self
+                        .facts
+                        .imported_conditional_member_trait(expected)
+                        .map_err(Error::unlocated)?
+                        .is_some())
                     && self
                         .facts
                         .declaration_header(expected)

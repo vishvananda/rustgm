@@ -541,8 +541,11 @@ pub(super) fn effect_read(
 ) -> Result<Constness, &'static str> {
     let tag = read.reader.u8()?;
     // Version thirteen carries the conditional hierarchy of the callable roles;
-    // validation admits it only on an actual callable role's own clauses.
-    if tag != 0 && !(tag == 2 && read.profile.body_nodes()) {
+    // version fourteen also carries unconditional const trait clauses.
+    if tag != 0
+        && !(tag == 2 && read.profile.body_nodes())
+        && !(tag == 1 && read.profile.declaration_policies())
+    {
         read.require_provided(unsupported)?;
     }
     match tag {

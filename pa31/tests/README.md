@@ -96,6 +96,11 @@ client outlives rejection.
 module-owned `safe fn` C imports (`libm` shape) and function-local `extern "C"`
 imports duplicating a runtime-role symbol (`c_str::strlen` shape), plus private
 module access rejection in fresh clients.
+`spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
+`const trait` and `const unsafe trait` declarations, `const impl` and
+`const unsafe impl` unwritten-const methods (including lifetime-capturing
+impls), conditional provided defaults, `[const]` and `const` trait bounds, and
+`#[rustc_non_const_trait_method]` runtime-only methods across fresh clients.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

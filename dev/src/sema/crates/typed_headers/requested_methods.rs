@@ -280,6 +280,7 @@ fn callable(
         declared,
         universals: raw.regions.total,
         constant: is_constant(raw.constness)?,
+        conditional: false,
     };
     Ok(staged_headers::Callable {
         header,

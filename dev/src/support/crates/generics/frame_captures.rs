@@ -4,7 +4,7 @@ use super::{HeaderIndex, SourceRows};
 use crate::support::{
     constness::Constness,
     crates::{
-        generics::{BinderRef, TypeRef, Work, source as s},
+        generics::{BinderRef, Range, TypeRef, Work, source as s},
         owner_catalog::DeclarationRef,
     },
 };
@@ -163,22 +163,7 @@ fn same_self(
                     arguments: right,
                 },
             ) => {
-                let (left, right) = (left.slice(&rows.arguments)?, right.slice(&rows.arguments)?);
-                if a != b || left.len() != right.len() {
-                    return Err(error);
-                }
-                work.charge(left.len())?;
-                for (left, right) in left.iter().zip(right) {
-                    match (*left, *right) {
-                        (s::Argument::Type(left), s::Argument::Type(right)) => {
-                            pending.push((left, right));
-                        }
-                        (s::Argument::Region(left), s::Argument::Region(right)) => {
-                            same_region(rows, frames, left, right)?;
-                        }
-                        _ => return Err(error),
-                    }
-                }
+                same_nominal(rows, frames, (a, left), (b, right), &mut pending, work)?;
             }
             (
                 s::Type::Reference {
@@ -225,8 +210,51 @@ fn same_self(
                 }
                 pending.push((expected, actual));
             }
+            (s::Type::Slice(expected), s::Type::Slice(actual)) => {
+                pending.push((expected, actual));
+            }
+            (
+                s::Type::RawPointer {
+                    mutable: a,
+                    pointee: expected,
+                },
+                s::Type::RawPointer {
+                    mutable: b,
+                    pointee: actual,
+                },
+            ) if a == b => {
+                pending.push((expected, actual));
+            }
             (s::Type::Dynamic(left), s::Type::Dynamic(right)) => {
                 same_dynamic(rows, frames, (left, right), &mut pending, work)?;
+            }
+            _ => return Err(error),
+        }
+    }
+    Ok(())
+}
+
+fn same_nominal(
+    rows: &SourceRows,
+    frames: Frames,
+    (a, left): (s::DeclarationAddress, Range),
+    (b, right): (s::DeclarationAddress, Range),
+    pending: &mut Vec<(TypeRef, TypeRef)>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "source method receiver differs from its actual implementation Self";
+    let (left, right) = (left.slice(&rows.arguments)?, right.slice(&rows.arguments)?);
+    if a != b || left.len() != right.len() {
+        return Err(error);
+    }
+    work.charge(left.len())?;
+    for (left, right) in left.iter().zip(right) {
+        match (*left, *right) {
+            (s::Argument::Type(left), s::Argument::Type(right)) => {
+                pending.push((left, right));
+            }
+            (s::Argument::Region(left), s::Argument::Region(right)) => {
+                same_region(rows, frames, left, right)?;
             }
             _ => return Err(error),
         }

@@ -63,6 +63,7 @@ pub(super) struct Header {
     pub declared: usize,
     pub universals: u32,
     pub constant: bool,
+    pub conditional: bool,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Headers {
@@ -415,6 +416,12 @@ impl super::Linkage {
         } else {
             &header.inputs
         })
+    }
+    pub(crate) fn original_conditional(&self, definition: DefId) -> bool {
+        self.originals
+            .as_deref()
+            .and_then(|headers| headers.get(definition))
+            .is_some_and(|header| header.conditional)
     }
 }
 pub(crate) fn is_source_original(

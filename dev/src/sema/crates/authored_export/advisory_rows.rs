@@ -104,7 +104,12 @@ impl Stage {
             }
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
-            facts.reject_profiled_advisory_transport(report, definition, self.body_nodes())?;
+            facts.reject_profiled_advisory_transport(
+                report,
+                definition,
+                self.body_nodes(),
+                self.declaration_policies(),
+            )?;
             let view = facts.profiled_publication_header_contracts(
                 report,
                 definition,
