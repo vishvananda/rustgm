@@ -15,5 +15,11 @@
     "signature": "fn clone_from(&mut self, source: &Self)",
     "coupled_borrows": "fn clone_from<'a>(&'a mut self, source: &'a Self)",
     "coupled_diagnostic": "source clone_from changed its actual provided conditional declaration"
+  },
+  "constant": {
+    "client": "const-client.rs",
+    "observer": "observe-const.c",
+    "stdout": "73 42\n",
+    "ordinary_impl": "const impl base::Clone for Local"
   }
 }

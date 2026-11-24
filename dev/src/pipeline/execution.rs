@@ -614,7 +614,7 @@ impl Engine {
             return Err(Error::at(FileId(0), 0, "missing selected const function"));
         };
         let definition = DefId(item.0);
-        if self.imported_function(report, facts, instance, definition)? {
+        if self.imported_function(report, facts, instance, definition, default)? {
             return Ok(true);
         }
         if !facts.typed_function_bodies.contains(&definition) {
@@ -858,6 +858,7 @@ impl Engine {
         facts: &mut Declarations,
         instance: crate::types::instance::Instance,
         definition: DefId,
+        default: Option<&crate::sema::function_context::DefaultExecution>,
     ) -> Result<bool, Error> {
         let Some(header) = facts
             .declaration_header(definition)
@@ -868,7 +869,7 @@ impl Engine {
         if header.declaration.source().is_some() {
             return Ok(false);
         }
-        if !facts.is_const_function(definition) {
+        if !facts.is_const_function(definition) && default.is_none() {
             return Err(report.body_optional_error(None, "imported function is not declared const"));
         }
         // Identifying an imported declaration needs no defining environment.
@@ -892,7 +893,7 @@ impl Engine {
             instance,
             row.template(),
             row.contract(),
-            None,
+            default,
         )?;
         Ok(true)
     }

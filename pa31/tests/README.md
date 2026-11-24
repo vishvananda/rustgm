@@ -139,6 +139,8 @@ the provider's const `Clone` and `TrivialClone` declarations. Run
 `scripts/check_clone_role_transport.py` with the prebuilt compilers.
 The `--case default` variant runs the actual `clone_from` body and checks its
 late borrow binders and conditional `Destruct` premise.
+The `--case constant` variant also evaluates the imported body for a
+constant initializer and rejects an ordinary implementation at that call.
 `spec/source-iteration-transport/outcomes.json` checks item and empty paths
 through a fresh client's imported `Iterator::next`, `IntoIterator::into_iter`,
 and `Option` declarations. Run `scripts/check_iteration_role_transport.py`

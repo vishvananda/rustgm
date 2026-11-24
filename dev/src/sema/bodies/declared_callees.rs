@@ -130,7 +130,7 @@ impl Checker<'_> {
             return Ok(());
         }
         self.facts
-            .function_header(definition)
+            .declaration_header(definition)
             .map_err(|e| self.error(node, e))?
             .ok_or_else(|| self.error(node, "defining member target header is pending"))?;
         // The existing inference finish resolves this full receiver and all its

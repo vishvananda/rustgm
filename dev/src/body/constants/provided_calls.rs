@@ -778,7 +778,7 @@ fn source_member(
     }
     work.charge(4)?;
     let header = facts
-        .function_header(definition)?
+        .declaration_header(definition)?
         .ok_or("const member header is pending")?;
     work.charge(1)?;
     if facts.nonconst_trait_member(definition)? {

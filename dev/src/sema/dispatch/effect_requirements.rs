@@ -19,19 +19,7 @@ pub(super) fn check(
         return Err("const default requirements lost their function item");
     };
     let definition = crate::resolve::model::DefId(item.0);
-    let count = facts
-        .generics
-        .declared_predicates_in_scope(definition)
-        .count();
-    facts.charge_caller_inputs(
-        count.saturating_add(1),
-        count.saturating_mul(size_of::<Clause>()),
-    )?;
-    let clauses = facts
-        .generics
-        .declared_predicates_in_scope(definition)
-        .map(|located| located.value)
-        .collect::<Vec<_>>();
+    let clauses = declared_inputs(facts, definition)?;
     let mut fold = super::callable_substitution(facts, instance)?;
     for clause in clauses {
         facts.charge_caller_inputs(4, 0)?;
@@ -74,4 +62,35 @@ pub(super) fn check(
         }
     }
     Ok(())
+}
+
+fn declared_inputs(
+    facts: &Declarations,
+    definition: crate::resolve::model::DefId,
+) -> Result<Vec<Clause>, &'static str> {
+    if facts.imported_clone_default(definition)? {
+        // The checked Clone role has an ordinary Sized supertrait. Its provided
+        // member owns the conditional Destruct premise in its imported header.
+        let inputs = crate::sema::declaration_inputs::declared_own(
+            &facts.generics,
+            facts.crates.as_deref(),
+            definition,
+        )?;
+        reserve(facts, inputs.len())?;
+        return Ok(inputs.iter().map(|input| input.value).collect());
+    }
+    let inputs = facts.generics.declared_predicates_in_scope(definition);
+    reserve(facts, inputs.count())?;
+    Ok(facts
+        .generics
+        .declared_predicates_in_scope(definition)
+        .map(|input| input.value)
+        .collect())
+}
+
+fn reserve(facts: &Declarations, count: usize) -> Result<(), &'static str> {
+    facts.charge_caller_inputs(
+        count.saturating_add(1),
+        count.saturating_mul(size_of::<Clause>()),
+    )
 }

@@ -117,11 +117,20 @@ impl Machine<'_, '_> {
             return Err("selected const callback lost its complete function item");
         };
         let definition = DefId(item.0);
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
+        let header = facts
+            .declaration_header(definition)?
             .ok_or("selected const callback has no actual declaration")?;
+        let source = if let Some(local) = header.declaration.source() {
+            header
+                .body
+                .unwrap_or(crate::resolve::body_origin::BodyOrigin::Source(local))
+        } else if facts.imported_clone_default(definition)? {
+            header
+                .body
+                .ok_or("selected const default lost its actual imported body")?
+        } else {
+            return Err("selected const callback has no actual declaration");
+        };
         let Some((public, owned)) = code.owner.signatures() else {
             return Err("selected const callback has no paired callable signatures");
         };
@@ -145,8 +154,7 @@ impl Machine<'_, '_> {
             return Err("selected const callback changed its paired public/owned binders");
         }
         if self.bodies.functions.get(&target) != Some(&index)
-            || function.definition != definition
-            || code.source.source() != Some(function.body.unwrap_or(function.node))
+            || code.source != source
             || public != signature
             || result != code.result
             || code.owner.key(code.source) != crate::body::ir::BodyKey::Declaration(definition)

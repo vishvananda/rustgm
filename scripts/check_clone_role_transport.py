@@ -69,24 +69,40 @@ def reject_coupled_borrows(check, exporter, source, contract):
         raise ValueError("altered clone_from borrow binders published a source artifact")
 
 
+def reject_ordinary_const_impl(check, importer, artifact, client, rustc, contract):
+    text = client.read_bytes()
+    marker = contract["ordinary_impl"].encode()
+    if text.count(marker) != 1:
+        raise ValueError("Clone const client lost its exact const implementation")
+    source = check.folder / "ordinary-impl.rs"
+    source.write_bytes(text.replace(marker, marker.removeprefix(b"const ")))
+    check.run("rustc-ordinary-impl", [rustc.resolve(strict=True), "--edition=2024", "--crate-type=lib",
+              "--emit=metadata", "--extern", f"base={check.folder / 'libbase.rlib'}",
+              "-o", check.folder / "ordinary-impl.rmeta", source], 1, timeout=30,
+              environment={"RUSTC_BOOTSTRAP": "1"})
+    check.run("rustgm-ordinary-impl", [*importer, "--extern", f"base={artifact}",
+              "-o", check.folder / "ordinary-impl.lowir", source], 1, timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "default"), default="roles")
+    parser.add_argument("--case", choices=("roles", "default", "constant"), default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     contract = json.loads((FIXTURE / "outcomes.json").read_text())
     check = Check(args.app, args.out)
     source = FIXTURE / contract["provider"]
-    default = args.case == "default"
-    if default:
+    case = contract.get(args.case, contract)
+    if args.case != "roles":
         source = default_provider(check, source, contract["default"])
-    client = FIXTURE / (contract["default"]["client"] if default else contract["client"])
+    client = FIXTURE / case["client"]
     observer = check.folder / "observer.o"
-    check.run("observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer], timeout=15)
-    expected = contract["stdout"].encode()
+    observe = FIXTURE / case.get("observer", contract["observer"])
+    check.run("observer", ["cc", "-c", observe, "-o", observer], timeout=15)
+    expected = case.get("stdout", contract["stdout"]).encode()
     pinned(check, args.rustc, source, client, observer, expected)
 
     common = [check.app, *RUSTGM, "--crate-type=lib"]
@@ -105,8 +121,10 @@ def main():
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("execute", [native], timeout=15).stdout != expected:
         raise ValueError("the fresh client changed the imported const Clone contract")
-    if default:
-        reject_coupled_borrows(check, exporter, source, contract["default"])
+    if args.case == "constant":
+        reject_ordinary_const_impl(check, importer, artifact, client, args.rustc, case)
+    elif args.case == "default":
+        reject_coupled_borrows(check, exporter, source, case)
     else:
         reject_providers(check, exporter, source, contract)
         reject_consumers(check, importer, artifact, client, args.baseline, contract)

@@ -70,12 +70,12 @@ impl Declarations {
             return Err("non-const trait methods cannot be called in const contexts");
         }
         let header = self
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("const default requires its completed actual function header")?;
         if header.body.is_none() {
             return Err("source abstract const-trait member execution is not implemented");
         }
-        if header.declaration.source().is_none() {
+        if header.declaration.source().is_none() && !self.imported_clone_default(definition)? {
             return Err("const default requires its actual source body");
         }
         Ok(Some(definition))
@@ -91,18 +91,25 @@ impl Declarations {
         let definition = self
             .const_default_member(instance)?
             .ok_or("const default changed its actual trait member")?;
-        if !matches!(
-            self.source_non_const_trait_method_contract(report, definition)
-                .map_err(|_| "const default changed its current source member header")?,
-            ContractKnowledge::KnownAbsent
-        ) {
-            return Err("const default lost its completed current member contract");
-        }
-        super::super::dispatch::check_const_default(self, instance)?;
         let source = self
-            .function_header(definition)?
+            .declaration_header(definition)?
             .and_then(|header| header.body)
             .ok_or("const default lost its actual source body")?;
+        if source.source().is_some() {
+            if !matches!(
+                self.source_non_const_trait_method_contract(report, definition)
+                    .map_err(|_| "const default changed its current source member header")?,
+                ContractKnowledge::KnownAbsent
+            ) {
+                return Err("const default lost its completed current member contract");
+            }
+        } else {
+            self.source_bindings
+                .as_deref()
+                .ok_or("imported const default lost its actual provider")?
+                .require_provider_report(report)?;
+        }
+        super::super::dispatch::check_const_default(self, instance)?;
         if self.types.existing_arena_identity().is_none() {
             self.charge_caller_inputs(1, crate::types::arena::Identity::allocation_bytes())?;
         }
