@@ -89,7 +89,7 @@ impl OwnSlots {
             // A version-thirteen const slot shares the type slots' index space.
             ParameterKind::Type { .. } | ParameterKind::Const { .. } => {
                 if let ParameterKind::Const { ty } = slot.kind {
-                    const_parameter_type(types, ty)?;
+                    const_formal_type(types, ty)?;
                 }
                 let index = if self.leading_regions.is_some() {
                     self.types
@@ -504,6 +504,28 @@ pub(crate) fn const_parameter_type(
             Ok(scalar)
         }
         _ => Err("source const parameter type is outside the initial profile"),
+    }
+}
+
+/// The closed nominal domain is specific to v14. Its ordinary declaration,
+/// marker implementation, and owner environment are authenticated on import.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ConstFormalType {
+    Scalar(crate::support::crates::Scalar),
+    Nominal(DeclarationRef),
+}
+pub(crate) fn const_formal_type(
+    types: &[super::Type],
+    ty: super::TypeRef,
+) -> Result<ConstFormalType, &'static str> {
+    match types.get(ty.0 as usize) {
+        Some(&super::Type::Nominal {
+            declaration,
+            arguments,
+        }) if declaration.artifact.0 == 0 && arguments.start == arguments.end => {
+            Ok(ConstFormalType::Nominal(declaration.declaration))
+        }
+        _ => const_parameter_type(types, ty).map(ConstFormalType::Scalar),
     }
 }
 

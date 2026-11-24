@@ -263,7 +263,11 @@ impl Stage {
                         body: None,
                     };
                     let ty = self.ty(facts, ty, context)?;
-                    s::const_parameter_type(&self.rows.types, ty)?;
+                    if self.declaration_policies() {
+                        s::const_formal_type(&self.rows.types, ty)?;
+                    } else {
+                        s::const_parameter_type(&self.rows.types, ty)?;
+                    }
                     self.push_slot(
                         parameter.binding,
                         id,

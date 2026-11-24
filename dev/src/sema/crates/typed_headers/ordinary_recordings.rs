@@ -1,5 +1,6 @@
 //! Ordinary originals share the selected allocator, never selected authorization.
 use super::{Prepared, Ready, SignaturePair, error, numbering_records};
+use crate::sema::crates::typed_headers::mapped_source::slot_bindings;
 use crate::{
     resolve::{
         crates::{ReservationWork, unpaid_provided::RecipeView},
@@ -300,9 +301,11 @@ fn original_formals(
             },
             // Version thirteen: a const formal keeps its complete position.
             s::ParameterKind::Const { ty } => crate::types::parameters::ParameterKind::Const {
-                ty: crate::sema::crates::scalar(
-                    s::const_parameter_type(&rows.types, ty).map_err(error)?,
-                ),
+                ty: slot_bindings::find_const_type(
+                    &facts.types,
+                    s::const_formal_type(&rows.types, ty).map_err(error)?,
+                    |row| view.definition(row, work),
+                )?,
             },
             s::ParameterKind::Region => {
                 return Err(error(
@@ -311,7 +314,7 @@ fn original_formals(
             }
         };
         if parameter.owner != ItemId(view.definition(slot.owner, work)?.0)
-            || parameter.index != slot.index
+            || parameter.index != slot_bindings::type_index(&rows.declarations, slot)
             || parameter.kind != kind
         {
             return Err(error(

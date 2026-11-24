@@ -1582,10 +1582,25 @@ fn slot_bindings(
 ) -> Result<(), &'static str> {
     for slot in &rows.slots {
         work.charge(1)?;
-        // Version thirteen's const slot carries its type and nothing else.
-        if matches!(slot.kind, super::super::ParameterKind::Const { .. }) && slot.default.is_some()
-        {
-            return Err("source const parameter slot has a default");
+        if let super::super::ParameterKind::Const { ty } = slot.kind {
+            use super::super::ConstFormalType;
+            if slot.default.is_some() {
+                return Err("source const parameter slot has a default");
+            }
+            if let ConstFormalType::Nominal(owner) =
+                super::super::const_formal_type(&rows.types, ty)?
+            {
+                if profile != BindingProfile::BodyOperations {
+                    return Err("source nominal const formal requires body operations");
+                }
+                if !matches!(
+                    headers.header(owner, work)?,
+                    Some(super::super::HeaderRef::Nominal(_))
+                ) || headers.scopes().complete_slots(owner, work)? != 0
+                {
+                    return Err("source nominal const formal requires its closed nominal header");
+                }
+            }
         }
         if let Some(default) = slot.default {
             let Some(super::super::HeaderRef::Trait(index)) = headers.header(slot.owner, work)?

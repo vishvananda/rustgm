@@ -70,6 +70,10 @@ with the prebuilt RustGM and pinned Rust compilers.
 `panic_fmt` and `panic_nounwind` call signatures, caller location, and
 invalid role bindings. Run `scripts/check_runtime_panic_transport.py` with
 the pinned Rust compiler.
+`spec/source-nominal-const-formals/outcomes.json` checks fresh applications of
+imported enum and record const parameters and rejects a different nominal
+type. Run `scripts/check_nominal_const_formals.py` with the prebuilt compilers.
+
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

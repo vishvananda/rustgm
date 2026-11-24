@@ -68,15 +68,17 @@ pub(super) fn prepare(
                 })?;
                 Argument::Lifetime(RegionId::bound(0, index).map_err(error)?)
             }
-            // Validation admitted only an integer, bool or char row, which the
-            // consumer's own primitive names exactly.
             s::ParameterKind::Const { ty } => {
-                let scalar = s::const_parameter_type(&rows.types, ty).map_err(error)?;
+                let ty = intern_const_type(
+                    &mut facts.types,
+                    s::const_formal_type(&rows.types, ty).map_err(error)?,
+                    |row| context.definition(row, budget),
+                )?;
                 intern_const(
                     &mut facts.types,
                     owner,
                     type_index(&rows.declarations, slot),
-                    crate::sema::crates::scalar(scalar),
+                    ty,
                 )?
             }
         });
@@ -212,7 +214,42 @@ pub(in crate::sema::crates::typed_headers) fn intern_type(
         .map(Argument::Type)
         .map_err(error)
 }
-/// A version-thirteen const slot: a rigid const parameter of `ty`, named by
+fn const_nominal(declaration: crate::resolve::model::DefId) -> Kind {
+    Kind::Adt(ItemId(declaration.0), crate::types::GenericArgs::EMPTY)
+}
+
+/// Type node capacity is prepaid with the owning structural recipe table.
+pub(in crate::sema::crates::typed_headers) fn intern_const_type(
+    store: &mut crate::types::Store,
+    ty: s::ConstFormalType,
+    remap: impl FnOnce(
+        crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<crate::resolve::model::DefId, Error>,
+) -> Result<crate::types::TypeId, Error> {
+    match ty {
+        s::ConstFormalType::Scalar(scalar) => Ok(crate::sema::crates::scalar(scalar)),
+        s::ConstFormalType::Nominal(owner) => {
+            store.intern(const_nominal(remap(owner)?)).map_err(error)
+        }
+    }
+}
+
+pub(in crate::sema::crates::typed_headers) fn find_const_type(
+    store: &crate::types::Store,
+    ty: s::ConstFormalType,
+    remap: impl FnOnce(
+        crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Result<crate::resolve::model::DefId, Error>,
+) -> Result<crate::types::TypeId, Error> {
+    match ty {
+        s::ConstFormalType::Scalar(scalar) => Ok(crate::sema::crates::scalar(scalar)),
+        s::ConstFormalType::Nominal(owner) => store
+            .find_kind(const_nominal(remap(owner)?))
+            .ok_or_else(|| error("const formal lost its exact canonical nominal")),
+    }
+}
+
+/// A rigid const parameter of `ty`, named by
 /// its canonical const term exactly as a local const parameter is.
 pub(in crate::sema::crates::typed_headers) fn intern_const(
     store: &mut crate::types::Store,

@@ -70,8 +70,8 @@ pub(crate) use descriptor::{
     NamespaceColumns, ProvidedContractRows, UnpublishedNamespace, callable_path, nested_original,
 };
 pub use inputs::*;
+pub(crate) use scopes::{ConstFormalType, const_formal_type, const_parameter_type, const_value};
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
-pub(crate) use scopes::{const_parameter_type, const_value};
 pub(crate) use validation::HeaderRows;
 pub use validation::{
     AllocationOrdinals, DomainIndex, DomainWork, HeaderIndex, HeaderRef, InputWork, NumberingUnits,

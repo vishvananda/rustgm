@@ -1,0 +1,9 @@
+{
+  "marker_provider": "pa31/tests/spec/source-const-parameter-role",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "19 41\n",
+  "rustc_rejected": "mismatched types",
+  "rustgm_rejected": "incompatible types"
+}

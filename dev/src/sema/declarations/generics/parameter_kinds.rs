@@ -4,6 +4,8 @@
 mod feature_bound_tests;
 use super::{Argument, Checker, ConstKind, DefId, Error, NodeKey, Type, TypeId};
 use crate::{
+    resolve::{body_origin::DeclarationOrigin, model::DefKind},
+    sema::{model::Declarations, nominals::Proof},
     support::bindings::LangItem,
     types::{
         Primitive,
@@ -57,19 +59,29 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn validate_const_parameter_types(
         &mut self,
     ) -> Result<(), Error> {
-        if !self
+        let local = self
             .report
             .package
             .requested_aggregate_const_parameters()
-            .map_err(Error::unlocated)?
-        {
+            .map_err(Error::unlocated)?;
+        let imported = self.report.package.source_client().is_some();
+        if !local && !imported {
             return Ok(());
         }
-        crate::sema::header_attributes::reserve_source_contracts(
-            &mut self.facts,
-            self.report.resolution.definitions.len(),
-            0,
-        )?;
+        if local {
+            crate::sema::header_attributes::reserve_source_contracts(
+                &mut self.facts,
+                self.report.resolution.definitions.len(),
+                0,
+            )?;
+        }
+        if imported {
+            crate::sema::crates::charge_source_headers(
+                &mut self.facts,
+                self.report.resolution.definitions.len(),
+                0,
+            )?;
+        }
         for index in 0..self.report.resolution.definitions.len() {
             let owner = DefId(
                 u32::try_from(index)
@@ -91,103 +103,136 @@ impl Checker<'_> {
                         "const parameter declaration lost its rigid identity",
                     ));
                 };
-                let Some(key) =
-                    self.report.resolution.definitions[parameter.binding.0 as usize].node
-                else {
-                    if let Some(origins) = self
-                        .facts
-                        .crates
-                        .as_deref()
-                        .and_then(|l| l.origin_catalog())
-                        && let Some(binding) = origins
-                            .declaration_if_imported(parameter.binding)
-                            .map_err(Error::unlocated)?
-                    {
-                        // The sealed source-interface slot has already checked its scalar type.
-                        origins
-                            .validate_declaration(
-                                binding,
-                                parameter.binding,
-                                crate::resolve::model::DefKind::Generic,
-                            )
-                            .map_err(Error::unlocated)?;
-                        continue;
-                    }
-                    return Err(Error::unlocated(
-                        "const parameter lacks its actual local source",
-                    ));
-                };
                 let ty = self
                     .facts
                     .types
                     .const_type(id)
-                    .ok_or_else(|| self.error(key, "const parameter lost its actual type"))?;
-                // Each environment proof retains its own lifetime witnesses, so
-                // the next parameter's proof is numbered after the retained one.
+                    .ok_or_else(|| Error::unlocated("const parameter lost its actual type"))?;
+                let Some(key) =
+                    self.report.resolution.definitions[parameter.binding.0 as usize].node
+                else {
+                    if !matches!(self.facts.types.kind(ty), Some(Type::Primitive(_))) {
+                        self.validate_imported_const_parameter(owner, parameter.binding, ty)?;
+                    }
+                    continue;
+                };
+                if !local {
+                    continue;
+                }
+                // Each environment proof retains its own lifetime witnesses.
                 let environment = self.facts.generics.environments.get(&owner).cloned();
                 let mut proof = self.declaration_proof(owner, environment);
-                self.prove_const_parameter_type(key, ty, &mut proof)?;
+                prove_const_parameter_type(&mut self.facts, ty, &mut proof, false)
+                    .map_err(|e| self.error(key, e))?;
                 self.retain_trait_proof(owner, key, &mut proof);
             }
         }
         Ok(())
     }
-    fn prove_const_parameter_type(
+    fn validate_imported_const_parameter(
         &mut self,
-        key: NodeKey,
+        owner: DefId,
+        binding: DefId,
         ty: TypeId,
-        proof: &mut crate::sema::nominals::Proof,
     ) -> Result<(), Error> {
-        let declaration = self
-            .facts
-            .source_bindings
+        let facts = &mut self.facts;
+        let catalog = facts
+            .crates
             .as_deref()
+            .and_then(|linkage| linkage.origin_catalog())
+            .ok_or_else(|| Error::unlocated("imported const formal lost its actual catalog"))?;
+        let parameter = catalog.declaration(binding).map_err(Error::unlocated)?;
+        catalog
+            .validate_declaration(parameter, binding, DefKind::Generic)
+            .map_err(Error::unlocated)?;
+        let environment = facts
+            .generics
+            .environments
+            .get(&owner)
+            .cloned()
             .ok_or_else(|| {
-                self.error(
-                    key,
-                    "const parameter proof requires its actual source catalog",
-                )
-            })?
-            .validated_role(LangItem::ConstParamTy)
-            .map_err(|e| self.error(key, e))?
-            .ok_or_else(|| self.error(key, "const parameter type requires actual ConstParamTy"))?;
-        crate::sema::header_attributes::reserve_source_contracts(&mut self.facts, 8, 0)?;
-        let application = crate::types::traits::Application {
-            item: crate::types::ItemId(declaration.definition.0),
-            arguments: crate::types::GenericArgs::EMPTY,
-        };
-        let application = if let Some(id) = self.facts.types.find_trait_application(application) {
-            id
-        } else {
-            let growth = self.facts.types.trait_application_growth();
-            crate::sema::header_attributes::reserve_source_contracts(
-                &mut self.facts,
-                growth.work,
-                growth.bytes,
-            )?;
-            self.facts
-                .types
-                .intern_trait_application(application)
-                .map_err(|e| self.error(key, e))?
-        };
-        // rustc's `check_param_wf` proves `Ty: ConstParamTy_` under the
-        // owner's param-env, so the owner's `#[unstable_feature_bound]` proves
-        // an impl's feature condition. The type itself is already closed.
-        if !proof
-            .prove(
-                &mut self.facts,
-                Predicate {
-                    ty,
-                    bound: Bound::Trait(application),
-                },
-            )
-            .map_err(|e| self.error(key, e))?
-        {
-            return Err(self.error(
-                key,
-                "const parameter type must implement actual ConstParamTy",
-            ));
+                Error::unlocated("imported const formal lacks its declaration environment")
+            })?;
+        let universals = u32::try_from(
+            facts
+                .generics
+                .parameters_in_scope(owner)
+                .filter(|parameter| matches!(parameter.argument, Argument::Lifetime(_)))
+                .count(),
+        )
+        .map_err(|_| Error::unlocated("imported const formal lifetime domain is too large"))?;
+        let mut proof = Proof::for_imported_declaration(environment, universals);
+        prove_const_parameter_type(facts, ty, &mut proof, true).map_err(Error::unlocated)?;
+        let mut work = proof.own_work();
+        if let Some(obligations) = proof.take_trait_proof() {
+            let mut queries = crate::types::outlives::Queries::new(
+                &self.facts.types,
+                &self.facts.lifetimes.nominal_requirements,
+                &self.facts.lifetimes.callables,
+            );
+            let mut constraints = self
+                .trait_region_environment_count(owner, &mut queries, universals)
+                .map_err(Error::unlocated)?;
+            obligations
+                .require(&mut constraints, &mut queries)
+                .map_err(Error::unlocated)?;
+            constraints
+                .solve()
+                .map_err(|e| Error::unlocated(e.to_string()))?;
+            work = work.saturating_add(queries.steps());
         }
-        Ok(())
+        crate::sema::crates::charge_source_headers(&mut self.facts, work, 0)
     }
+}
+
+fn prove_const_parameter_type(
+    facts: &mut Declarations,
+    ty: TypeId,
+    proof: &mut Proof,
+    imported: bool,
+) -> Result<(), String> {
+    let declaration = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("const parameter proof requires its actual source catalog")?
+        .validated_role(LangItem::ConstParamTy)?
+        .ok_or("const parameter type requires actual ConstParamTy")?;
+    if matches!(declaration.origin, DeclarationOrigin::Imported(_)) {
+        facts.associated.require_imported_role(declaration)?;
+    }
+    let application = crate::types::traits::Application {
+        item: crate::types::ItemId(declaration.definition.0),
+        arguments: crate::types::GenericArgs::EMPTY,
+    };
+    let existing = facts.types.find_trait_application(application);
+    let growth = if existing.is_some() {
+        crate::support::retained::Growth::default()
+    } else {
+        facts.types.trait_application_growth()
+    };
+    if imported {
+        crate::sema::crates::pay_source_headers(facts, 8 + growth.work, growth.bytes)?;
+    } else {
+        crate::sema::header_attributes::reserve_source_contracts(
+            facts,
+            8 + growth.work,
+            growth.bytes,
+        )
+        .map_err(|error| error.to_string())?;
+    }
+    let application = match existing {
+        Some(id) => id,
+        None => facts.types.intern_trait_application(application)?,
+    };
+    // The actual owner environment proves the marker's ordinary obligations.
+    if !proof.prove(
+        facts,
+        Predicate {
+            ty,
+            bound: Bound::Trait(application),
+        },
+    )? {
+        return Err("const parameter type must implement actual ConstParamTy".into());
+    }
+    Ok(())
 }

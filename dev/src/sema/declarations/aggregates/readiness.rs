@@ -112,14 +112,27 @@ impl Checker<'_> {
         Ok(())
     }
     pub(in super::super) fn constant_constructor(&mut self, id: DefId) -> Result<(), Error> {
-        let &owner = self.nominals.constructors.get(&id).ok_or_else(|| {
-            Error::at(
-                crate::resolve::unit::FileId(0),
-                0,
-                "missing constructor owner",
-            )
-        })?;
-        self.work.push(Work::Constructor(id));
+        let owner = if let Some(&owner) = self.nominals.constructors.get(&id) {
+            self.work.push(Work::Constructor(id));
+            owner
+        } else {
+            let definition = &self.report.resolution.definitions[id.0 as usize];
+            let owner = if let Some(variant) = self.facts.members.constructor(id) {
+                self.facts.members.variants[variant.0 as usize].owner
+            } else {
+                ItemId(id.0)
+            };
+            if definition.node.is_some() || !self.external_record(owner) {
+                return Err(Error::at(
+                    crate::resolve::unit::FileId(0),
+                    0,
+                    "missing constructor owner",
+                ));
+            }
+            // The imported member table has already installed the nominal's
+            // exact construction shape. It has no local field syntax to run.
+            owner
+        };
         self.work.push(Work::ValueType(DefId(owner.0)));
         Ok(())
     }

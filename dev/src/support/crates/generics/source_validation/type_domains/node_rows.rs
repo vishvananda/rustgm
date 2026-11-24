@@ -365,8 +365,7 @@ impl Builder<'_, '_> {
     ) -> Result<Summary, &'static str> {
         work.charge(1)?;
         let rows = self.headers.rows();
-        let parameter_type =
-            |ty| crate::support::crates::generics::source::const_parameter_type(&rows.types, ty);
+        let parameter_type = |ty| s::const_formal_type(&rows.types, ty);
         let formal = parameter_type(formal)?;
         let (ty, summary) = match rows.consts().get(term.0 as usize) {
             Some(&s::ConstTerm::Value(value)) => {

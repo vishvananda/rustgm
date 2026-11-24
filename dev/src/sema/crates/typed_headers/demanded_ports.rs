@@ -194,14 +194,13 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             if let Some(binding) = slot.definition {
                 self.view.definition(binding, budget)?;
             }
-            let scalar = s::const_parameter_type(&self.rows.types, ty).map_err(error)?;
-            let index = slot_bindings::type_index(&self.rows.declarations, slot);
-            let argument = slot_bindings::intern_const(
+            let ty = slot_bindings::intern_const_type(
                 store,
-                owner,
-                index,
-                crate::sema::crates::scalar(scalar),
+                s::const_formal_type(&self.rows.types, ty).map_err(error)?,
+                |row| self.view.definition(row, budget),
             )?;
+            let index = slot_bindings::type_index(&self.rows.declarations, slot);
+            let argument = slot_bindings::intern_const(store, owner, index, ty)?;
             publish(memo, argument)?;
             return Ok(argument);
         }
