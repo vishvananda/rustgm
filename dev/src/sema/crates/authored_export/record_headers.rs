@@ -3,9 +3,9 @@ use super::{Declarations, DefId, DefKind, Report, Stage, g, s};
 use crate::{
     resolve::model::Access,
     sema::members::Name,
-    support::{bindings::LangItem, crates::RecordRepr},
+    support::{bindings::LangItem, crates::RecordRepr, hash::HashMap, retained},
     syntax::item::Shape,
-    types::{ItemId, aggregate},
+    types::{ItemId, aggregate, outlives::Pair},
 };
 
 pub(super) struct NominalShape {
@@ -61,6 +61,7 @@ impl Stage {
                 .len()
                 .saturating_mul(size_of::<Option<super::DeclarationRef>>()),
         )?;
+        let lifetime_bounds = self.nominal_lifetime_index(facts)?;
         let mut modules = vec![None; report.package.modules.len()];
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             self.charge(1)?;
@@ -83,16 +84,40 @@ impl Stage {
                 continue;
             }
             let owner = DefId(u32::try_from(index).map_err(|_| "source nominal owner overflow")?);
-            self.nominal(report, facts, owner, &modules)?;
+            let bounds = lifetime_bounds
+                .get(&ItemId(owner.0))
+                .map_or(&[][..], Vec::as_slice);
+            self.nominal(report, facts, owner, &modules, bounds)?;
         }
         Ok(())
     }
+    fn nominal_lifetime_index(
+        &mut self,
+        facts: &Declarations,
+    ) -> Result<HashMap<ItemId, Vec<Pair>>, &'static str> {
+        if !self.declaration_policies() {
+            return Ok(HashMap::default());
+        }
+        let bounds = &facts.lifetimes.nominal_bounds;
+        self.charge(bounds.len())?;
+        self.reserve(
+            retained::new_map::<ItemId, Vec<Pair>>(bounds.len())
+                .saturating_add(size_of_val(bounds.as_slice()).saturating_mul(4)),
+        )?;
+        let mut by_owner = HashMap::default();
+        for &(owner, pair) in bounds {
+            by_owner.entry(owner).or_insert_with(Vec::new).push(pair);
+        }
+        Ok(by_owner)
+    }
+
     fn nominal(
         &mut self,
         report: &Report,
         facts: &Declarations,
         owner: DefId,
         modules: &[Option<super::DeclarationRef>],
+        explicit_bounds: &[Pair],
     ) -> Result<(), &'static str> {
         let item = ItemId(owner.0);
         let NominalShape {
@@ -130,6 +155,16 @@ impl Stage {
             contract
         };
         let context = self.nominal_frame(declaration)?;
+        if !explicit_bounds.is_empty() {
+            let bounds = self.region_bounds(explicit_bounds, context)?;
+            self.reserve(4 * size_of::<s::NominalRegionBounds>())?;
+            self.cold()?
+                .nominal_region_bounds
+                .push(s::NominalRegionBounds {
+                    declaration,
+                    bounds,
+                });
+        }
         let self_ty = facts
             .definitions
             .get(owner.0 as usize)

@@ -4,7 +4,7 @@ use crate::{
     resolve::model::DefId,
     sema::{generics::Parameter, lifetimes::FunctionRegions},
     support::retained,
-    types::{TypeId, parameters::environment::Environment},
+    types::{ItemId, TypeId, outlives::Pair, parameters::environment::Environment},
 };
 use std::{rc::Rc, sync::Arc};
 
@@ -46,6 +46,7 @@ impl Stage {
         contracts
             .check_cycles(&facts.types)
             .map_err(|(_, message)| error(message))?;
+        let nominal_bounds = prepare_nominal_bounds(context, &self.graph, facts, budget)?;
         let nominals = super::nominal_ports::prepare(context, &self.graph, facts, budget)?;
         let nominal_count = nominals
             .as_ref()
@@ -95,13 +96,6 @@ impl Stage {
         if let Some(shapes) = shapes {
             shapes.install();
         }
-        facts
-            .crates
-            .get_or_insert_default()
-            .imported_records
-            .extend(nominal_owners.iter().copied());
-        facts.generics.nominal_contracts.extend(nominal_owners);
-        facts.generics.has_nominal_requirements |= generic;
         // Every remaining key, index and allocation bound was checked above.
         // No fallible remap, quota check or proof follows this first publication.
         for (definition, ty) in cells {
@@ -113,6 +107,7 @@ impl Stage {
         if let Some((plan, catalog)) = effects {
             plan.install(catalog);
         }
+        install_nominal_facts(facts, nominal_owners, nominal_bounds, generic);
         facts.lifetimes.callables = callables;
         if !self.aliases.is_empty() {
             facts.alias_requirements = std::mem::take(&mut self.aliases);
@@ -299,6 +294,55 @@ fn prepay_tables(
     ]))
 }
 
+fn install_nominal_facts(
+    facts: &mut Declarations,
+    nominal_owners: Vec<DefId>,
+    nominal_bounds: Vec<(ItemId, Pair)>,
+    generic: bool,
+) {
+    facts
+        .crates
+        .get_or_insert_default()
+        .imported_records
+        .extend(nominal_owners.iter().copied());
+    facts.generics.nominal_contracts.extend(nominal_owners);
+    facts.lifetimes.nominal_bounds.extend(nominal_bounds);
+    facts.generics.has_nominal_requirements |= generic;
+}
+
+fn prepare_nominal_bounds(
+    context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
+    facts: &mut Declarations,
+    budget: &mut Headers,
+) -> Result<Vec<(ItemId, Pair)>, Error> {
+    let rows = context.descriptor.rows();
+    let mut prepared = Vec::new();
+    for row in &rows.cold().nominal_region_bounds {
+        let owner = ItemId(context.definition(row.declaration, budget)?.0);
+        let bounds = row.bounds.slice(&rows.region_bounds).map_err(error)?;
+        budget.charge(bounds.len().saturating_mul(3))?;
+        budget.reserve(bounds.len().saturating_mul(4 * size_of::<(ItemId, Pair)>()))?;
+        for bound in bounds {
+            prepared.push((
+                owner,
+                (graph.region(bound.longer)?, graph.region(bound.shorter)?),
+            ));
+        }
+    }
+    let destination = &mut facts.lifetimes.nominal_bounds;
+    let growth = retained::Growth::vector::<(ItemId, Pair)>(
+        destination.len(),
+        destination.capacity(),
+        prepared.len(),
+    );
+    budget.pay(growth.work, growth.bytes).map_err(error)?;
+    destination
+        .try_reserve(prepared.len())
+        .map_err(|_| error("imported nominal lifetime allocation failed"))?;
+    Ok(prepared)
+}
+
 fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
     for scope in scopes {
         if let super::Inputs::Associated {
@@ -375,11 +419,11 @@ fn prepay_cycles(
             .saturating_mul(2),
     )?;
     budget.reserve(
-        retained::new_map::<crate::types::ItemId, bool>(rows.traits.len()).saturating_add(
+        retained::new_map::<ItemId, bool>(rows.traits.len()).saturating_add(
             rows.traits
                 .len()
                 .saturating_add(rows.clauses.len())
-                .saturating_mul(size_of::<(crate::types::ItemId, bool)>()),
+                .saturating_mul(size_of::<(ItemId, bool)>()),
         ),
     )?;
     Ok(())

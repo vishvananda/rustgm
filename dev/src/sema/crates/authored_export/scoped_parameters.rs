@@ -160,10 +160,9 @@ impl Stage {
                 && !self.range_required_constant(facts, definition))
     }
 
-    /// Version thirteen transports a nominal's lifetimes but not its declared
-    /// lifetime bounds; each consumer would otherwise lose that requirement.
+    /// Older nominal profiles carry declared lifetimes without outlives rows.
     fn nominal_lifetime_bounds(&mut self, facts: &Declarations) -> Result<(), &'static str> {
-        if !self.body_nodes() {
+        if !self.body_nodes() || self.declaration_policies() {
             return Ok(());
         }
         for &(item, _) in &facts.lifetimes.nominal_bounds {

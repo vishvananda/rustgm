@@ -230,27 +230,7 @@ impl Lazy {
                 )?;
             }
         }
-        for range in rows
-            .functions
-            .iter()
-            .map(|header| header.regions.bounds)
-            .chain(rows.traits.iter().map(|header| header.region_bounds))
-            .chain(
-                rows.implementations
-                    .iter()
-                    .map(|header| header.region_bounds),
-            )
-        {
-            for bound in range.slice(&rows.region_bounds).map_err(error)? {
-                for region in [bound.longer, bound.shorter] {
-                    if matches!(port.region(region, work)?, Demand::Blocked(_)) {
-                        return Err(error(
-                            "ordinary header requires its actual declared lifetime",
-                        ));
-                    }
-                }
-            }
-        }
+        prepare_declared_regions(rows, &mut port, work)?;
         super::ingest_roots::prepare(rows, &mut |reference| match cursor.demand(
             &mut port,
             &mut facts.types,
@@ -312,6 +292,41 @@ impl Lazy {
             .map_err(error)?
             .ok_or_else(|| error("ordinary region requires its actual owning body domain"))
     }
+}
+/// Materialize the actual declaration regions before opening type recipes.
+fn prepare_declared_regions(
+    rows: s::ValidatedView<'_>,
+    port: &mut Reserved<'_, '_>,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    for range in rows
+        .functions
+        .iter()
+        .map(|header| header.regions.bounds)
+        .chain(rows.traits.iter().map(|header| header.region_bounds))
+        .chain(
+            rows.implementations
+                .iter()
+                .map(|header| header.region_bounds),
+        )
+        .chain(
+            rows.cold()
+                .nominal_region_bounds
+                .iter()
+                .map(|row| row.bounds),
+        )
+    {
+        for bound in range.slice(&rows.region_bounds).map_err(error)? {
+            for region in [bound.longer, bound.shorter] {
+                if matches!(port.region(region, work)?, Demand::Blocked(_)) {
+                    return Err(error(
+                        "ordinary header requires its actual declared lifetime",
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
 }
 fn operation_types(
     original: &s::Original,

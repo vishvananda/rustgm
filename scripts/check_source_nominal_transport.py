@@ -39,7 +39,9 @@ def rustc(check, source, client, cases):
               environment=bootstrap, timeout=15)
     for case in cases:
         name = case["cfg"]
-        codes = (f"error[{case['rustc']}]",) if case["status"] else ()
+        codes = ()
+        if case["status"]:
+            codes = (case["rustc_message"],) if "rustc_message" in case else (f"error[{case['rustc']}]",)
         check.run(f"rustc-{name}", [*RUSTC, "--crate-name", name, "--extern", f"base={artifact}",
                                  "--cfg", name, "-o", check.folder / f"{name}.rmeta",
                                  client], case["status"], codes,
@@ -80,7 +82,7 @@ def main():
         "--case",
         choices=("non-exhaustive-transport", "source-nominal-layout",
                  "source-storage-transport", "source-union-transport", "source-wrapper-transport",
-                 "source-panic-format-transport"),
+                 "source-panic-format-transport", "source-nominal-outlives"),
         default="non-exhaustive-transport",
     )
     parser.add_argument("--out", required=True, type=Path)

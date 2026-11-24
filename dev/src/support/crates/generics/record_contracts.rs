@@ -13,6 +13,9 @@ pub(super) fn require_profile(
             .saturating_add(1),
     )?;
     if !profile.declaration_policies() {
+        if !rows.cold().nominal_region_bounds.is_empty() {
+            return Err("source nominal lifetime bounds require the declaration policy profile");
+        }
         if rows
             .declarations
             .iter()

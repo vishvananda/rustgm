@@ -129,7 +129,8 @@ pub(super) fn encode_module_availability(
             | (u8::from(!aliases.is_empty()) << 2)
             | (u8::from(statics.is_some()) << 3)
             | (u8::from(!trait_aliases.is_empty()) << 4)
-            | (u8::from(!alias_normalizations.is_empty()) << 5))?;
+            | (u8::from(!alias_normalizations.is_empty()) << 5)
+            | (u8::from(!rows.cold().nominal_region_bounds.is_empty()) << 6))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
@@ -156,6 +157,12 @@ pub(super) fn encode_module_availability(
         write(out, alias_normalizations, |out, row| {
             id(out, row.declaration.0)?;
             id(out, row.target.0)
+        })?;
+    }
+    if !rows.cold().nominal_region_bounds.is_empty() {
+        write(out, &rows.cold().nominal_region_bounds, |out, row| {
+            id(out, row.declaration.0)?;
+            range(out, row.bounds)
         })?;
     }
     if profile.compiler_operations() {
@@ -299,7 +306,7 @@ fn decode_availability_trailers(
     }
     let flags = read.reader.u8()?;
     let maximum = if read.profile.declaration_policies() {
-        63
+        127
     } else {
         1
     };
@@ -356,6 +363,18 @@ fn decode_availability_trailers(
             return Err("alias normalization trailer must contain an actual root");
         }
         read.cold(rows)?.alias_normalizations = normalizations;
+    }
+    if flags & 64 != 0 {
+        let bounds = read.list(crates::MAX_COMPONENTS, 12, |read| {
+            Ok(s::NominalRegionBounds {
+                declaration: DeclarationRef(read.id()?),
+                bounds: read.range()?,
+            })
+        })?;
+        if bounds.is_empty() {
+            return Err("nominal lifetime trailer requires written bounds");
+        }
+        read.cold(rows)?.nominal_region_bounds = bounds;
     }
     Ok(())
 }

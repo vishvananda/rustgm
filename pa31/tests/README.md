@@ -51,6 +51,8 @@ active-field rules for imported unions.
 cursor's C ABI and the coherence rule for the fundamental Pin wrapper.
 `spec/source-panic-format-transport/outcomes.json` checks the imported
 panic and formatting structures, their field types, and member visibility.
+`spec/source-nominal-outlives/outcomes.json` checks explicit lifetime bounds
+in imported struct and enum headers.
 Run the declared case with
 `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.

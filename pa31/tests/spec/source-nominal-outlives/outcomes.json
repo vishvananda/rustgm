@@ -1,0 +1,10 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0, "lowir": ["function @inspect("]},
+    {"cfg": "static_mismatch", "status": 1, "rustc_message": "lifetime may not live long enough", "rustgm": "lifetime"},
+    {"cfg": "enum_mismatch", "status": 1, "rustc_message": "lifetime may not live long enough", "rustgm": "lifetime"}
+  ]
+}

@@ -674,6 +674,7 @@ pub struct ColdColumns {
     pub promoted_handlers: Vec<PromotedHandler>,
     pub type_aliases: Vec<TypeAliasHeader>,
     pub alias_normalizations: Vec<AliasNormalization>,
+    pub nominal_region_bounds: Vec<NominalRegionBounds>,
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
@@ -694,6 +695,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     promoted_handlers: Vec::new(),
     type_aliases: Vec::new(),
     alias_normalizations: Vec::new(),
+    nominal_region_bounds: Vec::new(),
     trait_aliases: Vec::new(),
     statics: None,
     bodies: None,
@@ -714,6 +716,7 @@ impl ColdColumns {
             && self.promoted_handlers.is_empty()
             && self.type_aliases.is_empty()
             && self.alias_normalizations.is_empty()
+            && self.nominal_region_bounds.is_empty()
             && self.trait_aliases.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()
@@ -731,6 +734,13 @@ pub struct TypeAliasHeader {
 pub struct AliasNormalization {
     pub declaration: DeclarationRef,
     pub target: TypeRef,
+}
+
+/// The written outlives obligations of one actual nominal declaration.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct NominalRegionBounds {
+    pub declaration: DeclarationRef,
+    pub bounds: Range,
 }
 
 /// A direct ordinary alias retains its own lexical Self and canonical clauses.

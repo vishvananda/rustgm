@@ -85,6 +85,7 @@ impl DomainIndex<'_, '_> {
     pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         self.trait_alias_roots(work)?;
+        self.nominal_lifetime_roots(work)?;
         for header in &rows.nominals {
             let context = Context {
                 owner: header.scope,
@@ -272,6 +273,32 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+    fn nominal_lifetime_roots(&self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let mut previous = None;
+        for row in &rows.cold().nominal_region_bounds {
+            work.charge(1)?;
+            let owner = row.declaration;
+            if previous.is_some_and(|id| id >= owner.0)
+                || row.bounds.start >= row.bounds.end
+                || !matches!(
+                    self.headers.header(owner, work)?,
+                    Some(HeaderRef::Nominal(_))
+                )
+            {
+                return Err("source nominal lifetime bounds lost their ordered actual owner");
+            }
+            previous = Some(owner.0);
+            let context = Context {
+                owner,
+                frame: Some(self.binders.declaration(owner, work)?),
+                body: None,
+            };
+            self.bounds(context, row.bounds, work)?;
+        }
+        Ok(())
+    }
+
     fn requirements(
         &mut self,
         context: Context,
