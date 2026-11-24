@@ -68,6 +68,8 @@ pub struct HeaderContract {
     pub optimization: Option<Optimization>,
     /// Version fourteen only, on the two checked formatting panic declarations.
     pub format_panic: bool,
+    /// Version fourteen retains the actual source owner site of a const promotion promise.
+    pub promotable: Option<u32>,
 }
 impl HeaderContract {
     #[must_use]
@@ -77,6 +79,7 @@ impl HeaderContract {
             || self.target_features.is_some()
             || self.optimization.is_some()
             || self.format_panic
+            || self.promotable.is_some()
     }
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -157,6 +160,13 @@ impl HeaderAttributeColumns {
                     "source target-feature rows require the version-thirteen header profile",
                 );
             }
+            if contract.promotable.is_some()
+                && (!profile.declaration_policies()
+                    || header.constness != crate::support::constness::Constness::Const
+                    || !matches!(header.body, super::FunctionBody::Original(_)))
+            {
+                return Err("source promotion promise requires its actual defined const function");
+            }
             if let Some(preference) = contract.optimization {
                 check_optimization(profile, header.body, contract.inline, preference)?;
             }
@@ -222,6 +232,9 @@ impl HeaderAttributeColumns {
             || contract
                 .inline
                 .is_some_and(|value| value.owner_site >= declaration.sites)
+            || contract
+                .promotable
+                .is_some_and(|site| site >= declaration.sites)
         {
             return Err("source attribute owner site is outside its actual declaration");
         }

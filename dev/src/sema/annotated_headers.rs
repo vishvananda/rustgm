@@ -124,6 +124,7 @@ pub struct HeaderAttributeView<'a> {
     pub must_use: ContractKnowledge<ContractView<'a>>,
     pub inline: ContractKnowledge<inlining::View<'a>>,
     pub optimization: ContractKnowledge<Optimization>,
+    pub(crate) imported_promotable: ContractKnowledge<ContractOrigin<'a>>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Ledger {
@@ -137,7 +138,7 @@ impl Declarations {
         &self,
         report: &Report,
         definition: DefId,
-    ) -> Result<ContractKnowledge<SourceContractSite>, Error> {
+    ) -> Result<ContractKnowledge<ContractOrigin<'_>>, Error> {
         let actual = report
             .resolution
             .definitions
@@ -150,10 +151,19 @@ impl Declarations {
             return Ok(ContractKnowledge::Unknown);
         }
         let view = self.header_attribute_contracts(report, definition)?;
-        if actual.node.is_none() || matches!(view.must_use, ContractKnowledge::Unknown) {
+        if actual.node.is_none() {
+            return Ok(view.imported_promotable);
+        }
+        if matches!(view.must_use, ContractKnowledge::Unknown) {
             return Ok(ContractKnowledge::Unknown);
         }
-        local::query_promotable(self, report, definition)
+        Ok(match local::query_promotable(self, report, definition)? {
+            ContractKnowledge::Unknown => ContractKnowledge::Unknown,
+            ContractKnowledge::KnownAbsent => ContractKnowledge::KnownAbsent,
+            ContractKnowledge::KnownPresent(site) => {
+                ContractKnowledge::KnownPresent(ContractOrigin(Site::Source(site)))
+            }
+        })
     }
     /// Complete header facts require positive producer state. Legacy imported
     /// rows and missing producers remain Unknown rather than checked absence.

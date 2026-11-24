@@ -82,6 +82,19 @@ impl LangItem {
 
     pub(crate) const REQUIRED_FOR_METHODS: [Self; 2] = [Self::IteratorNext, Self::IntoIter];
 
+    pub(crate) const RANGE_NOMINALS: [Self; 10] = [
+        Self::RangeFrom,
+        Self::RangeFull,
+        Self::RangeInclusiveStruct,
+        Self::Range,
+        Self::RangeToInclusive,
+        Self::RangeTo,
+        Self::RangeFromCopy,
+        Self::RangeCopy,
+        Self::RangeInclusiveCopy,
+        Self::RangeToInclusiveCopy,
+    ];
+
     pub(crate) const FOR_OPTION_ROLES: [Self; 3] =
         [Self::Option, Self::OptionSome, Self::OptionNone];
 

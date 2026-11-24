@@ -44,6 +44,7 @@ fn actual_promotable_forms_keep_required_ctfe_and_ordinary_source_calls() -> Tes
         else {
             return Err("actual marker missing".into());
         };
+        let site = site.source().ok_or("source marker origin")?;
         assert_ne!(
             site.owner, site.declaration,
             "attributed owner must stay distinct from canonical item"
@@ -165,7 +166,7 @@ fn marker_queries_reject_foreign_images_changed_flags_and_sticky_exhaustion() ->
         warm.0 - cold.0,
         warm.1 - cold.1
     );
-    let key = site.declaration;
+    let key = site.source().ok_or("source marker origin")?.declaration;
     let marker = facts
         .must_use_contracts
         .as_deref_mut()

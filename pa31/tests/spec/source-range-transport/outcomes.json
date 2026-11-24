@@ -1,0 +1,16 @@
+{
+  "foundation": "pa31/tests/spec/source-ranges/constructor-native.rs",
+  "prefix_marker": "const VALUE:",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-ranges/Range.fragment.rs",
+      "start": 0,
+      "end": 282,
+      "sha256": "c8a3e332382ad73e706139be29a7a9c4d1869d8c36a3781062d30a03c06170f3",
+      "marker": "// ORIGINAL_RANGE"
+    }
+  ],
+  "stdout": "8 16 23 47\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "unknown transported inline or callable advisory flags"
+}

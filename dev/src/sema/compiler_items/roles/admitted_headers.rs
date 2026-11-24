@@ -310,14 +310,7 @@ fn trait_headers(
                 super::slice_len_header(facts, declaration)?;
                 complete.insert(role);
             }
-            role if GROUPED.contains(&role)
-                || LangItem::FORMAT_PANICS.contains(&role)
-                || LangItem::TRY_PROTOCOL.contains(&role)
-                || LangItem::FOR_PROTOCOL.contains(&role)
-                || LangItem::COMPARISON_TRAITS.contains(&role)
-                || super::unsizing::ROLES.contains(&role)
-                || role.is_enum_value_role()
-                || super::super::layout::CONSTANTS.contains(&role) => {}
+            role if grouped_role(role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
@@ -425,6 +418,19 @@ fn check_nominal_role(
     }
 }
 
+fn grouped_role(role: LangItem) -> bool {
+    GROUPED.contains(&role)
+        || LangItem::FORMAT_PANICS.contains(&role)
+        || LangItem::TRY_PROTOCOL.contains(&role)
+        || LangItem::FOR_PROTOCOL.contains(&role)
+        || LangItem::COMPARISON_TRAITS.contains(&role)
+        || LangItem::RANGE_NOMINALS.contains(&role)
+        || role == LangItem::RangeInclusiveNew
+        || super::unsizing::ROLES.contains(&role)
+        || role.is_enum_value_role()
+        || super::super::layout::CONSTANTS.contains(&role)
+}
+
 fn grouped_roles(
     report: &Report,
     facts: &Declarations,
@@ -434,6 +440,7 @@ fn grouped_roles(
 ) -> Result<super::invocation::Imported, &'static str> {
     super::parameter_types::imported(report, facts, catalog, steps, complete)?;
     super::unsizing::imported_roles(report, facts, catalog, steps, complete)?;
+    super::super::interval_values::imported(facts, catalog, steps, complete)?;
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
     super::super::dereferencing::imported(report, facts, catalog, steps, complete)?;
     if let Some(constructor) = catalog.role(LangItem::PinNewUnchecked)? {

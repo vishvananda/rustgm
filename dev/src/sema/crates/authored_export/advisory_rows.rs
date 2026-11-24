@@ -266,6 +266,7 @@ impl Stage {
             cold: false,
             caller_tracking: false,
             format_panic: false,
+            promotable: None,
             target_features: None,
             optimization: if self.declaration_policies() {
                 match view.optimization {
@@ -410,6 +411,19 @@ impl Stage {
             ContractKnowledge::KnownPresent(()) => true,
         };
         contract.caller_tracking = facts.checked_caller_tracking(report, definition)?;
+        if self.declaration_policies()
+            && let ContractKnowledge::KnownPresent(origin) =
+                facts.promotable_contract(report, definition)?
+        {
+            let site = origin.source().ok_or_else(|| {
+                Error::unlocated("source promotion promise lost its actual owner")
+            })?;
+            contract.promotable = Some(
+                self.site(contract.declaration, site.owner)
+                    .map_err(Error::unlocated)?,
+            );
+        }
+
         contract.format_panic = self.declaration_policies()
             && crate::sema::compiler_items::runtime_panic_declaration(facts, definition)
                 .map_err(Error::unlocated)?;

@@ -791,7 +791,7 @@ pub(super) fn complete_value_declaration(
             | LangItem::ResumeTy
             | LangItem::CStr
             | LangItem::FieldRepresentingType
-    ) && !super::interval_values::NOMINALS.contains(&role)
+    ) && !LangItem::RANGE_NOMINALS.contains(&role)
     {
         return Err(Error::unlocated(
             "invalid source value declaration completion",

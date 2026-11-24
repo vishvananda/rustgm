@@ -1,0 +1,14 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"promotion_fixture\",issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "older_profile": "source promotable declaration transport requires its wider metadata profile",
+  "older_reader": "unknown transported inline or callable advisory flags",
+  "unmarked_error": "required lifetime does not outlive its target"
+}

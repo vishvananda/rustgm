@@ -1216,7 +1216,9 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::SliceLen
             | LangItem::OffsetOf
             | LangItem::Unsize
+            | LangItem::RangeInclusiveNew
     ) || interval_roles::ROLES.contains(&role)
+        || LangItem::RANGE_NOMINALS.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
@@ -1635,12 +1637,12 @@ fn role_header(
             defined_operation_role(profile, rows, role, header)?;
         }
         (LangItem::OffsetOf, Some(HeaderRef::Function(index)))
-            if rows.functions.get(index as usize).is_some_and(|function| {
-                function.body
-                    == super::super::FunctionBody::Intrinsic(
-                        super::super::BodylessIntrinsic::OffsetOf,
-                    )
-            }) => {}
+            if offset_intrinsic_header(rows, index) => {}
+        (role, header)
+            if role == LangItem::RangeInclusiveNew || LangItem::RANGE_NOMINALS.contains(&role) =>
+        {
+            range_value_header(profile, rows, kind, role, header)?;
+        }
         (role, Some(HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
         (role, Some(HeaderRef::Nominal(index)))
@@ -1709,6 +1711,38 @@ fn role_header(
         | (LangItem::PhantomData, Some(HeaderRef::Nominal(_)))
             if profile.languages() => {}
         _ => ordinary_declaration_role(role, header)?,
+    }
+    Ok(())
+}
+
+fn offset_intrinsic_header(rows: &SourceRows, index: u32) -> bool {
+    rows.functions.get(index as usize).is_some_and(|function| {
+        function.body == FunctionBody::Intrinsic(super::super::BodylessIntrinsic::OffsetOf)
+    })
+}
+
+fn range_value_header(
+    profile: BindingProfile,
+    rows: &SourceRows,
+    kind: super::super::DefinitionKind,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    use super::super::{DefinitionKind, HeaderRef};
+    let shared_profile = profile == BindingProfile::BodyOperations;
+    let actual = match (role, header) {
+        (LangItem::RangeInclusiveNew, Some(HeaderRef::Function(index))) => {
+            rows.functions.get(index as usize).is_some_and(|function| {
+                function.parent.is_some() && matches!(function.body, FunctionBody::Original(_))
+            })
+        }
+        (role, Some(HeaderRef::Nominal(_))) if LangItem::RANGE_NOMINALS.contains(&role) => {
+            kind == DefinitionKind::Struct
+        }
+        _ => false,
+    };
+    if !shared_profile || !actual {
+        return Err("source range role changed its actual declaration header");
     }
     Ok(())
 }

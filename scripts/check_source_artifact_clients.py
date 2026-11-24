@@ -16,12 +16,13 @@ FOUNDATION = "pa31/tests/spec/source-enum-role-transport/provider.rs"
 
 
 def assemble_provider(check, fixture, contract):
-    features = ", ".join(contract["features"])
+    features = ", ".join(contract.get("features", ()))
     attributes = "".join(f"#![{attribute}]\n" for attribute in contract.get("attributes", ()))
     source = check.folder / "provider.rs"
     boundary = contract.get("prefix_marker", '#[rustc_diagnostic_item = "Option"]')
-    parts = [f"#![feature({features})]\n{attributes}".encode(),
-             source_prefix(FOUNDATION, boundary)]
+    features = f"#![feature({features})]\n" if features else ""
+    parts = [f"{features}{attributes}".encode(),
+             source_prefix(contract.get("foundation", FOUNDATION), boundary)]
     tail = (fixture / "provider.rs").read_bytes()
     for fragment in contract.get("originals", ()):
         text = (ROOT / fragment["path"]).read_bytes()[fragment["start"]:fragment["end"]]
@@ -39,7 +40,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", required=True,
                         choices=("source-reference-cast-transport", "source-marker-trait-transport",
-                                 "source-offset-intrinsic-transport", "source-slice-length-transport"))
+                                 "source-offset-intrinsic-transport", "source-slice-length-transport",
+                                 "source-range-transport", "source-promotion-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
@@ -76,6 +78,19 @@ def main():
               timeout=30)
     if old.exists():
         raise ValueError("older source profile published the new metadata")
+    if error := contract.get("unmarked_error"):
+        marker = b"#[rustc_promotable]\n"
+        text = source.read_bytes()
+        if text.count(marker) != 1:
+            raise ValueError("expected the source promotion declaration")
+        unmarked = check.folder / "unmarked.rs"
+        unmarked.write_bytes(text.replace(marker, b""))
+        unmarked_artifact = check.folder / "unmarked.rgcrate"
+        check.run("unmarked-provider", [*exporter, "--source-profile",
+                  "module-body-operations-v14", "--metadata-output", unmarked_artifact,
+                  "-o", check.folder / "unmarked.lowir", unmarked], timeout=30)
+        check.run("unmarked-client", [*importer, "--extern", f"base={unmarked_artifact}",
+                  client], 1, [error], timeout=30)
     if role := contract.get("foreign_role"):
         packet = bytearray(artifact.read_bytes())
         offset = role_address(packet, 255, role["spelling"]) - 4

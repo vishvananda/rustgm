@@ -44,6 +44,10 @@ record type through one imported generic wrapper.
 `spec/source-slice-length-transport/outcomes.json` runs the pinned slice
 `len` body in a constant and at runtime. Both calls cross the crate boundary
 and use the provider’s pointer metadata operation.
+`spec/source-range-transport/outcomes.json` checks half-open and inclusive
+range syntax in a fresh client using the provider’s pinned declarations.
+`spec/source-promotion-transport/outcomes.json` checks a static borrow of an
+imported promotable call and rejects the same borrow when the marker is absent.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

@@ -19,7 +19,7 @@ const ROLES: [LangItem; 8] = [
 
 /// Complete ordinary headers/fields without restricting Rust-valid unused shapes.
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for role in ROLES.into_iter().chain(super::interval_values::NOMINALS) {
+    for role in ROLES.into_iter().chain(LangItem::RANGE_NOMINALS) {
         let Some(declaration) = facts
             .source_bindings
             .as_deref()
@@ -47,7 +47,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
         if matches!(role, LangItem::PollReady | LangItem::PollPending) {
             variant(facts, declaration, definition.kind).map_err(error)?;
         } else {
-            nominal(facts, declaration, role).map_err(error)?;
+            nominal(facts, declaration.definition, role).map_err(error)?;
         }
         super::roles::complete_value_declaration(facts, role, declaration)?;
     }
@@ -56,24 +56,21 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
 
 pub(super) fn nominal(
     facts: &Declarations,
-    declaration: Declaration,
+    definition: crate::resolve::model::DefId,
     role: LangItem,
 ) -> Result<(), &'static str> {
-    let item = ItemId(declaration.definition.0);
+    let item = ItemId(definition.0);
     let expected = if matches!(role, LangItem::Poll | LangItem::CoroutineState) {
         aggregate::Kind::Enum
     } else {
         aggregate::Kind::Struct
     };
     if !matches!(facts.definitions.get(item.0 as usize).copied().flatten().and_then(|ty| facts.types.kind(ty)), Some(Kind::Adt(owner, _)) if owner == item)
-        || !facts
-            .generics
-            .nominal_contracts
-            .contains(&declaration.definition)
+        || !facts.generics.nominal_contracts.contains(&definition)
         || facts
             .aggregates
             .get(item)
-            .is_none_or(|definition| definition.kind != expected)
+            .is_none_or(|aggregate| aggregate.kind != expected)
     {
         return Err("source value declaration lacks its actual completed nominal shape");
     }

@@ -7,7 +7,7 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
-        if super::interval_values::NOMINALS.contains(&role) || role == LangItem::RangeInclusiveNew {
+        if LangItem::RANGE_NOMINALS.contains(&role) || role == LangItem::RangeInclusiveNew {
             continue;
         }
         if LangItem::GUARD_PANICS.contains(&role) {

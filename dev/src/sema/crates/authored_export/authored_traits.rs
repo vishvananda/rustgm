@@ -182,12 +182,16 @@ impl Stage {
             DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
             DefKind::Function
                 if self.declaration_policies()
-                    && (role == LangItem::DropGlue || LangItem::FORMAT_PANICS.contains(&role)) => {}
+                    && (role == LangItem::DropGlue
+                        || LangItem::FORMAT_PANICS.contains(&role)) => {}
             DefKind::Function
                 if self.declaration_policies()
                     && matches!(
                         role,
-                        LangItem::PinNewUnchecked | LangItem::SliceLen | LangItem::OffsetOf
+                        LangItem::PinNewUnchecked
+                            | LangItem::SliceLen
+                            | LangItem::OffsetOf
+                            | LangItem::RangeInclusiveNew
                     ) => {}
             DefKind::TypeAlias if self.declaration_policies() && role == LangItem::DerefTarget => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
@@ -205,6 +209,8 @@ impl Stage {
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
+            DefKind::Struct
+                if self.declaration_policies() && LangItem::RANGE_NOMINALS.contains(&role) => {}
             DefKind::Enum if self.declaration_policies() && role == LangItem::CVoid => {}
             DefKind::Struct
                 if self.declaration_policies()

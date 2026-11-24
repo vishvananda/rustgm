@@ -117,12 +117,14 @@ impl Stage {
                 );
             }
             let declaration = self.declaration(definition)?;
-            if matches!(
-                facts
-                    .promotable_contract(report, definition)
-                    .map_err(|_| "source promotion header validation failed")?,
-                crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
-            ) {
+            if !self.declaration_policies()
+                && matches!(
+                    facts
+                        .promotable_contract(report, definition)
+                        .map_err(|_| "source promotion header validation failed")?,
+                    crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
+                )
+            {
                 return Err(
                     "source promotable declaration transport requires its wider metadata profile",
                 );

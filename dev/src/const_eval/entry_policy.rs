@@ -3,7 +3,7 @@ use super::{Failure, Machine};
 use crate::body::ir::Owner;
 impl Machine<'_, '_> {
     pub(super) fn check_source_function_root(&self, index: usize) -> Result<(), Failure> {
-        let Some(definition) = self.check_source_function_entry(index)? else {
+        let Some(definition) = self.check_source_function_entry(index, false)? else {
             return Ok(());
         };
         let facts = self.evaluator.facts();
@@ -39,7 +39,7 @@ impl Machine<'_, '_> {
         let instance = target.instance();
         let checked = (|| -> Result<(), Failure> {
             let definition = self
-                .check_source_function_entry(index)?
+                .check_source_function_entry(index, true)?
                 .ok_or("promoted function entry requires its source catalog")?;
             self.validate_invoked_entry(index, instance)?;
             let code = self
@@ -62,6 +62,7 @@ impl Machine<'_, '_> {
     fn check_source_function_entry(
         &self,
         index: usize,
+        promotion: bool,
     ) -> Result<Option<crate::resolve::model::DefId>, Failure> {
         self.evaluator.check_source_call_policy()?;
         let facts = self.evaluator.facts();
@@ -90,15 +91,10 @@ impl Machine<'_, '_> {
             return Ok(None);
         };
         let header = facts
-            .function_header(definition)?
-            .ok_or("source function root header is pending")?;
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
+            .declaration_header(definition)?
             .ok_or("source function root has no actual declaration")?;
-        if header.declaration.source().is_none()
-            || function.body != code.source.source()
+        if (!promotion && header.declaration.source().is_none())
+            || header.body != Some(code.source)
             || !facts.is_const_function(definition)
         {
             return Err("source function root differs from its actual const owner".into());
@@ -116,7 +112,7 @@ impl Machine<'_, '_> {
                     "source function root changed its full instance or public signature".into(),
                 );
             }
-        } else if public != function.signature {
+        } else if public != header.signature {
             return Err("source function root changed its original declaration signature".into());
         }
         if catalog.intrinsic_kind(definition)?.is_some() {

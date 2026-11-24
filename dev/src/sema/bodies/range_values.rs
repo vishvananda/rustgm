@@ -73,7 +73,7 @@ impl Checker<'_> {
             .require_provider_report(self.report)
             .map_err(|e| self.error(node, e))?;
         let declaration = catalog
-            .validated_language(role)
+            .validated_role(role)
             .map_err(|e| self.error(node, e))?
             .ok_or_else(|| {
                 self.error(

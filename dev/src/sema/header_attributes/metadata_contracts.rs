@@ -230,7 +230,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             }
         }
         if descriptor.profile().body_nodes() {
-            bytes = targeted(
+            bytes = callable_advisories(
                 &headers,
                 &mut rows_with_features,
                 imported,
@@ -261,20 +261,25 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
 }
 /// One fixed charge and slot per version-thirteen row with declared target
 /// features; names are paid when the row is checked.
-fn targeted(
+fn callable_advisories(
     headers: &Headers,
     found: &mut Vec<DefId>,
     imported: &crate::resolve::crates::Imported,
     interface: &crate::support::crates::Interface,
     mut bytes: usize,
 ) -> Result<usize, Error> {
-    let Some(attributes) = interface
-        .source_descriptor()
-        .and_then(|descriptor| descriptor.rows().header_attributes())
-    else {
+    let Some(descriptor) = interface.source_descriptor() else {
+        return Ok(bytes);
+    };
+    let Some(attributes) = descriptor.rows().header_attributes() else {
         return Ok(bytes);
     };
     for contract in &attributes.functions {
+        if contract.promotable.is_some() {
+            headers.charge(3)?;
+            validate_promotion_availability(descriptor, contract.declaration)
+                .map_err(Error::unlocated)?;
+        }
         if contract.target_features.is_none() {
             continue;
         }
@@ -293,6 +298,26 @@ fn targeted(
     }
     Ok(bytes)
 }
+fn validate_promotion_availability(
+    descriptor: crate::support::crates::SourceDescriptor<'_>,
+    declaration: DeclarationRef,
+) -> Result<(), &'static str> {
+    let table = descriptor.availability()?;
+    let policy = table
+        .declarations
+        .get(declaration.0 as usize)
+        .filter(|row| row.declaration == declaration)
+        .and_then(|row| row.constant)
+        .and_then(|reference| table.policies.get(reference.0 as usize))
+        .ok_or("imported promotion promise requires its own explicit const stability")?;
+    if policy.kind != s::AvailabilityKind::Const
+        || !matches!(policy.origin, s::AvailabilityOrigin::Declaration { owner, .. } if owner == declaration)
+    {
+        return Err("imported promotion promise changed its actual const stability owner");
+    }
+    Ok(())
+}
+
 pub(in crate::sema) fn target_feature_rows(facts: &Declarations) -> &[DefId] {
     facts
         .must_use_contracts
@@ -473,12 +498,25 @@ pub(super) fn query<'a>(
             external: header.external.as_ref(),
         })))
     };
+    attribute_view(
+        row,
+        kind == DefKind::Function && descriptor.profile().declaration_policies(),
+        site,
+    )
+}
+
+fn attribute_view<'a>(
+    row: Option<&'a s::HeaderContract>,
+    declaration_policies: bool,
+    site: impl Fn(Option<u32>) -> Result<ContractOrigin<'a>, Error>,
+) -> Result<HeaderAttributeView<'a>, Error> {
     let Some(row) = row else {
         return Ok(HeaderAttributeView {
             origin: site(None)?,
             must_use: ContractKnowledge::Unknown,
             inline: ContractKnowledge::Unknown,
             optimization: ContractKnowledge::Unknown,
+            imported_promotable: ContractKnowledge::Unknown,
         });
     };
     let must_use = if let Some(value) = &row.must_use {
@@ -502,11 +540,19 @@ pub(super) fn query<'a>(
     } else {
         ContractKnowledge::KnownAbsent
     };
+    let imported_promotable = if let Some(owner) = row.promotable {
+        ContractKnowledge::KnownPresent(site(Some(owner))?)
+    } else if declaration_policies {
+        ContractKnowledge::KnownAbsent
+    } else {
+        ContractKnowledge::Unknown
+    };
     Ok(HeaderAttributeView {
         origin: site(Some(row.declaration_site))?,
+        imported_promotable,
         must_use,
         inline,
-        optimization: if kind == DefKind::Function && descriptor.profile().declaration_policies() {
+        optimization: if declaration_policies {
             row.optimization.map_or(
                 ContractKnowledge::KnownAbsent,
                 ContractKnowledge::KnownPresent,

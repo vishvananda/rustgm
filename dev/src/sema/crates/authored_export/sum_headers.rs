@@ -40,6 +40,7 @@ impl Stage {
             cold: false,
             caller_tracking: false,
             format_panic: false,
+            promotable: None,
             target_features: None,
             optimization: None,
         })
