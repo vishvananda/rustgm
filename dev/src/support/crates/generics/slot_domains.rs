@@ -25,7 +25,7 @@ pub enum DefinitionKind {
     ValueParameter,
     Local,
     AssociatedType,
-    /// A public v14 module type alias with a transparent target recipe.
+    /// A v14 module type alias with a transparent target recipe.
     TypeAlias,
     /// A v14 module trait alias with a lexical Self and declared clauses.
     TraitAlias,
@@ -399,9 +399,7 @@ fn valid_owner(kind: DefinitionKind, scope: &ParameterScope) -> bool {
         DefinitionKind::Constant | DefinitionKind::TraitAlias => {
             scope.declared.start == scope.declared.end
         }
-        DefinitionKind::TypeAlias => {
-            scope.declared.end.checked_sub(scope.declared.start) == Some(1)
-        }
+        DefinitionKind::TypeAlias => scope.declared.start < scope.declared.end,
         _ => false,
     }
 }

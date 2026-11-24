@@ -385,8 +385,11 @@ impl Stage {
                     | DefKind::Variant
                     | DefKind::Function
                     | DefKind::Const
-            ) || (definition.kind == DefKind::SelfType
-                && matches!(report.package.unit(source.file).configured.ast.node(source.node).kind,Kind::Item(item) if matches!(report.package.unit(source.file).configured.ast.items[item as usize].kind,crate::syntax::item::ItemKind::Impl {..})));
+            ) || (!self.rows.declarations[owner.0 as usize].public
+                && self.rows.declarations[owner.0 as usize].definition.kind
+                    == s::DefinitionKind::TypeAlias)
+                || (definition.kind == DefKind::SelfType
+                    && matches!(report.package.unit(source.file).configured.ast.node(source.node).kind,Kind::Item(item) if matches!(report.package.unit(source.file).configured.ast.items[item as usize].kind,crate::syntax::item::ItemKind::Impl {..})));
             if actual {
                 self.source_origin(report, result, source, owner)?;
             }

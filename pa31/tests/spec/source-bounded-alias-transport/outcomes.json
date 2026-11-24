@@ -1,0 +1,27 @@
+{
+  "provider": {
+    "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+    "prefix_marker": "// Authored macro-context transport controls.",
+    "source": "provider.rs",
+    "legacy": "legacy.rs"
+  },
+  "consumers": [
+    {
+      "source": "proved.rs",
+      "status": 0,
+      "lowir": "return u32 34"
+    },
+    {
+      "source": "missing.rs",
+      "status": 1,
+      "diagnostic": "associated type",
+      "rustc_diagnostic": "error[E0277]"
+    },
+    {
+      "source": "private.rs",
+      "status": 1,
+      "diagnostic": "private type name `ChangeOutputType`",
+      "rustc_diagnostic": "error[E0603]"
+    }
+  ]
+}

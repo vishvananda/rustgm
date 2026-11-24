@@ -22,6 +22,9 @@ pub(super) fn prepare(
     for alias in rows.type_aliases() {
         demand(alias.target)?;
     }
+    for normalization in &rows.cold().alias_normalizations {
+        demand(normalization.target)?;
+    }
     for alias in rows.trait_aliases() {
         demand(alias.self_type)?;
     }

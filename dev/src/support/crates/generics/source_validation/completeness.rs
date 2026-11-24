@@ -129,11 +129,10 @@ fn alias_headers(
             .definition
             .parent
             .and_then(|id| rows.declarations.get(id.0 as usize));
-        if !row.public
-            || parent.is_none_or(|parent| parent.definition.kind != DefinitionKind::Module)
+        if parent.is_none_or(|parent| parent.definition.kind != DefinitionKind::Module)
             || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
         {
-            return Err("source type alias lacks canonical order or its public module declaration");
+            return Err("source type alias lacks canonical order or its actual module declaration");
         }
         previous = Some(header.declaration.0);
     }

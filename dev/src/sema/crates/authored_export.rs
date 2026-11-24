@@ -46,7 +46,7 @@ use crate::{
             owner_catalog::DeclarationRef,
         },
     },
-    types::TypeId,
+    types::{Kind, TypeId, lifetime_proof::ScopeId as ProofScope},
 };
 pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
@@ -652,7 +652,7 @@ impl Stage {
     fn alias_headers(
         &mut self,
         facts: &Declarations,
-        aliases: Vec<(DeclarationRef, TypeId)>,
+        aliases: Vec<(DeclarationRef, DefId)>,
     ) -> Result<(), &'static str> {
         if !aliases.is_empty() {
             self.reserve(
@@ -662,20 +662,58 @@ impl Stage {
             )?;
             self.cold()?.type_aliases.reserve_exact(aliases.len());
         }
-        for (declaration, target) in aliases {
-            let target = self.ty(
-                facts,
-                target,
-                canonical_nodes::Context {
-                    owner: declaration,
-                    frame: None,
-                    body: None,
-                },
-            )?;
+        for (declaration, definition) in aliases {
+            let target = facts.definitions[definition.0 as usize]
+                .ok_or("source alias lost its completed target")?;
+            let context = canonical_nodes::Context {
+                owner: declaration,
+                frame: None,
+                body: None,
+            };
+            let reference = self.ty(facts, target, context)?;
             self.cold()?.type_aliases.push(s::TypeAliasHeader {
                 declaration,
-                target,
+                target: reference,
             });
+            self.alias_normalization_rows(facts, definition, target, context)?;
+        }
+        Ok(())
+    }
+
+    fn alias_normalization_rows(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        target: TypeId,
+        context: canonical_nodes::Context,
+    ) -> Result<(), &'static str> {
+        let projected = facts.types.contains_projections(target) == Some(true);
+        if facts
+            .alias_requirements
+            .source_target(definition, target, projected)
+        {
+            return Ok(());
+        }
+        let normalizations = facts.alias_requirements.source_normalizations(definition)?;
+        self.charge(normalizations.len())?;
+        self.reserve(
+            normalizations
+                .len()
+                .saturating_mul(4 * size_of::<s::AliasNormalization>()),
+        )?;
+        for &(scope, ty) in normalizations {
+            if scope != ProofScope::ROOT
+                || !matches!(facts.types.kind(ty), Some(Kind::Projection(_)))
+            {
+                return Err("source alias requires a nonroot or nonprojection proof");
+            }
+            let target = self.ty(facts, ty, context)?;
+            self.cold()?
+                .alias_normalizations
+                .push(s::AliasNormalization {
+                    declaration: context.owner,
+                    target,
+                });
         }
         Ok(())
     }
@@ -699,25 +737,28 @@ impl Stage {
             return Err(error);
         };
         let item = &ast.items[index as usize];
-        let [formal] = ast.list(item.generics) else {
-            return Err(error);
-        };
-        let Syntax::Generic(index) = ast.node(*formal).kind else {
-            return Err(error);
-        };
-        let formal = &ast.generics[index as usize];
-        let [parameter] = facts.generics.parameters[&id].as_slice() else {
-            return Err(error);
-        };
-        if !matches!(parameter.argument, Argument::Type(_))
+        let formals = ast.list(item.generics);
+        let parameters = facts.generics.parameters.get(&id).ok_or(error)?;
+        self.charge(formals.len())?;
+        if formals.len() != parameters.len()
+            || formals.is_empty()
             || declaration.namespace != Namespace::Type
             || facts.generics.parents.contains_key(&id)
-            || formal.default.is_some()
-            || !ast.list(formal.bounds).is_empty()
-            || !ast.list(item.where_clause).is_empty()
             || !matches!(item.kind, ItemKind::TypeAlias { bounds, ty: Some(_) } if ast.list(bounds).is_empty())
         {
             return Err(error);
+        }
+        for (&formal, parameter) in formals.iter().zip(parameters) {
+            let Syntax::Generic(index) = ast.node(formal).kind else {
+                return Err(error);
+            };
+            if !matches!(parameter.argument, Argument::Type(_))
+                || ast.generics[index as usize].default.is_some()
+                || parameter.default.is_some()
+                || parameter.anonymous
+            {
+                return Err(error);
+            }
         }
         let target = facts.definitions[id.0 as usize].ok_or(error)?;
         if facts.node(source).and_then(|node| node.ty) != Some(target)
@@ -728,14 +769,7 @@ impl Stage {
                 .definition(id)
                 .is_some_and(|original| original != target)
         {
-            return Err(error);
-        }
-        let projected = facts.types.contains_projections(target).ok_or(error)?;
-        if !facts
-            .alias_requirements
-            .source_target(id, target, projected)
-        {
-            return Err(error);
+            return Err("source alias target has foreign, regional or unreduced inputs");
         }
         Ok(())
     }
@@ -796,7 +830,7 @@ impl Stage {
 
 #[derive(Default)]
 struct DeclarationLeaves {
-    aliases: Vec<(DeclarationRef, TypeId)>,
+    aliases: Vec<(DeclarationRef, DefId)>,
     trait_aliases: Vec<(DeclarationRef, DefId)>,
     statics: Vec<(DeclarationRef, DefId)>,
 }
@@ -805,22 +839,19 @@ impl DeclarationLeaves {
     fn record(
         &mut self,
         stage: &mut Stage,
-        facts: &Declarations,
         definition: DefId,
         row: DeclarationRef,
         kind: s::DefinitionKind,
     ) -> Result<(), &'static str> {
         match kind {
             s::DefinitionKind::TypeAlias => {
-                let target = facts.definitions[definition.0 as usize]
-                    .ok_or("source alias lost its completed target")?;
                 stage.scratch(
                     self.aliases
                         .len()
                         .saturating_add(1)
-                        .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
+                        .saturating_mul(4 * size_of::<(DeclarationRef, DefId)>()),
                 )?;
-                self.aliases.push((row, target));
+                self.aliases.push((row, definition));
             }
             s::DefinitionKind::TraitAlias => {
                 stage.scratch(
@@ -929,18 +960,24 @@ fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>
 }
 
 fn scoped_module_alias(
+    report: &Report,
     facts: &Declarations,
     definition: &crate::resolve::model::Definition,
     id: DefId,
 ) -> bool {
     definition.kind == DefKind::TypeAlias
-        && definition.access == Access::Public
+        && matches!(definition.access, Access::Public | Access::Within(_))
         && facts.associated.owner(id).is_none()
         && facts
             .generics
             .parameters
             .get(&id)
             .is_some_and(|parameters| !parameters.is_empty())
+        && report.resolution.module_scopes.get(
+            report.resolution.scopes[definition.scope.0 as usize]
+                .module
+                .0 as usize,
+        ) == Some(&definition.scope)
 }
 
 fn scope_owners(
@@ -974,7 +1011,7 @@ fn scope_owners(
         {
             let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
             if definition.kind == DefKind::TraitAlias
-                || scoped_module_alias(facts, definition, alias)
+                || scoped_module_alias(report, facts, definition, alias)
             {
                 let source = definition
                     .node

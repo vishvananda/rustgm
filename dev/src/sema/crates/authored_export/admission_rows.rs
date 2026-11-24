@@ -60,11 +60,11 @@ impl Stage {
             ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
         ) && definition.kind == DefKind::TypeAlias
         {
-            if self.declaration_policies() && scoped_module_alias(facts, definition, id) {
+            if self.declaration_policies() && scoped_module_alias(report, facts, definition, id) {
                 self.scoped_alias(report, facts, id)?;
-            } else {
-                self.closed_alias(report, facts, id)?;
+                return Ok(Some(s::DefinitionKind::TypeAlias));
             }
+            self.closed_alias(report, facts, id)?;
             return Ok(
                 (definition.access == Access::Public).then_some(s::DefinitionKind::TypeAlias)
             );
@@ -196,7 +196,7 @@ impl Stage {
             if kind == s::DefinitionKind::Variant {
                 self.publish_variant(facts, id, row)?;
             }
-            leaves.record(self, facts, id, row, kind)?;
+            leaves.record(self, id, row, kind)?;
             parents.push(parent);
             self.rows.declarations.push(s::Declaration {
                 definition: s::Definition { kind, parent: None },
