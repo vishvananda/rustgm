@@ -374,6 +374,17 @@ impl Original<'_> {
             }
         }
     }
+    pub(crate) fn const_argument(
+        &self,
+        reference: s::SlotRef,
+        steps: &mut usize,
+    ) -> Result<crate::types::arguments::ConstId, &'static str> {
+        charge(steps)?;
+        match self.slot(reference)? {
+            Argument::Const(term) => Ok(term),
+            _ => Err("source const argument lost its actual canonical const slot"),
+        }
+    }
     pub(crate) fn parameter(
         &self,
         reference: s::SlotRef,

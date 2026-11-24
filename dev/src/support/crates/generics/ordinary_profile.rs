@@ -694,7 +694,8 @@ fn originals(
                             | ValueKind::Assembly { .. }
                             | ValueKind::Constant(_)
                             | ValueKind::AssociatedConstant { .. }
-                    ))
+                    )
+                || constant_initializers && matches!(value.kind, ValueKind::ConstArgument(_)))
             {
                 return Err("source value operation requires a wider explicit profile");
             }

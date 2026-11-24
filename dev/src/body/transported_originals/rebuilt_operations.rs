@@ -152,6 +152,9 @@ fn value_kind(
         s::ValueKind::Constant(_) | s::ValueKind::AssociatedConstant { .. } => {
             constant_operand(view, value.kind, &mut work.steps)?
         }
+        s::ValueKind::ConstArgument(slot) => {
+            Rvalue::ConstArgument(view.const_argument(slot, &mut work.steps)?)
+        }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
         s::ValueKind::ScalarCast(_) => {
             let (kind, operand) = scalar_cast(view, value)?;
@@ -849,6 +852,9 @@ fn same_value(
         }
         (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
             actual == view.function(raw, steps)?
+        }
+        (Rvalue::ConstArgument(actual), s::ValueKind::ConstArgument(slot)) => {
+            actual == view.const_argument(slot, steps)?
         }
         (
             Rvalue::AssociatedConstant(actual),

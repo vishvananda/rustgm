@@ -250,6 +250,7 @@ fn dependency(
         | s::ValueKind::Text(_)
         | s::ValueKind::Function(_)
         | s::ValueKind::Constant(_)
+        | s::ValueKind::ConstArgument(_)
         | s::ValueKind::AssociatedConstant { .. } => None,
     };
     match operand {

@@ -25,6 +25,10 @@ impl<T: Enabled, const N: usize> Signal<Payload<T>, N> {
     pub const WAITING: Self = Self::Idle;
     pub const STOPPED: Self = Self::Payload(Payload::None);
     pub const FLAG: u8 = 27;
+    pub const WIDTH: usize = N;
 
     pub const fn flag() -> u8 { Self::FLAG }
+    pub const fn width() -> usize { Self::WIDTH }
 }
+
+pub const fn length<const M: usize>() -> usize { M }

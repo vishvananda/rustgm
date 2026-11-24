@@ -45,7 +45,8 @@ impl Builder<'_, '_, '_> {
             | s::ValueKind::Text(_)
             | s::ValueKind::Assembly { .. }
             | s::ValueKind::Constant(_)
-            | s::ValueKind::AssociatedConstant { .. } => Ok(()),
+            | s::ValueKind::AssociatedConstant { .. }
+            | s::ValueKind::ConstArgument(_) => Ok(()),
             s::ValueKind::Read(place) => self.read_input(
                 original,
                 OperationSite { port, site },

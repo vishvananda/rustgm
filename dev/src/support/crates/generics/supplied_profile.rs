@@ -163,6 +163,9 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         s::ValueKind::AssociatedConstant { .. } => {
             "source associated constant reads require the version-fourteen declaration profile"
         }
+        s::ValueKind::ConstArgument(_) => {
+            "source const argument reads require the version-fourteen declaration profile"
+        }
         _ => return None,
     })
 }

@@ -342,6 +342,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::AssociatedConstant { .. } => {
             Err("source associated constant reads require the version-fourteen declaration profile")
         }
+        s::ValueKind::ConstArgument(_) => {
+            Err("source const argument reads require the version-fourteen declaration profile")
+        }
         s::ValueKind::Call {
             signature,
             callee,

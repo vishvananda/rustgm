@@ -65,6 +65,9 @@ prebuilt RustGM to check these cases.
 `generic-inherent/outcomes.json` exercises initializer originals under a
 generic inherent owner with a trait requirement and a const parameter. A
 fresh client checks two enum constants and reads a scalar both directly
-and through an imported const function. The negative clients use a type
-that lacks the required trait and a type outside the inherent impl. Select
-these fixtures with `scripts/check_source_constants.py --case generic-inherent`.
+and through an imported const function. It also reads const formals through
+their actual function and inherent initializer originals. The negative
+clients use a type that lacks the required trait and a type outside the
+inherent impl. Altered artifacts test a foreign const owner and an unknown
+slot. Select these fixtures with
+`scripts/check_source_constants.py --case generic-inherent`.
