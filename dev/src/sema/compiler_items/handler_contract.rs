@@ -12,7 +12,7 @@ use crate::{
         header_attributes::{self, ContractKnowledge},
         model::{Declarations, Function},
     },
-    support::linkage::{Linkage, Naming},
+    support::linkage::{Linkage, Naming, PANIC_HANDLER_SYMBOL},
     syntax::{
         ast::Kind as Syntax,
         item::{Abi, ItemKind, Safety},
@@ -507,7 +507,7 @@ fn plain_import_name(
             crate::support::linkage::Naming::Exact(name) => registry.names().get(name),
             crate::support::linkage::Naming::Rust => None,
         });
-    if !actual.is_some_and(|actual| actual == spelling || actual == "rust_begin_unwind") {
+    if !actual.is_some_and(|actual| actual == spelling || actual == PANIC_HANDLER_SYMBOL) {
         return Err(Error::unlocated(
             "weak panic import changed its actual default source symbol",
         ));

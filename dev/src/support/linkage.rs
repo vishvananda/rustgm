@@ -1,6 +1,8 @@
 //! Exact symbol spellings are local arena identities, never serialized definition names.
 use super::names::{NameId, Names};
 
+pub(crate) const PANIC_HANDLER_SYMBOL: &str = "rust_begin_unwind";
+
 /// The reviewed CPPGM GNU initializer-section grammar, preserving spelling.
 pub(crate) fn gnu_init_array_section(name: &str) -> bool {
     if name == ".init_array" {

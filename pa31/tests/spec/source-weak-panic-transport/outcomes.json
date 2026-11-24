@@ -1,0 +1,9 @@
+{
+  "nominal_fixture": "source-panic-format-transport",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "symbol": "rust_begin_unwind",
+  "calls": 2,
+  "wrong_symbol": "weak panic import lacks its actual lexical Rust PanicInfo signature",
+  "wrong_form": "exact callable requires its actual closed module function/original"
+}

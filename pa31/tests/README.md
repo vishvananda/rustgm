@@ -57,6 +57,8 @@ in imported struct and enum headers.
 Run the declared case with
 `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.
+`spec/source-weak-panic-transport/outcomes.json` checks the two private weak
+panic imports, the fresh handler link, and forged exact-symbol rows.
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

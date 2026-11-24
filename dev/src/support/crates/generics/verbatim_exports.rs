@@ -1,10 +1,18 @@
 //! Version-five exact definitions retain real body owners without granting execution.
-use super::super::{ArtifactRef, DefinitionKind, FunctionBody, HeaderRef, Profile, Type};
+use super::super::{
+    Argument, ArtifactRef, DeclarationAddress, DefinitionKind, FunctionBody, HeaderRef, Profile,
+    Region, Type,
+};
 use super::{HeaderIndex, SourceRows};
 use crate::support::crates::generics::{Convention, Work};
 use crate::support::{
-    crates::{MAX_BYTES, MAX_NAME_BYTES, owner_catalog::BodyKind},
+    bindings::LangItem,
+    crates::{
+        MAX_BYTES, MAX_NAME_BYTES,
+        owner_catalog::{BodyKind, DeclarationRef},
+    },
     hash::HashSet,
+    linkage::PANIC_HANDLER_SYMBOL,
     retained,
 };
 
@@ -33,8 +41,9 @@ pub(super) fn validate(
         rows.exact_callables.len(),
         crate::support::hash::BuildFxHasher::default(),
     );
-    let mut runtime = runtime_roles(rows, profile, work)?;
+    let (mut runtime, panic_info) = import_roles(rows, profile, work)?;
     let mut previous = None;
+    let mut seen_weak = false;
     let mut bytes = 0_usize;
     for row in &rows.exact_callables {
         work.charge(row.symbol.len().saturating_add(12))?;
@@ -46,7 +55,8 @@ pub(super) fn validate(
         {
             return Err("invalid exact source symbol bytes");
         }
-        if previous.is_some_and(|id| id >= row.declaration.0) || !names.insert(row.symbol.as_ref())
+        if previous.is_some_and(|id| id >= row.declaration.0)
+            || !row.weak_panic && !names.insert(row.symbol.as_ref())
         {
             return Err("duplicate or reordered exact source callable identity/symbol");
         }
@@ -55,8 +65,19 @@ pub(super) fn validate(
             return Err("exact callable does not own an actual function header");
         };
         let header = &rows.functions[index as usize];
-        require_module(rows, headers, header, work)?;
         let imported = runtime.remove(&row.declaration);
+        if row.weak_panic {
+            if !profile.declaration_policies() || imported || names.contains(PANIC_HANDLER_SYMBOL) {
+                return Err("weak panic import requires its own version-fourteen declaration");
+            }
+            weak_panic_import(rows, headers, header, row, panic_info, work)?;
+            seen_weak = true;
+            continue;
+        }
+        if row.symbol.as_ref() == PANIC_HANDLER_SYMBOL && seen_weak {
+            return Err("weak panic symbol requires its authenticated source callable");
+        }
+        require_module(rows, headers, header, work)?;
         if imported {
             if row.body.is_some()
                 || header.body != FunctionBody::Absent
@@ -81,14 +102,18 @@ pub(super) fn validate(
     Ok(())
 }
 
-fn runtime_roles(
+fn import_roles(
     rows: &SourceRows,
     profile: Profile,
     work: &mut Work,
-) -> Result<HashSet<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+) -> Result<(HashSet<DeclarationRef>, Option<DeclarationAddress>), &'static str> {
     let mut result = HashSet::default();
+    let mut panic_info = None;
     for role in &rows.roles {
         work.charge(1)?;
+        if role.role == LangItem::PanicInfo && role.declaration.artifact == ArtifactRef(0) {
+            panic_info = Some(role.declaration);
+        }
         if role.role.is_runtime_import()
             && (!profile.declaration_policies()
                 || role.declaration.artifact != ArtifactRef(0)
@@ -100,7 +125,96 @@ fn runtime_roles(
             );
         }
     }
-    Ok(result)
+    Ok((result, panic_info))
+}
+
+fn weak_panic_import(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    header: &super::super::FunctionHeader,
+    row: &super::super::ExactCallable,
+    panic_info: Option<DeclarationAddress>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "weak panic import lacks its actual lexical Rust PanicInfo signature";
+    let declaration = &rows.declarations[header.declaration.0 as usize];
+    let parent = declaration.definition.parent.ok_or(error)?;
+    let Some(HeaderRef::Function(parent)) = headers.header(parent, work)? else {
+        return Err(error);
+    };
+    let panic_info = panic_info.ok_or(error)?;
+    if row.symbol.as_ref() != PANIC_HANDLER_SYMBOL
+        || declaration.public
+        || row.body.is_some()
+        || header.body != FunctionBody::Absent
+        || header.parent.is_some()
+        || header.receiver.is_some()
+        || header.declared_inputs != 0
+        || header.regions.captures != 0
+        || header.constness != crate::support::constness::Constness::Ordinary
+        || !matches!(
+            rows.functions[parent as usize].body,
+            FunctionBody::Original(_)
+        )
+    {
+        return Err(error);
+    }
+    for signature in [header.original, header.callable] {
+        work.charge(20)?;
+        if !weak_panic_signature(rows, signature, panic_info)? {
+            return Err(error);
+        }
+    }
+    Ok(())
+}
+
+fn weak_panic_signature(
+    rows: &SourceRows,
+    signature: crate::support::crates::generics::Signature,
+    panic_info: DeclarationAddress,
+) -> Result<bool, &'static str> {
+    let [parameter] = signature.parameters.slice(&rows.roots)? else {
+        return Ok(false);
+    };
+    let Some(Type::Reference {
+        mutable: false,
+        region,
+        referent,
+    }) = rows.types.get(parameter.0 as usize)
+    else {
+        return Ok(false);
+    };
+    let Some(Type::Nominal {
+        declaration,
+        arguments,
+    }) = rows.types.get(referent.0 as usize)
+    else {
+        return Ok(false);
+    };
+    let [Argument::Region(inner)] = arguments.slice(&rows.arguments)? else {
+        return Ok(false);
+    };
+    let bound_slot = |region: super::super::RegionRef| match rows.regions.get(region.0 as usize) {
+        Some(Region::Bound {
+            binder,
+            depth: 0,
+            slot,
+        }) if *binder == signature.binder => Some(*slot),
+        _ => None,
+    };
+    Ok(signature.convention == Convention::Rust
+        && signature.unsafe_
+        && !signature.variadic
+        && rows.types.get(signature.result.0 as usize) == Some(&Type::Never)
+        && *declaration == panic_info
+        && rows
+            .binders
+            .get(signature.binder.0 as usize)
+            .is_some_and(|binder| binder.count == 2)
+        && matches!(
+            (bound_slot(*region), bound_slot(*inner)),
+            (Some(0), Some(1)) | (Some(1), Some(0))
+        ))
 }
 
 fn require_module(

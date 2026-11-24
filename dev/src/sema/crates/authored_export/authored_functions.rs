@@ -129,7 +129,7 @@ impl Stage {
             }
             self.prepare_signature_arena(facts, function.signature)?;
             self.function(report, facts, &function, declaration)?;
-            self.exact_callable(facts, &function, declaration)?;
+            self.exact_callable(report, facts, &function, declaration)?;
             if self.declaration_policies()
                 && let Some(header) = self.rows.functions.last()
                 && s::nested_original(&self.rows.declarations, header).is_some()

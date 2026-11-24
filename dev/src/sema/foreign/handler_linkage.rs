@@ -3,11 +3,10 @@ use super::{Function, Item, Registry};
 use crate::{
     sema::compiler_items::HandlerBindings,
     support::{
-        linkage::{Linkage, Naming},
+        linkage::{Linkage, Naming, PANIC_HANDLER_SYMBOL as SYMBOL},
         retained::Growth,
     },
 };
-const SYMBOL: &str = "rust_begin_unwind";
 impl Registry {
     pub(in crate::sema) fn bind_handler(
         &mut self,

@@ -1,13 +1,14 @@
 //! Exact native linkage consumes the already checked foreign registry.
-use super::{DeclarationRef, Declarations, Stage, s};
+use super::{DeclarationRef, Declarations, Report, Stage, s};
 use crate::{
     resolve::model::DefId,
-    support::linkage::{Linkage, Naming},
+    support::linkage::{Linkage, Naming, PANIC_HANDLER_SYMBOL},
 };
 
 impl Stage {
     pub(super) fn exact_callable(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         function: &crate::sema::model::Function,
         declaration: DeclarationRef,
@@ -27,6 +28,17 @@ impl Stage {
         if !self.exact_linkage() || record.signature != function.signature {
             return Err("source exact callable changed its actual checked signature or profile");
         }
+        let symbol = registry
+            .names()
+            .get(id)
+            .ok_or("exact source callable lost its actual symbol pool")?;
+        let weak_panic = self.declaration_policies()
+            && record.linkage == Linkage::Import
+            && function.body.is_none()
+            && symbol == PANIC_HANDLER_SYMBOL
+            && facts
+                .weak_panic_import(report, function.definition)
+                .map_err(|_| "weak panic import lost its checked source claim")?;
         let body = match record.linkage {
             Linkage::Export if function.body.is_some() => Some(
                 self.functions
@@ -38,21 +50,18 @@ impl Stage {
             Linkage::Import
                 if self.declaration_policies()
                     && function.body.is_none()
-                    && runtime_import(facts, function.definition)? =>
+                    && (weak_panic || runtime_import(facts, function.definition)?) =>
             {
                 None
             }
             _ => return Err("source exact callable requires an actual original or runtime import"),
         };
-        let symbol = registry
-            .names()
-            .get(id)
-            .ok_or("exact source callable lost its actual symbol pool")?;
         self.charge(symbol.len().saturating_add(1))?;
         self.reserve(4 * size_of::<s::ExactCallable>() + symbol.len())?;
         self.rows.exact_callables.push(s::ExactCallable {
             declaration,
             body,
+            weak_panic,
             symbol: symbol.into(),
         });
         Ok(())

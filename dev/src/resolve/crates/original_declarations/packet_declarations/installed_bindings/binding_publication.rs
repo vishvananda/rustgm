@@ -67,7 +67,8 @@ pub(super) fn prepare(
         if rows.descriptor().profile().feature_predicates() {
             work.charge(1)?;
             if (rows.descriptor().profile().declaration_policies()
-                && s::nested_original(&rows.declarations, header).is_some())
+                && (s::nested_original(&rows.declarations, header).is_some()
+                    || private_weak_import(rows, header, work)?))
                 || header.parent.is_some_and(|parent| {
                     matches!(
                         rows.header(parent),
@@ -75,8 +76,8 @@ pub(super) fn prepare(
                     )
                 })
             {
-                // Private originals keep their actual body and declaration
-                // identity instead of entering an external callable path.
+                // A private callable keeps its actual declaration coordinate.
+                // Its original or exact foreign record supplies linkage.
                 continue;
             }
         }
@@ -237,6 +238,20 @@ fn member(
     }
     Ok(Some(binding))
 }
+fn private_weak_import(
+    rows: s::ValidatedView<'_>,
+    header: &s::FunctionHeader,
+    work: &mut Work,
+) -> Result<bool, Error> {
+    if header.body != s::FunctionBody::Absent || header.parent.is_some() {
+        return Ok(false);
+    }
+    work.charge(1 + rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
+    Ok(rows
+        .exact_callable(header.declaration)
+        .is_some_and(|row| row.weak_panic))
+}
+
 fn module_bindings(
     resolver: &mut Resolver<'_>,
     (rows, names): (s::ValidatedView<'_>, &s::ModuleNamespace),

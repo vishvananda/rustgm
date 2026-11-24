@@ -515,6 +515,8 @@ pub struct ExactCallable {
     /// Existing exported originals own bodies; version fourteen may name a
     /// checked external runtime declaration instead.
     pub body: Option<BodyRef>,
+    /// An independently checked Rust-ABI reference to the user panic handler.
+    pub weak_panic: bool,
     pub symbol: Box<str>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
