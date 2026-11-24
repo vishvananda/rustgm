@@ -432,7 +432,7 @@ fn reserve_roles(
                 return Err("source trait role has no actual canonical header");
             };
             let flags = rows.traits[index as usize].flags.bits();
-            charge(work, 5)?;
+            charge(work, 6)?;
             attributes[role.role.index()] = HeaderAttributes::retained(
                 [
                     (s::TraitFlags::FUNDAMENTAL, HeaderAttribute::Fundamental),
@@ -446,6 +446,10 @@ fn reserve_roles(
                         HeaderAttribute::DynIncompatible,
                     ),
                     (s::TraitFlags::MARKER, HeaderAttribute::Marker),
+                    (
+                        s::TraitFlags::UNSAFE_SPECIALIZATION,
+                        HeaderAttribute::UnsafeSpecialization,
+                    ),
                 ]
                 .into_iter()
                 .filter_map(|(bit, attribute)| (flags & bit != 0).then_some(attribute)),

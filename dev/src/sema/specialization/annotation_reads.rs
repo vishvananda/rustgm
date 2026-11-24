@@ -1,5 +1,6 @@
 //! Missing or imported trait state is Unknown, never a local marker absence.
 use super::annotation_store::{self as store, Marker, Policy};
+use crate::support::bindings::LangItem;
 use crate::{
     resolve::{
         expansion::Report,
@@ -15,6 +16,26 @@ pub(in crate::sema) fn marker(
     report: &Report,
     definition: DefId,
 ) -> Result<bool, Error> {
+    if report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .is_some_and(|row| row.kind == DefKind::Trait && row.node.is_none())
+        && let Some(catalog) = facts.source_bindings.as_deref()
+        && let Some(role) = catalog
+            .validated_role(LangItem::TrivialClone)
+            .map_err(Error::unlocated)?
+        && role.definition == definition
+    {
+        crate::sema::crates::charge_source_header_query(facts, LangItem::ALL.len())?;
+        catalog
+            .require_provider_report(report)
+            .map_err(Error::unlocated)?;
+        return Ok(catalog
+            .neutral_attributes(role)
+            .map_err(Error::unlocated)?
+            .contains(crate::resolve::bindings::HeaderAttribute::UnsafeSpecialization));
+    }
     Ok(read(facts, report, definition)?.0.is_some())
 }
 pub(in crate::sema) fn applicable(
@@ -185,11 +206,53 @@ fn validate_marker(report: &Report, marker: Marker, policy: Policy) -> Result<()
 }
 
 impl Declarations {
-    /// Publication requires completed source producers before rejecting untransported policy.
+    pub(in crate::sema) fn publication_unsafe_specialization(
+        &self,
+        report: &Report,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        if !self.checked_trivial_clone(definition)?
+            || self
+                .must_use_contracts
+                .as_deref()
+                .is_none_or(|owner| owner.specialization.is_none())
+        {
+            return Ok(false);
+        }
+        let (unsafe_, applicable) = read(self, report, definition)?;
+        Ok(unsafe_.is_some() && applicable.is_none())
+    }
+
+    fn checked_trivial_clone(&self, definition: DefId) -> Result<bool, Error> {
+        let Some(catalog) = self.source_bindings.as_deref() else {
+            return Ok(false);
+        };
+        if catalog
+            .language(LangItem::TrivialClone)
+            .is_none_or(|role| role.definition != definition)
+        {
+            return Ok(false);
+        }
+        Ok(catalog
+            .validated_language(LangItem::TrivialClone)
+            .map_err(Error::unlocated)?
+            .is_some())
+    }
+
     pub(crate) fn publication_header_contracts<'a>(
         &'a self,
         report: &Report,
         definition: DefId,
+    ) -> Result<crate::sema::header_attributes::HeaderAttributeView<'a>, Error> {
+        self.profiled_publication_header_contracts(report, definition, false)
+    }
+
+    /// Publication requires completed source producers before rejecting untransported policy.
+    pub(in crate::sema) fn profiled_publication_header_contracts<'a>(
+        &'a self,
+        report: &Report,
+        definition: DefId,
+        declaration_policies: bool,
     ) -> Result<crate::sema::header_attributes::HeaderAttributeView<'a>, Error> {
         use crate::sema::header_attributes::ContractKnowledge;
         let view = self.header_attribute_contracts(report, definition)?;
@@ -209,16 +272,21 @@ impl Declarations {
             ));
         }
         // Completion is produced after the shared marker consumer finishes.
-        // This is a presence fence; the wire still conveys no marker knowledge.
+        // The wire admits only those flags owned by the actual profiled role.
         if self
             .must_use_contracts
             .as_deref()
             .is_some_and(|owner| owner.specialization.is_some())
         {
             let (unsafe_, applicable) = read(self, report, definition)?;
-            // Existing closed profiles encode sizing's role-owned specialization
-            // flag and require its exact deny-impl contract. General trait policy
-            // and unsafe marker priority still need their wider wire protocol.
+            if declaration_policies
+                && unsafe_.is_some()
+                && applicable.is_none()
+                && self.checked_trivial_clone(definition)?
+            {
+                return Ok(view);
+            }
+            // The sizing profile owns the applicable flag and exact deny-impl contract.
             if unsafe_.is_none()
                 && applicable.is_some()
                 && self

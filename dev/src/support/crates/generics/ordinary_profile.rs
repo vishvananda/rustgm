@@ -264,7 +264,7 @@ fn trait_headers(
         work.charge(1)?;
         let flags = header.flags.bits();
         let role_header = super::super::TraitHeader {
-            flags: trait_profile_flags(header, roles.definition_policies)?,
+            flags: trait_profile_flags(header, roles)?,
             ..*header
         };
         if roles.destruct == Some(header.declaration) {
@@ -339,7 +339,8 @@ fn trait_headers(
         }
         let drop = roles.drop == Some(header.declaration);
         let protocol_trait = roles.try_traits.contains(&Some(header.declaration))
-            || roles.for_traits.contains(&Some(header.declaration));
+            || roles.for_traits.contains(&Some(header.declaration))
+            || [roles.clone, roles.trivial_clone].contains(&Some(header.declaration));
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
@@ -362,9 +363,15 @@ fn trait_headers(
 }
 fn trait_profile_flags(
     header: &super::super::TraitHeader,
-    policies: u16,
+    roles: &Bindings,
 ) -> Result<TraitFlags, &'static str> {
     let flags = header.flags.bits();
+    let policies = roles.definition_policies;
+    if flags & TraitFlags::UNSAFE_SPECIALIZATION != 0
+        && (roles.trivial_clone != Some(header.declaration) || flags & TraitFlags::MARKER == 0)
+    {
+        return Err("source unsafe specialization requires its actual TrivialClone marker");
+    }
     if header.region_captures != 0 && policies == 0 {
         return Err("source trait lifetimes require the declaration policy profile");
     }
@@ -995,6 +1002,9 @@ pub(super) struct Bindings {
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::RUNTIME_FORMAT_BODIES.len()],
     drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    clone_fn: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    trivial_clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
     try_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
@@ -1083,6 +1093,8 @@ impl Bindings {
         let [partial_eq, partial_ord] = self.comparisons;
         let target = if Some(input.owner) == self.drop_glue {
             self.destruct
+        } else if Some(input.owner) == self.trivial_clone {
+            self.clone
         } else if Some(input.owner) == deref_mut {
             deref
         } else if Some(input.owner) == try_ {
@@ -1135,6 +1147,7 @@ impl Bindings {
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         if self.drop.is_some() && function.parent == self.drop
+            || self.clone_fn == Some(function.declaration)
             || self.try_methods.contains(&Some(function.declaration))
             || self.for_methods.contains(&Some(function.declaration))
         {
@@ -1184,6 +1197,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::MetadataType
             | LangItem::DiscriminantKind
             | LangItem::DiscriminantType
+            | LangItem::TrivialClone
             | LangItem::DynMetadata
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq
@@ -1335,7 +1349,8 @@ pub(super) fn bindings(
         callable_roles::Roles::default()
     };
     let languages = profile.languages();
-    let range = if profile == BindingProfile::BodyOperations {
+    let modern = profile == BindingProfile::BodyOperations;
+    let range = if modern {
         interval_roles::family(rows, headers, interval_roles::ROLES.map(bound), work)?
     } else {
         None
@@ -1351,10 +1366,11 @@ pub(super) fn bindings(
         callables,
         languages,
         range,
-        drop: (profile == BindingProfile::BodyOperations)
-            .then_some(bound(LangItem::Drop))
-            .flatten(),
+        drop: bound(LangItem::Drop).filter(|_| modern),
         drop_glue: bound(LangItem::DropGlue),
+        clone: bound(LangItem::Clone).filter(|_| modern),
+        clone_fn: bound(LangItem::CloneFn).filter(|_| modern),
+        trivial_clone: bound(LangItem::TrivialClone),
         try_methods: LangItem::REQUIRED_TRY_METHODS.map(bound),
         try_traits: [
             bound(LangItem::TryTrait),

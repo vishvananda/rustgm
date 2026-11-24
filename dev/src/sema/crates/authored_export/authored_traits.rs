@@ -79,6 +79,7 @@ fn require_v14_role(role: LangItem) -> Result<(), &'static str> {
             Err("source Try declarations require version fourteen")
         }
         LangItem::DropGlue => Err("source Drop operation transport requires version fourteen"),
+        LangItem::TrivialClone => Err("source TrivialClone declarations require version fourteen"),
         LangItem::ConstParamTy | LangItem::StructuralPartialEq => {
             Err("source const parameter marker transport requires version 14")
         }
@@ -130,7 +131,7 @@ impl Stage {
                 == DefKind::Trait
             {
                 let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
-                self.trait_header(facts, &header, reserved, literal)?;
+                self.trait_header(report, facts, &header, reserved, literal)?;
                 if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
                     *slot = true;
                 }
@@ -151,7 +152,7 @@ impl Stage {
                     .ok_or("ordinary trait owner is outside its actual declaration arena")?;
                 if !*slot {
                     let (header, literal) = Trait::source_owner_with_bounds(report, facts, owner)?;
-                    self.trait_header(facts, &header, reserved, literal)?;
+                    self.trait_header(report, facts, &header, reserved, literal)?;
                     *slot = true;
                 }
             }
@@ -412,6 +413,7 @@ impl Stage {
 
     fn trait_header(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         header: &Trait<'_>,
         reserved: &Reservations,
@@ -479,10 +481,7 @@ impl Stage {
                 .map_err(|_| "source member table overflow")?,
         };
         let policy = if self.declaration_policies() {
-            facts.authored_definition_policy(header.definition)?
-                | facts.authored_dispatch_bits(header.definition)?
-                | (u16::from(facts.authored_incoherent_target(header.definition)?)
-                    * s::TraitFlags::INCOHERENT_INHERENT)
+            trait_policy(report, facts, header.definition)?
         } else {
             0
         };
@@ -553,6 +552,21 @@ impl Stage {
                 .map_err(|_| "source region bound table overflow")?,
         })
     }
+}
+
+fn trait_policy(
+    report: &Report,
+    facts: &Declarations,
+    definition: crate::resolve::model::DefId,
+) -> Result<u16, &'static str> {
+    let unsafe_specialization = facts
+        .publication_unsafe_specialization(report, definition)
+        .map_err(|_| "source unsafe specialization marker lost its checked declaration")?;
+    Ok(facts.authored_definition_policy(definition)?
+        | facts.authored_dispatch_bits(definition)?
+        | (u16::from(unsafe_specialization) * s::TraitFlags::UNSAFE_SPECIALIZATION)
+        | (u16::from(facts.authored_incoherent_target(definition)?)
+            * s::TraitFlags::INCOHERENT_INHERENT))
 }
 
 fn flags(

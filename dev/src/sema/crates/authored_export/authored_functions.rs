@@ -721,10 +721,11 @@ fn required_protocol_trait(
     let catalog = facts
         .source_bindings
         .as_deref()
-        .ok_or("source Try method lost its actual language catalog")?;
+        .ok_or("source required method lost its actual language catalog")?;
     let Some((role, declaration)) = LangItem::REQUIRED_TRY_METHODS
         .into_iter()
         .chain(LangItem::REQUIRED_FOR_METHODS)
+        .chain([LangItem::CloneFn])
         .filter_map(|role| {
             catalog
                 .language(role)
@@ -734,10 +735,10 @@ fn required_protocol_trait(
     else {
         return Ok(None);
     };
-    if LangItem::REQUIRED_TRY_METHODS.contains(&role)
+    if !LangItem::REQUIRED_FOR_METHODS.contains(&role)
         && catalog.header_role(role)? != Some(declaration)
     {
-        return Err("source Try method lost its checked language identity");
+        return Err("source protocol method lost its checked language identity");
     }
     let OwnerKind::Trait { definition, .. } = owner.kind else {
         return Err("source protocol method requires its actual trait owner");

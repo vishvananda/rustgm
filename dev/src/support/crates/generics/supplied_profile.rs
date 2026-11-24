@@ -28,7 +28,8 @@ pub(super) fn validate(
         if header.flags.bits() & s::TraitFlags::DISPATCH_POLICIES != 0 {
             return Err("source trait dispatch requires the declaration policy profile");
         }
-        if header.flags.bits() & s::TraitFlags::MARKER != 0 {
+        if header.flags.bits() & (s::TraitFlags::MARKER | s::TraitFlags::UNSAFE_SPECIALIZATION) != 0
+        {
             return Err("source marker trait requires the declaration policy profile");
         }
     }

@@ -1,0 +1,10 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observe.c",
+  "stdout": "73\n",
+  "ordinary_supertrait": "source role is missing its exact typed prerequisite",
+  "unrelated_marker": "source unsafe-specialization-marker contract transport is not implemented",
+  "foreign_owner": "source role binding is duplicated or belongs to a foreign provider",
+  "old_reader": "unknown source trait attribute claim"
+}

@@ -412,17 +412,20 @@ impl TraitFlags {
     pub const SKIP_BOXED_SLICE_DISPATCH: u16 = 2048;
     /// An empty marker declaration verified during metadata validation.
     pub const MARKER: u16 = 4096;
+    /// The checked unsafe specialization policy on the actual `TrivialClone` declaration.
+    pub const UNSAFE_SPECIALIZATION: u16 = 8192;
     pub(crate) const DISPATCH_POLICIES: u16 =
         Self::SKIP_ARRAY_DISPATCH | Self::SKIP_BOXED_SLICE_DISPATCH;
     pub(crate) const DECLARATION_POLICIES: u16 = Self::FUNDAMENTAL
         | Self::DYN_INCOMPATIBLE
         | Self::INCOHERENT_INHERENT
         | Self::DISPATCH_POLICIES
-        | Self::MARKER;
+        | Self::MARKER
+        | Self::UNSAFE_SPECIALIZATION;
     /// # Errors
     /// Rejects claims outside this exact supported structural vocabulary.
     pub fn from_bits(bits: u16) -> Result<Self, &'static str> {
-        if bits & !8191 != 0 {
+        if bits & !16383 != 0 {
             return Err("unknown source trait attribute claim");
         }
         Ok(Self(bits))

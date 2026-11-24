@@ -130,6 +130,9 @@ with pinned Rust.
 fresh client's `?` operation against ordinary and const trait declarations,
 including the associated bounds on the residual. Run
 `scripts/check_try_protocol_transport.py` with the prebuilt compilers.
+`spec/source-clone-transport/outcomes.json` checks a fresh implementation of
+the provider's const `Clone` and `TrivialClone` declarations. Run
+`scripts/check_clone_role_transport.py` with the prebuilt compilers.
 `spec/source-iteration-transport/outcomes.json` checks item and empty paths
 through a fresh client's imported `Iterator::next`, `IntoIterator::into_iter`,
 and `Option` declarations. Run `scripts/check_iteration_role_transport.py`

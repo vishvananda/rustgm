@@ -262,7 +262,10 @@ fn trait_headers(
             LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
                 catalog.validated_role(role)?;
             }
-            LangItem::Clone | LangItem::Copy | LangItem::LegacyReceiver => {
+            LangItem::Clone
+            | LangItem::Copy
+            | LangItem::LegacyReceiver
+            | LangItem::TrivialClone => {
                 copying_role(report, facts, catalog, (role, declaration), steps)?;
                 complete.insert(role);
                 if role == LangItem::Clone {
@@ -348,13 +351,25 @@ fn copying_role(
     steps: &mut usize,
 ) -> Result<(), &'static str> {
     let header = Trait::current(report, facts, declaration, steps)?;
-    header.profile(&facts.types, flags(), 0)?;
+    let trivial = role == LangItem::TrivialClone;
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: trivial,
+            constant: trivial || role == LangItem::Clone && header.flags.constant,
+            ..flags()
+        },
+        0,
+    )?;
+    *steps = steps.saturating_add(header.inputs.len());
+    if trivial {
+        return copying::validate_trivial(facts, catalog, &header);
+    }
     let expected = match role {
         LangItem::Clone => LangItem::Sized,
         LangItem::Copy => LangItem::Clone,
         _ => LangItem::PointeeSized,
     };
-    *steps = steps.saturating_add(header.inputs.len());
     copying::require_header_super(facts, catalog, &header, expected, Constness::Ordinary)?;
     if role == LangItem::Clone {
         clone_member(facts, catalog, &header, steps)?;

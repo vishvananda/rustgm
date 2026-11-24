@@ -264,6 +264,7 @@ impl Declarations {
                     definition,
                     LangItem::REQUIRED_FOR_METHODS
                         .into_iter()
+                        .chain([LangItem::CloneFn])
                         .map(|role| ((), role)),
                 )?
                 .is_some()

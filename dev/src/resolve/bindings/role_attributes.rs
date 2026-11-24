@@ -13,6 +13,7 @@ pub(crate) enum HeaderAttribute {
     Coinductive,
     DynIncompatible,
     Marker,
+    UnsafeSpecialization,
 }
 impl HeaderAttribute {
     pub(super) fn named(name: &str) -> Option<Self> {
