@@ -94,6 +94,10 @@ with pinned Rust.
 fresh client's `?` operation against ordinary and const trait declarations,
 including the associated bounds on the residual. Run
 `scripts/check_try_protocol_transport.py` with the prebuilt compilers.
+`spec/source-enum-role-transport/outcomes.json` checks the provider's actual
+Option, Result, and Ordering declarations in fresh clients. It also rejects
+swapped Option variants and a redirected Result diagnostic owner. Run
+`scripts/check_enum_role_transport.py` with the prebuilt compilers.
 `spec/source-nominal-const-formals/outcomes.json` checks fresh applications of
 imported enum and record const parameters and rejects a different nominal
 type. Run `scripts/check_nominal_const_formals.py` with the prebuilt compilers.

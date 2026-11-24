@@ -157,6 +157,8 @@ impl Stage {
     /// A non-trait role row carries only its declaration address.
     fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
         match kind {
+            DefKind::Enum | DefKind::Variant
+                if self.declaration_policies() && role.is_enum_value_role() => {}
             DefKind::Function | DefKind::Variant
                 if self.declaration_policies() && LangItem::TRY_PROTOCOL.contains(&role) => {}
             DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
@@ -241,6 +243,12 @@ impl Stage {
                     .language(LangItem::PanicDisplay)
                     .and_then(|_| reservations.display_declaration()),
             ),
+            (
+                s::DiagnosticRole::Result,
+                reservations
+                    .language(LangItem::ResultOk)
+                    .and_then(|_| reservations.result_declaration()),
+            ),
         ] {
             let Some(declaration) = declaration else {
                 continue;
@@ -256,6 +264,9 @@ impl Stage {
                     s::DiagnosticRole::Eq => "source Eq diagnostic identity requires version 14",
                     s::DiagnosticRole::Display => {
                         "source Display diagnostic identity requires version 14"
+                    }
+                    s::DiagnosticRole::Result => {
+                        "source Result diagnostic identity requires version 14"
                     }
                 });
             }
@@ -285,6 +296,12 @@ impl Stage {
             && catalog.language(role).is_some()
         {
             return Err("source formatting panic declarations require version fourteen");
+        }
+        if role.is_enum_value_role()
+            && !self.declaration_policies()
+            && catalog.language(role).is_some()
+        {
+            return Err("source enum roles require version fourteen");
         }
         if LangItem::TRY_PROTOCOL.contains(&role)
             && !self.declaration_policies()

@@ -488,6 +488,10 @@ fn diagnostic_roles(
                 DefKind::Trait,
                 "imported Display diagnostic item requires its actual trait declaration",
             ),
+            s::DiagnosticRole::Result => (
+                DefKind::Enum,
+                "imported Result diagnostic item requires its actual enum declaration",
+            ),
         };
         origins
             .validate_declaration(declaration, definition, kind)

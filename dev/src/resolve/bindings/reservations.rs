@@ -107,6 +107,10 @@ impl Reservations {
     pub(crate) fn display_declaration(&self) -> Option<Declaration> {
         self.diagnostics[super::annotations::DiagnosticItem::Display.index()]
     }
+    /// Actual enum owner of the diagnostic-owned Result variants.
+    pub(crate) fn result_declaration(&self) -> Option<Declaration> {
+        self.diagnostics[super::annotations::DiagnosticItem::Result.index()]
+    }
     /// Reserved diagnostic declaration, used after the trait headers are checked.
     pub(crate) fn debug_declaration(&self) -> Option<Declaration> {
         self.diagnostics[super::annotations::DiagnosticItem::Debug.index()]

@@ -76,6 +76,18 @@ impl LangItem {
     pub(crate) const REQUIRED_TRY_METHODS: [Self; 3] =
         [Self::TryFromOutput, Self::TryBranch, Self::TryFromResidual];
 
+    pub(crate) const fn is_enum_value_role(self) -> bool {
+        matches!(
+            self,
+            Self::Option
+                | Self::OptionSome
+                | Self::OptionNone
+                | Self::ResultOk
+                | Self::ResultErr
+                | Self::Ordering
+        )
+    }
+
     pub(crate) const FORMAT_PANICS: [Self; 4] = [
         Self::PanicFmt,
         Self::PanicNounwind,

@@ -1,0 +1,9 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "41 19 23 37 73\n",
+  "swapped_option": "source enum variant role changed its actual payload type",
+  "redirected_result": "source Result variant belongs to another actual diagnostic enum",
+  "old_reader": "unknown source diagnostic identity spelling"
+}

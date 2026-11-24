@@ -211,7 +211,12 @@ fn ordering_identity(
     Ok(item)
 }
 fn ordering(facts: &Declarations, output: TypeId) -> Result<[VariantId; 3], &'static str> {
-    let item = ordering_identity(facts, output)?;
+    ordering_layout(facts, ordering_identity(facts, output)?)
+}
+pub(super) fn ordering_layout(
+    facts: &Declarations,
+    item: crate::types::ItemId,
+) -> Result<[VariantId; 3], &'static str> {
     let definition = facts
         .aggregates
         .get(item)

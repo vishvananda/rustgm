@@ -309,9 +309,17 @@ pub enum DiagnosticRole {
     Eq,
     /// Version fourteen binds the actual trait required by `panic_display`.
     Display,
+    /// The actual enum owner of the Result variant roles.
+    Result,
 }
 impl DiagnosticRole {
-    pub const ALL: [Self; 4] = [Self::NonNull, Self::Send, Self::Eq, Self::Display];
+    pub const ALL: [Self; 5] = [
+        Self::NonNull,
+        Self::Send,
+        Self::Eq,
+        Self::Display,
+        Self::Result,
+    ];
     #[must_use]
     pub const fn spelling(self) -> &'static str {
         match self {
@@ -319,6 +327,7 @@ impl DiagnosticRole {
             Self::Send => "Send",
             Self::Eq => "Eq",
             Self::Display => "Display",
+            Self::Result => "Result",
         }
     }
     #[must_use]

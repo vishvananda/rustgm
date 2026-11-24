@@ -302,6 +302,7 @@ fn trait_headers(
             role if GROUPED.contains(&role)
                 || LangItem::FORMAT_PANICS.contains(&role)
                 || LangItem::TRY_PROTOCOL.contains(&role)
+                || role.is_enum_value_role()
                 || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
@@ -428,6 +429,14 @@ fn grouped_roles(
     if super::super::try_protocol::imported(report, facts, catalog, steps)? {
         for role in LangItem::TRY_PROTOCOL {
             complete.insert(role);
+        }
+    }
+    for group in super::super::enum_roles::Group::ALL {
+        *steps = steps.saturating_add(20);
+        if group.check(facts, catalog)? {
+            for &role in group.roles() {
+                complete.insert(role);
+            }
         }
     }
     if super::range_members::imported(report, facts, catalog, steps)? {

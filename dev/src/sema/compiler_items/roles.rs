@@ -841,6 +841,42 @@ pub(in crate::sema) fn complete_try_protocol(
     Ok(())
 }
 
+pub(in crate::sema) fn complete_enum_roles(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    for group in super::enum_roles::Group::ALL {
+        let Some(catalog) = facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        if !group
+            .roles()
+            .iter()
+            .any(|&role| catalog.language(role).is_some())
+        {
+            continue;
+        }
+        crate::sema::header_attributes::charge_source_contract_query(facts, 20)?;
+        catalog
+            .require_provider_report(report)
+            .map_err(Error::unlocated)?;
+        if !group.check(facts, catalog).unwrap_or(false) {
+            continue;
+        }
+        for &role in group.roles() {
+            let declaration = facts
+                .source_bindings
+                .as_deref()
+                .and_then(|catalog| catalog.language(role))
+                .ok_or_else(|| {
+                    Error::unlocated("checked enum roles lost their actual source declaration")
+                })?;
+            record_completion(facts, role, declaration)?;
+        }
+    }
+    Ok(())
+}
+
 fn record_completion(
     facts: &mut Declarations,
     role: LangItem,

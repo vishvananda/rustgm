@@ -1097,6 +1097,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
+        || role.is_enum_value_role()
         || role.is_runtime_import()
     {
         return profile == BindingProfile::BodyOperations;
@@ -1370,8 +1371,26 @@ fn diagnostic_bindings(
                     );
                 }
             }
+            super::super::DiagnosticRole::Result => {
+                result_diagnostic(
+                    rows,
+                    row.declaration.declaration,
+                    declarations,
+                    profile,
+                    (kind, header),
+                    work,
+                )?;
+            }
         }
     }
+    diagnostic_role_requirements(seen, declarations)?;
+    Ok(send)
+}
+
+fn diagnostic_role_requirements(
+    seen: [bool; super::super::DiagnosticRole::ALL.len()],
+    declarations: &[Option<crate::support::crates::owner_catalog::DeclarationRef>],
+) -> Result<(), &'static str> {
     let const_marker = declarations[LangItem::ConstParamTy.index()].is_some();
     if seen[super::super::DiagnosticRole::Eq as usize] != const_marker
         || const_marker && declarations[LangItem::StructuralPartialEq.index()].is_none()
@@ -1385,8 +1404,45 @@ fn diagnostic_bindings(
     {
         return Err("source panic_display requires its actual Display diagnostic declaration");
     }
-    Ok(send)
+    for role in [LangItem::ResultOk, LangItem::ResultErr] {
+        if seen[super::super::DiagnosticRole::Result as usize]
+            != declarations[role.index()].is_some()
+        {
+            return Err("source Result variants require their actual diagnostic enum declaration");
+        }
+    }
+    Ok(())
 }
+
+fn result_diagnostic(
+    rows: &SourceRows,
+    result: crate::support::crates::owner_catalog::DeclarationRef,
+    declarations: &[Option<crate::support::crates::owner_catalog::DeclarationRef>],
+    profile: BindingProfile,
+    (kind, header): (
+        Option<super::super::DefinitionKind>,
+        Option<super::super::HeaderRef>,
+    ),
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    if profile != BindingProfile::BodyOperations
+        || kind != Some(super::super::DefinitionKind::Enum)
+        || !matches!(header, Some(super::super::HeaderRef::Nominal(_)))
+    {
+        return Err("source Result diagnostic identity requires its own version-fourteen enum");
+    }
+    for role in [LangItem::ResultOk, LangItem::ResultErr] {
+        work.charge(1)?;
+        let actual = declarations[role.index()]
+            .and_then(|variant| rows.declarations.get(variant.0 as usize))
+            .and_then(|row| row.definition.parent);
+        if actual != Some(result) {
+            return Err("source Result variant belongs to another actual diagnostic enum");
+        }
+    }
+    Ok(())
+}
+
 const SEND: &str = "imported Send diagnostic item requires its unsafe auto trait declaration";
 fn defined_operation_role(
     profile: BindingProfile,
@@ -1425,6 +1481,9 @@ fn role_header(
     use super::super::HeaderRef;
     if LangItem::TRY_PROTOCOL.contains(&role) {
         return try_role_header(rows, role, header);
+    }
+    if role.is_enum_value_role() {
+        return enum_role_header(kind, role, header);
     }
     match (role, header) {
         (role, header)
@@ -1518,6 +1577,24 @@ fn role_header(
     }
     Ok(())
 }
+fn enum_role_header(
+    kind: super::super::DefinitionKind,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    use super::super::{DefinitionKind, HeaderRef};
+    let exact = match role {
+        LangItem::Option | LangItem::Ordering => {
+            kind == DefinitionKind::Enum && matches!(header, Some(HeaderRef::Nominal(_)))
+        }
+        _ => kind == DefinitionKind::Variant && matches!(header, Some(HeaderRef::Variant(_))),
+    };
+    if !exact {
+        return Err("source enum role requires its actual enum or variant header");
+    }
+    Ok(())
+}
+
 fn required_method_owner(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
