@@ -418,10 +418,11 @@ impl Stage {
             let site = origin.source().ok_or_else(|| {
                 Error::unlocated("source promotion promise lost its actual owner")
             })?;
-            contract.promotable = Some(
-                self.site(contract.declaration, site.owner)
-                    .map_err(Error::unlocated)?,
-            );
+            let owner = self
+                .site(contract.declaration, site.owner)
+                .map_err(Error::unlocated)?;
+            contract.promotable =
+                Some(s::HeaderContract::pack_promotion_site(owner).map_err(Error::unlocated)?);
         }
 
         contract.format_panic = self.declaration_policies()

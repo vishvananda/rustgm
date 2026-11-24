@@ -277,7 +277,7 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
         };
         let role = LangItem::from_name(name).ok_or("known role")?;
         if LangItem::GUARD_PANICS.contains(&role)
-            || crate::sema::compiler_items::interval_values::NOMINALS.contains(&role)
+            || LangItem::RANGE_NOMINALS.contains(&role)
             || role == LangItem::RangeInclusiveNew
         {
             continue;

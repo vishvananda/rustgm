@@ -7,6 +7,8 @@ use crate::support::{
     retained,
 };
 
+use std::num::NonZeroU32;
+
 pub const MAX_REASON_BYTES: usize = 64 * 1024;
 /// Version thirteen's declared target-feature sets: at most the consumer
 /// table's size, each name no longer than this bound, which exceeds the
@@ -69,9 +71,18 @@ pub struct HeaderContract {
     /// Version fourteen only, on the two checked formatting panic declarations.
     pub format_panic: bool,
     /// Version fourteen retains the actual source owner site of a const promotion promise.
-    pub promotable: Option<u32>,
+    pub promotable: Option<NonZeroU32>,
 }
 impl HeaderContract {
+    pub(crate) fn pack_promotion_site(site: u32) -> Result<NonZeroU32, &'static str> {
+        NonZeroU32::new(site.wrapping_add(1))
+            .ok_or("source promotion site exceeds its canonical range")
+    }
+
+    pub(crate) fn promotion_site(&self) -> Option<u32> {
+        self.promotable.map(|site| site.get() - 1)
+    }
+
     #[must_use]
     pub const fn callable_advisories(&self) -> bool {
         self.cold
@@ -233,7 +244,7 @@ impl HeaderAttributeColumns {
                 .inline
                 .is_some_and(|value| value.owner_site >= declaration.sites)
             || contract
-                .promotable
+                .promotion_site()
                 .is_some_and(|site| site >= declaration.sites)
         {
             return Err("source attribute owner site is outside its actual declaration");

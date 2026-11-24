@@ -540,7 +540,7 @@ fn attribute_view<'a>(
     } else {
         ContractKnowledge::KnownAbsent
     };
-    let imported_promotable = if let Some(owner) = row.promotable {
+    let imported_promotable = if let Some(owner) = row.promotion_site() {
         ContractKnowledge::KnownPresent(site(Some(owner))?)
     } else if declaration_policies {
         ContractKnowledge::KnownAbsent

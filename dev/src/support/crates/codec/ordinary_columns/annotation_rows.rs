@@ -51,7 +51,7 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
             s::InlineApplicability::DiagnosedNoBody => 1,
         })?;
     }
-    if let Some(site) = row.promotable {
+    if let Some(site) = row.promotion_site() {
         id(out, site)?;
     }
     // Written as declared: the reader, not the writer, owns canonical form.
@@ -97,7 +97,7 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         None
     };
     let promotable = if flags & 128 != 0 {
-        Some(read.id()?)
+        Some(s::HeaderContract::pack_promotion_site(read.id()?)?)
     } else {
         None
     };
