@@ -1035,53 +1035,12 @@ fn is_module_scoped(report: &Report, definition: &Definition) -> bool {
     report.resolution.module_scopes.get(module.0 as usize) == Some(&definition.scope)
 }
 
-fn scope_owners(
+fn complete_scope_owners(
     report: &Report,
     facts: &Declarations,
     stage: &mut Stage,
-) -> Result<Vec<Option<DefId>>, &'static str> {
-    let mut owners = vec![None; report.resolution.scopes.len()];
-    let root = report
-        .resolution
-        .crate_root
-        .ok_or("source provider has no actual root declaration")?;
-    let scope = report
-        .resolution
-        .definitions
-        .get(root.0 as usize)
-        .and_then(|definition| definition.members)
-        .ok_or("source provider root has no actual scope")?;
-    owners[scope.0 as usize] = Some(root);
-    for (index, definition) in report.resolution.definitions.iter().enumerate() {
-        stage.charge(1)?;
-        if stage.declaration_policies()
-            && matches!(definition.kind, DefKind::TypeAlias | DefKind::TraitAlias)
-        {
-            let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
-            if definition.kind == DefKind::TraitAlias
-                || facts.associated.families.contains_key(&alias)
-                || scoped_module_alias(report, facts, definition, alias)
-            {
-                let source = definition
-                    .node
-                    .ok_or("source alias has no actual source owner")?;
-                let module = report.resolution.scopes[definition.scope.0 as usize].module;
-                let scope = *report
-                    .resolution
-                    .node_scopes
-                    .get(&(module, source.node))
-                    .ok_or("source alias has no actual lexical scope")?;
-                owners[scope.0 as usize] = Some(alias);
-            }
-        }
-        if let Some(scope) = definition.members
-            && definition.kind != DefKind::ExternCrate
-        {
-            owners[scope.0 as usize] = Some(DefId(
-                u32::try_from(index).map_err(|_| "source owner identity overflow")?,
-            ));
-        }
-    }
+    owners: &mut [Option<DefId>],
+) -> Result<(), &'static str> {
     for owner in facts.associated.owners() {
         stage.charge(1)?;
         let owner = owner.source_owner()?;
@@ -1117,11 +1076,11 @@ fn scope_owners(
         owners[scope.0 as usize] = Some(function.definition);
     }
     if stage.declaration_policies() {
-        stage.constant_lexical_owners(report, facts, &mut owners)?;
-        stage.require_contextual_bindings(report, facts, &mut owners)?;
+        stage.constant_lexical_owners(report, facts, owners)?;
+        stage.require_contextual_bindings(report, facts, owners)?;
         authored_traits::require_role_transport(report, facts, true, true, true)?;
     }
-    Ok(owners)
+    Ok(())
 }
 
 fn find_owner(

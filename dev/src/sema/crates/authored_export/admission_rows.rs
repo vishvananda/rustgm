@@ -1,7 +1,8 @@
 //! The published declaration table uses the completed frontend declaration identities.
 use super::{
-    DeclarationLeaves, DeclarationRef, ExportMode, Stage, implementation_result, kind,
-    non_type_sources, require_foreign_declaration, s, scope_owners, scoped_module_alias, statics,
+    DeclarationLeaves, DeclarationRef, ExportMode, Stage, complete_scope_owners,
+    implementation_result, kind, non_type_sources, require_foreign_declaration, s,
+    scoped_module_alias, statics,
 };
 use crate::{
     resolve::{
@@ -141,10 +142,6 @@ impl Stage {
         facts: &mut Declarations,
         mode: ExportMode,
     ) -> Result<CollectedDeclarations, &'static str> {
-        let admission = self.declaration_inventory(report, facts, mode)?;
-        let mut leaves = DeclarationLeaves::default();
-        let mut features =
-            non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
         let definitions = report.resolution.definitions.len();
         let lexical_bytes = definitions.saturating_mul(size_of::<u32>()).saturating_add(
             report
@@ -154,15 +151,30 @@ impl Stage {
                 .saturating_mul(size_of::<Option<DefId>>()),
         );
         self.reserve(lexical_bytes)?;
-        let mut owners = scope_owners(report, facts, self)?;
         let root = report
             .resolution
             .crate_root
-            .ok_or("source provider has no actual root")?;
-        let provider = report
+            .ok_or("source provider has no actual root declaration")?;
+        let root_scope = report
+            .resolution
+            .definitions
+            .get(root.0 as usize)
+            .and_then(|definition| definition.members)
+            .ok_or("source provider root has no actual scope")?;
+        let root_name = report
             .package
             .source_core()
-            .ok_or("source provider policy disappeared")?;
+            .ok_or("source provider policy disappeared")?
+            .provider
+            .name();
+        let mut owners = vec![None; report.resolution.scopes.len()];
+        owners[root_scope.0 as usize] = Some(root);
+        let admission =
+            self.declaration_inventory(report, facts, mode, &mut owners, (root, root_name))?;
+        complete_scope_owners(report, facts, self, &mut owners)?;
+        let mut leaves = DeclarationLeaves::default();
+        let mut features =
+            non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
         let mut ordinals = vec![0_u32; definitions];
         for &(id, kind) in &admission {
             let index = id.0 as usize;
@@ -190,11 +202,10 @@ impl Stage {
             // The resolver names its exact root `crate`; its external module
             // spelling belongs to the authenticated artifact identity.
             let name = if id == root {
-                provider.provider.name()
+                root_name
             } else {
                 report.package.names.get(definition.name)
             };
-            self.reserve(name.len())?;
             let row = self.definitions[index].ok_or("source declaration lost its reserved row")?;
             let parent = parent.map(|id| self.declaration(id)).transpose()?;
             if kind == s::DefinitionKind::Variant {
@@ -225,15 +236,26 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         mode: ExportMode,
+        owners: &mut [Option<DefId>],
+        (root, root_name): (DefId, &str),
     ) -> Result<Vec<(DefId, s::DefinitionKind)>, &'static str> {
         let count = report.resolution.definitions.len();
         self.reserve(inventory_bytes(count))?;
         let mut admitted = Vec::with_capacity(count);
+        let mut name_bytes = 0_usize;
         for index in 0..count {
             self.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
+            let definition = &report.resolution.definitions[index];
+            definition_scope_owner(report, facts, owners, id, self.declaration_policies())?;
             if let Some(kind) = self.exported_kind(report, facts, id, mode)? {
+                let name = if id == root {
+                    root_name
+                } else {
+                    report.package.names.get(definition.name)
+                };
+                name_bytes = name_bytes.saturating_add(name.len());
                 self.definitions[index] = Some(DeclarationRef(
                     u32::try_from(admitted.len())
                         .map_err(|_| "source declaration table overflow")?,
@@ -241,8 +263,47 @@ impl Stage {
                 admitted.push((id, kind));
             }
         }
-        self.reserve(admitted.len().saturating_mul(size_of::<s::Declaration>()))?;
+        self.reserve(
+            admitted
+                .len()
+                .saturating_mul(size_of::<s::Declaration>())
+                .saturating_add(name_bytes),
+        )?;
         self.rows.declarations.reserve_exact(admitted.len());
         Ok(admitted)
     }
+}
+
+/// Names and lexical scope owners are known on the same walk as admission.
+fn definition_scope_owner(
+    report: &Report,
+    facts: &Declarations,
+    owners: &mut [Option<DefId>],
+    id: DefId,
+    declaration_policies: bool,
+) -> Result<(), &'static str> {
+    let definition = &report.resolution.definitions[id.0 as usize];
+    if declaration_policies
+        && matches!(definition.kind, DefKind::TypeAlias | DefKind::TraitAlias)
+        && (definition.kind == DefKind::TraitAlias
+            || facts.associated.families.contains_key(&id)
+            || scoped_module_alias(report, facts, definition, id))
+    {
+        let source = definition
+            .node
+            .ok_or("source alias has no actual source owner")?;
+        let module = report.resolution.scopes[definition.scope.0 as usize].module;
+        let scope = *report
+            .resolution
+            .node_scopes
+            .get(&(module, source.node))
+            .ok_or("source alias has no actual lexical scope")?;
+        owners[scope.0 as usize] = Some(id);
+    }
+    if let Some(scope) = definition.members
+        && definition.kind != DefKind::ExternCrate
+    {
+        owners[scope.0 as usize] = Some(id);
+    }
+    Ok(())
 }
