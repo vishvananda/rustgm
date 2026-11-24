@@ -1,0 +1,10 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "denied": "denied.rs",
+  "wrong-type": "wrong-type.rs",
+  "observer": "observe.c",
+  "stdout": "513\n7\n29\n",
+  "explicit_impl": "explicit implementation is prohibited by its source trait declaration",
+  "forged": "source role binding is duplicated or belongs to a foreign provider"
+}

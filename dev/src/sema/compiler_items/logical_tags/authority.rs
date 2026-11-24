@@ -1,6 +1,7 @@
 //! Actual source/member seals reuse the existing configured-owner ledger.
-use super::{Contracts, Declaration, Declarations, Error, LangItem, Report, header_attributes};
+use super::{Contracts, Declarations, Error, LangItem, Report, Role, charge, header_attributes};
 use crate::{
+    resolve::bindings::Declaration,
     sema::compiler_items::headers::{Flags, Trait},
     types::{ItemId, Kind, TypeId, projection},
 };
@@ -66,7 +67,14 @@ pub(super) fn plan(report: &Report, facts: &Declarations) -> Result<Option<Plan>
         self_type: header.self_type,
         projection,
     };
-    validate_member(facts, &plan).map_err(error)?;
+    validate_member(
+        facts,
+        trait_.into(),
+        member.into(),
+        header.self_type,
+        projection,
+    )
+    .map_err(error)?;
     Ok(Some(plan))
 }
 
@@ -101,33 +109,39 @@ fn required_member(report: &Report, member: Declaration) -> Result<(), Error> {
     Ok(())
 }
 
-fn validate_member(facts: &Declarations, plan: &Plan) -> Result<(), &'static str> {
-    if plan.member.parent != Some(plan.trait_.definition)
-        || facts.associated.trait_owner(plan.member.definition) != Some(plan.trait_.definition)
-        || facts.generics.parents.get(&plan.member.definition) != Some(&plan.trait_.definition)
+pub(super) fn validate_member(
+    facts: &Declarations,
+    trait_: Role,
+    member: Role,
+    self_type: TypeId,
+    projection: projection::Application,
+) -> Result<(), &'static str> {
+    if member.parent != Some(trait_.definition)
+        || facts.associated.trait_owner(member.definition) != Some(trait_.definition)
+        || facts.generics.parents.get(&member.definition) != Some(&trait_.definition)
         || facts
             .generics
             .parameters
-            .get(&plan.member.definition)
+            .get(&member.definition)
             .is_some_and(|p| !p.is_empty())
     {
         return Err("source discriminant changed its actual required member owner or parameters");
     }
-    if let Some(family) = facts.associated.families.get(&plan.member.definition)
+    if let Some(family) = facts.associated.families.get(&member.definition)
         && (family.captures != 0 || family.total != 0 || family.requirements.is_none())
     {
         return Err("source discriminant result inputs are pending or outside its profile");
     }
     let schema = facts
         .types
-        .projection_schema(ItemId(plan.member.definition.0))
+        .projection_schema(ItemId(member.definition.0))
         .ok_or("source discriminant lacks its actual result schema")?;
-    if schema.trait_item != ItemId(plan.trait_.definition.0)
-        || plan.projection.item != ItemId(plan.member.definition.0)
-        || plan.projection.subject != plan.self_type
+    if schema.trait_item != ItemId(trait_.definition.0)
+        || projection.item != ItemId(member.definition.0)
+        || projection.subject != self_type
         || facts
             .types
-            .trait_application(plan.projection.trait_application)
+            .trait_application(projection.trait_application)
             .is_none_or(|a| {
                 a.item != schema.trait_item
                     || facts
@@ -137,7 +151,7 @@ fn validate_member(facts: &Declarations, plan: &Plan) -> Result<(), &'static str
             })
         || facts
             .types
-            .arguments(plan.projection.arguments)
+            .arguments(projection.arguments)
             .is_none_or(|a| a.len() != 0)
     {
         return Err("source discriminant changed its complete projection identity");
@@ -150,7 +164,7 @@ impl Contracts {
         &self,
         facts: &Declarations,
     ) -> Result<(), Error> {
-        header_attributes::charge_source_contract_query(facts, 4)?;
+        charge(facts, 4)?;
         if !facts.types.has_identity(&self.arena) {
             return Err(Error::unlocated(
                 "source discriminant belongs to another type arena",
@@ -160,14 +174,30 @@ impl Contracts {
             .source_bindings
             .as_deref()
             .ok_or_else(|| Error::unlocated("source discriminant lost its catalog"))?;
-        if catalog.language(LangItem::DiscriminantKind) != Some(self.trait_)
-            || catalog.language(LangItem::DiscriminantType) != Some(self.member)
+        if catalog
+            .role(LangItem::DiscriminantKind)
+            .map_err(Error::unlocated)?
+            != Some(self.trait_)
+            || catalog
+                .role(LangItem::DiscriminantType)
+                .map_err(Error::unlocated)?
+                != Some(self.member)
         {
             return Err(Error::unlocated(
                 "source discriminant changed its actual role identities",
             ));
         }
-        for (declaration, image) in [self.trait_, self.member].into_iter().zip(&self.images) {
+        let Some(images) = &self.images else {
+            // Imported rows were checked and sealed before entering this ledger.
+            return Ok(());
+        };
+        for (role, image) in [LangItem::DiscriminantKind, LangItem::DiscriminantType]
+            .into_iter()
+            .zip(images)
+        {
+            let declaration = catalog.language(role).ok_or_else(|| {
+                Error::unlocated("source discriminant lost its actual source declaration")
+            })?;
             header_attributes::require_recorded_pointee_image(facts, declaration, image)?;
         }
         let contract = facts
@@ -181,12 +211,10 @@ impl Contracts {
         }
         validate_member(
             facts,
-            &Plan {
-                trait_: self.trait_,
-                member: self.member,
-                self_type: self.self_type,
-                projection: self.projection,
-            },
+            self.trait_,
+            self.member,
+            self.self_type,
+            self.projection,
         )
         .map_err(Error::unlocated)
     }
@@ -199,8 +227,8 @@ impl Contracts {
         self.current_facts(facts)?;
         let current = plan(report, facts)?
             .ok_or_else(|| Error::unlocated("source discriminant role disappeared"))?;
-        if current.trait_ != self.trait_
-            || current.member != self.member
+        if Role::from(current.trait_) != self.trait_
+            || Role::from(current.member) != self.member
             || current.self_type != self.self_type
             || current.projection != self.projection
         {
@@ -208,7 +236,11 @@ impl Contracts {
                 "source discriminant current header changed",
             ));
         }
-        for (declaration, image) in [self.trait_, self.member].into_iter().zip(&self.images) {
+        let images = self
+            .images
+            .as_ref()
+            .ok_or_else(|| Error::unlocated("source discriminant has no source incarnation"))?;
+        for (declaration, image) in [current.trait_, current.member].into_iter().zip(images) {
             let actual = header_attributes::role_source_image(facts, report, declaration)?;
             if !image.same(&actual) {
                 return Err(Error::unlocated(

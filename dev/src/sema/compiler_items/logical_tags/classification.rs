@@ -1,5 +1,5 @@
 //! Logical discriminator type does not depend on optimized physical tag storage.
-use super::{Declarations, Error, header_attributes};
+use super::{Declarations, Error, charge};
 use crate::types::{ItemId, Kind, Primitive, TypeId, aggregate};
 
 pub(in crate::sema) enum Output {
@@ -13,7 +13,7 @@ pub(in crate::sema::compiler_items) fn classify(
     mut ty: TypeId,
 ) -> Result<Output, Error> {
     loop {
-        header_attributes::charge_source_contract_query(facts, 1)?;
+        charge(facts, 1)?;
         return Ok(
             match facts.types.kind(ty).ok_or_else(|| {
                 Error::unlocated("source discriminant input is outside its type arena")

@@ -43,12 +43,8 @@ impl Query {
             .trait_parts()
             .ok_or("source discriminant lost its proved parent")?
             .0;
-        crate::sema::header_attributes::charge_source_retention(
-            facts,
-            1,
-            size_of::<Continuation>(),
-        )
-        .map_err(|_| "source discriminant continuation exceeds its budget")?;
+        discriminant::retain(facts, size_of::<Continuation>())
+            .map_err(|_| "source discriminant continuation exceeds its budget")?;
         self.inherited = Some(Box::new(Continuation::Discriminant(Pending {
             selected: None,
             application,
@@ -96,10 +92,10 @@ impl Query {
 
     fn wait_discriminant(
         self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         dependency: selection::Dependency,
     ) -> Result<Progress, &'static str> {
-        crate::sema::header_attributes::charge_source_retention(facts, 1, size_of::<Self>())
+        discriminant::retain(facts, size_of::<Self>())
             .map_err(|_| "source discriminant suspension exceeds its budget")?;
         Ok(Progress::Pending(dependency, Box::new(self)))
     }

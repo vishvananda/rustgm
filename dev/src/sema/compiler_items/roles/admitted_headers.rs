@@ -179,6 +179,7 @@ pub(in crate::sema::compiler_items) fn traits(
     } else {
         None
     };
+    let discriminant = super::super::discriminant::prepare_imported(report, facts, &mut roles)?;
     let entries: Vec<_> = [CallTrait::FnOnce, CallTrait::FnMut, CallTrait::Fn]
         .into_iter()
         .filter_map(|kind| {
@@ -201,7 +202,7 @@ pub(in crate::sema::compiler_items) fn traits(
         roles,
         methods: callables.methods,
         pointee,
-        discriminant: None,
+        discriminant,
         range: None,
         field: None,
         comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
@@ -221,7 +222,9 @@ const FREE_MARKERS: [LangItem; 6] = [
 ];
 
 // These roles are checked together after the individual headers.
-const GROUPED: [LangItem; 15] = [
+const GROUPED: [LangItem; 17] = [
+    LangItem::DiscriminantKind,
+    LangItem::DiscriminantType,
     LangItem::FnOnce,
     LangItem::FnMut,
     LangItem::Fn,

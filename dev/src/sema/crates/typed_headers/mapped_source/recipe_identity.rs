@@ -163,7 +163,7 @@ impl Graph {
 }
 
 impl Graph {
-    pub(in crate::sema) fn pointee_role(
+    pub(in crate::sema) fn associated_language_role(
         &self,
         facts: &Declarations,
         role: crate::sema::compiler_items::Role,
@@ -174,23 +174,23 @@ impl Graph {
         self.require_store(&facts.types)?;
         let descriptor = self.descriptor(&self.origins)?;
         if !descriptor.profile().declaration_policies() {
-            return Err("imported Pointee roles require the version-fourteen profile");
+            return Err("imported associated language roles require the version-fourteen profile");
         }
         let expected = match kind {
-            LangItem::PointeeTrait => DefKind::Trait,
-            LangItem::MetadataType => DefKind::TypeAlias,
+            LangItem::PointeeTrait | LangItem::DiscriminantKind => DefKind::Trait,
+            LangItem::MetadataType | LangItem::DiscriminantType => DefKind::TypeAlias,
             LangItem::DynMetadata => DefKind::Struct,
-            _ => return Err("invalid imported Pointee role"),
+            _ => return Err("invalid imported associated language role"),
         };
         *steps = steps.saturating_add(descriptor.rows().roles.len());
         let (row, _) = self.bound_role(facts, role, kind, expected, steps)?;
-        if kind == LangItem::MetadataType {
+        if matches!(kind, LangItem::MetadataType | LangItem::DiscriminantType) {
             let rows = descriptor.rows();
             let Some(s::HeaderRef::AssociatedType(index)) = rows.header(row)? else {
-                return Err("imported Metadata lacks its actual associated header");
+                return Err("imported language member lacks its actual associated header");
             };
             if rows.associated_types[index as usize].declared_inputs != 0 {
-                return Err("imported Metadata has unsupported own family inputs");
+                return Err("imported language member has unsupported own family inputs");
             }
         }
         Ok(())

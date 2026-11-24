@@ -530,12 +530,13 @@ fn actual_signature_features_and_transport_never_follow_spelling() -> TestResult
     }
     let report = provider("setup-followup/minimal")?;
     let facts = declarations::analyze(&report)?;
-    let error = require_transport(&report, &facts)
+    require_transport(&report, &facts, true)?;
+    let error = require_transport(&report, &facts, false)
         .err()
         .ok_or("transport unexpectedly opened")?;
     assert_eq!(
         error.message,
-        "source discriminant protocol transport is not implemented"
+        "source discriminant protocol transport requires version 14"
     );
     Ok(())
 }

@@ -33,8 +33,8 @@ pub(super) fn plan(
         .associated
         .imported_owner()
         .ok_or("imported Pointee roles lack their actual owner graph")?;
-    owner.pointee_role(facts, trait_, LangItem::PointeeTrait, steps)?;
-    owner.pointee_role(facts, member, LangItem::MetadataType, steps)?;
+    owner.associated_language_role(facts, trait_, LangItem::PointeeTrait, steps)?;
+    owner.associated_language_role(facts, member, LangItem::MetadataType, steps)?;
     let header = Trait::current(report, facts, trait_, steps)?;
     header.profile(
         &facts.types,
@@ -64,7 +64,7 @@ pub(super) fn plan(
         header.self_type,
     )?;
     if let Some(nominal) = nominal {
-        owner.pointee_role(facts, nominal, LangItem::DynMetadata, steps)?;
+        owner.associated_language_role(facts, nominal, LangItem::DynMetadata, steps)?;
         let target = schemas::nominal_formal(facts, nominal.definition)?;
         let inputs = declaration_inputs::declared_own(
             &facts.generics,

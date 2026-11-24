@@ -64,7 +64,11 @@ impl Stage {
             facts,
             self.declaration_policies(),
         )?;
-        crate::sema::compiler_items::discriminant::require_transport(report, facts)?;
+        crate::sema::compiler_items::discriminant::require_transport(
+            report,
+            facts,
+            self.declaration_policies(),
+        )?;
         let count = self.rows.declarations.len();
         self.reserve(
             count.saturating_mul(size_of::<Option<s::HeaderContract>>())

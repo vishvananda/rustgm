@@ -3,26 +3,30 @@
 mod authority;
 #[path = "logical_tags/classification.rs"]
 mod output;
-use super::{Declaration, Error, LangItem, Report, roles};
+use super::{Error, LangItem, Report, Role, roles};
+#[path = "logical_tags/discriminant_roles.rs"]
+mod imported_role;
 use crate::{
     resolve::model::DefId,
     sema::{
+        crates,
         header_attributes::{self, SourceImage},
         model::Declarations,
     },
     types::{TypeId, arena, projection},
 };
+pub(super) use imported_role::prepare as prepare_imported;
 pub(in crate::sema) use output::Output;
 pub(super) use output::classify;
 use std::rc::Rc;
 
 pub(in crate::sema::compiler_items) struct Contracts {
     arena: arena::Identity,
-    trait_: Declaration,
-    member: Declaration,
+    trait_: Role,
+    member: Role,
     self_type: TypeId,
     projection: projection::Application,
-    images: [SourceImage; 2],
+    images: Option<[SourceImage; 2]>,
 }
 
 /// The owning query retains the complete goal/application and its ordinary proof.
@@ -39,7 +43,7 @@ pub(in crate::sema) fn is_result(facts: &Declarations, item: crate::types::ItemI
     facts
         .source_bindings
         .as_deref()
-        .and_then(|c| c.language(LangItem::DiscriminantType))
+        .and_then(|c| c.role(LangItem::DiscriminantType).ok().flatten())
         .is_some_and(|member| member.definition.0 == item.0)
 }
 
@@ -65,7 +69,7 @@ pub(in crate::sema) fn for_result(
 
 impl Selection {
     pub(in crate::sema) fn current(&self, facts: &Declarations) -> Result<(), Error> {
-        header_attributes::charge_source_contract_query(facts, 1)?;
+        charge(facts, 1)?;
         let current = facts
             .source_bindings
             .as_deref()
@@ -124,14 +128,6 @@ pub(in crate::sema) fn select(
     if application.item.0 != trait_.definition.0 {
         return Ok(Readiness::Unrelated);
     }
-    if !matches!(
-        trait_.origin,
-        crate::resolve::body_origin::DeclarationOrigin::Source(_)
-    ) {
-        return Err(Error::unlocated(
-            "imported discriminant contracts are not implemented",
-        ));
-    }
     if effect != crate::support::constness::Constness::Ordinary
         || facts
             .types
@@ -143,7 +139,8 @@ pub(in crate::sema) fn select(
         ));
     }
     let member = catalog
-        .language(LangItem::DiscriminantType)
+        .role(LangItem::DiscriminantType)
+        .map_err(Error::unlocated)?
         .ok_or_else(|| {
             Error::unlocated("source discriminant requires its actual associated type")
         })?;
@@ -155,7 +152,7 @@ pub(in crate::sema) fn select(
         return Ok(Readiness::Pending(member.definition));
     };
     contract.current_facts(facts)?;
-    header_attributes::charge_source_retention(facts, 1, size_of::<Selection>())?;
+    super::pointee::retain(facts, trait_, 1, size_of::<Selection>())?;
     let contract = facts
         .source_bindings
         .as_deref()
@@ -196,11 +193,11 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     ];
     let contract = Rc::new(Contracts {
         arena,
-        trait_: plan.trait_,
-        member: plan.member,
+        trait_: plan.trait_.into(),
+        member: plan.member.into(),
         self_type: plan.self_type,
         projection: plan.projection,
-        images,
+        images: Some(images),
     });
     contract.current_report(report, facts)?;
     let catalog = facts
@@ -271,6 +268,7 @@ pub(crate) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), 
 pub(in crate::sema) fn require_transport(
     report: &Report,
     facts: &Declarations,
+    permitted: bool,
 ) -> Result<(), Error> {
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
@@ -281,9 +279,36 @@ pub(in crate::sema) fn require_transport(
         return Ok(());
     }
     authenticate(report, facts)?;
-    Err(Error::unlocated(
-        "source discriminant protocol transport is not implemented",
-    ))
+    if permitted {
+        Ok(())
+    } else {
+        Err(Error::unlocated(
+            "source discriminant protocol transport requires version 14",
+        ))
+    }
+}
+
+pub(in crate::sema) fn retain(facts: &mut Declarations, bytes: usize) -> Result<(), Error> {
+    let role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("source discriminant continuation has no actual catalog"))?
+        .role(LangItem::DiscriminantKind)
+        .map_err(Error::unlocated)?
+        .ok_or_else(|| Error::unlocated("source discriminant continuation lost its actual role"))?;
+    super::pointee::retain(facts, role, 1, bytes)
+}
+
+fn charge(facts: &Declarations, steps: usize) -> Result<(), Error> {
+    if facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(super::Catalog::uses_imported_roles)
+    {
+        crates::charge_source_header_query(facts, steps)
+    } else {
+        header_attributes::charge_source_contract_query(facts, steps)
+    }
 }
 
 #[cfg(test)]

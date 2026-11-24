@@ -124,7 +124,7 @@ impl ImportedOwners {
             Self::Provided(_) => Err("private Provided profiles do not own declared panic roles"),
         }
     }
-    pub(in crate::sema) fn pointee_role(
+    pub(in crate::sema) fn associated_language_role(
         &self,
         facts: &crate::sema::model::Declarations,
         role: Role,
@@ -132,8 +132,10 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.pointee_role(facts, role, kind, steps),
-            Self::Provided(_) => Err("private Provided profiles do not own Pointee roles"),
+            Self::Ordinary(graph) => graph.associated_language_role(facts, role, kind, steps),
+            Self::Provided(_) => {
+                Err("private Provided profiles do not own these associated language roles")
+            }
         }
     }
     pub(in crate::sema) fn conversion_role(

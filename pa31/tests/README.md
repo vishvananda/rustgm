@@ -72,6 +72,10 @@ another through the provider’s pinned override and `drop_glue`. A separate
 provider gives the default body its own fixture feature so the test can
 check that using the default requires that feature. Run
 `scripts/check_source_drop_defaults.py` with the prebuilt compilers.
+`spec/source-discriminant-transport/outcomes.json` checks the pinned
+DiscriminantKind declaration and its associated bounds. A fresh client
+normalizes the result for an imported enum, a local enum and a record.
+Run `scripts/check_discriminant_transport.py` with the prebuilt compilers.
 `spec/source-panic-format-transport/outcomes.json` checks the imported
 panic and formatting structures, field types, member visibility, and the
 fresh crate's own panic handler.

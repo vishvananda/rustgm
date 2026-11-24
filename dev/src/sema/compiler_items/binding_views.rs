@@ -512,6 +512,7 @@ fn role_parent(
         LangItem::FutureOutput
             | LangItem::FnOnceOutput
             | LangItem::MetadataType
+            | LangItem::DiscriminantType
             | LangItem::DerefTarget
     ) {
         let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {

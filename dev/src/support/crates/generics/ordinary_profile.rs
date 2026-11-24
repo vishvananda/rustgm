@@ -11,6 +11,8 @@ mod callable_traits;
 mod captured;
 #[path = "conversion_profile.rs"]
 mod conversions;
+#[path = "logical_discriminant.rs"]
+mod logical_discriminant;
 use crate::support::crates::generics::Convention;
 use crate::support::{
     bindings::LangItem, constness::Constness, crates::generics::Work, edition::Edition,
@@ -354,7 +356,11 @@ fn trait_headers(
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
-        ordinary_sizing_policy(header.declaration, flags, role_header.flags, sizing)?;
+        // The sealed discriminator role owns its exact deny-impl and dyn
+        // restrictions independently of the sizing declarations.
+        if roles.discriminant != Some(header.declaration) {
+            ordinary_sizing_policy(header.declaration, flags, role_header.flags, sizing)?;
+        }
     }
     Ok(())
 }
@@ -950,6 +956,7 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    discriminant: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::RUNTIME_FORMAT_BODIES.len()],
@@ -1136,6 +1143,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::TypeId
             | LangItem::PointeeTrait
             | LangItem::MetadataType
+            | LangItem::DiscriminantKind
+            | LangItem::DiscriminantType
             | LangItem::DynMetadata
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq
@@ -1344,6 +1353,7 @@ pub(super) fn bindings(
         sizing,
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
+        discriminant: bound(LangItem::DiscriminantKind),
         freeze: marker_traits.then_some(bound(LangItem::Freeze)).flatten(),
     })
 }
@@ -1562,11 +1572,11 @@ fn role_header(
         (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {
             return Err("source wrapper role requires its actual nominal header");
         }
-        (
-            LangItem::PointeeTrait | LangItem::PartialEq | LangItem::PartialOrd,
-            Some(HeaderRef::Trait(_)),
+        (LangItem::PointeeTrait | LangItem::DiscriminantKind, Some(HeaderRef::Trait(_)))
+        | (
+            LangItem::MetadataType | LangItem::DiscriminantType | LangItem::DerefTarget,
+            Some(HeaderRef::AssociatedType(_)),
         )
-        | (LangItem::MetadataType | LangItem::DerefTarget, Some(HeaderRef::AssociatedType(_)))
         | (
             LangItem::RangeMin
             | LangItem::RangeMax
@@ -1770,6 +1780,15 @@ fn owned_role_members(
             return Err("source Metadata belongs to another actual Pointee declaration");
         }
     }
+    logical_discriminant::owned_members(
+        rows,
+        headers,
+        [
+            declarations[LangItem::DiscriminantKind.index()],
+            declarations[LangItem::DiscriminantType.index()],
+        ],
+        work,
+    )?;
     layout_members(
         rows,
         headers,

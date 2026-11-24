@@ -42,12 +42,7 @@ impl Search<'_> {
             .0;
         let (written, completed) =
             self.resolve_result_equality(facts, context, normalization, completed)?;
-        crate::sema::header_attributes::charge_source_retention(
-            facts,
-            1,
-            size_of::<ResultContinuation>(),
-        )
-        .map_err(|e| e.to_string())?;
+        discriminant::retain(facts, size_of::<ResultContinuation>()).map_err(|e| e.to_string())?;
         normalization.inherited = Some(Box::new(ResultContinuation::Discriminant(Pending {
             completed,
             written,

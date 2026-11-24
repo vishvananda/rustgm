@@ -177,8 +177,9 @@ impl Stage {
                 if self.declaration_policies() && LangItem::GUARD_PANICS.contains(&role) => {}
             // FnOnce's declared result travels as its kind-9 result row.
             DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
-            DefKind::TypeAlias if role == LangItem::MetadataType && self.declaration_policies() => {
-            }
+            DefKind::TypeAlias
+                if self.declaration_policies()
+                    && matches!(role, LangItem::MetadataType | LangItem::DiscriminantType) => {}
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
