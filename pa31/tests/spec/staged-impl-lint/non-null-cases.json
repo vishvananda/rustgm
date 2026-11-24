@@ -1,0 +1,8 @@
+{
+  "source_core": true,
+  "cases": [
+    {"path": "nonnull-type.rs", "status": 1, "lint": "ineffective_unstable_trait_impl",
+     "diagnostic": "unstable annotation has no effect"},
+    {"path": "nonnull-type.rs", "cfg": "unstable_pointee", "status": 0, "lint": null}
+  ]
+}

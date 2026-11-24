@@ -9,7 +9,7 @@ use crate::{
     },
     sema::{associated::OwnerKind, model::Declarations},
     support::{diagnostics::WarningCode, retained::Growth},
-    syntax::ast::{Kind, TypeFlavor},
+    syntax::ast::{Kind, TypeConstraint, TypeFlavor},
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/ineffective_impls.rs"]
@@ -280,6 +280,10 @@ impl Visitor<'_> {
                     self.push(NodeKey { node: value, ..key })?;
                 }
                 Kind::NeverType => self.stable = false,
+                Kind::TypePattern {
+                    base,
+                    constraint: TypeConstraint::NonNull,
+                } => self.push(NodeKey { node: base, ..key })?,
                 Kind::Type { flavor, elements } => {
                     let elements = unit.configured.ast.list(elements);
                     if matches!(flavor, TypeFlavor::Ref | TypeFlavor::RefMut) {
