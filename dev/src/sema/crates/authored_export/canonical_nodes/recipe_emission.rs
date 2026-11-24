@@ -174,7 +174,7 @@ impl Stage {
         pending: &mut Vec<Task>,
     ) -> Result<(), &'static str> {
         let parts = signatures::Parts::actual(facts, key.ty)?;
-        if parts.bound_regions != 0
+        if (parts.bound_regions != 0 && !self.declaration_policies())
             || !parts.ordinary()
             || facts.types.needs_region_context(key.ty) != Some(false)
         {

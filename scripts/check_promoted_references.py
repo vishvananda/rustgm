@@ -39,6 +39,17 @@ def opponents(check, command, source, artifact, contract, baseline):
         corrupted.write_bytes(packet[:at] + wrong.to_bytes(4, "little") + packet[at + 4:])
         check.run(name, [*command, "--extern", f"base={corrupted}", source],
                   1, [diagnostic], timeout=40)
+    if slots := contract.get("binder_slots"):
+        # No outer frame, CallableType, and the total bound region slot count.
+        marker = bytes((0, 4)) + slots.to_bytes(4, "little")
+        at = packet.find(marker)
+        if at < 0 or packet.find(marker, at + 1) != -1:
+            raise ValueError("expected one closed higher-ranked frame")
+        count = at + 2
+        wrong = check.folder / "missing-bound-slot.rgcrate"
+        wrong.write_bytes(packet[:count] + (slots - 1).to_bytes(4, "little") + packet[count + 4:])
+        check.run("missing-bound-slot", [*command, "--extern", f"base={wrong}", source],
+                  1, [contract["binder_diagnostic"]], timeout=40)
     if baseline is not None:
         check.run("legacy-reader", [baseline.resolve(strict=True), *command[1:],
                   "--extern", f"base={artifact}", source], 1, [contract["legacy_diagnostic"]],
@@ -76,12 +87,14 @@ def candidate(check, source, contract, baseline):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--borrowed", action="store_true")
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    contract = json.loads((FIXTURE / "outcomes.json").read_text())
+    manifest = "borrowed.json" if args.borrowed else "outcomes.json"
+    contract = json.loads((FIXTURE / manifest).read_text())
     check = Check(args.app, args.out)
     source = provider_source(check.folder, FIXTURE, contract)
     independent(check, args.rustc, source, FIXTURE, contract)

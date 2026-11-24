@@ -50,7 +50,7 @@ impl BinderIndex<'_> {
         headers: &HeaderIndex<'_>,
         ordinal: usize,
         frame: &s::Binder,
-        bodies: bool,
+        profile: s::Profile,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         work.charge(2)?;
@@ -102,14 +102,15 @@ impl BinderIndex<'_> {
                 }
             }
             s::BinderKind::CallableType => {
-                // Version thirteen: a nominal's field type owns its zero-slot
-                // frame, as a function's signature or body owns its own.
                 let admitted = match owner {
                     Some(HeaderRef::Function(_)) => true,
-                    Some(HeaderRef::Nominal(_)) => bodies,
+                    Some(HeaderRef::Nominal(_)) => profile.body_nodes(),
                     _ => false,
                 };
-                if !admitted || parent.is_some() || frame.count != 0 {
+                if !admitted
+                    || parent.is_some()
+                    || (frame.count != 0 && !profile.declaration_policies())
+                {
                     return Err("source shared call type requires an actual closed callable frame");
                 }
             }
