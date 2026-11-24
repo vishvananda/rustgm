@@ -58,6 +58,11 @@ selected while lowering arithmetic in a fresh client. Run
 `scripts/check_guard_role_transport.py` with the prebuilt RustGM and pinned Rust
 compilers.
 
+`spec/source-location-transport/outcomes.json` declares the caller records for
+a tracked overflow guard and a direct call. Run
+`scripts/check_location_role_transport.py` to check each hidden pointer, the
+filename bytes and source coordinates, and invalid role bindings.
+
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the
 pinned `core` build. Run their `lint-cases.json` manifests with

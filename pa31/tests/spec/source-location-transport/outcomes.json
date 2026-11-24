@@ -1,0 +1,21 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "size": 24,
+  "alignment": 8,
+  "sites": [
+    {"caller": "add", "callee": "addition_overflow", "parameters": ["ptr"],
+     "result": "void", "noreturn": true, "line": 10, "column": 5},
+    {"caller": "call_tracked", "callee": "forwarded", "parameters": ["u8", "ptr"],
+     "result": "u8", "line": 15, "column": 5}
+  ],
+  "forgeries": {
+    "foreign-location": "source role binding is duplicated or belongs to a foreign provider",
+    "foreign-nonnull": "source diagnostic identity belongs to a foreign provider",
+    "wrong-nonnull": "source panic field belongs to another actual nominal"
+  },
+  "old_profile_diagnostic": "source role form is outside the complete first transport family",
+  "old_reader_diagnostic": "ordinary source roles cannot claim a nominal declaration"
+}

@@ -985,6 +985,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::DynMetadata
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq
+            | LangItem::PanicLocation
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1301,7 +1302,7 @@ fn role_header(
         | (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))
         | (LangItem::RangeSub, Some(super::super::HeaderRef::Function(_)))
         | (
-            LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId,
+            LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation,
             Some(super::super::HeaderRef::Nominal(_)),
         ) if profile == BindingProfile::BodyOperations => {}
         (LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata, _) => {
@@ -1312,6 +1313,9 @@ fn role_header(
         }
         (LangItem::TypeInfo | LangItem::TypeId, _) => {
             return Err("source reflection role requires its actual struct header");
+        }
+        (LangItem::PanicLocation, _) => {
+            return Err("source caller location role requires its actual nominal header");
         }
         (
             LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,

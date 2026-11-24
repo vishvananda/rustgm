@@ -128,8 +128,8 @@ impl Imported {
 }
 
 impl Catalog {
-    /// Source clients retain the closed local-header ABI of their import profile.
-    pub(crate) const fn local_caller_tracking_closed(&self) -> bool {
+    /// Select the source-client role catalog independently of callable policy.
+    pub(crate) const fn uses_imported_roles(&self) -> bool {
         matches!(self.bindings, Bindings::Imported(_))
     }
 
@@ -178,8 +178,10 @@ impl Catalog {
         }
     }
 
-    pub(in crate::sema) fn imported_eq(
+    pub(super) fn imported_diagnostic(
         &self,
+        wanted: s::DiagnosticRole,
+        kind: DefKind,
         work: &mut usize,
     ) -> Result<Option<Role>, &'static str> {
         let Bindings::Imported(imported) = &self.bindings else {
@@ -191,10 +193,10 @@ impl Catalog {
             .get(imported.provider_index as usize)
             .and_then(crate::support::crates::Interface::source_descriptor)
             .filter(|descriptor| descriptor.identity() == &self.provider)
-            .ok_or("imported Eq diagnostic identity lost its actual provider descriptor")?;
+            .ok_or("imported diagnostic identity lost its actual provider descriptor")?;
         for row in descriptor.rows().diagnostics() {
             charge(work, 1)?;
-            if row.role != s::DiagnosticRole::Eq {
+            if row.role != wanted {
                 continue;
             }
             let definition = imported
@@ -203,7 +205,7 @@ impl Catalog {
             let declaration = imported.origins.declaration(definition)?;
             imported
                 .origins
-                .validate_declaration(declaration, definition, DefKind::Trait)?;
+                .validate_declaration(declaration, definition, kind)?;
             return Ok(Some(Role {
                 definition,
                 parent: None,

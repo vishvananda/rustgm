@@ -342,7 +342,7 @@ fn copying_role(
 fn nominal_role(role: LangItem) -> bool {
     matches!(
         role,
-        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId
+        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation
     ) || LangItem::NOMINAL_WRAPPERS.contains(&role)
 }
 
@@ -357,6 +357,12 @@ fn check_nominal_role(
         LangItem::PhantomData => {
             super::super::phantom::imported(facts, catalog, declaration, steps)
         }
+        LangItem::PanicLocation => super::super::site_records::location_record::location(
+            facts,
+            catalog,
+            declaration,
+            steps,
+        ),
         LangItem::TypeInfo | LangItem::TypeId => {
             super::super::reflection::imported(facts, declaration, steps)
         }

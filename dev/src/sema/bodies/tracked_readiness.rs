@@ -16,6 +16,14 @@ impl Checker<'_> {
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(None);
         };
+        if self.report.package.source_client().is_some()
+            && catalog
+                .validated_role(LangItem::PanicLocation)
+                .map_err(Error::unlocated)?
+                .is_some()
+        {
+            return Ok(None);
+        }
         // Completed source data is an O(1) fast path; an absent declaration must
         // remain harmless until a real tracked call actually consumes it.
         let pending = if catalog.language(LangItem::PanicLocation).is_some() {

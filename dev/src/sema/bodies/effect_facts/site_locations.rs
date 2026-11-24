@@ -139,11 +139,9 @@ impl Checker<'_> {
             None
         };
         if tracked && self.report.package.source_core().is_none() {
-            // A consumer builds each caller Location from its provider's
-            // transported Location nominal, which no profile carries yet.
             let location = match self.facts.source_bindings.as_deref() {
                 Some(catalog) => catalog
-                    .validated_language(crate::support::bindings::LangItem::PanicLocation)
+                    .validated_role(crate::support::bindings::LangItem::PanicLocation)
                     .map_err(|error| self.error(node, error))?,
                 None => None,
             };

@@ -181,7 +181,10 @@ impl Stage {
                 if self.declaration_policies()
                     && matches!(
                         role,
-                        LangItem::TypeInfo | LangItem::TypeId | LangItem::DynMetadata
+                        LangItem::TypeInfo
+                            | LangItem::TypeId
+                            | LangItem::DynMetadata
+                            | LangItem::PanicLocation
                     ) => {}
             DefKind::Const
                 if self.declaration_policies()

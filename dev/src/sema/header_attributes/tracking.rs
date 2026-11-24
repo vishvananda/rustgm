@@ -103,15 +103,23 @@ fn aborting_abi(abi: crate::types::callable::Abi) -> bool {
 #[path = "../../../tests/invariants/aborting_source.rs"]
 mod abort_tests;
 
+fn caller_payments<'a>(
+    contracts: Option<&'a crate::sema::must_use::Contracts>,
+    catalog: Option<&crate::sema::compiler_items::Catalog>,
+) -> Result<super::Payments<'a>, Error> {
+    let provider = catalog.is_some_and(|catalog| !catalog.uses_imported_roles());
+    super::caller_payments(contracts, provider)
+}
+
 impl Declarations {
     pub(crate) fn charge_caller_inputs(
         &self,
         work: usize,
         bytes: usize,
     ) -> Result<(), &'static str> {
-        super::caller_payments(
+        caller_payments(
             self.must_use_contracts.as_deref(),
-            self.source_bindings.is_some(),
+            self.source_bindings.as_deref(),
         )
         .map_err(|_| "caller inputs exceed source work/storage budget")?
         .charge(work, bytes)
@@ -184,9 +192,9 @@ impl Declarations {
     pub(crate) fn caller_input_store(
         &mut self,
     ) -> Result<(&mut crate::types::Store, super::Payments<'_>), &'static str> {
-        let payments = super::caller_payments(
+        let payments = caller_payments(
             self.must_use_contracts.as_deref(),
-            self.source_bindings.is_some(),
+            self.source_bindings.as_deref(),
         )
         .map_err(|_| "caller inputs lack their actual source work/storage payer")?;
         Ok((&mut self.types, payments))
@@ -215,7 +223,7 @@ impl Declarations {
         ) && self
             .source_bindings
             .as_deref()
-            .is_some_and(crate::sema::compiler_items::Catalog::local_caller_tracking_closed)
+            .is_some_and(crate::sema::compiler_items::Catalog::uses_imported_roles)
         {
             return Ok(false);
         }

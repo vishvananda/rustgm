@@ -5,6 +5,7 @@ use crate::{
     support::bindings::LangItem,
     types::{ItemId, Kind, Primitive, RegionId, TypeId, arguments::Argument},
 };
+pub(super) mod location_record;
 mod outliving;
 
 /// Readiness for an actual caller-site demand; a reservation grants no data proof.
@@ -67,7 +68,7 @@ fn checked_role(report: &Report, facts: &mut Declarations, role: LangItem) -> Re
             "source panic nominal requires its actual record declaration",
         ));
     }
-    let fields = fields(facts, claimed).map_err(error)?;
+    let fields = fields(facts, ItemId(claimed.definition.0)).map_err(error)?;
     if role == LangItem::PanicLocation {
         location(report, facts, fields).map_err(error)?;
         location_variances(facts, claimed)?;
@@ -99,8 +100,7 @@ fn location_variances(facts: &mut Declarations, claimed: Declaration) -> Result<
         )
         .map_err(Error::unlocated)
 }
-fn fields(facts: &Declarations, declaration: Declaration) -> Result<&[TypeId], &'static str> {
-    let item = ItemId(declaration.definition.0);
+fn fields(facts: &Declarations, item: ItemId) -> Result<&[TypeId], &'static str> {
     let ty = facts
         .definitions
         .get(item.0 as usize)
@@ -134,8 +134,27 @@ fn location(report: &Report, facts: &Declarations, fields: &[TypeId]) -> Result<
         .as_deref()
         .and_then(crate::resolve::bindings::Reservations::nonnull_declaration)
         .ok_or("source Location requires the actual NonNull declaration")?;
-    if argument(facts, fields[0], ItemId(nominal.definition.0))?
-        != Argument::Type(TypeId::primitive(Primitive::Str))
+    let phantom = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source Location catalog disappeared")?
+        .validated_language(LangItem::PhantomData)?
+        .ok_or("source Location requires completed PhantomData")?;
+    location_fields(
+        facts,
+        fields,
+        ItemId(nominal.definition.0),
+        ItemId(phantom.definition.0),
+    )
+}
+
+fn location_fields(
+    facts: &Declarations,
+    fields: &[TypeId],
+    nonnull: ItemId,
+    phantom: ItemId,
+) -> Result<(), &'static str> {
+    if argument(facts, fields[0], nonnull)? != Argument::Type(TypeId::primitive(Primitive::Str))
         || fields[1] != TypeId::primitive(Primitive::U32)
         || fields[2] != TypeId::primitive(Primitive::U32)
     {
@@ -143,13 +162,7 @@ fn location(report: &Report, facts: &Declarations, fields: &[TypeId]) -> Result<
             "source Location requires its actual NonNull<str>, line and column field types",
         );
     }
-    let phantom = facts
-        .source_bindings
-        .as_deref()
-        .ok_or("source Location catalog disappeared")?
-        .validated_language(LangItem::PhantomData)?
-        .ok_or("source Location requires completed PhantomData")?;
-    let Argument::Type(target) = argument(facts, fields[3], ItemId(phantom.definition.0))? else {
+    let Argument::Type(target) = argument(facts, fields[3], phantom)? else {
         return Err("source Location marker has no actual type argument");
     };
     if !matches!(facts.types.kind(target), Some(Kind::Reference {referent, region,mutable:false}) if referent == TypeId::primitive(Primitive::Str) && region == RegionId::bound(0,0)?)

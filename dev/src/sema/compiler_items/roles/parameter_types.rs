@@ -1,9 +1,9 @@
 //! A real `ConstParamTy` header supplies no implementation or const-value evidence.
 use super::{Catalog, Declaration, Declarations, Error, LangItem, Report, RoleSet};
 use crate::{
-    resolve::model::DefId,
+    resolve::model::{DefId, DefKind},
     sema::compiler_items::headers::{Flags, Trait},
-    support::constness::Constness,
+    support::{constness::Constness, crates::generics::source::DiagnosticRole},
 };
 
 pub(super) fn validate(
@@ -56,7 +56,7 @@ pub(super) fn imported(
     };
     let structural = structural.ok_or("ConstParamTy requires actual StructuralPartialEq")?;
     let eq = catalog
-        .imported_eq(steps)?
+        .imported_diagnostic(DiagnosticRole::Eq, DefKind::Trait, steps)?
         .ok_or("ConstParamTy requires actual Eq diagnostic identity")?;
     let header = Trait::current(report, facts, declaration, steps)?;
     header.profile(&facts.types, ordinary(), 0)?;

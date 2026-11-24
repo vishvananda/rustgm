@@ -89,7 +89,7 @@ impl Evaluator<'_> {
             .ok_or("caller location lacks its actual source catalog")?;
         catalog.require_provider_report(report)?;
         let location = catalog
-            .validated_language(LangItem::PanicLocation)?
+            .validated_role(LangItem::PanicLocation)?
             .ok_or("caller location requires the completed source Location nominal")?;
         let length = filename.len();
         // Prepay actual retained value slots, filename backing and transient copy.
@@ -194,7 +194,7 @@ impl Reader<'_> {
             .as_deref()
             .ok_or("caller site lacks its source catalog")?;
         let declaration = catalog
-            .validated_language(LangItem::PanicLocation)?
+            .validated_role(LangItem::PanicLocation)?
             .ok_or("caller site lacks its completed actual Location declaration")?;
         let stored = self.location(location)?;
         let Some(Kind::Adt(item, arguments)) = self.facts.types.kind(stored.ty) else {
