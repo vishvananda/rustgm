@@ -73,7 +73,7 @@ fn completed_nominals_still_reject_changed_types_fields_and_marker_category() ->
     assert!(complete_location(&report, &mut facts).is_err());
     facts.definitions[index] = original;
     let item = ItemId(location.definition.0);
-    let mut changed = fields(&facts, location)?.to_vec();
+    let mut changed = fields(&facts, item)?.to_vec();
     changed[1] = TypeId::primitive(Primitive::U64);
     let changed = facts.types.intern_list(&changed)?;
     let original = std::mem::take(&mut facts.aggregates);
