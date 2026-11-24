@@ -186,6 +186,48 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
     Ok(())
 }
 
+/// Recheck the wrapper's canonical owner and the policy installed with its shape.
+pub(super) fn imported(
+    facts: &Declarations,
+    declaration: super::Role,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(5);
+    let owner = declaration.definition;
+    let item = ItemId(owner.0);
+    if declaration.parent.is_some()
+        || !facts.generics.nominal_contracts.contains(&owner)
+        || !facts
+            .aggregates
+            .get(item)
+            .is_some_and(|shape| shape.kind == aggregate::Kind::Struct)
+    {
+        return Err("imported storage wrapper requires its actual module-owned struct");
+    }
+    let single_formal = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .is_some_and(|rows| rows.len() == 1);
+    let valid = match role {
+        LangItem::UnsafeCell | LangItem::UnsafePinned => {
+            facts.aggregates.shared_mutation(item) == Some(SharedMutation::Interior)
+        }
+        LangItem::ManuallyDrop => {
+            single_formal && facts.aggregates.destruction(item) == Some(FieldDestruction::Never)
+        }
+        LangItem::MaybeDangling => {
+            single_formal && facts.aggregates.permits_dangling_pointers(item) == Some(true)
+        }
+        _ => false,
+    };
+    if !valid {
+        return Err("imported storage wrapper changed its required formal or policy");
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 #[path = "../../../tests/invariants/wrapper_rules.rs"]
 mod tests;

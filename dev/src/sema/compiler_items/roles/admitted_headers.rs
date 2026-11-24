@@ -307,12 +307,8 @@ fn trait_headers(
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
             }
-            LangItem::PhantomData => {
-                super::super::phantom::imported(facts, catalog, declaration, steps)?;
-                complete.insert(role);
-            }
-            LangItem::TypeInfo | LangItem::TypeId => {
-                super::super::reflection::imported(facts, declaration, steps)?;
+            role if nominal_role(role) => {
+                check_nominal_role(facts, catalog, declaration, role, steps)?;
                 complete.insert(role);
             }
             _ => return Err("imported source role requires its wider explicit header profile"),
@@ -323,6 +319,31 @@ fn trait_headers(
     }
     let callables = grouped_roles(report, facts, catalog, steps, &mut complete)?;
     Ok((complete, callables, needs_pointee))
+}
+
+fn nominal_role(role: LangItem) -> bool {
+    matches!(
+        role,
+        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId
+    ) || role.is_storage_wrapper()
+}
+
+fn check_nominal_role(
+    facts: &Declarations,
+    catalog: &Catalog,
+    declaration: super::super::Role,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    match role {
+        LangItem::PhantomData => {
+            super::super::phantom::imported(facts, catalog, declaration, steps)
+        }
+        LangItem::TypeInfo | LangItem::TypeId => {
+            super::super::reflection::imported(facts, declaration, steps)
+        }
+        _ => super::super::wrappers::imported(facts, declaration, role, steps),
+    }
 }
 
 fn grouped_roles(

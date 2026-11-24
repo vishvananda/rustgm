@@ -966,6 +966,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::MetadataType
             | LangItem::DynMetadata
     ) || interval_roles::ROLES.contains(&role)
+        || role.is_storage_wrapper()
     {
         return profile == BindingProfile::BodyOperations;
     }
@@ -1047,8 +1048,13 @@ fn binding_declarations(
         {
             return Err("source role binding is duplicated or belongs to a foreign provider");
         }
+        let declaration = rows
+            .declarations
+            .get(address.declaration.0 as usize)
+            .ok_or("source role binding names an unknown declaration")?;
         role_header(
             profile,
+            declaration.definition.kind,
             role.role,
             headers.header(address.declaration, work)?,
         )?;
@@ -1221,10 +1227,19 @@ const SEND: &str = "imported Send diagnostic item requires its unsafe auto trait
 /// The declaration/header kind each bound role may claim under `profile`.
 fn role_header(
     profile: BindingProfile,
+    kind: super::super::DefinitionKind,
     role: LangItem,
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     match (role, header) {
+        (role, header) if role.is_storage_wrapper() => {
+            if profile != BindingProfile::BodyOperations
+                || kind != super::super::DefinitionKind::Struct
+                || !matches!(header, Some(super::super::HeaderRef::Nominal(_)))
+            {
+                return Err("source storage wrapper role requires its actual struct header");
+            }
+        }
         (LangItem::PointeeTrait, Some(super::super::HeaderRef::Trait(_)))
         | (LangItem::MetadataType, Some(super::super::HeaderRef::AssociatedType(_)))
         | (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))

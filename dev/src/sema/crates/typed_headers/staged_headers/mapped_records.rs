@@ -11,7 +11,10 @@ use crate::{
     syntax::item::Shape,
     types::{
         ItemId,
-        aggregate::{self, Companion, ImportedEnum, NullableEnum, PreparedShapes},
+        aggregate::{
+            self, Companion, ImportedEnum, ImportedPolicy, ImportedStruct, NullableEnum,
+            PreparedShapes,
+        },
     },
 };
 pub(super) struct Prepared {
@@ -72,11 +75,9 @@ pub(super) fn prepare(
             .saturating_add(rows.enums().variants.len())
             .saturating_add(rows.enums().fields.len()),
     )?;
-    budget.reserve(
-        rows.nominals
-            .len()
-            .saturating_mul(4 * (size_of::<DefId>() + size_of::<(ItemId, Vec<Field>)>())),
-    )?;
+    budget.reserve(rows.nominals.len().saturating_mul(
+        4 * (size_of::<DefId>() + size_of::<(ItemId, Vec<Field>)>() + size_of::<ImportedStruct>()),
+    ))?;
     let mut groups = MemberGroups {
         records: Vec::with_capacity(rows.nominals.len()),
         ..MemberGroups::default()
@@ -88,6 +89,7 @@ pub(super) fn prepare(
     let mut open_enums = Vec::new();
     let mut enum_shapes = Vec::new();
     let constructors = super::definition_cells::struct_constructors(rows, budget)?;
+    let policies = nominal_roles(context, budget)?;
     for (row, constructor) in rows.nominals.iter().zip(constructors) {
         let owner = context.definition(row.declaration, budget)?;
         if let Ok(index) = rows
@@ -123,16 +125,14 @@ pub(super) fn prepare(
             record_fields(graph, facts, budget, owner, raw_fields)?
         };
         let fields_type = facts.types.intern_list(&types).map_err(error)?;
-        let repr = mapped_repr(row);
         groups.add_struct(context, budget, ItemId(owner.0), constructor, fields)?;
         if let Some(limit) = row.simd_lane_limit {
             budget.reserve(4 * size_of::<(ItemId, u64)>())?;
             limits.push((ItemId(owner.0), limit));
         }
-        shapes.push((ItemId(owner.0), repr, fields_type));
+        shapes.push(mapped_struct(row, ItemId(owner.0), fields_type, &policies));
         owners.push(owner);
     }
-    let phantom = phantom_role(context, budget)?;
     let mut pay = |steps, bytes| {
         budget
             .charge(steps)
@@ -152,7 +152,7 @@ pub(super) fn prepare(
         .map_err(error)?;
     let shapes = facts
         .aggregates
-        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, phantom, &limits, pay)
+        .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, &limits, pay)
         .map_err(error)?;
     Ok(Some(Prepared {
         members,
@@ -161,11 +161,31 @@ pub(super) fn prepare(
     }))
 }
 
+fn mapped_struct(
+    row: &s::NominalHeader,
+    item: ItemId,
+    fields: crate::types::ListId,
+    policies: &NominalRoles,
+) -> ImportedStruct {
+    let policy = policies
+        .iter()
+        .find_map(|(declaration, policy)| {
+            (*declaration == Some(row.declaration)).then_some(*policy)
+        })
+        .unwrap_or_default();
+    ImportedStruct {
+        item,
+        repr: mapped_repr(row),
+        fields,
+        policy,
+    }
+}
+
 fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
     let (align, packed) = match row.layout.modifier {
         s::LayoutModifier::Natural => (None, row.packed_simd.then_some(1)),
-        s::LayoutModifier::Aligned(width) => (Some(width), None),
-        s::LayoutModifier::Packed(width) => (None, Some(width)),
+        s::LayoutModifier::Aligned(unit) => (Some(unit.bytes()), None),
+        s::LayoutModifier::Packed(unit) => (None, Some(unit.bytes())),
     };
     aggregate::Repr {
         representation: match row.repr {
@@ -184,24 +204,34 @@ fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
         ..aggregate::Repr::default()
     }
 }
-/// The declaration the packet's own `PhantomData` role names. Only a struct
-/// with it is interned with a logical argument; the role re-proof later
-/// checks its unit shape.
-fn phantom_role(
+/// Derive the affected storage from the exact declarations in the validated role table.
+type NominalRoles = [(Option<DeclarationRef>, ImportedPolicy); 5];
+fn nominal_roles(
     context: &mapped_source::Context<'_>,
     budget: &mut Headers,
-) -> Result<Option<ItemId>, Error> {
+) -> Result<NominalRoles, Error> {
     let rows = context.descriptor.rows();
-    let roles = rows
-        .roles
-        .get(rows.policy.roles.start as usize..rows.policy.roles.end as usize)
-        .ok_or_else(|| error("source role range is outside its validated payload"))?;
-    budget.charge(roles.len())?;
-    let Some(role) = roles.iter().find(|role| role.role == LangItem::PhantomData) else {
-        return Ok(None);
-    };
-    let owner = context.definition(role.declaration.declaration, budget)?;
-    Ok(Some(ItemId(owner.0)))
+    let roles = rows.policy.roles.slice(&rows.roles).map_err(error)?;
+    let policies = [
+        (LangItem::PhantomData, ImportedPolicy::Phantom),
+        (LangItem::UnsafeCell, ImportedPolicy::SharedMutation),
+        (LangItem::UnsafePinned, ImportedPolicy::SharedMutation),
+        (LangItem::ManuallyDrop, ImportedPolicy::SuppressDestruction),
+        (LangItem::MaybeDangling, ImportedPolicy::DanglingPointers),
+    ];
+    budget.charge(
+        roles
+            .len()
+            .saturating_add(rows.nominals.len())
+            .saturating_mul(policies.len()),
+    )?;
+    Ok(policies.map(|(role, policy)| {
+        let owner = roles
+            .iter()
+            .find(|row| row.role == role)
+            .map(|row| row.declaration.declaration);
+        (owner, policy)
+    }))
 }
 /// A record's named fields with their canonical types and access.
 fn record_fields(

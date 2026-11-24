@@ -68,7 +68,8 @@ def main():
     compiler = parser.add_mutually_exclusive_group(required=True)
     compiler.add_argument("--app", type=Path)
     compiler.add_argument("--oracle-only", action="store_true")
-    parser.add_argument("--case", choices=("non-exhaustive-transport", "source-nominal-layout"),
+    parser.add_argument("--case", choices=("non-exhaustive-transport", "source-nominal-layout",
+                                                "source-storage-transport"),
                         default="non-exhaustive-transport")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()

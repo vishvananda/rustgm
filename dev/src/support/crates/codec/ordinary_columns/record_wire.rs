@@ -103,8 +103,8 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
 fn layout_write(out: &mut Writer, layout: s::NominalLayout) -> Result<(), &'static str> {
     let (kind, width) = match layout.modifier {
         s::LayoutModifier::Natural => (0, None),
-        s::LayoutModifier::Aligned(width) => (1, Some(width)),
-        s::LayoutModifier::Packed(width) => (2, Some(width)),
+        s::LayoutModifier::Aligned(unit) => (1, Some(unit.bytes())),
+        s::LayoutModifier::Packed(unit) => (2, Some(unit.bytes())),
     };
     out.u8(kind | (u8::from(layout.indirect_arguments) << 2))?;
     if let Some(width) = width {
@@ -119,8 +119,8 @@ fn layout_read(read: &mut Input<'_, '_>) -> Result<s::NominalLayout, &'static st
     }
     let modifier = match flags & 3 {
         0 => s::LayoutModifier::Natural,
-        1 => s::LayoutModifier::Aligned(read.id()?),
-        2 => s::LayoutModifier::Packed(read.id()?),
+        1 => s::LayoutModifier::Aligned(s::LayoutUnit::new(read.id()?)?),
+        2 => s::LayoutModifier::Packed(s::LayoutUnit::new(read.id()?)?),
         _ => return Err("invalid source nominal layout modifier"),
     };
     Ok(s::NominalLayout {

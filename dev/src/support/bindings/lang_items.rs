@@ -62,6 +62,16 @@ macro_rules! language_items {
 // Existing discriminants and spellings are frozen. Send is diagnostic-owned.
 // The appended rows follow rustc_hir/lang_items.rs at 88d9e12ae178fab0fb5cc050a94da85685d449ea;
 // weak-only foreign targets additionally follow rustc_hir/weak_lang_items.rs.
+impl LangItem {
+    /// These version-fourteen role bindings determine nominal storage policies.
+    pub(crate) const fn is_storage_wrapper(self) -> bool {
+        matches!(
+            self,
+            Self::UnsafeCell | Self::UnsafePinned | Self::ManuallyDrop | Self::MaybeDangling
+        )
+    }
+}
+
 language_items! {
     existing {
         Sized = 0 => ["sized"];

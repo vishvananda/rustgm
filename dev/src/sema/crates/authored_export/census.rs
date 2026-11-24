@@ -1,6 +1,9 @@
 //! Observe v14 declaration admission without forming a writable interface.
 use super::{BodyTransport, CrateIdentity, Declarations, DefId, ExportMode, Report, Stage, s};
-use crate::resolve::{model::Definition, package::Error};
+use crate::{
+    resolve::{model::Definition, package::Error},
+    support::bindings::LangItem,
+};
 
 /// The real v14 declaration and nominal shape gates that need no exported rows.
 pub struct DeclCensus {
@@ -42,17 +45,42 @@ impl DeclCensus {
             if let Err(message) = result {
                 // The same work ledger remains sticky after a failed admission.
                 stage.charge(0)?;
-                let failure = failure(report, id, definition, message);
-                let bytes = failure
-                    .path
-                    .len()
-                    .saturating_add(message.len())
-                    .saturating_add(2 * size_of::<DeclFailure>());
-                stage.reserve(bytes)?;
-                census.refused.push(failure);
+                census.refuse(&mut stage, failure(report, id, definition, message))?;
+            }
+        }
+        let roles = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source role census has no completed catalog")?;
+        for role in LangItem::ALL {
+            stage.charge(1)?;
+            let Some(declaration) = roles.language(role) else {
+                continue;
+            };
+            if let Err(message) = stage.admitted_role(report, facts, role) {
+                stage.charge(0)?;
+                let id = declaration.definition;
+                let mut refusal = failure(
+                    report,
+                    id,
+                    &report.resolution.definitions[id.0 as usize],
+                    message,
+                );
+                refusal.kind = "language-role";
+                census.refuse(&mut stage, refusal)?;
             }
         }
         Ok(census)
+    }
+    fn refuse(&mut self, stage: &mut Stage, failure: DeclFailure) -> Result<(), &'static str> {
+        let bytes = failure
+            .path
+            .len()
+            .saturating_add(failure.diagnostic.message.len())
+            .saturating_add(2 * size_of::<DeclFailure>());
+        stage.reserve(bytes)?;
+        self.refused.push(failure);
+        Ok(())
     }
 }
 

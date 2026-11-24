@@ -1,5 +1,5 @@
 //! Prepared ordinary external structs retain the exact shape destination frontier.
-use super::{Definitions, ItemId, Kind, Repr, Variant};
+use super::{Definitions, ItemId, Kind, NominalPolicy, Repr, SharedMutation, Variant};
 use crate::{
     support::retained,
     types::{ListId, arena::Identity},
@@ -10,6 +10,22 @@ pub(crate) struct ImportedEnum {
     pub repr: Repr,
     pub variants: Vec<Variant>,
     pub nullable: Option<super::nullable::NullableEnum>,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) enum ImportedPolicy {
+    #[default]
+    Ordinary,
+    Phantom,
+    SharedMutation,
+    SuppressDestruction,
+    DanglingPointers,
+}
+#[derive(Clone, Copy)]
+pub(crate) struct ImportedStruct {
+    pub item: ItemId,
+    pub repr: Repr,
+    pub fields: ListId,
+    pub policy: ImportedPolicy,
 }
 pub(crate) struct Prepared {
     identity: Identity,
@@ -34,9 +50,8 @@ impl Definitions {
     pub(crate) fn prepare_imported_nominals(
         &mut self,
         types: &crate::types::Store,
-        structs: &[(ItemId, Repr, ListId)],
+        structs: &[ImportedStruct],
         rows: &[ImportedEnum],
-        phantom: Option<ItemId>,
         limits: &[(ItemId, u64)],
         mut pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Prepared, &'static str> {
@@ -58,8 +73,9 @@ impl Definitions {
         }
         let count = rows.len().saturating_add(structs.len());
         let limit_bytes = self.reserve_imported_simd_limits(limits.len(), &mut pay)?;
+        self.reserve_imported_policies(structs, &mut pay)?;
         self.prepare_staged(count, variants, pay, |staged, destination| {
-            stage_structs(staged, destination, types, structs, phantom)?;
+            stage_structs(staged, destination, types, structs)?;
             for &(item, limit) in limits {
                 staged.register_simd_limit(item, limit, limit_bytes)?;
             }
@@ -77,6 +93,45 @@ impl Definitions {
             }
             Ok(())
         })
+    }
+    fn reserve_imported_policies(
+        &mut self,
+        structs: &[ImportedStruct],
+        pay: &mut impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        pay(structs.len(), 0)?;
+        let (interior, nominal) = structs
+            .iter()
+            .fold((0, 0), |(interior, nominal), row| match row.policy {
+                ImportedPolicy::SharedMutation => (interior + 1, nominal),
+                ImportedPolicy::SuppressDestruction | ImportedPolicy::DanglingPointers => {
+                    (interior, nominal + 1)
+                }
+                _ => (interior, nominal),
+            });
+        let mut growth = retained::Growth::map::<ItemId, ()>(
+            self.interior_storage.len(),
+            self.interior_storage.capacity(),
+            interior,
+        );
+        growth.include(retained::Growth::map::<ItemId, NominalPolicy>(
+            self.nominal_policies.len(),
+            self.nominal_policies.capacity(),
+            nominal,
+        ));
+        pay(
+            growth.work,
+            growth
+                .bytes
+                .saturating_add(retained::new_map::<ItemId, ()>(interior))
+                .saturating_add(retained::new_map::<ItemId, NominalPolicy>(nominal)),
+        )?;
+        self.interior_storage
+            .try_reserve(interior)
+            .map_err(|_| "external interior-storage policy reservation failed")?;
+        self.nominal_policies
+            .try_reserve(nominal)
+            .map_err(|_| "external wrapper policy reservation failed")
     }
     fn reserve_imported_simd_limits(
         &mut self,
@@ -177,16 +232,21 @@ fn stage_structs(
     staged: &mut Definitions,
     destination: &Definitions,
     types: &crate::types::Store,
-    rows: &[(ItemId, Repr, ListId)],
-    phantom: Option<ItemId>,
+    rows: &[ImportedStruct],
 ) -> Result<(), &'static str> {
-    for &(item, repr, fields) in rows {
+    for &ImportedStruct {
+        item,
+        repr,
+        fields,
+        policy,
+    } in rows
+    {
         if destination.get(item).is_some() {
             return Err("external struct batch changed its actual destination owner");
         }
-        staged.insert(
+        staged.insert_with_mutation(
             item,
-            if phantom == Some(item) {
+            if policy == ImportedPolicy::Phantom {
                 Kind::PhantomData
             } else {
                 Kind::Struct
@@ -196,7 +256,17 @@ fn stage_structs(
                 fields,
                 discriminant: 0,
             }],
+            if policy == ImportedPolicy::SharedMutation {
+                SharedMutation::Interior
+            } else {
+                SharedMutation::Ordinary
+            },
         )?;
+        match policy {
+            ImportedPolicy::SuppressDestruction => staged.suppress_destruction(item)?,
+            ImportedPolicy::DanglingPointers => staged.permit_dangling_pointers(item)?,
+            _ => {}
+        }
         if repr.representation == super::Representation::Simd {
             let shape = staged
                 .get(item)
@@ -241,6 +311,8 @@ impl Ready<'_> {
             target.entries.push(row);
         }
         target.variants.extend(self.rows.variants);
+        target.interior_storage.extend(self.rows.interior_storage);
+        target.nominal_policies.extend(self.rows.nominal_policies);
         if let Some(policies) = self.rows.nullable_enums {
             // Preparation reserved one destination slot per staged policy.
             target

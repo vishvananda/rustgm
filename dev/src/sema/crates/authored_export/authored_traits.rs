@@ -103,50 +103,23 @@ impl Stage {
         };
         for role in LangItem::ALL {
             self.charge(1)?;
-            let Some(declaration) = self.exported_role(report, facts, role)? else {
+            let Some(declaration) = self.admitted_role(report, facts, role)? else {
                 continue;
             };
-            if (!self.declaration_policies()
-                && matches!(
-                    role,
-                    LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
-                ))
-                || (role == LangItem::PhantomData && !self.body_nodes())
-            {
-                return Err("source Pointee contract transport is not implemented");
-            }
-            // Version thirteen transports Send's diagnostic identity as a 254
-            // row (`diagnostic_roles`); its header is an ordinary trait's.
-            if role == LangItem::Send {
-                if !self.body_nodes() {
-                    return Err("source Send diagnostic contract transport is not implemented");
-                }
-                continue;
-            }
-            // Version thirteen froze while the unwind safety identities were
-            // inert diagnostic names: their declarations stay ordinary auto
-            // traits, which consumers prove structurally. Version fourteen
-            // binds the role, which no profile represents yet, and refuses it.
-            if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe)
-                && !self.declaration_policies()
-            {
-                continue;
-            }
             let address = self.address(declaration.definition)?;
             self.reserve(4 * size_of::<s::RoleBinding>())?;
             self.rows.roles.push(s::RoleBinding {
                 role,
                 declaration: address,
             });
-            match report.resolution.definitions[declaration.definition.0 as usize].kind {
-                DefKind::Trait => {
-                    let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
-                    self.trait_header(facts, &header, reserved, literal)?;
-                    if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
-                        *slot = true;
-                    }
+            if report.resolution.definitions[declaration.definition.0 as usize].kind
+                == DefKind::Trait
+            {
+                let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
+                self.trait_header(facts, &header, reserved, literal)?;
+                if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
+                    *slot = true;
                 }
-                kind => self.declared_role_form(kind, role)?,
             }
         }
         self.rows.policy.roles = g::Range {
@@ -199,6 +172,7 @@ impl Stage {
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
+            DefKind::Struct if role.is_storage_wrapper() && self.declaration_policies() => {}
             DefKind::Struct
                 if self.declaration_policies()
                     && matches!(
@@ -261,6 +235,53 @@ impl Stage {
             });
         }
         Ok(())
+    }
+
+    /// Check the role producer's admission before assigning any canonical rows.
+    pub(super) fn admitted_role(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        role: LangItem,
+    ) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+        let catalog = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source header graph has no role catalog")?;
+        if role == LangItem::ConstParamTy && catalog.language(role).is_some() {
+            return Err("source ConstParamTy contract transport is not implemented");
+        }
+        let Some(declaration) = self.exported_role(report, facts, role)? else {
+            return Ok(None);
+        };
+        if (!self.declaration_policies()
+            && matches!(
+                role,
+                LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata
+            ))
+            || (role == LangItem::PhantomData && !self.body_nodes())
+        {
+            return Err("source Pointee contract transport is not implemented");
+        }
+        // Version thirteen writes Send's diagnostic identity in a separate row.
+        if role == LangItem::Send {
+            return if self.body_nodes() {
+                Ok(None)
+            } else {
+                Err("source Send diagnostic contract transport is not implemented")
+            };
+        }
+        // The historical profile treated unwind safety as ordinary auto traits.
+        if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe)
+            && !self.declaration_policies()
+        {
+            return Ok(None);
+        }
+        let kind = report.resolution.definitions[declaration.definition.0 as usize].kind;
+        if kind != DefKind::Trait {
+            self.declared_role_form(kind, role)?;
+        }
+        Ok(Some(declaration))
     }
 
     fn exported_role(

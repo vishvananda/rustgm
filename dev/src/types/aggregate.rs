@@ -13,7 +13,9 @@ mod phantom;
 mod preparation;
 pub(crate) use preparation::PendingFields;
 mod prepared_shapes;
-pub(crate) use prepared_shapes::{ImportedEnum, Prepared as PreparedShapes};
+pub(crate) use prepared_shapes::{
+    ImportedEnum, ImportedPolicy, ImportedStruct, Prepared as PreparedShapes,
+};
 mod simd;
 mod zero_bytes;
 use super::{ItemId, ListId, Primitive, Store, TypeId};

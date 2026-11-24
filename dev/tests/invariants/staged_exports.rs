@@ -115,14 +115,14 @@ fn run(source: &str, damage: Damage, counts: &Rc<Counts>) -> Result<(usize, Lowe
         analysis.prepared,
         |facts, _| {
             let (entry, exports) = selected(&report, facts)?;
-            Ok((
+            Ok(std::ops::ControlFlow::Continue((
                 entry,
                 exports,
                 Stage {
                     rows: HashSet::default(),
                     counts: Rc::clone(counts),
                 },
-            ))
+            )))
         },
         |stage, _, proved, input| {
             let body = proved.body();

@@ -3,7 +3,8 @@
 Planned: no graded manifest or generated reference outputs yet.
 
 `spec/source-export-census/outcomes.json` declares a source-provider control
-for observing independent declaration and nominal shape failures in order. Run
+for observing independent declaration, nominal shape, and language-role
+admission failures. Run
 `scripts/check_export_census.py` against a prebuilt compiler. A census writes
 an analysis report and exits with failure.
 
@@ -24,8 +25,10 @@ const-parameter provider exercises a named array length and its type.
 
 `spec/non-exhaustive-transport/outcomes.json` covers construction and matching
 with non-exhaustive structs and an enum. `spec/source-nominal-layout/outcomes.json`
-covers alignment, packing, and indirect C ABI arguments. Run the declared case
-with `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
+covers alignment, packing, and indirect C ABI arguments.
+`spec/source-storage-transport/outcomes.json` covers imported storage wrapper
+roles and a structurally similar ordinary type. Run the declared case with
+`scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.
 
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,

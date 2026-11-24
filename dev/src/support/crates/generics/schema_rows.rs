@@ -525,8 +525,25 @@ pub enum Exhaustiveness {
 pub enum LayoutModifier {
     #[default]
     Natural,
-    Aligned(u32),
-    Packed(u32),
+    Aligned(LayoutUnit),
+    Packed(LayoutUnit),
+}
+/// A checked power-of-two byte count stored as its exponent.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct LayoutUnit(u8);
+impl LayoutUnit {
+    pub(crate) fn new(bytes: u32) -> Result<Self, &'static str> {
+        let invalid = "invalid source nominal alignment or packing unit";
+        if !bytes.is_power_of_two() || bytes > 1 << 29 {
+            return Err(invalid);
+        }
+        Ok(Self(
+            u8::try_from(bytes.trailing_zeros()).map_err(|_| invalid)?,
+        ))
+    }
+    pub(crate) const fn bytes(self) -> u32 {
+        1 << self.0
+    }
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct NominalLayout {
@@ -539,13 +556,6 @@ impl NominalLayout {
         repr: crate::support::crates::RecordRepr,
     ) -> Result<(), &'static str> {
         use crate::support::crates::RecordRepr;
-        let width = match self.modifier {
-            LayoutModifier::Natural => 1,
-            LayoutModifier::Aligned(width) | LayoutModifier::Packed(width) => width,
-        };
-        if !width.is_power_of_two() || width > 1 << 29 {
-            return Err("invalid source nominal alignment or packing unit");
-        }
         if self.modifier != LayoutModifier::Natural
             && !matches!(repr, RecordRepr::Rust | RecordRepr::C)
             || self.indirect_arguments && repr != RecordRepr::C

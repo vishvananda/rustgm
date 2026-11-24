@@ -3,7 +3,7 @@ use super::{Declarations, DefId, DefKind, Report, Stage, g, s};
 use crate::{
     resolve::model::Access,
     sema::members::Name,
-    support::crates::RecordRepr,
+    support::{bindings::LangItem, crates::RecordRepr},
     syntax::item::Shape,
     types::{ItemId, aggregate},
 };
@@ -175,7 +175,7 @@ impl Stage {
     }
     /// These source facts are available before any metadata IDs are assigned.
     pub(super) fn nominal_shape(
-        &self,
+        &mut self,
         report: &Report,
         facts: &Declarations,
         owner: DefId,
@@ -199,15 +199,13 @@ impl Stage {
         if !policies {
             concrete_simd(facts, owner, repr)?;
         }
-        if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
-            || facts.aggregates.permits_dangling_pointers(item) != Some(false)
-            || !(shape.kind == aggregate::Kind::Struct
-                || enumeration
-                || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
-            || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
+        if !(shape.kind == aggregate::Kind::Struct
+            || enumeration
+            || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
         {
-            return Err("source nominal destruction/shape requires its wider complete contract");
+            return Err("source nominal shape requires its wider complete contract");
         }
+        self.nominal_storage(facts, item)?;
         Ok(NominalShape {
             repr,
             layout,
@@ -219,6 +217,40 @@ impl Stage {
                 s::Exhaustiveness::Closed
             },
         })
+    }
+    fn nominal_storage(&mut self, facts: &Declarations, item: ItemId) -> Result<(), &'static str> {
+        let mut proved = |role| -> Result<bool, &'static str> {
+            if !self.declaration_policies() {
+                return Ok(false);
+            }
+            self.charge(1)?;
+            let catalog = facts
+                .source_bindings
+                .as_deref()
+                .ok_or("source storage wrapper lost its role catalog")?;
+            Ok(catalog
+                .validated_language(role)?
+                .is_some_and(|d| d.definition.0 == item.0))
+        };
+        let admitted = match facts.aggregates.destruction(item) {
+            Some(aggregate::FieldDestruction::Fields) => true,
+            Some(aggregate::FieldDestruction::Never) => proved(LangItem::ManuallyDrop)?,
+            _ => false,
+        } && match facts.aggregates.permits_dangling_pointers(item) {
+            Some(false) => true,
+            Some(true) => proved(LangItem::MaybeDangling)?,
+            None => false,
+        } && match facts.aggregates.shared_mutation(item) {
+            Some(aggregate::SharedMutation::Ordinary) => true,
+            Some(aggregate::SharedMutation::Interior) => {
+                proved(LangItem::UnsafeCell)? || proved(LangItem::UnsafePinned)?
+            }
+            None => false,
+        };
+        if !admitted {
+            return Err("source nominal destruction/shape requires its wider complete contract");
+        }
+        Ok(())
     }
     fn nominal_inputs(
         &mut self,
@@ -357,9 +389,9 @@ fn record_repr(
     let mut repr = repr;
     let layout = if policies && !enumeration {
         let modifier = match (repr.align.take(), repr.packed.take()) {
-            (Some(width), None) => s::LayoutModifier::Aligned(width),
+            (Some(width), None) => s::LayoutModifier::Aligned(s::LayoutUnit::new(width)?),
             (None, Some(_)) if packed_simd => s::LayoutModifier::Natural,
-            (None, Some(width)) => s::LayoutModifier::Packed(width),
+            (None, Some(width)) => s::LayoutModifier::Packed(s::LayoutUnit::new(width)?),
             (None, None) => s::LayoutModifier::Natural,
             _ => return Err("source nominal has conflicting alignment and packing"),
         };

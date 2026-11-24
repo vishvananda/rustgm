@@ -1,0 +1,11 @@
+{
+  "foundation": "pa31/tests/spec/unsafe-cell-source/shared-is-not-unique.rs",
+  "prefix_marker": "#[lang=\"sync\"]",
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0},
+    {"cfg": "cell", "status": 1, "rustc": "E0277", "rustgm": "trait obligation"},
+    {"cfg": "pinned", "status": 1, "rustc": "E0277", "rustgm": "trait obligation"},
+    {"cfg": "dangling", "status": 1, "rustc": "E0080", "rustgm": "constant pointer has no allocation provenance"}
+  ]
+}
