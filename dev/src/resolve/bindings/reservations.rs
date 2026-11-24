@@ -143,7 +143,11 @@ pub(in crate::resolve) fn finish(
         crate::resolve::stability::fn_allowances::prepare_library(package, &mut library)?;
     let mut inventory =
         crate::resolve::stability::complete(package, facts, library, pending_library.as_deref())?;
-    let mut reserved = reserve_all(package, facts, &claims)?;
+    let (mut reserved, local_handler) = if package.source_client().is_some() {
+        (None, reserve_client_handler(package, facts, &claims)?)
+    } else {
+        (reserve_all(package, facts, &claims)?, None)
+    };
     let column = extra
         .seal(&mut package.names)
         .map_err(|message| extra.error(message))?;
@@ -169,10 +173,84 @@ pub(in crate::resolve) fn finish(
         result.map_err(|error| Error::at(FileId(0), 0, error))?;
     }
     facts.source_bindings = reserved;
+    facts.local_panic_handler = local_handler;
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
         library.publish(inventory);
     }
     crate::resolve::stability::availability_imports::check_all(package, facts)
+}
+
+fn reserve_client_handler(
+    package: &Package,
+    facts: &Resolution,
+    claims: &HashMap<NodeKey, Vec<Claim>>,
+) -> Result<Option<Declaration>, Error> {
+    let Some((&origin, attributes)) = claims.iter().next() else {
+        return Ok(None);
+    };
+    if !claims
+        .values()
+        .flatten()
+        .all(|claim| matches!(claim, Claim::PanicHandler))
+    {
+        return Err(Error::unlocated(
+            "compiler bindings require an explicit source-core provider",
+        ));
+    }
+    if claims.len() != 1 || attributes.len() != 1 {
+        return Err(Error::unlocated(
+            "multiple panic handler definitions or attributes",
+        ));
+    }
+    let (index, actual) = facts
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, definition)| {
+            definition.node == Some(origin)
+                && super::role_attributes::primary(
+                    package,
+                    origin,
+                    definition.kind,
+                    definition.namespace,
+                    Some(attributes),
+                )
+        })
+        .ok_or_else(|| {
+            error(
+                package,
+                origin,
+                "panic handler requires an actual indexed definition",
+            )
+        })?;
+    let definition = DefId(u32::try_from(index).map_err(|_| {
+        error(
+            package,
+            origin,
+            "panic handler definition exceeds its arena",
+        )
+    })?);
+    if facts.definitions.iter().any(|owner| {
+        matches!(owner.kind, DefKind::Trait | DefKind::SelfType)
+            && owner.members == Some(actual.scope)
+    }) {
+        return Err(error(
+            package,
+            origin,
+            "panic handler must be a free function",
+        ));
+    }
+    let declaration = Declaration {
+        definition,
+        parent: None,
+        origin,
+    };
+    super::panic_claims::validate_handler(
+        package,
+        declaration,
+        facts.foreign_owners.contains_key(&definition),
+    )?;
+    Ok(Some(declaration))
 }
 
 fn reserve_all(

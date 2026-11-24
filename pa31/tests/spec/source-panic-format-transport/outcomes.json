@@ -9,6 +9,9 @@
   "cases": [
     {"cfg": "accepted", "status": 0, "lowir": ["function @can_unwind(", "load"]},
     {"cfg": "private_message", "status": 1, "rustc": "E0616", "rustgm": "private"},
-    {"cfg": "wrong_role", "status": 1, "rustc": "E0308", "rustgm": "incompatible types"}
+    {"cfg": "wrong_role", "status": 1, "rustc": "E0308", "rustgm": "incompatible types"},
+    {"cfg": "handler", "status": 0, "lowir": ["function @rust_begin_unwind(", "return=noreturn"]},
+    {"cfg": "wrong_handler", "status": 1, "rustc": "E0308", "rustgm": "another nominal"},
+    {"cfg": "duplicate_handler", "status": 1, "rustc": "E0152", "rustgm": "multiple panic handler"}
   ]
 }

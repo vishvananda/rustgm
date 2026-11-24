@@ -251,6 +251,6 @@ fn reject_static_handler_signature(
         .as_deref()
         .and_then(|catalog| catalog.language(super::LangItem::PanicInfo))
         .ok_or("actual PanicInfo")?;
-    assert!(super::signature(facts, function, info, false).is_err());
+    assert!(super::signature(facts, function, info.into(), false).is_err());
     Ok(())
 }

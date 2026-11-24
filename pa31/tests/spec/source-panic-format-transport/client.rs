@@ -19,3 +19,27 @@ pub fn message(info: &'static base::PanicInfo<'static>) -> &'static base::Argume
 pub fn wrong(info: &'static base::Arguments<'static>) -> &'static base::PanicInfo<'static> {
     info
 }
+
+#[cfg(handler)]
+#[panic_handler]
+fn handle(_: &base::PanicInfo<'_>) -> ! {
+    loop {}
+}
+
+#[cfg(wrong_handler)]
+#[panic_handler]
+fn handle_wrong(_: &base::Arguments<'_>) -> ! {
+    loop {}
+}
+
+#[cfg(duplicate_handler)]
+#[panic_handler]
+fn first(_: &base::PanicInfo<'_>) -> ! {
+    loop {}
+}
+
+#[cfg(duplicate_handler)]
+#[panic_handler]
+fn second(_: &base::PanicInfo<'_>) -> ! {
+    loop {}
+}

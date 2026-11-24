@@ -36,6 +36,9 @@ impl Bindings {
 }
 
 pub(crate) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    if report.package.source_client().is_some() {
+        return complete_client(report, facts);
+    }
     let declaration = declaration(report, facts)?;
     if report.package.source_core().is_none() {
         return Ok(());
@@ -65,26 +68,63 @@ pub(crate) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), 
         .ok_or_else(|| Error::unlocated("panic callable requires completed actual PanicInfo"))?;
     for &(definition, _) in &imports {
         let function = checked_function(report, facts, definition)?;
-        signature(facts, function, info, true)?;
+        signature(facts, function, info.into(), true)?;
     }
     let handler = declaration
-        .map(|declaration| checked_handler(report, facts, declaration, info))
+        .map(|declaration| checked_handler(report, facts, declaration, info.into()))
         .transpose()?;
     let batch = Bindings { handler, imports };
     let payments = header_attributes::source_payments(facts.must_use_contracts.as_deref())?;
-    if let Some(registry) = facts.foreign.as_deref_mut() {
-        registry
-            .bind_handler(batch, |growth| payments.charge(growth.work, growth.bytes))
-            .map_err(Error::unlocated)
+    publish(&mut facts.foreign, batch, |growth| {
+        payments.charge(growth.work, growth.bytes)
+    })
+}
+
+fn complete_client(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    let Some(local) = report.resolution.local_panic_handler else {
+        return Ok(());
+    };
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("panic handler lost its source client catalog"))?;
+    catalog
+        .require_provider_report(report)
+        .map_err(Error::unlocated)?;
+    let info = catalog
+        .validated_role(LangItem::PanicInfo)
+        .map_err(Error::unlocated)?
+        .ok_or_else(|| Error::unlocated("panic handler requires completed actual PanicInfo"))?;
+    let handler = checked_handler(report, facts, local, info)?;
+    let batch = Bindings {
+        handler: Some(handler),
+        imports: Vec::new(),
+    };
+    let payments = crate::sema::crates::source_header_payments(facts.crates.as_deref_mut())
+        .map_err(Error::unlocated)?;
+    publish(&mut facts.foreign, batch, |growth| {
+        payments.pay(growth.work, growth.bytes)
+    })
+}
+
+fn publish(
+    target: &mut Option<Box<Registry>>,
+    batch: Bindings,
+    mut pay: impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+) -> Result<(), Error> {
+    if let Some(registry) = target.as_deref_mut() {
+        registry.bind_handler(batch, pay).map_err(Error::unlocated)
     } else {
-        payments
-            .charge(1, size_of::<Registry>())
-            .map_err(Error::unlocated)?;
+        pay(crate::support::retained::Growth {
+            work: 1,
+            bytes: size_of::<Registry>(),
+        })
+        .map_err(Error::unlocated)?;
         let mut registry = Registry::default();
         registry
-            .bind_handler(batch, |growth| payments.charge(growth.work, growth.bytes))
+            .bind_handler(batch, pay)
             .map_err(Error::unlocated)?;
-        facts.foreign = Some(Box::new(registry));
+        *target = Some(Box::new(registry));
         Ok(())
     }
 }
@@ -93,7 +133,7 @@ fn checked_handler(
     report: &Report,
     facts: &mut Declarations,
     declaration: Declaration,
-    info: Declaration,
+    info: super::Role,
 ) -> Result<(DefId, ForeignFunction), Error> {
     let handler = checked_function(report, facts, declaration.definition)?;
     if declaration.parent.is_some()
@@ -198,20 +238,32 @@ fn checked_function(
         .and_then(|&index| facts.functions.get(index))
         .copied()
         .ok_or_else(|| Error::unlocated("panic function lacks its completed current header"))?;
-    let view = facts.header_attribute_contracts(report, definition)?;
+    let source = report.resolution.definitions.get(definition.0 as usize);
     if function.definition != definition
-        || view
-            .origin
-            .source()
-            .is_none_or(|origin| origin.declaration != function.node)
-        || matches!(view.must_use, ContractKnowledge::Unknown)
-        || matches!(view.inline, ContractKnowledge::Unknown)
+        || source.is_none_or(|actual| {
+            actual.kind != crate::resolve::model::DefKind::Function
+                || actual.node != Some(function.node)
+        })
         || !matches!(facts.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty| facts.types.kind(ty)),
             Some(Kind::FunctionItem{item,signature,..}) if item.0 == definition.0 && signature == function.signature)
     {
         return Err(Error::unlocated(
             "panic function changed its actual canonical declaration or callable",
         ));
+    }
+    if report.package.source_core().is_some() {
+        let view = facts.header_attribute_contracts(report, definition)?;
+        if view
+            .origin
+            .source()
+            .is_none_or(|origin| origin.declaration != function.node)
+            || matches!(view.must_use, ContractKnowledge::Unknown)
+            || matches!(view.inline, ContractKnowledge::Unknown)
+        {
+            return Err(Error::unlocated(
+                "source panic function lost its checked header contracts",
+            ));
+        }
     }
     Ok(function)
 }
@@ -265,10 +317,10 @@ fn require_untracked(
 fn signature(
     facts: &mut Declarations,
     function: Function,
-    info: Declaration,
+    info: super::Role,
     weak: bool,
 ) -> Result<(), Error> {
-    let (bound_regions, unsafe_) = signature_shape(facts, function.signature, info)?;
+    let (bound_regions, unsafe_) = signature_shape(facts, function.signature, info.definition)?;
     if weak && !unsafe_ {
         return Err(Error::unlocated(
             "safe weak panic declaration contract is not implemented",
@@ -279,7 +331,11 @@ fn signature(
         .parameters
         .get(&function.definition)
         .map_or(0, Vec::len);
-    header_attributes::charge_source_retention(facts, count, 0)?;
+    let imported = matches!(
+        info.origin,
+        crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+    );
+    signature_payment(facts, imported, count, 0)?;
     if facts
         .generics
         .parameters
@@ -300,14 +356,15 @@ fn signature(
         .map_err(|_| Error::unlocated("panic signature binder exceeds its arena"))?
         .saturating_add(8);
     let limit = nodes.saturating_mul(64);
-    header_attributes::charge_source_retention(
+    signature_payment(
         facts,
+        imported,
         limit,
         nodes
             .saturating_mul(8)
             .saturating_mul(size_of::<Constraints<'_>>()),
     )?;
-    let expected = expected_signature(facts, info, unsafe_)?;
+    let expected = expected_signature(facts, info.definition, unsafe_)?;
     let mut relations = Constraints::new(&facts.types, &facts.lifetimes.variances, 0, limit)
         .map_err(|error| Error::unlocated(error.to_string()))?;
     relations
@@ -325,11 +382,24 @@ fn signature(
     Ok(())
 }
 
+fn signature_payment(
+    facts: &mut Declarations,
+    imported: bool,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    if imported {
+        crate::sema::crates::charge_source_headers(facts, steps, bytes)
+    } else {
+        header_attributes::charge_source_retention(facts, steps, bytes)
+    }
+}
+
 /// Enforce the finite nominal schema before allocating a callable relation graph.
 fn signature_shape(
     facts: &Declarations,
     signature: TypeId,
-    info: Declaration,
+    info: DefId,
 ) -> Result<(u32, bool), Error> {
     let Some(Kind::Function {
         bound_regions,
@@ -367,7 +437,7 @@ fn signature_shape(
         .types
         .arguments(arguments)
         .ok_or_else(|| Error::unlocated("panic callable lost its actual nominal arguments"))?;
-    if item.0 != info.definition.0
+    if item.0 != info.0
         || result != TypeId::NEVER
         || !matches!(arguments.next(), Some(Argument::Lifetime(_)))
         || arguments.next().is_some()
@@ -380,7 +450,7 @@ fn signature_shape(
 }
 fn expected_signature(
     facts: &mut Declarations,
-    info: Declaration,
+    info: DefId,
     unsafe_: bool,
 ) -> Result<TypeId, Error> {
     let lifetime = facts
@@ -391,7 +461,7 @@ fn expected_signature(
         .map_err(Error::unlocated)?;
     let nominal = facts
         .types
-        .intern(Kind::Adt(crate::types::ItemId(info.definition.0), lifetime))
+        .intern(Kind::Adt(crate::types::ItemId(info.0), lifetime))
         .map_err(Error::unlocated)?;
     let parameter = facts
         .types
