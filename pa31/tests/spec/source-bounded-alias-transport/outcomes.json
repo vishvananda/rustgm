@@ -9,7 +9,7 @@
     {
       "source": "proved.rs",
       "status": 0,
-      "lowir": "return u32 34"
+      "lowir": ["return u32 34"]
     },
     {
       "source": "missing.rs",
@@ -23,5 +23,16 @@
       "diagnostic": "private type name `ChangeOutputType`",
       "rustc_diagnostic": "error[E0603]"
     }
-  ]
+  ],
+  "block": {
+    "source": "block-provider.rs",
+    "baseline_diagnostic": "source alias changed its completed closed type or source witness",
+    "consumers": [
+      {
+        "source": "block-client.rs",
+        "status": 0,
+        "lowir": ["call u32 @rgc", "store u32 34"]
+      }
+    ]
+  }
 }

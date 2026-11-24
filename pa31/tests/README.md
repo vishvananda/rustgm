@@ -10,7 +10,8 @@ an analysis report and exits with failure.
 `spec/source-bounded-alias-transport/outcomes.json` declares a source library
 with the two associated-type projections used by `core`'s `ChangeOutputType`.
 Fresh clients exercise a valid application, a missing implementation and
-an inaccessible alias.
+an inaccessible alias. A separate provider uses a block-local type alias
+within a function and a fresh client calls that exported function.
 
 `spec/explicit-dynamic-call-members/outcomes.json` declares the borrowed dynamic
 rust-call member cases, the Box callable foundation and the ordered C observer

@@ -35,7 +35,8 @@ mod verbatim_exports;
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, DefKind, Namespace, Origin, ScopeId},
+        model::{Access, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
+        unit::NodeKey,
     },
     sema::{associated::OwnerKind, model::Declarations},
     support::{
@@ -46,6 +47,7 @@ use crate::{
             owner_catalog::DeclarationRef,
         },
     },
+    syntax::{ast::Kind as Syntax, item::ItemKind},
     types::{Kind, TypeId, lifetime_proof::ScopeId as ProofScope},
 };
 pub(crate) use advisory_rows::require_defaultness_transport;
@@ -724,10 +726,7 @@ impl Stage {
         facts: &Declarations,
         id: DefId,
     ) -> Result<(), &'static str> {
-        use crate::{
-            syntax::{ast::Kind as Syntax, item::ItemKind},
-            types::arguments::Argument,
-        };
+        use crate::types::arguments::Argument;
         self.charge(10)?;
         let error = "source alias formals or deferred proofs require their wider profile";
         let declaration = &report.resolution.definitions[id.0 as usize];
@@ -818,7 +817,14 @@ impl Stage {
             .copied()
             .flatten()
             .ok_or("source alias has no completed canonical type")?;
-        if facts.node(source).and_then(|node| node.ty) != Some(ty)
+        let witness = facts.node(source).and_then(|node| node.ty);
+        let completed = witness == Some(ty)
+            || self.declaration_policies()
+                && witness == Some(TypeId::UNIT)
+                && matches!(declaration.access, Access::Within(_))
+                && !is_module_scoped(report, declaration)
+                && block_alias_target(report, facts, source) == Some(ty);
+        if !completed
             || facts.types.contains_parameters(ty) != Some(false)
             || facts.types.needs_region_context(ty) != Some(false)
         {
@@ -826,6 +832,24 @@ impl Stage {
         }
         Ok(())
     }
+}
+
+fn block_alias_target(report: &Report, facts: &Declarations, source: NodeKey) -> Option<TypeId> {
+    // Body typing assigns the item statement a unit type. The RHS still
+    // witnesses the completed canonical type of the alias declaration.
+    let ast = &report.package.unit(source.file).configured.ast;
+    let Syntax::Item(index) = ast.node(source.node).kind else {
+        return None;
+    };
+    let ItemKind::TypeAlias { ty: Some(rhs), .. } = ast.items[index as usize].kind else {
+        return None;
+    };
+    facts
+        .node(NodeKey {
+            node: rhs,
+            ..source
+        })?
+        .ty
 }
 
 #[derive(Default)]
@@ -962,7 +986,7 @@ fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>
 fn scoped_module_alias(
     report: &Report,
     facts: &Declarations,
-    definition: &crate::resolve::model::Definition,
+    definition: &Definition,
     id: DefId,
 ) -> bool {
     definition.kind == DefKind::TypeAlias
@@ -973,11 +997,12 @@ fn scoped_module_alias(
             .parameters
             .get(&id)
             .is_some_and(|parameters| !parameters.is_empty())
-        && report.resolution.module_scopes.get(
-            report.resolution.scopes[definition.scope.0 as usize]
-                .module
-                .0 as usize,
-        ) == Some(&definition.scope)
+        && is_module_scoped(report, definition)
+}
+
+fn is_module_scoped(report: &Report, definition: &Definition) -> bool {
+    let module = report.resolution.scopes[definition.scope.0 as usize].module;
+    report.resolution.module_scopes.get(module.0 as usize) == Some(&definition.scope)
 }
 
 fn scope_owners(

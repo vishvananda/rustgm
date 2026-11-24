@@ -44,11 +44,15 @@ PROFILE = ["--emit-lowir", "--edition=2024", "--crate-type=lib", "--cap-lints=al
            "--crate-disambiguator", "bounded_alias"]
 
 
+def publish_command(app, out, name, source):
+    return [app, *PROFILE, "--crate-name", "base", "--source-core", IDENTITY,
+            "--source-profile", "module-body-operations-v14", "--metadata-output",
+            out / f"{name}.rgcrate", "-o", out / f"{name}.lowir", source]
+
+
 def publish(app, out, name, source):
     artifact = out / f"{name}.rgcrate"
-    check([app, *PROFILE, "--crate-name", "base", "--source-core", IDENTITY,
-           "--source-profile", "module-body-operations-v14", "--metadata-output",
-           artifact, "-o", out / f"{name}.lowir", source], out / f"{name}.stderr", 0)
+    check(publish_command(app, out, name, source), out / f"{name}.stderr", 0)
     if not artifact.is_file() or artifact.stat().st_size == 0:
         raise ValueError("provider emitted no crate metadata")
     return artifact
@@ -60,11 +64,14 @@ def candidate(app, out, source, consumers):
         name = Path(case["source"]).stem
         lowir = out / f"{name}.lowir"
         test = FIXTURE / case["source"]
-        check([app, *PROFILE, "--crate-name", name, "--source-client", IDENTITY,
+        check([app, *PROFILE, "--crate-name", name.replace("-", "_"), "--source-client", IDENTITY,
                "--extern", f"base={artifact}", "-o", lowir, test],
               out / f"rustgm-{name}.stderr", case["status"], case.get("diagnostic"))
-        if "lowir" in case and case["lowir"] not in lowir.read_text():
-            raise ValueError(f"{name}: the imported alias did not produce the declared LowIR")
+        if "lowir" in case:
+            rendered = lowir.read_text()
+            for fragment in case["lowir"]:
+                if fragment not in rendered:
+                    raise ValueError(f"{name}: expected imported LowIR {fragment!r}")
     return artifact
 
 
@@ -80,6 +87,20 @@ def compatibility(app, baseline, out, contract, artifact):
           out / "legacy-reader.stderr", 1, "invalid compiler-operation const-body trailer presence")
 
 
+def block_alias(options, contract):
+    out = options.out / "block"
+    out.mkdir()
+    block = contract["block"]
+    source = out / "provider.rs"
+    source.write_bytes(declared_provider(contract["provider"], block["source"]))
+    independent(options.rustc, out, source, block["consumers"])
+    if options.baseline is not None:
+        check(publish_command(options.baseline, out, "previous", source), out / "previous.stderr",
+              1, block["baseline_diagnostic"])
+    if options.app is not None:
+        candidate(options.app, out, source, block["consumers"])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", type=Path)
@@ -91,13 +112,17 @@ def main():
     options.out.mkdir(parents=True, exist_ok=False)
     source = options.out / "provider.rs"
     source.write_bytes(declared_provider(contract["provider"], contract["provider"]["source"]))
-    independent(options.rustc.resolve(strict=True), options.out, source, contract["consumers"])
+    options.rustc = options.rustc.resolve(strict=True)
+    independent(options.rustc, options.out, source, contract["consumers"])
     if options.app is not None:
-        app = options.app.resolve(strict=True)
-        artifact = candidate(app, options.out, source, contract["consumers"])
+        options.app = options.app.resolve(strict=True)
+        artifact = candidate(options.app, options.out, source, contract["consumers"])
         if options.baseline is not None:
-            compatibility(app, options.baseline.resolve(strict=True), options.out, contract["provider"], artifact)
-    print(f"Checked {len(contract['consumers'])} independently compiled alias consumers")
+            options.baseline = options.baseline.resolve(strict=True)
+            compatibility(options.app, options.baseline, options.out, contract["provider"], artifact)
+    block_alias(options, contract)
+    print(f"Checked {len(contract['consumers']) + len(contract['block']['consumers'])}"
+          " independently compiled alias consumers")
 
 
 if __name__ == "__main__":
