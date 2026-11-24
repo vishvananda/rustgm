@@ -36,7 +36,10 @@ pub enum DefinitionKind {
 }
 impl DefinitionKind {
     pub(crate) const fn leading_regions(self) -> bool {
-        matches!(self, Self::Struct | Self::Enum | Self::Trait)
+        matches!(
+            self,
+            Self::Struct | Self::Enum | Self::Trait | Self::AssociatedType
+        )
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -59,13 +62,28 @@ struct Counts {
 }
 /// A type slot's wire index is its ordinal, except for owners with leading
 /// regions, whose type slots count only the owner's earlier type slots.
-#[derive(Default)]
 struct OwnSlots {
     leading_regions: Option<DefinitionKind>,
     types: u32,
     regions: u32,
 }
 impl OwnSlots {
+    fn for_definition(kind: DefinitionKind, captures: Counts) -> Result<Self, &'static str> {
+        let regions = if kind == DefinitionKind::AssociatedType {
+            captures
+                .all
+                .checked_sub(captures.types)
+                .ok_or("source associated scope has an invalid captured region count")?
+        } else {
+            0
+        };
+        Ok(Self {
+            leading_regions: kind.leading_regions().then_some(kind),
+            types: 0,
+            regions,
+        })
+    }
+
     fn check(&mut self, slot: &ParameterSlot, types: &[super::Type]) -> Result<(), &'static str> {
         match slot.kind {
             // A version-thirteen const slot shares the type slots' index space.
@@ -90,6 +108,8 @@ impl OwnSlots {
                 if self.types != 0 || slot.index != self.regions {
                     return Err(if self.leading_regions == Some(DefinitionKind::Trait) {
                         "source trait region slot changed its leading declared index"
+                    } else if self.leading_regions == Some(DefinitionKind::AssociatedType) {
+                        "source associated region slot changed its declared family index"
                     } else {
                         "source nominal region slot changed its leading declared index"
                     });
@@ -160,10 +180,7 @@ impl<'a> ScopeIndex<'a> {
             {
                 return Err("source parameter scope changed its exact prefix or declared range");
             }
-            let mut own = OwnSlots {
-                leading_regions: definition.kind.leading_regions().then_some(definition.kind),
-                ..OwnSlots::default()
-            };
+            let mut own = OwnSlots::for_definition(definition.kind, captured)?;
             for (ordinal, slot) in rows.slots[cursor as usize..scope.declared.end as usize]
                 .iter()
                 .enumerate()

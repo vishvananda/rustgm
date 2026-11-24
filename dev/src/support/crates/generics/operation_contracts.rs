@@ -168,7 +168,7 @@ pub(super) fn validate(
         associated(rows, headers, header, work)?;
     }
     for projection in &rows.projections {
-        projection_contract(rows, headers, projection, work)?;
+        projection_contract(rows, headers, projection, false, work)?;
     }
     validate_operations(rows, headers, work)
 }
@@ -315,6 +315,7 @@ pub(super) fn projection_contract(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     projection: &super::ProjectionRecipe,
+    families: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(3)?;
@@ -334,11 +335,29 @@ pub(super) fn projection_contract(
     if application.subject != projection.subject
         || application.declaration.artifact.0 != 0
         || application.declaration.declaration != header.parent
-        || projection.arguments.start != projection.arguments.end
+        || (!families && projection.arguments.start != projection.arguments.end)
     {
         return Err("projection changed its actual Self, parent trait or family arguments");
     }
-
+    if families {
+        let formals = headers
+            .scopes()
+            .declared_slots(header.scope, work)?
+            .slice(&rows.slots)?;
+        let arguments = projection.arguments.slice(&rows.arguments)?;
+        work.charge(formals.len())?;
+        if formals.len() != arguments.len()
+            || formals.iter().zip(arguments).any(|(slot, argument)| {
+                !matches!(
+                    (slot.kind, argument),
+                    (super::ParameterKind::Region, super::Argument::Region(_))
+                        | (super::ParameterKind::Type { .. }, super::Argument::Type(_))
+                )
+            })
+        {
+            return Err("projection changed its actual Self, parent trait or family arguments");
+        }
+    }
     Ok(())
 }
 

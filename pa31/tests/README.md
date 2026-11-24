@@ -62,6 +62,10 @@ panic imports, the fresh handler link, and forged exact-symbol rows.
 `spec/source-regional-impl-transport/outcomes.json` checks trait selection
 and native execution with an impl's captured lifetime and a trait's own
 written lifetime.
+`spec/source-associated-family-transport/outcomes.json` checks that a fresh
+client can implement an imported associated type family and must preserve its
+lifetime requirements. Run `scripts/check_associated_family_transport.py`
+with the prebuilt RustGM and pinned Rust compilers.
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

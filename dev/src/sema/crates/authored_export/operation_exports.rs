@@ -158,14 +158,18 @@ impl Stage {
                 .associated
                 .require_projection_header(member.definition)?;
             let parent=facts.associated.trait_owner(member.definition).ok_or("associated implementation result transport requires its complete definition profile")?;
-            if facts.associated.families.contains_key(&member.definition)
-                || facts
-                    .generics
-                    .parameters
-                    .get(&member.definition)
-                    .is_some_and(|parameters| !parameters.is_empty())
-            {
+            let family = facts.associated.families.get(&member.definition);
+            if family.is_some() && !self.declaration_policies() {
                 return Err("associated own-family transport requires its complete wider profile");
+            }
+            let captures = facts
+                .associated
+                .schema(parent)
+                .ok_or("associated result lost its actual trait scope")?
+                .captures;
+            let regions = family.map_or(captures, |family| family.total);
+            if !self.declaration_policies() && regions != 0 {
+                return Err("associated captured lifetimes require their wider profile");
             }
             let schema = facts
                 .types
@@ -173,7 +177,8 @@ impl Stage {
                 .ok_or("associated result export lacks its completed schema")?;
             let declaration = self.declaration(member.definition)?;
             let parent = self.declaration(parent)?;
-            let context = self.frame(declaration, None, s::BinderKind::DeclarationHeader, 0)?;
+            let context =
+                self.frame(declaration, None, s::BinderKind::DeclarationHeader, regions)?;
             let projection = self.ty(facts, contract.projection, context)?;
             let source = report
                 .resolution
@@ -181,12 +186,9 @@ impl Stage {
                 .get(member.definition.0 as usize)
                 .and_then(|row| row.node)
                 .ok_or("associated result export lost its actual declaration source")?;
-            let start = u32::try_from(self.rows.clauses.len())
-                .map_err(|_| "associated input table overflow")?;
-            let end = u32::try_from(self.rows.clauses.len())
-                .map_err(|_| "associated input table overflow")?;
-            let inputs = g::Range { start, end };
-            let start = end;
+            let inputs =
+                self.associated_family_inputs(facts, member.definition, family, context)?;
+            let start = inputs.end;
             for &value in &contract.bounds {
                 self.clause(
                     facts,
@@ -218,6 +220,54 @@ impl Stage {
             });
         }
         Ok(())
+    }
+
+    fn associated_family_inputs(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        family: Option<&crate::sema::associated::Family>,
+        context: Context,
+    ) -> Result<g::Range, &'static str> {
+        let length = |count| u32::try_from(count).map_err(|_| "associated input table overflow");
+        let start = length(self.rows.clauses.len())?;
+        if let Some(family) = family {
+            if !family.regions.is_empty() {
+                return Err(
+                    "associated written region relations require their complete wider profile",
+                );
+            }
+            let actual = family
+                .requirements
+                .as_deref()
+                .ok_or("associated family input contract is not complete")?;
+            let predicates = facts
+                .generics
+                .predicates
+                .get(&definition)
+                .map_or(&[][..], Vec::as_slice);
+            let inputs = predicates
+                .get(..actual.len())
+                .ok_or("associated family lost its actual input prefix")?;
+            for (predicate, &required) in inputs.iter().zip(actual) {
+                if predicate.value != required {
+                    return Err("associated family input changed its actual source predicate");
+                }
+                self.clause(
+                    facts,
+                    crate::sema::declaration_inputs::Input {
+                        source: predicate.source.into(),
+                        value: predicate.value,
+                    },
+                    context,
+                    None,
+                )?;
+            }
+        }
+        Ok(g::Range {
+            start,
+            end: length(self.rows.clauses.len())?,
+        })
     }
 }
 

@@ -1,8 +1,9 @@
 //! Visit relevant trait members once and retain each member's separate contribution.
-use super::{Analysis, Checker, DefId, Error, Family, Site, charge, uses::Collector};
+use super::{Analysis, Checker, DefId, Error, Family, Site, charge, site_error, uses::Collector};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
-    resolve::model::DefKind,
+    resolve::{body_origin::DeclarationOrigin, model::DefKind},
+    sema::associated::Member,
     types::{GenericArgs, Kind, parameters::clauses::Clause},
 };
 
@@ -26,16 +27,8 @@ impl Analysis {
             else {
                 continue;
             };
-            let definition = &checker.report.resolution.definitions[id.0 as usize];
-            let source_owner = checker
-                .facts
-                .associated
-                .source_owner(member.owner)
-                .map_err(Error::unlocated)?;
-            let source = definition.node.ok_or_else(|| {
-                checker.error(source_owner.source, "missing required-bound member source")
-            })?;
-            self.collect_site(checker, id, owner, source)?;
+            let origin = member_origin(checker, member)?;
+            self.collect_site(checker, id, owner, origin)?;
         }
         Ok(())
     }
@@ -50,33 +43,26 @@ impl Analysis {
             let Some(contract) = checker.facts.associated.type_contract(id) else {
                 continue;
             };
-            let source_owner = checker
-                .facts
-                .associated
-                .source_owner(member.owner)
-                .map_err(Error::unlocated)?;
             let Some(Kind::Projection(formal)) = checker.facts.types.kind(contract.projection)
             else {
-                return Err(checker.error(
-                    source_owner.source,
+                let origin = member_origin(checker, *member)?;
+                return Err(site_error(
+                    checker,
+                    origin,
                     "missing required-bound family projection",
                 ));
             };
             if formal.arguments == GenericArgs::EMPTY {
                 continue;
             }
-            let source = checker.report.resolution.definitions[id.0 as usize]
-                .node
-                .ok_or_else(|| {
-                    checker.error(source_owner.source, "missing required-bound family source")
-                })?;
-            charge(&mut self.steps, 1).map_err(|e| checker.error(source, e))?;
+            let origin = member_origin(checker, *member)?;
+            charge(&mut self.steps, 1).map_err(|e| site_error(checker, origin, e))?;
             owners.insert(owner);
             self.families.insert(
                 id,
                 Family {
                     owner,
-                    source,
+                    origin,
                     formal,
                     users: 0,
                     votes: HashMap::default(),
@@ -92,10 +78,10 @@ impl Analysis {
         checker: &mut Checker<'_>,
         id: DefId,
         owner: DefId,
-        source: super::NodeKey,
+        origin: DeclarationOrigin,
     ) -> Result<(), Error> {
         let definition = &checker.report.resolution.definitions[id.0 as usize];
-        charge(&mut self.steps, 1).map_err(|e| checker.error(source, e))?;
+        charge(&mut self.steps, 1).map_err(|e| site_error(checker, origin, e))?;
         let mut collector = Collector::default();
         let mut inputs = Vec::new();
         match definition.kind {
@@ -105,43 +91,55 @@ impl Analysis {
                     .unreduced
                     .definition(id)
                     .or(checker.facts.definitions[id.0 as usize])
-                    .ok_or_else(|| checker.error(source, "missing required-bound method type"))?;
+                    .ok_or_else(|| {
+                        site_error(checker, origin, "missing required-bound method type")
+                    })?;
                 let Some(Kind::FunctionItem { signature, .. }) = checker.facts.types.kind(ty)
                 else {
-                    return Err(checker.error(source, "invalid required-bound method type"));
+                    return Err(site_error(
+                        checker,
+                        origin,
+                        "invalid required-bound method type",
+                    ));
                 };
                 let Some(Kind::Function {
                     parameters, result, ..
                 }) = checker.facts.types.kind(signature)
                 else {
-                    return Err(checker.error(source, "invalid required-bound method signature"));
+                    return Err(site_error(
+                        checker,
+                        origin,
+                        "invalid required-bound method signature",
+                    ));
                 };
                 inputs.extend_from_slice(
                     checker
                         .facts
                         .types
                         .list(parameters)
-                        .ok_or_else(|| checker.error(source, "missing method inputs"))?,
+                        .ok_or_else(|| site_error(checker, origin, "missing method inputs"))?,
                 );
                 for ty in inputs.iter().copied().chain(std::iter::once(result)) {
                     collector
                         .collect(&checker.facts.types, ty, 0)
-                        .map_err(|e| checker.error(source, e))?;
+                        .map_err(|e| site_error(checker, origin, e))?;
                 }
             }
             DefKind::TypeAlias => {
-                for clause in result_bounds(checker, id).map_err(|e| checker.error(source, e))? {
+                for clause in result_bounds(checker, id, origin)
+                    .map_err(|e| site_error(checker, origin, e))?
+                {
                     collector
                         .clause(&checker.facts.types, clause)
-                        .map_err(|e| checker.error(source, e))?;
+                        .map_err(|e| site_error(checker, origin, e))?;
                 }
             }
             _ => return Ok(()),
         }
         let uses = collector
             .finish(&mut checker.facts.types, &self.families, owner, id)
-            .map_err(|e| checker.error(source, e))?;
-        charge(&mut self.steps, collector.steps).map_err(|e| checker.error(source, e))?;
+            .map_err(|e| site_error(checker, origin, e))?;
+        charge(&mut self.steps, collector.steps).map_err(|e| site_error(checker, origin, e))?;
         if uses.is_empty() {
             return Ok(());
         }
@@ -151,19 +149,19 @@ impl Analysis {
                 .lifetimes
                 .nominal_requirements
                 .prepare(&mut checker.facts.types, ty)
-                .map_err(|e| checker.error(source, e))?;
+                .map_err(|e| site_error(checker, origin, e))?;
         }
         for use_ in &uses {
             self.families
                 .get_mut(&use_.target)
-                .ok_or_else(|| checker.error(source, "missing family use"))?
+                .ok_or_else(|| site_error(checker, origin, "missing family use"))?
                 .users += 1;
         }
         let index = self.sites.len();
         self.dependents.insert(id, index);
         self.sites.push(Site {
             owner: id,
-            source,
+            origin,
             inputs,
             uses,
         });
@@ -173,10 +171,44 @@ impl Analysis {
     }
 }
 
-fn result_bounds(checker: &Checker<'_>, id: DefId) -> Result<Vec<Clause>, &'static str> {
+fn member_origin(checker: &Checker<'_>, member: Member) -> Result<DeclarationOrigin, Error> {
+    let definition = &checker.report.resolution.definitions[member.definition.0 as usize];
+    if let Some(owner) = checker
+        .facts
+        .associated
+        .source_at(member.owner.0 as usize)
+        .map_err(Error::unlocated)?
+    {
+        return definition
+            .node
+            .map(DeclarationOrigin::Source)
+            .ok_or_else(|| checker.error(owner.source, "missing required-bound member source"));
+    }
+    let catalog = checker
+        .facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.origin_catalog())
+        .ok_or_else(|| Error::unlocated("required-bound member lost its declaration catalog"))?;
+    let imported = catalog
+        .declaration(member.definition)
+        .map_err(Error::unlocated)?;
+    catalog
+        .validate_declaration(imported, member.definition, definition.kind)
+        .map_err(Error::unlocated)
+}
+
+fn result_bounds(
+    checker: &Checker<'_>,
+    id: DefId,
+    origin: DeclarationOrigin,
+) -> Result<Vec<Clause>, &'static str> {
     let Some(contract) = checker.facts.associated.type_contract(id) else {
         return Ok(Vec::new());
     };
+    if matches!(origin, DeclarationOrigin::Imported(_)) {
+        return Ok(contract.bounds.clone());
+    }
     let inputs = checker
         .facts
         .associated

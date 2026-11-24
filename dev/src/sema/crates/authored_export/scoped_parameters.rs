@@ -140,12 +140,17 @@ impl Stage {
         if kind == DefKind::Const {
             return Ok(g::Range { start, end: start });
         }
-        // Nominals and traits own their leading written lifetimes. Impl
-        // captures follow the implementation's own type slots.
+        // Written lifetimes lead template arguments. Associated families add
+        // their own written lifetimes after the parent binder's captures.
+        let family = self
+            .declaration_policies()
+            .then(|| facts.associated.families.get(&owner))
+            .flatten();
         let leading = if self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum)
-            || self.declaration_policies() && kind == DefKind::Trait
+            || self.declaration_policies() && (kind == DefKind::Trait || family.is_some())
         {
-            self.leading_region_slots(facts, owner, declaration, start)?;
+            let captures = family.map_or(0, |actual| actual.captures);
+            self.leading_region_slots(facts, owner, declaration, start, captures)?;
             Leading::Declaration
         } else if self.body_nodes()
             && kind == DefKind::SelfType
@@ -390,6 +395,7 @@ impl Stage {
         owner: DefId,
         declaration: DeclarationRef,
         start: u32,
+        captures: u32,
     ) -> Result<(), &'static str> {
         let declared = facts
             .lifetimes
@@ -397,15 +403,18 @@ impl Stage {
             .get(&owner)
             .map_or(&[][..], Vec::as_slice);
         let arguments = facts.generics.parameters.get(&owner);
-        for (index, &definition) in (0_u32..).zip(declared) {
+        for (offset, &definition) in (0_u32..).zip(declared) {
             self.charge(1)?;
+            let index = captures
+                .checked_add(offset)
+                .ok_or("source lifetime slot overflow")?;
             let region = crate::types::RegionId::bound(
                 0,
                 u16::try_from(index).map_err(|_| "source nominal lifetime slot overflow")?,
             )?;
             if arguments.is_some_and(|arguments| {
                 arguments
-                    .get(index as usize)
+                    .get(offset as usize)
                     .map(|p| (p.binding, p.argument))
                     != Some((definition, Argument::Lifetime(region)))
             }) {
@@ -523,7 +532,7 @@ impl Stage {
 enum Leading {
     /// The type-argument vector owns no lifetimes.
     None,
-    /// Leading written lifetimes of a nominal, or of a v14 trait.
+    /// Leading written lifetimes of a nominal, trait or associated family.
     Declaration,
     /// Captures of an inherent impl in v13 or a trait impl in v14.
     Implementation,

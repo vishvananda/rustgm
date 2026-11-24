@@ -1,18 +1,22 @@
 //! Version thirteen's associated results are structure only: every consumer
 //! re-derives their projections, bounds and normal forms from these rows.
-use super::{Argument, HeaderIndex, HeaderRef, ParameterKind, SourceRows, Type};
+use super::{
+    Argument, BinderKind, HeaderIndex, HeaderRef, ParameterKind, Profile, Region, SourceRows, Type,
+};
 use crate::support::crates::generics::Work;
 
 pub(super) fn validate(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
+    profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    let families = profile.declaration_policies();
     for header in &rows.associated_types {
-        declared(rows, headers, header, work)?;
+        declared(rows, headers, header, families, work)?;
     }
     for projection in &rows.projections {
-        super::operation_contracts::projection_contract(rows, headers, projection, work)?;
+        super::operation_contracts::projection_contract(rows, headers, projection, families, work)?;
     }
     for definition in rows.associated_definitions() {
         work.charge(1)?;
@@ -25,13 +29,13 @@ pub(super) fn validate(
     Ok(())
 }
 
-/// A trait's declared result: no own family inputs or region formals, the
-/// implicit sizing promise only, and the canonical projection
-/// `<Self as Trait<P..>>::Member` over the trait's own type formals.
+/// The canonical projection applies the actual trait and member formals to
+/// their own slots. Its result bounds and formation inputs remain separate.
 fn declared(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     header: &super::AssociatedTypeHeader,
+    families: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(4)?;
@@ -40,16 +44,17 @@ fn declared(
     };
     let parent = &rows.traits[index as usize];
     super::operation_contracts::sizing(rows, header, work)?;
-    if header.inputs.start != header.inputs.end || header.declared_inputs != 0 {
+    if !families && (header.inputs.start != header.inputs.end || header.declared_inputs != 0) {
         return Err("associated own-family inputs require their complete wider profile");
     }
     let scopes = headers.scopes();
     let own = scopes.declared_slots(header.scope, work)?;
     let complete = scopes.complete_slots(parent.scope, work)?;
-    if own.start != own.end
-        || scopes.complete_slots(header.scope, work)? != complete
-        || parent.region_captures != 0
-        || scopes.complete_type_slots(parent.scope, work)? != complete
+    if !families
+        && (own.start != own.end
+            || scopes.complete_slots(header.scope, work)? != complete
+            || parent.region_captures != 0
+            || scopes.complete_type_slots(parent.scope, work)? != complete)
     {
         return Err("associated result generic/region family requires its wider explicit profile");
     }
@@ -75,23 +80,41 @@ fn declared(
         return Err("associated canonical projection lost its trait Self formal");
     };
     let declared = scopes.declared_slots(parent.scope, work)?;
-    let mut formals = (declared.start..declared.end).filter(|&slot| slot != self_slot.0);
-    for argument in application.arguments.slice(&rows.arguments)? {
+    let formals = (declared.start..declared.end).filter(|&slot| slot != self_slot.0);
+    identity_application(rows, header, application.arguments, formals, work)?;
+    identity_application(rows, header, projection.arguments, own.start..own.end, work)
+}
+
+fn identity_application(
+    rows: &SourceRows,
+    header: &super::AssociatedTypeHeader,
+    arguments: super::Range,
+    mut formals: impl Iterator<Item = u32>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "associated canonical projection is not its declaration's identity application";
+    for &argument in arguments.slice(&rows.arguments)? {
         work.charge(1)?;
-        let formal = formals.next();
-        let Argument::Type(ty) = *argument else {
-            return Err("associated canonical projection has a non-type trait argument");
+        let index = formals.next().ok_or(error)?;
+        let formal = rows.slots.get(index as usize).ok_or(error)?;
+        let same = match (argument, formal.kind) {
+            (Argument::Type(ty), ParameterKind::Type { .. }) => {
+                matches!(rows.types.get(ty.0 as usize), Some(Type::Parameter(slot)) if slot.0 == index)
+            }
+            (Argument::Region(region), ParameterKind::Region) => {
+                matches!(rows.regions.get(region.0 as usize),
+                    Some(Region::Bound { binder, depth: 0, slot }) if *slot == formal.index
+                        && rows.binders.get(binder.0 as usize).is_some_and(|frame|
+                            frame.owner == header.declaration && frame.kind == BinderKind::DeclarationHeader))
+            }
+            _ => false,
         };
-        if !matches!(rows.types.get(ty.0 as usize), Some(Type::Parameter(slot)) if Some(slot.0) == formal)
-            || formal
-                .and_then(|slot| rows.slots.get(slot as usize))
-                .is_none_or(|slot| !matches!(slot.kind, ParameterKind::Type { .. }))
-        {
-            return Err("associated canonical projection is not its trait's identity application");
+        if !same {
+            return Err(error);
         }
     }
     if formals.next().is_some() {
-        return Err("associated canonical projection omitted a trait formal");
+        return Err("associated canonical projection omitted a declared formal");
     }
     Ok(())
 }

@@ -1057,6 +1057,7 @@ fn scope_owners(
         {
             let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
             if definition.kind == DefKind::TraitAlias
+                || facts.associated.families.contains_key(&alias)
                 || scoped_module_alias(report, facts, definition, alias)
             {
                 let source = definition

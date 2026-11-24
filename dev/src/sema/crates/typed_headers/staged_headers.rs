@@ -54,6 +54,7 @@ enum Inputs {
         inputs: Arc<[Input]>,
         bounds: Arc<[Input]>,
         projection: crate::types::TypeId,
+        family: Option<crate::sema::associated::Family>,
     },
     Trait(predicate_remap::Prepared),
     TraitAlias(Arc<[Input]>),
@@ -293,23 +294,13 @@ impl Walk<'_, '_> {
                     budget,
                 )?))
             }
-            Some(s::HeaderRef::AssociatedType(index)) => {
-                let header = &rows.associated_types[index as usize];
-                if raw.parent != Some(header.parent) {
-                    return Err(error(
-                        "associated type scope changed its actual trait parent",
-                    ));
-                }
-                Ok(Inputs::Associated {
-                    inputs: self
-                        .remap
-                        .declaration_inputs(definition, &mut facts.types, budget)?,
-                    bounds: self
-                        .remap
-                        .associated_bounds(definition, &mut facts.types, budget)?,
-                    projection: self.graph.ty(header.projection)?,
-                })
-            }
+            Some(s::HeaderRef::AssociatedType(index)) => self.associated_type_inputs(
+                facts,
+                raw,
+                definition,
+                &rows.associated_types[index as usize],
+                budget,
+            ),
             Some(s::HeaderRef::Nominal(_)) if raw.parent.is_none() => Ok(Inputs::Nominal(
                 self.remap
                     .declaration_inputs(definition, &mut facts.types, budget)?,
@@ -372,6 +363,39 @@ impl Walk<'_, '_> {
             )),
         }
     }
+    fn associated_type_inputs(
+        &mut self,
+        facts: &mut Declarations,
+        scope: &s::ParameterScope,
+        definition: DefId,
+        header: &s::AssociatedTypeHeader,
+        budget: &mut Headers,
+    ) -> Result<Inputs, Error> {
+        if scope.parent != Some(header.parent) {
+            return Err(error(
+                "associated type scope changed its actual trait parent",
+            ));
+        }
+        let inputs = self
+            .remap
+            .declaration_inputs(definition, &mut facts.types, budget)?;
+        let family = contract_ports::associated_family(
+            self.context.descriptor.rows(),
+            header,
+            scope,
+            &inputs,
+            budget,
+        )?;
+        Ok(Inputs::Associated {
+            family,
+            inputs,
+            bounds: self
+                .remap
+                .associated_bounds(definition, &mut facts.types, budget)?,
+            projection: self.graph.ty(header.projection)?,
+        })
+    }
+
     fn self_type_inputs(
         rows: s::ValidatedView<'_>,
         owner: crate::support::crates::owner_catalog::DeclarationRef,

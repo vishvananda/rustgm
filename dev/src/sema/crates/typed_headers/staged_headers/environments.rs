@@ -180,6 +180,10 @@ fn assumption(
             ));
         }
     };
+    if matches!(predicate.bound, Bound::Outlives(_)) && leaves.regional_arguments() {
+        leaf(facts, predicate.ty)?;
+        return Ok(1);
+    }
     let id = if let Bound::ProjectionEqual(value) = predicate.bound
         && leaves.vacuous_scopes()
     {

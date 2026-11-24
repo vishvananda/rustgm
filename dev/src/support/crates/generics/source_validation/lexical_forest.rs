@@ -28,28 +28,7 @@ pub(super) fn validate(
             {
                 return Err("source foreign declaration has no actual module owner");
             }
-            let ordinary = matches!(
-                actual.definition.kind,
-                DefinitionKind::Module
-                    | DefinitionKind::Struct
-                    | DefinitionKind::Enum
-                    | DefinitionKind::Trait
-                    | DefinitionKind::SelfType
-                    | DefinitionKind::Function
-            );
-            let initializer_local = actual.definition.kind == DefinitionKind::Constant
-                && row.definition.kind == DefinitionKind::Local
-                && row.local.is_some();
-            let alias_formal = actual.definition.kind == DefinitionKind::TypeAlias
-                && matches!(
-                    row.definition.kind,
-                    DefinitionKind::TypeParameter | DefinitionKind::ConstParameter
-                );
-            let alias_self = actual.definition.kind == DefinitionKind::TraitAlias
-                && row.definition.kind == DefinitionKind::SelfType;
-            if !(ordinary || initializer_local || alias_formal || alias_self)
-                || row.ordinal != ordinals[parent]
-            {
+            if !valid_child(actual.definition.kind, row) || row.ordinal != ordinals[parent] {
                 return Err("source lexical child has a foreign kind, gap or duplicate ordinal");
             }
             ordinals[parent] = ordinals[parent]
@@ -105,4 +84,30 @@ pub(super) fn validate(
         }
     }
     Ok(definitions)
+}
+
+fn valid_child(parent: DefinitionKind, child: &super::super::Declaration) -> bool {
+    match parent {
+        DefinitionKind::Module
+        | DefinitionKind::Struct
+        | DefinitionKind::Enum
+        | DefinitionKind::Trait
+        | DefinitionKind::SelfType
+        | DefinitionKind::Function => true,
+        DefinitionKind::Constant => {
+            child.definition.kind == DefinitionKind::Local && child.local.is_some()
+        }
+        DefinitionKind::TypeAlias => matches!(
+            child.definition.kind,
+            DefinitionKind::TypeParameter | DefinitionKind::ConstParameter
+        ),
+        DefinitionKind::AssociatedType => matches!(
+            child.definition.kind,
+            DefinitionKind::TypeParameter
+                | DefinitionKind::RegionParameter
+                | DefinitionKind::ConstParameter
+        ),
+        DefinitionKind::TraitAlias => child.definition.kind == DefinitionKind::SelfType,
+        _ => false,
+    }
 }

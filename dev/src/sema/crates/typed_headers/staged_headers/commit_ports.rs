@@ -197,11 +197,20 @@ impl Stage {
             ),
         )?;
         let mut constants = 0usize;
+        let mut families = 0usize;
         for scope in &self.scopes {
             budget.charge(1)?;
             constants += usize::from(scope.function.as_ref().is_some_and(|c| c.header.constant));
             let definition = scope.definition;
-            if facts.generics.parameters.contains_key(&definition)
+            families += usize::from(matches!(
+                scope.inputs,
+                super::Inputs::Associated {
+                    family: Some(_),
+                    ..
+                }
+            ));
+            if facts.associated.families.contains_key(&definition)
+                || facts.generics.parameters.contains_key(&definition)
                 || facts.generics.environments.contains_key(&definition)
                 || facts.generics.parents.contains_key(&definition)
                 || facts.generics.predicates.contains_key(&definition)
@@ -220,6 +229,13 @@ impl Stage {
                 ));
             }
         }
+        let family_growth = retained::Growth::map::<DefId, crate::sema::associated::Family>(
+            facts.associated.families.len(),
+            facts.associated.families.capacity(),
+            families,
+        );
+        budget.charge(family_growth.work)?;
+        budget.reserve(family_growth.bytes)?;
         let growth = retained::Growth::map::<DefId, ()>(
             facts.constant_functions.len(),
             facts.constant_functions.capacity(),
@@ -346,16 +362,22 @@ fn prepare_nominal_bounds(
 fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
     for scope in scopes {
         if let super::Inputs::Associated {
-            bounds, projection, ..
-        } = &scope.inputs
+            bounds,
+            projection,
+            family,
+            ..
+        } = scope.inputs
         {
             facts.associated.types.insert(
                 scope.definition,
                 crate::sema::associated::TypeContract {
-                    projection: *projection,
+                    projection,
                     bounds: bounds.iter().map(|input| input.value).collect(),
                 },
             );
+            if let Some(family) = family {
+                facts.associated.families.insert(scope.definition, family);
+            }
         }
         if let Some(parent) = scope.parent {
             facts.generics.parents.insert(scope.definition, parent);
@@ -386,6 +408,7 @@ fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &
 
 fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Allocation {
     let mut result = facts.associated.imported_table_allocation();
+    result.map(&facts.associated.families);
     result.map(&facts.generics.parameters);
     result.map(&facts.generics.parents);
     result.map(&facts.generics.environments);

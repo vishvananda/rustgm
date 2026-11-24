@@ -1,5 +1,5 @@
 //! Move the authenticated canonical prefix into ordinary trait contracts.
-use super::{Error, Headers, Inputs, Scope, error, mapped_source};
+use super::{Error, Headers, Inputs, Scope, error, mapped_source, s};
 use crate::{
     resolve::model::DefId,
     sema::traits::{Contracts, Header, inherited_inputs::HeaderInputs},
@@ -12,6 +12,41 @@ use crate::{
     },
 };
 
+pub(super) fn associated_family(
+    rows: s::ValidatedView<'_>,
+    header: &s::AssociatedTypeHeader,
+    scope: &s::ParameterScope,
+    inputs: &[crate::sema::declaration_inputs::Input],
+    budget: &mut Headers,
+) -> Result<Option<crate::sema::associated::Family>, Error> {
+    let own = scope.declared.slice(&rows.slots).map_err(error)?;
+    if own.is_empty() && inputs.is_empty() {
+        return Ok(None);
+    }
+    let Some(s::HeaderRef::Trait(parent)) = rows.header(header.parent).map_err(error)? else {
+        return Err(error("associated family lacks its actual enclosing trait"));
+    };
+    let captures = rows.traits[parent as usize].region_captures;
+    budget.charge(own.len().saturating_add(inputs.len()))?;
+    let own_regions = own
+        .iter()
+        .filter(|slot| slot.kind == s::ParameterKind::Region)
+        .count();
+    let total = u32::try_from(own_regions)
+        .ok()
+        .and_then(|own| own.checked_add(captures))
+        .ok_or_else(|| error("associated family region count exceeds its checked scope"))?;
+    budget.reserve(inputs.len().saturating_mul(size_of::<Clause>()))?;
+    let requirements = inputs.iter().map(|input| input.value).collect::<Vec<_>>();
+    budget.observed.vector(&requirements);
+    Ok(Some(crate::sema::associated::Family {
+        captures,
+        total,
+        regions: Vec::new(),
+        requirements: Some(requirements),
+    }))
+}
+
 type Results =
     crate::support::hash::HashMap<DefId, Vec<(ItemId, crate::sema::declaration_inputs::Input)>>;
 fn associated_results(scopes: &[Scope], budget: &mut Headers) -> Result<Results, Error> {
@@ -22,7 +57,11 @@ fn associated_results(scopes: &[Scope], budget: &mut Headers) -> Result<Results,
     let mut results = Results::default();
     for scope in scopes {
         budget.charge(1)?;
-        if let super::Inputs::Associated { bounds, .. } = &scope.inputs {
+        // Trait-wide promises have no arguments of the associated member's
+        // own. Family bounds are applied through its complete projection.
+        if let super::Inputs::Associated { bounds, .. } = &scope.inputs
+            && scope.parameters.is_empty()
+        {
             let parent = scope
                 .parent
                 .ok_or_else(|| error("associated result lost its actual trait parent"))?;

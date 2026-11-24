@@ -129,7 +129,15 @@ impl BinderIndex<'_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let count = match owner {
-            Some(HeaderRef::Nominal(_) | HeaderRef::AssociatedType(_)) => 0,
+            Some(HeaderRef::Nominal(_)) => 0,
+            Some(HeaderRef::AssociatedType(index)) => {
+                let scope = self.rows.associated_types[index as usize].scope;
+                headers
+                    .scopes()
+                    .complete_slots(scope, work)?
+                    .checked_sub(headers.scopes().complete_type_slots(scope, work)?)
+                    .ok_or("source associated header has an invalid bound region count")?
+            }
             Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
             Some(HeaderRef::Implementation(index)) => {
                 self.rows.implementations[index as usize].region_captures

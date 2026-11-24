@@ -1,7 +1,8 @@
 //! Required family bounds intersect member contributions and propagate only along uses.
 mod sites;
 mod uses;
-use super::{Checker, DefId, Error, NodeKey};
+use super::{Checker, DefId, Error};
+use crate::resolve::body_origin::DeclarationOrigin;
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{
     RegionId, TypeId, outlives::Queries, projection::Application, region_graph::VerificationId,
@@ -41,7 +42,7 @@ impl Condition {
 }
 struct Family {
     owner: DefId,
-    source: NodeKey,
+    origin: DeclarationOrigin,
     formal: Application,
     users: usize,
     votes: HashMap<Condition, usize>,
@@ -55,7 +56,7 @@ struct Use {
 }
 struct Site {
     owner: DefId,
-    source: NodeKey,
+    origin: DeclarationOrigin,
     inputs: Vec<TypeId>,
     uses: Vec<Use>,
 }
@@ -67,6 +68,36 @@ struct Analysis {
     queue: VecDeque<usize>,
     queued: HashSet<usize>,
     steps: usize,
+}
+fn site_error(
+    checker: &Checker<'_>,
+    origin: DeclarationOrigin,
+    message: impl Into<String>,
+) -> Error {
+    match origin {
+        DeclarationOrigin::Source(source) => checker.error(source, message),
+        DeclarationOrigin::Imported(_) => Error::unlocated(message),
+    }
+}
+fn declared_environment<'a>(
+    checker: &'a Checker<'_>,
+    owner: DefId,
+    origin: DeclarationOrigin,
+    queries: &mut Queries<'_>,
+) -> Result<Constraints<'a>, String> {
+    let mut proof = checker.trait_region_declared_environment(owner, queries)?;
+    if matches!(origin, DeclarationOrigin::Imported(_)) {
+        let generics = &checker.facts.generics;
+        for scope in generics.scopes(owner) {
+            let inputs = crate::sema::declaration_inputs::declared_own(
+                generics,
+                checker.facts.crates.as_deref(),
+                scope,
+            )?;
+            proof.assume_outlives_clauses(queries, inputs.iter().map(|input| input.value))?;
+        }
+    }
+    Ok(proof)
 }
 fn charge(steps: &mut usize, count: usize) -> Result<(), &'static str> {
     *steps = steps.saturating_add(count);
@@ -89,13 +120,13 @@ impl Checker<'_> {
         analysis.collect(self)?;
         while let Some(index) = analysis.queue.pop_front() {
             analysis.queued.remove(&index);
-            let source = analysis.sites[index].source;
+            let origin = analysis.sites[index].origin;
             let answers = analysis
                 .evaluate(self, index)
-                .map_err(|e| self.error(source, e))?;
+                .map_err(|e| site_error(self, origin, e))?;
             analysis
                 .publish(index, answers)
-                .map_err(|e| self.error(source, e))?;
+                .map_err(|e| site_error(self, origin, e))?;
         }
         let mut families: Vec<_> = analysis.families.keys().copied().collect();
         families.sort_unstable_by_key(|id| id.0);
@@ -109,24 +140,25 @@ impl Checker<'_> {
                 &self.facts.lifetimes.nominal_requirements,
                 &self.facts.lifetimes.callables,
             );
-            let mut proof = self
-                .trait_region_declared_environment(id, &mut queries)
-                .map_err(|e| self.error(family.source, e))?;
+            let mut proof = declared_environment(self, id, family.origin, &mut queries)
+                .map_err(|e| site_error(self, family.origin, e))?;
             let mut tests = Vec::new();
             for condition in sorted(&family.required) {
                 tests.push(
                     condition
                         .test(&mut proof, &mut queries)
-                        .map_err(|e| self.error(family.source, e))?,
+                        .map_err(|e| site_error(self, family.origin, e))?,
                 );
             }
             let answers = proof
                 .test_answers(&tests)
-                .map_err(|e| self.error(family.source, e.to_string()))?;
-            charge(&mut analysis.steps, answers.steps).map_err(|e| self.error(family.source, e))?;
+                .map_err(|e| site_error(self, family.origin, e.to_string()))?;
+            charge(&mut analysis.steps, answers.steps)
+                .map_err(|e| site_error(self, family.origin, e))?;
             if answers.values.contains(&false) {
-                return Err(self.error(
-                    family.source,
+                return Err(site_error(
+                    self,
+                    family.origin,
                     "associated type is missing required where clauses",
                 ));
             }
@@ -148,7 +180,7 @@ impl Analysis {
             &checker.facts.lifetimes.nominal_requirements,
             &checker.facts.lifetimes.callables,
         );
-        let mut proof = checker.trait_region_declared_environment(site.owner, &mut queries)?;
+        let mut proof = declared_environment(checker, site.owner, site.origin, &mut queries)?;
         for &ty in &site.inputs {
             proof.assume_well_formed(&mut queries, ty)?;
         }
