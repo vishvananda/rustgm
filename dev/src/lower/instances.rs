@@ -6,6 +6,8 @@ mod demand;
 pub(super) use demand::record_demand;
 pub(super) use demand::{BODIES_EXCEEDED, BODY_BYTES};
 mod dependencies;
+mod export_census;
+pub use export_census::{DeclCensus, DeclFailure, inspect_declaration_exports};
 mod namespace_snapshot;
 mod proof;
 mod staged_originals;
@@ -34,6 +36,7 @@ use crate::{
     sema::model::Declarations,
     support::bindings::LangItem,
 };
+use std::ops::ControlFlow;
 
 /// Inspect actual source-provider transport rows after complete original,
 /// instance and assembly success. This publishes no metadata descriptor or
@@ -134,7 +137,7 @@ fn collect_source<R>(
             let source = begin(facts, checked)?;
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, exports, source))
+            Ok(ControlFlow::Continue((None, exports, source)))
         },
         |source, facts, proved, input| {
             source
@@ -197,7 +200,7 @@ pub(crate) fn build_selected_prepared(
         |facts, _| {
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((Some(entry), exports, ()))
+            Ok(ControlFlow::Continue((Some(entry), exports, ())))
         },
         staged_originals::ignore,
         |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
@@ -386,7 +389,7 @@ pub fn build_source_library_profile(
                 .map_err(|e| diagnostic(report, None, e.into()))?;
             let roots = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, roots, (source, base)))
+            Ok(ControlFlow::Continue((None, roots, (source, base))))
         },
         |(source, _), facts, proved, input| {
             let Some((rows, _)) = source else {
@@ -580,7 +583,10 @@ fn inspect_selected<R>(
         report,
         facts,
         prepared,
-        |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
+        |facts, checked| {
+            select(facts, checked)
+                .map(|(entry, exports)| ControlFlow::Continue((entry, exports, ())))
+        },
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
         construction,
@@ -658,7 +664,7 @@ pub(crate) fn build_local_prepared(
         |facts, _| {
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((entry, exports, ()))
+            Ok(ControlFlow::Continue((entry, exports, ())))
         },
         staged_originals::ignore,
         |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
@@ -667,6 +673,8 @@ pub(crate) fn build_local_prepared(
     .map_err(|e| diagnostic(report, e.node, e.message.into()))
 }
 
+type PrepareSelection<S, R> = ControlFlow<R, (Option<DefId>, super::roots::Exports, S)>;
+
 fn inspect_staged<S, R>(
     report: &Report,
     facts: &mut Declarations,
@@ -674,7 +682,7 @@ fn inspect_staged<S, R>(
     select: impl FnOnce(
         &mut Declarations,
         &borrow::templates::Checked<'_>,
-    ) -> Result<(Option<DefId>, super::roots::Exports, S), Error>,
+    ) -> Result<PrepareSelection<S, R>, Error>,
     collect: impl FnMut(
         &mut S,
         &mut Declarations,
@@ -717,7 +725,10 @@ fn inspect_staged<S, R>(
     facts
         .prepare_opaque_storage_located()
         .map_err(|failure| opaque_storage_error(report, facts, failure))?;
-    let (entry, exports, mut stage) = select(facts, &checked)?;
+    let (entry, exports, mut stage) = match select(facts, &checked)? {
+        ControlFlow::Break(result) => return Ok(result),
+        ControlFlow::Continue(selected) => selected,
+    };
     let mut roots = exports.selected(entry);
     if let Some(entry) = entry {
         roots.startup = crate::sema::entry::prepare_startup(report, facts, entry)

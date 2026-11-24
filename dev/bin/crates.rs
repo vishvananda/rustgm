@@ -34,6 +34,7 @@ pub struct Options {
     /// Analysis-only census records; never a build output.
     pub census: Option<String>,
     pub census_progress: Option<String>,
+    pub export_census: Option<String>,
     guests: Vec<Guest>,
     guest_cfgs: Vec<GuestCfg>,
     bringup_guests: bool,
@@ -64,6 +65,9 @@ impl Options {
             }
             "--native-links-output" => self.select_native_output(args.next())?,
             "--census-output" => census::select(&mut self.census, args.next())?,
+            "--export-census" => {
+                census::select_path(&mut self.export_census, args.next(), "--export-census")?;
+            }
             "--census-progress" => {
                 census::select_progress(&mut self.census_progress, args.next())?;
             }
@@ -236,6 +240,7 @@ impl Options {
         Ok(())
     }
     pub fn validate(&self, mode: &str, count: bool, output: Option<&str>) -> Result<(), String> {
+        self.validate_export_census(mode, output)?;
         if let Some(path) = &self.native_links {
             if mode != "--emit-lowir" || count {
                 return Err("--native-links-output requires LowIR output without counting".into());
@@ -251,7 +256,7 @@ impl Options {
                 || self.source_client.is_some()
                 || !self.is_library()
                 || mode != "--emit-lowir"
-                || self.metadata.is_none()
+                || self.metadata.is_none() && self.export_census.is_none()
                 || count
                 || self.identity()?.is_none())
         {
@@ -334,6 +339,28 @@ impl Options {
         }
         Ok(())
     }
+    fn validate_export_census(&self, mode: &str, output: Option<&str>) -> Result<(), String> {
+        use rustgm::lower::instances::SourcePublication;
+        if self.export_census.is_none() {
+            return Ok(());
+        }
+        if self.source_profile != Some(SourcePublication::ModuleBodyOperations)
+            || mode != "--emit-lowir"
+            || self.metadata.is_some()
+            || self.native_links.is_some()
+            || output.is_some()
+            || !self.guests.is_empty()
+            || self.dependency_count() != 0
+            || rustgm::support::bringup::selected().is_some()
+        {
+            return Err(
+                "--export-census requires a strict v14 SourceCore library command without artifact paths"
+                    .into(),
+            );
+        }
+        Ok(())
+    }
+
     /// Guest crates need a source core to depend on and an expanding view.
     /// An analysis-only census may observe a guest session: it records every
     /// crate's declarations and bodies and still never passes a build.

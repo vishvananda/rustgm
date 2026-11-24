@@ -503,6 +503,9 @@ fn emit_lowir(
     count: bool,
     out: &mut impl Write,
 ) -> Result<(), String> {
+    if let Some(path) = &crates.export_census {
+        return crate::export_census::run(&report, &mut facts, prepared, crates, path);
+    }
     let (lowir, interface) = if crates.is_library() {
         let identity = crates
             .identity()

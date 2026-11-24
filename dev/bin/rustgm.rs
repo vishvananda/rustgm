@@ -4,6 +4,7 @@ mod census;
 mod crates;
 mod driver;
 mod emission;
+mod export_census;
 mod link_manifest;
 mod modules;
 
