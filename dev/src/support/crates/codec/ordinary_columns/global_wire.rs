@@ -1,8 +1,9 @@
 //! The v14 static table stores each canonical initializer once.
 use super::{DeclarationRef, Input, Writer, crates, g, id, range, s, write};
 
-// Scalar payloads are bounded far below this reserved starting offset.
+// Scalar payloads are bounded far below these reserved starting offsets.
 const PROMOTION: u32 = u32::MAX;
+const PROVIDER_OWNED: u32 = u32::MAX - 1;
 
 pub(super) fn encode(out: &mut Writer, statics: &s::StaticColumns) -> Result<(), &'static str> {
     write(out, &statics.headers, |out, row| {
@@ -15,6 +16,10 @@ pub(super) fn encode(out: &mut Writer, statics: &s::StaticColumns) -> Result<(),
                 s::StaticInitializer::Promotion(anchor) => g::Range {
                     start: PROMOTION,
                     end: anchor.0,
+                },
+                s::StaticInitializer::ProviderOwned => g::Range {
+                    start: PROVIDER_OWNED,
+                    end: 0,
                 },
             },
         )
@@ -30,6 +35,11 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<Box<s::StaticColumns>, 
         let values = read.range()?;
         let initializer = if values.start == PROMOTION {
             s::StaticInitializer::Promotion(DeclarationRef(values.end))
+        } else if values.start == PROVIDER_OWNED {
+            if values.end != 0 {
+                return Err("source provider-owned static initializer has nonzero payload");
+            }
+            s::StaticInitializer::ProviderOwned
         } else {
             s::StaticInitializer::Scalars(values)
         };

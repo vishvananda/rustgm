@@ -222,10 +222,16 @@ fn static_headers(
             .definition
             .parent
             .and_then(|id| rows.declarations.get(id.0 as usize));
-        if parent.is_none_or(|module| module.definition.kind != DefinitionKind::Module)
-            || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
+        if parent.is_none_or(|owner| {
+            !matches!(
+                owner.definition.kind,
+                DefinitionKind::Module | DefinitionKind::Function
+            )
+        }) || previous.is_some_and(|ordinal| ordinal >= header.declaration.0)
         {
-            return Err("source static lacks canonical order or its actual module owner");
+            return Err(
+                "source static lacks canonical order or its actual module or function owner",
+            );
         }
         previous = Some(header.declaration.0);
     }

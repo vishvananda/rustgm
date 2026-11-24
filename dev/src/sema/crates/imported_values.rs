@@ -160,7 +160,13 @@ fn complete(
         NamedValue::Scalar(value) => Constant::scalar(value),
         NamedValue::InlineTuple { rows, value, width } => {
             let bytes = value.bits.to_le_bytes();
-            super::statics::decode_scalar_aggregate(evaluator, rows, value.ty, &bytes[..width])?
+            super::statics::decode_scalar_aggregate(
+                evaluator,
+                None,
+                rows,
+                value.ty,
+                &bytes[..width],
+            )?
         }
     };
     complete_value(evaluator, definition, value)

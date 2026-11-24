@@ -494,6 +494,75 @@ impl Source {
         Ok(true)
     }
 
+    fn checked_static_closure(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+        input: &Contract,
+    ) -> Result<bool, &'static str> {
+        let Owner::Closure {
+            identity,
+            signature,
+            ..
+        } = body.owner
+        else {
+            return Ok(false);
+        };
+        let Some(closure) = facts.closures.identity(identity) else {
+            return Ok(false);
+        };
+        let Some(owner) = closure.owner else {
+            return Ok(false);
+        };
+        if !self.stage.evaluated_static(owner)? {
+            return Ok(false);
+        }
+        let expected_signature = closure
+            .execution
+            .map_or(closure.signature, |execution| execution.signature);
+        if Some(closure.semantic_source()) != body.source.source()
+            || expected_signature != signature
+            || body.key() != input.key
+            || body.source != input.source
+        {
+            return Err("source static closure changed its actual checked body");
+        }
+        Ok(true)
+    }
+
+    fn evaluated_anonymous(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+    ) -> Result<bool, &'static str> {
+        if !self.stage.body_nodes() {
+            return Ok(false);
+        }
+        let crate::body::ir::BodyKey::Anonymous(source) = body.key() else {
+            return Ok(false);
+        };
+        if !matches!(body.owner, Owner::AnonymousConstant) {
+            return Ok(false);
+        }
+        if facts
+            .evaluated_arguments
+            .as_ref()
+            .is_some_and(|evaluated| evaluated.contains(&source))
+            && !facts.array_lengths.contains_key(&source)
+        {
+            return Ok(true);
+        }
+        let Some(owner) = facts
+            .inline_constants
+            .as_deref()
+            .and_then(|registry| registry.get(source))
+            .and_then(|constant| constant.declaration)
+        else {
+            return Ok(false);
+        };
+        self.stage.evaluated_static(owner)
+    }
+
     fn collect_body(
         &mut self,
         facts: &mut Declarations,
@@ -504,19 +573,9 @@ impl Source {
         if let Some(collector) = self.collector.as_deref() {
             collector.require_store(facts, &mut self.stage)?;
         }
-        if Self::checked_linked_handler(facts, body, input)? {
-            return Ok(());
-        }
-        // Version thirteen: a const argument travels as its evaluated term,
-        // so the anonymous body its value was folded from is not an original.
-        if self.stage.body_nodes()
-            && let crate::body::ir::BodyKey::Anonymous(source) = body.key()
-            && matches!(body.owner, Owner::AnonymousConstant)
-            && facts
-                .evaluated_arguments
-                .as_ref()
-                .is_some_and(|evaluated| evaluated.contains(&source))
-            && !facts.array_lengths.contains_key(&source)
+        if Self::checked_linked_handler(facts, body, input)?
+            || self.checked_static_closure(facts, body, input)?
+            || self.evaluated_anonymous(facts, body)?
         {
             return Ok(());
         }

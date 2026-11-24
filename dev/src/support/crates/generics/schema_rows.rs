@@ -21,7 +21,7 @@ mod results_contract;
 mod statics;
 pub use compiler_rows::*;
 pub use statics::{StaticColumns, StaticHeader, StaticInitializer};
-pub(crate) use statics::{StaticShape, read_bits as read_static_bits};
+pub(crate) use statics::{StaticShape, StaticTypeTable, read_bits as read_static_bits};
 #[path = "free_constants.rs"]
 mod free_constants;
 #[path = "traitless_impls.rs"]

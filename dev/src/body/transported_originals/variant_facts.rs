@@ -71,6 +71,7 @@ struct Prover<'a> {
     facts: &'a Declarations,
     body: &'a Body,
     places: Vec<Shape>,
+    statics: HashMap<crate::body::ir::DefId, u32>,
     temporaries: u32,
     escaped: Vec<bool>,
     killed: Vec<u64>,
@@ -82,6 +83,26 @@ struct Prover<'a> {
     undo: Vec<Undo>,
     steps: usize,
 }
+fn static_places(
+    body: &Body,
+    next: &mut u32,
+    work: &mut usize,
+) -> Result<HashMap<crate::body::ir::DefId, u32>, &'static str> {
+    let mut statics = HashMap::default();
+    if let Some(table) = body.static_types.as_deref() {
+        let mut ids: Vec<_> = table.keys().copied().collect();
+        ids.sort_unstable_by_key(|id| id.0);
+        *work = work.saturating_add(ids.len());
+        for id in ids {
+            statics.insert(id, *next);
+            *next = next
+                .checked_add(1)
+                .ok_or("source canonical place overflow")?;
+        }
+    }
+    Ok(statics)
+}
+
 impl<'a> Prover<'a> {
     /// `None` when the body has no constructor test and no downcast field: it
     /// keeps the ordinary transported exits unchanged.
@@ -98,10 +119,15 @@ impl<'a> Prover<'a> {
         );
         let temporaries =
             u32::try_from(body.locals.len()).map_err(|_| "source local ordinal overflow")?;
+        let mut next = temporaries
+            .checked_add(u32::try_from(body.values.len()).map_err(|_| "value overflow")?)
+            .ok_or("source canonical place overflow")?;
+        let statics = static_places(body, &mut next, work)?;
         let mut prover = Self {
             facts,
             body,
             places: Vec::with_capacity(body.projections.len()),
+            statics,
             temporaries,
             escaped: vec![false; body.locals.len()],
             killed: vec![0; body.locals.len()],
@@ -114,9 +140,6 @@ impl<'a> Prover<'a> {
             steps: 0,
         };
         let mut interned = HashMap::default();
-        let mut next = temporaries
-            .checked_add(u32::try_from(body.values.len()).map_err(|_| "value overflow")?)
-            .ok_or("source canonical place overflow")?;
         let mut tested = body
             .values
             .iter()
@@ -198,7 +221,16 @@ impl<'a> Prover<'a> {
             }
             Place::Projection(projection) => self.places.get(projection.0 as usize).copied(),
             Place::Temporary(value) => Some(local(self.temporaries.saturating_add(value.0), None)),
-            Place::Local(_) | Place::Static(_) => None,
+            Place::Static(id) => self.statics.get(&id).copied().map(|canon| Shape {
+                key: Key {
+                    canon,
+                    root: None,
+                    mutable: true,
+                },
+                through: false,
+                downcast: None,
+            }),
+            Place::Local(_) => None,
         }
         .ok_or("source variant fact place is outside its body")
     }

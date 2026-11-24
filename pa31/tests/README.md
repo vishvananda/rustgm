@@ -83,6 +83,10 @@ uninhabited enums, `#[must_use]` enum contracts, and inherent methods on
 `spec/source-fn-lifetime-transport/outcomes.json` checks lifetime-capturing and
 higher-ranked `fn` pointer types across nominal fields, provider bodies,
 reification, pointer calls, and fresh client invariance enforcement.
+`spec/source-static-aggregate-transport/outcomes.json` checks closed scalar
+struct array statics (const and runtime), promoted byte-array reference statics,
+slice-bearing struct statics, function-owned cyclic vtable statics in `const fn`,
+and private-static access rejection in fresh clients.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

@@ -1,5 +1,8 @@
-//! Module statics retain their exact type recipes and one completed initializer.
-use super::{ConstTerm, ConstantBody, HeaderRef, SourceRows, Type};
+//! Module and function statics retain their exact type recipes and one initializer policy.
+use super::{
+    ArtifactRef, ConstTerm, ConstantBody, Declaration, DefinitionKind, HeaderRef, NominalField,
+    NominalForm, NominalHeader, SourceRows, Type,
+};
 use crate::support::crates::{
     self, Scalar, ScalarValue,
     generics::{self as g, Work},
@@ -15,10 +18,12 @@ pub struct StaticHeader {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StaticInitializer {
-    /// Canonical little-endian scalar leaves in tuple or array element order.
+    /// Canonical little-endian scalar leaves in tuple, array or closed struct order.
     Scalars(g::Range),
     /// A raw pointer reached through zero or more single-field struct values.
     Promotion(DeclarationRef),
+    /// A provider-owned native allocation imported by symbol without CTFE bytes.
+    ProviderOwned,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -27,30 +32,43 @@ pub struct StaticColumns {
     pub values: Vec<u8>,
 }
 
+#[derive(Clone, Copy)]
+pub(crate) struct StaticTypeTable<'a> {
+    pub(crate) declarations: &'a [Declaration],
+    pub(crate) nominals: &'a [NominalHeader],
+    pub(crate) fields: &'a [NominalField],
+    pub(crate) types: &'a [Type],
+    pub(crate) roots: &'a [g::TypeRef],
+    pub(crate) lengths: &'a [ConstTerm],
+}
+
 pub(crate) enum StaticShape<'a> {
     Scalar(Scalar),
     WideFloat(usize),
     Tuple(&'a [g::TypeRef]),
     Array(g::TypeRef, usize),
+    Struct {
+        declaration: DeclarationRef,
+        fields: &'a [NominalField],
+    },
 }
 
 impl<'a> StaticShape<'a> {
     pub(crate) fn new(
-        types: &[Type],
-        roots: &'a [g::TypeRef],
-        lengths: &[ConstTerm],
+        table: StaticTypeTable<'a>,
+        nominal: impl FnOnce(DeclarationRef) -> Result<Option<u32>, &'static str>,
         ty: g::TypeRef,
     ) -> Result<Self, &'static str> {
-        match types.get(ty.0 as usize).copied() {
+        match table.types.get(ty.0 as usize).copied() {
             Some(Type::Scalar(ty)) => Ok(Self::Scalar(ty)),
             Some(Type::F16) => Ok(Self::WideFloat(2)),
             Some(Type::F128) => Ok(Self::WideFloat(16)),
-            Some(Type::Tuple(fields)) => Ok(Self::Tuple(fields.slice(roots)?)),
+            Some(Type::Tuple(fields)) => Ok(Self::Tuple(fields.slice(table.roots)?)),
             Some(Type::Array { element, length }) => {
-                let Some(ConstTerm::Value(value)) = lengths.get(length.0 as usize) else {
+                let Some(ConstTerm::Value(value)) = table.lengths.get(length.0 as usize) else {
                     return Err("source static array requires a closed length");
                 };
-                if types.get(value.ty.0 as usize) != Some(&Type::Scalar(Scalar::Usize)) {
+                if table.types.get(value.ty.0 as usize) != Some(&Type::Scalar(Scalar::Usize)) {
                     return Err("source static array length is not usize");
                 }
                 let count = usize::try_from(value.bits)
@@ -58,6 +76,33 @@ impl<'a> StaticShape<'a> {
                     .filter(|&count| count <= crates::MAX_COMPONENTS)
                     .ok_or("source static array length exceeds its value budget")?;
                 Ok(Self::Array(element, count))
+            }
+            Some(Type::Nominal {
+                declaration,
+                arguments,
+            }) if declaration.artifact == ArtifactRef(0)
+                && arguments.start == arguments.end
+                && table
+                    .declarations
+                    .get(declaration.declaration.0 as usize)
+                    .is_some_and(|row| row.definition.kind == DefinitionKind::Struct) =>
+            {
+                let Some(index) = nominal(declaration.declaration)? else {
+                    return Err("source static struct lacks its nominal header");
+                };
+                let header = table
+                    .nominals
+                    .get(index as usize)
+                    .ok_or("source static struct lacks its nominal header")?;
+                if header.layout.form == NominalForm::Union {
+                    return Err(
+                        "source static initializer requires its closed scalar aggregate type",
+                    );
+                }
+                Ok(Self::Struct {
+                    declaration: declaration.declaration,
+                    fields: header.fields.slice(table.fields)?,
+                })
             }
             _ => Err("source static initializer requires its closed scalar aggregate type"),
         }
@@ -67,7 +112,9 @@ impl<'a> StaticShape<'a> {
 enum Visit<'a> {
     Root(g::TypeRef, bool),
     Tuple(std::slice::Iter<'a, g::TypeRef>, bool),
+    Struct(std::slice::Iter<'a, NominalField>, bool),
     Array(g::TypeRef, usize, bool),
+    LeaveStruct,
 }
 
 pub(super) fn validate(
@@ -85,6 +132,7 @@ pub(super) fn validate(
     let mut end = 0;
     let mut walk = Walk {
         pending: Vec::new(),
+        active: Vec::new(),
         peak: base,
         base,
     };
@@ -95,7 +143,13 @@ pub(super) fn validate(
                 if values.start != end {
                     return Err("source static initializer ranges must cover the values in order");
                 }
-                walk.value(rows, header.ty, values.slice(&statics.values)?, work)?;
+                walk.value(
+                    rows,
+                    headers,
+                    header.ty,
+                    values.slice(&statics.values)?,
+                    work,
+                )?;
                 end = values.end;
             }
             StaticInitializer::Promotion(anchor) => {
@@ -108,6 +162,7 @@ pub(super) fn validate(
                     return Err("source static relocation changed its actual promotion owner");
                 }
             }
+            StaticInitializer::ProviderOwned => {}
         }
     }
     if end as usize != statics.values.len() {
@@ -118,6 +173,7 @@ pub(super) fn validate(
 
 struct Walk<'a> {
     pending: Vec<Visit<'a>>,
+    active: Vec<DeclarationRef>,
     peak: usize,
     base: usize,
 }
@@ -128,9 +184,10 @@ impl<'a> Walk<'a> {
         let needed = self.pending.len() + additional;
         if needed > previous {
             let capacity = needed.next_power_of_two();
+            let stride = size_of::<Visit<'_>>().saturating_add(size_of::<DeclarationRef>());
             let peak = |size: usize| {
                 self.base
-                    .saturating_add((previous + size).saturating_mul(size_of::<Visit<'_>>()))
+                    .saturating_add((previous + size).saturating_mul(stride))
             };
             if peak(capacity) > crates::MAX_BYTES {
                 return Err("source static validation exceeds the combined storage budget");
@@ -149,21 +206,29 @@ impl<'a> Walk<'a> {
     fn value(
         &mut self,
         rows: &'a SourceRows,
+        headers: &[Option<HeaderRef>],
         ty: g::TypeRef,
         mut bytes: &[u8],
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        self.active.clear();
         self.reserve(1)?;
         self.pending.push(Visit::Root(ty, true));
         while let Some(visit) = self.pending.pop() {
             work.charge(1)?;
             self.reserve(2)?;
             match visit {
-                Visit::Root(ty, present) => self.root(rows, ty, present, &mut bytes)?,
+                Visit::Root(ty, present) => self.root(rows, headers, ty, present, &mut bytes)?,
                 Visit::Tuple(mut fields, present) => {
                     if let Some(&field) = fields.next() {
                         self.pending.push(Visit::Tuple(fields, present));
                         self.pending.push(Visit::Root(field, present));
+                    }
+                }
+                Visit::Struct(mut fields, present) => {
+                    if let Some(field) = fields.next() {
+                        self.pending.push(Visit::Struct(fields, present));
+                        self.pending.push(Visit::Root(field.ty, present));
                     }
                 }
                 Visit::Array(element, count, present) => {
@@ -171,6 +236,9 @@ impl<'a> Walk<'a> {
                         self.pending.push(Visit::Array(element, count - 1, present));
                         self.pending.push(Visit::Root(element, present));
                     }
+                }
+                Visit::LeaveStruct => {
+                    self.active.pop();
                 }
             }
         }
@@ -183,11 +251,28 @@ impl<'a> Walk<'a> {
     fn root(
         &mut self,
         rows: &'a SourceRows,
+        headers: &[Option<HeaderRef>],
         ty: g::TypeRef,
         present: bool,
         bytes: &mut &[u8],
     ) -> Result<(), &'static str> {
-        match StaticShape::new(&rows.types, &rows.roots, rows.array_lengths(), ty)? {
+        let nominal = |declaration: DeclarationRef| match headers
+            .get(declaration.0 as usize)
+            .copied()
+            .flatten()
+        {
+            Some(HeaderRef::Nominal(index)) => Ok(Some(index)),
+            _ => Ok(None),
+        };
+        let table = StaticTypeTable {
+            declarations: &rows.declarations,
+            nominals: &rows.nominals,
+            fields: &rows.fields,
+            types: &rows.types,
+            roots: &rows.roots,
+            lengths: rows.array_lengths(),
+        };
+        match StaticShape::new(table, nominal, ty)? {
             StaticShape::Scalar(ty) if present => {
                 let bits = read_bits(bytes, ty.bit_width().div_ceil(8) as usize)?;
                 ScalarValue::new(ty, bits)?;
@@ -197,6 +282,17 @@ impl<'a> Walk<'a> {
             }
             StaticShape::Scalar(_) | StaticShape::WideFloat(_) => {}
             StaticShape::Tuple(fields) => self.pending.push(Visit::Tuple(fields.iter(), present)),
+            StaticShape::Struct {
+                declaration,
+                fields,
+            } => {
+                if self.active.contains(&declaration) {
+                    return Err("source static struct has a recursive value cycle");
+                }
+                self.active.push(declaration);
+                self.pending.push(Visit::LeaveStruct);
+                self.pending.push(Visit::Struct(fields.iter(), present));
+            }
             StaticShape::Array(element, count) if present && count != 0 => {
                 self.pending.push(Visit::Array(element, count, true));
             }

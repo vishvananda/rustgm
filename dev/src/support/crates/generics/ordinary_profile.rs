@@ -842,7 +842,9 @@ fn originals(
                 || constant_initializers
                     && matches!(
                         value.kind,
-                        ValueKind::ConstArgument(_) | ValueKind::PointerCast(_)
+                        ValueKind::Read(Place::Static(_))
+                            | ValueKind::ConstArgument(_)
+                            | ValueKind::PointerCast(_)
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

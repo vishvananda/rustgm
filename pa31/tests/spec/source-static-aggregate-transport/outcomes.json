@@ -1,0 +1,12 @@
+{
+  "features": [
+    "auto_traits"
+  ],
+  "stdout": "42 50 29 37\n",
+  "older_profile": "source declaration kind is outside the initial source profile",
+  "restricted_client": {
+    "path": "private_static.rs",
+    "rustc": "is private",
+    "rustgm": "private"
+  }
+}

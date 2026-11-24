@@ -31,20 +31,30 @@ fn spend(remaining: &mut usize, work: usize) -> Result<(), &'static str> {
     Ok(())
 }
 
+enum ChainOutcome {
+    Ready(Chain),
+    Pending,
+    Unsupported(&'static str),
+}
+
 fn chain(
     facts: &mut Declarations,
     ty: TypeId,
     remaining: &mut usize,
-) -> Result<Option<Chain>, &'static str> {
+) -> Result<ChainOutcome, &'static str> {
     let mut current = ty;
     let mut records = Vec::new();
     loop {
         spend(remaining, 1)?;
         match facts.types.kind(current) {
-            Some(Kind::Pointer { pointee, .. }) => return Ok(Some(Chain { records, pointee })),
+            Some(Kind::Pointer { pointee, .. }) => {
+                return Ok(ChainOutcome::Ready(Chain { records, pointee }));
+            }
             Some(Kind::Adt(owner, _)) => {
                 let [variant] = facts.members.variants(owner) else {
-                    return Err("source static relocation requires a single-field record");
+                    return Ok(ChainOutcome::Unsupported(
+                        "source static relocation requires a single-field record",
+                    ));
                 };
                 if !facts
                     .aggregates
@@ -55,7 +65,9 @@ fn chain(
                         .fields(*variant)
                         .is_none_or(|fields| fields.len() != 1)
                 {
-                    return Err("source static relocation requires a single-field record");
+                    return Ok(ChainOutcome::Unsupported(
+                        "source static relocation requires a single-field record",
+                    ));
                 }
                 let before = facts.aggregates.instantiation_steps();
                 let instantiated = facts.aggregates.instantiate(&mut facts.types, current);
@@ -70,7 +82,7 @@ fn chain(
                 let ShapeReadiness::Ready(shape) =
                     facts.aggregates.try_shape(&facts.types, current)?
                 else {
-                    return Ok(None);
+                    return Ok(ChainOutcome::Pending);
                 };
                 let mut variants = shape.variants();
                 let shape = variants
@@ -83,7 +95,11 @@ fn chain(
                 records.push(*variant);
                 current = field;
             }
-            _ => return Err("source static relocation requires a raw pointer terminal"),
+            _ => {
+                return Ok(ChainOutcome::Unsupported(
+                    "source static relocation requires a raw pointer terminal",
+                ));
+            }
         }
     }
 }
@@ -92,10 +108,10 @@ fn address(
     reader: Reader<'_>,
     value: Constant,
     pointee: TypeId,
-) -> Result<LocationId, &'static str> {
-    let location = value
-        .location()
-        .ok_or("source static relocation has no actual address")?;
+) -> Result<Option<LocationId>, &'static str> {
+    let Some(location) = value.location() else {
+        return Ok(None);
+    };
     let stored = reader.location(location)?;
     if stored.ty != pointee
         || !matches!(stored.origin, Origin::Allocation)
@@ -103,19 +119,24 @@ fn address(
         || value.metadata().is_some()
         || value.write_permission() != Some(WritePermission::SharedDerived)
     {
-        return Err("source static relocation changed the actual shared allocation");
+        return Ok(None);
     }
-    Ok(location)
+    Ok(Some(location))
 }
 
 pub(super) fn checked_pointer(
     facts: &mut Declarations,
     ty: TypeId,
     mut value: Constant,
-) -> Result<(LocationId, usize), &'static str> {
+) -> Result<Option<(LocationId, usize)>, &'static str> {
     let mut remaining = MAX_COMPONENTS;
-    let chain = chain(facts, ty, &mut remaining)?
-        .ok_or("source static relocation requires completed provider storage")?;
+    let chain = match chain(facts, ty, &mut remaining)? {
+        ChainOutcome::Ready(chain) => chain,
+        ChainOutcome::Pending => {
+            return Err("source static relocation requires completed provider storage");
+        }
+        ChainOutcome::Unsupported(_) => return Ok(None),
+    };
     let reader = Reader::new(facts);
     for variant in chain.records {
         if !matches!(reader.view(value)?, View::Product { length: 1, variant: Some(actual) } if actual == variant)
@@ -124,8 +145,8 @@ pub(super) fn checked_pointer(
         }
         value = reader.field(value, 0)?;
     }
-    let location = address(reader, value, chain.pointee)?;
-    Ok((location, MAX_COMPONENTS - remaining))
+    Ok(address(reader, value, chain.pointee)?
+        .map(|location| (location, MAX_COMPONENTS - remaining)))
 }
 
 pub(super) fn finish(
@@ -148,8 +169,10 @@ pub(super) fn import(
     relocation: &Relocation,
     remaining: &mut usize,
 ) -> Result<Option<Constant>, Error> {
-    let Some(chain) = chain(facts, relocation.ty, remaining).map_err(error)? else {
-        return Ok(None);
+    let chain = match chain(facts, relocation.ty, remaining).map_err(error)? {
+        ChainOutcome::Ready(chain) => chain,
+        ChainOutcome::Pending => return Ok(None),
+        ChainOutcome::Unsupported(message) => return Err(error(message)),
     };
     let mut evaluator = Evaluator::new(report, facts);
     let facts = evaluator.facts();
@@ -163,7 +186,9 @@ pub(super) fn import(
             })
         })
         .ok_or_else(|| error("imported source static relocation lost its completed constant"))?;
-    let location = address(reader, value, chain.pointee).map_err(error)?;
+    let location = address(reader, value, chain.pointee)
+        .map_err(error)?
+        .ok_or_else(|| error("source static relocation changed the actual shared allocation"))?;
     if facts
         .crates
         .as_deref()
