@@ -320,8 +320,21 @@ impl Stage {
                 .ok_or("source impl result has no completed definition type")?;
             let trait_member = Some(self.address(member)?);
             let declaration = self.declaration(definition)?;
+            let family = facts.associated.families.get(&definition);
             let context =
-                self.result_definition_context(facts, definition, declaration, context)?;
+                self.result_definition_context(facts, definition, declaration, context, family)?;
+            if let Some(family) = family {
+                let inputs =
+                    self.associated_family_inputs(facts, definition, Some(family), context)?;
+                if inputs.start != inputs.end {
+                    self.reserve(4 * size_of::<s::AssociatedDefinitionInputs>())?;
+                    let cold = self.cold()?;
+                    let index = u32::try_from(cold.associated_definitions.len())
+                        .map_err(|_| "source associated definition index overflow")?;
+                    cold.associated_definition_inputs
+                        .push(s::AssociatedDefinitionInputs { index, inputs });
+                }
+            }
             let value = self.ty(facts, value, context)?;
             self.rows.member_links.push(s::MemberLink {
                 trait_member,
@@ -339,8 +352,9 @@ impl Stage {
         definition: DefId,
         declaration: super::DeclarationRef,
         parent: super::canonical_nodes::Context,
+        family: Option<&crate::sema::associated::Family>,
     ) -> Result<super::canonical_nodes::Context, &'static str> {
-        let Some(family) = facts.associated.families.get(&definition) else {
+        let Some(family) = family else {
             return Ok(parent);
         };
         let own = facts
@@ -358,10 +372,11 @@ impl Stage {
                 )
             })
             || !family.regions.is_empty()
-            || family
-                .requirements
-                .as_ref()
-                .is_none_or(|requirements| !requirements.is_empty())
+            || family.requirements.as_ref().is_none_or(|requirements| {
+                requirements.iter().any(|clause| !matches!(clause,
+                    crate::types::parameters::clauses::Clause::Predicate(predicate)
+                    if matches!(predicate.bound, crate::types::parameters::predicates::Bound::Outlives(_))))
+            })
             || family.captures != self.rows.binders[binder.0 as usize].count
             || family.captures as usize + own.len() != family.total as usize
         {

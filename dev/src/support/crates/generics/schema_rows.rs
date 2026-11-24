@@ -690,6 +690,7 @@ pub type SourceRows = Rows;
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,
+    pub associated_definition_inputs: Vec<AssociatedDefinitionInputs>,
     pub enums: EnumColumns,
     /// Version thirteen: each range pattern's endpoints, in type-row order.
     pub pattern_ranges: Vec<PatternRange>,
@@ -712,6 +713,7 @@ pub struct ColdColumns {
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
     associated_definitions: Vec::new(),
+    associated_definition_inputs: Vec::new(),
     enums: EnumColumns {
         headers: Vec::new(),
         variants: Vec::new(),
@@ -736,8 +738,17 @@ impl ColdColumns {
         cold.unwrap_or(&EMPTY_COLD)
     }
     #[must_use]
+    pub(crate) fn definition_inputs(&self, index: u32) -> Option<Range> {
+        let position = self
+            .associated_definition_inputs
+            .binary_search_by_key(&index, |row| row.index)
+            .ok()?;
+        Some(self.associated_definition_inputs[position].inputs)
+    }
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.associated_definitions.is_empty()
+            && self.associated_definition_inputs.is_empty()
             && self.enums.is_empty()
             && self.pattern_ranges.is_empty()
             && self.diagnostics.is_empty()

@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from struct import pack, unpack_from
 
 import backend
 from check_caller_location_forwarding import pinned
@@ -11,8 +12,29 @@ from crate_qualification import Check
 
 
 FIXTURES = ROOT / "pa31/tests/spec"
-CASES = ("source-associated-family-transport", "source-impl-associated-family-transport")
+CASES = (
+    "source-associated-family-transport",
+    "source-impl-associated-family-transport",
+    "source-impl-associated-where-transport",
+)
 IDENTITY = "base@associated_family"
+
+
+def reject_empty_family_range(check, importer, artifact, client, diagnostic):
+    packet = artifact.read_bytes()
+    upper = len(packet) // 8
+    marked = []
+    for offset in range(len(packet) - 15):
+        owner, value, start, end = unpack_from("<IIII", packet, offset)
+        if 0 < owner < upper and (1 << 31) <= value < (1 << 31) + upper and 0 < start < end < upper:
+            marked.append((offset, start, end))
+    if len(marked) != 1 or marked[0][2] != marked[0][1] + 1:
+        raise ValueError("expected one associated definition with one owned input")
+    offset, start, _ = marked[0]
+    altered = check.folder / "empty-range.rgcrate"
+    altered.write_bytes(packet[:offset + 12] + pack("<I", start) + packet[offset + 16:])
+    check.run("empty-range", [*importer, "--extern", f"base={altered}", client], 1,
+              [diagnostic], timeout=15)
 
 
 def main():
@@ -52,6 +74,8 @@ def main():
     check.run("older-profile", [*exporter, "--source-profile", "module-bodies-v13",
                                 "--metadata-output", check.folder / "v13.rgcrate", source], 1,
               [contract["older_profile"]], timeout=15)
+    if diagnostic := contract.get("empty_range"):
+        reject_empty_family_range(check, importer[:-2], artifact, client, diagnostic)
     native = check.folder / "rustgm-client"
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("rustgm-observe", [native], timeout=15).stdout != expected:

@@ -32,6 +32,13 @@ pub struct AssociatedDefinition {
     pub value: TypeRef,
 }
 
+/// The sparse input range of one provider-owned associated family.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AssociatedDefinitionInputs {
+    pub index: u32,
+    pub inputs: Range,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ProjectionRecipe {
     pub declaration: DeclarationAddress,

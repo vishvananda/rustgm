@@ -44,6 +44,26 @@ pub(super) fn validate(
             }
         }
     }
+    for row in &rows.cold().associated_definition_inputs {
+        work.charge(1)?;
+        let declaration = rows.associated_definitions()[row.index as usize].declaration;
+        let own = headers.scopes().declared_slots(declaration, work)?;
+        if !families || own.start == own.end {
+            return Err(
+                "associated definition premises require their exact version-fourteen family",
+            );
+        }
+        for input in row.inputs.slice(&rows.clauses)? {
+            work.charge(1)?;
+            if input.binder.is_some()
+                || !matches!(input.requirement, super::Requirement::TypeOutlives { .. })
+            {
+                return Err(
+                    "associated definition premises require their actual type outlives inputs",
+                );
+            }
+        }
+    }
     Ok(())
 }
 

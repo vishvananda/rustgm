@@ -448,6 +448,28 @@ fn associated_headers(
             return Err("associated result definition lost its actual implementation owner");
         }
     }
+    let mut previous = None;
+    for row in &rows.cold().associated_definition_inputs {
+        work.charge(1)?;
+        if previous.is_some_and(|index| index >= row.index) || row.inputs.start >= row.inputs.end {
+            return Err("associated definition inputs are empty or out of declaration order");
+        }
+        previous = Some(row.index);
+        let declaration = rows
+            .associated_definitions()
+            .get(row.index as usize)
+            .ok_or("associated definition inputs name an unknown result")?
+            .declaration;
+        inputs(
+            rows,
+            declaration,
+            row.inputs,
+            row.inputs.end - row.inputs.start,
+            None,
+            clauses,
+            work,
+        )?;
+    }
     Ok(())
 }
 

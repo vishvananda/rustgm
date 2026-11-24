@@ -172,6 +172,7 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
             .bytes
             .saturating_add(size_of::<super::super::ColdColumns>());
         count.vector(&cold.associated_definitions, work)?;
+        count.vector(&cold.associated_definition_inputs, work)?;
         count.vector(&cold.enums.headers, work)?;
         count.vector(&cold.enums.variants, work)?;
         count.vector(&cold.enums.fields, work)?;

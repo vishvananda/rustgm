@@ -31,42 +31,11 @@ impl Checker<'_> {
         expected: DefId,
         actual: DefId,
     ) -> Result<(), Error> {
-        let mut mapping =
-            mapping::build(&mut self.facts, owner, predicate, expected, actual, false)
-                .map_err(Error::unlocated)?;
-        let assumptions = families::inputs(&mut self.facts, actual, &mut mapping.actual)
-            .map_err(Error::unlocated)?;
-        let mut required = families::inputs(&mut self.facts, expected, &mut mapping.expected)
-            .map_err(Error::unlocated)?;
-        if !assumptions.clauses.is_empty()
-            || !assumptions.regions.is_empty()
-            || !required.clauses.is_empty()
-            || !required.regions.is_empty()
-            || !self.facts.associated.families.contains_key(&actual)
-        {
+        if !self.facts.associated.families.contains_key(&actual) {
             return Err(Error::unlocated(
-                "imported associated family requires its wider premise profile",
+                "imported associated definition lost its actual family",
             ));
         }
-        let value = self.facts.definitions[actual.0 as usize]
-            .ok_or_else(|| Error::unlocated("imported associated family lost its actual result"))?;
-        let value = mapping
-            .actual
-            .apply(&mut self.facts.types, value)
-            .map_err(Error::unlocated)?;
-        self.family_lifetime_inputs(predicate, value, mapping.captures)
-            .map_err(Error::unlocated)?;
-        let mut substitution = Some(mapping.expected);
-        required.clauses = super::conformance::mapped_result_bounds(
-            &mut self.facts,
-            predicate,
-            expected,
-            value,
-            &mut substitution,
-        )
-        .map_err(Error::unlocated)?;
-        mapping.expected =
-            substitution.ok_or_else(|| Error::unlocated("missing imported family substitution"))?;
         let environment = self
             .facts
             .generics
@@ -76,25 +45,125 @@ impl Checker<'_> {
             .ok_or_else(|| {
                 Error::unlocated("imported associated family has no actual impl environment")
             })?;
-        let mut proof = Proof::for_declaration(Some(environment), mapping.total, 1);
-        if !proof
-            .check(&mut self.facts, value)
-            .map_err(Error::unlocated)?
-            .well_formed
+        for declared in [true, false] {
+            let contract =
+                self.imported_family_contract(owner, predicate, (expected, actual), declared)?;
+            self.prove_imported_family(owner, &environment, &contract)?;
+        }
+        Ok(())
+    }
+
+    fn imported_family_contract(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        (expected, actual): (DefId, DefId),
+        declared: bool,
+    ) -> Result<Contract, Error> {
+        let mut mapping = mapping::build(
+            &mut self.facts,
+            owner,
+            predicate,
+            expected,
+            actual,
+            declared,
+        )
+        .map_err(Error::unlocated)?;
+        let declaration = families::inputs(&mut self.facts, expected, &mut mapping.expected)
+            .map_err(Error::unlocated)?;
+        let implementation = families::inputs(&mut self.facts, actual, &mut mapping.actual)
+            .map_err(Error::unlocated)?;
+        if [&declaration, &implementation].iter().any(|premises| {
+            !premises.regions.is_empty()
+                || premises.clauses.iter().any(|clause| {
+                    !matches!(
+                        clause,
+                        Clause::Predicate(Predicate {
+                            bound: crate::types::parameters::predicates::Bound::Outlives(_),
+                            ..
+                        })
+                    )
+                })
+        }) {
+            return Err(Error::unlocated(
+                "imported associated family requires its wider premise profile",
+            ));
+        }
+        let (assumptions, mut required) = if declared {
+            (declaration, implementation)
+        } else {
+            (implementation, declaration)
+        };
+        let result = if declared {
+            None
+        } else {
+            let value = self.facts.definitions[actual.0 as usize].ok_or_else(|| {
+                Error::unlocated("imported associated family lost its actual result")
+            })?;
+            let value = mapping
+                .actual
+                .apply(&mut self.facts.types, value)
+                .map_err(Error::unlocated)?;
+            self.family_lifetime_inputs(predicate, value, mapping.captures)
+                .map_err(Error::unlocated)?;
+            let mut substitution = Some(mapping.expected);
+            required.clauses.extend(
+                super::conformance::mapped_result_bounds(
+                    &mut self.facts,
+                    predicate,
+                    expected,
+                    value,
+                    &mut substitution,
+                )
+                .map_err(Error::unlocated)?,
+            );
+            mapping.expected = substitution
+                .ok_or_else(|| Error::unlocated("missing imported family substitution"))?;
+            Some((value, value))
+        };
+        Ok(Contract {
+            mapping,
+            assumptions,
+            required,
+            result,
+        })
+    }
+
+    fn prove_imported_family(
+        &mut self,
+        owner: DefId,
+        environment: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+        contract: &Contract,
+    ) -> Result<(), Error> {
+        if contract.result.is_none() && contract.required.clauses.is_empty() {
+            return Ok(());
+        }
+        let assumptions = &contract.assumptions.clauses;
+        let environment = if assumptions.is_empty() {
+            std::sync::Arc::clone(environment)
+        } else {
+            std::sync::Arc::new(
+                environment
+                    .as_ref()
+                    .clone()
+                    .with_clauses(&self.facts.types, assumptions)
+                    .map_err(Error::unlocated)?,
+            )
+        };
+        let mut proof = Proof::for_declaration(Some(environment), contract.mapping.total, 1);
+        if let Some((value, _)) = contract.result
+            && !proof
+                .check(&mut self.facts, value)
+                .map_err(Error::unlocated)?
+                .well_formed
         {
             return Err(Error::unlocated(
                 "imported associated family result must be well-formed",
             ));
         }
-        self.prove_family_results(None, &required, &mut proof)?;
-        let contract = Contract {
-            mapping,
-            assumptions,
-            required,
-            result: Some((value, value)),
-        };
+        self.prove_family_results(None, &contract.required, &mut proof)?;
         let evidence = proof.take_trait_proof();
-        self.prove_family_regions(owner, None, &contract, &[], evidence.as_ref())
+        self.prove_family_regions(owner, None, contract, assumptions, evidence.as_ref())
     }
 
     pub(super) fn check_associated_family(

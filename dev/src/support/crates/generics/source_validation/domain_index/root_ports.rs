@@ -18,7 +18,7 @@ impl DomainIndex<'_, '_> {
         }
         self.alias_normalization_roots(work)?;
         // An impl's result can name only the formals of its own frame.
-        for row in rows.associated_definitions() {
+        for (definition_index, row) in (0_u32..).zip(rows.associated_definitions()) {
             let parent = rows
                 .declarations
                 .get(row.declaration.0 as usize)
@@ -43,6 +43,13 @@ impl DomainIndex<'_, '_> {
                 body: None,
             };
             self.types.root(self.headers, context, row.value, work)?;
+            if own.start != own.end {
+                let inputs = &rows.cold().associated_definition_inputs;
+                work.charge(inputs.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+                if let Some(range) = rows.cold().definition_inputs(definition_index) {
+                    self.requirements(context, range, work)?;
+                }
+            }
         }
         Ok(())
     }

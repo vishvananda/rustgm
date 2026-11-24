@@ -63,6 +63,8 @@ enum Inputs {
     /// An implementation's associated-result definition: the version-thirteen
     /// profile admits no own family inputs, so it inherits its impl's frame.
     Definition,
+    /// The family conformance proof opens these premises with its own
+    /// slots after reconstructing the enclosing implementation.
     FamilyDefinition(crate::sema::associated::Family),
 }
 impl Inputs {
@@ -332,8 +334,8 @@ impl Walk<'_, '_> {
                     budget,
                 )?))
             }
-            Some(s::HeaderRef::AssociatedDefinition(_)) => {
-                self.associated_definition_inputs(rows, raw)
+            Some(s::HeaderRef::AssociatedDefinition(index)) => {
+                self.associated_definition_inputs(facts, raw, definition, index, budget)
             }
             Some(s::HeaderRef::Constant(index))
                 if !rows.constants()[index as usize].body.evaluated()
@@ -356,14 +358,20 @@ impl Walk<'_, '_> {
         }
     }
     fn associated_definition_inputs(
-        &self,
-        rows: s::ValidatedView<'_>,
+        &mut self,
+        facts: &mut Declarations,
         raw: &s::ParameterScope,
+        definition: DefId,
+        index: u32,
+        budget: &mut Headers,
     ) -> Result<Inputs, Error> {
+        let rows = self.context.descriptor.rows();
         let parent = raw
             .parent
             .ok_or_else(|| error("source associated definition has no impl scope"))?;
-        let Some(s::HeaderRef::Implementation(index)) = rows.header(parent).map_err(error)? else {
+        let Some(s::HeaderRef::Implementation(parent_index)) =
+            rows.header(parent).map_err(error)?
+        else {
             return Err(error(
                 "source associated definition scope lost its actual impl owner",
             ));
@@ -382,15 +390,30 @@ impl Walk<'_, '_> {
                 "source associated definition families require their wider profile",
             ));
         }
-        let captures = rows.implementations[index as usize].region_captures;
+        let captures = rows.implementations[parent_index as usize].region_captures;
         let total = captures.checked_add(own).ok_or_else(|| {
             error("associated definition lifetime count exceeds its checked scope")
         })?;
+        let count = rows.cold().associated_definition_inputs.len();
+        budget.charge(count.checked_ilog2().unwrap_or(0) as usize + 1)?;
+        let inputs = if rows.cold().definition_inputs(index).is_some() {
+            self.remap
+                .declaration_inputs(definition, &mut facts.types, budget)?
+        } else {
+            Arc::default()
+        };
+        budget.reserve(
+            inputs
+                .len()
+                .saturating_mul(size_of::<crate::types::parameters::clauses::Clause>()),
+        )?;
+        let requirements = inputs.iter().map(|input| input.value).collect::<Vec<_>>();
+        budget.observed.vector(&requirements);
         Ok(Inputs::FamilyDefinition(crate::sema::associated::Family {
             captures,
             total,
             regions: Vec::new(),
-            requirements: Some(Vec::new()),
+            requirements: Some(requirements),
         }))
     }
     fn associated_type_inputs(

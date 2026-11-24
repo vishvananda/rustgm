@@ -73,6 +73,8 @@ with the prebuilt RustGM and pinned Rust compilers.
 `spec/source-impl-associated-family-transport/outcomes.json` checks the other
 direction. A fresh client projects the provider's family and observes the
 lifetime declared by the member and the lifetime captured from its impl.
+`spec/source-impl-associated-where-transport/outcomes.json` exercises the
+same provider-owned family with a written `Self: 'a` requirement.
 `spec/source-runtime-panic-transport/outcomes.json` checks the fresh
 `panic_fmt` and `panic_nounwind` call signatures, caller location, and
 invalid role bindings. Run `scripts/check_runtime_panic_transport.py` with

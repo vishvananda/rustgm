@@ -168,6 +168,14 @@ impl<'a> Context<'a> {
                 DefKind::TypeAlias,
                 rows.associated_types[index as usize].inputs,
             ),
+            Some(s::HeaderRef::AssociatedDefinition(index)) => {
+                let count = rows.cold().associated_definition_inputs.len();
+                budget.charge(count.checked_ilog2().unwrap_or(0) as usize + 1)?;
+                let inputs = rows.cold().definition_inputs(index).ok_or_else(|| {
+                    error("source associated definition lost its actual input range")
+                })?;
+                (DefKind::TypeAlias, inputs)
+            }
             Some(s::HeaderRef::TraitAlias(index)) => (
                 DefKind::TraitAlias,
                 rows.trait_aliases()[index as usize].inputs,

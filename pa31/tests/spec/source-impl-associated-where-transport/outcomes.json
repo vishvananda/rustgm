@@ -1,0 +1,13 @@
+{
+  "foundation": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+  "prefix_marker": "pub fn identity<T>",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "../source-impl-associated-family-transport/observer.c",
+  "stdout": "19 73\n",
+  "rejected_cfg": "missing_family_input",
+  "rustc_rejected": "error[E0623]",
+  "rustgm_rejected": "required lifetime does not outlive its target",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "empty_range": "associated definition inputs are empty or out of declaration order"
+}

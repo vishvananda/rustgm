@@ -222,7 +222,7 @@ impl Stage {
         Ok(())
     }
 
-    fn associated_family_inputs(
+    pub(super) fn associated_family_inputs(
         &mut self,
         facts: &Declarations,
         definition: DefId,

@@ -63,6 +63,7 @@ impl Columns {
     pub(crate) fn raw_cold(&self) -> Option<Box<super::super::ColdColumns>> {
         let cold = self.cold();
         (!cold.associated_definitions.is_empty()
+            || !cold.associated_definition_inputs.is_empty()
             || !cold.enums.is_empty()
             || !cold.pattern_ranges.is_empty()
             || !cold.diagnostics.is_empty()
@@ -78,6 +79,7 @@ impl Columns {
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
+                associated_definition_inputs: cold.associated_definition_inputs.clone(),
                 enums: cold.enums.clone(),
                 pattern_ranges: cold.pattern_ranges.clone(),
                 diagnostics: cold.diagnostics.clone(),
