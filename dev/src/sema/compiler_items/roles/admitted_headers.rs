@@ -220,6 +220,21 @@ const FREE_MARKERS: [LangItem; 6] = [
     LangItem::UnsafeUnpin,
 ];
 
+// These roles are checked together after the individual headers.
+const GROUPED: [LangItem; 11] = [
+    LangItem::FnOnce,
+    LangItem::FnMut,
+    LangItem::Fn,
+    LangItem::FnOnceOutput,
+    LangItem::RangeMin,
+    LangItem::RangeMax,
+    LangItem::RangeSub,
+    LangItem::ConstParamTy,
+    LangItem::StructuralPartialEq,
+    LangItem::Drop,
+    LangItem::DropGlue,
+];
+
 fn trait_headers(
     report: &Report,
     facts: &Declarations,
@@ -280,17 +295,7 @@ fn trait_headers(
                 tuple_marker(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
-            // Grouped roles are checked together once the loop completes.
-            LangItem::FnOnce
-            | LangItem::FnMut
-            | LangItem::Fn
-            | LangItem::FnOnceOutput
-            | LangItem::RangeMin
-            | LangItem::RangeMax
-            | LangItem::RangeSub
-            | LangItem::ConstParamTy
-            | LangItem::StructuralPartialEq => {}
-            role if super::super::layout::CONSTANTS.contains(&role) => {}
+            role if GROUPED.contains(&role) || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
@@ -392,6 +397,8 @@ fn grouped_roles(
 ) -> Result<super::invocation::Imported, &'static str> {
     super::parameter_types::imported(report, facts, catalog, steps, complete)?;
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
+    super::destructibility::imported_drop(report, facts, catalog, steps, complete)?;
+    super::glue::imported(facts, catalog, steps, complete)?;
     if super::range_members::imported(report, facts, catalog, steps)? {
         for role in super::range_members::ROLES {
             complete.insert(role);

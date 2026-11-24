@@ -202,7 +202,9 @@ fn validate_with(
     }
     for clause in &rows.clauses {
         work.charge(1)?;
-        ordinary(&clause.requirement, roles.callables.callable(clause.owner))?;
+        let qualified =
+            roles.callables.callable(clause.owner) || roles.conditional_glue_input(rows, clause);
+        ordinary(&clause.requirement, qualified)?;
     }
     originals(rows, headers, work, profile, binding, features)?;
     body_inputs(rows, work, profile.conversions(), binding.languages())
@@ -325,10 +327,11 @@ fn trait_headers(
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
+        let drop = roles.drop == Some(header.declaration);
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion && !binary && !range
+            || flags & TraitFlags::CONST != 0 && !conversion && !binary && !range && !drop
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -888,6 +891,8 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         Profile::CONST_BINARY_ROLES.len()],
@@ -939,6 +944,25 @@ impl Bindings {
         Ok(rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
     }
 
+    fn conditional_glue_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {
+        if Some(input.owner) != self.drop_glue {
+            return false;
+        }
+        let super::super::Requirement::Trait {
+            application,
+            effect: Constness::Conditional,
+        } = input.requirement
+        else {
+            return false;
+        };
+        rows.trait_applications
+            .get(application.0 as usize)
+            .is_some_and(|app| {
+                app.declaration.artifact.0 == 0
+                    && Some(app.declaration.declaration) == self.destruct
+            })
+    }
+
     fn required_member(
         &self,
         rows: &SourceRows,
@@ -946,6 +970,9 @@ impl Bindings {
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
+        if self.drop.is_some() && function.parent == self.drop {
+            return conversions::required_member(rows, headers, function, self.drop, true, work);
+        }
         if self
             .range
             .is_some_and(|family| family.method == function.declaration)
@@ -991,6 +1018,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::FormatArgument
             | LangItem::MemSizeConst
             | LangItem::MemAlignConst
+            | LangItem::DropGlue
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1139,6 +1167,10 @@ pub(super) fn bindings(
         callables,
         languages,
         range,
+        drop: (profile == BindingProfile::BodyOperations)
+            .then_some(declarations[LangItem::Drop.index()])
+            .flatten(),
+        drop_glue: declarations[LangItem::DropGlue.index()],
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
@@ -1275,6 +1307,29 @@ fn diagnostic_bindings(
     Ok(send)
 }
 const SEND: &str = "imported Send diagnostic item requires its unsafe auto trait declaration";
+fn defined_operation_role(
+    profile: BindingProfile,
+    rows: &SourceRows,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    if profile == BindingProfile::BodyOperations
+        && let Some(super::super::HeaderRef::Function(index)) = header
+        && rows.functions.get(index as usize).is_some_and(|function| {
+            function.parent.is_none()
+                && matches!(function.body, FunctionBody::Original(_))
+                && (role != LangItem::DropGlue || function.constness == Constness::Const)
+        })
+    {
+        return Ok(());
+    }
+    Err(if role == LangItem::DropGlue {
+        "source drop_glue requires its actual defined const module function"
+    } else {
+        "source guard role requires its actual defined free function"
+    })
+}
+
 /// The declaration/header kind each bound role may claim under `profile`.
 fn role_header(
     profile: BindingProfile,
@@ -1285,14 +1340,8 @@ fn role_header(
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
     match (role, header) {
-        (role, Some(HeaderRef::Function(index)))
-            if profile == BindingProfile::BodyOperations
-                && LangItem::GUARD_PANICS.contains(&role)
-                && rows.functions.get(index as usize).is_some_and(|function| {
-                    function.parent.is_none() && matches!(function.body, FunctionBody::Original(_))
-                }) => {}
-        (role, _) if LangItem::GUARD_PANICS.contains(&role) => {
-            return Err("source guard role requires its actual defined free function");
+        (role, header) if role == LangItem::DropGlue || LangItem::GUARD_PANICS.contains(&role) => {
+            defined_operation_role(profile, rows, role, header)?;
         }
         (role, Some(HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}

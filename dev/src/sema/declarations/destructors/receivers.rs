@@ -145,7 +145,7 @@ impl Checker<'_> {
             return Ok(0);
         };
         let role = catalog
-            .validated_language(crate::support::bindings::LangItem::Drop)
+            .validated_role(crate::support::bindings::LangItem::Drop)
             .map_err(|e| self.error(key, e))?
             .ok_or_else(|| {
                 self.error(key, "registered source destructor has no actual Drop role")

@@ -58,7 +58,7 @@ pub(crate) fn destruct_predicate(
         .types
         .trait_application(application)
         .ok_or("invalid Destruct trait application")?;
-    let Some(declaration) = catalog.validated_language(LangItem::Destruct)? else {
+    let Some(declaration) = catalog.validated_role(LangItem::Destruct)? else {
         return Ok(false);
     };
     Ok(application.item.0 == declaration.definition.0
@@ -87,6 +87,49 @@ pub(crate) fn destruct_predicate(
             )))
 }
 
+pub(super) fn imported_drop(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+    complete: &mut super::RoleSet,
+) -> Result<(), &'static str> {
+    let Some(role) = catalog.role(LangItem::Drop)? else {
+        return Ok(());
+    };
+    let header = Trait::current(report, facts, role, steps)?;
+    profile(facts, &header)?;
+    header.canonical_inputs(facts)?;
+    let mut drop = false;
+    let mut pinned = false;
+    for &member in header.members {
+        *steps = steps.saturating_add(6);
+        let actual = facts
+            .declaration_header(member)?
+            .ok_or("imported Drop lost its actual method")?;
+        if facts.associated.trait_owner(member) != Some(role.definition)
+            || actual.declaration.source().is_some()
+            || crate::sema::declaration_inputs::declared_own(
+                &facts.generics,
+                facts.crates.as_deref(),
+                member,
+            )?
+            .iter()
+            .next()
+            .is_some()
+        {
+            return Err("imported Drop method changed its owner or defining conditions");
+        }
+        let is_pinned = method_kind(report, member, &mut drop, &mut pinned)?;
+        typed_method(facts, member, actual.signature, header.self_type, is_pinned)?;
+    }
+    if !drop {
+        return Err("imported Drop requires its actual drop member");
+    }
+    complete.insert(LangItem::Drop);
+    Ok(())
+}
+
 pub(in crate::sema) fn require_source_drop_contract(
     report: &Report,
     facts: &Declarations,
@@ -94,13 +137,23 @@ pub(in crate::sema) fn require_source_drop_contract(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
-    let Some(declaration) = catalog
-        .validated_language(LangItem::Drop)
+    let Some(role) = catalog
+        .validated_role(LangItem::Drop)
         .map_err(Error::unlocated)?
     else {
         return Err(Error::unlocated(
             "source destructor lost its actual Drop declaration",
         ));
+    };
+    let Some(declaration) = catalog.language(LangItem::Drop) else {
+        // Imported headers already passed this role's typed checks.
+        return if role.origin.source().is_none() {
+            Ok(())
+        } else {
+            Err(Error::unlocated(
+                "source destructor lost its actual Drop header",
+            ))
+        };
     };
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = Trait::source(report, facts, declaration).map_err(error)?;
@@ -117,45 +170,11 @@ pub(in crate::sema) fn require_source_drop_contract(
             "executable source Drop has unsupported defining conditions",
         ));
     }
-    header
-        .profile(
-            &facts.types,
-            Flags {
-                unsafe_: false,
-                constant: header.flags.constant,
-                auto_: false,
-            },
-            0,
-        )
-        .map_err(error)?;
-    if header.written.supertraits != 0 || header.members.is_empty() || header.members.len() > 2 {
-        return Err(error(
-            "executable source Drop requires its actual drop/pin_drop contract",
-        ));
-    }
+    profile(facts, &header).map_err(error)?;
     let mut drop = false;
     let mut pinned = false;
     for &member in header.members {
-        let definition = report
-            .resolution
-            .definitions
-            .get(member.0 as usize)
-            .ok_or_else(|| error("Drop member lost its actual definition"))?;
-        let pin = match report.package.names.get(definition.name) {
-            "drop" if !drop => {
-                drop = true;
-                false
-            }
-            "pin_drop" if !pinned => {
-                pinned = true;
-                true
-            }
-            _ => {
-                return Err(error(
-                    "executable source Drop has another associated contract",
-                ));
-            }
-        };
+        let pin = method_kind(report, member, &mut drop, &mut pinned).map_err(error)?;
         require_method(report, facts, member, header.self_type, pin).map_err(error)?;
     }
     if !drop {
@@ -164,6 +183,40 @@ pub(in crate::sema) fn require_source_drop_contract(
         ));
     }
     Ok(())
+}
+
+fn profile(facts: &Declarations, header: &Trait<'_>) -> Result<(), &'static str> {
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: false,
+            constant: header.flags.constant,
+            auto_: false,
+        },
+        0,
+    )?;
+    if header.written.supertraits != 0 || header.members.is_empty() || header.members.len() > 2 {
+        return Err("executable source Drop requires its actual drop/pin_drop contract");
+    }
+    Ok(())
+}
+
+fn method_kind(
+    report: &Report,
+    member: DefId,
+    drop: &mut bool,
+    pinned: &mut bool,
+) -> Result<bool, &'static str> {
+    let definition = report
+        .resolution
+        .definitions
+        .get(member.0 as usize)
+        .ok_or("Drop member lost its actual definition")?;
+    match report.package.names.get(definition.name) {
+        "drop" if !std::mem::replace(drop, true) => Ok(false),
+        "pin_drop" if !std::mem::replace(pinned, true) => Ok(true),
+        _ => Err("executable source Drop has another associated contract"),
+    }
 }
 
 fn require_method(
@@ -196,13 +249,23 @@ fn require_method(
     if !ast.list(ast.items[item as usize].where_clause).is_empty() {
         return Err("source Drop method has unsupported defining conditions");
     }
+    typed_method(facts, member, method.signature, subject, pinned)
+}
+
+fn typed_method(
+    facts: &Declarations,
+    member: DefId,
+    signature: TypeId,
+    subject: TypeId,
+    pinned: bool,
+) -> Result<(), &'static str> {
     let Some(Kind::Function {
         bound_regions: 1,
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(method.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err(
             "source Drop requires a safe Rust method with one borrow binder and unit result",
@@ -243,7 +306,7 @@ fn pin_pointer(facts: &Declarations, receiver: TypeId) -> Result<TypeId, &'stati
         .source_bindings
         .as_deref()
         .ok_or("missing source Pin catalog")?
-        .language(LangItem::Pin)
+        .role(LangItem::Pin)?
         .ok_or("pinned Drop requires the actual Pin declaration")?;
     let Some(Kind::Adt(item, args)) = facts.types.kind(receiver) else {
         return Err("pinned Drop requires its actual Pin application");

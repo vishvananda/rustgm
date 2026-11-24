@@ -7,6 +7,7 @@ mod receivers;
 use super::{Checker, Error, Type, heads};
 use crate::{
     sema::destructors::{Coverage, Implementation},
+    support::bindings::LangItem,
     types::{ItemId, outlives::Queries},
 };
 
@@ -42,23 +43,35 @@ impl Checker<'_> {
         if !pending.is_empty() {
             crate::sema::compiler_items::require_source_drop_contract(self.report, &self.facts)?;
         }
+        let source_role = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.validated_role(LangItem::Drop))
+            .transpose()
+            .map_err(Error::unlocated)?
+            .flatten();
+        if let Some(role) = source_role
+            && role.origin.source().is_none()
+            && self
+                .facts
+                .generics
+                .implementations
+                .as_deref()
+                .is_some_and(|registry| {
+                    registry.has_imported_implementation(ItemId(role.definition.0))
+                })
+        {
+            return Err(Error::unlocated(
+                "provider-owned Drop implementations require their destructor registry transport",
+            ));
+        }
         for Pending { header, owner } in pending {
             let key = header.source;
             let method = header
                 .method
                 .ok_or_else(|| self.error(key, "Drop impl is missing its drop method"))?;
-            let source_role = self
-                .facts
-                .source_bindings
-                .as_deref()
-                .and_then(|c| c.language(crate::support::bindings::LangItem::Drop));
-            let environment = if let Some(role) = source_role {
-                self.facts
-                    .source_bindings
-                    .as_deref()
-                    .ok_or_else(|| self.error(key, "source catalog disappeared"))?
-                    .validated_language(crate::support::bindings::LangItem::Drop)
-                    .map_err(|e| self.error(role.origin, e))?;
+            let environment = if source_role.is_some() {
                 self.work.push(super::Work::ImplHeader(
                     header.self_definition,
                     super::impl_headers::Phase::Begin,

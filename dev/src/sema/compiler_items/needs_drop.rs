@@ -23,12 +23,6 @@ impl Catalog {
                 Err("source destructor registration has no actual Drop declaration")
             };
         };
-        if matches!(
-            declaration.origin,
-            crate::resolve::body_origin::DeclarationOrigin::Imported(_)
-        ) {
-            return Err("imported Drop registration requires its complete wider source profile");
-        }
         if self.destruction_registration != Some(declaration.definition) {
             return Err("source destructor registration requires exhaustive preparation");
         }
@@ -39,12 +33,6 @@ impl Catalog {
         let Some(declaration) = self.validated_role(LangItem::Drop)? else {
             return Ok(());
         };
-        if matches!(
-            declaration.origin,
-            crate::resolve::body_origin::DeclarationOrigin::Imported(_)
-        ) {
-            return Err("imported Drop registration requires its complete wider source profile");
-        }
         if self.destruction_registration.is_some() {
             return Err("source destructor registration was completed twice");
         }
@@ -72,7 +60,7 @@ impl Catalog {
     }
     pub(crate) fn require_needs_drop_roles(&self) -> Result<(), &'static str> {
         for role in [LangItem::Copy, LangItem::Drop] {
-            if self.validated_language(role)?.is_none() {
+            if self.validated_role(role)?.is_none() {
                 return Err("source needs_drop requires completed source Drop and Copy roles");
             }
         }

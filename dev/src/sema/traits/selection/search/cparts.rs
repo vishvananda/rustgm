@@ -58,7 +58,7 @@ impl Search<'_> {
                             .source_bindings
                             .as_deref()
                             .ok_or("const Destruct lost its source catalog")?
-                            .validated_language(LangItem::Drop)?
+                            .validated_role(LangItem::Drop)?
                             .ok_or("const Destruct requires its actual Drop declaration")?;
                         let application = facts.types.intern_trait_application(Application {
                             item: ItemId(drop.definition.0),

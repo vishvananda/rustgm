@@ -26,6 +26,7 @@ struct Expected<'a, 'b> {
     view: &'a SourceOriginal<'b>,
     facts: &'a Declarations,
     declared: Inputs<'a>,
+    glue_declared_inputs: usize,
     sized: Bound,
     root: ProofSite,
     associated: Option<Ref<'a, [Predicate]>>,
@@ -39,14 +40,24 @@ impl<'a, 'b> Expected<'a, 'b> {
         steps: &mut usize,
     ) -> Result<Self, &'static str> {
         let root = view.source()?.root_site();
+        let definition = view.definition();
+        let glue_declared_inputs = if view.const_context()
+            && crate::sema::compiler_items::drop_glue_member(facts, definition)?
+        {
+            declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?
+                .len()
+        } else {
+            0
+        };
         Ok(Self {
             view,
             facts,
             declared: declaration_inputs::own_view(
                 &facts.generics,
                 facts.crates.as_deref(),
-                view.definition(),
+                definition,
             )?,
+            glue_declared_inputs,
             sized: view.sizing_requirement(facts, steps)?,
             root,
             associated: view.associated_goals(steps)?,
@@ -113,7 +124,11 @@ impl<'a, 'b> Expected<'a, 'b> {
     /// callable sugar opens even when it binds no region. A declared result
     /// binding is not a builtin debt: each caller proves the imported header's
     /// own clauses, and the original's environment assumes it.
-    fn declared_predicate(&self, clause: Clause) -> Result<Option<Predicate>, &'static str> {
+    fn declared_predicate(
+        &self,
+        index: usize,
+        clause: Clause,
+    ) -> Result<Option<Predicate>, &'static str> {
         let body_nodes = self.view.rows().descriptor().profile().body_nodes();
         let predicate = match clause {
             Clause::Predicate(predicate) => predicate,
@@ -137,7 +152,11 @@ impl<'a, 'b> Expected<'a, 'b> {
             }
         };
         let binding = matches!(predicate.bound, Bound::ProjectionEqual(_));
-        Ok((!(body_nodes && binding)).then_some(predicate))
+        // The role proof authenticated the glue's own conditional Destruct
+        // premise. It is assumed here and paid by calls at their actual effect.
+        let glue_premise = index < self.glue_declared_inputs
+            && matches!(predicate.bound, Bound::MaybeConstTrait(_));
+        Ok((!(body_nodes && binding || glue_premise)).then_some(predicate))
     }
     fn predicates<'s>(
         &'s self,
@@ -179,7 +198,7 @@ impl<'a, 'b> Expected<'a, 'b> {
                         return Ok(None);
                     }
                     return Ok(self
-                        .declared_predicate(input.value)?
+                        .declared_predicate(index, input.value)?
                         .map(|predicate| (input.source, predicate)));
                 }
                 index -= self.declared.len();

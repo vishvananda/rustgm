@@ -1,6 +1,6 @@
 //! Selected helper data is separate from checked body and caller authority.
 use crate::{
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::{body_origin::BodyOrigin, model::DefId},
     sema::model::Declarations,
     support::bindings::LangItem,
     types::{Kind, TypeId, arguments::Argument, instance::Instance},
@@ -15,7 +15,7 @@ pub(crate) struct DropGlueSelection {
     pub instance: Instance,
     pub signature: TypeId,
     pub element: TypeId,
-    pub source: NodeKey,
+    pub source: BodyOrigin,
     pub empty_registry: bool,
 }
 
@@ -76,9 +76,7 @@ pub(crate) fn source_drop_glue(
         return Err("source drop glue requires a closed normalized type argument");
     }
     let function = facts
-        .function_indices
-        .get(&definition)
-        .and_then(|&index| facts.functions.get(index))
+        .declaration_header(definition)?
         .ok_or("source drop glue declaration is missing")?;
     Ok(Some(DropGlueSelection {
         definition,

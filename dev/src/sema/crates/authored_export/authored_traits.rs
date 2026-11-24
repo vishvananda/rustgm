@@ -158,6 +158,7 @@ impl Stage {
     fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
         match kind {
             DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
+            DefKind::Function if role == LangItem::DropGlue && self.declaration_policies() => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
             }
@@ -263,6 +264,12 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        if role == LangItem::DropGlue
+            && !self.declaration_policies()
+            && catalog.language(role).is_some()
+        {
+            return Err("source Drop operation transport requires version fourteen");
+        }
         if matches!(role, LangItem::MemSizeConst | LangItem::MemAlignConst) {
             let Some(declaration) = catalog.language(role) else {
                 return Ok(None);

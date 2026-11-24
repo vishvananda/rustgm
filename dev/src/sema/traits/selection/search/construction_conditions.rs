@@ -270,12 +270,12 @@ fn source_destruct_goal(facts: &Declarations, frame: &Frame) -> Result<bool, Str
     let Some((item, arguments)) = frame.goal.trait_arguments() else {
         return Ok(false);
     };
-    let Some(declaration) = catalog.language(LangItem::Destruct) else {
+    let Some(declaration) = catalog.role(LangItem::Destruct)? else {
         return Ok(false);
     };
     if declaration.definition != DefId(item.0) {
         return Ok(false);
     }
-    catalog.validated_language(LangItem::Destruct)?;
+    catalog.validated_role(LangItem::Destruct)?;
     Ok(arguments.is_empty())
 }

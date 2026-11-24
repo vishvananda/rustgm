@@ -54,11 +54,11 @@ impl Checker<'_> {
             .as_deref()
             .ok_or_else(|| self.error(key, "const Drop field catalog disappeared"))?;
         catalog
-            .validated_language(LangItem::Drop)
+            .validated_role(LangItem::Drop)
             .map_err(|e| self.error(key, e))?
             .ok_or_else(|| self.error(key, "const Drop field validation lost actual Drop"))?;
         let role = catalog
-            .validated_language(LangItem::Destruct)
+            .validated_role(LangItem::Destruct)
             .map_err(|e| self.error(key, e))?
             .ok_or_else(|| self.error(key, "const Drop fields require actual Destruct"))?;
         let application = self

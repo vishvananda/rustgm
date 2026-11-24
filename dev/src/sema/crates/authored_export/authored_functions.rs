@@ -611,6 +611,19 @@ fn required_trait_member(
             }
         }
     }
+    let drop = roles
+        .declaration_policies
+        .then(|| catalog.language(LangItem::Drop))
+        .flatten()
+        .filter(|role| role.definition == definition);
+    if drop.is_some() {
+        crate::sema::compiler_items::require_source_drop_contract(report, facts)
+            .map_err(|_| "conditional Drop member lost its actual checked trait contract")?;
+        if function.body.is_some() {
+            return Err("provided Drop members require their original conditional body transport");
+        }
+        selected = drop;
+    }
     let role = match selected {
         Some(role) => role,
         None => catalog

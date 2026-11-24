@@ -162,7 +162,7 @@ impl Reader<'_> {
             return Ok(None);
         };
         Ok(catalog
-            .validated_language(crate::support::bindings::LangItem::DropGlue)?
+            .validated_role(crate::support::bindings::LangItem::DropGlue)?
             .map(|declaration| declaration.definition))
     }
     pub(crate) fn source_drop_glue(

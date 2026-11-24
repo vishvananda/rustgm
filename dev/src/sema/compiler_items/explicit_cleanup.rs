@@ -17,7 +17,7 @@ pub(in crate::sema) fn explicit_drop_member(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    let Some(declaration) = catalog.language(LangItem::Drop) else {
+    let Some(declaration) = catalog.role(LangItem::Drop)? else {
         return Ok(false);
     };
     let Some(owner) = facts
@@ -53,26 +53,6 @@ pub(in crate::sema) fn explicit_drop_member(
                     _ => Err("explicit source Drop use requires a completed implementation header"),
                 };
             };
-            if header.owner != owner.self_definition {
-                return Err("explicit source Drop use changed implementation ownership");
-            }
-            let Some((application, _)) = header.predicate.bound.trait_parts() else {
-                return Ok(false);
-            };
-            let application = facts
-                .types
-                .trait_application(application)
-                .ok_or("explicit source Drop use has an invalid trait application")?;
-            if application.item.0 != declaration.definition.0 {
-                return Ok(false);
-            }
-            if facts
-                .types
-                .arguments(application.arguments)
-                .is_none_or(|a| a.len() != 0)
-            {
-                return Err("explicit source Drop use has unexpected trait arguments");
-            }
             Some(header)
         }
         OwnerKind::Impl {
@@ -80,7 +60,14 @@ pub(in crate::sema) fn explicit_drop_member(
         } => return Ok(false),
         OwnerKind::ImportedImpl(_) => {
             facts.associated.require_imported(*owner)?;
-            return Err("imported explicit Drop rules require their wider supported role profile");
+            Some(
+                facts
+                    .generics
+                    .implementations
+                    .as_deref()
+                    .and_then(|registry| registry.header(owner.self_definition))
+                    .ok_or("explicit source Drop use requires a completed imported impl header")?,
+            )
         }
         // An imported inherent method is never the Drop override.
         OwnerKind::ImportedInherent(_) => {
@@ -88,10 +75,31 @@ pub(in crate::sema) fn explicit_drop_member(
             return Ok(false);
         }
     };
-    catalog.validated_language(LangItem::Drop)?;
     let Some(header) = implementation else {
+        catalog.validated_role(LangItem::Drop)?;
         return Ok(true);
     };
+    if header.owner != owner.self_definition {
+        return Err("explicit source Drop use changed implementation ownership");
+    }
+    let Some((application, _)) = header.predicate.bound.trait_parts() else {
+        return Ok(false);
+    };
+    let application = facts
+        .types
+        .trait_application(application)
+        .ok_or("explicit source Drop use has an invalid trait application")?;
+    if application.item.0 != declaration.definition.0 {
+        return Ok(false);
+    }
+    if facts
+        .types
+        .arguments(application.arguments)
+        .is_none_or(|a| a.len() != 0)
+    {
+        return Err("explicit source Drop use has unexpected trait arguments");
+    }
+    catalog.validated_role(LangItem::Drop)?;
     if !header
         .methods
         .iter()

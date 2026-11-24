@@ -30,7 +30,8 @@ pub(super) fn item(report: &Report, key: NodeKey) -> Result<Item, Error> {
 pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Header>, Error> {
     let selected = if let Some(catalog) = facts.source_bindings.as_deref() {
         catalog
-            .language(crate::support::bindings::LangItem::Drop)
+            .role(crate::support::bindings::LangItem::Drop)
+            .map_err(Error::unlocated)?
             .map(|d| d.definition)
     } else {
         report.resolution.drop_trait

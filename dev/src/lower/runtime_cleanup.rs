@@ -147,7 +147,7 @@ fn checked(types: &Store, body: &Body, selection: DropGlueSelection) -> Result<(
         || body.key() != BodyKey::Declaration(definition)
         || body.instance != Some(selection.instance)
         || signature != selection.signature
-        || body.source.source() != Some(selection.source)
+        || body.source != selection.source
         || body.result != TypeId::UNIT
     {
         return Err("source drop glue body belongs to another selected contract");

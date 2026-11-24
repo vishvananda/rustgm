@@ -76,6 +76,11 @@ intrinsics and their `SizedTypeProperties` defaults. Run
 `scripts/check_layout_intrinsic_transport.py` to compare a fresh native
 client with pinned rustc and check malformed metadata and older readers.
 
+`spec/source-drop-glue-transport/outcomes.json` declares an imported glue
+helper, a local destructor, and an ordinary provider function. Run
+`scripts/check_drop_glue_transport.py` to compare direct and private-wrapper
+calls with pinned rustc and check explicit destructor calls and invalid role bindings.
+
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the
 pinned `core` build. Run their `lint-cases.json` manifests with

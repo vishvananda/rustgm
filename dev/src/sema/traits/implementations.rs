@@ -105,6 +105,16 @@ impl Implementations {
         self.pending.iter().flat_map(|pending| pending.owners())
     }
 
+    pub(in crate::sema) fn has_imported_implementation(&self, item: ItemId) -> bool {
+        self.traits
+            .get(&Identity::User(item))
+            .is_some_and(|owners| {
+                owners
+                    .iter()
+                    .any(|&index| self.entries[index].value.source.is_none())
+            })
+    }
+
     /// Cost only: reserve constructs the same pending inventory in both paths.
     pub(in crate::sema) fn reservation_allocation_bound(count: usize) -> usize {
         pending::Pending::allocation_bound(count)
