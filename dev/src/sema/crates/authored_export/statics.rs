@@ -101,7 +101,7 @@ impl Stage {
                 .definition(definition)
                 .ok_or("source static requires its completed value")?;
             let start = offset(&columns.values)?;
-            self.static_value(facts, ty, value, &mut columns.values)?;
+            self.scalar_aggregate_bytes(facts, ty, value, &mut columns.values)?;
             columns.headers.push(s::StaticHeader {
                 declaration: row,
                 ty: raw,
@@ -153,7 +153,7 @@ impl Stage {
         )
     }
 
-    fn static_value(
+    pub(super) fn scalar_aggregate_bytes(
         &mut self,
         facts: &Declarations,
         ty: TypeId,

@@ -1,5 +1,5 @@
 //! Imported originals map a static to its one provider allocation and completed value.
-use super::{Declarations, Error, Report, error, imported_values, static_symbol};
+use super::{Declarations, Error, Report, error, static_symbol};
 use crate::{
     literal::value::FloatBits,
     resolve::model::DefId,
@@ -37,7 +37,7 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
             declare(facts, descriptor.identity(), definition, *header)?;
             let data = header.initializer.slice(&statics.values).map_err(error)?;
             let mut evaluator = Evaluator::new(report, facts);
-            let value = decode(&mut evaluator, rows, header.ty, data)?;
+            let value = decode_scalar_aggregate(&mut evaluator, rows, header.ty, data)?;
             evaluator.complete_definition(definition, value);
         }
     }
@@ -85,7 +85,7 @@ enum Visit<'a> {
     Seal(usize),
 }
 
-fn decode(
+pub(super) fn decode_scalar_aggregate(
     evaluator: &mut Evaluator<'_>,
     rows: s::ValidatedView<'_>,
     ty: TypeRef,
@@ -148,7 +148,7 @@ fn scalar(evaluator: &mut Evaluator<'_>, ty: Scalar, data: &mut &[u8]) -> Result
             .fields(&[], None)
             .map_err(|failure| error(failure.message()));
     }
-    imported_values::convert(value)
+    super::closed_values::decode(value)
         .map(Constant::scalar)
         .map_err(error)
 }
