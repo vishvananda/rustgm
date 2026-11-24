@@ -1,114 +1,46 @@
-# RustGM Programming Assignment 40: Edition and attribute closure
+# RustGM Programming Assignment 40 — Editions and attributes
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
-and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
-See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
-implementation priority, source pins and the migration of unreleased numbers.
+This is a draft handout. The assignment's grading suite will accompany
+its release.
 
-## Required implementation
+Complete Rust 2015, 2018, 2021, and 2024 behavior beyond the subset used
+by [PA34](../pa34/README.md)'s selected crate graph. Extend the typed
+attribute checks and diagnostic policies from [PA31](../pa31/README.md).
+Features already required by an earlier library build belong to that
+build's prerequisites.
 
-Pinned edition differences and remaining mandatory attribute semantics.
+## Edition behavior
 
-The [primitive documentation packet](tests/spec/primitive-documentation/README.md)
-validates the compilation-required rustc_doc_primitive marker on real modules,
-including mixed inner/outer captures, with actual source/macro authority. A
-label is any string; it cannot install a primitive type or bypass body checks.
-Native, metadata-export and real two-field layout controls remain separate from
-Rustdoc rendering, general edition closure and original crate artifacts.
+Retain the edition of the source and each relevant macro token.
+Apply edition-dependent rules to parsing, paths and preludes, fragment
+matching, captures, and temporary destruction scopes. Check mixed-edition
+macro and crate boundaries using the edition at the deciding location.
 
-PA34 already owns the 2021/2024 behavior needed by the first crate graph. Complete
-2015/2018 and remaining edition/attribute semantics here. Required internal source
-features cannot be deferred past an earlier library that actually exercises them.
+## Attributes and diagnostics
 
-The maintainer implements compiler responsibilities in `dev/src/` and introduces
-typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
-Reference and CPPGM's efficient representation principles. Parse once, retain
-completed facts and avoid speculative or repeated whole-graph work. The compiler
-implementation remains idiomatic safe Rust; strict Clippy all/pedantic and the
-syntax-aware file/architecture audit are required.
+Validate the placement, form, owner, and required permissions of retained
+attributes. Separate documentation and advisory metadata from attributes
+that change semantic eligibility. For example, a primitive documentation
+label describes an item and leaves the type namespace and body checks
+unchanged.
+
+Carry scoped lint levels and expectations through expansion, imports,
+and checked bodies. Associate deprecation and visibility events with
+their actual source or import. Report unmet expectations after their
+scope has completed. A lint cap can suppress optional diagnostics.
+Hard errors and semantic checks still apply.
 
 ## Tool surface
 
-Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.
-Earlier views remain available. Freeze deterministic ordering, diagnostics,
-source/configuration identities and any new build-summary text contract before
-activation. Whole-library acceptance includes actual linked execution through
-the configured CPPGM backend; text output alone is insufficient.
+Use the compiler's edition option and the crate graph's per-crate
+configuration. Use the existing typed inspection and LowIR modes to
+compare edition-dependent results. The pinned Rust Reference describes
+[attributes](../doc/rust-reference/src/attributes.md).
 
-## Tests to develop with the reference
+## Check your implementation
 
-- 2015/2018/2021/2024 differences.
-- Capture.
-- Drop scope.
-- Fragment editions.
-
-Place each fixture in the earliest assignment owning all features it exercises.
-Keep original upstream bytes, attribution and checksums. Declare expected outcomes
-before generating oracles; use pinned rustc independently and retain negative
-controls. Register the complete selected dependency graph and native consumers,
-not just reducers or successful submodules. Never hand-edit generated references.
-
-## Completion and review
-
-Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
-formats and generated references together after independent outcome review.
-Until then, this assignment must fail explicitly and stays outside pass totals.
-Run affected focused source/native controls during development. At publication,
-run the required coherent checkpoint checks from
-[TESTING_AND_REFERENCES.md](../TESTING_AND_REFERENCES.md), including prior active
-suites, strict Clippy, file/architecture audits, harness checks and affected
-performance measurements. Use the resource/storage guards and scoped cleanup.
-Do not activate a stage merely because a reduced example or an empty suite passes.
-
-The unpublished [finite lint expectation checkpoint](../docs/pa40-lint-expectations-checkpoint.md)
-connects genuine local deprecation events to owner/list identities, effective
-expectations and completed request scopes. Its source contracts include
-independent positive and opposing controls; full lint/edition and release
-requirements remain open.
-
-The unpublished [hidden glob reexport checkpoint](../docs/pa40-hidden-glob-reexports-checkpoint.md)
-adds completed resolver events, exact public import chains and namespace-sensitive
-expectations, with the next unchanged original-core boundary recorded explicitly.
-
-The [cost-owner successor](../docs/pa40-glob-payer-checkpoint.md) preserves each
-import/diagnostic payer and shares validation through existing canonical source
-selections. It retains exact destination/glob/source witnesses and both uncapped
-and Allow behavior without increasing limits. Original core advances to the
-UseCloned semantic contract; no library artifact or PA40 release is inferred.
-
-The unpublished [ineffective unstable trait impl checkpoint](../docs/pa40-ineffective-unstable-impl-checkpoint.md)
-adds genuine resolved header events, exact unstable-attribute witnesses and
-header-only expectation completion, with imported transport remaining explicit.
-
-The unpublished [deprecation suggestion checkpoint](../docs/pa40-deprecation-suggestions-checkpoint.md)
-retains actual replacement metadata and enforces its source feature gate.
-Suggestion rendering and broader diagnostic parity are deferred while the
-immediate work prioritizes library compilation.
-
-The unpublished [const/macro diagnostic packet](tests/spec/diagnostic-directives/README.md)
-separates diagnostic-only requests from semantic permissions. Its explicit capped
-profile preserves hard literal, unsafe, const/trait and macro-matching checks;
-custom error text, uncapped diagnostics and imported metadata remain required.
-
-The unpublished [documentation feature packet](tests/spec/documentation-gates/README.md)
-preserves genuine doc_cfg/doc_notable_trait and nested cfg-query permissions.
-Its shared syntax parser validates metadata without using predicates to remove
-program items. Documentation rendering and full strict diagnostics remain open.
-
-The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
-keeps strict policy as the default while permitting an authenticated compilation
-to suppress optional diagnostics. Hard semantic checks and witnessed expectation
-debt remain separate from diagnostic suppression.
-
-Under an authenticated Allow cap, suppress optional macro deprecation event
-lookup before target/module ancestry traversal. Preserve owner parsing, hard
-attribute errors, macro execution identity, pending expectations and sticky
-work/storage limits. Wide retained headers and many invocations must not create
-unnecessary Cartesian validation work for a suppressed event; the uncapped
-diagnostic path retains its full checks.
-
-The unpublished [documentation/provenance request packet](tests/spec/advisory-requests/README.md)
-qualifies genuine metadata-only requests without enabling pointer operations or
-weakening unsafe checks. Optional strict provenance producers and Rustdoc output
-remain required, with honest boundaries under the uncapped profile.
+Use paired programs that differ only in edition or attribute placement.
+Cover capture, drop scope, macro fragments, inherited lint levels,
+and expected diagnostics. Check cases with disabled syntax, imported
+bindings, and actual macro allowances. Run executable examples when the
+edition changes evaluation or destruction behavior.

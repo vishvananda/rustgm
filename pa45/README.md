@@ -1,5 +1,7 @@
 # RustGM Programming Assignment 45: Reproducible self-hosting
 
+The [student handout](STUDENT.md) describes the planned assignment.
+
 Status: **planned**. This is a buildout brief, not a released grading contract.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, edition 2024 and
 Linux x86-64, with aborting panics.

@@ -1,56 +1,35 @@
-# RustGM Programming Assignment 38: Derive and attribute macros
+# RustGM Programming Assignment 38 — Derive and attribute macros
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
-and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
-See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
-implementation priority, source pins and the migration of unreleased numbers.
+This is a draft handout. The assignment's grading suite will accompany
+its release.
+
+Extend the [PA37 host interface](../pa37/README.md) to expand procedural
+derives and attribute macros. Use ordinary typed expansion and name
+resolution for their output.
 
 ## Required implementation
 
-Item replacement, helper attributes, nested expansion and token conversion.
+Apply attribute macros in source order, replacing the attributed item
+with the selected macro's output. Register permitted derive helper
+attributes and append the items emitted by derives. Preserve nested
+expansion order, source provenance, delimiter-none groups, and punctuation
+jointness across host token conversions.
 
-Build original serde_derive and its selected dependency graph, then compile a
-Serialize/Deserialize application with RustGM and execute native round trips.
-Do not substitute compiler-generated Serde methods or synthetic macro outputs.
-
-The maintainer implements compiler responsibilities in `dev/src/` and introduces
-typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
-Reference and CPPGM's efficient representation principles. Parse once, retain
-completed facts and avoid speculative or repeated whole-graph work. The compiler
-implementation remains idiomatic safe Rust; strict Clippy all/pedantic and the
-syntax-aware file/architecture audit are required.
+Build the original `serde_derive` host crate and its locked dependencies.
+Compile a target application that uses its real `Serialize` and
+`Deserialize` expansions. Use the host/target separation from
+[PA34](../pa34/README.md) and the runtime environment from
+[PA36](../pa36/README.md).
 
 ## Tool surface
 
-Extend the existing `dev/rustgm --emit-expanded` view and explicit crate-build interfaces.
-Earlier views remain available. Freeze deterministic ordering, diagnostics,
-source/configuration identities and any new build-summary text contract before
-activation. Whole-library acceptance includes actual linked execution through
-the configured CPPGM backend; text output alone is insufficient.
+Use the expansion inspection mode for token and item replacement checks.
+Use the crate build and LowIR pipeline to build, link, and run the
+complete application.
 
-## Tests to develop with the reference
+## Check your implementation
 
-- Derive output.
-- Attribute order.
-- Punctuation jointness.
-- Delimiter-none groups.
-- Serde_derive integration.
-
-Place each fixture in the earliest assignment owning all features it exercises.
-Keep original upstream bytes, attribution and checksums. Declare expected outcomes
-before generating oracles; use pinned rustc independently and retain negative
-controls. Register the complete selected dependency graph and native consumers,
-not just reducers or successful submodules. Never hand-edit generated references.
-
-## Completion and review
-
-Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
-formats and generated references together after independent outcome review.
-Until then, this assignment must fail explicitly and stays outside pass totals.
-Run affected focused source/native controls during development. At publication,
-run the required coherent checkpoint checks from
-[TESTING_AND_REFERENCES.md](../TESTING_AND_REFERENCES.md), including prior active
-suites, strict Clippy, file/architecture audits, harness checks and affected
-performance measurements. Use the resource/storage guards and scoped cleanup.
-Do not activate a stage merely because a reduced example or an empty suite passes.
+Exercise helper attribute lookup, order-sensitive replacements, nested
+derives, joint punctuation, and groups without delimiters. Run native
+serialization and deserialization round trips with the original macro
+output and the selected Serde dependency graph.

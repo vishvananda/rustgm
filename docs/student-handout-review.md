@@ -8,9 +8,20 @@ Where release tooling uses the original README, link to the separate student
 handout. It becomes the exported README.
 
 PA1–PA30 are available in the current preview. PA31–PA45 are planned and
-outside the preview. For those handouts, confirm the intended student
-instructions and distinguish them from commands that depend on an unreleased
-suite.
+outside the preview. A checked planned handout means its instructions and
+prerequisites have been reviewed as a draft.
+
+## Bootstrap sequence
+
+Build on the PA25–PA30 course contracts and complete PA31's source bindings
+and runtime integration. Before starting PA32, teach the required crate
+build work from PA34, the core-specific target and assembly work from PA41,
+and the source and generic-body transport beyond PA29's declared profile.
+
+Build original `core`, then run PA35's core-only crate milestone. Build
+`alloc` in PA33 and run PA35's allocation-dependent graph. Build `std` in
+PA36. The broader target work and the remaining advanced features stay in
+their owning assignments. PA45 remains the self-hosting capstone.
 
 ## Current export
 
@@ -53,12 +64,12 @@ suite.
 - [x] [PA34](../pa34/README.md)
 - [x] [PA35](../pa35/README.md)
 - [x] [PA36](../pa36/README.md)
-- [ ] [PA37](../pa37/README.md)
-- [ ] [PA38](../pa38/README.md)
-- [ ] [PA39](../pa39/README.md)
-- [ ] [PA40](../pa40/README.md)
-- [ ] [PA41](../pa41/README.md)
-- [ ] [PA42](../pa42/README.md)
-- [ ] [PA43](../pa43/README.md)
-- [ ] [PA44](../pa44/README.md)
-- [ ] [PA45](../pa45/README.md)
+- [x] [PA37](../pa37/README.md)
+- [x] [PA38](../pa38/README.md)
+- [x] [PA39](../pa39/README.md)
+- [x] [PA40](../pa40/README.md)
+- [x] [PA41](../pa41/README.md)
+- [x] [PA42](../pa42/README.md)
+- [x] [PA43](../pa43/README.md)
+- [x] [PA44](../pa44/STUDENT.md)
+- [x] [PA45](../pa45/STUDENT.md)

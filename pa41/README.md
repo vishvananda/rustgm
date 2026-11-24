@@ -1,148 +1,56 @@
-# RustGM Programming Assignment 41: Target-specific closure
+# RustGM Programming Assignment 41 — Target features and assembly
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
-and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
-See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
-implementation priority, source pins and the migration of unreleased numbers.
+This is a draft handout. The assignment's grading suite will accompany
+its release.
 
-## Required implementation
+Implement the typed target-feature, vector layout, and assembly rules
+for the course's Linux x86-64 target. Use the pinned CPPGM backend and
+its verified capabilities. Complete the core prerequisite below before
+[PA32](../pa32/README.md). The broader work can follow the bootstrap.
 
-Target attributes and assembly contracts against explicit backend capabilities.
+## Required core prerequisite
 
-### Required core prerequisite
+Use [PA31](../pa31/README.md)'s source binding and feature rules to
+identify the assembly builtin. Reuse [PA27](../pa27/README.md)'s unsafe
+place checks and [PA28](../pa28/README.md)'s typed memory and intrinsic
+effects. The original `_mm_stream_ps` exercises the first end-to-end path.
+Preserve its generated template, pointer register, real 128-bit vector
+operand, `nostack`, and `preserves_flags` options.
 
-The [architecture-request packet](tests/spec/architecture-requests/README.md)
-separates pinned non-x86 language requests from the selected x86-64 feature table.
-Unknown requests and active foreign attributes remain errors; x86 gate, body,
-cfg and safety contracts retain their own authority. Requests alone add no
-target truth, instruction support or ordinary provider/library-policy owner.
-Its scalar native/configuration controls do not complete target closure.
+1. Retain the parsed template, operands, modifiers, and source spans
+   through expansion. Check register and operand types, option
+   combinations, initialized inputs, writable outputs, unsafe permission,
+   and actual target features.
+2. Preserve left-to-right operand evaluation and left-to-right output
+   writes after the assembly effect. Retain memory, flags, clobbers, and
+   divergence in the typed CFG. Const and symbol operands keep their
+   constant and relocation identities.
+3. Implement the required SIMD storage, ABI, and lane checks for the
+   actual substituted type. Keep the vector operand in its selected
+   register class and enforce call compatibility.
+4. Emit the required non-temporal store through the backend. Link the
+   original function and check every input bit, the target storage,
+   surrounding sentinels, and the emitted instruction. A source body
+   exported to a consumer retains the checked operand and target facts.
 
-The [float-reliability cfg packet](tests/spec/float-reliability-cfg/README.md)
-implements the four genuine backend capability queries and shared feature/macro
-gating. Fixed target truth remains unchanged, including false f16/f128 math
-capabilities. Its [checkpoint](../docs/pa41-float-reliability-checkpoint.md)
-qualifies real source execution and an explicit configuration-source rebind.
-Broader target closure, library transport and assignment release remain required.
+## Broader target closure
 
-The [SIMD lane-limit packet](tests/spec/simd-lane-limit/README.md) adds actual
-rustc_simd_monomorphize_lane_limit validation and concrete lane enforcement to
-this existing SIMD contract. Preserve source ownership, feature/macro authority,
-zero and target-width parsing, duplicates, pending generic declarations and
-ordinary struct behavior. Real substituted array counts drive the bound; packed
-non-power-of-two vectors remain valid. Source-provider intrinsics in const blocks
-and the original independent native/imported controls test the actual layout.
-PA31/40 own annotation authority, PA27 supplies unsafe prerequisites, and PA29
-must transport the authenticated representation policy. Existing old-profile
-metadata rejection is a boundary, not completed imported support.
-
-The original core source needs this assignment's assembly slice during PA32,
-before the broader PA41 release. Track that implementation as LIB-045; do not
-add another assignment or postpone a required core feature to this number.
-PA31 authenticates the source builtin declaration and feature provenance;
-PA27/PA28 supply the ordinary place, safety, memory and intrinsic rules. PA25
-and PA29 retain const-evaluation and body-transport ownership.
-
-For the first source path, preserve the original `_mm_stream_ps` function,
-its `vps!`/`concat!` template production, `in(reg)` pointer, `in(xmm_reg)` real
-`__m128` input, and `nostack`/`preserves_flags` options. Parsing its syntax does
-not establish SIMD layout, target-feature compatibility, an exported body or
-native emission. Complete each required boundary before claiming that consumer.
-
-- Parse templates and operand expressions once. Preserve source spans, template
-  pieces, names, positional references, modifiers and declaration ownership
-  through macro expansion. A builtin's placeholder macro body cannot implement
-  an assembly invocation.
-- Check register classes and explicit aliases, input/output and tied-operand
-  types, output places, initialization, Copy obligations, unsafe context,
-  option combinations and actual feature availability. Evaluate operand
-  expressions left to right and write outputs left to right after the effect.
-  Overlapping output places receive the rightmost output last.
-- Retain the real effect in checked CFG and instance data. Preserve memory,
-  flags, register clobbers and divergence; `noreturn` has no normal successor.
-  Const and symbol operands require real constant and relocation producers.
-  Export and import must preserve the checked operation and revalidate its
-  identities; an unsupported body protocol must fail explicitly.
-- Implement the required SIMD representation and target-feature rules against
-  the pinned compiler. A 128-bit vector is not two independent scalar arguments.
-  Attribute presence alone proves neither the enabled instruction set nor call
-  compatibility. Lower only independently proved Rust layout and ABI facts.
-- Qualify a real backend operation for every demanded emitted instruction.
-  The non-temporal store must preserve all128 bits and its actual memory
-  semantics. An ordinary store, erased statement or frontend delegation cannot
-  replace it. Keep unsupported backend forms distinct from Rust language errors.
-
-The [derived constant-subtree checkpoint](../docs/pa8-derived-constants-checkpoint.md)
-preserves actual stdarch array lane counts and qualifies a finite genuine
-128-bit source Clone/Copy C call/return. Use the reviewed host-object reader for
-SSEUP validation; the standalone course validator has a different dialect. The
-complete original splat/Debug/conversion graph and broader target closure remain
-required; the frozen backend is unchanged.
-
-### Broader target closure
-
-Complete the pinned assembly operand, option, ABI-clobber and supported-target
-contracts beyond the initial source path, including valid forms retained as
-unsupported in earlier checkpoints. Inventory labels, symbols, target-specific
-register/modifier rules, global/naked assembly and unwind restrictions against
-the pinned Reference and compiler. State the supported target policy explicitly;
-an unrelated architecture is not an excuse for a required selected-target gap.
-
-Earlier library/crate milestones must already qualify their active target paths.
-This assignment closes the general assembly/target contract, including explicit
-unsupported-capability diagnostics. Separately scope any required CPPGM extension;
-the roadmap does not authorize modifying the frozen code generator.
-
-The maintainer implements compiler responsibilities in `dev/src/` and introduces
-typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
-Reference and CPPGM's efficient representation principles. Parse once, retain
-completed facts and avoid speculative or repeated whole-graph work. The compiler
-implementation remains idiomatic safe Rust; strict Clippy all/pedantic and the
-syntax-aware file/architecture audit are required.
+Complete the target configurations, operand and modifier forms, explicit
+register aliases, ABI clobbers, labels, symbols, global and naked assembly,
+and unwind restrictions required by the selected profile. Check active
+features and target-specific declarations against real target facts.
+Architecture-specific feature requests and backend capability queries
+do not change the configured target.
 
 ## Tool surface
 
-Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.
-Earlier views remain available. Freeze deterministic ordering, diagnostics,
-source/configuration identities and any new build-summary text contract before
-activation. Whole-library acceptance includes actual linked execution through
-the configured CPPGM backend; text output alone is insufficient.
+Compile through the typed LowIR pipeline and link against the pinned
+backend. Report an unavailable backend operation separately from an invalid
+Rust assembly invocation.
 
-## Tests to develop with the reference
+## Check your implementation
 
-- Asm constraints.
-- Target features.
-- Unsupported capability rejection.
-
-Use text oracles for template/operand bindings, typed effects and CFG, target
-facts and precise diagnostics. Independently observe accepted and rejected
-source cases before generating references. Include operand/place side effects,
-aliased outputs, uninitialized inputs, `noreturn`, foreign or changed source
-owners, const/relocation contracts, and ordinary programs without assembly.
-Measure row/byte growth and work on shared and repeated inputs. Retain actual
-source/body/layout costs, including costs paid by ordinary bodies.
-
-Native consumers must check the original demanded source body, full-width input
-bits, destination and surrounding sentinels, and the required instruction's
-presence. Validate its real Rust/C ABI against independent compilers where the
-ABI crosses that boundary. Metadata acceptance or an instruction in disassembly
-alone does not establish correct linked execution.
-
-Place each fixture in the earliest assignment owning all features it exercises.
-Keep original upstream bytes, attribution and checksums. Declare expected outcomes
-before generating oracles; use pinned rustc independently and retain negative
-controls. Register the complete selected dependency graph and native consumers,
-not just reducers or successful submodules. Never hand-edit generated references.
-
-## Completion and review
-
-Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
-formats and generated references together after independent outcome review.
-Until then, this assignment must fail explicitly and stays outside pass totals.
-Run affected focused source/native controls during development. At publication,
-run the required coherent checkpoint checks from
-[TESTING_AND_REFERENCES.md](../TESTING_AND_REFERENCES.md), including prior active
-suites, strict Clippy, file/architecture audits, harness checks and affected
-performance measurements. Use the resource/storage guards and scoped cleanup.
-Do not activate a stage merely because a reduced example or an empty suite passes.
+Exercise side effects, aliased outputs, uninitialized inputs, divergence,
+feature restrictions, constants, symbols, and ordinary code without
+assembly. Observe executable results and instruction selection. Use an
+independently compiled caller when checking the C ABI.
