@@ -64,10 +64,10 @@ def fixture_files(stage, manifest):
     return paths
 
 
-def extract(commit, stages, public, tree):
+def extract(commit, stages, public, handouts, tree):
     overlays = {f"student/{path}": path for path in STUDENT_FILES}
     overlays["student/assignment.mk"] = "scripts/student-assignment.mk"
-    wanted = {**dict.fromkeys(public), **overlays}
+    wanted = {**dict.fromkeys(public), **overlays, **handouts}
     fixture_roots = {(stage, "tests") for stage in stages}
     command = ["git", "-C", str(ROOT), "archive", commit, "--", *stages, "doc",
                "scripts", "student", "shared", "third_party"]
@@ -129,6 +129,13 @@ def export(revision, through, destination):
     public = PUBLIC_FILES | set(git("ls-tree", "-rz", "--name-only", commit, "--", "doc").decode().split("\0")[:-1])
     for stage in stages:
         public.update(fixture_files(stage, git_json(commit, f"{stage}/tests/manifest.json")))
+    student_paths = [f"{stage}/STUDENT.md" for stage in stages]
+    tracked_handouts = git("ls-tree", "-z", "--name-only", commit, "--", *student_paths)
+    handouts = {}
+    for name in tracked_handouts.decode().split("\0")[:-1]:
+        readme = str(Path(name).with_name("README.md"))
+        public.remove(readme)
+        handouts[name] = readme
     sources = git_json(commit, "third_party/sources.json")
     sources["files"] = [entry for entry in sources["files"] if entry["destination"] in public]
     assignments["stages"] = [
@@ -137,7 +144,7 @@ def export(revision, through, destination):
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".rustgm-export-", dir=destination.parent) as scratch:
         tree = Path(scratch) / "tree"
-        extract(commit, stages, public, tree)
+        extract(commit, stages, public, handouts, tree)
         write_json(tree / "assignments.json", assignments)
         write_json(tree / "third_party/sources.json", sources)
         for stage in stages:

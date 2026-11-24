@@ -1,5 +1,7 @@
 # RustGM Programming Assignment 25: Constant evaluation
 
+The [student handout](STUDENT.md) describes the exported assignment.
+
 The [const closure member checkpoint](../docs/pa25-closure-members.md) accepts
 actual closure-owned trait calls and clears six older prepared-lowering gaps.
 Concrete runtime execution qualifies; default premises, CTFE, ordinary imports

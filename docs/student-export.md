@@ -24,8 +24,9 @@ Follow CPPGM's two-part release process for `rustgm-assignments`. Qualify the
 chosen maintainer revision with the assignment release checks and run the
 exported suites against the same immutable reference executable. Use the
 export's backend installer and run its library example as part of that check.
-Review exported handout links and commands from a fresh directory. The pilot
-carries the existing handout text, including references to maintainer tools.
+Review links and commands from a fresh export. When a PA has a `STUDENT.md`,
+the exporter uses it as that PA's `README.md`. See the
+[handout review tracker](student-handout-review.md).
 
 Publish the qualified Linux x86-64 reference executable as a separate release
 asset. Pin its URL, archive and executable digests, source commit,

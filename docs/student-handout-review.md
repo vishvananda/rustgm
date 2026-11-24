@@ -4,6 +4,8 @@ Review the handouts in order. Check off a PA after reading the full handout,
 confirming the student requirements and examples, and checking links and
 commands against the exported tree. Keep implementation history, internal
 paths, reference generation and release procedures in maintainer documentation.
+Where release tooling uses the original README, link to the separate student
+handout. It becomes the exported README.
 
 PA1–PA30 are available in the current preview. PA31–PA45 are planned and
 outside the preview. For those handouts, confirm the intended student
