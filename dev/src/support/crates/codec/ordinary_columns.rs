@@ -36,6 +36,7 @@ mod recipe_columns;
 mod register_tests;
 mod relation_columns;
 mod results_wire;
+mod sparse_defaults_wire;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/supplied_packets.rs"]
 mod supplied_tests;
@@ -130,7 +131,8 @@ pub(super) fn encode_module_availability(
             | (u8::from(statics.is_some()) << 3)
             | (u8::from(!trait_aliases.is_empty()) << 4)
             | (u8::from(!alias_normalizations.is_empty()) << 5)
-            | (u8::from(!rows.cold().nominal_region_bounds.is_empty()) << 6))?;
+            | (u8::from(!rows.cold().nominal_region_bounds.is_empty()) << 6)
+            | (u8::from(!rows.cold().const_defaults.is_empty()) << 7))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
@@ -164,6 +166,9 @@ pub(super) fn encode_module_availability(
             id(out, row.declaration.0)?;
             range(out, row.bounds)
         })?;
+    }
+    if !rows.cold().const_defaults.is_empty() {
+        sparse_defaults_wire::encode(out, &rows.cold().const_defaults)?;
     }
     if profile.compiler_operations() {
         if profile.body_nodes() {
@@ -305,12 +310,7 @@ fn decode_availability_trailers(
         return Ok(());
     }
     let flags = read.reader.u8()?;
-    let maximum = if read.profile.declaration_policies() {
-        127
-    } else {
-        1
-    };
-    if flags > maximum {
+    if !read.profile.declaration_policies() && flags > 1 {
         return Err("invalid compiler-operation const-body trailer presence");
     }
     if flags & 1 != 0 {
@@ -375,6 +375,10 @@ fn decode_availability_trailers(
             return Err("nominal lifetime trailer requires written bounds");
         }
         read.cold(rows)?.nominal_region_bounds = bounds;
+    }
+    if flags & 128 != 0 {
+        let defaults = sparse_defaults_wire::decode(read)?;
+        read.cold(rows)?.const_defaults = defaults;
     }
     Ok(())
 }

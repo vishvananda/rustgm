@@ -9,7 +9,7 @@ use crate::{
     sema::crates::typed_headers::{
         error,
         predicate_remap::translation::{self, Mapping},
-        recipe_cursor::{Cursor, Demand, Port, Recorded, Reserved},
+        recipe_cursor::{Cursor, Demand, Port, Recorded, Reserved, const_argument},
     },
     support::{
         crates::{
@@ -134,6 +134,14 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
     ) -> Result<RegionId, Error> {
         self.port.predicate_region(reference, work)
     }
+    fn constant(
+        &mut self,
+        store: &mut Store,
+        term: s::ConstRef,
+        work: &mut ReservationWork,
+    ) -> Result<Argument, Error> {
+        const_argument(&mut self.port, store, term, work)
+    }
     fn arguments(
         &self,
         store: &mut Store,
@@ -144,10 +152,17 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
         if args.is_empty() {
             return Ok(GenericArgs::EMPTY);
         }
-        if !args
-            .iter()
-            .all(|argument| matches!(argument, Argument::Type(_)))
-        {
+        let consts = self
+            .port
+            .rows()
+            .descriptor()
+            .profile()
+            .declaration_policies();
+        if args.iter().any(|argument| match argument {
+            Argument::Type(_) => false,
+            Argument::Const(_) => !consts,
+            Argument::Lifetime(_) => true,
+        }) {
             return Err(error(
                 "private assumption arguments require their later regional profile",
             ));

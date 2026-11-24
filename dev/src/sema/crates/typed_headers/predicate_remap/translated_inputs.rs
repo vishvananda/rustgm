@@ -47,6 +47,12 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows, B: Budget>:
     fn site(&self, owner: DeclarationRef, site: u32, budget: &mut B) -> Result<ProofSite, Error>;
     fn ty(&mut self, store: &mut Store, ty: g::TypeRef, budget: &mut B) -> Result<TypeId, Error>;
     fn region(&mut self, region: s::RegionRef, budget: &mut B) -> Result<RegionId, Error>;
+    fn constant(
+        &mut self,
+        store: &mut Store,
+        term: s::ConstRef,
+        budget: &mut B,
+    ) -> Result<Argument, Error>;
     fn arguments(
         &self,
         store: &mut Store,
@@ -133,6 +139,20 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
     fn region(&mut self, region: s::RegionRef, _: &mut Headers) -> Result<RegionId, Error> {
         self.graph.region(region)
     }
+    fn constant(
+        &mut self,
+        store: &mut Store,
+        term: s::ConstRef,
+        budget: &mut Headers,
+    ) -> Result<Argument, Error> {
+        crate::sema::crates::typed_headers::recipe_cursor::remap_const_argument(
+            self.descriptor.rows(),
+            store,
+            term,
+            budget,
+            |_, slot, _| self.graph.slot(slot),
+        )
+    }
     fn arguments(
         &self,
         store: &mut Store,
@@ -214,13 +234,7 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
         arguments.push(match *argument {
             s::Argument::Type(ty) => Argument::Type(port.ty(store, ty, budget)?),
             s::Argument::Region(region) => Argument::Lifetime(port.region(region, budget)?),
-            // Validation admits const arguments in nominal and function
-            // applications only.
-            s::Argument::Const(_) => {
-                return Err(error(
-                    "source trait argument changed its actual formal kind",
-                ));
-            }
+            s::Argument::Const(term) => port.constant(store, term, budget)?,
         });
     }
     let arguments = port.arguments(store, &arguments, budget)?;

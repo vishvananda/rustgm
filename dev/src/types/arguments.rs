@@ -264,6 +264,39 @@ impl Store {
     }
     /// # Errors
     /// Rejects non-const-parameter types, invalid scalar bits and compact overflow.
+    pub(crate) fn intern_constant_charged(
+        &mut self,
+        value: Constant,
+        pay: impl FnOnce(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ConstId, &'static str> {
+        use crate::support::retained::Growth;
+        let kind = ConstKind::Value(value);
+        let storage = self.arguments.as_deref();
+        if let Some(&id) = storage.and_then(|table| table.constant_index.get(&kind)) {
+            pay(1, 0)?;
+            return Ok(id);
+        }
+        let mut growth = Growth::vector::<ConstKind>(
+            storage.map_or(0, |table| table.constants.len()),
+            storage.map_or(0, |table| table.constants.capacity()),
+            1,
+        );
+        growth.include(Growth::map::<ConstKind, ConstId>(
+            storage.map_or(0, |table| table.constant_index.len()),
+            storage.map_or(0, |table| table.constant_index.capacity()),
+            1,
+        ));
+        let storage_bytes = if storage.is_none() {
+            size_of::<Storage>()
+        } else {
+            0
+        };
+        pay(growth.work + 1, growth.bytes.saturating_add(storage_bytes))?;
+        self.intern_constant(value)
+    }
+
+    /// # Errors
+    /// Rejects non-const-parameter types, invalid scalar bits and compact overflow.
     pub fn intern_constant(&mut self, value: Constant) -> Result<ConstId, &'static str> {
         self.intern_const(ConstKind::Value(value))
     }

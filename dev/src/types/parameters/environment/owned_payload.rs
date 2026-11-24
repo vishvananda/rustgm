@@ -81,6 +81,7 @@ impl Environment {
     /// must use an explicit wider estimator before any environment allocation.
     pub(crate) fn trait_leaf_allocation_bound(
         parameters: usize,
+        constants: usize,
         clauses: usize,
         roots: usize,
     ) -> usize {
@@ -93,6 +94,7 @@ impl Environment {
             .saturating_add(4 * size_of::<usize>())
             .saturating_add(size_of::<super::HashMap<ParameterId, super::Abilities>>())
             .saturating_add(new_map::<ParameterId, super::Abilities>(parameters))
+            .saturating_add(new_map::<ParameterId, ()>(constants))
             .saturating_add(super::premises::TraitAssumptions::leaf_allocation_bound(
                 clauses,
             ));

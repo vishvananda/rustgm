@@ -87,8 +87,8 @@ const PASSES: [(&str, Pass); 34] = [
     ("validate_const_parameter_types", |checker, _, _| {
         checker.validate_const_parameter_types()
     }),
-    ("validate_imported_type_defaults", |checker, _, _| {
-        checker.validate_imported_type_defaults()
+    ("validate_imported_parameter_defaults", |checker, _, _| {
+        checker.validate_imported_parameter_defaults()
     }),
     ("validate_trait_impl_owners", |checker, _, _| {
         checker.validate_trait_impl_owners()

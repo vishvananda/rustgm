@@ -36,6 +36,9 @@ pub(in crate::sema::crates::typed_headers) trait LeafClauses:
     fn regional_arguments(&self) -> bool {
         false
     }
+    fn const_arguments(&self) -> bool {
+        false
+    }
 }
 struct Ordinary<'a>(&'a [Clause], Option<s::Profile>);
 impl sealed::Sealed for Ordinary<'_> {}
@@ -47,6 +50,9 @@ impl LeafClauses for Ordinary<'_> {
         self.1.is_some_and(s::Profile::body_nodes)
     }
     fn regional_arguments(&self) -> bool {
+        self.1.is_some_and(s::Profile::declaration_policies)
+    }
+    fn const_arguments(&self) -> bool {
         self.1.is_some_and(s::Profile::declaration_policies)
     }
     /// This consumer's row validation admits a conditional effect only on an
@@ -64,9 +70,9 @@ impl LeafClauses for Ordinary<'_> {
 pub(in crate::sema::crates::typed_headers) fn prepare(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
-    parameters: &[(ParameterId, Abilities)],
+    parameters: (&[(ParameterId, Abilities)], &[ParameterId]),
     (clauses, profile): (&[Clause], Option<s::Profile>),
-    previous_parameters: usize,
+    previous_parameters: (usize, usize),
     previous_clauses: usize,
     budget: &mut impl Accounting,
 ) -> Result<Arc<Environment>, Error> {
@@ -84,15 +90,17 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
 pub(in crate::sema::crates::typed_headers) fn prepare_checked(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
-    parameters: &[(ParameterId, Abilities)],
+    parameters: (&[(ParameterId, Abilities)], &[ParameterId]),
     leaves: &impl LeafClauses,
-    previous_parameters: usize,
+    previous_parameters: (usize, usize),
     previous_clauses: usize,
     budget: &mut impl Accounting,
 ) -> Result<Arc<Environment>, Error> {
+    let (parameters, constants) = parameters;
+    let same_parameters = previous_parameters == (parameters.len(), constants.len());
     let clauses = leaves.clauses();
     let own = &clauses[previous_clauses..];
-    if previous_parameters == parameters.len()
+    if same_parameters
         && own.is_empty()
         && let Some(parent) = parent
     {
@@ -101,7 +109,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
     }
     let mut roots = 0_usize;
     let mut copied = 0_usize;
-    let (assumptions, inherited) = if previous_parameters == parameters.len() {
+    let (assumptions, inherited) = if same_parameters {
         if let Some(parent) = parent {
             copied = previous_clauses;
             (own, Some(parent))
@@ -122,16 +130,24 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
         }
         roots = roots.saturating_add(assumption(facts, leaves, *clause, budget)?);
     }
-    budget.charge(parameters.len().saturating_add(copied))?;
+    budget.charge(
+        parameters
+            .len()
+            .saturating_add(constants.len())
+            .saturating_add(copied),
+    )?;
     budget.reserve(Environment::trait_leaf_allocation_bound(
         parameters.len(),
+        constants.len(),
         clauses.len(),
         roots,
     ))?;
     let environment = if let Some(parent) = inherited {
         parent.as_ref().clone()
     } else {
-        Environment::new(&facts.types, parameters).map_err(error)?
+        Environment::new(&facts.types, parameters)
+            .and_then(|environment| environment.with_const_parameters(&facts.types, constants))
+            .map_err(error)?
     };
     let environment = Arc::new(
         super::super::predicate_remap::translation::feature_names::with_clauses(
@@ -215,6 +231,13 @@ fn assumption(
         let ty = match argument {
             Argument::Type(ty) => ty,
             Argument::Lifetime(_) if leaves.regional_arguments() => continue,
+            Argument::Const(constant) if leaves.const_arguments() => {
+                facts
+                    .types
+                    .const_type(constant)
+                    .ok_or_else(|| error("source assumption lost its checked const argument"))?;
+                continue;
+            }
             _ => {
                 return Err(error(
                     "source regional assumption requires a wider environment profile",

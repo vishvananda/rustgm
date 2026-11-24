@@ -74,6 +74,7 @@ impl Columns {
             || !cold.type_aliases.is_empty()
             || !cold.alias_normalizations.is_empty()
             || !cold.nominal_region_bounds.is_empty()
+            || !cold.const_defaults.is_empty()
             || !cold.trait_aliases.is_empty()
             || cold.statics.is_some())
         .then(|| {
@@ -90,6 +91,7 @@ impl Columns {
                 type_aliases: cold.type_aliases.clone(),
                 alias_normalizations: cold.alias_normalizations.clone(),
                 nominal_region_bounds: cold.nominal_region_bounds.clone(),
+                const_defaults: cold.const_defaults.clone(),
                 trait_aliases: cold.trait_aliases.clone(),
                 statics: cold.statics.clone(),
                 bodies: None,

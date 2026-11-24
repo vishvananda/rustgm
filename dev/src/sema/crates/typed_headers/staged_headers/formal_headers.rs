@@ -18,6 +18,7 @@ pub(super) fn parameters(
     context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
     scope: &s::ParameterScope,
+    store: &mut crate::types::Store,
     budget: &mut Headers,
 ) -> Result<Vec<Parameter>, Error> {
     let rows = context.descriptor.rows();
@@ -57,11 +58,17 @@ pub(super) fn parameters(
                 "source named early lifetime requires its wider callable profile",
             ));
         }
-        // Validation admitted only the owning trait's Self as a default.
-        let default = slot
-            .default
-            .map(|ty| graph.ty(ty).map(Argument::Type))
-            .transpose()?;
+        let default = if let Some(value) =
+            s::const_defaults::find(&rows.cold().const_defaults, s::SlotRef(ordinal))
+        {
+            Some(super::materialized_defaults::materialize(
+                rows, slot, argument, value, store, budget,
+            )?)
+        } else {
+            slot.default
+                .map(|ty| graph.ty(ty).map(Argument::Type))
+                .transpose()?
+        };
         parameters.push(Parameter {
             binding,
             anonymous: false,

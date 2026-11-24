@@ -929,8 +929,19 @@ pub(super) fn const_argument<'rows, B: Budget, P: Port<'rows, B>>(
     term: s::ConstRef,
     budget: &mut B,
 ) -> Result<Argument, Error> {
+    remap_const_argument(port.rows(), store, term, budget, |store, slot, budget| {
+        port.slot(store, slot, budget)
+    })
+}
+
+pub(super) fn remap_const_argument<B: Budget>(
+    rows: s::ValidatedView<'_>,
+    store: &mut Store,
+    term: s::ConstRef,
+    budget: &mut B,
+    slot_argument: impl FnOnce(&mut Store, s::SlotRef, &mut B) -> Result<Argument, Error>,
+) -> Result<Argument, Error> {
     budget.charge(1)?;
-    let rows = port.rows();
     match rows.consts().get(term.0 as usize).copied() {
         Some(s::ConstTerm::Value(value)) => {
             s::const_value(&rows.types, value).map_err(error)?;
@@ -943,7 +954,7 @@ pub(super) fn const_argument<'rows, B: Budget, P: Port<'rows, B>>(
                 .map(Argument::Const)
                 .map_err(|_| error("non-canonical source const value"))
         }
-        Some(s::ConstTerm::Parameter(slot)) => match port.slot(store, slot, budget)? {
+        Some(s::ConstTerm::Parameter(slot)) => match slot_argument(store, slot, budget)? {
             argument @ Argument::Const(_) => Ok(argument),
             _ => Err(error("source const term names a non-const slot")),
         },

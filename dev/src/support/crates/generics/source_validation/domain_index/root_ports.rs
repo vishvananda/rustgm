@@ -100,9 +100,19 @@ impl DomainIndex<'_, '_> {
 
     fn parameter_defaults(&self, context: Context, work: &mut Work) -> Result<(), &'static str> {
         let declared = self.headers.scopes().declared_slots(context.owner, work)?;
+        let rows = self.headers.rows();
+        let mut defaulted = false;
         for index in declared.start..declared.end {
             work.charge(1)?;
-            if let Some(default) = self.headers.rows().slots[index as usize].default {
+            let formal = s::SlotRef(index);
+            let default = rows.slots[index as usize].default;
+            let present = default.is_some()
+                || s::const_defaults::find(&rows.cold().const_defaults, formal).is_some();
+            if defaulted && !present {
+                return Err("source generic defaults must follow all required formals");
+            }
+            defaulted = present;
+            if let Some(default) = default {
                 self.types
                     .default_root(self.headers, context, s::SlotRef(index), default, work)?;
             }

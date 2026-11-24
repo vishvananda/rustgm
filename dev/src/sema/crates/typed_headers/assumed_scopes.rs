@@ -219,9 +219,9 @@ impl Scope {
         let environment = environments::prepare_checked(
             facts,
             inherited.map(|scope| &scope.environment),
-            &parameters,
+            (&parameters, &[]),
             &ImportedLeaves(&clauses),
-            previous_parameters,
+            (previous_parameters, 0),
             previous_clauses,
             &mut accounting,
         )?;

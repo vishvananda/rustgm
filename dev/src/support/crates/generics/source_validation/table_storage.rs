@@ -186,6 +186,13 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         count.vector(&cold.type_aliases, work)?;
         count.vector(&cold.alias_normalizations, work)?;
         count.vector(&cold.nominal_region_bounds, work)?;
+        count.vector(&cold.const_defaults, work)?;
+        for default in &cold.const_defaults {
+            work.charge(1)?;
+            if let super::super::ConstDefaultValue::Record(fields) = &default.value {
+                count.vector(fields, work)?;
+            }
+        }
         count.vector(&cold.trait_aliases, work)?;
         if let Some(statics) = &cold.statics {
             work.charge(1)?;

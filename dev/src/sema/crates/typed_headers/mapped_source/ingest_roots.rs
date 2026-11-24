@@ -112,7 +112,11 @@ fn application(
         match *argument {
             s::Argument::Type(ty) => demand(Root::Type(ty))?,
             s::Argument::Region(region) => demand(Root::Region(region))?,
-            s::Argument::Const(_) => return Err(error("unsupported source trait argument")),
+            s::Argument::Const(term) => match rows.consts().get(term.0 as usize) {
+                Some(s::ConstTerm::Value(value)) => demand(Root::Type(value.ty))?,
+                Some(s::ConstTerm::Parameter(_)) => {}
+                None => return Err(error("source trait argument lost its const term")),
+            },
         }
     }
     Ok(())

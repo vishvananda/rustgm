@@ -9,10 +9,13 @@ mod bodies;
 pub(crate) mod bodymap;
 #[path = "compiler_rows.rs"]
 mod compiler_rows;
+#[path = "valued_defaults.rs"]
+pub(crate) mod const_defaults;
 #[path = "profile_descriptor.rs"]
 mod descriptor;
 mod interval_roles;
 mod operation_contracts;
+pub use const_defaults::{ConstDefault, ConstDefaultValue};
 mod results_contract;
 #[path = "global_columns.rs"]
 mod statics;
@@ -707,6 +710,7 @@ pub struct ColdColumns {
     pub type_aliases: Vec<TypeAliasHeader>,
     pub alias_normalizations: Vec<AliasNormalization>,
     pub nominal_region_bounds: Vec<NominalRegionBounds>,
+    pub const_defaults: Vec<ConstDefault>,
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
@@ -729,6 +733,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     type_aliases: Vec::new(),
     alias_normalizations: Vec::new(),
     nominal_region_bounds: Vec::new(),
+    const_defaults: Vec::new(),
     trait_aliases: Vec::new(),
     statics: None,
     bodies: None,
@@ -759,6 +764,7 @@ impl ColdColumns {
             && self.type_aliases.is_empty()
             && self.alias_normalizations.is_empty()
             && self.nominal_region_bounds.is_empty()
+            && self.const_defaults.is_empty()
             && self.trait_aliases.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()

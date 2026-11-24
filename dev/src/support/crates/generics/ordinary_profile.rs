@@ -1585,6 +1585,9 @@ fn slot_bindings(
     profile: BindingProfile,
     sized_role: Option<crate::support::crates::owner_catalog::DeclarationRef>,
 ) -> Result<(), &'static str> {
+    if profile == BindingProfile::BodyOperations {
+        super::super::const_defaults::validate(headers, work)?;
+    }
     for slot in &rows.slots {
         work.charge(1)?;
         if let super::super::ParameterKind::Const { ty } = slot.kind {

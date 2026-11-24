@@ -2,7 +2,7 @@
 use super::{BoundUse, Builder, HeaderRef, Summary, Work, g, s};
 use crate::support::crates::{Scalar, owner_catalog::DeclarationRef};
 
-/// Const arguments travel in nominal and function applications only.
+/// Own projection and opaque arguments require their complete const domain.
 const OUTSIDE_APPLICATIONS: &str =
     "source const arguments outside nominal and function applications require a wider profile";
 
@@ -105,8 +105,7 @@ impl Builder<'_, '_> {
                 self.push_type(application.subject, work)?;
                 application.arguments
             };
-            // Region arguments have no recipe child; `application` admits
-            // only a lifetime-generic enum constructor's leading regions.
+            // A region argument has no separate type recipe child.
             for argument in arguments.slice(&rows.arguments)?.iter().rev() {
                 work.charge(1)?;
                 self.push_argument(*argument, work)?;
@@ -581,6 +580,11 @@ impl Builder<'_, '_> {
                 (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => self.child(ty, work)?,
                 (s::Argument::Region(region), s::ParameterKind::Region) => {
                     region_summary(self.headers, self.binders, region, work)?
+                }
+                (s::Argument::Const(term), s::ParameterKind::Const { ty })
+                    if self.profile.declaration_policies() =>
+                {
+                    self.const_summary(term, ty, work)?
                 }
                 _ => return Err("source trait argument changed its actual formal kind"),
             };

@@ -4,6 +4,7 @@ pub(super) mod contract_ports;
 mod definition_cells;
 pub(super) mod environments;
 mod formal_headers;
+mod materialized_defaults;
 pub(in crate::sema::crates::typed_headers) use formal_headers::Callable;
 mod impl_headers;
 #[path = "staged_headers/mapped_records.rs"]
@@ -19,6 +20,7 @@ use crate::{
     sema::{alias_requirements::Requirements, declaration_inputs::Input, generics::Parameter},
     support::crates::generics::source as s,
     types::{
+        arguments::Argument,
         lifetime_proof::ScopeId,
         parameters::{
             ParameterId,
@@ -83,6 +85,7 @@ impl Inputs {
 struct Active {
     owner: crate::support::crates::owner_catalog::DeclarationRef,
     parameters: usize,
+    constants: usize,
     clauses: usize,
     environment: Arc<Environment>,
 }
@@ -92,6 +95,7 @@ struct Walk<'a, 'b: 'a> {
     remap: predicate_remap::Context<'a>,
     active: Vec<Active>,
     abilities: Vec<(ParameterId, Abilities)>,
+    constants: Vec<ParameterId>,
     clauses: Vec<Clause>,
 }
 impl Stage {
@@ -129,6 +133,7 @@ impl Stage {
             remap,
             active: Vec::with_capacity(rows.scopes.len()),
             abilities: Vec::with_capacity(rows.slots.len()),
+            constants: Vec::new(),
             clauses: Vec::with_capacity(rows.clauses.len()),
         };
         for raw in &rows.scopes {
@@ -473,6 +478,37 @@ impl Walk<'_, '_> {
         }
         Ok(Inputs::SelfType)
     }
+    fn append_formals(
+        &mut self,
+        store: &crate::types::Store,
+        parameters: &[Parameter],
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        for parameter in parameters {
+            budget.charge(1)?;
+            let argument = parameter.argument;
+            if matches!(argument, Argument::Lifetime(_)) {
+                continue;
+            }
+            let parameter = crate::sema::generics::parameter_id(store, argument).map_err(error)?;
+            if matches!(argument, Argument::Const(_)) {
+                let growth = crate::support::retained::Growth::vector::<ParameterId>(
+                    self.constants.len(),
+                    self.constants.capacity(),
+                    1,
+                );
+                budget.pay(growth.work, growth.bytes).map_err(error)?;
+                self.constants
+                    .try_reserve(1)
+                    .map_err(|_| error("source const formal scope allocation failed"))?;
+                self.constants.push(parameter);
+            } else {
+                self.abilities.push((parameter, Abilities::default()));
+            }
+        }
+        Ok(())
+    }
+
     fn enter(
         &mut self,
         facts: &mut Declarations,
@@ -488,24 +524,17 @@ impl Walk<'_, '_> {
                 .pop()
                 .ok_or_else(|| error("source header parent is missing or closed"))?;
             self.abilities.truncate(closed.parameters);
+            self.constants.truncate(closed.constants);
             self.clauses.truncate(closed.clauses);
         }
         let definition = context.definition(raw.owner, budget)?;
         let inputs = self.inputs(facts, raw, definition, budget)?;
         let previous_parameters = self.abilities.len();
+        let previous_constants = self.constants.len();
         let previous_clauses = self.clauses.len();
-        let parameters = formal_headers::parameters(context, self.graph, raw, budget)?;
-        for parameter in &parameters {
-            budget.charge(1)?;
-            if let crate::types::arguments::Argument::Type(ty) = parameter.argument {
-                let Some(crate::types::Kind::Parameter(id)) = facts.types.kind(ty) else {
-                    return Err(error(
-                        "source declared formal lost its actual rigid identity",
-                    ));
-                };
-                self.abilities.push((id, Abilities::default()));
-            }
-        }
+        let parameters =
+            formal_headers::parameters(context, self.graph, raw, &mut facts.types, budget)?;
+        self.append_formals(&facts.types, &parameters, budget)?;
         for input in inputs.all() {
             budget.charge(1)?;
             self.clauses.push(input.value);
@@ -513,9 +542,9 @@ impl Walk<'_, '_> {
         let environment = environments::prepare(
             facts,
             self.active.last().map(|a| &a.environment),
-            &self.abilities,
+            (&self.abilities, &self.constants),
             (&self.clauses, Some(context.descriptor.profile())),
-            previous_parameters,
+            (previous_parameters, previous_constants),
             previous_clauses,
             budget,
         )?;
@@ -551,6 +580,7 @@ impl Walk<'_, '_> {
         self.active.push(Active {
             owner: raw.owner,
             parameters: previous_parameters,
+            constants: previous_constants,
             clauses: previous_clauses,
             environment: Arc::clone(&environment),
         });

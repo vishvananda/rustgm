@@ -87,6 +87,10 @@ type. Run `scripts/check_nominal_const_formals.py` with the prebuilt compilers.
 arguments for an enum, a struct with a function pointer, and traits with
 closed and projection defaults. Run `scripts/check_type_default_transport.py`
 with the prebuilt compilers.
+`spec/source-const-default-transport/outcomes.json` checks the default array
+length and a record-valued trait argument in a fresh client. Run
+`scripts/check_const_default_transport.py` with the prebuilt compilers.
+
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

@@ -16,6 +16,7 @@ mod contract_rows;
 mod deprecation_rows;
 mod evaluated_constants;
 pub(crate) use evaluated_constants::prepare_inherent_constants;
+mod defaulted_arguments;
 mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
@@ -319,6 +320,7 @@ impl Stage {
         self.rows
             .exact_callables
             .sort_unstable_by_key(|row| row.declaration.0);
+        self.sort_const_defaults()?;
         let work = self.work();
         for slot in self.functions.originals.into_iter().flatten() {
             let (body, inputs) = slot;

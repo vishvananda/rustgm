@@ -204,9 +204,9 @@ impl ContractParts {
         super::environments::prepare(
             facts,
             None,
-            &self.parameters,
+            (&self.parameters, &[]),
             (&self.clauses, None),
-            0,
+            (0, 0),
             0,
             budget,
         )

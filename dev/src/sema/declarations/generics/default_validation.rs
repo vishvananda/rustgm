@@ -43,7 +43,7 @@ impl Checker<'_> {
         self.prove_parameter_defaults(owner, Some(key), proof)
     }
 
-    pub(in crate::sema::declarations) fn validate_imported_type_defaults(
+    pub(in crate::sema::declarations) fn validate_imported_parameter_defaults(
         &mut self,
     ) -> Result<(), Error> {
         if self.report.package.source_client().is_none() {
