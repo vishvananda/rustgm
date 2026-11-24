@@ -27,7 +27,7 @@ struct Expected<'a, 'b> {
     view: &'a SourceOriginal<'b>,
     facts: &'a Declarations,
     declared: Inputs<'a>,
-    glue_declared_inputs: usize,
+    assumed_conditional_inputs: usize,
     sized: Bound,
     root: ProofSite,
     associated: Option<Ref<'a, [Predicate]>>,
@@ -42,8 +42,12 @@ impl<'a, 'b> Expected<'a, 'b> {
     ) -> Result<Self, &'static str> {
         let root = view.source()?.root_site();
         let definition = view.definition();
-        let glue_declared_inputs = if view.const_context()
-            && crate::sema::compiler_items::drop_glue_member(facts, definition)?
+        let assumed_conditional_inputs = if view.const_context()
+            && (crate::sema::compiler_items::drop_glue_member(facts, definition)?
+                || matches!(
+                    view.inputs().environment,
+                    s::EnvironmentOrigin::ConstTraitDefault { .. }
+                ) && facts.imported_clone_default(definition)?)
         {
             declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?
                 .len()
@@ -58,7 +62,7 @@ impl<'a, 'b> Expected<'a, 'b> {
                 facts.crates.as_deref(),
                 definition,
             )?,
-            glue_declared_inputs,
+            assumed_conditional_inputs,
             sized: view.sizing_requirement(facts, steps)?,
             root,
             associated: view.associated_goals(steps)?,
@@ -153,11 +157,11 @@ impl<'a, 'b> Expected<'a, 'b> {
             }
         };
         let binding = matches!(predicate.bound, Bound::ProjectionEqual(_));
-        // The role proof authenticated the glue's own conditional Destruct
-        // premise. It is assumed here and paid by calls at their actual effect.
-        let glue_premise = index < self.glue_declared_inputs
+        // These checked originals assume their own conditional Destruct premise.
+        // The actual caller pays the premise at its selected effect.
+        let conditional_premise = index < self.assumed_conditional_inputs
             && matches!(predicate.bound, Bound::MaybeConstTrait(_));
-        Ok((!(body_nodes && binding || glue_premise)).then_some(predicate))
+        Ok((!(body_nodes && binding || conditional_premise)).then_some(predicate))
     }
     fn predicates<'s>(
         &'s self,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify const Clone and its checked TrivialClone marker in a fresh client."""
+"""Qualify imported Clone declarations and the provided clone_from body."""
 import argparse
 import json
 from pathlib import Path
@@ -45,17 +45,45 @@ def reject_consumers(check, importer, artifact, client, baseline, contract):
                   "--extern", f"base={artifact}", client], 1, [contract["old_reader"]], timeout=30)
 
 
+def default_provider(check, source, contract):
+    prefix, marker, _ = source.read_bytes().partition(contract["end"].encode())
+    required = contract["required_method"].encode()
+    if not marker or prefix.count(required) != 1:
+        raise ValueError("Clone fixture lost the exact default insertion point")
+    provider = check.folder / "provider.rs"
+    provider.write_bytes(prefix.replace(required, required + (FIXTURE / contract["method"]).read_bytes()))
+    return provider
+
+
+def reject_coupled_borrows(check, exporter, source, contract):
+    text = source.read_bytes()
+    signature = contract["signature"].encode()
+    if text.count(signature) != 1:
+        raise ValueError("Clone fixture lost the exact clone_from signature")
+    source = check.folder / "coupled-borrows.rs"
+    source.write_bytes(text.replace(signature, contract["coupled_borrows"].encode()))
+    output = source.with_suffix(".rgcrate")
+    check.run("coupled-borrows", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", output, source], 1, [contract["coupled_diagnostic"]], timeout=30)
+    if output.exists():
+        raise ValueError("altered clone_from borrow binders published a source artifact")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--case", choices=("roles", "default"), default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     contract = json.loads((FIXTURE / "outcomes.json").read_text())
     check = Check(args.app, args.out)
     source = FIXTURE / contract["provider"]
-    client = FIXTURE / contract["client"]
+    default = args.case == "default"
+    if default:
+        source = default_provider(check, source, contract["default"])
+    client = FIXTURE / (contract["default"]["client"] if default else contract["client"])
     observer = check.folder / "observer.o"
     check.run("observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer], timeout=15)
     expected = contract["stdout"].encode()
@@ -77,8 +105,11 @@ def main():
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("execute", [native], timeout=15).stdout != expected:
         raise ValueError("the fresh client changed the imported const Clone contract")
-    reject_providers(check, exporter, source, contract)
-    reject_consumers(check, importer, artifact, client, args.baseline, contract)
+    if default:
+        reject_coupled_borrows(check, exporter, source, contract["default"])
+    else:
+        reject_providers(check, exporter, source, contract)
+        reject_consumers(check, importer, artifact, client, args.baseline, contract)
     print(expected.decode(), end="")
 
 

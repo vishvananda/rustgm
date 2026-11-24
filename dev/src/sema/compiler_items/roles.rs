@@ -3,6 +3,7 @@ mod completion_set;
 mod conversion;
 mod copying;
 pub(crate) use conversion::float_default;
+pub(in crate::sema) use copying::source_clone_default;
 mod parameter_types;
 #[path = "roles/interval_members.rs"]
 pub(in crate::sema::compiler_items) mod range_members;

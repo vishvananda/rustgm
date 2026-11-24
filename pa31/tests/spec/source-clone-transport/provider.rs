@@ -14,6 +14,7 @@ pub trait Sized: MetaSized {}
 #[lang="legacy_receiver"]
 pub trait LegacyReceiver: PointeeSized {}
 impl<T: PointeeSized> LegacyReceiver for &T {}
+impl<T: PointeeSized> LegacyReceiver for &mut T {}
 #[lang="freeze"]
 pub unsafe auto trait Freeze {}
 

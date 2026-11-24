@@ -635,12 +635,12 @@ fn conditional_trait_member(
             }
         }
     }
-    let drop = if roles.declaration_policies {
-        conditional_drop_trait(report, facts, function.definition, definition)?
+    let defining = if roles.declaration_policies {
+        conditional_definition_trait(report, facts, function, definition)?
     } else {
         None
     };
-    selected = selected.or(drop);
+    selected = selected.or(defining);
     if roles.declaration_policies
         && let Some(role) = required_protocol_trait(facts, function, owner)?
     {
@@ -655,7 +655,7 @@ fn conditional_trait_member(
     if role.definition != definition {
         return Err("conditional member belongs to another actual trait");
     }
-    if function.body.is_some() && drop.is_none() && comparison.is_none() {
+    if function.body.is_some() && defining.is_none() && comparison.is_none() {
         return Err("conversion trait defaults require their actual body transport");
     }
     if role.parent.is_some()
@@ -676,10 +676,10 @@ fn conditional_trait_member(
     Ok(true)
 }
 
-fn conditional_drop_trait(
+fn conditional_definition_trait(
     report: &Report,
     facts: &Declarations,
-    member: DefId,
+    function: &crate::sema::model::Function,
     owner: DefId,
 ) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
     let drop = facts
@@ -690,9 +690,16 @@ fn conditional_drop_trait(
     if drop.is_some() {
         crate::sema::compiler_items::require_source_drop_contract(report, facts)
             .map_err(|_| "conditional Drop member lost its actual checked trait contract")?;
-        if facts.nonconst_trait_member(member)? {
+        if facts.nonconst_trait_member(function.definition)? {
             return Err("source non-const Drop method requires its actual policy transport");
         }
+    } else if function.body.is_some() {
+        return crate::sema::compiler_items::source_clone_default(
+            report,
+            facts,
+            function.definition,
+            owner,
+        );
     }
     Ok(drop)
 }

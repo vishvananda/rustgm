@@ -152,6 +152,7 @@ pub(in crate::sema) use range_contract::{
 pub(in crate::sema) mod site_records;
 pub(in crate::sema) use roles::admitted_headers::selected_roles;
 pub(crate) use roles::float_default;
+pub(in crate::sema) use roles::source_clone_default;
 pub(crate) use roles::{
     callable_member, callable_method_definition, callable_operator, callable_output_role,
     callable_role,

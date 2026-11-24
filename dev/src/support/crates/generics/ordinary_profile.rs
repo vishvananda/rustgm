@@ -839,11 +839,12 @@ fn defining_default(
         return Ok(());
     };
     if trait_.artifact == rows.policy.provider
-        && defaults.contains(trait_.declaration)
         && let Some(super::super::HeaderRef::Function(index)) = headers.header(member, work)?
-        && callable_traits::provided_default(&rows.functions[index as usize], trait_.declaration)
     {
-        return Ok(());
+        let function = &rows.functions[index as usize];
+        if function.parent == Some(trait_.declaration) && defaults.provided(function) {
+            return Ok(());
+        }
     }
     Err("source defining default requires its wider imported preparation profile")
 }
@@ -1004,6 +1005,7 @@ pub(super) struct Bindings {
     drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone_fn: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    clone_from: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     trivial_clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
@@ -1032,6 +1034,7 @@ impl Bindings {
     fn default_traits(&self) -> callable_traits::DefaultTraits {
         callable_traits::DefaultTraits {
             drop: self.drop,
+            clone_from: self.clone_from,
             comparisons: self.comparisons,
         }
     }
@@ -1091,7 +1094,7 @@ impl Bindings {
         let [deref, deref_mut] = self.dereferences;
         let [try_, from_residual] = self.try_traits;
         let [partial_eq, partial_ord] = self.comparisons;
-        let target = if Some(input.owner) == self.drop_glue {
+        let target = if [self.drop_glue, self.clone_from].contains(&Some(input.owner)) {
             self.destruct
         } else if Some(input.owner) == self.trivial_clone {
             self.clone
@@ -1125,10 +1128,10 @@ impl Bindings {
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        let Some(owner) = function.parent.filter(|&parent| {
-            self.default_traits().contains(parent)
-                && callable_traits::provided_default(function, parent)
-        }) else {
+        let Some(owner) = function
+            .parent
+            .filter(|_| self.default_traits().provided(function))
+        else {
             return Ok(false);
         };
         if !matches!(headers.header(owner, work)?, Some(super::super::HeaderRef::Trait(index))
@@ -1370,6 +1373,12 @@ pub(super) fn bindings(
         drop_glue: bound(LangItem::DropGlue),
         clone: bound(LangItem::Clone).filter(|_| modern),
         clone_fn: bound(LangItem::CloneFn).filter(|_| modern),
+        clone_from: clone_default_member(
+            rows,
+            headers,
+            bound(LangItem::Clone).filter(|_| modern),
+            work,
+        )?,
         trivial_clone: bound(LangItem::TrivialClone),
         try_methods: LangItem::REQUIRED_TRY_METHODS.map(bound),
         try_traits: [
@@ -1749,6 +1758,41 @@ fn enum_role_header(
         return Err("source enum role requires its actual enum or variant header");
     }
     Ok(())
+}
+
+fn clone_default_member(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    owner: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    work: &mut Work,
+) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+    use super::super::HeaderRef;
+    let Some(owner) = owner else {
+        return Ok(None);
+    };
+    let Some(HeaderRef::Trait(index)) = headers.header(owner, work)? else {
+        return Err("source Clone default lost its actual trait header");
+    };
+    let header = &rows.traits[index as usize];
+    if header.flags.bits() & TraitFlags::CONST == 0 {
+        return Ok(None);
+    }
+    let members = header.members.slice(&rows.members)?;
+    work.charge(members.len())?;
+    let Some(&member) = members.iter().find(|member| {
+        rows.declarations
+            .get(member.0 as usize)
+            .is_some_and(|row| row.name.as_deref() == Some("clone_from"))
+    }) else {
+        return Ok(None);
+    };
+    if !matches!(headers.header(member, work)?, Some(HeaderRef::Function(index))
+        if rows.functions[index as usize].parent == Some(owner)
+            && matches!(rows.functions[index as usize].body, FunctionBody::Original(_)))
+    {
+        return Err("source Clone default requires its actual provided clone_from method");
+    }
+    Ok(Some(member))
 }
 
 fn required_method_owner(

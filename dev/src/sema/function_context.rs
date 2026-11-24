@@ -271,19 +271,40 @@ impl Declarations {
         {
             return Ok(Some(owner));
         }
-        for kind in [LangItem::Drop]
+        for kind in [LangItem::Drop, LangItem::Clone]
             .into_iter()
             .chain(LangItem::COMPARISON_TRAITS)
         {
             if let Some(role) = catalog.role(kind)?
                 && role.definition == owner
                 && role.origin.source().is_none()
+                && (kind != LangItem::Clone || header.body.is_some())
                 && self.associated.constant_trait(owner) == Some(true)
             {
                 return Ok(Some(owner));
             }
         }
         Ok(None)
+    }
+
+    /// The loaded Clone role seals the provided default before any body demand.
+    pub(crate) fn imported_clone_default(&self, definition: DefId) -> Result<bool, &'static str> {
+        let Some(catalog) = self.source_bindings.as_deref() else {
+            return Ok(false);
+        };
+        let Some(role) = catalog.role(LangItem::Clone)? else {
+            return Ok(false);
+        };
+        if role.origin.source().is_some()
+            || self.associated.trait_owner(definition) != Some(role.definition)
+            || self.associated.constant_trait(role.definition) != Some(true)
+            || self
+                .declaration_header(definition)?
+                .is_none_or(|header| header.declaration.source().is_some() || header.body.is_none())
+        {
+            return Ok(false);
+        }
+        Ok(catalog.validated_role(LangItem::Clone)? == Some(role))
     }
 
     fn imported_member_self_site(

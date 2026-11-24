@@ -197,18 +197,18 @@ fn empty_auto(
 #[derive(Clone, Copy)]
 pub(super) struct DefaultTraits {
     pub(super) drop: Option<DeclarationRef>,
+    pub(super) clone_from: Option<DeclarationRef>,
     pub(super) comparisons: [Option<DeclarationRef>; LangItem::COMPARISON_TRAITS.len()],
 }
 impl DefaultTraits {
-    pub(super) fn contains(self, owner: DeclarationRef) -> bool {
-        self.drop == Some(owner) || self.comparisons.contains(&Some(owner))
+    pub(super) fn provided(self, header: &s::FunctionHeader) -> bool {
+        header.parent.is_some_and(|owner| {
+            self.drop == Some(owner)
+                || self.comparisons.contains(&Some(owner))
+                || self.clone_from == Some(header.declaration)
+        }) && header.constness == Constness::Conditional
+            && matches!(header.body, s::FunctionBody::Original(_))
     }
-}
-
-pub(super) fn provided_default(header: &s::FunctionHeader, drop: DeclarationRef) -> bool {
-    header.parent == Some(drop)
-        && header.constness == Constness::Conditional
-        && matches!(header.body, s::FunctionBody::Original(_))
 }
 
 /// Exact defining mode comes from the original's actual declaration header.
@@ -225,9 +225,9 @@ pub(super) fn original_context(
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
             let function = &rows.functions[index as usize];
-            defining_default = function.parent.filter(|&parent| {
-                default_traits.contains(parent) && provided_default(function, parent)
-            });
+            defining_default = function
+                .parent
+                .filter(|_| default_traits.provided(function));
             if (function.constness == Constness::Const
                 && !runtime_format_bodies.contains(&Some(body.declaration)))
                 || defining_default.is_some()

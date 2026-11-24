@@ -133,6 +133,8 @@ including the associated bounds on the residual. Run
 `spec/source-clone-transport/outcomes.json` checks a fresh implementation of
 the provider's const `Clone` and `TrivialClone` declarations. Run
 `scripts/check_clone_role_transport.py` with the prebuilt compilers.
+The `--case default` variant runs the actual `clone_from` body and checks its
+late borrow binders and conditional `Destruct` premise.
 `spec/source-iteration-transport/outcomes.json` checks item and empty paths
 through a fresh client's imported `Iterator::next`, `IntoIterator::into_iter`,
 and `Option` declarations. Run `scripts/check_iteration_role_transport.py`

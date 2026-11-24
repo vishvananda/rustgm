@@ -373,6 +373,7 @@ fn copying_role(
     copying::require_header_super(facts, catalog, &header, expected, Constness::Ordinary)?;
     if role == LangItem::Clone {
         clone_member(facts, catalog, &header, steps)?;
+        copying::imported_clone_default(report, facts, catalog, &header, steps)?;
     } else if !header.members.is_empty() {
         return Err("source copying marker must not declare members");
     }

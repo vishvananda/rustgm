@@ -1,7 +1,12 @@
 //! Copying roles validate declared contracts; no type gains a Copy permission here.
 use super::super::headers::{Method, Trait, clone_method};
 use super::{Catalog, Declaration, Declarations, Error, LangItem, Report, TypeId};
-use crate::support::constness::Constness;
+use crate::{
+    resolve::model::{DefId, DefKind},
+    sema::declaration_inputs::{self, Input},
+    support::constness::Constness,
+    types::{GenericArgs, Kind, callable::Convention, parameters::clauses::Clause},
+};
 
 pub(super) fn validate(
     report: &Report,
@@ -120,4 +125,139 @@ pub(super) fn validate_trivial(
         LangItem::Clone,
         Constness::Conditional,
     )
+}
+
+pub(in crate::sema) fn source_clone_default(
+    report: &Report,
+    facts: &Declarations,
+    member: DefId,
+    owner: DefId,
+) -> Result<Option<Declaration>, &'static str> {
+    if !named_clone_from(report, member) {
+        return Ok(None);
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source clone_from lost its actual provider catalog")?;
+    let Some(clone) = catalog
+        .header_role(LangItem::Clone)?
+        .filter(|role| role.definition == owner)
+    else {
+        return Ok(None);
+    };
+    let header = Trait::source(report, facts, clone)?;
+    require_clone_default(facts, catalog, &header, member)?;
+    Ok(Some(clone))
+}
+
+pub(super) fn imported_clone_default(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    header: &Trait<'_>,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    if !header.flags.constant {
+        return Ok(());
+    }
+    *steps = steps.saturating_add(header.members.len());
+    let Some(&member) = header
+        .members
+        .iter()
+        .find(|&&member| named_clone_from(report, member))
+    else {
+        return Ok(());
+    };
+    require_clone_default(facts, catalog, header, member)
+}
+
+fn named_clone_from(report: &Report, member: DefId) -> bool {
+    report
+        .resolution
+        .definitions
+        .get(member.0 as usize)
+        .is_some_and(|definition| {
+            definition.kind == DefKind::Function
+                && report.package.names.get(definition.name) == "clone_from"
+        })
+}
+
+fn require_clone_default(
+    facts: &Declarations,
+    catalog: &Catalog,
+    owner: &Trait<'_>,
+    member: DefId,
+) -> Result<(), &'static str> {
+    let function = facts
+        .declaration_header(member)?
+        .ok_or("source clone_from has no actual completed header")?;
+    if !owner.flags.constant
+        || facts.associated.trait_owner(member) != Some(owner.definition)
+        || function.body.is_none()
+        || function.universals != 2
+        || facts
+            .generics
+            .parameters
+            .get(&member)
+            .is_some_and(|parameters| !parameters.is_empty())
+        || function.declaration.source().is_some() && facts.nonconst_trait_member(member)?
+    {
+        return Err("source clone_from changed its actual provided conditional declaration");
+    }
+    let Some(Kind::Function {
+        parameters,
+        result: TypeId::UNIT,
+        unsafe_: false,
+        convention: Convention::RUST,
+        bound_regions: 2,
+    }) = facts.types.kind(function.signature)
+    else {
+        return Err("source clone_from requires its exact safe Rust signature");
+    };
+    let Some([receiver, incoming]) = facts.types.list(parameters) else {
+        return Err("source clone_from requires its actual receiver and source");
+    };
+    for (slot, ty, mutable) in [(0, *receiver, true), (1, *incoming, false)] {
+        if !matches!(facts.types.kind(ty), Some(Kind::Reference { referent, mutable: actual, region })
+            if referent == owner.self_type && actual == mutable && region.bound_parts() == Some((0, slot)))
+        {
+            return Err("source clone_from changed its distinct late Self borrows");
+        }
+    }
+    require_clone_destruct(facts, catalog, owner.self_type, member)
+}
+
+fn require_clone_destruct(
+    facts: &Declarations,
+    catalog: &Catalog,
+    subject: TypeId,
+    member: DefId,
+) -> Result<(), &'static str> {
+    const BOUND: &str = "source clone_from requires its actual conditional Self: Destruct premise";
+    let destruct = catalog.role(LangItem::Destruct)?.ok_or(BOUND)?;
+    let inputs =
+        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), member)?;
+    let Some(Input {
+        value: Clause::Predicate(predicate),
+        ..
+    }) = inputs.get(0).filter(|_| inputs.len() == 1)
+    else {
+        return Err(BOUND);
+    };
+    let Some((application, Constness::Conditional)) = predicate.bound.trait_parts() else {
+        return Err(BOUND);
+    };
+    if predicate.ty != subject
+        || !facts
+            .types
+            .trait_application(application)
+            .is_some_and(|application| {
+                application.item.0 == destruct.definition.0
+                    && application.arguments == GenericArgs::EMPTY
+            })
+    {
+        return Err(BOUND);
+    }
+    Ok(())
 }
