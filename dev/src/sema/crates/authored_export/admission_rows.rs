@@ -12,6 +12,11 @@ use crate::{
     syntax::item::Shape,
 };
 
+pub(super) struct CollectedDeclarations {
+    pub(super) leaves: DeclarationLeaves,
+    pub(super) order: Vec<(DefId, s::DefinitionKind)>,
+}
+
 impl Stage {
     pub(super) fn exported_kind(
         &mut self,
@@ -131,7 +136,7 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
         mode: ExportMode,
-    ) -> Result<DeclarationLeaves, &'static str> {
+    ) -> Result<CollectedDeclarations, &'static str> {
         let admission = self.declaration_inventory(report, facts, mode)?;
         let mut leaves = DeclarationLeaves::default();
         let mut features =
@@ -155,8 +160,7 @@ impl Stage {
         )?;
         let mut ordinals = vec![0_u32; report.resolution.definitions.len()];
         let mut parents = Vec::with_capacity(admission.len());
-        for (id, kind) in admission {
-            self.charge(1)?;
+        for &(id, kind) in &admission {
             let index = id.0 as usize;
             let definition = &report.resolution.definitions[index];
             features.observe(report, facts, id, self)?;
@@ -214,7 +218,10 @@ impl Stage {
             }
         }
         features.finish()?;
-        Ok(leaves)
+        Ok(CollectedDeclarations {
+            leaves,
+            order: admission,
+        })
     }
 
     fn declaration_inventory(

@@ -474,8 +474,10 @@ impl Stage {
         if stage.declaration_policies() {
             stage.prepare_callable_arena(facts)?;
         }
-        let leaves = stage.declarations(report, facts, mode)?;
-        stage.scopes(report, facts)?;
+        let admission_rows::CollectedDeclarations { leaves, order } =
+            stage.declarations(report, facts, mode)?;
+        stage.scopes(report, facts, &order)?;
+        drop(order);
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
         if stage.nominal_transport {
             stage.nominals(report, facts)?;

@@ -14,57 +14,42 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
+        admitted: &[(DefId, s::DefinitionKind)],
     ) -> Result<(), &'static str> {
-        let count = self.definitions.len();
-        self.reserve(count.saturating_mul(
-            size_of::<bool>()
-                + 2 * size_of::<Option<DefId>>()
-                + size_of::<DefId>()
-                + size_of::<Option<u32>>(),
-        ))?;
         self.nominal_lifetime_bounds(facts)?;
+        let count = self.definitions.len();
+        self.reserve(
+            count
+                .saturating_mul(
+                    size_of::<bool>() + 2 * size_of::<Option<DefId>>() + size_of::<Option<u32>>(),
+                )
+                .saturating_add(admitted.len().saturating_mul(size_of::<DefId>())),
+        )?;
         let mut active = vec![false; count];
-        for (index, enabled) in active.iter_mut().enumerate() {
+        let mut owners = Vec::with_capacity(admitted.len());
+        for &(id, kind) in admitted {
             self.charge(1)?;
-            if let Some(row) = self.definitions[index] {
-                let kind = self.rows.declarations[row.0 as usize].definition.kind;
-                *enabled = matches!(
-                    kind,
-                    s::DefinitionKind::SelfType
-                        | s::DefinitionKind::Trait
-                        | s::DefinitionKind::TraitAlias
-                        | s::DefinitionKind::Function
-                        | s::DefinitionKind::Struct
-                        | s::DefinitionKind::Enum
-                        | s::DefinitionKind::AssociatedType
-                ) || kind == s::DefinitionKind::Constant
-                    && self.scoped_constant(report, facts, index)?
-                    || kind == s::DefinitionKind::TypeAlias
-                        && facts
-                            .generics
-                            .parameters
-                            .get(&DefId(
-                                u32::try_from(index)
-                                    .map_err(|_| "source alias identity overflow")?,
-                            ))
-                            .is_some_and(|parameters| !parameters.is_empty());
+            if self.has_scope(report, facts, id, kind) {
+                active[id.0 as usize] = true;
+                owners.push(id);
             }
         }
+        let owner_count = owners.len();
+        self.reserve(
+            owner_count.saturating_mul(size_of::<s::ParameterScope>() + size_of::<DefId>()),
+        )?;
+        self.rows.scopes.reserve_exact(owner_count);
         // Prepending while visiting increasing IDs keeps siblings in stack order.
         let mut first_child = vec![None; count];
         let mut next_sibling = vec![None; count];
-        let mut pending = Vec::with_capacity(count);
-        for (index, &enabled) in active.iter().enumerate() {
+        let mut pending = Vec::with_capacity(owner_count);
+        for id in owners {
             self.charge(1)?;
-            if !enabled {
-                continue;
-            }
-            let id = DefId(u32::try_from(index).map_err(|_| "source scope identity overflow")?);
             if let Some(&parent) = facts.generics.parents.get(&id) {
                 if active.get(parent.0 as usize) != Some(&true) {
                     return Err("source generic scope parent is not an actual retained owner");
                 }
-                next_sibling[index] = first_child[parent.0 as usize].replace(id);
+                next_sibling[id.0 as usize] = first_child[parent.0 as usize].replace(id);
             } else {
                 pending.push(id);
             }
@@ -90,7 +75,6 @@ impl Stage {
                 declaration,
                 report.resolution.definitions[owner.0 as usize].kind,
             )?;
-            self.reserve(4 * size_of::<s::ParameterScope>())?;
             let parent = parent.map(|parent| self.declaration(parent)).transpose()?;
             self.rows.scopes.push(s::ParameterScope {
                 owner: declaration,
@@ -109,13 +93,35 @@ impl Stage {
                 child = next_sibling[id.0 as usize];
             }
         }
-        for (index, enabled) in active.into_iter().enumerate() {
-            self.charge(1)?;
-            if enabled && totals[index].is_none() {
-                return Err("source generic scope graph is cyclic or incomplete");
-            }
+        if self.rows.scopes.len() != owner_count {
+            return Err("source generic scope graph is cyclic or incomplete");
         }
         Ok(())
+    }
+
+    fn has_scope(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+        kind: s::DefinitionKind,
+    ) -> bool {
+        matches!(
+            kind,
+            s::DefinitionKind::SelfType
+                | s::DefinitionKind::Trait
+                | s::DefinitionKind::TraitAlias
+                | s::DefinitionKind::Function
+                | s::DefinitionKind::Struct
+                | s::DefinitionKind::Enum
+                | s::DefinitionKind::AssociatedType
+        ) || kind == s::DefinitionKind::Constant && self.scoped_constant(report, facts, owner)
+            || kind == s::DefinitionKind::TypeAlias
+                && facts
+                    .generics
+                    .parameters
+                    .get(&owner)
+                    .is_some_and(|parameters| !parameters.is_empty())
     }
 
     fn declared_scope_slots(
@@ -148,16 +154,10 @@ impl Stage {
         Ok(g::Range { start, end })
     }
 
-    fn scoped_constant(
-        &self,
-        report: &Report,
-        facts: &Declarations,
-        index: usize,
-    ) -> Result<bool, &'static str> {
-        let definition = DefId(u32::try_from(index).map_err(|_| "source scope identity overflow")?);
-        Ok(self.provided_constant(report, facts, definition)
+    fn scoped_constant(&self, report: &Report, facts: &Declarations, definition: DefId) -> bool {
+        self.provided_constant(report, facts, definition)
             || self.authored_required_constant(report, facts, definition)
-                && !self.range_required_constant(facts, definition))
+                && !self.range_required_constant(facts, definition)
     }
 
     /// Older nominal profiles carry declared lifetimes without outlives rows.

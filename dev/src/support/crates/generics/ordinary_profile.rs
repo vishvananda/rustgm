@@ -1283,8 +1283,9 @@ fn role_header(
     role: LangItem,
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
+    use super::super::HeaderRef;
     match (role, header) {
-        (role, Some(super::super::HeaderRef::Function(index)))
+        (role, Some(HeaderRef::Function(index)))
             if profile == BindingProfile::BodyOperations
                 && LangItem::GUARD_PANICS.contains(&role)
                 && rows.functions.get(index as usize).is_some_and(|function| {
@@ -1293,28 +1294,28 @@ fn role_header(
         (role, _) if LangItem::GUARD_PANICS.contains(&role) => {
             return Err("source guard role requires its actual defined free function");
         }
-        (role, Some(super::super::HeaderRef::Function(_)))
+        (role, Some(HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
-        (role, Some(super::super::HeaderRef::Nominal(index)))
+        (role, Some(HeaderRef::Nominal(index)))
             if LangItem::NOMINAL_WRAPPERS.contains(&role)
                 && profile == BindingProfile::BodyOperations
                 && wrapper_header(rows, kind, role, index) => {}
         (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {
             return Err("source wrapper role requires its actual nominal header");
         }
-        (LangItem::PointeeTrait, Some(super::super::HeaderRef::Trait(_)))
-        | (LangItem::MetadataType, Some(super::super::HeaderRef::AssociatedType(_)))
+        (LangItem::PointeeTrait, Some(HeaderRef::Trait(_)))
+        | (LangItem::MetadataType, Some(HeaderRef::AssociatedType(_)))
         | (
             LangItem::RangeMin
             | LangItem::RangeMax
             | LangItem::MemSizeConst
             | LangItem::MemAlignConst,
-            Some(super::super::HeaderRef::Constant(_)),
+            Some(HeaderRef::Constant(_)),
         )
-        | (LangItem::RangeSub, Some(super::super::HeaderRef::Function(_)))
+        | (LangItem::RangeSub, Some(HeaderRef::Function(_)))
         | (
             LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation,
-            Some(super::super::HeaderRef::Nominal(_)),
+            Some(HeaderRef::Nominal(_)),
         ) if profile == BindingProfile::BodyOperations => {}
         (LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata, _) => {
             return Err("source Pointee roles require their actual declaration header kinds");
@@ -1327,7 +1328,7 @@ fn role_header(
         }
         (
             LangItem::PanicInfo | LangItem::FormatArguments | LangItem::FormatArgument,
-            Some(super::super::HeaderRef::Nominal(_)),
+            Some(HeaderRef::Nominal(_)),
         ) if profile == BindingProfile::BodyOperations
             && kind == super::super::DefinitionKind::Struct => {}
         (LangItem::PanicLocation, _) => {
@@ -1338,26 +1339,20 @@ fn role_header(
         }
         (
             LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
-            Some(super::super::HeaderRef::Function(_)),
+            Some(HeaderRef::Function(_)),
         ) => {}
-        (LangItem::FutureOutput, Some(super::super::HeaderRef::AssociatedType(_)))
+        (LangItem::FutureOutput, Some(HeaderRef::AssociatedType(_)))
             if matches!(
                 profile,
                 BindingProfile::CompilerOperations | BindingProfile::BodyOperations
             ) => {}
         // A bound `panic` names a free function; consumers re-prove its header.
         // A bound `phantom_data` names a nominal; consumers re-prove its unit struct.
-        (LangItem::FnOnceOutput, Some(super::super::HeaderRef::AssociatedType(_)))
-        | (LangItem::Panic, Some(super::super::HeaderRef::Function(_)))
-        | (LangItem::PhantomData, Some(super::super::HeaderRef::Nominal(_)))
+        (LangItem::FnOnceOutput, Some(HeaderRef::AssociatedType(_)))
+        | (LangItem::Panic, Some(HeaderRef::Function(_)))
+        | (LangItem::PhantomData, Some(HeaderRef::Nominal(_)))
             if profile.languages() => {}
-        (
-            _,
-            Some(
-                super::super::HeaderRef::AssociatedType(_)
-                | super::super::HeaderRef::AssociatedDefinition(_),
-            ),
-        ) => {
+        (_, Some(HeaderRef::AssociatedType(_) | HeaderRef::AssociatedDefinition(_))) => {
             return Err("source associated role has a different actual member kind");
         }
         (LangItem::CloneFn, _)
@@ -1365,23 +1360,16 @@ fn role_header(
             _,
             None
             | Some(
-                super::super::HeaderRef::Function(_)
-                | super::super::HeaderRef::Implementation(_)
-                | super::super::HeaderRef::Static(_)
-                | super::super::HeaderRef::TypeAlias(_)
-                | super::super::HeaderRef::TraitAlias(_)
-                | super::super::HeaderRef::Constant(_),
+                HeaderRef::Function(_)
+                | HeaderRef::Implementation(_)
+                | HeaderRef::Static(_)
+                | HeaderRef::TypeAlias(_)
+                | HeaderRef::TraitAlias(_)
+                | HeaderRef::Constant(_),
             ),
         ) => return Err("source role has a different actual declaration/header kind"),
-        (_, Some(super::super::HeaderRef::Trait(_))) => {}
-        (
-            _,
-            Some(
-                super::super::HeaderRef::Nominal(_)
-                | super::super::HeaderRef::Variant(_)
-                | super::super::HeaderRef::Constructor(_),
-            ),
-        ) => {
+        (_, Some(HeaderRef::Trait(_))) => {}
+        (_, Some(HeaderRef::Nominal(_) | HeaderRef::Variant(_) | HeaderRef::Constructor(_))) => {
             return Err("ordinary source roles cannot claim a nominal declaration");
         }
     }
