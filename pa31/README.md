@@ -22,7 +22,9 @@ the source bodies that use those declarations.
   scoped lint at the call, import or macro expansion. For unstable trait
   implementations, use the stability of the types and traits named in
   the checked header. Validate `doc(cfg)`, `doc(auto_cfg)` and
-  `doc(notable_trait)` where the source uses them.
+  `doc(notable_trait)` where the source uses them. Check the placement, options,
+  and format arguments of `diagnostic::on_const` and
+  `diagnostic::on_unmatched_args`.
 - Support the declarations used by the pinned library, including
   `no_core`, explicit prelude imports, internal attributes, nominal roles,
   trait aliases and compiler-provided traits. Use the expanded item identities

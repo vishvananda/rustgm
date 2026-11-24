@@ -182,7 +182,7 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                 if directive_profiles::defer(
                     report,
                     facts,
-                    file,
+                    key,
                     attribute,
                     forest,
                     &mut directive_requests,

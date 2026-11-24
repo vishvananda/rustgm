@@ -1,0 +1,12 @@
+{
+  "bootstrap": true,
+  "cases": [
+    {"path": "directives.rs", "status": 0, "lint": null},
+    {"path": "directives.rs", "cfg": "empty", "status": 1,
+     "lint": "malformed_diagnostic_attributes", "diagnostic": "diagnostic directive requires a nonempty list"},
+    {"path": "directives.rs", "cfg": "misplaced", "status": 1,
+     "lint": "misplaced_diagnostic_attributes", "diagnostic": "on_const requires a non-const trait implementation"},
+    {"path": "directives.rs", "cfg": "format", "status": 1,
+     "lint": "malformed_diagnostic_format_literals", "diagnostic": "invalid on_unmatched_args format literal"}
+  ]
+}

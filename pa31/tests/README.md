@@ -19,8 +19,8 @@ non-exhaustive structs and an enum. `scripts/check_non_exhaustive_transport.py`
 publishes the provider and checks fresh construction and matching clients
 against RustGM and the pinned Rust compiler.
 
-The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`, and
-`spec/bootstrap-doc-options/` cases declare diagnostics needed before the
+The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
+`spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the
 pinned `core` build. Run their `lint-cases.json` manifests with
 `scripts/check_bootstrap_lints.py` against a prebuilt compiler.
 

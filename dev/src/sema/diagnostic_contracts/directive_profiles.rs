@@ -1,10 +1,18 @@
-//! Capped bring-up defers diagnostic rendering, preserving lexical/hard errors.
+//! Validate the source directives that describe a failed call or macro match.
+use super::attribute_directives::{OptionKind, Parser};
 use crate::{
     lex::token::Punctuation,
-    resolve::{expansion::Report, package::Error, unit::FileId},
+    resolve::{
+        expansion::Report,
+        package::Error,
+        unit::{FileId, NodeKey},
+    },
     sema::model::Declarations,
+    support::diagnostics::WarningCode,
     syntax::{
+        ast::Kind,
         attribute::{Attribute, Input},
+        item::ItemKind,
         token_tree::Forest,
     },
 };
@@ -81,12 +89,13 @@ pub(super) fn validate_literals(
 
 pub(super) fn defer(
     report: &Report,
-    facts: &Declarations,
-    file: FileId,
+    facts: &mut Declarations,
+    key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
     requests: &mut Requests,
 ) -> Result<bool, Error> {
+    let file = key.file;
     let source = report.package.units[file.0 as usize].source.text();
     let Some(directive) = recognized(attribute, forest, source) else {
         return Ok(false);
@@ -106,18 +115,132 @@ pub(super) fn defer(
         if !requests.enabled(report, directive)? {
             return Ok(true);
         }
-        return Err(Error::at(
-            file,
-            attribute.span.start,
-            if matches!(directive, Directive::Move) {
-                "uncapped move diagnostic directive profile is not implemented"
-            } else {
-                "uncapped const/macro diagnostic directive profile is not implemented"
-            },
-        ));
+        if matches!(directive, Directive::Move) {
+            return Err(Error::at(
+                file,
+                attribute.span.start,
+                "uncapped move diagnostic directive profile is not implemented",
+            ));
+        }
+        let mut parser = Parser::new(report, facts, key, attribute, forest);
+        check_owner(&mut parser, directive)?;
+        check_options(&mut parser, attribute, directive)?;
     }
-    // No diagnostic table, feature capability, obligation or body permission.
     Ok(true)
+}
+
+fn check_owner(parser: &mut Parser<'_, '_>, directive: Directive) -> Result<(), Error> {
+    let ast = &parser.report.package.unit(parser.key.file).configured.ast;
+    let mut node = parser.key.node;
+    while let Kind::Attributed { value, .. } = ast.node(node).kind {
+        node = value;
+    }
+    let item = if let Kind::Item(index) = ast.node(node).kind {
+        ast.items.get(index as usize).map(|item| item.kind)
+    } else {
+        None
+    };
+    let invalid = match directive {
+        Directive::Const
+            if !matches!(
+                item,
+                Some(ItemKind::Impl {
+                    constant: false,
+                    trait_path: Some(_),
+                    ..
+                })
+            ) =>
+        {
+            Some("on_const requires a non-const trait implementation")
+        }
+        Directive::UnmatchedArgs
+            if !matches!(
+                item,
+                Some(ItemKind::MacroRules { .. } | ItemKind::DeclarativeMacro { .. })
+            ) =>
+        {
+            Some("on_unmatched_args requires a macro definition")
+        }
+        _ => None,
+    };
+    if let Some(message) = invalid {
+        parser.warn(WarningCode::MisplacedDiagnosticAttributes, message)?;
+    }
+    Ok(())
+}
+
+fn check_options(
+    parser: &mut Parser<'_, '_>,
+    attribute: Attribute,
+    directive: Directive,
+) -> Result<(), Error> {
+    let Some(parts) = parser.option_parts(attribute)? else {
+        return parser.warn(
+            WarningCode::MalformedDiagnosticAttributes,
+            "diagnostic directive requires a nonempty list",
+        );
+    };
+    let mut seen = [false; 2];
+    for part in parts {
+        let Some((option, value)) = parser.option(part)? else {
+            parser.warn(
+                WarningCode::MalformedDiagnosticAttributes,
+                "malformed diagnostic directive option",
+            )?;
+            continue;
+        };
+        let single = match option {
+            OptionKind::Message => Some(0),
+            OptionKind::Label => Some(1),
+            OptionKind::Note => None,
+        };
+        if single.is_some_and(|index| std::mem::replace(&mut seen[index], true)) {
+            parser.warn(
+                WarningCode::MalformedDiagnosticAttributes,
+                "duplicate diagnostic directive option",
+            )?;
+        }
+        parser.charge(value.len(), 0)?;
+        if !valid_format(&value, directive) {
+            let message = if matches!(directive, Directive::Const) {
+                "invalid on_const format literal"
+            } else {
+                "invalid on_unmatched_args format literal"
+            };
+            parser.warn(WarningCode::MalformedDiagnosticFormatLiterals, message)?;
+        }
+    }
+    Ok(())
+}
+
+fn valid_format(mut text: &str, directive: Directive) -> bool {
+    while let Some(index) = text.find(['{', '}']) {
+        let brace = text.as_bytes()[index];
+        text = &text[index + 1..];
+        if text.as_bytes().first() == Some(&brace) {
+            text = &text[1..];
+            continue;
+        }
+        let Some((name, rest)) = text.split_once('}') else {
+            return false;
+        };
+        if brace == b'}' || !valid_argument(name, directive) {
+            return false;
+        }
+        text = rest;
+    }
+    true
+}
+
+fn valid_argument(name: &str, directive: Directive) -> bool {
+    if matches!(directive, Directive::UnmatchedArgs) {
+        return name == "This";
+    }
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|first| first == '_' || unicode_ident::is_xid_start(first))
+        && chars.all(unicode_ident::is_xid_continue)
 }
 
 #[cfg(test)]

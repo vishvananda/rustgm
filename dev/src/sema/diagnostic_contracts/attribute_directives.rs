@@ -23,7 +23,31 @@ pub(super) struct Parser<'a, 'b> {
     pub parameters: Vec<(DefId, usize)>,
     issue: u32,
 }
-impl Parser<'_, '_> {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum OptionKind {
+    Message,
+    Label,
+    Note,
+}
+impl<'a, 'b> Parser<'a, 'b> {
+    pub(super) fn new(
+        report: &'a Report,
+        facts: &'b mut Declarations,
+        key: NodeKey,
+        attribute: Attribute,
+        forest: &'a Forest,
+    ) -> Self {
+        Self {
+            report,
+            facts,
+            key,
+            offset: attribute.span.start,
+            forest,
+            source: report.package.unit(key.file).source.text(),
+            parameters: Vec::new(),
+            issue: 0,
+        }
+    }
     pub(super) fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error> {
         super::charge(self.facts, self.key, steps, bytes)
     }
@@ -98,31 +122,18 @@ impl Parser<'_, '_> {
     }
     fn options(&mut self, parts: &[TreeRange], directive: &mut Directive) -> Result<(), Error> {
         for range in parts {
-            let Some(name) = self.forest.name(self.source, range.start) else {
-                self.malformed()?;
-                continue;
-            };
-            if !matches!(name, "message" | "label" | "note")
-                || range.end != range.start + 3
-                || !self
-                    .forest
-                    .punctuation(range.start + 1, crate::lex::token::Punctuation::Equal)
-            {
-                self.malformed()?;
-                continue;
-            }
-            let Some(value) = self.literal(range.start + 2)? else {
+            let Some((option, value)) = self.option(*range)? else {
                 self.malformed()?;
                 continue;
             };
             let Some(template) = super::template_text::parse(self, &value)? else {
                 continue;
             };
-            if name == "note" {
+            if option == OptionKind::Note {
                 self.charge(1, 4 * size_of::<Template>())?;
                 directive.notes.push(template);
             } else {
-                let exists = if name == "message" {
+                let exists = if option == OptionKind::Message {
                     directive.message.is_some()
                 } else {
                     directive.label.is_some()
@@ -134,7 +145,7 @@ impl Parser<'_, '_> {
                     )?;
                     continue;
                 }
-                if name == "message" {
+                if option == OptionKind::Message {
                     directive.message = Some(template);
                 } else {
                     directive.label = Some(template);
@@ -142,6 +153,25 @@ impl Parser<'_, '_> {
             }
         }
         Ok(())
+    }
+    pub(super) fn option(
+        &mut self,
+        range: TreeRange,
+    ) -> Result<Option<(OptionKind, String)>, Error> {
+        let kind = match self.forest.name(self.source, range.start) {
+            Some("message") => OptionKind::Message,
+            Some("label") => OptionKind::Label,
+            Some("note") => OptionKind::Note,
+            _ => return Ok(None),
+        };
+        if range.end != range.start + 3
+            || !self
+                .forest
+                .punctuation(range.start + 1, crate::lex::token::Punctuation::Equal)
+        {
+            return Ok(None);
+        }
+        Ok(self.literal(range.start + 2)?.map(|value| (kind, value)))
     }
     fn condition(&mut self, range: TreeRange) -> Result<Condition, Error> {
         let Some(name) = self.forest.name(self.source, range.start) else {
@@ -197,28 +227,35 @@ impl Parser<'_, '_> {
         self.options(options, &mut directive)?;
         Ok(Some(directive))
     }
-    fn parse(&mut self, attribute: Attribute, mode: Mode) -> Result<Vec<Directive>, Error> {
+    pub(super) fn option_parts(
+        &mut self,
+        attribute: Attribute,
+    ) -> Result<Option<Vec<TreeRange>>, Error> {
         let Input::Delimited(group) = attribute.input else {
-            self.malformed()?;
-            return Ok(Vec::new());
+            return Ok(None);
         };
         let Some(TreeKind::Group {
             delimiter: Delimiter::Parenthesis,
             ..
         }) = self.forest.tree(group).map(|tree| tree.kind)
         else {
-            self.malformed()?;
-            return Ok(Vec::new());
+            return Ok(None);
         };
         let Some(range) = self.forest.children(group) else {
-            self.malformed()?;
-            return Ok(Vec::new());
+            return Ok(None);
         };
         let parts = self.parts(range)?;
         if parts.is_empty() || attribute.unsafe_wrapper {
+            Ok(None)
+        } else {
+            Ok(Some(parts))
+        }
+    }
+    fn parse(&mut self, attribute: Attribute, mode: Mode) -> Result<Vec<Directive>, Error> {
+        let Some(parts) = self.option_parts(attribute)? else {
             self.malformed()?;
             return Ok(Vec::new());
-        }
+        };
         let mut directives = Vec::new();
         let mut defaults = Vec::new();
         for part in parts {
@@ -258,18 +295,9 @@ pub(super) fn collect(
     else {
         return Ok(());
     };
-    let unit = report.package.unit(key.file);
     let parameters = formal_slots(report, facts, key, item)?;
-    let mut parser = Parser {
-        report,
-        facts,
-        key,
-        offset: attribute.span.start,
-        forest,
-        source: unit.source.text(),
-        parameters,
-        issue: 0,
-    };
+    let mut parser = Parser::new(report, facts, key, attribute, forest);
+    parser.parameters = parameters;
     let directives = parser.parse(attribute, mode)?;
     let previous = parser
         .facts

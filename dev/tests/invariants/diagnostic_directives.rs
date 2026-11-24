@@ -59,20 +59,14 @@ fn capped_directives_match_independent_edition_outcomes() -> Result {
     Ok(())
 }
 #[test]
-fn uncapped_rendering_remains_explicit_and_capped_tables_stay_cold() -> Result {
+fn uncapped_directives_validate_and_capped_tables_stay_cold() -> Result {
     for name in ["const-valid", "macro-valid"] {
         let source = crate::test_source::fixture(&format!(
             "pa40/tests/spec/diagnostic-directives/{name}.rs"
         ))?;
         let strict = report(&source, &Config::default())?;
-        let Err(error) = crate::sema::declarations::analyze(&strict) else {
-            return Err("uncapped directive rendering unexpectedly accepted".into());
-        };
-        assert!(
-            error
-                .to_string()
-                .contains("uncapped const/macro diagnostic")
-        );
+        let facts = crate::sema::declarations::analyze(&strict)?;
+        crate::pipeline::analyze(&strict, facts)?;
         let mut config = Config::default();
         config.set_lint_cap(LintCap::Allow);
         let capped = report(&source, &config)?;
