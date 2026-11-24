@@ -92,6 +92,9 @@ fn check(
     }
     let iterator = trait_header(report, facts, iterator, steps)?;
     let into_iter = trait_header(report, facts, into_owner, steps)?;
+    if iterator.origin.source().is_none() {
+        super::cardinality::imported(report, facts, &iterator, ItemId(option.definition.0), steps)?;
+    }
     let item = next_item(facts, next, &iterator, ItemId(option.definition.0))?;
     let (input, result) = function(facts, into, 0)?;
     if input != into_iter.self_type {
@@ -136,7 +139,7 @@ fn trait_owner(facts: &Declarations, method: Role) -> Result<Role, &'static str>
     })
 }
 
-fn trait_header<'a>(
+pub(super) fn trait_header<'a>(
     report: &Report,
     facts: &'a Declarations,
     role: Role,

@@ -160,7 +160,9 @@ and `Option` declarations. Run `scripts/check_iteration_role_transport.py`
 with the prebuilt compilers.
 The `--case blanket` variant uses the provider's const blanket with a local
 ordinary iterator. The `--case blanket-const` variant also evaluates the
-imported `into_iter` body in a constant initializer.
+imported `into_iter` body in a constant initializer. The `--case size-hint`
+variant calls the actual provided default in native and const execution and
+checks both fields of its returned tuple.
 `spec/source-enum-role-transport/outcomes.json` checks the provider's actual
 Option, Result, and Ordering declarations in fresh clients. It also rejects
 swapped Option variants and a redirected Result diagnostic owner. Run

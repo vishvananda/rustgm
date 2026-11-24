@@ -68,9 +68,9 @@ fn declared_inputs(
     facts: &Declarations,
     definition: crate::resolve::model::DefId,
 ) -> Result<Vec<Clause>, &'static str> {
-    if facts.imported_clone_default(definition)? {
-        // The checked Clone role has an ordinary Sized supertrait. Its provided
-        // member owns the conditional Destruct premise in its imported header.
+    if facts.imported_const_default(definition)? {
+        // Imported provided methods carry their own predicates in their
+        // authenticated header, including Clone's conditional Destruct premise.
         let inputs = crate::sema::declaration_inputs::declared_own(
             &facts.generics,
             facts.crates.as_deref(),

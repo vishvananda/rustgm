@@ -198,6 +198,7 @@ fn empty_auto(
 pub(super) struct DefaultTraits {
     pub(super) drop: Option<DeclarationRef>,
     pub(super) clone_from: Option<DeclarationRef>,
+    pub(super) size_hint: Option<DeclarationRef>,
     pub(super) comparisons: [Option<DeclarationRef>; LangItem::COMPARISON_TRAITS.len()],
 }
 impl DefaultTraits {
@@ -206,6 +207,7 @@ impl DefaultTraits {
             self.drop == Some(owner)
                 || self.comparisons.contains(&Some(owner))
                 || self.clone_from == Some(header.declaration)
+                || self.size_hint == Some(header.declaration)
         }) && header.constness == Constness::Conditional
             && matches!(header.body, s::FunctionBody::Original(_))
     }

@@ -32,7 +32,7 @@ pub(super) fn defining(
     }
     if let Some(instance) = body.instance {
         if execution.is_none()
-            || body.const_context && !facts.imported_clone_default(definition)?
+            || body.const_context && !facts.imported_const_default(definition)?
             || !matches!(
                 facts.types.kind(instance.ty()), Some(Kind::FunctionItem { item, signature: actual, .. })
                 if item.0 == definition.0 && actual == signature

@@ -7,38 +7,46 @@ use crate::{
 };
 use std::cell::Ref;
 impl Original<'_> {
-    pub(crate) fn nominal_variant(
+    pub(crate) fn aggregate_variant(
         &self,
         root: TypeRef,
         steps: &mut usize,
-    ) -> Result<VariantId, &'static str> {
+    ) -> Result<Option<VariantId>, &'static str> {
         super::charge(steps)?;
-        if !self.rows().descriptor().profile().nominals() {
+        let rows = self.rows();
+        let profile = rows.descriptor().profile();
+        if !profile.nominals() {
             return Err("source nominal reconstruction requires its explicit version-ten profile");
         }
-        let s::Type::Nominal { declaration, .. } = *self
-            .rows()
+        let recipe = rows
             .types
             .get(root.0 as usize)
-            .ok_or("source nominal value type is unknown")?
-        else {
-            return Err("source nominal value omitted its actual nominal type recipe");
-        };
-        if declaration.artifact.0 != 0 {
-            return Err("source nominal value belongs to a foreign actual provider");
-        }
-        let owner = self.declaration(declaration.declaration, steps)?;
+            .ok_or("source aggregate value type is unknown")?;
         let store = match &self.mapping {
             super::selected::Mapping::Ordinary { store, .. } => *store,
             super::selected::Mapping::Selected { .. } => {
                 return Err("provided profiles do not own source nominal storage");
             }
         };
-        if !matches!(store.kind(self.ty(root,steps)?),Some(Kind::Adt(item,_)) if item.0 == owner.0)
-        {
+        let canonical = store.kind(self.ty(root, steps)?);
+        if matches!(recipe, s::Type::Tuple(_)) && profile.declaration_policies() {
+            return if matches!(canonical, Some(Kind::Tuple(_))) {
+                Ok(None)
+            } else {
+                Err("source tuple value changed its canonical result type")
+            };
+        }
+        let s::Type::Nominal { declaration, .. } = *recipe else {
+            return Err("source nominal value omitted its actual nominal type recipe");
+        };
+        if declaration.artifact.0 != 0 {
+            return Err("source nominal value belongs to a foreign actual provider");
+        }
+        let owner = self.declaration(declaration.declaration, steps)?;
+        if !matches!(canonical, Some(Kind::Adt(item, _)) if item.0 == owner.0) {
             return Err("source nominal value changed its canonical declaration identity");
         }
-        self.nominal_owner(declaration.declaration, steps)
+        self.nominal_owner(declaration.declaration, steps).map(Some)
     }
     fn nominal_owner(
         &self,

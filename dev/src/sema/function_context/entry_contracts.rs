@@ -75,7 +75,7 @@ impl Declarations {
         if header.body.is_none() {
             return Err("source abstract const-trait member execution is not implemented");
         }
-        if header.declaration.source().is_none() && !self.imported_clone_default(definition)? {
+        if header.declaration.source().is_none() && !self.imported_const_default(definition)? {
             return Err("const default requires its actual source body");
         }
         Ok(Some(definition))

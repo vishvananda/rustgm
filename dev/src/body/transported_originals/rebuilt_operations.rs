@@ -127,7 +127,7 @@ fn value_kind(
     Ok(match value.kind {
         s::ValueKind::Unit => Rvalue::Unit,
         s::ValueKind::Aggregate { fields } => Rvalue::Aggregate {
-            variant: Some(view.nominal_variant(value.ty, &mut work.steps)?),
+            variant: view.aggregate_variant(value.ty, &mut work.steps)?,
             fields: crate::body::ir::ValueList {
                 start: fields.start,
                 end: fields.end,
@@ -799,12 +799,12 @@ fn same_value(
         (Rvalue::Unit, s::ValueKind::Unit) | (Rvalue::Text(_), s::ValueKind::Text(_)) => true,
         (
             Rvalue::Aggregate {
-                variant: Some(actual),
+                variant: actual,
                 fields,
             },
             s::ValueKind::Aggregate { fields: raw },
         ) => {
-            actual == view.nominal_variant(record.ty, steps)?
+            actual == view.aggregate_variant(record.ty, steps)?
                 && fields.start == raw.start
                 && fields.end == raw.end
         }

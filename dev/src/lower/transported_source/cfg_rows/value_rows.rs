@@ -144,6 +144,22 @@ fn item(
             variant: Some(variant),
             fields,
         } if stage.nominal_transport() => aggregate(stage, facts, value.ty, variant, fields),
+        ir::Rvalue::Aggregate {
+            variant: None,
+            fields,
+        } if stage.declaration_policies()
+            && matches!(
+                facts.types.kind(value.ty),
+                Some(crate::types::Kind::Tuple(_))
+            ) =>
+        {
+            Ok(s::ValueKind::Aggregate {
+                fields: g::Range {
+                    start: fields.start,
+                    end: fields.end,
+                },
+            })
+        }
         ir::Rvalue::Scalar(id) if stage.feature_predicates() => scalar(facts, body, value.ty, id),
         ir::Rvalue::Text(text) if stage.body_nodes() => {
             text_literal(stage, facts, raw, value.ty, text)

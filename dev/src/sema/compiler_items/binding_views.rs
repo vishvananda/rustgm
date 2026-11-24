@@ -224,6 +224,29 @@ impl Catalog {
         }
     }
 
+    pub(in crate::sema) fn imported_member_named(
+        &self,
+        origin: DeclarationOrigin,
+        name: &str,
+    ) -> Result<bool, &'static str> {
+        let (Bindings::Imported(imported), DeclarationOrigin::Imported(declaration)) =
+            (&self.bindings, origin)
+        else {
+            return Ok(false);
+        };
+        let (owner, ordinal, _) = imported.origins.declaration_coordinate(declaration)?;
+        if owner != &self.provider {
+            return Ok(false);
+        }
+        let descriptor = imported.descriptor(&self.provider)?;
+        Ok(descriptor.profile().declaration_policies()
+            && descriptor
+                .rows()
+                .declarations
+                .get(ordinal.0 as usize)
+                .is_some_and(|row| row.name.as_deref() == Some(name)))
+    }
+
     pub(super) fn imported_diagnostic(
         &self,
         wanted: s::DiagnosticRole,

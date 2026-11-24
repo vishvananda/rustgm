@@ -1032,6 +1032,7 @@ pub(super) struct Bindings {
     clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone_fn: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone_from: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    size_hint: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     trivial_clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
@@ -1061,6 +1062,7 @@ impl Bindings {
         callable_traits::DefaultTraits {
             drop: self.drop,
             clone_from: self.clone_from,
+            size_hint: self.size_hint,
             comparisons: self.comparisons,
         }
     }
@@ -1444,6 +1446,9 @@ pub(super) fn bindings(
             | BindingProfile::Languages
             | BindingProfile::BodyOperations
     );
+    let mut default = |role, name| {
+        const_default_member(rows, headers, bound(role).filter(|_| modern), name, work)
+    };
     Ok(Bindings {
         callables,
         languages,
@@ -1452,12 +1457,8 @@ pub(super) fn bindings(
         drop_glue: bound(LangItem::DropGlue),
         clone: bound(LangItem::Clone).filter(|_| modern),
         clone_fn: bound(LangItem::CloneFn).filter(|_| modern),
-        clone_from: clone_default_member(
-            rows,
-            headers,
-            bound(LangItem::Clone).filter(|_| modern),
-            work,
-        )?,
+        clone_from: default(LangItem::Clone, "clone_from")?,
+        size_hint: default(LangItem::Iterator, "size_hint")?,
         trivial_clone: bound(LangItem::TrivialClone),
         try_methods: LangItem::REQUIRED_TRY_METHODS.map(bound),
         try_traits: [
@@ -1907,10 +1908,11 @@ fn enum_role_header(
     Ok(())
 }
 
-fn clone_default_member(
+fn const_default_member(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     owner: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    name: &str,
     work: &mut Work,
 ) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
     use super::super::HeaderRef;
@@ -1918,7 +1920,7 @@ fn clone_default_member(
         return Ok(None);
     };
     let Some(HeaderRef::Trait(index)) = headers.header(owner, work)? else {
-        return Err("source Clone default lost its actual trait header");
+        return Err("source const default lost its actual trait header");
     };
     let header = &rows.traits[index as usize];
     if header.flags.bits() & TraitFlags::CONST == 0 {
@@ -1929,15 +1931,16 @@ fn clone_default_member(
     let Some(&member) = members.iter().find(|member| {
         rows.declarations
             .get(member.0 as usize)
-            .is_some_and(|row| row.name.as_deref() == Some("clone_from"))
+            .is_some_and(|row| row.name.as_deref() == Some(name))
     }) else {
         return Ok(None);
     };
     if !matches!(headers.header(member, work)?, Some(HeaderRef::Function(index))
         if rows.functions[index as usize].parent == Some(owner)
+            && rows.functions[index as usize].constness == Constness::Conditional
             && matches!(rows.functions[index as usize].body, FunctionBody::Original(_)))
     {
-        return Err("source Clone default requires its actual provided clone_from method");
+        return Err("source const default requires its actual provided method");
     }
     Ok(Some(member))
 }

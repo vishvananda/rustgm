@@ -26,10 +26,10 @@ impl Builder<'_, '_, '_> {
         match value.kind {
             s::ValueKind::Unit => self.unit(original, value.ty, work),
             s::ValueKind::Aggregate { fields } => {
-                self.nominal_value(original, (value.ty, None), fields, work)
+                self.aggregate_value(original, (value.ty, None), fields, work)
             }
             s::ValueKind::VariantAggregate { variant, fields } => {
-                self.nominal_value(original, (value.ty, Some(variant)), fields, work)
+                self.aggregate_value(original, (value.ty, Some(variant)), fields, work)
             }
             s::ValueKind::IsVariant { place, variant } => {
                 self.variant_test(original, (value.ty, place), variant, work)

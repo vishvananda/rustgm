@@ -706,7 +706,16 @@ fn conditional_definition_trait(
             return Err("source non-const Drop method requires its actual policy transport");
         }
     } else if function.body.is_some() {
-        return crate::sema::compiler_items::source_clone_default(
+        let clone = crate::sema::compiler_items::source_clone_default(
+            report,
+            facts,
+            function.definition,
+            owner,
+        )?;
+        if clone.is_some() {
+            return Ok(clone);
+        }
+        return crate::sema::compiler_items::for_roles::source_default(
             report,
             facts,
             function.definition,

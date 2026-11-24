@@ -271,15 +271,17 @@ impl Declarations {
         {
             return Ok(Some(owner));
         }
-        for kind in [LangItem::Drop, LangItem::Clone]
+        for kind in [LangItem::Drop, LangItem::Clone, LangItem::Iterator]
             .into_iter()
             .chain(LangItem::COMPARISON_TRAITS)
         {
             if let Some(role) = catalog.role(kind)?
                 && role.definition == owner
                 && role.origin.source().is_none()
-                && (kind != LangItem::Clone || header.body.is_some())
+                && (!matches!(kind, LangItem::Clone | LangItem::Iterator) || header.body.is_some())
                 && self.associated.constant_trait(owner) == Some(true)
+                && (kind != LangItem::Iterator
+                    || catalog.imported_member_named(header.declaration, "size_hint")?)
             {
                 return Ok(Some(owner));
             }
@@ -289,22 +291,43 @@ impl Declarations {
 
     /// The loaded Clone role seals the provided default before any body demand.
     pub(crate) fn imported_clone_default(&self, definition: DefId) -> Result<bool, &'static str> {
+        self.imported_default_for(definition, LangItem::Clone)
+    }
+
+    pub(crate) fn imported_const_default(&self, definition: DefId) -> Result<bool, &'static str> {
+        Ok(self.imported_clone_default(definition)?
+            || self.imported_default_for(definition, LangItem::Iterator)?)
+    }
+
+    fn imported_default_for(
+        &self,
+        definition: DefId,
+        kind: LangItem,
+    ) -> Result<bool, &'static str> {
         let Some(catalog) = self.source_bindings.as_deref() else {
             return Ok(false);
         };
-        let Some(role) = catalog.role(LangItem::Clone)? else {
+        let Some(role) = catalog.role(kind)? else {
             return Ok(false);
         };
         if role.origin.source().is_some()
             || self.associated.trait_owner(definition) != Some(role.definition)
             || self.associated.constant_trait(role.definition) != Some(true)
-            || self
-                .declaration_header(definition)?
-                .is_none_or(|header| header.declaration.source().is_some() || header.body.is_none())
         {
             return Ok(false);
         }
-        Ok(catalog.validated_role(LangItem::Clone)? == Some(role))
+        let Some(header) = self
+            .declaration_header(definition)?
+            .filter(|header| header.declaration.source().is_none() && header.body.is_some())
+        else {
+            return Ok(false);
+        };
+        if kind == LangItem::Iterator
+            && !catalog.imported_member_named(header.declaration, "size_hint")?
+        {
+            return Ok(false);
+        }
+        Ok(catalog.validated_role(kind)? == Some(role))
     }
 
     fn imported_member_self_site(

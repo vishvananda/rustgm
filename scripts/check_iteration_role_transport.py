@@ -106,12 +106,47 @@ def reject_ordinary_const_client(check, importer, artifact, client, rustc, contr
               "-o", check.folder / "ordinary-iterator.lowir", wrong], 1, timeout=30)
 
 
+def size_hint_inputs(contract, blanket, provider):
+    anchor = contract["provider_anchor"].encode()
+    if provider.count(anchor) != 1:
+        raise ValueError("iteration fixture lost its exact next declaration anchor")
+    member = (FIXTURE / contract["provider_member"]).read_bytes()
+    drop = source_prefix(FIXTURE / blanket["provider"], "const impl<I:")
+    return b"#![feature(const_destruct)]\n" + provider.replace(anchor, member + anchor) + drop
+
+
+def reject_size_hint_rows(check, exporter, importer, source, artifact, client, contract):
+    text = source.read_bytes()
+    receiver = b"fn size_hint(&self)"
+    if text.count(receiver) != 1:
+        raise ValueError("iteration fixture lost the exact size_hint receiver")
+    wrong = check.folder / "mutating-size-hint.rs"
+    wrong.write_bytes(text.replace(receiver, b"fn size_hint(&mut self)"))
+    rejected = check.folder / "mutating-size-hint.rgcrate"
+    check.run("wrong-size-hint-receiver", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", rejected, wrong], 1, [contract["wrong_receiver"]], timeout=30)
+    if rejected.exists():
+        raise ValueError("an altered size_hint declaration produced an artifact")
+
+    # The actual body has one aggregate node with a range operand [0, 2).
+    range_start = bytes((3, 1, 9)) + (0).to_bytes(4, "little")
+    tuple_node = range_start + (2).to_bytes(4, "little")
+    packet = artifact.read_bytes()
+    if packet.count(tuple_node) != 1:
+        raise ValueError("size_hint original lost its one two-operand aggregate row")
+    forged = check.folder / "short-tuple.rgcrate"
+    forged.write_bytes(packet.replace(tuple_node, range_start + (1).to_bytes(4, "little")))
+    check.run("wrong-size-hint-arity", [*importer, "--extern", f"base={forged}", client],
+              1, [contract["wrong_arity"]], timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const"), default="roles")
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint"),
+                        default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     contract = json.loads((FIXTURE / "outcomes.json").read_text())
@@ -122,10 +157,16 @@ def main():
                 + (FIXTURE / contract["provider"]).read_bytes())
     client = FIXTURE / contract["client"]
     constant = args.case == "blanket-const"
-    if args.case != "roles":
+    observed = contract
+    if args.case == "size-hint":
+        observed = contract["size_hint"]
+        provider = size_hint_inputs(observed, contract["blanket"], provider)
+        client = FIXTURE / observed["client"]
+    elif args.case != "roles":
         provider, client = blanket_inputs(check, contract["blanket"], provider, client, constant)
+        if constant:
+            observed = contract["blanket"]["const"]
     source.write_bytes(provider)
-    observed = contract["blanket"]["const"] if constant else contract
     observer = check.folder / "observer.o"
     check.run("observer", ["cc", "-c", FIXTURE / observed["observer"], "-o", observer], timeout=15)
     expected = observed["stdout"].encode()
@@ -147,12 +188,17 @@ def main():
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("rustgm-observe", [native], timeout=15).stdout != expected:
         raise ValueError("fresh RustGM client changed either branch of the imported iteration")
-    if constant:
-        reject_ordinary_const_client(check, importer, artifact, client, args.rustc,
-                                     contract["blanket"]["const"])
+    if constant or args.case == "size-hint":
+        reject_ordinary_const_client(check, importer, artifact, client, args.rustc, observed)
+    if args.case == "size-hint":
+        reject_size_hint_rows(check, exporter, importer, source, artifact, client, observed)
+        if args.baseline is not None:
+            check.run("old-size-hint-reader", [args.baseline.resolve(strict=True), *importer[1:],
+                      "--extern", f"base={artifact}", client], 1, [observed["old_reader"]],
+                      timeout=30)
     elif args.case == "blanket":
         reject_ordinary_premise(check, exporter, source, contract["blanket"])
-    else:
+    elif args.case == "roles":
         rejected_providers(check, exporter, source, contract)
         rejected_consumers(check, importer, client, artifact, args.baseline, contract)
     print(expected.decode(), end="")

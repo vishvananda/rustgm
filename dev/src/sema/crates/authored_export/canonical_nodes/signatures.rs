@@ -186,40 +186,33 @@ impl Stage {
             .types
             .list(parts.parameters)
             .ok_or("source callable input list is unknown")?;
-        let deferred = matches!(mode, Roots::Demand)
-            && self.anonymous_signature_field(facts, parts)?.is_some();
-        // Only new nested functions need temporary roots. Ordinary signatures
-        // keep their existing direct append and allocation behavior.
+        // A nested type recipe may append its own root range while being emitted.
+        // Reserve the signature's exact parameter range before demanding children.
         self.reserve(
             parameter_types
                 .len()
-                .saturating_mul((4 + usize::from(deferred)) * size_of::<g::TypeRef>()),
+                .saturating_mul(4 * size_of::<g::TypeRef>()),
         )?;
-        let mut parameters = Vec::with_capacity(if deferred { parameter_types.len() } else { 0 });
-        let mut start = self.rows.roots.len();
-        for &parameter in parameter_types {
+        let start = self.rows.roots.len();
+        let end = start
+            .checked_add(parameter_types.len())
+            .ok_or("source callable roots overflow")?;
+        let bounds = g::Range {
+            start: u32::try_from(start).map_err(|_| "source callable roots overflow")?,
+            end: u32::try_from(end).map_err(|_| "source callable roots overflow")?,
+        };
+        self.rows.roots.resize(end, g::TypeRef(0));
+        for (index, &parameter) in parameter_types.iter().enumerate() {
             self.charge(1)?;
             let ty = self.signature_root(facts, parameter, context, mode)?;
-            if deferred {
-                parameters.push(ty);
-            } else {
-                self.rows.roots.push(ty);
-            }
+            self.rows.roots[start + index] = ty;
         }
         let result = self.signature_root(facts, parts.result, context, mode)?;
-        if deferred {
-            // Children have completed their own root ranges before this one.
-            start = self.rows.roots.len();
-            self.rows.roots.extend(parameters);
-        }
-        let start = u32::try_from(start).map_err(|_| "source callable roots overflow")?;
-        let end =
-            u32::try_from(self.rows.roots.len()).map_err(|_| "source callable roots overflow")?;
         Ok(g::Signature {
             binder: self.graph.frames
                 [context.frame.ok_or("source callable frame was lost")?.0 as usize]
                 .binder,
-            parameters: g::Range { start, end },
+            parameters: bounds,
             result,
             unsafe_: parts.unsafe_,
             convention: match parts.convention.abi {

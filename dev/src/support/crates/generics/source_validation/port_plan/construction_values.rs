@@ -221,13 +221,20 @@ fn applied_region(
     uses::region(domains, arena, region, Rewrite::Original, work)
 }
 impl Builder<'_, '_, '_> {
-    pub(super) fn nominal_value(
+    pub(super) fn aggregate_value(
         &mut self,
         original: &s::Original,
         (ty, variant): (g::TypeRef, Option<DeclarationRef>),
         fields: g::Range,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        if variant.is_none()
+            && self.domains.declaration_policies
+            && let Some(&s::Type::Tuple(elements)) =
+                self.domains.headers.rows().types.get(ty.0 as usize)
+        {
+            return self.tuple_value(original, elements, fields, work);
+        }
         let base = self.node(original, ty, work)?;
         let Some(Node::Nominal { declaration, .. }) =
             self.arena.nodes.get(base.0 as usize).copied()
@@ -274,6 +281,27 @@ impl Builder<'_, '_, '_> {
                 return Err(
                     "source aggregate field type differs after actual nominal substitution",
                 );
+            }
+        }
+        Ok(())
+    }
+    fn tuple_value(
+        &mut self,
+        original: &s::Original,
+        elements: g::Range,
+        fields: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let elements = elements.slice(&self.domains.headers.rows().roots)?;
+        let fields = fields.slice(&original.arguments)?;
+        if elements.len() != fields.len() {
+            return Err("source tuple value changed its complete actual field count");
+        }
+        for (&element, &value) in elements.iter().zip(fields) {
+            let expected = self.node(original, element, work)?;
+            let actual = self.node(original, original.values[value as usize].ty, work)?;
+            if actual != expected {
+                return Err("source tuple field type differs from its ordered result element");
             }
         }
         Ok(())
