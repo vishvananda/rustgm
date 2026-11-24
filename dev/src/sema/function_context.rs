@@ -314,6 +314,10 @@ impl Declarations {
         self.imported_default_for(definition, LangItem::Iterator, &["last"])
     }
 
+    pub(crate) fn imported_iterator_count(&self, definition: DefId) -> Result<bool, &'static str> {
+        self.imported_default_for(definition, LangItem::Iterator, &["count"])
+    }
+
     fn imported_default_for(
         &self,
         definition: DefId,

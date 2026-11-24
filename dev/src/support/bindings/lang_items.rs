@@ -146,7 +146,8 @@ impl LangItem {
         Self::RangeToInclusiveCopy,
     ];
 
-    pub(crate) const PROVIDED_ITERATOR_METHODS: [&str; 4] = ["size_hint", "by_ref", "fold", "last"];
+    pub(crate) const PROVIDED_ITERATOR_METHODS: [&str; 5] =
+        ["size_hint", "by_ref", "fold", "last", "count"];
 
     pub(crate) const FOR_OPTION_ROLES: [Self; 3] =
         [Self::Option, Self::OptionSome, Self::OptionNone];

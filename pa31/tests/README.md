@@ -194,6 +194,12 @@ iterators, non-const callbacks, and altered callback premises.
 The `--case last` variant runs the actual `Iterator::last` default calling
 `self.fold(Maybe::Absent, some)` with its nested function-item helper in native
 and const execution, and rejects non-const iterators and altered item premises.
+The `--case count` variant runs the actual `Iterator::count` default alongside
+the transported `const trait Add` companion role and `const impl Add for usize`
+in native and const execution (with a nested `const fn add_one` helper, as
+unchanged pinned `core::iter::Iterator::count`'s non-capturing `const` closure
+callback stays gated on separate closure-body transport), and rejects non-const
+iterators, non-const `Add` implementations, and altered item premises.
 `spec/source-precise-cleanup-transport/outcomes.json` checks an imported generic
 enum move in native and const execution. Its reader has no precise-drop feature,
 and the same provider without the feature rejects the potential destructor.

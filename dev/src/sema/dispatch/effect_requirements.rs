@@ -24,7 +24,9 @@ pub(super) fn check(
         .imported_iterator_fold(definition)?
         .then(|| crate::sema::compiler_items::callable_role(facts, CallTrait::FnMut))
         .transpose()?;
-    let iterator_reduction = callable.is_some() || facts.imported_iterator_last(definition)?;
+    let iterator_reduction = callable.is_some()
+        || facts.imported_iterator_last(definition)?
+        || facts.imported_iterator_count(definition)?;
     let mut fold = super::callable_substitution(facts, instance)?;
     for clause in clauses {
         facts.charge_caller_inputs(4, 0)?;

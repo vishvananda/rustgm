@@ -112,7 +112,10 @@ def provided_inputs(contract, blanket, provider):
         raise ValueError("iteration fixture lost its exact next declaration anchor")
     member = (FIXTURE / contract["provider_member"]).read_bytes()
     drop = source_prefix(FIXTURE / blanket["provider"], "const impl<I:")
-    extra = (FIXTURE / contract["provider_extra"]).read_bytes() if "provider_extra" in contract else b""
+    extras = contract.get("provider_extra", [])
+    if isinstance(extras, str):
+        extras = [extras]
+    extra = b"".join((FIXTURE / path).read_bytes() for path in extras)
     features = ", ".join(contract.get("features", ["const_destruct"]))
     return f"#![feature({features})]\n".encode() + provider.replace(anchor, member + anchor) + drop + extra
 
@@ -210,12 +213,36 @@ def reject_last_bounds(check, exporter, source, contract):
         raise ValueError("an altered last premise produced an artifact")
 
 
+def reject_count_bounds(check, exporter, importer, source, artifact, client, rustc, contract):
+    text = source.read_bytes()
+    bound = b"Self::Item: [const] Destruct,"
+    if text.count(bound) != 1:
+        raise ValueError("iteration fixture lost its exact count item premise")
+    extra = check.folder / "extra-count-premise.rs"
+    extra.write_bytes(text.replace(bound, b"Self::Item: [const] Destruct + Copy,"))
+    rejected = check.folder / "extra-count-premise.rgcrate"
+    check.run("wrong-count-premise", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", rejected, extra], 1, [contract["wrong_item_bound"]],
+              timeout=30)
+    if rejected.exists():
+        raise ValueError("an altered count premise produced an artifact")
+
+    nonconst_add = check.folder / "ordinary-add-client.rs"
+    nonconst_add.write_bytes(client.read_bytes() + contract["nonconst_add_suffix"].encode())
+    check.run("rustc-ordinary-add-client", [rustc.resolve(strict=True), "--edition=2024",
+              "--crate-type=lib", "--emit=metadata", "--extern", f"base={check.folder / 'libbase.rlib'}",
+              "-o", check.folder / "ordinary-add-client.rmeta", nonconst_add], 1, timeout=30,
+              environment={"RUSTC_BOOTSTRAP": "1"})
+    check.run("rustgm-ordinary-add-client", [*importer, "--extern", f"base={artifact}",
+              "-o", check.folder / "ordinary-add-client.lowir", nonconst_add], 1, timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref", "fold", "last"),
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref", "fold", "last", "count"),
                         default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
@@ -228,7 +255,7 @@ def main():
     client = FIXTURE / contract["client"]
     constant = args.case == "blanket-const"
     observed = contract
-    provided = args.case in ("size-hint", "by-ref", "fold", "last")
+    provided = args.case in ("size-hint", "by-ref", "fold", "last", "count")
     if provided:
         observed = contract[args.case.replace("-", "_")]
         provider = provided_inputs(observed, contract["blanket"], provider)
@@ -273,6 +300,8 @@ def main():
         reject_fold_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
     elif args.case == "last":
         reject_last_bounds(check, exporter, source, observed)
+    elif args.case == "count":
+        reject_count_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
     elif args.case == "blanket":
         reject_ordinary_premise(check, exporter, source, contract["blanket"])
     elif args.case == "roles":

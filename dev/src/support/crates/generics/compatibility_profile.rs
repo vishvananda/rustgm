@@ -3,7 +3,8 @@ use super::{Profile, SourceRows, ValidatedRows, Work};
 use crate::support::crates::{CrateIdentity, generics::source as s};
 
 impl Profile {
-    pub(crate) const CONST_BINARY_ROLES: [crate::support::bindings::LangItem; 2] = [
+    pub(crate) const CONST_BINARY_ROLES: [crate::support::bindings::LangItem; 3] = [
+        crate::support::bindings::LangItem::Add,
         crate::support::bindings::LangItem::Sub,
         crate::support::bindings::LangItem::Div,
     ];

@@ -4,7 +4,7 @@ use crate::{
     sema::compiler_items::{const_payments::closed_clause, headers::Trait},
     support::constness::Constness,
     types::{
-        GenericArgs, TypeId,
+        GenericArgs, Primitive, TypeId,
         arguments::Argument,
         parameters::{
             ParameterKind,
@@ -17,6 +17,7 @@ use crate::{
 pub(super) enum Reduction {
     Fold,
     Last,
+    Count,
 }
 
 struct Roles {
@@ -39,7 +40,7 @@ impl Reduction {
     pub(super) const fn inputs(self) -> usize {
         match self {
             Self::Fold => 3,
-            Self::Last => 1,
+            Self::Last | Self::Count => 1,
         }
     }
 
@@ -93,7 +94,14 @@ impl Reduction {
                 if !option_item(facts, result, option, item) {
                     return Err("source Iterator reduction changed its actual result");
                 }
-                require_consuming(facts, &roles, member, item)
+                require_consuming(facts, &roles, member, item, "last")
+            }
+            (Self::Count, []) => {
+                require_formals(facts, member, rest)?;
+                if result != TypeId::primitive(Primitive::Usize) {
+                    return Err("source Iterator reduction changed its actual result");
+                }
+                require_consuming(facts, &roles, member, item, "count")
             }
             _ => Err("source Iterator reduction changed its actual callable arity"),
         }
@@ -185,6 +193,7 @@ fn require_consuming(
     roles: &Roles,
     member: DefId,
     item: ItemProjection,
+    name: &str,
 ) -> Result<(), &'static str> {
     let mut seen = [false; 3];
     for predicate in inputs(facts, member)? {
@@ -202,12 +211,20 @@ fn require_consuming(
         } else if destruct && item.matches(facts, predicate.ty) {
             2
         } else {
-            return Err("source last has an extra method premise");
+            return Err(if name == "count" {
+                "source count has an extra method premise"
+            } else {
+                "source last has an extra method premise"
+            });
         };
         record(&mut seen[slot])?;
     }
     if seen.contains(&false) {
-        return Err("source last omitted an actual Sized or Destruct premise");
+        return Err(if name == "count" {
+            "source count omitted an actual Sized or Destruct premise"
+        } else {
+            "source last omitted an actual Sized or Destruct premise"
+        });
     }
     Ok(())
 }

@@ -67,5 +67,17 @@
     "stdout": "73 42 73\n",
     "implementation": "impl base::Iterator for Values",
     "wrong_item_bound": "source last has an extra method premise"
+  },
+  "count": {
+    "features": ["pattern_types", "const_destruct", "const_closures", "const_precise_live_drops", "unboxed_closures"],
+    "provider_extra": ["fold-callables.rs", "count-add.rs"],
+    "provider_member": "count-member.rs",
+    "provider_anchor": "    #[lang=\"next\"]",
+    "client": "count-client.rs",
+    "observer": "fold-observer.c",
+    "stdout": "12 71 0\n",
+    "implementation": "impl base::Iterator for Values",
+    "nonconst_add_suffix": "\nconst BAD_ADD: u8 = base::Add::add(1u8, 2u8);\n",
+    "wrong_item_bound": "source count has an extra method premise"
   }
 }

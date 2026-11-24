@@ -17,9 +17,7 @@ impl Dependencies {
         body: &Body,
         calls: &mut Vec<Instance>,
     ) -> Result<(), String> {
-        if body.source.source().is_none()
-            || (report.package.source_core().is_none() && report.package.source_client().is_none())
-        {
+        if report.package.source_core().is_none() && report.package.source_client().is_none() {
             return Ok(());
         }
         self.charge(body.statements.len())?;
