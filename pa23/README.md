@@ -1,8 +1,8 @@
-# RustGM Programming Assignment 23: Trait objects
+# RustGM Programming Assignment 23 — Trait objects
 
-Status: **implemented**. The maintainer reference and manifest-listed text
-suite implement the contract below. Prerequisite: PA22. The source profile is
-Rust 1.98.0, edition 2024, Linux x86-64.
+Build on [PA22](../pa22/README.md) to check trait object formation and
+lower vtables, object upcasts, and dynamic calls. Use Rust 1.98.0,
+edition 2024, on Linux x86-64.
 
 ## Required implementation
 
@@ -39,7 +39,7 @@ existing LowIR backend contract.
   obligations for the supported language, including explicit local nominal
   implementations and inherited object markers. An explicit implementation
   replaces the nominal family's structural default; its conditions and unsafe
-  declaration rules still apply. Stable Rust's negative-impl syntax is excluded.
+  declaration rules still apply. Negative impls are outside the PA23 profile.
 - Auto-trait demands on return-position `impl Trait` may require a completed
   defining body. Retain the pending proof, finish that body once, and close its
   hidden lifetimes using the actual CFG and borrow proof. Keep private hidden
@@ -57,19 +57,16 @@ object pointer, closure call traits, procedural macros or a Rust standard librar
 
 ## Runtime and text contract
 
-Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`. Earlier views remain available.
-Success exits 0 with deterministic LowIR and empty stderr; diagnosed rejection
-exits 1 with empty stdout. Signals, panics, timeouts and exit 86 fail the test.
-Committed `.ref`, `.ref.stderr` and `.ref.exit_status` sidecars are byte oracles.
-`reference.json` records the source and input identities used to generate them.
+Use PA11's `rustgm --emit-lowir` interface and input/output options.
+Success exits 0 with deterministic LowIR and empty standard error.
+A source error exits 1 with a diagnostic and empty standard output.
 
-An object reference occupies 16 bytes: data address followed by vtable address.
+An object reference occupies 16 bytes, with the data address first and the vtable address second.
 The course table starts with destructor address, concrete size and alignment,
 then method slots and demanded upcast-table pointers. A null destructor entry
 means no destruction work; a null conditional method entry remains uncallable
-without proof. This is the course ABI, not a claim about rustc's unspecified
-vtable layout. Reuse the existing aggregate/out-pointer calling convention,
-ordinary instance discovery, destructor recipes and unchanged CPPGM backend.
+without proof. Use this course ABI for LowIR. Reuse the aggregate and
+out-pointer calling convention, instance discovery, and destructor recipes.
 
 Build tables lazily from selected concrete implementations. Deduplicate by the
 complete runtime object shape and concrete type. Reserve identities before
@@ -87,30 +84,19 @@ completed constant-pattern batches when restoring an ancestor body.
 
 An orchestration layer may request an early defining CFG and borrow proof, then
 retain that CFG and contract for ordinary lowering. Consume appended lifetime
-facts once and reuse constant-definition indexes. Measure chains of demanded
-bodies and growth in unrelated definitions; a cache-hit scan can still be
-quadratic. Keep actual work/storage counters alongside frozen-binary A/A and
-paired ABBA measurements, and verify identical shared outputs. `spec.md` owns
-the detailed architecture and performance requirements.
+facts once and reuse constant-definition indexes. Test long chains of demanded bodies and growth in unrelated definitions.
+Check that completing one body resumes its dependents without rescanning
+the entire crate.
 
-Use safe idiomatic Rust. Clippy `all` and `pedantic` warnings are errors. Keep
-lint exceptions narrow and justified; do not use blanket allowances or split
-files mechanically to evade the syntax-aware audit. Compiler sources must not
-read environment variables. The file, function, nesting and phase checks in
-`scripts/rust_audit.py` apply independently of the text suites.
+## Run the tests
 
-## Tests and completion
+Run the PA23 test target from the repository root.
 
-See [tests/README.md](tests/README.md) for the published matrix. Every fixture
-has a declared outcome, independently checked with pinned rustc before reference
-generation. Runtime controls compare RustGM through CPPGM with rustc; compile-only
-controls make no claim that their unused function was executed. Maintainer tests
-also inspect and directly invoke a table's destructor header through typed LowIR.
+```sh
+make -C pa23 test
+```
 
-Run `make test-pa23`, `make test-native-pa23`, `make test-rustc`, all active earlier
-byte/native suites, the complete release Cargo and native maintainer suites,
-formatting, strict Clippy, architecture/file audits, harness, upstream integrity
-and the owning performance checks. Follow `TESTING_AND_REFERENCES.md` and use the
-storage guard with scoped cleanup. Qualification and reviewed representation
-changes are recorded in [the release evidence](../docs/pa23-release.md).
-PA24 and PA25 remain separate assignments and cannot be counted as passing here.
+[The manifest](tests/manifest.json) covers object formation, upcasts,
+dynamic dispatch, and destruction metadata. Use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+to run examples that exercise inherited and default virtual methods.

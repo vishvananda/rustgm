@@ -1,11 +1,9 @@
-# RustGM Programming Assignment 24: Closures
+# RustGM Programming Assignment 24 — Closures
 
-Status: **implemented**. The maintainer reference, manifest and reviewed
-byte oracles implement the contract below.
-Prerequisite: PA23. The common source profile is Rust 1.98.0, initially edition
-2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
-
-The [inferred-input repair](../docs/pa24-inferred-inputs.md) preserves creator aliases and generic private ports, with28 new ordinary regressions and source counterparts in PA31.
+Build on [PA23](../pa23/README.md) to infer closure types, form precise
+capture environments, and lower callable adapters. Use Rust 1.98.0,
+edition 2024, on Linux x86-64. PA34 adds edition 2021 and PA40 covers
+the remaining editions.
 
 ## Required implementation
 
@@ -27,7 +25,9 @@ LowIR instances.
   subslicing capture the containing array or slice. Unused places do not gain
   reads, moves or loans merely because they occur in a pattern.
   A wildcard discarding a computed value still evaluates that expression's
-  operands. A try block consumes its tail through the actual source protocol;
+  operands. Computed match, `if let`, and `while let` scrutinees retain their
+  ordinary move and initialization effects. A try block consumes its tail
+  through the actual source protocol;
   a discarded result must not hide an owned capture's move.
 - Build the actual environment layout, moves and destruction from its stored
   captures. Derive applicable Copy, Clone and auto-trait obligations from those
@@ -44,8 +44,11 @@ LowIR instances.
 - Support borrowed callable objects, nested reference receivers, associated
   and projected callable inputs, quantified lifetimes and returned closures.
   Keep public late-bound slots, enclosing capture lifetimes and local proof
-  variables distinct. Required callable goals may wait for inference; unresolved
-  caller terms must not enter a completed semantic cache.
+  variables distinct. Use inferred callable inputs through aliases and
+  associated projections while retaining their original proof obligations.
+  A function item can satisfy an abstract callable input when its full
+  signature matches that input. Required callable goals may wait for inference.
+  Cache completed results only after caller terms are settled.
 - Settle a generic call's actual callable-output constraints before consuming
   its result as a tuple, nominal, array or callable. Retain complete argument,
   receiver, ownership, lifetime and quantified proof; a field use supplies no
@@ -69,21 +72,18 @@ ordinary capture, call or lifetime checks in this assignment.
 
 ## Runtime and text contract
 
-Extend `dev/rustgm --emit-lowir -o OUTPUT SOURCE`; preserve earlier inspection
-modes and their proof boundaries. Successful complete lowering exits 0 with
-deterministic LowIR and empty stderr. Diagnosed rejection exits 1 with empty
-stdout. A panic, signal, timeout or exit 86 is a failed implementation, not a
-language rejection. The published `.ref`, `.ref.stderr` and `.ref.exit_status`
-sidecars define the byte contract; `reference.json` records their provenance.
+Use PA11's `rustgm --emit-lowir` interface and input/output options.
+Preserve the earlier inspection modes and their proof boundaries.
+Success exits 0 with deterministic LowIR and empty standard error.
+A source error exits 1 with a diagnostic and empty standard output.
 
 Use the course's aggregate/out-pointer ABI and PA23 object layout. A closure
 environment carries its selected capture fields. Fn and FnMut adapters borrow
 that environment with their respective permissions; FnOnce transfers ownership
 and performs ordinary cleanup. Noncapturing pointer adapters use the ordinary
 function-pointer ABI. Borrowed callable objects use checked method tables and
-the existing data/table pair. This is the course ABI; matching rustc's private
-environment layout or symbols is not required. CPPGM remains the unchanged
-LowIR-to-native backend.
+the existing data/table pair. Use the course's environment layout and
+callable symbol rules for LowIR.
 
 ## Implementation and performance
 
@@ -99,90 +99,20 @@ owner's inference and proof state without taking authority over another body's
 fresh regions. Share completed selection and projection work; repeated callers
 must not repeatedly scan unrelated declarations or regenerate the same adapter.
 
-Measure repeated and distinct captures, nested receivers, generic inputs,
-projected and quantified objects, and growth in unrelated source. Keep actual
-work/storage counters alongside immutable-binary A/A calibration and paired
-ABBA timings. Verify byte-identical shared outputs. A cache alone is not evidence
-of linear work; inspect adapter count and per-body proof growth separately.
-Follow `spec.md` for the architecture and measurement requirements.
+Test distinct and repeated captures, nested receivers, generic callable
+inputs, and growth in unrelated declarations. Verify that repeated demands
+reuse adapters and that adding unrelated bodies does not increase capture
+analysis work.
 
-Use safe idiomatic Rust. Strict Clippy `all` and `pedantic`, the file/function
-and nesting audit, and compiler phase boundaries remain mandatory. Keep lint
-exceptions narrow and explained. Do not use blanket allowances, split files
-mechanically to evade limits, or read the environment from `dev/src/`.
+## Run the tests
 
-## Completion and review
+Run the PA24 test target from the repository root.
 
-The manifest contains 684 independently declared source outcomes:
-490 accept and 194 reject. The reviewed native classifications contain 396
-runtime comparisons, five unused-body code-generation controls and 89 entry-free
-object controls. Draft outcome files retain the history of the source hypotheses;
-they are not substitutes for the released manifest. See
-[the release review](../docs/pa24-release-review.md) for the released profile and
-[closure parameter projections](../docs/pa24-parameter-projections.md) and
-[callable results](../docs/pa24-callable-results.md) for later checkpoint evidence
-and pending private/full qualification. No planned assignment is counted as passing.
-The [callback formation packet](tests/spec/callback-formation/README.md) adds
-ordinary FnOnce constructor inference controls; their const counterparts stay in PA25.
-The [projected callback-result checkpoint](../docs/pa24-projected-callback-results.md)
-adds35 outcomes for associated inputs, inherent result consumers, generic method
-values and actual lifetime proof. The [wrapped callback-premise checkpoint](../docs/pa24-wrapped-callback-premises.md)
-adds26 course outcomes; three serialized ordinary positives remain required.
+```sh
+make -C pa24 test
+```
 
-When updating this assignment, qualify every source with pinned rustc, compare declared
-executions through RustGM/CPPGM, generate and review the complete byte oracles,
-and publish the manifest and provenance together. A negative must exercise its
-intended semantic rule rather than an unrelated unsupported-feature guard.
-Compile-only and object controls must retain those explicit classifications;
-do not add a synthetic main or claim their unused bodies executed.
-
-Run all active earlier text and independent source/native suites, full release
-Cargo and native maintainer tests, formatting, strict Clippy, architecture/file
-and layout audits, harness and upstream checks, and the performance matrix.
-Run the owning `test-pa24` and `test-native-pa24` targets and preserve root
-text, independent-source and native-suite coverage. Follow
-`TESTING_AND_REFERENCES.md` and use the storage/resource guards. Student export
-is a later operation; this repository owns the full reference implementation.
-
-The [contract builder/capture checkpoint](../docs/pa31-contract-builders-checkpoint.md)
-qualifies real generic const helper bodies, actual source callable Copy evidence,
-closure capture field proofs and typed-wildcard reborrow evaluation. Existing
-caller assumptions, source traits, lifetime debts and const/safety checks remain
-required. Contract intrinsic/runtime transformations, imported body/value/API
-transport and complete assignment publication remain outstanding.
-
-The [try-capture checkpoint](../docs/pa24-try-captures.md) retains fourteen
-ordinary contracts as serialized requirements while the actual source forms
-qualify under PA31. It preserves complete ownership checking and one-field
-scaling; no ordinary Try-provider fence is counted as a language outcome.
-
-The [computed-match capture checkpoint](../docs/pa24-match-captures.md) adds
-nineteen reviewed ordinary outcomes and actual ordinary/source execution.
-Captured-place pattern operations and generic Try/import transport remain
-explicit positive requirements; discriminant reads do not imply payload moves.
-
-The [helper return-input checkpoint](../docs/pa24-flatten-helper-inputs.md) adds
-twenty-three reviewed ordinary outcomes and actual ordinary/source execution.
-Implicit return-opaque input context and two impl where-clause native inputs
-remain explicit positive requirements; no associated result is inverted.
-
-The [helper return-output checkpoint](../docs/pa24-flatten-helper-outputs.md) adds
-fifteen reviewed ordinary outcomes. Two of them are an observer-linked native
-export and its explicit twin. A borrowed-receiver executable remains an explicit
-positive requirement at the existing opaque-storage gate.
-
-The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
-adds one reviewed executable closure outcome: a callback over a projected item
-whose trait obligation refutes a blanket header that would need a rigid alias to
-equal a parameter.
-
-The [abstract callable input checkpoint](../docs/pa24-abstract-callable-inputs.md)
-adds nine reviewed ordinary outcomes. Seven executable positives pass a function
-item, such as a trait member path or `Ord::cmp`, for an `I::Item` callable input.
-A concrete item and one item for two projections reject.
-
-The [let-condition capture checkpoint](../docs/pa24-let-condition-captures.md)
-adds seven reviewed ordinary outcomes. Five executable positives consume a
-computed `if let` or `while let` scrutinee inside a capturing closure, as core's
-`read_radix_max_digits` does. A capture moved in every iteration and an `Fn`
-closure assigning its capture reject.
+[The manifest](tests/manifest.json) covers closure creation, invocation,
+captured storage, and callable types, including library cases without a
+`main`. For an executable case, use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable).

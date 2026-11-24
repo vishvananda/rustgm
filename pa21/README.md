@@ -1,12 +1,9 @@
-# RustGM Programming Assignment 21: Advanced generic relationships
+# RustGM Programming Assignment 21 — Advanced generic relationships
 
-Status: **implemented**. Prerequisite: PA20. The public suite contains
-801 cases: 324 generic-semantic inspections and 477 LowIR checks. The bounded
-source profile is Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The manifest declares 278 native executions, including
-four expected destructor panics. See [the validation review](../docs/pa21-validation.md).
-The later [callable-family checkpoint](../docs/parallel/callable-family-checkpoint.md)
-qualifies forwarding, callable-local formation and the expanded current suite.
+Build on [PA20](../pa20/README.md) to check higher-ranked bounds, generic
+associated types, opaque types, and generic destruction. Use Rust 1.98.0,
+edition 2024, on Linux x86-64 with aborting panics, checked arithmetic,
+and disabled debug assertions.
 
 ## Required implementation
 
@@ -36,9 +33,9 @@ body operation only in that caller's environment. Preserve quantified proof
 scopes through normalization, header waits, specialization and concrete body
 instance validation. A semantic inspection alone is not a completed region proof.
 
-The initial implementation controls use user-defined traits and scalar/reference
-programs. They must not depend implicitly on closures, trait objects or standard
-library iterator implementations. See the pinned
+Use user-defined traits and scalar or reference programs to exercise these
+rules. Later assignments cover trait objects, closures, and library iterators.
+See the pinned
 [trait-bound rules](../doc/rust-reference/src/trait-bounds.md#higher-ranked-trait-bounds).
 
 ### Generic associated type families
@@ -98,9 +95,8 @@ Complete generic drop checking for the supported safe source profile. Retain the
 required lifetime/type dependencies of actual owned storage and selected drop
 behavior through family normalization and hidden-type substitution. Preserve
 initialization, conditional cleanup, borrow validity and destruction order from
-earlier stages. Neither an erased input nor a shared layout cache grants a
-caller an outlives proof. Qualify positive and negative source controls against
-rustc before choosing a more permissive rule.
+earlier stages. Check outlives requirements in the actual caller environment,
+including for inputs erased by normalization.
 
 Library hooks such as PhantomData and UnsafeCell, unstable `may_dangle` promises,
 unsafe operations and trait-object destruction are separate responsibilities.
@@ -108,14 +104,20 @@ Do not require them implicitly in the first safe generic controls. The existing
 [variance rules](../doc/rust-reference/src/subtyping.md) remain authoritative for
 the supported constructors.
 
-## Tool surface
+## Command-line interface
 
-`--emit-generic-semantics` emits `generic-semantics 1`; the matching
-`--count-generic-semantics` mode emits only the final counts and a newline.
-PA19's `semantic-crate 1` and PA20's `trait-semantics 1` remain separate contracts.
-The new inspection consumes typed facts without running additional proofs.
+```text
+rustgm --emit-generic-semantics [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+rustgm --emit-lowir [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
 
-The following vocabulary defines the text contract in the manifest and sidecars:
+Use PA11's input and output options. The inspection command reports
+retained typed facts. Keep PA19 and PA20's existing inspection formats.
+Use the complete proof and lowering pipeline in LowIR mode.
+
+## Output format
+
+Begin the inspection with `generic-semantics 1`. Use the following records.
 
 - First come PA19's type, definition, owner, parameter, predicate, implementation,
   dispatch and pending lifetime records, then PA20's associated member, constant
@@ -158,15 +160,13 @@ The following vocabulary defines the text contract in the manifest and sidecars:
   `hidden-types` counts opaque records with a non-dash hidden value.
 
 Numbers are decimal, booleans are `true`/`false`, and list commas have no spaces.
-Full and count views have identical counts. Hash-table iteration never determines
-row order. Pending markers are intentional: an accepted inspection can still
-fail the complete region, loan or storage proof required by LowIR.
+Order the records deterministically. The `pending` marker denotes an obligation
+that the complete region, loan, or storage proof must still check before LowIR.
 
 The supplemental `--emit-lowir` lane proves complete region, ownership,
 destruction and layout obligations before emitting the existing LowIR contract.
-Execute accepted controls through CPPGM and compare their declared results with
-pinned rustc. The frontend must not invoke either compiler to implement a Rust
-phase. Success exits 0 with newline-terminated stdout and empty stderr. Diagnosed
+Build and run executable examples through CPPGM using the PA11 procedure.
+Implement Rust frontend phases within your compiler. Success exits 0 with newline-terminated stdout and empty stderr. Diagnosed
 rejection exits 1 with empty stdout. Panics, signals, timeouts and exit 86 are
 implementation failures, never accepted negative outcomes.
 
@@ -184,26 +184,21 @@ Successful structural sharing never shares caller permissions. Traverse recursiv
 obligations iteratively with charged work and diagnosed limits; unfinished or
 cycle-cutoff answers are not completed negative evidence.
 
-Measure binder depth, quantified premise width, independent callers, GAT argument
-count and repeated opaque instances separately. Use internal work/storage
-invariants and immutable A/B binaries with A/A calibration, paired blocks,
-retained observations and output equality. Follow `spec.md`, safe idiomatic Rust,
-Clippy all/pedantic with warnings denied and the file/architecture audits.
+When testing efficiency, vary binder depth, the number of quantified
+premises, the number of independent callers, and repeated generic or
+opaque applications.
 
-## Completion and review
+## Run the tests
 
-Develop all families in [tests/README.md](tests/README.md) alongside the maintainer
-reference. Declare source, stage and native outcomes before generating oracles.
-Unsupported-feature rejection of a negative control does not validate its intended
-lifetime, capture or conformance rule. Pair positive capabilities with nearby
-negative controls and preserve any independently qualified gaps.
+Run the PA21 test target from the repository root.
 
-Publish the semantic and lowering contracts, complete manifest, sidecars and
-validation review together. Run every active earlier stage, strict lint, audits,
-harness, upstream/backend checks, independent source/native checks and affected
-scaling measurements. PA22 and later stages continue to fail explicitly until
-released. Student export remains a later operation; this repository owns the full solution.
+```sh
+make -C pa21 test
+```
 
-The [empty-binder inspection review](../docs/pa21-empty-binder-ci-review.md)
-records the current zero-lifetime proof representation, unchanged complete
-Copy/equality/lifetime obligations, and independently checked reference updates.
+[The manifest](tests/manifest.json) selects generic inspection and
+executable LowIR cases. Pair successful cases with nearby failures to
+check that the compiler enforced the intended lifetime, capture, or
+conformance rule. Use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+to run executable examples.

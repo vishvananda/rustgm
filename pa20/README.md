@@ -1,27 +1,9 @@
-# RustGM Programming Assignment 20: Trait solving
+# RustGM Programming Assignment 20 — Trait solving
 
-The [implicit result-field checkpoint](../docs/pa20-implicit-result-fields.md)
-prepares exact solved protocol results before readonly drop queries.17 source
-outcomes, one ordinary control and eleven native programs pass. A scoped PA20
-primary preserves every older oracle; ordinary question-mark bootstrap and original
-core artifacts remain required.
-
-
-Status: **implemented-draft**. Prerequisite: PA19. The bounded source profile is
-Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The current public manifest has1,627 text-oracle cases:614 trait-semantic
-inspections and1,013 complete LowIR checks, with608 declared native executions.
-The [post-inference property repair](../docs/pa20-post-inference-properties.md)
-keeps candidate conditions after trait equations settle, with four concrete
-projection controls and explicit remaining generic projected-premise requirements.
-The [projected candidate packet](tests/spec/projected-method-inputs/README.md)
-adds27 independently checked outcomes and retains actual bound-sensitive method
-priority through existing semantic selection. Ordinary referent field preparation
-reductions stay in PA18; actual source slice methods stay in PA31.
-The latest [pending-join input checkpoint](../docs/pa20-pending-join-inputs.md)
-adds29 independently checked outcomes after the projected constant/receiver cases.
-All whole-assignment release requirements and the remaining original-core
-current-impl trait-visibility frontier are retained.
+Build on [PA19](../pa19/README.md) to resolve associated items, normalize
+types, and check the coherence of trait implementations. Use Rust 1.98.0,
+edition 2024, on Linux x86-64 with aborting panics, checked arithmetic,
+and disabled debug assertions.
 
 ## Required implementation
 
@@ -63,15 +45,13 @@ Keep retained declaration field types available for variance while layout consum
 normalized storage. Associated equality is not injective: equal output types do
 not establish equality of Self or any trait argument.
 
-The stable foundation does not support default associated type definitions or
-ungated inherent associated types; see the
-[Reference](../doc/rust-reference/src/items/associated-items.md#associated-types).
-The explicitly feature-gated [inherent alias extension](tests/spec/inherent-associated/README.md)
-adds21 finite closed-owner cases. Its pinned Rust oracle explicitly uses the
-bootstrap profile already frozen by that packet; this does not enable a feature
-without its source request. Generic/lifetime owners, members and conditions
-outside the finite extension remain required work. Generic associated type
-families and higher-ranked trait bounds belong to PA21.
+Support inherent associated type aliases on concrete closed owners when the
+source enables `inherent_associated_types`. A type and function of the same
+name in one impl conflict. Distinct owners can use the names independently.
+Generic owners, generic or lifetime-bearing members, and extra owner or
+member conditions are beyond this subset. See the Rust Reference on
+[associated types](../doc/rust-reference/src/items/associated-items.md#associated-types).
+PA21 handles generic associated type families and higher-ranked bounds.
 
 ### Associated constants
 
@@ -120,7 +100,12 @@ slots through this process. See `tests/spec/selection/inferred-parents/lowir/`.
 
 Normalize complete subject and argument graphs with bounded worklists. Retain
 the selected impl, member, substitutions and proof obligations for later phases.
-Keep immutable environments fixed for each query; do not publish an unfinished
+Keep immutable environments fixed for each query. A compatible candidate
+must satisfy its input equations under the current assumptions. Reject a
+candidate that would have to equate a rigid associated type with an
+unjustified parameter or concrete type. A caller premise can supply the
+projection that fixes an inferred trait argument. Preserve that projection
+when checking the argument's type and coercion. Do not publish an unfinished
 declaration environment to break a dependency cycle. Structural type caches must
 not become caches of permission learned from a particular caller.
 
@@ -131,10 +116,6 @@ normalizer. Interleaved body allocations remain outside its proof. Generic and
 lifetime-bearing results must retain unused declaration debts after normalization.
 
 ### Coherence and recursive obligations
-
-The unstable [negative-coherence packet](../pa31/tests/spec/negative-coherence/README.md)
-belongs to this solver's architecture, with PA31 owning source permission and
-PA29 owning transport. It does not change this assignment's stable public profile.
 
 Validate all impls, including unused ones, for orphan legality and overlap within
 the supported crate and builtin-trait profile. Keep local trait/type identity and
@@ -153,22 +134,26 @@ completed results under the full environment, query mode and binder scope.
 Reused evidence with fresh lifetime identities must be rebased before use.
 Repeated subgoals should share work without sharing permissions across callers.
 
-## Tool surface
+## Command-line interface
 
-Use `dev/rustgm --emit-trait-semantics -o OUTPUT SOURCE` and
-`--count-trait-semantics`. PA19 keeps its separate `--emit-semantics` byte contract.
-Preserve PA19's inspection boundary: pending lifetime facts are not proof that
-the whole program can execute. The semantic view must expose the retained
-associated declarations, result contracts, selected definitions and normalized
-uses that later phases consume. Count mode must read the same typed facts.
+```text
+rustgm --emit-trait-semantics [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+rustgm --emit-lowir [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
 
-The maintainer view starts with `trait-semantics 1`, shares PA19's typed records,
-then adds the rows below before `eof` and one count line. The manifest declares
-which inspection applies to each source; all three reference sidecars are graded
-byte for byte.
+Use PA11's input and output options. Keep PA19's `--emit-semantics` format.
+Trait inspection reports the associated declarations, result contracts,
+selected definitions, and normalized uses. LowIR lowering also requires
+the complete lifetime and ownership proofs.
+
+## Output format
+
+Start the inspection with `trait-semantics 1`, followed by PA19's typed
+records. Write the additional rows before the `eof` summary.
 
 | Row | Retained fact |
 | --- | --- |
+| `impl-type owner=O declaration=D definition=S` | The selected implementation of an associated type. |
 | `associated-type def=D type=T` | An associated type declaration's formal projection or an impl definition's type. |
 | `associated-constant def=D type=T` | The member's declared type. |
 | `result-contract def=D projection=T` | The trait member's formal result application. |
@@ -187,27 +172,26 @@ uses the existing canonical writer. Hash iteration must not determine any row or
 
 For a minimal example, [this fixture](tests/spec/contracts/associated-type-declarations/semantics/concrete.rs)
 defines `trait A { type Out; }` and implements `A` for `u8` with `Out = u16`.
-Its [complete oracle](tests/spec/contracts/associated-type-declarations/semantics/concrete.rs.ref)
-contains these retained relationships:
+Its [expected output](tests/spec/contracts/associated-type-declarations/semantics/concrete.rs.ref)
+contains the records below.
 
 ```text
 impl-type owner=16 declaration=15 definition=17
-associated-type def=15 type=20
-result-contract def=15 projection=20
-result-bound def=15 index=0 subject=20 bound=sized
+associated-type def=15 type=22
+result-contract def=15 projection=22
+result-bound def=15 index=0 subject=22 bound=sized
 associated-type def=17 type=12
 ```
 
-The preceding type and definition rows identify `20` as the trait's formal
+The preceding type and definition rows identify `22` as the trait's formal
 projection and `12` as `u16`; the implementation mapping connects the declared
-member to its selected definition. The full oracle also includes the other
+member to its selected definition. The expected output also includes the other
 shared records and the exact count line.
 
 The count line retains PA19's fields, then appends `type-members`,
 `constant-members`, `result-contracts`, `result-bounds`, `impl-constants`,
 `constant-uses`, `constant-dispatches`, `normalized-nodes` and
 `normalized-definitions`, in that order. Each counts the corresponding added row.
-Count mode reads these same facts without rendering, sorting or selecting again.
 
 A constant use is not necessarily a completed value dispatch: ordinary executable
 uses may wait for specialization, whereas a declaration-time const argument may
@@ -229,73 +213,20 @@ rejection exits 1 with empty stdout. Signals, timeouts, panics and exit 86 are
 implementation failures, never acceptable negative language outcomes. Earlier
 stage views and their committed byte contracts remain available.
 
-## Tests and reference
+## Run the tests
 
-The families listed in [tests/README.md](tests/README.md) include positive, negative
-and cross-feature controls. See [the validation review](../docs/pa20-validation.md)
-for independent language checks, native execution and the semantic phase boundary.
+Run the PA20 test target from the repository root.
 
-Add spec fixtures, positive/negative controls and cross-feature regressions in
-the earliest owning assignment. Use the course reference for text oracles and
-pinned rustc for independent language checks. From PA11, execute emitted LowIR
-with the configured CPPGM backend. Do not require new future-stage behavior
-implicitly. An empty suite or a not-implemented result cannot pass.
+```sh
+make -C pa20 test
+```
 
-## Completion and review
+[The manifest](tests/manifest.json) selects inspection and executable cases.
+Use the [PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+to run executable examples. Exercise repeated subgoals and shared projections
+to check that the implementation stays within its work limits.
 
-Implement the responsibilities in `dev/src/` using typed phase results, safe Rust,
-Clippy all/pedantic with warnings denied and the file/architecture audits. Follow
-`spec.md` and the CPPGM architecture guidance: parse once, consume retained facts,
-index compatible candidates and avoid speculative work on ordinary paths.
-
-Measure environment width, candidate count, repeated subgoals, shared projection
-graphs and recursive depth separately. Work counters must establish sharing and
-bounded algorithms. Wall-time comparisons require immutable binaries and inputs,
-A/A calibration, paired ABBA blocks, retained observations and output equality.
-
-Before changing the assignment's status, publish its semantic and lowering
-contracts, complete `tests/manifest.json`, all reference sidecars and a validation
-review together. Independently qualify declared source outcomes with pinned rustc
-before generating oracles. Execute every accepted native control with rustc and
-CPPGM, and explain any deliberate profile differences in the manifest.
-
-Run every active earlier suite, strict lint, file/architecture audits, harness,
-upstream and backend checks, plus affected scaling measurements. Review every
-generated reference diff and validate the root report's stage discovery. A planned
-stage must not acquire an unregistered executable manifest or empty-suite success.
-Student export is a later operation: this repository owns the full solution.
-
-The maintainer implementation retains exact header and selected-definition waits,
-complete generic arguments and scoped lifetime evidence. Declaration-time constant,
-projection and type-qualified method queries resume their pending work without
-restarting normalization. Receiver lookup uses its existing synchronous applicability
-path. The semantic writer reads retained typed facts; it neither runs selection
-again nor adds a second normalization history.
-
-PA21 owns higher-ranked trait premises, GATs, opaque types and complete generic
-projection drop checking. PA22 and PA23 own unsized execution and trait objects.
-PA25 extends constant evaluation with const functions and general statements.
-Library/crate metadata and the Cargo ecosystem remain later work. The maintainer
-journal in `docs/pa18-pa21-buildout.md` records earlier implementation checkpoints;
-those historical planned-stage statements describe their original checkpoints.
-
-The [projected inherent header checkpoint](../docs/pa20-projected-inherent-headers.md)
-adds nine reviewed outcomes for method candidates whose implementation header
-contains a projection. An unbound-output rejection remains an explicit
-requirement until method selection refutes the candidate itself.
-
-The [rigid candidate header checkpoint](../docs/pa20-rigid-candidate-headers.md)
-adds five reviewed outcomes. In each, a trait implementation header would need
-the goal's rigid associated item to equal a parameter or a concrete head. Like
-rustc, selection refutes that header instead of keeping it ambiguous.
-
-The [premise input checkpoint](../docs/pa20-premise-inputs.md) adds seven
-reviewed executable outcomes. A caller premise selects a path call's inferred
-`Rhs` and binds it to the premise's own projection, as in core's `Pin`
-comparison forwarding. The argument's expectation and reference coercion still
-succeed. A premise naming another `Rhs` rejects.
-
-The [structural-pattern controls](tests/spec/structural-pattern-controls/README.md)
-retain four ordinary sources and required outcomes in a serialized manifest.
-Handwritten standard-trait implementation and inactive-variant qualification
-remain required; actual source counterparts are qualified in PA31.
+PA21 covers higher-ranked trait premises, generic associated types, opaque
+types, and generic projection drop checking. PA22 and PA23 add unsized
+execution and trait objects. PA25 adds const functions and general
+statements in constant evaluation.
