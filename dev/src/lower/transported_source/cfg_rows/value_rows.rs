@@ -86,7 +86,15 @@ fn operator(
             kind,
             operand,
             direct_variant: false,
-        } if stage.conversion_roles() => scalar_cast(facts, body, index, value.ty, operand, kind),
+        } if stage.conversion_roles() => cast(
+            facts,
+            body,
+            index,
+            value.ty,
+            operand,
+            kind,
+            stage.declaration_policies(),
+        ),
         _ => Err(WIDER),
     }
 }
@@ -347,21 +355,28 @@ fn reify(
     Ok(s::ValueKind::Reify(operand.0))
 }
 
-fn scalar_cast(
+fn cast(
     facts: &Declarations,
     body: &Body,
     before: usize,
     result: crate::types::TypeId,
     operand: ir::ValueId,
     kind: crate::sema::model::Cast,
+    declaration_policies: bool,
 ) -> Result<s::ValueKind, &'static str> {
     if operand.0 as usize >= before {
-        return Err("source scalar cast changed its actual preceding operand");
+        return Err("source cast changed its actual preceding operand");
     }
     let input = body
         .values
         .get(operand.0 as usize)
-        .ok_or("source scalar cast lost its actual operand")?;
+        .ok_or("source cast lost its actual operand")?;
+    if declaration_policies
+        && kind == crate::sema::model::Cast::Pointer
+        && crate::sema::crates::transportable_pointer_cast(&facts.types, input.ty, result)
+    {
+        return Ok(s::ValueKind::PointerCast(operand.0));
+    }
     let from = crate::sema::crates::export_scalar(facts, input.ty)
         .map_err(|_| "source cast operand requires a closed primitive type")?;
     let to = crate::sema::crates::export_scalar(facts, result)

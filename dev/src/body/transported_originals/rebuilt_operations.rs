@@ -156,8 +156,8 @@ fn value_kind(
             Rvalue::ConstArgument(view.const_argument(slot, &mut work.steps)?)
         }
         s::ValueKind::Binary { .. } => binary(view, value.kind)?,
-        s::ValueKind::ScalarCast(_) => {
-            let (kind, operand) = scalar_cast(view, value)?;
+        s::ValueKind::ScalarCast(_) | s::ValueKind::PointerCast(_) => {
+            let (kind, operand) = cast(view, value)?;
             Rvalue::Cast {
                 kind,
                 operand,
@@ -327,10 +327,17 @@ fn same_guards(
                 == (b.tested_start, b.tested_end, b.views_start, b.views_end)
         }))
 }
-fn scalar_cast(
+fn cast(
     view: &SourceOriginal<'_>,
     value: s::Value,
 ) -> Result<(crate::sema::model::Cast, ValueId), &'static str> {
+    if let s::ValueKind::PointerCast(operand) = value.kind {
+        if !view.rows().descriptor().profile().declaration_policies() {
+            return Err("source pointer cast requires its actual version-fourteen descriptor");
+        }
+        // The sealed body has checked the actual pointee and mutability.
+        return Ok((crate::sema::model::Cast::Pointer, ValueId(operand)));
+    }
     if !view.rows().descriptor().profile().conversion_roles() {
         return Err("source primitive cast requires its actual version-nine descriptor");
     }
@@ -830,8 +837,8 @@ fn same_value(
                 operand,
                 direct_variant: false,
             },
-            s::ValueKind::ScalarCast(_),
-        ) => (kind, operand) == scalar_cast(view, record)?,
+            s::ValueKind::ScalarCast(_) | s::ValueKind::PointerCast(_),
+        ) => (kind, operand) == cast(view, record)?,
         (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
         (Rvalue::Reify(actual), s::ValueKind::Reify(record))
             if view.rows().descriptor().profile().body_nodes() =>

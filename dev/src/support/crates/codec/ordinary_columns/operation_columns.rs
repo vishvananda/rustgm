@@ -302,6 +302,9 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
             out.u8(7)?;
             id(out, value)
         }
+        s::ValueKind::PointerCast(_) => {
+            Err("source pointer casts require the version-fourteen body IR profile")
+        }
         s::ValueKind::Borrow(place) => {
             out.u8(3)?;
             place_write(out, place)

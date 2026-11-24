@@ -151,6 +151,10 @@ impl DomainIndex<'_, '_> {
                 prefix_value(original, operand, index, work)?;
                 value.scalar_cast_types(original, &self.headers.rows().types)?;
             }
+            s::ValueKind::PointerCast(operand) => {
+                prefix_value(original, operand, index, work)?;
+                self.pointer_cast(original.values[operand as usize].ty, value.ty)?;
+            }
             s::ValueKind::Binary {
                 operator,
                 left,
@@ -406,6 +410,22 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+    fn pointer_cast(&self, from: s::TypeRef, to: s::TypeRef) -> Result<(), &'static str> {
+        let types = &self.headers.rows().types;
+        let from_type = types.get(from.0 as usize);
+        let identity = from == to && matches!(from_type, Some(s::Type::RawPointer { .. }));
+        if !self.declaration_policies
+            || !identity
+                && !matches!((from_type, types.get(to.0 as usize)),
+                (Some(s::Type::Reference { mutable: from_mutable, referent, .. }),
+                 Some(s::Type::RawPointer { mutable: to_mutable, pointee }))
+                    if referent == pointee && (!*to_mutable || *from_mutable))
+        {
+            return Err("source pointer cast changed its pointee or access");
+        }
+        Ok(())
+    }
+
     /// A variant operand names a validated variant row of this artifact.
     fn variant(
         &self,

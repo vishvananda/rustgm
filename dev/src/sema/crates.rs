@@ -271,6 +271,23 @@ pub(super) const fn scalar(value: Scalar) -> TypeId {
 pub(crate) fn scalar_cast(from: Scalar, to: Scalar) -> Option<super::model::Cast> {
     super::scalar::cast(scalar_primitive(from)?, scalar_primitive(to)?)
 }
+/// A transported pointer cast retains the pointee and can only weaken access.
+pub(crate) fn transportable_pointer_cast(
+    types: &crate::types::Store,
+    from: TypeId,
+    to: TypeId,
+) -> bool {
+    if from == to && matches!(types.kind(from), Some(Type::Pointer { .. })) {
+        return true;
+    }
+    matches!(
+        (types.kind(from), types.kind(to)),
+        (Some(Type::Reference { mutable: from_mutable, referent, .. }),
+         Some(Type::Pointer { mutable: to_mutable, pointee }))
+            if referent == pointee && (!to_mutable || from_mutable)
+    )
+}
+
 pub(crate) const fn scalar_primitive(value: Scalar) -> Option<Primitive> {
     Some(match value {
         Scalar::Unit => return None,

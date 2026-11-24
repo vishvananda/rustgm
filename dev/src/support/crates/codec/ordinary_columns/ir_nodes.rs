@@ -317,6 +317,9 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         s::ValueKind::ScalarCast(value) => {
             node_write(out, 28, &[Operand::Value(value), Operand::Flag(0)])
         }
+        s::ValueKind::PointerCast(value) => {
+            node_write(out, 28, &[Operand::Value(value), Operand::Flag(2)])
+        }
         // Flag one is a fieldless enum's integer conversion.
         s::ValueKind::EnumCast(value) => {
             node_write(out, 28, &[Operand::Value(value), Operand::Flag(1)])
@@ -453,6 +456,9 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         ) => binary(left, right, operator, form, read.profile)?,
         (28, &[Operand::Value(value), Operand::Flag(0)]) => s::ValueKind::ScalarCast(value),
         (28, &[Operand::Value(value), Operand::Flag(1)]) => s::ValueKind::EnumCast(value),
+        (28, &[Operand::Value(value), Operand::Flag(2)]) if read.profile.declaration_policies() => {
+            s::ValueKind::PointerCast(value)
+        }
         (29 | 30, operands) => callable_value(node.code, operands)?,
         (code, _) => {
             return Err(rejected(

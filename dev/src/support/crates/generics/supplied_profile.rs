@@ -28,6 +28,9 @@ pub(super) fn validate(
         if header.flags.bits() & s::TraitFlags::DISPATCH_POLICIES != 0 {
             return Err("source trait dispatch requires the declaration policy profile");
         }
+        if header.flags.bits() & s::TraitFlags::MARKER != 0 {
+            return Err("source marker trait requires the declaration policy profile");
+        }
     }
     for declaration in &rows.declarations {
         work.charge(1)?;
@@ -162,6 +165,9 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         }
         s::ValueKind::AssociatedConstant { .. } => {
             "source associated constant reads require the version-fourteen declaration profile"
+        }
+        s::ValueKind::PointerCast(_) => {
+            "source pointer casts require the version-fourteen body IR profile"
         }
         s::ValueKind::ConstArgument(_) => {
             "source const argument reads require the version-fourteen declaration profile"

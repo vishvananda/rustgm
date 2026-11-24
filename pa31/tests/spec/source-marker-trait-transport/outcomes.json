@@ -1,0 +1,9 @@
+{
+  "features": [
+    "auto_traits",
+    "marker_trait_attr"
+  ],
+  "stdout": "41 73\n",
+  "older_profile": "source marker trait requires the version-fourteen declaration profile",
+  "older_reader": "unknown source trait attribute claim"
+}

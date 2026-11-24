@@ -33,6 +33,14 @@ and projected variants check writable storage and the separate rules for
 const and static initializers. The projected variant requires a validated
 imported trait implementation to determine the initializer's field type.
 
+`spec/source-reference-cast-transport/outcomes.json` checks a generic
+reference-to-pointer cast in a fresh client, both in a constant and
+as a runtime call.
+`spec/source-marker-trait-transport/outcomes.json` checks an empty unsafe
+marker trait and native calls with provider and client implementations.
+Run `scripts/check_source_artifact_clients.py --case CASE` with the case
+directory name and the pinned compiler.
+
 `spec/source-comparison-role-transport/outcomes.json` checks the
 `PartialEq::ne` default through its actual required `eq` member. A
 fresh client selects implementations with both the default and an

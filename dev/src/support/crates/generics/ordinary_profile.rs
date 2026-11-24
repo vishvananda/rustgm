@@ -263,17 +263,8 @@ fn trait_headers(
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
-        if header.region_captures != 0 && roles.definition_policies == 0 {
-            return Err("source trait lifetimes require the declaration policy profile");
-        }
-        if flags & TraitFlags::INCOHERENT_INHERENT & !roles.definition_policies != 0 {
-            return Err("source incoherent trait requires the declaration policy profile");
-        }
-        if flags & TraitFlags::DISPATCH_POLICIES & !roles.definition_policies != 0 {
-            return Err("source trait dispatch requires the declaration policy profile");
-        }
         let role_header = super::super::TraitHeader {
-            flags: TraitFlags::from_bits(flags & !roles.definition_policies)?,
+            flags: trait_profile_flags(header, roles.definition_policies)?,
             ..*header
         };
         if roles.destruct == Some(header.declaration) {
@@ -365,6 +356,28 @@ fn trait_headers(
     }
     Ok(())
 }
+fn trait_profile_flags(
+    header: &super::super::TraitHeader,
+    policies: u16,
+) -> Result<TraitFlags, &'static str> {
+    let flags = header.flags.bits();
+    if header.region_captures != 0 && policies == 0 {
+        return Err("source trait lifetimes require the declaration policy profile");
+    }
+    if flags & TraitFlags::INCOHERENT_INHERENT & !policies != 0 {
+        return Err("source incoherent trait requires the declaration policy profile");
+    }
+    if flags & TraitFlags::DISPATCH_POLICIES & !policies != 0 {
+        return Err("source trait dispatch requires the declaration policy profile");
+    }
+    if flags & TraitFlags::MARKER != 0
+        && (policies & TraitFlags::MARKER == 0 || header.members.start != header.members.end)
+    {
+        return Err("source marker trait requires its actual empty declaration profile");
+    }
+    TraitFlags::from_bits(flags & !policies)
+}
+
 fn require_no_drop_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {
     if header.flags.bits() != (TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE)
         || header.written_parameters != 0
@@ -764,7 +777,11 @@ fn originals(
                             | ValueKind::Constant(_)
                             | ValueKind::AssociatedConstant { .. }
                     )
-                || constant_initializers && matches!(value.kind, ValueKind::ConstArgument(_)))
+                || constant_initializers
+                    && matches!(
+                        value.kind,
+                        ValueKind::ConstArgument(_) | ValueKind::PointerCast(_)
+                    ))
             {
                 return Err("source value operation requires a wider explicit profile");
             }

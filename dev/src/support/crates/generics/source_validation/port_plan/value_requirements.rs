@@ -41,6 +41,7 @@ impl Builder<'_, '_, '_> {
             // Formation above remains an ordinary unpaid request.
             s::ValueKind::Scalar(_)
             | s::ValueKind::ScalarCast(_)
+            | s::ValueKind::PointerCast(_)
             | s::ValueKind::Binary { .. }
             | s::ValueKind::Text(_)
             | s::ValueKind::Assembly { .. }

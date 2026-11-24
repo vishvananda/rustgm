@@ -410,16 +410,19 @@ impl TraitFlags {
     pub const INCOHERENT_INHERENT: u16 = 512;
     pub const SKIP_ARRAY_DISPATCH: u16 = 1024;
     pub const SKIP_BOXED_SLICE_DISPATCH: u16 = 2048;
+    /// An empty marker declaration verified during metadata validation.
+    pub const MARKER: u16 = 4096;
     pub(crate) const DISPATCH_POLICIES: u16 =
         Self::SKIP_ARRAY_DISPATCH | Self::SKIP_BOXED_SLICE_DISPATCH;
     pub(crate) const DECLARATION_POLICIES: u16 = Self::FUNDAMENTAL
         | Self::DYN_INCOMPATIBLE
         | Self::INCOHERENT_INHERENT
-        | Self::DISPATCH_POLICIES;
+        | Self::DISPATCH_POLICIES
+        | Self::MARKER;
     /// # Errors
     /// Rejects claims outside this exact supported structural vocabulary.
     pub fn from_bits(bits: u16) -> Result<Self, &'static str> {
-        if bits & !4095 != 0 {
+        if bits & !8191 != 0 {
             return Err("unknown source trait attribute claim");
         }
         Ok(Self(bits))

@@ -1,0 +1,8 @@
+{
+  "features": [
+    "auto_traits"
+  ],
+  "stdout": "41 73\n",
+  "older_profile": "source cast operand requires a closed primitive type",
+  "older_reader": "body IR value node has malformed operands"
+}

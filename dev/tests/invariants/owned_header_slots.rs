@@ -109,8 +109,12 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
         TraitFlags::from_bits(TraitFlags::RESTRICTED_IMPL)?.bits(),
         TraitFlags::RESTRICTED_IMPL
     );
-    // Bits 512 to 2048 are the v14 inherent-authority and dispatch policies.
-    for unknown in [4096, 4096 | TraitFlags::CONST, u16::MAX] {
+    // Version fourteen also transports the checked empty marker declaration.
+    assert_eq!(
+        TraitFlags::from_bits(TraitFlags::MARKER)?.bits(),
+        TraitFlags::MARKER
+    );
+    for unknown in [8192, 8192 | TraitFlags::CONST, u16::MAX] {
         assert!(TraitFlags::from_bits(unknown).is_err());
     }
     assert_eq!(TraitFlags::from_bits(255)?.bits(), 255);

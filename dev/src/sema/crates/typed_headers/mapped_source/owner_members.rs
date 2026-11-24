@@ -107,7 +107,9 @@ impl Graph {
         let header = &rows.traits[index as usize];
         // Version thirteen admits an unsafe trait: `implementation` re-proves
         // each impl's safety against it.
-        let admitted = if descriptor.profile().body_nodes() {
+        let admitted = if descriptor.profile().declaration_policies() {
+            s::TraitFlags::RESTRICTED_IMPL | s::TraitFlags::UNSAFE | s::TraitFlags::MARKER
+        } else if descriptor.profile().body_nodes() {
             s::TraitFlags::RESTRICTED_IMPL | s::TraitFlags::UNSAFE
         } else {
             s::TraitFlags::RESTRICTED_IMPL

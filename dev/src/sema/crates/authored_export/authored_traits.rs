@@ -482,7 +482,7 @@ impl Stage {
         } else {
             0
         };
-        let flags = flags(header, reserved, policy)?;
+        let flags = flags(header, reserved, policy, self.declaration_policies())?;
         self.reserve(4 * size_of::<s::TraitHeader>())?;
         self.rows.traits.push(s::TraitHeader {
             declaration,
@@ -555,11 +555,14 @@ fn flags(
     header: &Trait<'_>,
     reserved: &Reservations,
     policy: u16,
+    declaration_policies: bool,
 ) -> Result<s::TraitFlags, &'static str> {
-    if header.attributes.contains(HeaderAttribute::Marker) {
-        return Err("source marker trait contract transport is not implemented");
+    let marker = header.attributes.contains(HeaderAttribute::Marker);
+    if marker && !declaration_policies {
+        return Err("source marker trait requires the version-fourteen declaration profile");
     }
-    let mut bits = (u16::from(header.flags.unsafe_) * s::TraitFlags::UNSAFE)
+    let mut bits = (u16::from(marker) * s::TraitFlags::MARKER)
+        | (u16::from(header.flags.unsafe_) * s::TraitFlags::UNSAFE)
         | (u16::from(header.flags.constant) * s::TraitFlags::CONST)
         | (u16::from(header.flags.auto_) * s::TraitFlags::AUTO)
         | (u16::from(reserved.denies_implementation(header.definition)) * s::TraitFlags::DENY_IMPL);

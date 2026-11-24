@@ -33,7 +33,15 @@ pub(super) fn trait_read(read: &mut Input<'_, '_>) -> Result<s::TraitHeader, &'s
         scope: DeclarationRef(read.id()?),
         self_definition: DeclarationRef(read.id()?),
         self_type: g::TypeRef(read.id()?),
-        flags: s::TraitFlags::from_bits(read.reader.u16()?)?,
+        flags: {
+            let flags = s::TraitFlags::from_bits(read.reader.u16()?)?;
+            if flags.bits() & s::TraitFlags::MARKER != 0 && !read.profile.declaration_policies() {
+                return Err(
+                    "source marker trait requires the version-fourteen declaration profile",
+                );
+            }
+            flags
+        },
         region_captures: read.id()?,
         region_bounds: read.range()?,
         inputs: read.range()?,

@@ -62,6 +62,8 @@ pub enum ValueKind {
     /// A closed primitive `as` conversion. The operand and result types determine
     /// its operation; no provider cast decision or semantic proof is serialized.
     ScalarCast(u32),
+    /// Version fourteen retains pointer identity and reference-to-pointer casts.
+    PointerCast(u32),
     Function(FunctionApplicationRef),
     Call {
         signature: TypeRef,

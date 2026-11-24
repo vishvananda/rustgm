@@ -218,6 +218,7 @@ fn dependency(
         }
         s::ValueKind::Constrain(value)
         | s::ValueKind::ScalarCast(value)
+        | s::ValueKind::PointerCast(value)
         | s::ValueKind::EnumCast(value)
         | s::ValueKind::Reify(value) => (ordinal == 0).then_some(value),
         s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
