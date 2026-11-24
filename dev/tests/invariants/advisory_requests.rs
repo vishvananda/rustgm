@@ -6,7 +6,11 @@ use crate::{
         expansion::Report,
         load::{InputFile, Sources},
     },
-    support::{diagnostics::LintCap, edition::Edition, source::SourceFile},
+    support::{
+        diagnostics::{LintCap, WarningCode},
+        edition::Edition,
+        source::SourceFile,
+    },
 };
 use std::path::Path;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -47,17 +51,37 @@ fn advisory_requests_preserve_independent_source_outcomes_and_strict_boundaries(
             if *cap == "allow" {
                 config.set_lint_cap(LintCap::Allow);
             }
-            let actual = (|| -> Result {
+            let actual = (|| -> Result<_> {
                 let report = report(&source, &config, *provider == "1")?;
-                crate::pipeline::analyze_source(&report)?;
-                Ok(())
+                let analysis = crate::pipeline::analyze_source(&report)?;
+                Ok(analysis
+                    .facts
+                    .warnings()
+                    .map(|warning| warning.code)
+                    .collect::<Vec<_>>())
             })();
-            assert_eq!(
-                actual.is_ok(),
-                *status == "0",
-                "{name} {edition:?}: {:?}",
-                actual.err()
-            );
+            // These two rows now meet the required verdict in contract-v2.json.
+            match *name {
+                "casts-warn-strict" => {
+                    assert_eq!(actual?, [WarningCode::ImplicitProvenanceCasts; 2]);
+                }
+                "casts-expect-strict" => assert!(actual?.is_empty()),
+                "casts-deny-strict" | "casts-forbid-strict" => {
+                    let error = actual.err().ok_or("accepted an exposed provenance cast")?;
+                    assert!(
+                        error
+                            .to_string()
+                            .contains("pointer-to-integer cast uses exposed provenance"),
+                        "{name} {edition:?}: {error}"
+                    );
+                }
+                _ => assert_eq!(
+                    actual.is_ok(),
+                    *status == "0",
+                    "{name} {edition:?}: {:?}",
+                    actual.err()
+                ),
+            }
         }
         count += 1;
     }

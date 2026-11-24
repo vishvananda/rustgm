@@ -35,6 +35,13 @@ operands in source order. Check target features, alignment and register
 classes before lowering the selected operations. Keep the broader
 target features and assembly forms for the follow-on track.
 
+## Diagnostics used by core
+
+Use the checked operand and result types to detect explicit casts between raw
+pointers and integers. Honor the crate's `deny(implicit_provenance_casts)` and
+the local `allow` and `expect` attributes on the pointer APIs. Complete each
+expectation using an actual cast in its scope.
+
 ## Build the library
 
 Use the pinned sources and submodules without edits. Retain the target

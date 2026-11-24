@@ -251,6 +251,9 @@ impl Declarations {
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
             WarningCode::InvalidDocAttributes => self.safety_policies.invalid_doc_attributes(key),
             WarningCode::OverflowingLiterals => self.safety_policies.overflowing_literals(key),
+            WarningCode::ImplicitProvenanceCasts => {
+                self.safety_policies.implicit_provenance_casts(key)
+            }
             WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
             WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
             WarningCode::DuplicateMacroAttributes => {

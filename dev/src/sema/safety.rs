@@ -347,6 +347,9 @@ impl Policies {
     pub(super) fn overflowing_literals(&self, key: NodeKey) -> Level {
         self.at(key).overflowing_literals
     }
+    pub(super) fn implicit_provenance_casts(&self, key: NodeKey) -> Level {
+        self.at(key).implicit_provenance_casts
+    }
     pub(super) fn hidden_glob_reexports(&self, key: NodeKey) -> Level {
         self.at(key).hidden_glob_reexports
     }

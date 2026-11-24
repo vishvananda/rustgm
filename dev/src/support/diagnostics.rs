@@ -43,6 +43,7 @@ pub enum WarningCode {
     DeprecatedSafe2024,
     InvalidDocAttributes,
     OverflowingLiterals,
+    ImplicitProvenanceCasts,
 }
 impl WarningCode {
     #[must_use]
@@ -69,6 +70,7 @@ impl WarningCode {
             Self::DeprecatedSafe2024 => "deprecated_safe_2024",
             Self::InvalidDocAttributes => "invalid_doc_attributes",
             Self::OverflowingLiterals => "overflowing_literals",
+            Self::ImplicitProvenanceCasts => "implicit_provenance_casts",
         }
     }
 }

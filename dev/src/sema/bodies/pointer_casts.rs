@@ -2,8 +2,9 @@
 use super::{Checker, Constructor, Error, Kind, NodeId, TermId, Type, TypeId, Work};
 use crate::{
     abi::metadata::Metadata,
+    resolve::lint_policy::Level,
     sema::model::{AdjustmentKind, Cast, Operation},
-    support::retained::Growth,
+    support::{diagnostics::WarningCode, retained::Growth},
     types::infer::{Domain, Error as InferError, Solved},
 };
 
@@ -459,6 +460,25 @@ impl Checker<'_> {
                 node,
                 "pointers cannot be cast to integers during const eval",
             ));
+        }
+        let message = match (kind, from) {
+            (Cast::IntegerToPointer, _) => "integer-to-pointer cast uses exposed provenance",
+            (Cast::PointerToInteger, Some(Type::Pointer { .. })) => {
+                "pointer-to-integer cast uses exposed provenance"
+            }
+            _ => return Ok(Some(kind)),
+        };
+        let key = self.key(node);
+        if self.facts.safety_policies.implicit_provenance_casts(key) != Level::Allow {
+            let unit = self.report.package.unit(key.file);
+            self.facts.must_use_diagnostic(
+                self.report,
+                key,
+                unit.configured.ast.node(node).span.start,
+                0,
+                WarningCode::ImplicitProvenanceCasts,
+                message.to_owned(),
+            )?;
         }
         Ok(Some(kind))
     }

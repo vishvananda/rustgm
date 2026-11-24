@@ -340,15 +340,6 @@ fn deferred_lint(
             attribute,
             "unsupported lint expectation requires an implemented lint producer",
         ));
-    } else if setting.level != Level::Allow
-        && range.end == range.start + 1
-        && forest.name(setting.unit.source.text(), range.start) == Some("implicit_provenance_casts")
-    {
-        return Err(invalid(
-            key,
-            attribute,
-            "strict provenance lint producer is not implemented",
-        ));
     }
     Ok(())
 }
@@ -590,6 +581,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("unused_attributes") => &[Lint::UnusedAttributes],
         Some("invalid_doc_attributes") => &[Lint::InvalidDocAttributes],
         Some("overflowing_literals") => &[Lint::OverflowingLiterals],
+        Some("implicit_provenance_casts") => &[Lint::ImplicitProvenanceCasts],
         Some("unused_visibilities") => &[Lint::UnusedVisibilities],
         Some("duplicate_macro_attributes") => &[Lint::DuplicateMacroAttributes],
         Some("ambiguous_derive_helpers" | "future_incompatible") => &[Lint::AmbiguousDeriveHelpers],
