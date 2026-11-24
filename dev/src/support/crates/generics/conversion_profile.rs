@@ -76,6 +76,7 @@ pub(super) fn method(
     function: &s::FunctionHeader,
     unsafe_impls: bool,
     impl_effect: Constness,
+    pin_drop: Option<(DeclarationRef, DeclarationRef)>,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -116,7 +117,8 @@ pub(super) fn method(
     // not an early or captured generic lifetime transport permission.
     if let Some(receiver) = function.receiver {
         work.charge(2)?;
-        if receiver.base != implementation.self_type
+        if (receiver.base != implementation.self_type
+            && !pinned_receiver(rows, implementation, function, receiver, pin_drop, work)?)
             || receiver.references > 1
             || receiver.formal as usize >= function.formals.slice(&rows.formals)?.len()
         {
@@ -124,4 +126,51 @@ pub(super) fn method(
         }
     }
     Ok(true)
+}
+
+fn pinned_receiver(
+    rows: &SourceRows,
+    implementation: &s::ImplHeader,
+    function: &s::FunctionHeader,
+    receiver: s::Receiver,
+    roles: Option<(DeclarationRef, DeclarationRef)>,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some((drop, pin)) = roles else {
+        return Ok(false);
+    };
+    work.charge(6)?;
+    let Some(application) = implementation
+        .trait_application
+        .and_then(|row| rows.trait_applications.get(row.0 as usize))
+    else {
+        return Ok(false);
+    };
+    if application.declaration.artifact.0 != 0
+        || application.declaration.declaration != drop
+        || application.subject != implementation.self_type
+        || receiver.formal != 0
+        || receiver.references != 0
+        || rows
+            .declarations
+            .get(function.declaration.0 as usize)
+            .is_none_or(|row| row.name.as_deref() != Some("pin_drop"))
+    {
+        return Ok(false);
+    }
+    let Some(s::Type::Nominal {
+        declaration,
+        arguments,
+    }) = rows.types.get(receiver.base.0 as usize)
+    else {
+        return Ok(false);
+    };
+    let [s::Argument::Type(argument)] = arguments.slice(&rows.arguments)? else {
+        return Ok(false);
+    };
+    Ok(declaration.artifact.0 == 0
+        && declaration.declaration == pin
+        && matches!(rows.types.get(argument.0 as usize), Some(s::Type::Reference {
+            mutable: true, referent, ..
+        }) if *referent == implementation.self_type))
 }

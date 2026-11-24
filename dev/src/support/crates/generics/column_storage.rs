@@ -286,6 +286,27 @@ impl std::ops::Deref for ValidatedView<'_> {
     }
 }
 impl<'a> ValidatedView<'a> {
+    /// A v14 provided member remains owned by its trait. The profile already
+    /// authenticated the exact owner and body before publishing the table.
+    pub(crate) fn transported_default(self, declaration: Option<super::super::HeaderRef>) -> bool {
+        use super::super::{ConstantBody, FunctionBody, HeaderRef};
+        if !self.descriptor().profile().declaration_policies() {
+            return false;
+        }
+        match declaration {
+            Some(HeaderRef::Constant(index)) => matches!(
+                self.constants()[index as usize].body,
+                ConstantBody::Original(_)
+            ),
+            Some(HeaderRef::Function(index)) => {
+                let function = &self.functions[index as usize];
+                function.constness == crate::support::constness::Constness::Conditional
+                    && matches!(function.body, FunctionBody::Original(_))
+            }
+            _ => false,
+        }
+    }
+
     pub(crate) fn exact_callable(
         self,
         declaration: DeclarationRef,

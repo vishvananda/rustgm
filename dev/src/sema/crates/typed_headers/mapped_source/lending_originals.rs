@@ -10,7 +10,7 @@ use crate::{
         },
     },
     support::retained::Allocation,
-    types::parameters::environment::Environment,
+    types::parameters::environment::{Environment, Retained},
 };
 use std::{rc::Rc, sync::Arc};
 
@@ -206,6 +206,20 @@ fn environment(
             }
             Ok(Arc::clone(actual))
         }
+        s::EnvironmentOrigin::ConstTraitDefault { member, trait_ } => {
+            if view.definition(member, work)? != definition
+                || trait_.artifact != rows.policy.provider
+            {
+                return Err(error(
+                    "const default environment changed its actual member or provider",
+                ));
+            }
+            let owner = view.definition(trait_.declaration, work)?;
+            if header.is_some_and(|header| header.environment.is_some()) {
+                return Err(error("const default acquired an unconstructed environment"));
+            }
+            default_environment(facts, definition, owner, work, allocation)
+        }
         s::EnvironmentOrigin::Contract => {
             if header.is_some_and(|header| header.environment.is_some()) {
                 return Err(error(
@@ -225,4 +239,49 @@ fn environment(
             "ordinary environment requires its actual defining construction profile",
         )),
     }
+}
+
+fn default_environment(
+    facts: &Declarations,
+    member: DefId,
+    owner: DefId,
+    work: &mut ReservationWork,
+    allocation: &mut Allocation,
+) -> Result<Arc<Environment>, Error> {
+    if facts.associated.trait_owner(member) != Some(owner) {
+        return Err(error(
+            "const default environment changed its actual trait owner",
+        ));
+    }
+    let actual = facts
+        .generics
+        .environments
+        .get(&member)
+        .ok_or_else(|| error("const default lost its complete declaration environment"))?;
+    let clause = facts.defining_self_clause(owner).map_err(error)?;
+    let clauses = actual
+        .trait_clauses()
+        .map_err(error)?
+        .count()
+        .saturating_add(1);
+    work.charge(clauses)?;
+    let bound = Environment::trait_leaf_allocation_bound(1, 0, clauses, clauses);
+    work.reserve(bound)?;
+    let environment = Arc::new(
+        actual
+            .as_ref()
+            .clone()
+            .with_clauses(&facts.types, &[clause])
+            .map_err(error)?,
+    );
+    let retained = environment.retain_owned_from(actual, &mut Retained::default());
+    if retained.bytes.saturating_add(2 * size_of::<usize>()) > bound {
+        return Err(error(
+            "const default exceeded its actual environment prepayment",
+        ));
+    }
+    work.charge(retained.visits)?;
+    allocation.include(retained);
+    allocation.add(2 * size_of::<usize>());
+    Ok(environment)
 }

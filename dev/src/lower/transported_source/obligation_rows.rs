@@ -46,10 +46,8 @@ pub(super) fn allocations(
     }
     for (index, proof) in input.proofs.iter().enumerate() {
         stage.charge(1)?;
-        if !proof.proof.quantifies_nothing() {
-            return Err(
-                "quantified source normalization ownership needs a complete scoped transport profile",
-            );
+        if !normalization_supported(stage, &proof.proof) {
+            return Err("source normalization needs a wider complete scoped proof profile");
         }
         let s::InputSite::Body(site) = sites.input(stage, proof.source)? else {
             return Err("source normalization allocation is not a body-owned site");
@@ -79,6 +77,15 @@ pub(super) fn allocations(
         }
     }
     Ok(rows)
+}
+
+fn normalization_supported(
+    stage: &Stage,
+    proof: &crate::types::lifetime_proof::Obligations,
+) -> bool {
+    proof.quantifies_nothing()
+        || stage.declaration_policies()
+            && (proof.has_only_root_intervals() || proof.single_normalization_scope().is_some())
 }
 
 pub(super) fn emit(

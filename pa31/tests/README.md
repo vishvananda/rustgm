@@ -58,6 +58,13 @@ and `DerefMut` reference implementations through const evaluation and native
 Pin mutation in a fresh client. A provider function also calls the constructor
 with an opened borrow inside its Pin type argument.
 Run `scripts/check_const_deref_transport.py`.
+`spec/source-drop-default-transport/outcomes.json` uses the pinned `Drop`
+forwarding body with a reference-based Pin companion. A fresh client
+observes one destructor effect from its own pinned implementation and
+another through the provider’s pinned override and `drop_glue`. A separate
+provider gives the default body its own fixture feature so the test can
+check that using the default requires that feature. Run
+`scripts/check_source_drop_defaults.py` with the prebuilt compilers.
 `spec/source-panic-format-transport/outcomes.json` checks the imported
 panic and formatting structures, field types, member visibility, and the
 fresh crate's own panic handler.

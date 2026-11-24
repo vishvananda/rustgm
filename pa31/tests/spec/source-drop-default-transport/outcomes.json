@@ -1,0 +1,14 @@
+{
+  "foundation": "pa31/tests/spec/full-drop-source/pin-drop.rs",
+  "foundation_end": "pub mod ops{",
+  "deref": "pa31/tests/spec/source-const-deref-transport/provider.rs",
+  "deref_end": "\npub fn pin_store(",
+  "drop_start": "/// Helper function for `drop_in_place`.",
+  "drop_end": "unsafe extern \"C\"{fn record(value:u8);}",
+  "pin": "pin.rs",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observe.c",
+  "stdout": "73\n42\n",
+  "denied": "drop_body_fixture"
+}

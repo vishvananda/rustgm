@@ -59,7 +59,7 @@ impl Builder<'_, '_, '_> {
                 ports,
                 OperationSite { port, site },
                 value.ty,
-                place,
+                (place, matches!(value.kind, s::ValueKind::TwoPhaseBorrow(_))),
                 work,
             ),
             s::ValueKind::Constrain(operand) => self.constrained(
@@ -223,10 +223,11 @@ impl Builder<'_, '_, '_> {
         ports: &Ports,
         location: OperationSite,
         ty: g::TypeRef,
-        place: s::Place,
+        borrow: (s::Place, bool),
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let OperationSite { port, site } = location;
+        let (place, two_phase) = borrow;
         let rows = self.domains.headers.rows();
         let s::Type::Reference {
             mutable,
@@ -239,7 +240,8 @@ impl Builder<'_, '_, '_> {
         let actual = Ports::place_type(self.domains.headers, original, place, work)?;
         let referent = self.node(original, referent, work)?;
         if self.node(original, actual, work)? != referent
-            && !self.coerced_reborrow(original, place, referent, work)?
+            && !self.coerced_reborrow(original, place, referent, two_phase, work)?
+            || two_phase && !mutable
             || mutable && !ports.writable(original, place, work)?
         {
             return Err("source Borrow changed its actual referent or writable place");
@@ -450,6 +452,7 @@ impl Builder<'_, '_, '_> {
         original: &s::Original,
         place: s::Place,
         referent: NodeId,
+        two_phase: bool,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
@@ -470,7 +473,7 @@ impl Builder<'_, '_, '_> {
         let reference = Ports::place_type(self.domains.headers, original, base, work)?;
         let reference = self.node(original, reference, work)?;
         self.coverage
-            .reborrow(original.body, reference, referent, work)
+            .reborrow(original.body, reference, referent, two_phase, work)
     }
 }
 /// A borrow whose outermost projection dereferences a reference.

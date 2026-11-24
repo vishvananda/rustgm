@@ -247,7 +247,7 @@ impl Obligations {
     pub fn append_at(&mut self, proof: Self, scope: ScopeId) -> Result<(), &'static str> {
         self.append_at_origin(proof, scope, 0)
     }
-    pub(super) fn append_at_origin(
+    pub(crate) fn append_at_origin(
         &mut self,
         proof: Self,
         scope: ScopeId,

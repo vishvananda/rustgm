@@ -39,8 +39,13 @@ pub(in crate::sema) fn is_final_trait_method(
             if header.body.is_none() {
                 return Ok(false);
             }
+            // The v14 Drop profile checks these bodies and excludes written finalness.
             if crate::sema::header_attributes::has_plain_provided_function_policy(facts, definition)
                 .map_err(Error::unlocated)?
+                || facts
+                    .imported_conditional_member_trait(definition)
+                    .map_err(Error::unlocated)?
+                    .is_some()
             {
                 return Ok(false);
             }

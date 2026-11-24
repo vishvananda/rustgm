@@ -40,7 +40,7 @@ pub(super) struct Coverage {
     local_borrows: HashSet<(BodyRef, s::RegionRef)>,
     /// Version thirteen: each one-dereference reborrow coercion's actual
     /// reference and expected referent.
-    reborrows: HashSet<(BodyRef, NodeId, NodeId)>,
+    reborrows: HashSet<(BodyRef, NodeId, NodeId, bool)>,
 }
 impl Coverage {
     pub(super) fn new(
@@ -157,14 +157,16 @@ impl Coverage {
                     Some(s::ReferenceConversion {
                         dereferences: dereferences @ 1..,
                         unsize: false,
-                        two_phase: false,
+                        two_phase,
                     }),
-            } if domains.bodies => {
-                self.plain_reborrow(
+            } if domains.bodies
+                && (!two_phase || domains.declaration_policies && dereferences == 1) =>
+            {
+                self.reference_reborrow(
                     domains,
                     arena,
                     context,
-                    (actual, expected, dereferences),
+                    (actual, expected, dereferences, two_phase),
                     work,
                 )?;
             }
@@ -279,15 +281,26 @@ impl Coverage {
     /// operation pays for it. Both types must still root in this original's
     /// scope, and a one-dereference reborrow records the exact expected
     /// referent its coerced Borrow value borrows at.
-    fn plain_reborrow(
+    fn reference_reborrow(
         &mut self,
         domains: &DomainIndex<'_, '_>,
         arena: &mut Arena,
         context: Context,
-        coercion: (s::TypeRef, s::TypeRef, u32),
+        coercion: (s::TypeRef, s::TypeRef, u32, bool),
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let (actual, expected, dereferences) = coercion;
+        let (actual, expected, dereferences, two_phase) = coercion;
+        let types = &domains.headers.rows().types;
+        if two_phase
+            && [actual, expected].into_iter().any(|ty| {
+                !matches!(
+                    types.get(ty.0 as usize),
+                    Some(s::Type::Reference { mutable: true, .. })
+                )
+            })
+        {
+            return Err("source two-phase reborrow requires actual exclusive reference types");
+        }
         let body = context
             .body
             .ok_or("source coverage has no original body owner")?;
@@ -296,18 +309,17 @@ impl Coverage {
             let key = uses::key(domains, ty, Rewrite::Original, Some(context), work)?;
             *node = arena.root(domains, key, work)?;
         }
-        if let (1, Some(&s::Type::Reference { referent, .. })) = (
-            dereferences,
-            domains.headers.rows().types.get(expected.0 as usize),
-        ) {
+        if let (1, Some(&s::Type::Reference { referent, .. })) =
+            (dereferences, types.get(expected.0 as usize))
+        {
             let key = uses::key(domains, referent, Rewrite::Original, Some(context), work)?;
             let referent = arena.root(domains, key, work)?;
             arena.reserve(
-                retained::new_map::<(BodyRef, NodeId, NodeId), ()>(1),
+                retained::new_map::<(BodyRef, NodeId, NodeId, bool), ()>(1),
                 0,
                 work,
             )?;
-            self.reborrows.insert((body, nodes[0], referent));
+            self.reborrows.insert((body, nodes[0], referent, two_phase));
         }
         Ok(())
     }
@@ -316,10 +328,13 @@ impl Coverage {
         body: BodyRef,
         reference: NodeId,
         referent: NodeId,
+        two_phase: bool,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
-        Ok(self.reborrows.contains(&(body, reference, referent)))
+        Ok(self
+            .reborrows
+            .contains(&(body, reference, referent, two_phase)))
     }
     pub(super) fn retained_bytes(&self) -> usize {
         self.variables
@@ -349,6 +364,7 @@ impl Coverage {
                 BodyRef,
                 NodeId,
                 NodeId,
+                bool,
             )>()))
     }
 }

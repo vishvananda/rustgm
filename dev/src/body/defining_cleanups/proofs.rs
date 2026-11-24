@@ -217,9 +217,8 @@ pub(super) fn goals(
                 .source_bindings
                 .as_deref()
                 .ok_or("own Drop lost its source catalog")?
-                .validated_language(crate::support::bindings::LangItem::Drop)?
+                .cleanup_role(crate::support::bindings::LangItem::Drop, true)?
                 .ok_or("own Drop requires its actual language declaration")?
-                .definition
         } else {
             destruct.require()?
         };

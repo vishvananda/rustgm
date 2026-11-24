@@ -772,7 +772,11 @@ impl Graph {
                 .is_some_and(|input| {
                     input.body == body
                         && input.frame == raw.original.binder
-                        && input.environment == s::EnvironmentOrigin::Contract
+                        && matches!(
+                            input.environment,
+                            s::EnvironmentOrigin::Contract
+                                | s::EnvironmentOrigin::ConstTraitDefault { .. }
+                        )
                 })
         {
             // This query exposes declaration facts only. The v9 original port
@@ -802,6 +806,7 @@ impl Graph {
                         }
                     }
                     s::EnvironmentOrigin::Contract
+                    | s::EnvironmentOrigin::ConstTraitDefault { .. }
                         if !std::sync::Arc::ptr_eq(environment, defining) => {}
                     _ => {
                         return Err(

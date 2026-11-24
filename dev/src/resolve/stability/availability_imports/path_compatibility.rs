@@ -1,7 +1,7 @@
 //! Real path groups preserve terminal identity before checking module prefixes.
 use super::{
     Declaration, Error, ImportedDeprecation, Imports, NodeKey, Package, PathEntry, Resolution,
-    Selection, Target, owner, retained, s,
+    Selection, Target, UseKind, owner, retained, s,
 };
 use crate::resolve::{
     expansion::Report,
@@ -163,7 +163,7 @@ impl Imports {
             }
         }
         // A note never waives the terminal declaration's independent API gate.
-        self.declaration(package, path.site, path.terminal, false)?;
+        self.declaration(package, path.site, path.terminal, UseKind::Regular)?;
         let message = if matches!(path.kind, PathKind::Associated(_)) {
             None
         } else {
@@ -254,7 +254,7 @@ impl Imports {
         if entry.binding.source == s::BindingSource::Declaration {
             self.policy(package, site, entry.binding.artifact, row.regular)?;
         }
-        self.declaration(package, site, entry.binding.target, false)
+        self.declaration(package, site, entry.binding.target, UseKind::Regular)
     }
     pub(super) fn complete_paths(&mut self) -> Result<(), Error> {
         if self.paths_complete {
@@ -286,7 +286,7 @@ impl Imports {
             if let Target::Definition(definition) | Target::Associated(definition) =
                 reference.target
             {
-                self.declaration(package, reference.node, definition, false)?;
+                self.declaration(package, reference.node, definition, UseKind::Regular)?;
             }
         }
         Ok(())
@@ -428,7 +428,7 @@ pub(crate) fn visit_warnings(
             if matches!(path.kind, PathKind::Associated(_)) {
                 // Enabled prefixes retain the old ordinary member route. A denied
                 // module already requires its genuine selected-leaf consumer.
-                imports.declaration(&report.package, site, terminal, false)?;
+                imports.declaration(&report.package, site, terminal, UseKind::Regular)?;
                 continue;
             }
             return Err(Error::unlocated(

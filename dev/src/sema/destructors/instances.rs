@@ -120,14 +120,10 @@ fn provided_instance(
     if declaration == method {
         return Ok(None);
     }
-    let function = facts
-        .function_indices
-        .get(&declaration)
-        .and_then(|&index| facts.functions.get(index))
-        .ok_or("provided destructor lost its actual source function")?;
-    if function.definition != declaration || function.body.is_none() {
-        return Err("pinned destruction requires its actual provided Drop body");
-    }
+    let body = facts
+        .declaration_header(declaration)?
+        .and_then(|header| header.body)
+        .ok_or("pinned destruction requires its actual provided Drop body")?;
     let item = ItemId(declaration.0);
     let template = facts
         .lifetimes
@@ -147,10 +143,29 @@ fn provided_instance(
     }
     let signature = template.signature;
     let bindings = [(*parameter, Argument::Type(target))];
-    let payments =
-        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
-            .map_err(|_| "provided Drop requires its actual source payer")?;
-    let pay = |work, bytes| payments.charge(work, bytes);
+    let source = body.source().is_some();
+    let provider = source
+        .then(|| {
+            crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
+        })
+        .transpose()
+        .map_err(|_| "provided Drop requires its actual source payer")?;
+    let imported = (!source)
+        .then(|| crate::sema::crates::source_header_payments(facts.crates.as_deref_mut()))
+        .transpose()?
+        .map(std::cell::RefCell::new);
+    let pay = |work, bytes| {
+        if let Some(payer) = &provider {
+            payer.charge(work, bytes)
+        } else {
+            imported
+                .as_ref()
+                .ok_or("provided Drop lacks its imported payer")?
+                .try_borrow_mut()
+                .map_err(|_| "provided Drop reentered its imported payer")?
+                .pay(work, bytes)
+        }
+    };
     let mut fold = Bound::parameters_captured_charged(&facts.types, &bindings, Vec::new(), &pay)?;
     let Argument::Type(signature) =
         fold.apply_argument_charged(&mut facts.types, Argument::Type(signature), &pay)?
@@ -211,7 +226,7 @@ fn provided_member(
         .source_bindings
         .as_deref()
         .ok_or("pinned destruction requires source Drop")?
-        .validated_language(crate::support::bindings::LangItem::Drop)?
+        .validated_role(crate::support::bindings::LangItem::Drop)?
         .ok_or("pinned destruction lost its actual Drop role")?;
     let registry = facts
         .generics

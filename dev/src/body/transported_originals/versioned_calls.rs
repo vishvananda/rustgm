@@ -121,12 +121,14 @@ impl<'a> Index<'a> {
                 if rows.descriptor().profile().declaration_policies()
                     && let Some(expected) = link.trait_member
                     && expected.artifact == s::ArtifactRef(0)
-                    && matches!(
-                        rows.header(expected.declaration)?,
-                        Some(s::HeaderRef::Constant(_))
-                    )
                 {
-                    continue;
+                    let declaration = rows.header(expected.declaration)?;
+                    if matches!(declaration, Some(s::HeaderRef::Constant(_)))
+                        || link.implementation.is_none() && rows.transported_default(declaration)
+                    {
+                        // A provided body is indexed under its declaring trait.
+                        continue;
+                    }
                 }
                 let (Some(actual), Some(expected)) = (link.implementation, link.trait_member)
                 else {

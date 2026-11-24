@@ -182,16 +182,15 @@ impl DomainIndex<'_, '_> {
                     }
                 }
             }
-            for &bound in normalization
-                .equalities
-                .iter()
-                .chain(&normalization.outlives)
-            {
-                self.bound(context, bound, work)?;
-            }
-            for input in &normalization.types {
-                self.types.root(self.headers, context, input.ty, work)?;
-                Types::region(self.headers, &self.binders, context, input.shorter, work)?;
+            self.normalization_relations(
+                context,
+                &normalization.equalities,
+                &normalization.outlives,
+                &normalization.types,
+                work,
+            )?;
+            if let Some(scoped) = &normalization.scoped {
+                self.scoped_normalization(context, normalization, scoped, work)?;
             }
         }
         for (index, variable) in original.variables.iter().enumerate() {
@@ -200,6 +199,59 @@ impl DomainIndex<'_, '_> {
             {
                 return Err("source normalization allocation has no complete disjoint input owner");
             }
+        }
+        Ok(())
+    }
+    fn scoped_normalization(
+        &self,
+        context: Context,
+        input: &s::NormalizationInput,
+        scoped: &s::ScopedNormalization,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(1)?;
+        let binder = self
+            .headers
+            .rows()
+            .binders
+            .get(scoped.frame.0 as usize)
+            .ok_or("source scoped normalization binder is unknown")?;
+        if binder.owner != context.owner
+            || binder.parent != context.frame
+            || binder.kind != s::BinderKind::Clause
+            || scoped.origin as usize > input.sources.len()
+            || !input.owned.is_empty()
+        {
+            return Err(
+                "source scoped normalization changed its actual binder, origin or allocation",
+            );
+        }
+        self.normalization_relations(
+            Context {
+                frame: Some(scoped.frame),
+                ..context
+            },
+            &scoped.equalities,
+            &scoped.outlives,
+            &scoped.types,
+            work,
+        )
+    }
+
+    fn normalization_relations(
+        &self,
+        context: Context,
+        equalities: &[s::RegionBound],
+        outlives: &[s::RegionBound],
+        types: &[s::TypeOutlives],
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        for &bound in equalities.iter().chain(outlives) {
+            self.bound(context, bound, work)?;
+        }
+        for input in types {
+            self.types.root(self.headers, context, input.ty, work)?;
+            Types::region(self.headers, &self.binders, context, input.shorter, work)?;
         }
         Ok(())
     }

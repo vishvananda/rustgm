@@ -1,4 +1,5 @@
 //! Convert an exact original IR statement into a neutral defining-call query.
+pub(super) mod pinned_defaults;
 mod signatures;
 use super::invocations::Work;
 use crate::{
@@ -71,10 +72,9 @@ pub(super) fn defining(
     ) {
         return Ok(false);
     }
-    let source = body
-        .source
-        .source()
-        .ok_or("imported provided-body defining checks are not implemented")?;
+    let Some(source) = body.source.source() else {
+        return pinned_defaults::defining(facts, body, work);
+    };
     work.charge(5)?;
     if !matches!(
         facts.function_context(definition, source)?,
@@ -789,7 +789,9 @@ fn source_member(
     // dispatch must select the actual impl and prove its body before Code;
     // direct root entry still cannot execute a trait default without a caller.
     if (header.declaration.source().is_none()
-        && facts.imported_const_operator_trait(definition)?.is_none())
+        && facts
+            .imported_conditional_member_trait(definition)?
+            .is_none())
         || facts
             .associated
             .trait_owner(definition)

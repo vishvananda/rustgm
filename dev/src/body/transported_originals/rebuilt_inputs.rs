@@ -13,6 +13,7 @@ use crate::{
     support::crates::generics::source as s,
     types::{
         TypeId,
+        lifetime_proof::{Obligations, ScopeId},
         parameters::{
             clauses::Clause,
             environment::Environment,
@@ -515,23 +516,28 @@ fn normalization(
     steps: &mut usize,
 ) -> Result<Proof, &'static str> {
     let regions = view.normalization_interval(index, record, steps)?;
-    let mut proof = crate::types::lifetime_proof::Obligations::new(regions.start);
-    proof.regions = regions;
-    proof.equalities = record
-        .equalities
-        .iter()
-        .map(|&p| pair(view, p, steps))
-        .collect::<Result<_, _>>()?;
-    proof.outlives = record
-        .outlives
-        .iter()
-        .map(|&p| pair(view, p, steps))
-        .collect::<Result<_, _>>()?;
-    proof.types = record
-        .types
-        .iter()
-        .map(|p| Ok((view.ty(p.ty, steps)?, view.region(p.shorter, steps)?)))
-        .collect::<Result<_, &'static str>>()?;
+    let mut proof = normalization_relations(
+        view,
+        (&record.equalities, &record.outlives, &record.types),
+        regions,
+        steps,
+    )?;
+    if let Some(scoped) = &record.scoped {
+        let count = view.normalization_scope(scoped.frame, steps)?;
+        let scope = if scoped.callable {
+            proof.callable_scope(ScopeId::ROOT, count)?
+        } else {
+            proof.scope(ScopeId::ROOT, count)?
+        };
+        let end = proof.regions.end;
+        let nested = normalization_relations(
+            view,
+            (&scoped.equalities, &scoped.outlives, &scoped.types),
+            end..end,
+            steps,
+        )?;
+        proof.append_at_origin(nested, scope, scoped.origin)?;
+    }
     Ok(Proof {
         source: view.input_site(record.site, steps)?,
         sources: record
@@ -541,6 +547,35 @@ fn normalization(
             .collect::<Result<_, _>>()?,
         proof,
     })
+}
+
+type RelationRows<'a> = (
+    &'a [s::RegionBound],
+    &'a [s::RegionBound],
+    &'a [s::TypeOutlives],
+);
+
+fn normalization_relations(
+    view: &SourceOriginal<'_>,
+    (equalities, outlives, types): RelationRows<'_>,
+    regions: std::ops::Range<u32>,
+    steps: &mut usize,
+) -> Result<Obligations, &'static str> {
+    let mut proof = Obligations::new(regions.start);
+    proof.regions = regions;
+    proof.equalities = equalities
+        .iter()
+        .map(|&row| pair(view, row, steps))
+        .collect::<Result<_, _>>()?;
+    proof.outlives = outlives
+        .iter()
+        .map(|&row| pair(view, row, steps))
+        .collect::<Result<_, _>>()?;
+    proof.types = types
+        .iter()
+        .map(|row| Ok((view.ty(row.ty, steps)?, view.region(row.shorter, steps)?)))
+        .collect::<Result<_, &'static str>>()?;
+    Ok(proof)
 }
 
 pub(super) fn validate(
@@ -746,13 +781,9 @@ fn validate_normalization(
     steps: &mut usize,
 ) -> Result<(), &'static str> {
     let regions = view.normalization_interval(index, record, steps)?;
-    if actual.proof.has_quantified()
-        || actual.proof.regions != regions
+    if actual.proof.regions != regions
         || actual.source != view.input_site(record.site, steps)?
         || actual.sources.len() != record.sources.len()
-        || actual.proof.equalities.len() != record.equalities.len()
-        || actual.proof.outlives.len() != record.outlives.len()
-        || actual.proof.types.len() != record.types.len()
     {
         return Err("source original changed its complete record normalization domain");
     }
@@ -761,17 +792,55 @@ fn validate_normalization(
             return Err("source normalization changed an actual diagnostic origin");
         }
     }
-    for (rows, mapped) in [
-        (&record.equalities, &actual.proof.equalities),
-        (&record.outlives, &actual.proof.outlives),
-    ] {
+    validate_normalization_relations(
+        view,
+        (&record.equalities, &record.outlives, &record.types),
+        &actual.proof,
+        steps,
+    )?;
+    if let Some(scoped) = &record.scoped {
+        let evidence = actual
+            .proof
+            .single_normalization_scope()
+            .ok_or("source normalization lost its actual single scope")?;
+        if evidence.regions != view.normalization_scope(scoped.frame, steps)?
+            || evidence.callable != scoped.callable
+            || evidence.origin != scoped.origin
+        {
+            return Err("source normalization changed its scoped binder or origin");
+        }
+        validate_normalization_relations(
+            view,
+            (&scoped.equalities, &scoped.outlives, &scoped.types),
+            evidence.block,
+            steps,
+        )?;
+    } else if actual.proof.has_quantified() {
+        return Err("source normalization acquired an unrecorded scope");
+    }
+    Ok(())
+}
+
+fn validate_normalization_relations(
+    view: &SourceOriginal<'_>,
+    (equalities, outlives, types): RelationRows<'_>,
+    proof: &Obligations,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    if equalities.len() != proof.equalities.len()
+        || outlives.len() != proof.outlives.len()
+        || types.len() != proof.types.len()
+    {
+        return Err("source original changed its complete record normalization relations");
+    }
+    for (rows, mapped) in [(equalities, &proof.equalities), (outlives, &proof.outlives)] {
         for (&record, &actual) in rows.iter().zip(mapped) {
             if pair(view, record, steps)? != actual {
                 return Err("source normalization changed a record relation");
             }
         }
     }
-    for (record, &actual) in record.types.iter().zip(&actual.proof.types) {
+    for (record, &actual) in types.iter().zip(&proof.types) {
         if (
             view.ty(record.ty, steps)?,
             view.region(record.shorter, steps)?,

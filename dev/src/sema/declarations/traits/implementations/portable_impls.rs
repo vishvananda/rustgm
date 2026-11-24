@@ -152,9 +152,31 @@ impl Checker<'_> {
         )
         .map_err(Error::unlocated)?;
         for &(expected, actual) in &members.methods {
-            let actual = actual.ok_or_else(|| {
-                Error::unlocated("v4 defaults require their wider conformance profile")
-            })?;
+            let Some(actual) = actual else {
+                if self
+                    .facts
+                    .imported_conditional_member_trait(expected)
+                    .map_err(Error::unlocated)?
+                    .is_some()
+                    && self
+                        .facts
+                        .declaration_header(expected)
+                        .map_err(Error::unlocated)?
+                        .is_some_and(|header| {
+                            matches!(
+                                header.body,
+                                Some(crate::resolve::body_origin::BodyOrigin::Imported(_))
+                            )
+                        })
+                {
+                    // The trait owns the checked original. Dispatch reuses
+                    // its full defining contract with the impl's actual Self.
+                    continue;
+                }
+                return Err(Error::unlocated(
+                    "v4 defaults require their wider conformance profile",
+                ));
+            };
             if crate::sema::declarations::is_final_trait_method(self.report, &self.facts, expected)?
                 || self.facts.methods.receivers.contains_key(&expected)
                     != self.facts.methods.receivers.contains_key(&actual)

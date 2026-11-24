@@ -140,13 +140,7 @@ fn implementation_members(
         let Some(actual) = link.implementation else {
             // The trait owns the default's original, so it contributes no
             // declaration to the implementation's own lexical inventory.
-            if rows.descriptor().profile().declaration_policies()
-                && let Some(s::HeaderRef::Constant(index)) = declaration
-                && matches!(
-                    rows.constants()[index as usize].body,
-                    s::ConstantBody::Original(_)
-                )
-            {
+            if rows.transported_default(declaration) {
                 continue;
             }
             return Err(error("v4 method conformance requires its actual override"));

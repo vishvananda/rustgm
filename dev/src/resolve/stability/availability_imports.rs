@@ -313,20 +313,26 @@ impl Imports {
         }
         Ok(())
     }
-    pub(in crate::resolve) fn declaration(
+    fn declaration(
         &self,
         package: &Package,
         site: NodeKey,
         definition: DefId,
-        constant: bool,
+        use_: UseKind,
     ) -> Result<(), Error> {
         self.charge(1, 0)?;
         let Some(mapped) = self.declarations.get(&definition) else {
             return Ok(());
         };
-        let mapped = mapped.as_ref().ok_or_else(|| {
-            Error::unlocated("imported API availability is unknown in its metadata profile")
-        })?;
+        let Some(mapped) = mapped else {
+            return if matches!(use_, UseKind::DefaultBody) {
+                Ok(())
+            } else {
+                Err(Error::unlocated(
+                    "imported API availability is unknown in its metadata profile",
+                ))
+            };
+        };
         self.catalog()?
             .validate_declaration(mapped.handle, definition, mapped.kind)
             .map_err(Error::unlocated)?;
@@ -346,17 +352,17 @@ impl Imports {
                 "availability declaration changed its canonical origin",
             ));
         }
-        let row = self
-            .rows(mapped.artifact)?
+        let rows = self.rows(mapped.artifact)?;
+        let row = rows
             .declarations
             .get(mapped.reference.0 as usize)
             .ok_or_else(|| Error::unlocated("availability declaration coverage is missing"))?;
-        self.policy(
-            package,
-            site,
-            mapped.artifact,
-            if constant { row.constant } else { row.regular },
-        )
+        let reference = match use_ {
+            UseKind::Regular => row.regular,
+            UseKind::Const => row.constant,
+            UseKind::DefaultBody => rows.default_body(mapped.reference),
+        };
+        self.policy(package, site, mapped.artifact, reference)
     }
     pub(in crate::resolve) fn trace(&self, length: usize) -> Result<Observations, Error> {
         let growth = retained::Growth::vector::<Selection>(0, 0, length);
@@ -675,11 +681,40 @@ pub(crate) fn check(
     definition: DefId,
     constant: bool,
 ) -> Result<(), Error> {
+    let use_ = if constant {
+        UseKind::Const
+    } else {
+        UseKind::Regular
+    };
+    check_declaration(report, site, definition, use_)
+}
+
+pub(crate) fn check_default_body(
+    report: &Report,
+    site: NodeKey,
+    definition: DefId,
+) -> Result<(), Error> {
+    check_declaration(report, site, definition, UseKind::DefaultBody)
+}
+
+#[derive(Clone, Copy)]
+enum UseKind {
+    Regular,
+    Const,
+    DefaultBody,
+}
+
+fn check_declaration(
+    report: &Report,
+    site: NodeKey,
+    definition: DefId,
+    use_: UseKind,
+) -> Result<(), Error> {
     let Some(availability) = owner(&report.package, report.resolution.crates.as_deref())? else {
         return Ok(());
     };
     let start = availability.deferred.borrow().len();
-    availability.declaration(&report.package, site, definition, constant)?;
+    availability.declaration(&report.package, site, definition, use_)?;
     availability.admit_deferred(report, start)
 }
 /// After ordinary resolution, admit every use deferred inside an expansion

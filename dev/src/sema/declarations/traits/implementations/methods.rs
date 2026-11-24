@@ -190,6 +190,20 @@ impl Checker<'_> {
                     .library_default(expected.definition)
                     .is_some()
             {
+                if has_body
+                    && self
+                        .facts
+                        .associated
+                        .owner(trait_item)
+                        .and_then(|id| self.facts.associated.get(id))
+                        .is_some_and(|owner| owner.source.is_none())
+                {
+                    crate::resolve::stability::check_default_body(
+                        self.report,
+                        source,
+                        expected.definition,
+                    )?;
+                }
                 result.push((expected.definition, None));
             } else {
                 return Err(self.error(source, "implementation is missing a required trait method"));

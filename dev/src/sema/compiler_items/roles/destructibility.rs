@@ -301,7 +301,10 @@ fn typed_method(
     Ok(())
 }
 
-fn pin_pointer(facts: &Declarations, receiver: TypeId) -> Result<TypeId, &'static str> {
+pub(in crate::sema) fn pin_pointer(
+    facts: &Declarations,
+    receiver: TypeId,
+) -> Result<TypeId, &'static str> {
     let actual = facts
         .source_bindings
         .as_deref()

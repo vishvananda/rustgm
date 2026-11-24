@@ -15,6 +15,7 @@ pub use notices::{DeprecatedDeclaration, DeprecationColumns, DeprecationNotice, 
 pub enum AvailabilityKind {
     Regular,
     Const,
+    DefaultBody,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AvailabilitySince {
@@ -231,18 +232,7 @@ impl AvailabilityRows {
             ancestry,
             declaration_policies,
         };
-        let mut origins = crate::support::hash::HashSet::with_capacity_and_hasher(
-            self.policies.len(),
-            crate::support::hash::BuildFxHasher::default(),
-        );
-        for (index, policy) in self.policies.iter().enumerate() {
-            work.charge(1)?;
-            if !origins.insert((policy.origin, policy.kind)) {
-                return Err("availability source origin has duplicate policy kinds");
-            }
-            self.origin_policy(index, policy)?;
-        }
-        let mut used = vec![false; self.policies.len()];
+        let mut used = self.policy_origins(&view, work)?;
         for (index, row) in self.declarations.iter().enumerate() {
             work.charge(1)?;
             if row.declaration.0 as usize != index {
@@ -296,6 +286,34 @@ impl AvailabilityRows {
         }
         Ok(AvailabilityColumns { rows: self })
     }
+    fn policy_origins(
+        &self,
+        view: &Validation<'_>,
+        work: &mut Work,
+    ) -> Result<Vec<bool>, &'static str> {
+        let mut origins = crate::support::hash::HashSet::with_capacity_and_hasher(
+            self.policies.len(),
+            crate::support::hash::BuildFxHasher::default(),
+        );
+        let mut used = vec![false; self.policies.len()];
+        for (index, policy) in self.policies.iter().enumerate() {
+            work.charge(1)?;
+            if !origins.insert((policy.origin, policy.kind)) {
+                return Err("availability source origin has duplicate policy kinds");
+            }
+            if policy.kind == AvailabilityKind::DefaultBody {
+                if index + 1 != self.policies.len() {
+                    return Err("source default-body stability is not its final policy row");
+                }
+                view.default_body_policy(policy, work)?;
+                used[index] = true;
+            } else {
+                self.origin_policy(index, policy)?;
+            }
+        }
+        Ok(used)
+    }
+
     /// Explicit v9 ordinary absence is complete data, never a synthesized policy.
     fn ordinary_absence(self, work: &mut Work) -> Result<AvailabilityColumns, &'static str> {
         work.charge(1)?;
@@ -321,6 +339,17 @@ impl AvailabilityRows {
         }
         Ok(AvailabilityColumns { rows: self })
     }
+    pub(crate) fn default_body(&self, declaration: DeclarationRef) -> Option<AvailabilityRef> {
+        let index = self.policies.len().checked_sub(1)?;
+        let policy = &self.policies[index];
+        if policy.kind != AvailabilityKind::DefaultBody
+            || !matches!(policy.origin, AvailabilityOrigin::Declaration { owner, .. } if owner == declaration)
+        {
+            return None;
+        }
+        Some(AvailabilityRef(u32::try_from(index).ok()?))
+    }
+
     fn policy(&self, reference: AvailabilityRef) -> Result<&AvailabilityPolicy, &'static str> {
         self.policies
             .get(reference.0 as usize)
@@ -368,6 +397,9 @@ impl AvailabilityRows {
         work.charge(1)?;
         let policy = self.policy(reference)?;
         if constant {
+            if policy.kind == AvailabilityKind::DefaultBody {
+                return Err("default-body policy cannot supply const API availability");
+            }
             if policy.kind == AvailabilityKind::Regular
                 && !matches!(policy.level, AvailabilityLevel::Unstable { .. })
             {
@@ -522,6 +554,45 @@ struct Validation<'a> {
     declaration_policies: bool,
 }
 impl Validation<'_> {
+    fn default_body_policy(
+        &self,
+        policy: &AvailabilityPolicy,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let error = "source default-body stability requires its actual provided Drop::drop member";
+        let AvailabilityOrigin::Declaration { owner, site } = policy.origin else {
+            return Err(error);
+        };
+        let Some(declaration) = self.columns.declarations.get(owner.0 as usize) else {
+            return Err(error);
+        };
+        let Some(super::HeaderRef::Function(index)) =
+            self.headers.get(owner.0 as usize).copied().flatten()
+        else {
+            return Err(error);
+        };
+        let function = &self.columns.functions[index as usize];
+        if !self.declaration_policies
+            || !matches!(policy.level, AvailabilityLevel::Unstable { .. })
+            || site >= declaration.sites
+            || declaration.name.as_deref() != Some("drop")
+            || function.constness != crate::support::constness::Constness::Conditional
+            || !matches!(function.body, super::FunctionBody::Original(_))
+        {
+            return Err(error);
+        }
+        let roles = self.columns.policy.roles.slice(&self.columns.roles)?;
+        work.charge(roles.len())?;
+        if !roles.iter().any(|row| {
+            row.role == crate::support::bindings::LangItem::Drop
+                && row.declaration.artifact == self.columns.policy.provider
+                && Some(row.declaration.declaration) == function.parent
+        }) {
+            return Err(error);
+        }
+        Ok(())
+    }
+
     fn trait_implementation(&self, owner: DeclarationRef) -> bool {
         match self.headers.get(owner.0 as usize).copied().flatten() {
             Some(super::HeaderRef::Implementation(index)) => self

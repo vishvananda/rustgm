@@ -640,8 +640,8 @@ fn required_trait_member(
     if drop.is_some() {
         crate::sema::compiler_items::require_source_drop_contract(report, facts)
             .map_err(|_| "conditional Drop member lost its actual checked trait contract")?;
-        if function.body.is_some() {
-            return Err("provided Drop members require their original conditional body transport");
+        if facts.nonconst_trait_member(function.definition)? {
+            return Err("source non-const Drop method requires its actual policy transport");
         }
         selected = drop;
     }
@@ -659,7 +659,7 @@ fn required_trait_member(
     if role.definition != definition {
         return Err("conditional member belongs to another actual trait");
     }
-    if function.body.is_some() {
+    if function.body.is_some() && drop.is_none() {
         return Err("conversion trait defaults require their actual body transport");
     }
     if role.parent.is_some()

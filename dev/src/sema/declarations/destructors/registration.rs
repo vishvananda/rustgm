@@ -279,7 +279,12 @@ fn receiver(facts: &Declarations, signature: TypeId, target: TypeId) -> Result<(
     let Some([receiver]) = facts.types.list(parameters) else {
         return Err(WIDER);
     };
-    if !matches!(facts.types.kind(*receiver), Some(Kind::Reference { mutable: true, referent, region })
+    let receiver = if matches!(facts.types.kind(*receiver), Some(Kind::Adt(..))) {
+        crate::sema::compiler_items::drop_pin_pointer(facts, *receiver)?
+    } else {
+        *receiver
+    };
+    if !matches!(facts.types.kind(receiver), Some(Kind::Reference { mutable: true, referent, region })
         if referent == target && region.bound_parts() == Some((0, 0)))
     {
         return Err(WIDER);
@@ -303,14 +308,22 @@ pub(super) fn complete(facts: &Declarations) -> Result<(), &'static str> {
         .ok_or(WIDER)?
         .validated_role(LangItem::Drop)?
         .ok_or(WIDER)?;
-    let owner = facts.associated.owner(drop.definition).ok_or(WIDER)?;
-    let [required] = facts.associated.owner_members(owner).ok_or(WIDER)? else {
-        return Err(WIDER);
-    };
     let registry = facts.generics.implementations.as_deref().ok_or(WIDER)?;
     for implementation in rows {
-        if registry.method(implementation.self_definition, *required) != Some(implementation.method)
-        {
+        let owner = implementation.self_definition;
+        if !registry.is_validated(owner) {
+            return Err("provider destructor lost its checked Drop implementation");
+        }
+        let header = registry.header(owner).ok_or(WIDER)?;
+        let mut selected = None;
+        for &(member, actual) in &header.methods {
+            if facts.associated.trait_owner(member) != Some(drop.definition)
+                || actual.is_some_and(|actual| selected.replace(actual).is_some())
+            {
+                return Err("provider destructor changed its actual Drop declaration or override");
+            }
+        }
+        if selected != Some(implementation.method) {
             return Err("provider destructor lost its checked Drop member mapping");
         }
     }

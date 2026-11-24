@@ -73,14 +73,24 @@ pub struct TypeOutlives {
     pub shorter: RegionRef,
 }
 
-/// Root-scoped raw input only. Unsupported quantified proofs must reject during
-/// export; a flat row must never silently discard their nested scope ownership.
+/// A root input may carry one lexical child with its own normalized relations.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NormalizationInput {
     pub site: InputSite,
     pub sources: Vec<InputSite>,
     /// Exact disjoint ranges in this body's explicit owned-allocation table.
     pub owned: Vec<Range>,
+    pub equalities: Vec<RegionBound>,
+    pub outlives: Vec<RegionBound>,
+    pub types: Vec<TypeOutlives>,
+    pub scoped: Option<Box<ScopedNormalization>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ScopedNormalization {
+    pub frame: BinderRef,
+    pub callable: bool,
+    pub origin: u32,
     pub equalities: Vec<RegionBound>,
     pub outlives: Vec<RegionBound>,
     pub types: Vec<TypeOutlives>,

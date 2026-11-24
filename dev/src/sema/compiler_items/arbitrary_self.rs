@@ -66,7 +66,7 @@ pub(in crate::sema) fn next(
             .as_deref()
             .ok_or("receiver lacks its actual source catalog")?;
         let legacy = catalog
-            .validated_language(LangItem::LegacyReceiver)?
+            .validated_role(LangItem::LegacyReceiver)?
             .ok_or("receiver lacks its completed actual LegacyReceiver trait")?
             .definition;
         if require_trait(facts, proof, current, legacy)?.is_none() {
@@ -125,15 +125,18 @@ fn roles(
         .ok_or("receiver lacks its actual source catalog")?;
     catalog.require_provider_report(report)?;
     let declaration = catalog
-        .validated_language(role)?
+        .validated_role(role)?
         .ok_or("receiver lacks its completed actual trait")?;
     let associated = catalog
-        .validated_language(member)?
+        .validated_role(member)?
         .ok_or("receiver lacks its completed actual Target")?;
     if associated.parent != Some(declaration.definition) {
         return Err("receiver Target belongs to another actual trait");
     }
-    let header = super::headers::Trait::source(report, facts, declaration)?;
+    let mut steps = 0;
+    let header = super::headers::Trait::current(report, facts, declaration, &mut steps)?;
+    crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+        .map_err(|_| "receiver source work budget exceeded")?;
     header.canonical_inputs(facts)?;
     if !header.parameters.is_empty() {
         return Err("receiver trait application requires its actual generic arguments");

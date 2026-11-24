@@ -102,12 +102,18 @@ impl Checker<'_> {
         if self.report.package.names.get(definition.name) != "pin_drop" {
             return Ok(receiver);
         }
-        let pin = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::Pin))
-            .ok_or_else(|| self.error(key, "pinned destructor requires its actual source Pin"))?;
+        let catalog =
+            self.facts.source_bindings.as_deref().ok_or_else(|| {
+                self.error(key, "pinned destructor requires its source role catalog")
+            })?;
+        let role = crate::support::bindings::LangItem::Pin;
+        let pin = if catalog.uses_imported_roles() {
+            catalog.validated_role(role)
+        } else {
+            catalog.role(role)
+        }
+        .map_err(|error| self.error(key, error))?
+        .ok_or_else(|| self.error(key, "pinned destructor requires its actual source Pin"))?;
         let Some(Type::Adt(item, arguments)) = self.facts.types.kind(receiver) else {
             return Err(self.error(key, "pinned destructor requires its actual Pin application"));
         };

@@ -133,7 +133,7 @@ impl Stage {
     ) -> Result<s::AvailabilityRows, &'static str> {
         self.require_attribute_context(report, facts)
             .map_err(|_| "availability collection lost its actual source owner")?;
-        if inventory.has_default_body_policies() {
+        if !self.declaration_policies() && inventory.has_default_body_policies() {
             return Err("source default-body stability requires complete policy transport");
         }
         if inventory.has_relationships() {
@@ -215,6 +215,7 @@ impl Stage {
             .into_iter()
             .collect::<Option<Vec<_>>>()
             .ok_or("availability declaration census is incomplete")?;
+        self.default_body_policy(report, inventory, &origins, &mut policies)?;
         let const_bodies = self.const_body_contracts(inventory, &origins.definitions)?;
         Ok(s::AvailabilityRows {
             const_bodies,
@@ -224,6 +225,42 @@ impl Stage {
             bindings,
         })
     }
+    fn default_body_policy(
+        &mut self,
+        report: &Report,
+        inventory: &Inventory,
+        origins: &Origins,
+        policies: &mut Policies,
+    ) -> Result<(), &'static str> {
+        if !self.declaration_policies() {
+            return Ok(());
+        }
+        self.charge(inventory.policies().len())?;
+        let mut defaults = inventory
+            .policies()
+            .iter()
+            .enumerate()
+            .filter(|(_, policy)| policy.kind == PolicyKind::DefaultBody);
+        let Some((index, policy)) = defaults.next() else {
+            return Ok(());
+        };
+        if defaults.next().is_some() {
+            return Err("source default-body stability needs its wider policy profile");
+        }
+        let Some([origin]) = origins.sources.get(&policy.origin).map(Vec::as_slice) else {
+            return Err("source default-body stability lacks its single actual declaration");
+        };
+        self.availability_policy(
+            report,
+            inventory,
+            origins,
+            policies,
+            Subject::Declaration(origin.owner),
+            Some(index),
+        )?;
+        Ok(())
+    }
+
     fn const_body_contracts(
         &mut self,
         inventory: &Inventory,
@@ -507,9 +544,7 @@ impl Stage {
             kind: match policy.kind {
                 PolicyKind::Regular => s::AvailabilityKind::Regular,
                 PolicyKind::Const => s::AvailabilityKind::Const,
-                PolicyKind::DefaultBody => {
-                    return Err("source default-body stability requires complete policy transport");
-                }
+                PolicyKind::DefaultBody => s::AvailabilityKind::DefaultBody,
             },
             feature: policy.feature.to_string(),
             level,

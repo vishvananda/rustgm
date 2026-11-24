@@ -8,7 +8,9 @@ mod parameter_types;
 pub(in crate::sema::compiler_items) mod range_members;
 pub(super) use completion_set::RoleSet;
 mod destructibility;
-pub(in crate::sema) use destructibility::require_source_drop_contract;
+pub(in crate::sema) use destructibility::{
+    pin_pointer as drop_pin_pointer, require_source_drop_contract,
+};
 mod freezing;
 mod glue;
 pub(crate) use destructibility::destruct_predicate;
@@ -92,8 +94,10 @@ impl Catalog {
         role: LangItem,
         validated: bool,
     ) -> Result<Option<DefId>, &'static str> {
-        if !matches!(role, LangItem::Destruct | LangItem::Copy) {
-            return Err("defining cleanup requires its actual Destruct or Copy role");
+        let supported = matches!(role, LangItem::Destruct | LangItem::Copy)
+            || validated && role == LangItem::Drop;
+        if !supported {
+            return Err("defining cleanup requires a supported actual language declaration");
         }
         Ok(if validated {
             self.validated_role(role)?

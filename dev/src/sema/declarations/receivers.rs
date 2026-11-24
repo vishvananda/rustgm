@@ -289,7 +289,9 @@ impl Checker<'_> {
                     break;
                 }
                 (Some(Type::Adt(..)), _)
-                    if crate::sema::compiler_items::dereferencing::available(&self.facts) =>
+                    if crate::sema::compiler_items::dereferencing::available(&self.facts)
+                        || self.facts.destructors.method(owner).is_some()
+                            && self.drop_receiver(key, owner, terminal)? != terminal =>
                 {
                     // Retain the actual outer type. Full declaration validation
                     // proves the real Deref/LegacyReceiver chain after impl headers.

@@ -35,7 +35,7 @@ pub(crate) use inputs::{prepare_signature, prepare_signature_roots};
 mod projections;
 use super::{
     drops,
-    ir::{Body, ProjectionKind, Rvalue},
+    ir::{Body, Owner, ProjectionKind, Rvalue},
     templates::Template,
 };
 use crate::{
@@ -319,11 +319,20 @@ fn materialize(
     {
         return Err("executable instance has unresolved type or const parameters");
     }
+    // A provided default's imported original retains its conditional
+    // checking mode. Its native instance follows an authored default and
+    // runs in runtime mode. Const entry needs independent execution proof.
+    let const_context = source.const_context
+        && (source.source.source().is_some()
+            || !matches!(owner, Owner::Function { .. })
+            || facts
+                .imported_conditional_member_trait(definition)?
+                .is_none());
     let mut body = Body {
         assembly: source.assembly.clone(),
         static_permissions: source.static_permissions.clone(),
         static_types: source.static_types.clone(),
-        const_context: source.const_context,
+        const_context,
         instance,
         owner,
         source: source.source,

@@ -281,7 +281,10 @@ pub(super) fn complete(
             .filter(|inputs| inputs.body == reference)
             .ok_or_else(|| error("source original environment omitted its actual body inputs"))?;
         if context.descriptor.profile().original_domains()
-            && inputs.environment == s::EnvironmentOrigin::Contract
+            && matches!(
+                inputs.environment,
+                s::EnvironmentOrigin::Contract | s::EnvironmentOrigin::ConstTraitDefault { .. }
+            )
         {
             scope
                 .function

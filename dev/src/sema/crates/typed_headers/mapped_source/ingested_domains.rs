@@ -105,6 +105,14 @@ impl Lazy {
             &mut facts.types,
             work,
         )?;
+        for normalization in &rows.body_input(raw).map_err(error)?.normalizations {
+            work.charge(1)?;
+            if let Some(scoped) = &normalization.scoped {
+                for relation in &scoped.types {
+                    require_type(cursor, &mut port, &mut facts.types, relation.ty, work)?;
+                }
+            }
+        }
         let super::Applications::Lazy { memo, reader } = &graph.applications else {
             return Err(error(
                 "ordinary original lost its actual lazy application owner",

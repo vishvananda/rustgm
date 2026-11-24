@@ -115,7 +115,7 @@ mod inhabited_properties;
 mod layout;
 mod nounwind;
 pub(crate) use inhabited_properties::{Ready as RuntimeLayout, prepare as prepare_runtime_layout};
-pub(in crate::sema) use roles::require_source_drop_contract;
+pub(in crate::sema) use roles::{drop_pin_pointer, require_source_drop_contract};
 mod needs_drop;
 pub(in crate::sema) mod pointee;
 mod ptr_metadata;

@@ -208,16 +208,16 @@ fn validate_with(
             roles.callables.callable(clause.owner) || roles.conditional_role_input(rows, clause);
         ordinary(&clause.requirement, qualified)?;
     }
-    originals(
+    originals(rows, headers, work, profile, binding, features, &roles)?;
+    body_inputs(
         rows,
         headers,
         work,
-        profile,
-        binding,
-        features,
-        roles.runtime_format_bodies,
-    )?;
-    body_inputs(rows, work, profile.conversions(), binding.languages())
+        profile.conversions(),
+        binding.languages(),
+        roles.drop,
+        binding == BindingProfile::BodyOperations,
+    )
 }
 /// Version thirteen: an implementation member's public safety is its trait
 /// member's, as rustc's E0053 requires of the impl that declares it.
@@ -430,6 +430,7 @@ fn associated_method(
                 header,
                 roles.languages,
                 Constness::Ordinary,
+                roles.drop.zip(roles.pin),
                 work,
             )? || bodies
                 && (captured::method(
@@ -488,7 +489,7 @@ fn trait_const_method(
         return Ok(false);
     };
     Ok(
-        conversions::method(rows, headers, header, false, Constness::Const, work)?
+        conversions::method(rows, headers, header, false, Constness::Const, None, work)?
             || roles.dereferences.contains(&Some(owner))
                 && captured::method(rows, headers, header, (true, Constness::Const), work)?,
     )
@@ -526,14 +527,14 @@ fn functions(
     roles: &Bindings,
     bodies: bool,
 ) -> Result<(), &'static str> {
-    for declaration in &rows.declarations {
-        work.charge(1)?;
-        if profile == NamespaceProfile::Root
-            && declaration.definition.kind == super::super::DefinitionKind::Module
-            && declaration.definition.parent.is_some()
-        {
-            return Err("nested source modules require a wider source namespace profile");
-        }
+    work.charge(rows.declarations.len())?;
+    if profile == NamespaceProfile::Root
+        && rows.declarations.iter().any(|declaration| {
+            declaration.definition.kind == super::super::DefinitionKind::Module
+                && declaration.definition.parent.is_some()
+        })
+    {
+        return Err("nested source modules require a wider source namespace profile");
     }
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
@@ -543,7 +544,9 @@ fn functions(
         // constness, convention and variadic forms keep their fences.
         let safety = free_effects || (bodies && header.parent.is_some());
         let callable = callable_roles::required_member(header, roles.callables, work)?;
-        let required = callable
+        let provided_drop = roles.provided_drop(rows, headers, header, work)?;
+        let conditional = callable
+            || provided_drop
             || profile.conversions() && roles.required_member(rows, headers, header, work)?;
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
         let trait_const =
@@ -555,11 +558,11 @@ fn functions(
                     || admitted_convention(rows, header.declaration, signature.convention, profile))
         };
         if (!free_effects
-            && !required
+            && !conditional
             && !inherent_const
             && !trait_const
             && header.constness != Constness::Ordinary)
-            || !required && header.constness == Constness::Conditional
+            || !conditional && header.constness == Constness::Conditional
             || !supported_signature(header.original)
             || !supported_signature(header.callable)
         {
@@ -578,8 +581,9 @@ fn functions(
         if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
             return Err("source associated callable changed its actual original/public safety");
         }
-        let associated =
-            trait_const || associated_method(rows, headers, header, work, profile, roles, bodies)?;
+        let associated = provided_drop
+            || trait_const
+            || associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !associated
@@ -694,8 +698,7 @@ fn originals(
     profile: NamespaceProfile,
     binding: BindingProfile,
     features: bool,
-    runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
-        LangItem::RUNTIME_FORMAT_BODIES.len()],
+    roles: &Bindings,
 ) -> Result<(), &'static str> {
     let regional = profile.conversions();
     let constant_initializers = binding == BindingProfile::BodyOperations;
@@ -708,7 +711,8 @@ fn originals(
                 original,
                 work,
                 constant_initializers,
-                runtime_format_bodies,
+                roles.runtime_format_bodies,
+                roles.drop,
             )?
         } else {
             super::super::CallContext::Runtime
@@ -778,29 +782,45 @@ fn originals(
     }
     Ok(())
 }
+fn defining_default(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    origin: EnvironmentOrigin,
+    drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let EnvironmentOrigin::ConstTraitDefault { member, trait_ } = origin else {
+        return Ok(());
+    };
+    if trait_.artifact == rows.policy.provider
+        && drop == Some(trait_.declaration)
+        && let Some(super::super::HeaderRef::Function(index)) = headers.header(member, work)?
+        && callable_traits::provided_drop_default(
+            &rows.functions[index as usize],
+            trait_.declaration,
+        )
+    {
+        return Ok(());
+    }
+    Err("source defining default requires its wider imported preparation profile")
+}
+
 /// Recorded preparation inputs: `scoped` admits only the vacuous formation
 /// scope that version-thirteen parenthesized callable sugar opens.
 fn body_inputs(
     rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
     work: &mut Work,
     regional: bool,
     scoped: bool,
+    drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    declaration_policies: bool,
 ) -> Result<(), &'static str> {
     for input in &rows.body_inputs {
         work.charge(1)?;
-        if matches!(
-            input.environment,
-            EnvironmentOrigin::ConstTraitDefault { .. }
-        ) {
-            return Err("source defining default requires its wider imported preparation profile");
-        }
+        defining_default(rows, headers, input.environment, drop, work)?;
         if let Some(builtins) = &input.builtins {
-            if matches!(
-                builtins.environment,
-                EnvironmentOrigin::ConstTraitDefault { .. }
-            ) {
-                return Err("source defining builtin environment requires a wider source profile");
-            }
+            defining_default(rows, headers, builtins.environment, drop, work)?;
             for request in &builtins.predicates {
                 work.charge(1)?;
                 ordinary(&request.value, false)?;
@@ -810,7 +830,7 @@ fn body_inputs(
             work.charge(1)?;
             ordinary(&request.value, false)?;
         }
-        normalization_ownership(input, work, regional)?;
+        normalization_ownership(input, work, regional, declaration_policies)?;
         for obligation in &input.obligations {
             work.charge(1)?;
             // Parenthesized callable sugar opens a clause binder even when it
@@ -840,9 +860,13 @@ fn normalization_ownership(
     input: &super::super::BodyInputs,
     work: &mut Work,
     regional: bool,
+    declaration_policies: bool,
 ) -> Result<(), &'static str> {
     for normalization in &input.normalizations {
         work.charge(1)?;
+        if normalization.scoped.is_some() && !declaration_policies {
+            return Err("source scoped normalization requires the declaration policy profile");
+        }
         if !normalization.owned.is_empty()
             && (!regional
                 || !matches!(normalization.owned.as_slice(), [range] if range.start < range.end))
@@ -936,6 +960,7 @@ pub(super) struct Bindings {
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
     try_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
+    pin: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         Profile::CONST_BINARY_ROLES.len()],
@@ -1024,6 +1049,27 @@ impl Bindings {
             .is_some_and(|app| {
                 app.declaration.artifact.0 == 0 && Some(app.declaration.declaration) == target
             })
+    }
+
+    fn provided_drop(
+        &self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        function: &super::super::FunctionHeader,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Some(owner) = self
+            .drop
+            .filter(|&parent| callable_traits::provided_drop_default(function, parent))
+        else {
+            return Ok(false);
+        };
+        if !matches!(headers.header(owner, work)?, Some(super::super::HeaderRef::Trait(index))
+            if rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
+        {
+            return Err("source provided Drop default requires its actual const trait");
+        }
+        Ok(true)
     }
 
     fn required_member(
@@ -1251,6 +1297,7 @@ pub(super) fn bindings(
             required_method_owner(rows, headers, bound(LangItem::TryFromResidual), work)?,
         ],
         runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES.map(bound),
+        pin: bound(LangItem::Pin),
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [

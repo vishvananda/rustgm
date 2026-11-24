@@ -147,6 +147,15 @@ impl Declarations {
         Ok(Some(self.defining_self_clause(trait_definition)?))
     }
 
+    pub(crate) fn imported_default_premise(
+        &self,
+        definition: DefId,
+    ) -> Result<Option<(DefId, Clause)>, &'static str> {
+        self.imported_conditional_member_trait(definition)?
+            .map(|owner| Ok((owner, self.defining_self_clause(owner)?)))
+            .transpose()
+    }
+
     /// Construct the actual const trait's defining premise, without body authority.
     pub(in crate::sema) fn defining_self_clause(
         &self,
@@ -226,22 +235,34 @@ impl Declarations {
         Ok(None)
     }
 
-    /// The actual imported required operator member retains only its declaration.
-    pub(crate) fn imported_const_operator_trait(
+    /// Imported conditional methods come from witnessed language roles.
+    pub(crate) fn imported_conditional_member_trait(
         &self,
         definition: DefId,
     ) -> Result<Option<DefId>, &'static str> {
         let Some(owner) = self.associated.trait_owner(definition) else {
             return Ok(None);
         };
-        if self.imported_const_operator_role(owner)?.is_none()
-            || self
-                .declaration_header(definition)?
-                .is_none_or(|header| header.declaration.source().is_some() || header.body.is_some())
-        {
+        let Some(header) = self
+            .declaration_header(definition)?
+            .filter(|header| header.declaration.source().is_none())
+        else {
             return Ok(None);
+        };
+        if header.body.is_none() && self.imported_const_operator_role(owner)?.is_some() {
+            return Ok(Some(owner));
         }
-        Ok(Some(owner))
+        let Some(catalog) = self.source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let drop = catalog.role(crate::support::bindings::LangItem::Drop)?;
+        Ok(drop
+            .filter(|role| {
+                role.definition == owner
+                    && role.origin.source().is_none()
+                    && self.associated.constant_trait(owner) == Some(true)
+            })
+            .map(|_| owner))
     }
 
     fn imported_member_self_site(
@@ -249,7 +270,7 @@ impl Declarations {
         definition: DefId,
         trait_definition: DefId,
     ) -> Result<ProofSite, &'static str> {
-        if self.imported_const_operator_trait(definition)? != Some(trait_definition) {
+        if self.imported_conditional_member_trait(definition)? != Some(trait_definition) {
             return Err(
                 "imported const-member defining requests require their authenticated source-profile counterpart",
             );

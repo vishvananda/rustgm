@@ -314,6 +314,13 @@ pub(super) fn allocation<'a>(
                 .saturating_add(proof.outlives.len())
                 .saturating_add(proof.types.len())
                 .saturating_add(1);
+            if let Some(scoped) = &proof.scoped {
+                count = count
+                    .saturating_add(scoped.equalities.len())
+                    .saturating_add(scoped.outlives.len())
+                    .saturating_add(scoped.types.len())
+                    .saturating_add(1);
+            }
         }
         if let Some(builtins) = &input.builtins {
             count = count

@@ -59,7 +59,9 @@ pub(super) fn environment_read(
         1 => s::EnvironmentOrigin::Declaration(DeclarationRef(read.id()?)),
         2 => s::EnvironmentOrigin::Contract,
         3 => {
-            read.require_provided("unknown source ordinary environment origin")?;
+            if !read.profile.declaration_policies() {
+                read.require_provided("unknown source ordinary environment origin")?;
+            }
             s::EnvironmentOrigin::ConstTraitDefault {
                 member: DeclarationRef(read.id()?),
                 trait_: address_read(read)?,
@@ -82,7 +84,11 @@ fn site_write(out: &mut Writer, row: &s::InputSite) -> Result<(), &'static str> 
     }
 }
 fn site_read(read: &mut Input<'_, '_>) -> Result<s::InputSite, &'static str> {
-    Ok(match read.reader.u8()? {
+    let tag = read.reader.u8()?;
+    site_from_tag(read, tag)
+}
+fn site_from_tag(read: &mut Input<'_, '_>, tag: u8) -> Result<s::InputSite, &'static str> {
+    Ok(match tag {
         0 => s::InputSite::Body(read.id()?),
         1 => s::InputSite::Declaration {
             owner: DeclarationRef(read.id()?),
@@ -174,8 +180,8 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
                 read.require_provided("source adjusted coercion requires a wider source profile")?;
             }
             let reference = if read.boolean()? {
-                // Version thirteen admits a plain reborrow: no unsizing and no
-                // two-phase borrow, at either level.
+                // Version thirteen admits plain reborrows. Version fourteen
+                // also admits the single-dereference exclusive call adjustment.
                 let plain = !unsize && read.profile.body_nodes();
                 if !plain {
                     read.require_provided(
@@ -187,7 +193,12 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
                     unsize: read.boolean()?,
                     two_phase: read.boolean()?,
                 };
-                if plain && (reference.unsize || reference.two_phase) {
+                if plain
+                    && (reference.unsize
+                        || reference.two_phase
+                            && !(read.profile.declaration_policies()
+                                && reference.dereferences == 1))
+                {
                     read.require_provided(
                         "source adjusted coercion requires a wider source profile",
                     )?;
@@ -232,16 +243,36 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
     };
     Ok(s::Obligation { site, kind })
 }
+// Marker 2 extends only the normalization site; ordinary sites remain 0 and 1.
+const SCOPED_NORMALIZATION: u8 = 2;
 fn normalization_write(out: &mut Writer, row: &s::NormalizationInput) -> Result<(), &'static str> {
+    if row.scoped.is_some() {
+        out.u8(SCOPED_NORMALIZATION)?;
+    }
     site_write(out, &row.site)?;
     write(out, &row.sources, site_write)?;
     write_copy(out, &row.owned, super::range)?;
     write_copy(out, &row.equalities, types::bound_write)?;
     write_copy(out, &row.outlives, types::bound_write)?;
-    write_copy(out, &row.types, outlives_write)
+    write_copy(out, &row.types, outlives_write)?;
+    if let Some(scoped) = &row.scoped {
+        id(out, scoped.frame.0)?;
+        out.u8(u8::from(scoped.callable))?;
+        id(out, scoped.origin)?;
+        write_copy(out, &scoped.equalities, types::bound_write)?;
+        write_copy(out, &scoped.outlives, types::bound_write)?;
+        write_copy(out, &scoped.types, outlives_write)?;
+    }
+    Ok(())
 }
 fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput, &'static str> {
-    let site = site_read(read)?;
+    let tag = read.reader.u8()?;
+    let scoped = tag == SCOPED_NORMALIZATION && read.profile.declaration_policies();
+    let site = if scoped {
+        site_read(read)?
+    } else {
+        site_from_tag(read, tag)?
+    };
     let sources = read.list(crates::MAX_COMPONENTS, 5, site_read)?;
     let owned = read.regional_list(crates::MAX_COMPONENTS, 8, Input::range)?;
     Ok(s::NormalizationInput {
@@ -251,6 +282,19 @@ fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput,
         equalities: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
         outlives: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
         types: read.list(crates::MAX_COMPONENTS, 8, outlives_read)?,
+        scoped: if scoped {
+            read.reserve(size_of::<s::ScopedNormalization>())?;
+            Some(Box::new(s::ScopedNormalization {
+                frame: g::BinderRef(read.id()?),
+                callable: read.boolean()?,
+                origin: read.id()?,
+                equalities: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
+                outlives: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
+                types: read.list(crates::MAX_COMPONENTS, 8, outlives_read)?,
+            }))
+        } else {
+            None
+        },
     })
 }
 fn outlives_write(out: &mut Writer, row: s::TypeOutlives) -> Result<(), &'static str> {

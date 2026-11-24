@@ -162,11 +162,13 @@ pub(super) fn callable_effect(
     } else {
         false
     };
-    // A required callable role's conditional effect stays on its declaration.
+    // Sealed conditional rows name actual required methods or Drop defaults.
     let conditional = raw.constness == Constness::Conditional
         && descriptor.profile().body_nodes()
         && raw.parent.is_some()
-        && raw.body == s::FunctionBody::Absent;
+        && (raw.body == s::FunctionBody::Absent
+            || (descriptor.profile().declaration_policies()
+                && matches!(raw.body, s::FunctionBody::Original(_))));
     if raw.regions.captures != 0 && !associated_captures(descriptor, raw)
         || raw.regions.early.start != raw.regions.early.end
         || (raw.constness != Constness::Ordinary

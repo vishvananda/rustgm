@@ -40,7 +40,7 @@ pub(super) fn check_calls(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let mut receivers = None;
-    let mut member_context = None;
+    let mut provided = ProvidedCalls::default();
     let mut seen = HashSet::default();
     let mut members = 0;
     let defining_default = super::provided_calls::defining(facts, body, work)?;
@@ -64,41 +64,7 @@ pub(super) fn check_calls(
                 if !seen.insert(id) {
                     return Err("const member value is evaluated at multiple source sites");
                 }
-                if defining_default && member_context.is_none() {
-                    let owner = defining_owner(facts, body, work)?;
-                    member_context =
-                        Some(super::provided_calls::prepare(facts, body, owner, work)?);
-                }
-                // A defining request is authenticated against the completed
-                // source call, including generic arguments. Actual dispatch and
-                // const function entry still prove its executable implementation.
-                if let Some(report) = report
-                    && super::provided_calls::source_request_in_scope(
-                        report,
-                        facts,
-                        body,
-                        statement,
-                        member_context.as_ref(),
-                        work,
-                    )?
-                {
-                    members += 1;
-                    continue;
-                }
-                if member_context.is_none() {
-                    let owner = defining_owner(facts, body, work)?;
-                    member_context =
-                        Some(super::provided_calls::prepare(facts, body, owner, work)?);
-                }
-                super::provided_calls::check(
-                    member_context
-                        .as_ref()
-                        .ok_or("missing defining member context")?,
-                    facts,
-                    body,
-                    statement,
-                    work,
-                )?;
+                provided.check(report, facts, body, statement, defining_default, work)?;
                 members += 1;
                 continue;
             }
@@ -140,6 +106,68 @@ pub(super) fn check_calls(
     }
     Ok(())
 }
+#[derive(Default)]
+struct ProvidedCalls<'a> {
+    local: Option<crate::sema::function_context::DefiningCalls<'a>>,
+    imported: Option<super::provided_calls::pinned_defaults::Calls>,
+}
+impl<'a> ProvidedCalls<'a> {
+    fn check(
+        &mut self,
+        report: Option<&crate::resolve::expansion::Report>,
+        facts: &'a Declarations,
+        body: &Body,
+        statement: &crate::body::ir::Statement,
+        defining_default: bool,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        use super::provided_calls;
+        if defining_default && body.source.source().is_none() {
+            if self.imported.is_none() {
+                self.imported = Some(provided_calls::pinned_defaults::Calls::new(
+                    facts, body, work,
+                )?);
+            }
+            return self
+                .imported
+                .as_ref()
+                .ok_or("missing imported defining member context")?
+                .check(facts, body, statement, work);
+        }
+        if defining_default && self.local.is_none() {
+            let owner = defining_owner(facts, body, work)?;
+            self.local = Some(provided_calls::prepare(facts, body, owner, work)?);
+        }
+        // Authenticate the completed source call, including its generic
+        // arguments. Dispatch still proves the executable implementation.
+        if let Some(report) = report
+            && provided_calls::source_request_in_scope(
+                report,
+                facts,
+                body,
+                statement,
+                self.local.as_ref(),
+                work,
+            )?
+        {
+            return Ok(());
+        }
+        if self.local.is_none() {
+            let owner = defining_owner(facts, body, work)?;
+            self.local = Some(provided_calls::prepare(facts, body, owner, work)?);
+        }
+        provided_calls::check(
+            self.local
+                .as_ref()
+                .ok_or("missing defining member context")?,
+            facts,
+            body,
+            statement,
+            work,
+        )
+    }
+}
+
 fn defining_owner(
     facts: &Declarations,
     body: &Body,

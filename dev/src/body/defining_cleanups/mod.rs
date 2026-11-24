@@ -332,10 +332,23 @@ fn active_definition(
             // The validated original runs at runtime despite its const header.
             return Ok(None);
         }
-        if actual_source != source || !constant || default {
-            return Err("imported defining cleanup changed its free const original context");
+        if actual_source != source || !constant {
+            return Err("imported defining cleanup changed its const original context");
         }
-        FunctionContext::ConstFunction
+        if default {
+            if !matches!(
+                view.inputs().environment,
+                crate::support::crates::generics::source::EnvironmentOrigin::ConstTraitDefault { .. }
+            ) {
+                return Err("imported defining cleanup lost its actual default environment");
+            }
+            let trait_definition = facts
+                .imported_conditional_member_trait(definition)?
+                .ok_or("imported defining cleanup lost its actual default trait owner")?;
+            FunctionContext::ConstTraitDefault { trait_definition }
+        } else {
+            FunctionContext::ConstFunction
+        }
     };
     if !context.checks_const() {
         return Err("defining cleanup requires its actual provided member owner");

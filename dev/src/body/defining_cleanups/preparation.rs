@@ -200,17 +200,14 @@ fn counted(
         return Err("defining cleanup required carrier belongs to another declaration");
     }
     work.charge(1)?;
-    let defining_environment = facts
-        .generics
-        .body_environment(id)
-        .ok_or("defining cleanup original has no actual defining environment")?;
+    let defining_environment = defining_environment(facts, id, actual, work)?;
     let environment = if let Some(environment) = &builtins.environment {
-        if !Arc::ptr_eq(environment, defining_environment) {
+        if !Arc::ptr_eq(environment, &defining_environment) {
             return Err("defining cleanup changed its actual defining environment");
         }
         Arc::clone(environment)
     } else {
-        Arc::clone(defining_environment)
+        defining_environment
     };
     let role = claims::Role::current(facts, crate::support::bindings::LangItem::Destruct, work)?;
     let copy_role = claims::Role::current(facts, crate::support::bindings::LangItem::Copy, work)?;
@@ -233,6 +230,33 @@ fn counted(
     builtins.environment = Some(environment);
     builtins.set_defining(Some(Arc::new(State::Prepared(prepared))));
     Ok(())
+}
+
+fn defining_environment(
+    facts: &Declarations,
+    id: DefId,
+    actual: Definition,
+    work: &mut Work,
+) -> Result<Arc<crate::types::parameters::environment::Environment>, &'static str> {
+    if actual.source.source().is_none()
+        && matches!(
+            actual.context,
+            crate::sema::function_context::FunctionContext::ConstTraitDefault { .. }
+        )
+    {
+        let original = crate::sema::crates::source_original(facts, id, &mut work.steps)?
+            .ok_or("imported defining cleanup lost its actual default body")?;
+        work.charge(0)?;
+        if original.source()? != actual.source {
+            return Err("imported defining cleanup changed its actual default body");
+        }
+        return Ok(Arc::clone(original.environment()?));
+    }
+    facts
+        .generics
+        .body_environment(id)
+        .cloned()
+        .ok_or("defining cleanup original has no actual defining environment")
 }
 
 fn counted_definition(

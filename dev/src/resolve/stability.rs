@@ -369,7 +369,7 @@ impl Draft<'_> {
 }
 pub(super) use attributes::collect;
 pub(crate) use availability_imports::{
-    ImportedDeprecation, check as check_imported_api, declaration_deprecation,
+    ImportedDeprecation, check as check_imported_api, check_default_body, declaration_deprecation,
     declaration_deprecation_absent, visit_warnings as visit_compatibility_warnings,
 };
 pub(in crate::resolve) use compatibility_notes::{

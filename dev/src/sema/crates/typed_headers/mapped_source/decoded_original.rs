@@ -5,7 +5,10 @@ use super::super::staged_headers::scheme_ports::{const_impl_body, inherent_captu
 use crate::{
     resolve::body_origin::{BodyOrigin, BodySite, ImportedBodyId, ProofSite},
     sema::model::Declarations,
-    support::crates::{generics::TypeRef, owner_catalog::DeclarationRef},
+    support::crates::{
+        generics::{BinderRef, TypeRef},
+        owner_catalog::DeclarationRef,
+    },
     types::{
         RegionId, TypeId,
         arguments::Argument,
@@ -110,7 +113,11 @@ impl Graph {
             .ok_or("source provided body omitted its actual complete original row")?;
         let inputs = rows.body_input(reference)?;
         let constant = function.constness == crate::support::constness::Constness::Const;
-        let context = if !constant
+        let default = matches!(inputs.environment,
+            s::EnvironmentOrigin::ConstTraitDefault { member, trait_ }
+                if member == row && trait_.artifact == rows.policy.provider
+                    && Some(trait_.declaration) == function.parent);
+        let context = if !(constant || default)
             || raw.context == s::CallContext::Runtime
                 && descriptor.profile().declaration_policies()
                 && crate::sema::compiler_items::runtime_format_entry(facts, definition)?
@@ -259,6 +266,19 @@ impl Original<'_> {
         };
         actual.ok_or("source original requires its actual pending defining environment")
     }
+    pub(crate) fn normalization_scope(
+        &self,
+        scoped: BinderRef,
+        steps: &mut usize,
+    ) -> Result<u32, &'static str> {
+        charge(steps)?;
+        self.rows
+            .binders
+            .get(scoped.0 as usize)
+            .map(|scope| scope.count)
+            .ok_or("selected normalization lacks its actual scope")
+    }
+
     pub(crate) fn ty(&self, reference: TypeRef, steps: &mut usize) -> Result<TypeId, &'static str> {
         charge(steps)?;
         match &self.mapping {

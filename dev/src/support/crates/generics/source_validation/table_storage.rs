@@ -271,6 +271,14 @@ fn inputs(
         count.vector(&row.equalities, work)?;
         count.vector(&row.outlives, work)?;
         count.vector(&row.types, work)?;
+        if let Some(scoped) = &row.scoped {
+            count.bytes = count
+                .bytes
+                .saturating_add(size_of::<super::super::ScopedNormalization>());
+            count.vector(&scoped.equalities, work)?;
+            count.vector(&scoped.outlives, work)?;
+            count.vector(&scoped.types, work)?;
+        }
     }
     if let Some(builtins) = &input.builtins {
         count.vector(&builtins.predicates, work)?;

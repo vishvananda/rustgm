@@ -193,6 +193,13 @@ fn empty_auto(
     Ok(())
 }
 
+/// Effect and original transport for a default of the bound Drop role.
+pub(super) fn provided_drop_default(header: &s::FunctionHeader, drop: DeclarationRef) -> bool {
+    header.parent == Some(drop)
+        && header.constness == Constness::Conditional
+        && matches!(header.body, s::FunctionBody::Original(_))
+}
+
 /// Exact defining mode comes from the original's actual declaration header.
 pub(super) fn original_context(
     rows: &SourceRows,
@@ -201,11 +208,16 @@ pub(super) fn original_context(
     work: &mut Work,
     constant_initializers: bool,
     runtime_format_bodies: [Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()],
+    drop: Option<DeclarationRef>,
 ) -> Result<s::CallContext, &'static str> {
+    let mut defining_drop = None;
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
-            if rows.functions[index as usize].constness == Constness::Const
-                && !runtime_format_bodies.contains(&Some(body.declaration))
+            let function = &rows.functions[index as usize];
+            defining_drop = drop.filter(|&parent| provided_drop_default(function, parent));
+            if (function.constness == Constness::Const
+                && !runtime_format_bodies.contains(&Some(body.declaration)))
+                || defining_drop.is_some()
             {
                 s::CallContext::ConstDefinition
             } else {
@@ -222,7 +234,14 @@ pub(super) fn original_context(
         _ => return Err("source original has no actual callable header"),
     };
     if context != s::CallContext::Runtime {
-        constant_calls(rows, headers, body, work, constant_initializers)?;
+        constant_calls(
+            rows,
+            headers,
+            body,
+            work,
+            constant_initializers,
+            defining_drop,
+        )?;
     }
     Ok(context)
 }
@@ -234,6 +253,7 @@ fn constant_calls(
     body: &s::Original,
     work: &mut Work,
     constructors: bool,
+    drop: Option<DeclarationRef>,
 ) -> Result<(), &'static str> {
     for request in &body.calls {
         work.charge(3)?;
@@ -247,7 +267,10 @@ fn constant_calls(
         let declaration = application.declaration.declaration;
         match headers.header(declaration, work)? {
             Some(s::HeaderRef::Function(index)) => {
-                if rows.functions[index as usize].constness != Constness::Const {
+                let target = &rows.functions[index as usize];
+                if target.constness != Constness::Const
+                    && !conditional_pin_drop(rows, headers, target, request, drop, work)?
+                {
                     return Err("source const-definition call requires its actual const target");
                 }
             }
@@ -264,4 +287,36 @@ fn constant_calls(
         }
     }
     Ok(())
+}
+
+fn conditional_pin_drop(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    target: &s::FunctionHeader,
+    request: &s::CallRequest,
+    drop: Option<DeclarationRef>,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(owner) = drop.filter(|&owner| target.parent == Some(owner)) else {
+        return Ok(false);
+    };
+    work.charge(4)?;
+    let Some(application) = request
+        .method
+        .and_then(|row| rows.trait_applications.get(row.0 as usize))
+    else {
+        return Ok(false);
+    };
+    let Some(s::HeaderRef::Trait(index)) = headers.header(owner, work)? else {
+        return Err("source conditional pinned destruction lost its actual Drop trait");
+    };
+    Ok(target.constness == Constness::Conditional
+        && rows
+            .declarations
+            .get(target.declaration.0 as usize)
+            .is_some_and(|row| row.name.as_deref() == Some("pin_drop"))
+        && application.declaration.artifact.0 == 0
+        && application.declaration.declaration == owner
+        && application.subject == rows.traits[index as usize].self_type
+        && application.arguments.start == application.arguments.end)
 }

@@ -68,6 +68,7 @@ fn policy_write(
     out.u8(match policy.kind {
         s::AvailabilityKind::Regular => 0,
         s::AvailabilityKind::Const => 1,
+        s::AvailabilityKind::DefaultBody => 2,
     })?;
     out.string(&policy.feature)?;
     match &policy.level {
@@ -116,6 +117,7 @@ fn policy_read(
     let kind = match read.reader.u8()? {
         0 => s::AvailabilityKind::Regular,
         1 => s::AvailabilityKind::Const,
+        2 if read.profile.declaration_policies() => s::AvailabilityKind::DefaultBody,
         _ => return Err("unknown API availability policy kind"),
     };
     let feature = text(read)?;

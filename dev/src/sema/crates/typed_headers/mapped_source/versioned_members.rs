@@ -180,8 +180,9 @@ impl Graph {
                 .filter(|member| member.artifact == s::ArtifactRef(0))
                 .ok_or_else(|| error("v4 method requires its genuine trait member"))?;
             let kind = TraitMember::read(rows, member.declaration).map_err(error)?;
+            let member_row = member.declaration;
             let member = kind
-                .definition(&self.origins, provider, member.declaration)
+                .definition(&self.origins, provider, member_row)
                 .map_err(error)?;
             let actual = link
                 .implementation
@@ -193,8 +194,15 @@ impl Graph {
                     members.constants.push((member, actual));
                 }
                 (TraitMember::Type, Some(actual)) => members.types.push((member, actual)),
-                (TraitMember::Method(_), Some(actual)) => {
-                    members.methods.push((member, Some(actual)));
+                (TraitMember::Method(_), actual) => {
+                    if actual.is_none()
+                        && !rows.transported_default(rows.header(member_row).map_err(error)?)
+                    {
+                        return Err(error(
+                            "v4 default method requires its wider body/conformance profile",
+                        ));
+                    }
+                    members.methods.push((member, actual));
                 }
                 _ => {
                     return Err(error(
