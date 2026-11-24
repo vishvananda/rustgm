@@ -42,8 +42,8 @@ suite.
 - [x] [PA26](../pa26/STUDENT.md)
 - [x] [PA27](../pa27/STUDENT.md)
 - [x] [PA28](../pa28/STUDENT.md)
-- [ ] [PA29](../pa29/README.md)
-- [ ] [PA30](../pa30/README.md)
+- [x] [PA29](../pa29/STUDENT.md)
+- [x] [PA30](../pa30/STUDENT.md)
 
 ## Planned assignments
 

@@ -1,5 +1,7 @@
 # RustGM Programming Assignment 30: Foreign interfaces
 
+The [student handout](STUDENT.md) describes the exported assignment.
+
 Status: **closed at its finite contract.** What is graded is the contract under
 [Graded contract](#graded-contract). The rest of this brief is buildout guidance
 for the work that contract defers, which
