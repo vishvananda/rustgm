@@ -1,0 +1,29 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "1 7 41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-poll-transport/original-poll.rs",
+      "start": 453,
+      "end": 1063,
+      "sha256": "ffb0f566a62319122134e6bd74e2c68179086baf9fafa58b52d2b5bfbf686146",
+      "marker": "// Original declaration from original-poll.rs"
+    },
+    {
+      "path": "pa31/tests/spec/source-coroutines/full/original.rs",
+      "start": 368,
+      "end": 1134,
+      "sha256": "560fa79ec2e5c5dc30c072e333d3186e43ca06ba6ab7d03289bed55647841ec3",
+      "marker": "// Original declaration from original.rs"
+    }
+  ],
+  "older_profile": "source enum roles require version fourteen",
+  "older_reader": "ordinary source roles cannot claim a nominal declaration"
+}

@@ -1,0 +1,22 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-receiver-transport/original-deref.rs",
+      "start": 14234,
+      "end": 14587,
+      "sha256": "fb47477ac79988cd944ac91f542b4d305578a5cf5fce5839c48096d132a1d51c",
+      "marker": "// Original declaration from original-deref.rs"
+    }
+  ],
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "source associated role has a different actual member kind"
+}

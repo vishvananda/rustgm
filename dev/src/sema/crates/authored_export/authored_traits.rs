@@ -190,11 +190,14 @@ impl Stage {
                     && matches!(
                         role,
                         LangItem::PinNewUnchecked
+                            | LangItem::FnPtrAddr
                             | LangItem::SliceLen
                             | LangItem::OffsetOf
                             | LangItem::RangeInclusiveNew
                     ) => {}
-            DefKind::TypeAlias if self.declaration_policies() && role == LangItem::DerefTarget => {}
+            DefKind::TypeAlias
+                if self.declaration_policies()
+                    && matches!(role, LangItem::DerefTarget | LangItem::ReceiverTarget) => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
             }
@@ -224,6 +227,7 @@ impl Stage {
                         LangItem::TypeInfo
                             | LangItem::TypeId
                             | LangItem::TransmuteOpts
+                            | LangItem::CStr
                             | LangItem::DynMetadata
                             | LangItem::PanicLocation
                             | LangItem::PanicInfo

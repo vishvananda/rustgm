@@ -850,7 +850,7 @@ pub(in crate::sema) fn complete_enum_roles(
     report: &Report,
     facts: &mut Declarations,
 ) -> Result<(), Error> {
-    for group in super::enum_roles::Group::ALL {
+    for group in super::enum_roles::Group::SOURCE {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(());
         };

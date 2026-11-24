@@ -291,6 +291,10 @@ fn trait_headers(
             require_unsize_header(header)?;
             continue;
         }
+        if roles.fn_pointer == Some(header.declaration) {
+            require_fn_pointer_header(rows, header)?;
+            continue;
+        }
         if roles.no_drop == Some(header.declaration) {
             require_no_drop_header(header)?;
             continue;
@@ -399,6 +403,25 @@ fn require_unsize_header(header: &super::super::TraitHeader) -> Result<(), &'sta
         || header.members.start != header.members.end
     {
         return Err("source Unsize requires its empty restricted trait declaration");
+    }
+    Ok(())
+}
+
+fn require_fn_pointer_header(
+    rows: &SourceRows,
+    header: &super::super::TraitHeader,
+) -> Result<(), &'static str> {
+    if header.flags.bits() != (TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE)
+        || header.written_parameters != 0
+        || header.region_captures != 0
+        || header.members.slice(&rows.members)?.len() != 1
+        || header
+            .written_supertraits
+            .slice(&rows.clause_indices)?
+            .len()
+            != 2
+    {
+        return Err("source FnPtr requires its actual restricted trait with one member");
     }
     Ok(())
 }
@@ -1001,6 +1024,7 @@ pub(super) struct Bindings {
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     unsize: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     discriminant: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    fn_pointer: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::RUNTIME_FORMAT_BODIES.len()],
@@ -1242,6 +1266,9 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         role,
         LangItem::TypeInfo
             | LangItem::TransmuteOpts
+            | LangItem::FnPtrTrait
+            | LangItem::CStr
+            | LangItem::FnPtrAddr
             | LangItem::AllocLayout
             | LangItem::TypeId
             | LangItem::PointeeTrait
@@ -1261,6 +1288,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::DropGlue
             | LangItem::PinNewUnchecked
             | LangItem::DerefTarget
+            | LangItem::ReceiverTarget
             | LangItem::SliceLen
             | LangItem::OffsetOf
             | LangItem::Unsize
@@ -1476,6 +1504,7 @@ pub(super) fn bindings(
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
         unsize: bound(LangItem::Unsize),
         discriminant: bound(LangItem::DiscriminantKind),
+        fn_pointer: bound(LangItem::FnPtrTrait),
         freeze: marker_traits.then_some(bound(LangItem::Freeze)).flatten(),
     })
 }
@@ -1688,6 +1717,10 @@ fn role_header(
         {
             defined_operation_role(profile, rows, role, header)?;
         }
+        (LangItem::FnPtrAddr, Some(HeaderRef::Function(index)))
+            if rows.functions.get(index as usize).is_some_and(|function| {
+                function.body == FunctionBody::Absent && function.constness == Constness::Ordinary
+            }) => {}
         (LangItem::OffsetOf, Some(HeaderRef::Function(index)))
             if offset_intrinsic_header(rows, index) => {}
         (role, header)
@@ -1706,7 +1739,10 @@ fn role_header(
         }
         (LangItem::PointeeTrait | LangItem::DiscriminantKind, Some(HeaderRef::Trait(_)))
         | (
-            LangItem::MetadataType | LangItem::DiscriminantType | LangItem::DerefTarget,
+            LangItem::MetadataType
+            | LangItem::DiscriminantType
+            | LangItem::DerefTarget
+            | LangItem::ReceiverTarget,
             Some(HeaderRef::AssociatedType(_)),
         )
         | (
@@ -1769,6 +1805,7 @@ fn ordinary_struct_role(role: LangItem) -> bool {
             | LangItem::FormatArguments
             | LangItem::FormatArgument
             | LangItem::TransmuteOpts
+            | LangItem::CStr
     )
 }
 
@@ -1784,10 +1821,10 @@ fn check_struct_role(
     {
         return Ok(());
     }
-    Err(if role == LangItem::TransmuteOpts {
-        "source transmute options require their actual struct header"
-    } else {
-        "source panic or formatting role requires its actual struct header"
+    Err(match role {
+        LangItem::TransmuteOpts => "source transmute options require their actual struct header",
+        LangItem::CStr => "source CStr requires its actual struct header",
+        _ => "source panic or formatting role requires its actual struct header",
     })
 }
 
@@ -1859,7 +1896,7 @@ fn enum_role_header(
 ) -> Result<(), &'static str> {
     use super::super::{DefinitionKind, HeaderRef};
     let exact = match role {
-        LangItem::Option | LangItem::Ordering => {
+        LangItem::Option | LangItem::Ordering | LangItem::Poll | LangItem::CoroutineState => {
             kind == DefinitionKind::Enum && matches!(header, Some(HeaderRef::Nominal(_)))
         }
         _ => kind == DefinitionKind::Variant && matches!(header, Some(HeaderRef::Variant(_))),

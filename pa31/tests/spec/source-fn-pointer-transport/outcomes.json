@@ -1,0 +1,22 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/coerce-pointee-source/original-marker.rs",
+      "start": 43821,
+      "end": 44416,
+      "sha256": "360ecc48ed902f2433970e884ce65dfaf12de5ae1d256c5782f670247fd2a5e7",
+      "marker": "// Original declaration from original-marker.rs"
+    }
+  ],
+  "older_profile": "forced dyn policy requires authenticated trait metadata transport",
+  "older_reader": "source role has a different actual declaration/header kind"
+}

@@ -1209,6 +1209,24 @@
       "adaptation": "none; complete original module retained; separate source-provider control uses the original function declaration and body",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/deref.rs",
+      "destination": "pa31/tests/spec/source-receiver-transport/original-deref.rs",
+      "sha256": "55d940bd62685513afbc552b96ea42974a45fc16f6db1d4971d56c332074eca5",
+      "adaptation": "none; complete original module retained; a reduced provider uses the exact declaration interval",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/task/poll.rs",
+      "destination": "pa31/tests/spec/source-poll-transport/original-poll.rs",
+      "sha256": "dbaf9d13639e373517116869dbced2a438dc0cb297308b431da7484823294ee0",
+      "adaptation": "none; complete original module retained; a reduced provider uses the exact declaration interval",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

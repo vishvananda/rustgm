@@ -1,0 +1,22 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/cstr-source/original-cstr.rs",
+      "start": 3180,
+      "end": 4084,
+      "sha256": "42762c2ce72964c29f682a0b733c10209206ca058370f14d56e4faf7ad08c7ef",
+      "marker": "// Original declaration from original-cstr.rs"
+    }
+  ],
+  "older_profile": "incoherent target authority and inherent index require their wider metadata profile",
+  "older_reader": "ordinary source roles cannot claim a nominal declaration"
+}

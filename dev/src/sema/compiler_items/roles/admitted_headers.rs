@@ -383,6 +383,7 @@ fn nominal_role(role: LangItem) -> bool {
         LangItem::PhantomData
             | LangItem::AllocLayout
             | LangItem::TransmuteOpts
+            | LangItem::CStr
             | LangItem::TypeInfo
             | LangItem::TypeId
             | LangItem::PanicLocation
@@ -401,6 +402,7 @@ fn check_nominal_role(
 ) -> Result<(), &'static str> {
     match role {
         LangItem::AllocLayout => super::super::alloc_layout::imported(facts, declaration, steps),
+        LangItem::CStr => super::super::c_strings::imported(facts, declaration, steps),
         LangItem::TransmuteOpts => {
             super::super::transmutability::imported_options(facts, declaration, steps)
         }
@@ -431,6 +433,13 @@ fn grouped_role(role: LangItem) -> bool {
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
         || LangItem::FOR_PROTOCOL.contains(&role)
+        || matches!(
+            role,
+            LangItem::FnPtrTrait
+                | LangItem::FnPtrAddr
+                | LangItem::Receiver
+                | LangItem::ReceiverTarget
+        )
         || LangItem::COMPARISON_TRAITS.contains(&role)
         || LangItem::RANGE_NOMINALS.contains(&role)
         || role == LangItem::RangeInclusiveNew
@@ -451,6 +460,14 @@ fn grouped_roles(
     super::super::interval_values::imported(facts, catalog, steps, complete)?;
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
     super::super::dereferencing::imported(report, facts, catalog, steps, complete)?;
+    if super::super::pointers::imported(report, facts, catalog, steps)? {
+        complete.insert(LangItem::FnPtrTrait);
+        complete.insert(LangItem::FnPtrAddr);
+    }
+    if super::super::arbitrary_self::imported(report, facts, catalog, steps)? {
+        complete.insert(LangItem::Receiver);
+        complete.insert(LangItem::ReceiverTarget);
+    }
     if let Some(constructor) = catalog.role(LangItem::PinNewUnchecked)? {
         if !complete.contains(LangItem::Pin) || !complete.contains(LangItem::Deref) {
             return Err("imported Pin constructor requires the completed Pin and Deref roles");

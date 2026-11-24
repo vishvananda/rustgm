@@ -53,6 +53,14 @@ and field reads of the provider’s four Boolean `Assume` settings.
 `spec/source-contract-helper-transport/outcomes.json` calls the pinned
 `build_check_ensures` in a fresh crate and rejects a predicate limited to
 `'static` borrows.
+`spec/source-fn-pointer-transport/outcomes.json` calls the required address
+method on the actual `FnPtr` trait through a fresh generic function.
+`spec/source-receiver-transport/outcomes.json` uses a fresh `Receiver`
+implementation and normalizes its declared `Target`.
+`spec/source-poll-transport/outcomes.json` constructs and matches the
+provider's pinned `Poll` and `CoroutineState` variants in a fresh crate.
+`spec/source-cstr-transport/outcomes.json` checks the bytes and terminating
+nul of a C string literal using the pinned imported `CStr` declaration.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

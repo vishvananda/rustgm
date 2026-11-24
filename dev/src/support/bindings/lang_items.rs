@@ -118,6 +118,10 @@ impl LangItem {
                 | Self::ResultOk
                 | Self::ResultErr
                 | Self::Ordering
+                | Self::Poll
+                | Self::PollReady
+                | Self::PollPending
+                | Self::CoroutineState
         )
     }
 

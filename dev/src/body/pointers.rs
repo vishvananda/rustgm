@@ -1,8 +1,8 @@
 //! The real `FnPtr` address shim is one typed read and cast, never a pointer call.
 use super::{
     ir::{
-        Action, Body, BodyKey, Local, LocalId, LocalKind, Owner, Place, Rvalue, Statement,
-        Terminator, Value, ValueId,
+        Action, Body, BodyKey, Local, LocalId, LocalKind, NodeKey, Owner, Place, ProofSite, Rvalue,
+        Statement, Terminator, Value, ValueId,
     },
     regions::Contract,
 };
@@ -32,6 +32,7 @@ impl Permit {
 fn contract(
     facts: &mut Declarations,
     selected: Address,
+    source: NodeKey,
 ) -> Result<(Contract, TypeId), &'static str> {
     let mut regions = Bound::universals(0);
     let receiver = regions.apply(&mut facts.types, selected.receiver)?;
@@ -49,7 +50,7 @@ fn contract(
         facts,
         selected.definition,
         selected.definition,
-        selected.source,
+        source,
         signature,
     )?;
     input.parameters.clear();
@@ -60,9 +61,23 @@ pub(crate) fn build(
     report: &Report,
     facts: &mut Declarations,
     selected: Address,
+    demand: ProofSite,
 ) -> Result<(Body, Contract), Error> {
-    let error = |message| report.body_error(selected.source, message);
-    let (input, receiver) = contract(facts, selected).map_err(error)?;
+    let source = selected
+        .origin
+        .source()
+        .or_else(|| demand.source())
+        .unwrap_or_else(|| {
+            // A demanded imported shim is generated in this crate. The real crate
+            // root is its diagnostic anchor when an imported caller also lacks syntax.
+            let file = crate::resolve::unit::FileId(0);
+            NodeKey {
+                file,
+                node: report.package.unit(file).configured.ast.root,
+            }
+        });
+    let error = |message| report.body_error(demand, message);
+    let (input, receiver) = contract(facts, selected, source).map_err(error)?;
     let mut body = Body::new(
         Owner::Function {
             definition: selected.definition,
@@ -71,12 +86,12 @@ pub(crate) fn build(
                 .signature
                 .filter(|&signature| signature != selected.signature),
         },
-        selected.source,
+        source,
         selected.result,
     );
     body.instance = Some(selected.instance);
     body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
-        selected.source.node,
+        source.node,
     )));
     body.locals.push(Local {
         scope: super::scopes::Id(0),
@@ -85,7 +100,7 @@ pub(crate) fn build(
         kind: LocalKind::Parameter(0),
         definition: None,
         mutable: false,
-        source: selected.source.node.into(),
+        source: source.node.into(),
     });
     body.values.push(Value {
         ty: receiver,
@@ -123,13 +138,23 @@ pub(crate) fn validate(
     if address(facts, selected.instance)? != Some(selected) {
         return Err("function-pointer shim differs from its actual canonical source method");
     }
-    let (expected, receiver) = contract(facts, selected)?;
+    let source = body
+        .source
+        .source()
+        .ok_or("generated FnPtr body requires its local diagnostic anchor")?;
+    if selected
+        .origin
+        .source()
+        .is_some_and(|origin| origin != source)
+    {
+        return Err("function-pointer shim changed its actual source method");
+    }
+    let (expected, receiver) = contract(facts, selected, source)?;
     let execution = expected
         .signature
         .filter(|&signature| signature != selected.signature);
     if body.instance != Some(selected.instance)
         || body.key() != BodyKey::Declaration(selected.definition)
-        || body.source != selected.source.into()
         || body.result != selected.result
         || !matches!(body.owner, Owner::Function {definition,signature,execution:actual} if definition==selected.definition && signature==selected.signature && actual==execution)
     {

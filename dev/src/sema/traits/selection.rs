@@ -343,11 +343,11 @@ fn language_subject(
     facts: &Declarations,
     item: crate::types::ItemId,
     subject: super::heads::Subject,
-) -> bool {
+) -> Result<bool, infer::Error> {
     use super::heads::{Head, Subject};
     use crate::support::bindings::LangItem;
     let Some(catalog) = facts.source_bindings.as_deref() else {
-        return false;
+        return Ok(false);
     };
     let provides = |role| {
         catalog
@@ -355,11 +355,17 @@ fn language_subject(
             .is_some_and(|role| role.definition.0 == item.0)
     };
     let copying = || provides(LangItem::Copy) || provides(LangItem::Clone);
-    match subject {
-        Subject::Rigid(Head::Function) => provides(LangItem::FnPtrTrait) || copying(),
+    Ok(match subject {
+        Subject::Rigid(Head::Function) => {
+            catalog
+                .role(LangItem::FnPtrTrait)
+                .map_err(|_| infer::Error::InvalidIdentity)?
+                .is_some_and(|role| role.definition.0 == item.0)
+                || copying()
+        }
         Subject::Rigid(Head::Tuple | Head::Closure(_) | Head::FunctionItem(_)) => copying(),
         _ => false,
-    }
+    })
 }
 
 /// A negative outer-head result excludes a candidate without importing its graph.
@@ -405,7 +411,7 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
-    if language_subject(facts, item, subject) {
+    if language_subject(facts, item, subject)? {
         // Exclusion only: actual declaration completion and the full pointer,
         // element or capture evidence still belong to ordinary source selection.
         return Ok(true);

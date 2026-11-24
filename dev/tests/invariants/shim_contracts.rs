@@ -30,14 +30,19 @@ fn prepare() -> TestResult<(Report, Declarations, Address)> {
 #[test]
 fn exact_shim_passes_and_forged_body_or_lifetime_contract_cannot_get_a_permit() -> TestResult {
     let (report, mut facts, selected) = prepare()?;
-    let (body, input) = build(&report, &mut facts, selected)?;
+    let site = selected
+        .origin
+        .source()
+        .ok_or("actual source diagnostic")?
+        .into();
+    let (body, input) = build(&report, &mut facts, selected, site)?;
     let permit = validate(&mut facts, selected, &body, &input)?;
     assert_eq!(
         super::super::factories::Permit::FunctionPointer(permit).instance(),
         Some(selected.instance)
     );
     for case in 0..8 {
-        let (mut body, mut input) = build(&report, &mut facts, selected)?;
+        let (mut body, mut input) = build(&report, &mut facts, selected, site)?;
         match case {
             0 => body.values[1].kind = Rvalue::Read(Place::Local(LocalId(0))),
             1 => {
@@ -64,7 +69,12 @@ fn exact_shim_passes_and_forged_body_or_lifetime_contract_cannot_get_a_permit() 
 #[test]
 fn changed_descriptor_or_source_function_header_cannot_authorize_the_factory() -> TestResult {
     let (report, mut facts, selected) = prepare()?;
-    let (body, input) = build(&report, &mut facts, selected)?;
+    let site = selected
+        .origin
+        .source()
+        .ok_or("actual source diagnostic")?
+        .into();
+    let (body, input) = build(&report, &mut facts, selected, site)?;
     let mut wrong = selected;
     wrong.receiver = TypeId::primitive(crate::types::Primitive::U8);
     assert!(validate(&mut facts, wrong, &body, &input).is_err());

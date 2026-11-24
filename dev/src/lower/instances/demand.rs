@@ -385,8 +385,9 @@ impl Budget {
         templates: &Checked<'_>,
         program: &mut proof::Builder,
         selected: crate::sema::compiler_items::pointers::Address,
+        demand: body::ir::ProofSite,
     ) -> Result<(usize, BodyKey), Error> {
-        let (body, input) = body::pointers::build(report, facts, selected)?;
+        let (body, input) = body::pointers::build(report, facts, selected, demand)?;
         let family = body.key();
         self.enter(family, &body, &input)
             .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
@@ -811,6 +812,7 @@ impl Traversal<'_> {
                 templates,
                 &mut self.program,
                 selected,
+                source,
             )?;
             self.instances.insert(instance, index);
             self.budget

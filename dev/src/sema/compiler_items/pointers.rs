@@ -1,7 +1,11 @@
 //! Canonical source identities and closed function-pointer shims remain distinct proofs.
 use crate::{
     resolve::{
-        bindings::Declaration, expansion::Report, model::DefId, package::Error, unit::NodeKey,
+        bindings::{Declaration, HeaderAttribute},
+        body_origin::DeclarationOrigin,
+        expansion::Report,
+        model::DefId,
+        package::Error,
     },
     sema::model::Declarations,
     support::{bindings::LangItem, constness::Constness},
@@ -53,6 +57,96 @@ pub(super) fn validate_member(
     checked().map_err(|message| Declarations::error(report, declaration.origin, message))
 }
 
+/// Accept the pinned function-pointer role in a consumer only with its actual
+/// required member, declared supertraits, and restrictions.
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    *steps = steps.saturating_add(6);
+    let owner = catalog.role(LangItem::FnPtrTrait)?;
+    let member = catalog.role(LangItem::FnPtrAddr)?;
+    let (Some(owner), Some(member)) = (owner, member) else {
+        return if owner.is_none() && member.is_none() {
+            Ok(false)
+        } else {
+            Err("imported FnPtr requires its actual trait and address member")
+        };
+    };
+    let header = super::headers::Trait::current(report, facts, owner, steps)?;
+    header.profile(
+        &facts.types,
+        super::headers::Flags {
+            unsafe_: false,
+            constant: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    if header.written.parameters != 0
+        || header.written.supertraits != 2
+        || header.members != [member.definition]
+        || !header.attributes.contains(HeaderAttribute::DynIncompatible)
+        || !facts
+            .associated
+            .imported_denies_implementation(owner.definition)?
+    {
+        return Err("imported FnPtr changed its restricted trait declaration");
+    }
+    *steps = steps.saturating_add(2 * header.inputs.len());
+    for role in [LangItem::Copy, LangItem::Clone] {
+        let bound = catalog
+            .role(role)?
+            .ok_or("imported FnPtr lost a required supertrait")?;
+        if !header.requires(&facts.types, bound.definition, None, Constness::Ordinary) {
+            return Err("imported FnPtr requires the actual Copy and Clone supertraits");
+        }
+    }
+    imported_member(facts, member, &header)?;
+    Ok(true)
+}
+
+fn imported_member(
+    facts: &Declarations,
+    member: super::Role,
+    owner: &super::headers::Trait<'_>,
+) -> Result<(), &'static str> {
+    let function = facts
+        .declaration_header(member.definition)?
+        .ok_or("imported fn_ptr_addr lost its actual required signature")?;
+    if member.parent != Some(owner.definition)
+        || facts.associated.trait_owner(member.definition) != Some(owner.definition)
+        || facts.generics.parents.get(&member.definition) != Some(&owner.definition)
+        || facts
+            .generics
+            .parameters
+            .get(&member.definition)
+            .is_some_and(|own| !own.is_empty())
+        || function.declaration != member.origin
+        || function.body.is_some()
+    {
+        return Err("imported fn_ptr_addr changed its actual required member");
+    }
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 0,
+        unsafe_: false,
+        convention: Convention::RUST,
+    }) = facts.types.kind(function.signature)
+    else {
+        return Err("imported fn_ptr_addr requires its ordinary Rust signature");
+    };
+    if facts.types.list(parameters) != Some(&[owner.self_type][..])
+        || !unit_pointer(&facts.types, result)
+    {
+        return Err("imported fn_ptr_addr requires the exact Self to *const () contract");
+    }
+    Ok(())
+}
+
 pub(in crate::sema) fn application(
     facts: &Declarations,
     predicate: Predicate,
@@ -66,13 +160,13 @@ pub(in crate::sema) fn application(
     let Some(application) = facts.types.trait_application(id) else {
         return Err("invalid source FnPtr application");
     };
-    let Some(declaration) = catalog.language(LangItem::FnPtrTrait) else {
+    let Some(declaration) = catalog.role(LangItem::FnPtrTrait)? else {
         return Ok(false);
     };
     if declaration.definition.0 != application.item.0 {
         return Ok(false);
     }
-    catalog.validated_language(LangItem::FnPtrTrait)?;
+    catalog.validated_role(LangItem::FnPtrTrait)?;
     if facts
         .types
         .arguments(application.arguments)
@@ -95,7 +189,7 @@ pub(in crate::sema) fn predicate(
 pub(crate) struct Address {
     pub instance: Instance,
     pub definition: DefId,
-    pub source: NodeKey,
+    pub origin: DeclarationOrigin,
     pub signature: TypeId,
     pub receiver: TypeId,
     pub result: TypeId,
@@ -117,15 +211,15 @@ pub(crate) fn address(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    let Some(member) = catalog.language(LangItem::FnPtrAddr) else {
+    let Some(member) = catalog.role(LangItem::FnPtrAddr)? else {
         return Ok(None);
     };
     if member.definition.0 != item.0 {
         return Ok(None);
     }
-    catalog.validated_language(LangItem::FnPtrAddr)?;
+    catalog.validated_role(LangItem::FnPtrAddr)?;
     let owner = catalog
-        .validated_language(LangItem::FnPtrTrait)?
+        .validated_role(LangItem::FnPtrTrait)?
         .ok_or("source fn_ptr_addr requires its completed actual FnPtr owner")?;
     if member.parent != Some(owner.definition)
         || facts.associated.trait_owner(member.definition) != Some(owner.definition)
@@ -133,9 +227,9 @@ pub(crate) fn address(
         return Err("source fn_ptr_addr shim belongs to a different actual trait");
     }
     let function = facts
-        .function_header(member.definition)?
+        .declaration_header(member.definition)?
         .ok_or("source fn_ptr_addr lost its actual header")?;
-    if function.declaration.source() != Some(member.origin) || function.body.is_some() {
+    if function.declaration != member.origin || function.body.is_some() {
         return Err("source fn_ptr_addr changed its required actual declaration");
     }
     let (receiver, result) = operands(&facts.types, arguments, signature)?;
@@ -157,7 +251,7 @@ pub(crate) fn address(
     Ok(Some(Address {
         instance,
         definition: member.definition,
-        source: member.origin,
+        origin: member.origin,
         signature,
         receiver,
         result,
@@ -191,10 +285,18 @@ fn operands(
     else {
         return Err("source fn_ptr_addr shim requires its safe ordinary Rust signature");
     };
-    if types.list(parameters) != Some(&[receiver][..])
-        || !matches!(types.kind(result),Some(Kind::Pointer { mutable:false, pointee }) if pointee==TypeId::UNIT)
-    {
+    if types.list(parameters) != Some(&[receiver][..]) || !unit_pointer(types, result) {
         return Err("source fn_ptr_addr shim requires the exact Self to *const () contract");
     }
     Ok((receiver, result))
+}
+
+fn unit_pointer(types: &crate::types::Store, ty: TypeId) -> bool {
+    matches!(
+        types.kind(ty),
+        Some(Kind::Pointer {
+            mutable: false,
+            pointee: TypeId::UNIT
+        })
+    )
 }

@@ -16,15 +16,27 @@ pub(super) enum Group {
     Option,
     Result,
     Ordering,
+    Poll,
+    CoroutineState,
 }
 impl Group {
-    pub(super) const ALL: [Self; 3] = [Self::Option, Self::Result, Self::Ordering];
+    pub(super) const SOURCE: [Self; 3] = [Self::Option, Self::Result, Self::Ordering];
+
+    pub(super) const ALL: [Self; 5] = [
+        Self::Option,
+        Self::Result,
+        Self::Ordering,
+        Self::Poll,
+        Self::CoroutineState,
+    ];
 
     pub(super) const fn roles(self) -> &'static [LangItem] {
         match self {
             Self::Option => &[LangItem::Option, LangItem::OptionSome, LangItem::OptionNone],
             Self::Result => &[LangItem::ResultOk, LangItem::ResultErr],
             Self::Ordering => &[LangItem::Ordering],
+            Self::Poll => &[LangItem::Poll, LangItem::PollReady, LangItem::PollPending],
+            Self::CoroutineState => &[LangItem::CoroutineState],
         }
     }
 
@@ -34,23 +46,8 @@ impl Group {
         catalog: &Catalog,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Option => {
-                let owner = catalog.role(LangItem::Option)?;
-                let some = catalog.role(LangItem::OptionSome)?;
-                let none = catalog.role(LangItem::OptionNone)?;
-                let (Some(owner), Some(some), Some(none)) = (owner, some, none) else {
-                    return absent([owner, some, none]);
-                };
-                let owner = ItemId(owner.definition.0);
-                let [payload] = formals(facts, owner, 2)? else {
-                    return Err("Option requires its actual single type formal");
-                };
-                let Argument::Type(payload) = payload.argument else {
-                    return Err("Option requires its actual type payload");
-                };
-                check_variant(facts, owner, some, Some(payload))?;
-                check_variant(facts, owner, none, None)?;
-            }
+            Self::Option | Self::Poll => return unary_enum(facts, catalog, self.roles()),
+            Self::CoroutineState => return coroutine_state(facts, catalog),
             Self::Result => {
                 let ok = catalog.role(LangItem::ResultOk)?;
                 let err = catalog.role(LangItem::ResultErr)?;
@@ -88,6 +85,63 @@ impl Group {
         }
         Ok(true)
     }
+}
+
+fn unary_enum(
+    facts: &Declarations,
+    catalog: &Catalog,
+    roles: &[LangItem],
+) -> Result<bool, &'static str> {
+    let &[owner, payload, empty] = roles else {
+        return Err("source enum requires all three roles");
+    };
+    let (owner, payload, empty) = (
+        catalog.role(owner)?,
+        catalog.role(payload)?,
+        catalog.role(empty)?,
+    );
+    let (Some(owner), Some(payload), Some(empty)) = (owner, payload, empty) else {
+        return absent([owner, payload, empty]);
+    };
+    let owner = ItemId(owner.definition.0);
+    let [formal] = formals(facts, owner, 2)? else {
+        return Err("source enum requires its actual single type formal");
+    };
+    let Argument::Type(ty) = formal.argument else {
+        return Err("source enum requires its actual type payload");
+    };
+    check_variant(facts, owner, payload, Some(ty))?;
+    check_variant(facts, owner, empty, None)?;
+    Ok(true)
+}
+
+fn coroutine_state(facts: &Declarations, catalog: &Catalog) -> Result<bool, &'static str> {
+    let Some(role) = catalog.role(LangItem::CoroutineState)? else {
+        return Ok(false);
+    };
+    let owner = ItemId(role.definition.0);
+    let [yielded, returned] = formals(facts, owner, 2)? else {
+        return Err("CoroutineState requires its actual two type formals");
+    };
+    for (&variant, formal) in facts
+        .members
+        .variants(owner)
+        .iter()
+        .zip([yielded, returned])
+    {
+        let Argument::Type(ty) = formal.argument else {
+            return Err("CoroutineState requires distinct actual type payloads");
+        };
+        let record = facts
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .ok_or("CoroutineState lost its actual variant declaration")?;
+        if record.owner != owner || variant_payload(facts, variant, record)? != Some(ty) {
+            return Err("CoroutineState changed an actual variant or its payload type");
+        }
+    }
+    Ok(true)
 }
 
 fn absent<const N: usize>(roles: [Option<Role>; N]) -> Result<bool, &'static str> {
@@ -150,17 +204,24 @@ fn check_variant(
     {
         return Err("source enum variant role changed its actual owner or identity");
     }
+    if variant_payload(facts, id, variant)? != payload {
+        return Err("source enum variant role changed its actual payload type");
+    }
+    Ok(())
+}
+
+fn variant_payload(
+    facts: &Declarations,
+    id: VariantId,
+    variant: &crate::sema::members::Variant,
+) -> Result<Option<TypeId>, &'static str> {
     let fields = facts
         .members
         .fields(id)
         .ok_or("source enum variant lost its actual fields")?;
-    let present = match (variant.shape, fields) {
-        (Shape::Unit, []) => None,
-        (Shape::Tuple, [field]) => Some(field.ty),
-        _ => return Err("source enum variant role requires its exact unit or single-field shape"),
-    };
-    if present != payload {
-        return Err("source enum variant role changed its actual payload type");
+    match (variant.shape, fields) {
+        (Shape::Unit, []) => Ok(None),
+        (Shape::Tuple, [field]) => Ok(Some(field.ty)),
+        _ => Err("source enum variant role requires its exact unit or single-field shape"),
     }
-    Ok(())
 }

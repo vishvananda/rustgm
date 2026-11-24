@@ -1,7 +1,8 @@
 //! C string storage consumes its completed source type and ordinary byte tail.
 use crate::{
+    resolve::body_origin::DeclarationOrigin,
     sema::{
-        members::{FieldId, Selection},
+        members::{FieldId, Origin, Selection},
         model::Declarations,
     },
     support::bindings::LangItem,
@@ -42,17 +43,47 @@ pub(crate) fn storage_profile(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    let Some(declaration) = catalog.language(LangItem::CStr) else {
+    let Some(declaration) = catalog.role(LangItem::CStr)? else {
         return Ok(None);
     };
     if owner != ItemId(declaration.definition.0) {
         return Ok(None);
     }
-    if catalog.validated_language(LangItem::CStr)? != Some(declaration)
-        || !facts
-            .generics
-            .nominal_contracts
-            .contains(&declaration.definition)
+    catalog.validated_role(LangItem::CStr)?;
+    checked_storage(facts, declaration, referent).map(Some)
+}
+
+pub(super) fn imported(
+    facts: &Declarations,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(12);
+    let referent = facts
+        .definitions
+        .get(declaration.definition.0 as usize)
+        .copied()
+        .flatten()
+        .ok_or("imported CStr is missing its completed nominal type")?;
+    if !matches!(facts.types.kind(referent), Some(Kind::Adt(item, args)) if item.0 == declaration.definition.0
+        && facts.types.arguments(args).is_some_and(|args| args.len() == 0))
+    {
+        return Err("imported CStr requires its actual parameterless nominal");
+    }
+    checked_storage(facts, declaration, referent)?;
+    Ok(())
+}
+
+fn checked_storage(
+    facts: &Declarations,
+    declaration: super::Role,
+    referent: TypeId,
+) -> Result<LiteralProfile, &'static str> {
+    let owner = ItemId(declaration.definition.0);
+    if !facts
+        .generics
+        .nominal_contracts
+        .contains(&declaration.definition)
     {
         return Err("C string storage requires its completed actual source declaration");
     }
@@ -77,9 +108,13 @@ pub(crate) fn storage_profile(
         .variants
         .get(variant.0 as usize)
         .ok_or("C string variant is missing")?;
+    let origin = match declaration.origin {
+        DeclarationOrigin::Source(node) => Origin::Source(node),
+        DeclarationOrigin::Imported(_) => Origin::External(declaration.definition),
+    };
     if record.owner != owner
         || record.ordinal != 0
-        || record.origin.source() != Some(declaration.origin)
+        || record.origin != origin
         || facts
             .members
             .fields(*variant)
@@ -109,9 +144,9 @@ pub(crate) fn storage_profile(
     ) {
         return Err("C string storage requires a one-byte character element");
     }
-    Ok(Some(LiteralProfile {
+    Ok(LiteralProfile {
         referent,
         element,
         field: Selection::Nominal(FieldId(record.start)),
-    }))
+    })
 }

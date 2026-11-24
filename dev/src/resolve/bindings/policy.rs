@@ -183,7 +183,7 @@ impl Request {
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
             "link_llvm_intrinsics" => Self::Capability(Feature::LinkLlvmIntrinsics),
             "unsized_fn_params" => Self::Capability(Feature::UnsizedFnParams),
-            "arbitrary_self_types" => Self::Capability(Feature::ArbitrarySelfTypes),
+            "arbitrary_self_types" => Self::Library(Feature::ArbitrarySelfTypes),
             "arbitrary_self_types_pointers" => {
                 Self::Capability(Feature::ArbitrarySelfTypesPointers)
             }

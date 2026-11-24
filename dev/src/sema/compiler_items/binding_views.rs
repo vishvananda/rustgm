@@ -519,6 +519,7 @@ fn role_parent(
             | LangItem::MetadataType
             | LangItem::DiscriminantType
             | LangItem::DerefTarget
+            | LangItem::ReceiverTarget
     ) {
         let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {
             return Err("imported Output role lacks its actual associated header");

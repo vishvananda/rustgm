@@ -18,13 +18,13 @@ impl Search<'_> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(false);
         };
-        let Some(declaration) = catalog.language(LangItem::FnPtrTrait) else {
+        let Some(declaration) = catalog.role(LangItem::FnPtrTrait)? else {
             return Ok(false);
         };
         if declaration.definition.0 != item.0 {
             return Ok(false);
         }
-        catalog.validated_language(LangItem::FnPtrTrait)?;
+        catalog.validated_role(LangItem::FnPtrTrait)?;
         if !arguments.is_empty() {
             return Err("source FnPtr has unexpected trait arguments".into());
         }

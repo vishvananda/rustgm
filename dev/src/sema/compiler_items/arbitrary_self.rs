@@ -94,7 +94,10 @@ pub(in crate::sema) fn next(
         && facts
             .source_bindings
             .as_deref()
-            .is_none_or(|catalog| catalog.language(role).is_none())
+            .map(|catalog| catalog.role(role))
+            .transpose()?
+            .flatten()
+            .is_none()
     {
         return Ok(None);
     }
@@ -142,6 +145,56 @@ fn roles(
         return Err("receiver trait application requires its actual generic arguments");
     }
     Ok((declaration.definition, associated.definition))
+}
+
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    *steps = steps.saturating_add(4);
+    let owner = catalog.role(LangItem::Receiver)?;
+    let target = catalog.role(LangItem::ReceiverTarget)?;
+    let (Some(owner), Some(target)) = (owner, target) else {
+        return if owner.is_none() && target.is_none() {
+            Ok(false)
+        } else {
+            Err("imported Receiver requires its actual trait and Target declarations")
+        };
+    };
+    let header = super::headers::Trait::current(report, facts, owner, steps)?;
+    header.profile(
+        &facts.types,
+        super::headers::Flags {
+            unsafe_: false,
+            constant: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    *steps = steps.saturating_add(header.inputs.len());
+    let pointee = catalog
+        .validated_role(LangItem::PointeeSized)?
+        .ok_or("imported Receiver requires its actual PointeeSized")?;
+    if header.written.supertraits != 1
+        || !header.requires(
+            &facts.types,
+            pointee.definition,
+            None,
+            crate::support::constness::Constness::Ordinary,
+        )
+        || header.members != [target.definition]
+        || target.parent != Some(owner.definition)
+        || facts.associated.trait_owner(target.definition) != Some(owner.definition)
+        || facts
+            .types
+            .projection_schema(ItemId(target.definition.0))
+            .is_none_or(|schema| schema.trait_item.0 != owner.definition.0)
+    {
+        return Err("imported Receiver changed its actual Target or PointeeSized contract");
+    }
+    Ok(true)
 }
 
 fn require_trait(
