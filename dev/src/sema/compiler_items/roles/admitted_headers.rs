@@ -269,7 +269,7 @@ fn trait_headers(
                     complete.insert(LangItem::CloneFn);
                 }
             }
-            LangItem::CloneFn => {}
+            LangItem::CloneFn | LangItem::OffsetOf => {}
             role if FREE_MARKERS.contains(&role) => {
                 free_marker(report, facts, catalog, role, declaration, steps)?;
                 complete.insert(role);
@@ -302,11 +302,17 @@ fn trait_headers(
                 tuple_marker(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
+            LangItem::SliceLen => {
+                *steps = steps.saturating_add(4);
+                super::slice_len_header(facts, declaration)?;
+                complete.insert(role);
+            }
             role if GROUPED.contains(&role)
                 || LangItem::FORMAT_PANICS.contains(&role)
                 || LangItem::TRY_PROTOCOL.contains(&role)
                 || LangItem::FOR_PROTOCOL.contains(&role)
                 || LangItem::COMPARISON_TRAITS.contains(&role)
+                || super::unsizing::ROLES.contains(&role)
                 || role.is_enum_value_role()
                 || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
@@ -411,6 +417,7 @@ fn grouped_roles(
     complete: &mut super::RoleSet,
 ) -> Result<super::invocation::Imported, &'static str> {
     super::parameter_types::imported(report, facts, catalog, steps, complete)?;
+    super::unsizing::imported_roles(report, facts, catalog, steps, complete)?;
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
     super::super::dereferencing::imported(report, facts, catalog, steps, complete)?;
     if let Some(constructor) = catalog.role(LangItem::PinNewUnchecked)? {

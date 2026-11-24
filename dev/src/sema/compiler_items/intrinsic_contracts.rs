@@ -193,7 +193,8 @@ pub(in crate::sema) fn validate(
     } else {
         signature(facts, function, entry.kind).map_err(error)?;
     }
-    let source_fallback = source_fallback(report, facts, function, entry.kind)?;
+    let kind = entry.kind;
+    let source_fallback = source_fallback(report, facts, function, kind)?;
     let completed = facts
         .source_bindings
         .as_deref_mut()
@@ -204,6 +205,9 @@ pub(in crate::sema) fn validate(
     } else {
         HeaderState::Validated(function.signature)
     };
+    if kind == SourceIntrinsic::OffsetOf {
+        super::displacement::complete_provider(facts)?;
+    }
     Ok(())
 }
 
@@ -411,7 +415,7 @@ impl Catalog {
                 return Ok(None);
             };
             let kind = operation.kind();
-            if !matches!(kind, SourceIntrinsic::Layout(_)) {
+            if !matches!(kind, SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf) {
                 return Ok(None);
             }
             if signature != header.signature {

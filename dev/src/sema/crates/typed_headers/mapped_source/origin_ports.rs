@@ -163,10 +163,18 @@ impl Graph {
             return Err("imported inherent impl changed its actual Self or modifiers");
         }
         if raw.core_primitive_inherent {
-            return if descriptor.profile().declaration_policies()
-                && matches!(store.kind(self_type), Some(crate::types::Kind::Primitive(tag))
-                    if tag != crate::types::Primitive::Str)
-            {
+            use crate::types::{Kind, Primitive, parameters::ParameterKind};
+            let actual = match store.kind(self_type) {
+                Some(Kind::Primitive(tag)) => tag != Primitive::Str,
+                Some(Kind::Slice(element)) => {
+                    matches!(store.kind(element), Some(Kind::Parameter(id))
+                    if store.parameter(id).is_some_and(|formal|
+                        formal.owner.0 == owner.self_definition.0 && formal.index == 0
+                            && formal.kind == ParameterKind::Type { sized: true }))
+                }
+                _ => false,
+            };
+            return if descriptor.profile().declaration_policies() && actual {
                 Ok(())
             } else {
                 Err("imported Core primitive authority changed its canonical Self type")

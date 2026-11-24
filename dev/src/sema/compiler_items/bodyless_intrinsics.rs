@@ -76,6 +76,28 @@ fn check(
                     false,
                 )?
             }
+            BodylessIntrinsic::PtrMetadata => {
+                super::ptr_metadata::validate_header(facts, role.definition, actual.signature)?;
+                let Some(Kind::Function { result, .. }) = facts.types.kind(actual.signature) else {
+                    return Err("imported ptr_metadata lost its checked signature");
+                };
+                *steps = steps.saturating_add(16).saturating_add(
+                    crate::sema::declaration_inputs::declared_own(
+                        &facts.generics,
+                        facts.crates.as_deref(),
+                        role.definition,
+                    )?
+                    .len(),
+                );
+                result
+            }
+            BodylessIntrinsic::OffsetOf => super::displacement::validate_imported(
+                facts,
+                catalog,
+                role,
+                actual.signature,
+                steps,
+            )?,
             BodylessIntrinsic::SizeOf | BodylessIntrinsic::AlignOf => {
                 validate_layout(facts, role.definition, actual.signature, operation)?;
                 TypeId::primitive(Primitive::Usize)

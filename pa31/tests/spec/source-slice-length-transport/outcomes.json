@@ -1,0 +1,28 @@
+{
+  "features": [
+    "intrinsics",
+    "core_intrinsics",
+    "auto_traits",
+    "staged_api",
+    "const_destruct",
+    "unsize",
+    "coerce_unsized"
+  ],
+  "attributes": [
+    "rustc_coherence_is_core",
+    "unstable(feature=\"pointer_metadata_fixture\",issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"clone\"]",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/cstr-source/original-slice.rs",
+      "start": 3577,
+      "end": 3865,
+      "sha256": "817e2fd69c83aec8927510405f450171cca6b9d1cc074b882eff8742a295ae6c",
+      "marker": "// ORIGINAL_SLICE_LENGTH"
+    }
+  ],
+  "stdout": "3 5\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "older_reader": "invalid source required/provided body tag"
+}

@@ -181,7 +181,7 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
         }
         0 => s::FunctionBody::Absent,
         1 => s::FunctionBody::Original(BodyRef(read.id()?)),
-        tag @ 3..=5 if read.profile.declaration_policies() => {
+        tag @ 3..=7 if read.profile.declaration_policies() => {
             s::FunctionBody::Intrinsic(s::BodylessIntrinsic::ALL[usize::from(tag - 3)])
         }
         _ => return Err("invalid source required/provided body tag"),

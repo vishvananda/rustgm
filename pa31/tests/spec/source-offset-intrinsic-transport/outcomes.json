@@ -1,0 +1,28 @@
+{
+  "features": [
+    "auto_traits",
+    "intrinsics",
+    "core_intrinsics",
+    "staged_api"
+  ],
+  "attributes": [
+    "unstable(feature=\"offset_transport\", issue=\"none\")"
+  ],
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-offset-of/provider/intrinsic.rs",
+      "start": 0,
+      "end": 301,
+      "sha256": "9bef96529000773bc1bb4ccab2e932677ceddfa2f5c7af4fd6d8b18219c20bcb",
+      "marker": "// ORIGINAL_OFFSET"
+    }
+  ],
+  "stdout": "8 16\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "invalid source required/provided body tag",
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "foreign_role": {
+    "spelling": "offset_of",
+    "diagnostic": "source offset_of intrinsic changed its actual bound language declaration"
+  }
+}

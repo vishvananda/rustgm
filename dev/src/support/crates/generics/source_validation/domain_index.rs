@@ -106,6 +106,7 @@ pub struct DomainIndex<'index, 'rows> {
     /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
     bodies: bool,
     declaration_policies: bool,
+    metadata_member: Option<s::DeclarationAddress>,
 }
 impl<'index, 'rows> DomainIndex<'index, 'rows> {
     pub(super) fn new(
@@ -151,6 +152,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             used_traits: vec![false; traits],
             bodies,
             declaration_policies: profile.declaration_policies(),
+            metadata_member: slice_metadata_member(headers, profile, work)?,
         };
         index.header_roots(work)?;
         index.originals(work, conversions, bodies)?;
@@ -297,4 +299,41 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         self.types.peak = self.types.peak.max(peak);
         Ok(())
     }
+}
+
+/// Preserve the exact provider-owned Pointee member used by slice and str
+/// signature recipes. The consumer still checks the complete typed role.
+fn slice_metadata_member(
+    headers: &HeaderIndex<'_>,
+    profile: s::Profile,
+    work: &mut Work,
+) -> Result<Option<s::DeclarationAddress>, &'static str> {
+    use crate::support::bindings::LangItem;
+    if !profile.declaration_policies() {
+        return Ok(None);
+    }
+    let rows = headers.rows();
+    let mut parent = None;
+    let mut member = None;
+    for binding in &rows.roles {
+        work.charge(1)?;
+        if binding.declaration.artifact != rows.policy.provider {
+            continue;
+        }
+        match binding.role {
+            LangItem::PointeeTrait => parent = Some(binding.declaration.declaration),
+            LangItem::MetadataType => member = Some(binding.declaration),
+            _ => {}
+        }
+    }
+    let (Some(parent), Some(member)) = (parent, member) else {
+        return Ok(None);
+    };
+    let Some(HeaderRef::AssociatedType(index)) = headers.header(member.declaration, work)? else {
+        return Err("source slice metadata requires its actual associated declaration");
+    };
+    if rows.associated_types[index as usize].parent != parent {
+        return Err("source slice metadata belongs to another trait");
+    }
+    Ok(Some(member))
 }

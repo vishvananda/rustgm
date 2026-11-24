@@ -2,21 +2,44 @@
 """Run fresh native clients of separately published source artifacts."""
 import argparse
 import json
+from hashlib import sha256
 from pathlib import Path
 
 import backend
 from check_caller_location_forwarding import pinned
-from check_source_nominal_transport import FIXTURES, RUSTGM, source_prefix
+from check_location_role_transport import role_address
+from check_source_nominal_transport import FIXTURES, ROOT, RUSTGM, source_prefix
 from crate_qualification import Check
 
 
 FOUNDATION = "pa31/tests/spec/source-enum-role-transport/provider.rs"
 
 
+def assemble_provider(check, fixture, contract):
+    features = ", ".join(contract["features"])
+    attributes = "".join(f"#![{attribute}]\n" for attribute in contract.get("attributes", ()))
+    source = check.folder / "provider.rs"
+    boundary = contract.get("prefix_marker", '#[rustc_diagnostic_item = "Option"]')
+    parts = [f"#![feature({features})]\n{attributes}".encode(),
+             source_prefix(FOUNDATION, boundary)]
+    tail = (fixture / "provider.rs").read_bytes()
+    for fragment in contract.get("originals", ()):
+        text = (ROOT / fragment["path"]).read_bytes()[fragment["start"]:fragment["end"]]
+        if sha256(text).hexdigest() != fragment["sha256"]:
+            raise ValueError(f"{fragment['path']}: checked original bytes changed")
+        marker = fragment["marker"].encode()
+        if tail.count(marker) != 1:
+            raise ValueError(f"{fixture.name}: expected one original source marker")
+        tail = tail.replace(marker, text)
+    source.write_bytes(b"".join(parts) + tail)
+    return source
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", required=True,
-                        choices=("source-reference-cast-transport", "source-marker-trait-transport"))
+                        choices=("source-reference-cast-transport", "source-marker-trait-transport",
+                                 "source-offset-intrinsic-transport", "source-slice-length-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
@@ -27,11 +50,7 @@ def main():
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")
     identity = f"base@{disambiguator}"
-    source = check.folder / "provider.rs"
-    features = ", ".join(contract["features"])
-    source.write_bytes(f"#![feature({features})]\n".encode()
-                       + source_prefix(FOUNDATION, '#[rustc_diagnostic_item = "Option"]')
-                       + (fixture / "provider.rs").read_bytes())
+    source = assemble_provider(check, fixture, contract)
     client = fixture / "client.rs"
     observer = check.folder / "observer.o"
     check.run("observer", ["cc", "-c", fixture / "observe.c", "-o", observer], timeout=15)
@@ -57,6 +76,14 @@ def main():
               timeout=30)
     if old.exists():
         raise ValueError("older source profile published the new metadata")
+    if role := contract.get("foreign_role"):
+        packet = bytearray(artifact.read_bytes())
+        offset = role_address(packet, 255, role["spelling"]) - 4
+        packet[offset:offset + 4] = (1).to_bytes(4, "little")
+        forged = check.folder / "foreign-role.rgcrate"
+        forged.write_bytes(packet)
+        check.run("foreign-role", [*importer, "--extern", f"base={forged}", client], 1,
+                  [role["diagnostic"]], timeout=30)
     if args.baseline is not None:
         check.run("older-reader", [args.baseline.resolve(strict=True), *importer[1:],
                   "--extern", f"base={artifact}", client], 1, [contract["older_reader"]], timeout=30)

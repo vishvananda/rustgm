@@ -68,15 +68,31 @@ fn bodyless_intrinsics(
             work.charge(rows.roles.len())?;
             role(rows, LangItem::PanicLocation)?;
         }
+        if operation == BodylessIntrinsic::OffsetOf {
+            work.charge(rows.roles.len())?;
+            let address = role(rows, LangItem::OffsetOf)?;
+            if address.artifact.0 != 0 || address.declaration != header.declaration {
+                return Err(
+                    "source offset_of intrinsic changed its actual bound language declaration",
+                );
+            }
+        }
         if !profile.declaration_policies()
             || std::mem::replace(&mut seen[operation as usize], true)
             || !bodyless_header(rows, header, operation)
             || !bodyless_inputs(rows, header, operation, work)?
         {
-            return Err(if operation == BodylessIntrinsic::CallerLocation {
-                "source caller_location intrinsic requires its exact version-fourteen header"
-            } else {
-                "source layout intrinsic requires its exact version-fourteen header"
+            return Err(match operation {
+                BodylessIntrinsic::CallerLocation => {
+                    "source caller_location intrinsic requires its exact version-fourteen header"
+                }
+                BodylessIntrinsic::PtrMetadata => {
+                    "source ptr_metadata intrinsic requires its exact version-fourteen header"
+                }
+                BodylessIntrinsic::OffsetOf => {
+                    "source offset_of intrinsic requires its exact version-fourteen header"
+                }
+                _ => "source layout intrinsic requires its exact version-fourteen header",
             });
         }
     }
@@ -103,19 +119,61 @@ fn bodyless_header(
         signature.convention == Convention::Rust
             && !signature.unsafe_
             && !signature.variadic
-            && signature.parameters.start == signature.parameters.end
-            && (operation == BodylessIntrinsic::CallerLocation
-                || rows.types.get(signature.result.0 as usize)
-                    == Some(&Type::Scalar(Scalar::Usize)))
+            && match operation {
+                BodylessIntrinsic::PtrMetadata => metadata_signature(rows, signature, header.scope),
+                BodylessIntrinsic::OffsetOf => {
+                    signature.parameters.slice(&rows.roots).is_ok_and(|params| {
+                        matches!(params, [first, last] if first == last
+                            && rows.types.get(first.0 as usize) == Some(&Type::Scalar(Scalar::U32)))
+                    }) && rows.types.get(signature.result.0 as usize)
+                        == Some(&Type::Scalar(Scalar::Usize))
+                }
+                _ => {
+                    signature.parameters.start == signature.parameters.end
+                        && (operation == BodylessIntrinsic::CallerLocation
+                            || rows.types.get(signature.result.0 as usize)
+                                == Some(&Type::Scalar(Scalar::Usize)))
+                }
+            }
     };
     module_declaration
         && header.parent.is_none()
         && header.receiver.is_none()
         && header.regions.total == 0
-        && header.formals.start == header.formals.end
+        && header.formals.end.checked_sub(header.formals.start)
+            == Some(match operation {
+                BodylessIntrinsic::PtrMetadata => 1,
+                BodylessIntrinsic::OffsetOf => 2,
+                _ => 0,
+            })
         && header.constness == Constness::Const
         && signature(header.original)
         && signature(header.callable)
+}
+
+fn metadata_signature(
+    rows: &SourceRows,
+    signature: super::super::Signature,
+    scope: crate::support::crates::owner_catalog::DeclarationRef,
+) -> bool {
+    let Ok([input]) = signature.parameters.slice(&rows.roots) else {
+        return false;
+    };
+    let Some(Type::RawPointer {
+        mutable: false,
+        pointee,
+    }) = rows.types.get(input.0 as usize)
+    else {
+        return false;
+    };
+    [*pointee, signature.result].into_iter().enumerate().all(|(index, ty)| {
+        let Some(Type::Parameter(slot)) = rows.types.get(ty.0 as usize) else {
+            return false;
+        };
+        rows.slots.get(slot.0 as usize).is_some_and(|slot| slot.owner == scope
+            && slot.index as usize == index
+            && matches!(slot.kind, ParameterKind::Type { sized } if sized.is_some() == (index == 1)))
+    })
 }
 
 fn bodyless_inputs(
@@ -128,6 +186,30 @@ fn bodyless_inputs(
     if operation == BodylessIntrinsic::CallerLocation {
         return Ok(inputs.is_empty());
     }
+    if operation == BodylessIntrinsic::PtrMetadata {
+        work.charge(inputs.len())?;
+        return Ok(inputs.iter().all(|input| input.owner == header.declaration)
+            && inputs.iter().any(|input| {
+                matches!(
+                    input.requirement,
+                    super::Requirement::ProjectionEqual { .. }
+                )
+            }));
+    }
+    if operation == BodylessIntrinsic::OffsetOf {
+        let [input] = inputs else { return Ok(false) };
+        if header.declared_inputs != 1 {
+            return Ok(false);
+        }
+        work.charge(rows.roles.len())?;
+        return Ok(sizing_input(
+            rows,
+            header,
+            input,
+            role(rows, LangItem::PointeeSized)?,
+            None,
+        ));
+    }
     if inputs.len() != 2 || header.declared_inputs != 1 {
         return Ok(false);
     }
@@ -135,22 +217,36 @@ fn bodyless_inputs(
     let meta = role(rows, LangItem::MetaSized)?;
     let pointee = role(rows, LangItem::PointeeSized)?;
     let sized = role(rows, LangItem::Sized)?;
-    Ok(inputs.iter().zip([meta, pointee]).all(|(clause, expected)| {
-        let super::Requirement::Trait {
-            application,
-            effect: Constness::Ordinary,
-        } = clause.requirement else { return false };
-        let Some(application) = rows.trait_applications.get(application.0 as usize) else {
-            return false;
-        };
-        clause.owner == header.declaration
-            && clause.binder.is_none()
-            && application.declaration == expected
-            && application.arguments.start == application.arguments.end
-            && matches!(rows.types.get(application.subject.0 as usize), Some(Type::Parameter(slot))
-                if rows.slots.get(slot.0 as usize).is_some_and(|parameter| parameter.owner == header.scope
-                    && parameter.index == 0 && parameter.kind == ParameterKind::Type { sized: Some(sized) }))
-    }))
+    Ok(inputs
+        .iter()
+        .zip([meta, pointee])
+        .all(|(clause, expected)| sizing_input(rows, header, clause, expected, Some(sized))))
+}
+
+fn sizing_input(
+    rows: &SourceRows,
+    header: &super::FunctionHeader,
+    clause: &super::Clause,
+    expected: super::DeclarationAddress,
+    sized: Option<super::DeclarationAddress>,
+) -> bool {
+    let super::Requirement::Trait {
+        application,
+        effect: Constness::Ordinary,
+    } = clause.requirement
+    else {
+        return false;
+    };
+    let Some(application) = rows.trait_applications.get(application.0 as usize) else {
+        return false;
+    };
+    clause.owner == header.declaration
+        && clause.binder.is_none()
+        && application.declaration == expected
+        && application.arguments.start == application.arguments.end
+        && matches!(rows.types.get(application.subject.0 as usize), Some(Type::Parameter(slot))
+            if rows.slots.get(slot.0 as usize).is_some_and(|parameter| parameter.owner == header.scope
+                && parameter.index == 0 && parameter.kind == ParameterKind::Type { sized }))
 }
 fn role(rows: &SourceRows, role: LangItem) -> Result<super::DeclarationAddress, &'static str> {
     rows.roles

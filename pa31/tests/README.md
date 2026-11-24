@@ -38,6 +38,12 @@ reference-to-pointer cast in a fresh client, both in a constant and
 as a runtime call.
 `spec/source-marker-trait-transport/outcomes.json` checks an empty unsafe
 marker trait and native calls with provider and client implementations.
+`spec/source-offset-intrinsic-transport/outcomes.json` uses the pinned
+`offset_of` intrinsic. A fresh client evaluates two fields of the same
+record type through one imported generic wrapper.
+`spec/source-slice-length-transport/outcomes.json` runs the pinned slice
+`len` body in a constant and at runtime. Both calls cross the crate boundary
+and use the provider’s pointer metadata operation.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

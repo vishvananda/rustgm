@@ -245,7 +245,7 @@ impl Checker<'_> {
     }
 
     /// An imported inherent impl arrives with its completed, re-authenticated
-    /// Self schema, so each method joins the ordinary nominal bucket at once.
+    /// Self schema, so each method joins its nominal or Core structural bucket.
     /// Lookup then uses exactly the local candidate and receiver rules.
     fn publish_imported_inherent(
         &mut self,
@@ -271,7 +271,7 @@ impl Checker<'_> {
             .map(Head::canonical)
             .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self type"))?;
         // Header installation authenticated the owner and each member link.
-        let primitive = matches!(head, Head::Primitive(_));
+        let core_shape = matches!(head, Head::Primitive(_) | Head::Slice);
         let kind = self.report.resolution.definitions[member.0 as usize].kind;
         if !matches!(kind, DefKind::Function | DefKind::Const) {
             return Err(Error::unlocated(
@@ -280,7 +280,7 @@ impl Checker<'_> {
         }
         let bucket = Bucket::declared(&self.facts.types, head, name);
         let Some(bucket) =
-            bucket.filter(|bucket| primitive || matches!(bucket, Bucket::Nominal(..)))
+            bucket.filter(|bucket| core_shape || matches!(bucket, Bucket::Nominal(..)))
         else {
             return Err(Error::unlocated(
                 "imported inherent impl Self is not a nominal of its own provider",

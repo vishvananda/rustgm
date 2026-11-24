@@ -1,6 +1,38 @@
 //! Canonical conformance keeps actual trait/member links and typed impl Self.
 use super::{Declarations, DefId, OwnerKind, Report, Stage, g, s};
-use crate::support::constness::Constness;
+use crate::{
+    support::{bindings::LangItem, constness::Constness},
+    types::{Kind, TypeId, arguments::Argument, parameters::ParameterKind},
+};
+
+fn slice_implementation(
+    report: &Report,
+    facts: &Declarations,
+    owner: DefId,
+    self_type: TypeId,
+) -> Result<bool, &'static str> {
+    let Some(Kind::Slice(element)) = facts.types.kind(self_type) else {
+        return Ok(false);
+    };
+    if !report.package.coherence_is_core() {
+        return Ok(false);
+    }
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some(role) = catalog.validated_language(LangItem::SliceLen)? else {
+        return Ok(false);
+    };
+    let Some([parameter]) = facts.generics.parameters.get(&owner).map(Vec::as_slice) else {
+        return Ok(false);
+    };
+    Ok(role.parent == Some(owner)
+        && parameter.argument == Argument::Type(element)
+        && parameter.default.is_none()
+        && matches!(facts.types.kind(element), Some(Kind::Parameter(id))
+            if facts.types.parameter(id).is_some_and(|formal| formal.owner.0 == owner.0
+                && formal.index == 0 && formal.kind == ParameterKind::Type { sized: true })))
+}
 
 impl Stage {
     pub(super) fn implementations(
@@ -109,11 +141,11 @@ impl Stage {
             .schema(owner.self_definition)
             .ok_or("source implementation has no completed typed Self schema")?;
         let core_primitive_inherent = self.declaration_policies()
-            && super::evaluated_constants::core_primitive_owner(
+            && (super::evaluated_constants::core_primitive_owner(
                 report,
                 facts,
                 owner.self_definition,
-            );
+            ) || slice_implementation(report, facts, owner.self_definition, schema.self_type)?);
         if !core_primitive_inherent {
             let Some(crate::types::Kind::Adt(nominal, _)) = facts.types.kind(schema.self_type)
             else {

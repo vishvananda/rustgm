@@ -23,21 +23,7 @@ pub(crate) struct OffsetSelection {
 }
 
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
-    let Some(Kind::Function {
-        bound_regions: 0,
-        parameters,
-        result,
-        unsafe_: false,
-        convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
-    else {
-        return Err("source offset_of requires a safe Rust signature without late regions");
-    };
-    let u32_ = TypeId::primitive(Primitive::U32);
-    if facts.types.list(parameters) != Some(&[u32_, u32_])
-        || result != TypeId::primitive(Primitive::Usize)
-        || function.body.is_some()
-        || !facts.is_const_function(function.definition)
+    if function.body.is_some()
         || facts
             .lifetimes
             .functions
@@ -59,8 +45,60 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
     {
         return Err("source offset_of intrinsic differs from its actual language declaration");
     }
-    let ty = formal(facts, function.definition)?;
-    constraint(facts, catalog, function.definition, ty)
+    validate_header(facts, catalog, function.definition, function.signature)
+}
+
+pub(super) fn complete_provider(
+    facts: &mut Declarations,
+) -> Result<(), crate::resolve::package::Error> {
+    let language = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(LangItem::OffsetOf))
+        .ok_or_else(|| {
+            crate::resolve::package::Error::unlocated(
+                "source offset_of lost its validated language declaration",
+            )
+        })?;
+    super::roles::record_completion(facts, LangItem::OffsetOf, language)
+}
+
+pub(super) fn validate_imported(
+    facts: &Declarations,
+    catalog: &Catalog,
+    role: super::Role,
+    signature: TypeId,
+    steps: &mut usize,
+) -> Result<TypeId, &'static str> {
+    if catalog.role(LangItem::OffsetOf)? != Some(role) || role.parent.is_some() {
+        return Err("imported offset_of changed its actual language declaration");
+    }
+    *steps = steps.saturating_add(16);
+    validate_header(facts, catalog, role.definition, signature)?;
+    Ok(TypeId::primitive(Primitive::Usize))
+}
+
+fn validate_header(
+    facts: &Declarations,
+    catalog: &Catalog,
+    definition: DefId,
+    signature: TypeId,
+) -> Result<(), &'static str> {
+    let u32_ = TypeId::primitive(Primitive::U32);
+    if !facts.is_const_function(definition)
+        || !super::intrinsic_contracts::opened_signature_matches(
+            &facts.types,
+            signature,
+            &[u32_, u32_],
+            TypeId::primitive(Primitive::Usize),
+            false,
+            Convention::RUST,
+        )
+    {
+        return Err("source offset_of requires its const safe Rust (u32,u32)->usize signature");
+    }
+    let ty = formal(facts, definition)?;
+    constraint(facts, catalog, definition, ty)
 }
 
 fn formal(facts: &Declarations, definition: DefId) -> Result<TypeId, &'static str> {
@@ -97,34 +135,33 @@ fn constraint(
     let sizing = catalog
         .sizing
         .ok_or("source offset_of requires completed sizing headers")?;
-    let mut found = false;
-    for clause in facts.generics.declared_predicates(definition) {
-        if found {
-            return Err("source offset_of has additional defining constraints");
-        }
-        let Clause::Predicate(predicate) = clause.value else {
-            return Err("source offset_of does not declare quantified constraints");
-        };
-        let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
-            return Err("source offset_of requires its ordinary PointeeSized constraint");
-        };
-        let application = facts
+    let inputs = crate::sema::declaration_inputs::declared_own(
+        &facts.generics,
+        facts.crates.as_deref(),
+        definition,
+    )?;
+    let mut inputs = inputs.iter();
+    let (Some(input), None) = (inputs.next(), inputs.next()) else {
+        return Err("source offset_of requires only its actual PointeeSized bound");
+    };
+    let Clause::Predicate(predicate) = input.value else {
+        return Err("source offset_of does not declare quantified constraints");
+    };
+    let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
+        return Err("source offset_of requires its ordinary PointeeSized constraint");
+    };
+    let application = facts
+        .types
+        .trait_application(application)
+        .ok_or("source offset_of lost its formal trait constraint")?;
+    if predicate.ty != ty
+        || application.item.0 != sizing[2].0
+        || facts
             .types
-            .trait_application(application)
-            .ok_or("source offset_of lost its formal trait constraint")?;
-        if predicate.ty != ty
-            || application.item.0 != sizing[2].0
-            || facts
-                .types
-                .arguments(application.arguments)
-                .is_none_or(|a| a.len() != 0)
-        {
-            return Err("source offset_of changed its actual PointeeSized constraint");
-        }
-        found = true;
-    }
-    if !found {
-        return Err("source offset_of requires its actual PointeeSized bound");
+            .arguments(application.arguments)
+            .is_none_or(|a| a.len() != 0)
+    {
+        return Err("source offset_of changed its actual PointeeSized constraint");
     }
     Ok(())
 }
@@ -148,18 +185,13 @@ impl Catalog {
             return Err("offset plan requires its actual source function item");
         };
         let definition = DefId(item.0);
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("offset callable has no completed header")?;
-        validate(facts, *function)?;
+        let checked_signature = self.offset_header(facts, definition)?;
         self.require_offset_report(report, facts, definition)?;
         let mut actual = facts
             .types
             .arguments(arguments)
             .ok_or("offset callable arguments disappeared")?;
-        if signature != function.signature
+        if signature != checked_signature
             || actual.len() != 1
             || actual.next() != Some(Argument::Type(container))
         {
@@ -174,6 +206,10 @@ impl Catalog {
         definition: DefId,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if self.uses_imported_roles() {
+            self.offset_header(facts, definition)?;
+            return Ok(());
+        }
         let Some((declaration, SourceIntrinsic::OffsetOf, _)) =
             self.intrinsic_record(definition)?
         else {
@@ -212,16 +248,34 @@ impl Catalog {
         }
         crate::sema::header_attributes::charge_source_contract_query(facts, 16)
             .map_err(|_| "source offset_of selection budget exhausted")?;
-        let function = facts
-            .function_indices
-            .get(&selected.definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("selected offset_of lacks its completed function")?;
-        validate(facts, *function)?;
+        self.offset_header(facts, selected.definition)?;
         Ok(Some(OffsetSelection {
             definition: selected.definition,
             element: selected.element,
         }))
+    }
+    fn offset_header(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<TypeId, &'static str> {
+        if self.uses_imported_roles() {
+            let Some((
+                crate::support::crates::generics::source::BodylessIntrinsic::OffsetOf,
+                header,
+            )) = self.imported_intrinsic(definition)
+            else {
+                return Err("imported offset_of requires its exact checked intrinsic header");
+            };
+            return Ok(header.signature);
+        }
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&i| facts.functions.get(i))
+            .ok_or("offset callable has no completed header")?;
+        validate(facts, *function)?;
+        Ok(function.signature)
     }
 }
 

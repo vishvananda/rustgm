@@ -163,6 +163,22 @@ impl Arena {
                 Node::NominalArgument { ty: at, next: an },
                 Node::NominalArgument { ty: bt, next: bn },
             ) => ((at, bt), Some((an, bn))),
+            (
+                Node::Projection {
+                    member: a,
+                    arguments: ac,
+                },
+                Node::Projection {
+                    member: b,
+                    arguments: bc,
+                },
+            ) if a == b => ((ac, bc), None),
+            (Node::Scalar(crate::support::crates::Scalar::Usize), projection)
+            | (projection, Node::Scalar(crate::support::crates::Scalar::Usize))
+                if self.slice_metadata(domains, projection, work)? =>
+            {
+                return Ok(());
+            }
             (a, b) if a == b => return Ok(()),
             _ => {
                 return Err("source signature differs after complete application and late opening");
@@ -181,6 +197,29 @@ impl Arena {
         }
         Ok(())
     }
+    fn slice_metadata(
+        &self,
+        domains: &DomainIndex<'_, '_>,
+        projection: Node,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Node::Projection { member, arguments } = projection else {
+            return Ok(false);
+        };
+        if domains.metadata_member != Some(member) {
+            return Ok(false);
+        }
+        work.charge(3)?;
+        let Some(Node::NominalArgument { ty, next }) = self.nodes.get(arguments.0 as usize) else {
+            return Ok(false);
+        };
+        Ok(self.nodes.get(next.0 as usize) == Some(&Node::NominalEnd)
+            && matches!(
+                self.nodes.get(ty.0 as usize),
+                Some(Node::Slice(_) | Node::Str)
+            ))
+    }
+
     fn same_region(
         &self,
         domains: &DomainIndex<'_, '_>,

@@ -903,7 +903,46 @@ pub(in crate::sema) fn complete_comparison_roles(
     Ok(())
 }
 
-fn record_completion(
+pub(in crate::sema) fn complete_slice_len_role(facts: &mut Declarations) -> Result<(), Error> {
+    let Some(declaration) = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(LangItem::SliceLen))
+    else {
+        return Ok(());
+    };
+    crate::sema::header_attributes::charge_source_contract_query(facts, 4)?;
+    slice_len_header(facts, declaration.into()).map_err(Error::unlocated)?;
+    record_completion(facts, LangItem::SliceLen, declaration)
+}
+
+fn slice_len_header(facts: &Declarations, role: super::Role) -> Result<(), &'static str> {
+    use crate::sema::associated::OwnerKind;
+    let owner = facts
+        .associated
+        .owner(role.definition)
+        .and_then(|id| facts.associated.get(id))
+        .ok_or("source slice length role requires its actual inherent method owner")?;
+    let header = facts
+        .declaration_header(role.definition)?
+        .ok_or("source slice length role requires its completed function header")?;
+    if role.parent != Some(owner.self_definition)
+        || !matches!(
+            owner.kind,
+            OwnerKind::Impl {
+                trait_type: None,
+                ..
+            } | OwnerKind::ImportedInherent(_)
+        )
+        || header.declaration != role.origin
+        || header.body.is_none()
+    {
+        return Err("source slice length role changed its actual inherent declaration");
+    }
+    Ok(())
+}
+
+pub(super) fn record_completion(
     facts: &mut Declarations,
     role: LangItem,
     declaration: Declaration,

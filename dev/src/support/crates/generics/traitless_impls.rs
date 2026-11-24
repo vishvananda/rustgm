@@ -3,7 +3,10 @@
 //! a nominal that this provider declares. Older profiles reject it by name,
 //! and every consumer re-proves its Self, inputs and methods.
 use super::{ArtifactRef, DefinitionKind, ImplHeader, Profile, SourceRows, Type};
-use crate::support::crates::generics::Work;
+use crate::support::{
+    bindings::LangItem,
+    crates::{generics::Work, owner_catalog::DeclarationRef},
+};
 
 impl ImplHeader {
     pub(crate) fn inherent_constant_owner(&self, types: &[Type]) -> bool {
@@ -34,6 +37,7 @@ pub(super) fn require_profile(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.implementations.len().saturating_add(1))?;
+    let slice_owner = slice_owner(rows, profile, work)?;
     for implementation in &rows.implementations {
         work.charge(1)?;
         if implementation.core_primitive_inherent {
@@ -42,12 +46,14 @@ pub(super) fn require_profile(
                 Some(Type::Scalar(tag)) => *tag != crate::support::crates::Scalar::Unit,
                 _ => false,
             };
-            if !profile.declaration_policies()
-                || !implementation.closed_inherent_constant_owner(&rows.types)
-                || !primitive
+            let slice = slice_owner == Some(implementation.self_definition)
+                && slice_generic_element(rows, implementation);
+            if !(profile.declaration_policies()
+                && (primitive && implementation.closed_inherent_constant_owner(&rows.types)
+                    || slice && implementation.inherent_constant_owner(&rows.types)))
             {
                 return Err(
-                    "source Core primitive authority requires an actual closed inherent owner",
+                    "source Core primitive authority requires an actual supported inherent owner",
                 );
             }
             continue;
@@ -61,6 +67,43 @@ pub(super) fn require_profile(
         own_nominal(rows, implementation)?;
     }
     Ok(())
+}
+
+fn slice_owner(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<Option<DeclarationRef>, &'static str> {
+    if !profile.declaration_policies() {
+        return Ok(None);
+    }
+    let roles = rows.policy.roles.slice(&rows.roles)?;
+    work.charge(roles.len())?;
+    let Some(method) = roles.iter().find(|role| role.role == LangItem::SliceLen) else {
+        return Ok(None);
+    };
+    if method.declaration.artifact != rows.policy.provider {
+        return Err("source slice length role belongs to another provider");
+    }
+    rows.declarations
+        .get(method.declaration.declaration.0 as usize)
+        .map(|row| row.definition.parent)
+        .ok_or("source slice length role lost its actual inherent owner")
+}
+
+fn slice_generic_element(rows: &SourceRows, implementation: &ImplHeader) -> bool {
+    let Some(Type::Slice(element)) = rows.types.get(implementation.self_type.0 as usize) else {
+        return false;
+    };
+    let Some(Type::Parameter(slot)) = rows.types.get(element.0 as usize) else {
+        return false;
+    };
+    rows.slots.get(slot.0 as usize).is_some_and(|slot| {
+        slot.owner == implementation.self_definition
+            && slot.ordinal == 0
+            && slot.index == 0
+            && matches!(slot.kind, super::ParameterKind::Type { sized: Some(_) })
+    })
 }
 
 /// An inherent impl may extend only a nominal declared by this provider.

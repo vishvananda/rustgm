@@ -43,7 +43,8 @@ pub(super) fn requirements(
     let role = facts
         .source_bindings
         .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::Unsize))
+        .ok_or("nominal source Unsize lost its actual catalog")?
+        .validated_role(LangItem::Unsize)?
         .ok_or("nominal source Unsize lost its actual trait")?;
     context.account_work(1)?;
     goals.push(Requirement {

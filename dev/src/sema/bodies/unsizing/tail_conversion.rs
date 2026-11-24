@@ -209,7 +209,7 @@ impl Checker<'_> {
             return Ok(Input::Unsupported);
         };
         let Some(unsize) = catalog
-            .validated_language(crate::support::bindings::LangItem::Unsize)
+            .validated_role(crate::support::bindings::LangItem::Unsize)
             .map_err(|e| self.error(node, e))?
             .map(|role| ItemId(role.definition.0))
         else {

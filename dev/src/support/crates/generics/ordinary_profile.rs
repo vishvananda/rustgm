@@ -284,6 +284,10 @@ fn trait_headers(
             )?;
             continue;
         }
+        if roles.unsize == Some(header.declaration) {
+            require_unsize_header(header)?;
+            continue;
+        }
         if roles.no_drop == Some(header.declaration) {
             require_no_drop_header(header)?;
             continue;
@@ -376,6 +380,17 @@ fn trait_profile_flags(
         return Err("source marker trait requires its actual empty declaration profile");
     }
     TraitFlags::from_bits(flags & !policies)
+}
+
+fn require_unsize_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {
+    if header.flags.bits() != (TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE)
+        || header.written_parameters != 1
+        || header.region_captures != 0
+        || header.members.start != header.members.end
+    {
+        return Err("source Unsize requires its empty restricted trait declaration");
+    }
+    Ok(())
 }
 
 fn require_no_drop_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {
@@ -974,6 +989,7 @@ pub(super) struct Bindings {
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    unsize: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     discriminant: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
@@ -1180,6 +1196,9 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::DropGlue
             | LangItem::PinNewUnchecked
             | LangItem::DerefTarget
+            | LangItem::SliceLen
+            | LangItem::OffsetOf
+            | LangItem::Unsize
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1379,6 +1398,7 @@ pub(super) fn bindings(
         sizing,
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
+        unsize: bound(LangItem::Unsize),
         discriminant: bound(LangItem::DiscriminantKind),
         freeze: marker_traits.then_some(bound(LangItem::Freeze)).flatten(),
     })
@@ -1575,13 +1595,13 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
-    if LangItem::TRY_PROTOCOL.contains(&role) || LangItem::FOR_PROTOCOL.contains(&role) {
-        return protocol_role_header(rows, role, header);
-    }
-    if role.is_enum_value_role() {
-        return enum_role_header(kind, role, header);
-    }
     match (role, header) {
+        (role, header)
+            if LangItem::TRY_PROTOCOL.contains(&role) || LangItem::FOR_PROTOCOL.contains(&role) =>
+        {
+            protocol_role_header(rows, role, header)?;
+        }
+        (role, header) if role.is_enum_value_role() => enum_role_header(kind, role, header)?,
         (role, header)
             if role == LangItem::DropGlue
                 || LangItem::GUARD_PANICS.contains(&role)
@@ -1589,6 +1609,13 @@ fn role_header(
         {
             defined_operation_role(profile, rows, role, header)?;
         }
+        (LangItem::OffsetOf, Some(HeaderRef::Function(index)))
+            if rows.functions.get(index as usize).is_some_and(|function| {
+                function.body
+                    == super::super::FunctionBody::Intrinsic(
+                        super::super::BodylessIntrinsic::OffsetOf,
+                    )
+            }) => {}
         (role, Some(HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
         (role, Some(HeaderRef::Nominal(index)))
@@ -1610,7 +1637,10 @@ fn role_header(
             | LangItem::MemAlignConst,
             Some(HeaderRef::Constant(_)),
         )
-        | (LangItem::RangeSub | LangItem::PinNewUnchecked, Some(HeaderRef::Function(_)))
+        | (
+            LangItem::RangeSub | LangItem::PinNewUnchecked | LangItem::SliceLen,
+            Some(HeaderRef::Function(_)),
+        )
         | (
             LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation,
             Some(HeaderRef::Nominal(_)),
@@ -1653,6 +1683,17 @@ fn role_header(
         | (LangItem::Panic, Some(HeaderRef::Function(_)))
         | (LangItem::PhantomData, Some(HeaderRef::Nominal(_)))
             if profile.languages() => {}
+        _ => ordinary_declaration_role(role, header)?,
+    }
+    Ok(())
+}
+
+fn ordinary_declaration_role(
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    use super::super::HeaderRef;
+    match (role, header) {
         (_, Some(HeaderRef::AssociatedType(_) | HeaderRef::AssociatedDefinition(_))) => {
             return Err("source associated role has a different actual member kind");
         }

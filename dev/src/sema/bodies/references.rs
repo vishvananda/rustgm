@@ -532,7 +532,7 @@ impl Checker<'_> {
             .require_provider_report(self.report)
             .map_err(|e| self.error(node, e))?;
         let definition = catalog
-            .validated_language(crate::support::bindings::LangItem::CoerceUnsized)
+            .validated_role(crate::support::bindings::LangItem::CoerceUnsized)
             .map_err(|e| self.error(node, e))?
             .ok_or_else(|| {
                 self.error(

@@ -75,7 +75,7 @@ impl PtrMetadataSelection {
             .ok_or("source ptr_metadata lost its actual catalog")?;
         for role in [LangItem::PointeeTrait, LangItem::MetadataType] {
             catalog
-                .validated_language(role)?
+                .validated_role(role)?
                 .ok_or("source ptr_metadata role is not complete")?;
         }
         let Some(Kind::FunctionItem {
@@ -106,28 +106,40 @@ pub(super) fn validate(
     facts: &Declarations,
     function: Function,
 ) -> Result<projection::Application, &'static str> {
+    if function.body.is_some() {
+        return Err(
+            "source ptr_metadata requires a const bodyless declaration with two owned types",
+        );
+    }
+    validate_header(facts, function.definition, function.signature)
+}
+
+pub(super) fn validate_header(
+    facts: &Declarations,
+    definition: DefId,
+    signature: TypeId,
+) -> Result<projection::Application, &'static str> {
     let Some(Kind::Function {
         bound_regions: 0,
         parameters,
         result,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err("source ptr_metadata requires a safe Rust signature without late regions");
     };
     let generic = facts
         .generics
         .parameters
-        .get(&function.definition)
+        .get(&definition)
         .ok_or("source ptr_metadata requires its two own type parameters")?;
     if generic.len() != 2
-        || !facts.is_const_function(function.definition)
-        || function.body.is_some()
+        || !facts.is_const_function(definition)
         || facts
             .lifetimes
             .functions
-            .get(&function.definition)
+            .get(&definition)
             .is_some_and(|r| r.total != 0)
     {
         return Err(
@@ -143,7 +155,7 @@ pub(super) fn validate(
             return Err("source ptr_metadata lost its formal identity");
         };
         if facts.types.parameter(id).is_none_or(|p| {
-            p.owner.0 != function.definition.0
+            p.owner.0 != definition.0
                 || p.index as usize != index
                 || !matches!(p.kind, ParameterKind::Type { sized } if sized == (index == 1))
         }) {
@@ -167,7 +179,7 @@ pub(super) fn validate(
     {
         return Err("source ptr_metadata requires exactly *const P to its own M");
     }
-    protocol(facts, function.definition, types)
+    protocol(facts, definition, types)
 }
 
 fn protocol(
@@ -180,10 +192,10 @@ fn protocol(
         .as_deref()
         .ok_or("source ptr_metadata requires its actual catalog")?;
     let parent = catalog
-        .language(LangItem::PointeeTrait)
+        .role(LangItem::PointeeTrait)?
         .ok_or("source ptr_metadata requires actual Pointee")?;
     let member = catalog
-        .language(LangItem::MetadataType)
+        .role(LangItem::MetadataType)?
         .ok_or("source ptr_metadata requires actual Metadata")?;
     let sizing = catalog
         .sizing
@@ -193,7 +205,12 @@ fn protocol(
     }
     let mut found = 0;
     let mut projection = None;
-    for clause in facts.generics.declared_predicates(definition) {
+    let clauses = crate::sema::declaration_inputs::declared_own(
+        &facts.generics,
+        facts.crates.as_deref(),
+        definition,
+    )?;
+    for clause in clauses.iter() {
         let predicate = match clause.value {
             Clause::UnstableFeature(_) => {
                 return Err("source ptr_metadata feature conditions require an explicit contract");
@@ -284,33 +301,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
-            return Ok(None);
-        };
-        if kind != SourceIntrinsic::PtrMetadata {
+        if !self.ptr_metadata_header(facts, definition, origin)? {
             return Ok(None);
         }
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("imported ptr_metadata requires transported source operation provenance");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source ptr_metadata has no completed declaration")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-        {
-            return Err("source ptr_metadata completed declaration changed");
-        }
-        let clauses = facts.generics.declared_predicates(definition).len();
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16 + clauses)
-            .map_err(|_| "source ptr_metadata source query budget exhausted")?;
-        validate(facts, *function)?;
         let mut args = facts
             .types
             .arguments(arguments)
@@ -356,7 +349,7 @@ impl Catalog {
             );
         }
         for role in [LangItem::PointeeTrait, LangItem::MetadataType] {
-            self.validated_language(role)?
+            self.validated_role(role)?
                 .ok_or("source ptr_metadata role is not complete")?;
         }
         Ok(Some(PtrMetadataSelection {
@@ -366,6 +359,44 @@ impl Catalog {
             output,
             instance,
         }))
+    }
+
+    fn ptr_metadata_header(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<bool, &'static str> {
+        if self.uses_imported_roles() {
+            return Ok(self
+                .imported_intrinsic(definition)
+                .is_some_and(|(operation, _)| operation.kind() == SourceIntrinsic::PtrMetadata));
+        }
+        let Some((declaration, SourceIntrinsic::PtrMetadata, original)) =
+            self.intrinsic_record(definition)?
+        else {
+            return Ok(false);
+        };
+        if origin.source().is_none() {
+            return Err("imported ptr_metadata requires transported source operation provenance");
+        }
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| facts.functions.get(index))
+            .ok_or("source ptr_metadata has no completed declaration")?;
+        if declaration.parent.is_some()
+            || function.definition != definition
+            || function.node != declaration.origin
+            || function.signature != original
+        {
+            return Err("source ptr_metadata completed declaration changed");
+        }
+        let clauses = facts.generics.declared_predicates(definition).len();
+        crate::sema::header_attributes::charge_source_contract_query(facts, 16 + clauses)
+            .map_err(|_| "source ptr_metadata source query budget exhausted")?;
+        validate(facts, *function)?;
+        Ok(true)
     }
 
     pub(crate) fn require_ptr_metadata_report(
@@ -378,18 +409,35 @@ impl Catalog {
         selected.current(facts)?;
         super::pointee::authenticate(report, facts)
             .map_err(|_| "source ptr_metadata lost its current source role image")?;
-        let Some((declaration, SourceIntrinsic::PtrMetadata, _)) =
+        let origin = if let Some((declaration, SourceIntrinsic::PtrMetadata, _)) =
             self.intrinsic_record(selected.definition)?
-        else {
+        {
+            declaration.origin.into()
+        } else if self
+            .imported_intrinsic(selected.definition)
+            .is_some_and(|(operation, _)| operation.kind() == SourceIntrinsic::PtrMetadata)
+        {
+            facts
+                .declaration_header(selected.definition)?
+                .ok_or("imported ptr_metadata lost its actual declared header")?
+                .declaration
+        } else {
             return Err("source ptr_metadata lost its actual intrinsic declaration");
         };
         let current = facts
             .header_attribute_contracts(report, selected.definition)
             .map_err(|_| "source ptr_metadata lost its current source header")?;
-        if current
-            .origin
-            .source()
-            .is_none_or(|site| site.declaration != declaration.origin)
+        let same = match origin {
+            crate::resolve::body_origin::DeclarationOrigin::Source(origin) => current
+                .origin
+                .source()
+                .is_some_and(|site| site.declaration == origin),
+            crate::resolve::body_origin::DeclarationOrigin::Imported(origin) => current
+                .origin
+                .imported()
+                .is_some_and(|site| site.declaration() == origin),
+        };
+        if !same
             || matches!(current.must_use, ContractKnowledge::Unknown)
             || matches!(current.inline, ContractKnowledge::Unknown)
         {

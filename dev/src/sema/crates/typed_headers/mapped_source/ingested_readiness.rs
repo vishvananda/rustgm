@@ -453,12 +453,14 @@ impl Graph {
         let Some(s::HeaderRef::Function(index)) = rows.header(parent)? else {
             return Err("source value binding lacks its actual function header");
         };
-        // The sealed formal ledger established unique membership once. Only a
-        // required method's genuine formal may lack original-local coverage.
+        // The sealed formal ledger established membership in the actual header.
+        // A retained intrinsic has header formals and no Rust body locals.
         if binding.definition.kind != s::DefinitionKind::ValueParameter
             || !matches!(
                 rows.functions[index as usize].body,
-                s::FunctionBody::Absent | s::FunctionBody::CompilerOperation(_)
+                s::FunctionBody::Absent
+                    | s::FunctionBody::CompilerOperation(_)
+                    | s::FunctionBody::Intrinsic(_)
             )
         {
             return Err("source provided value binding omitted its actual original local");

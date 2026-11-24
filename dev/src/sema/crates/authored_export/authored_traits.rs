@@ -183,7 +183,11 @@ impl Stage {
                 if self.declaration_policies()
                     && (role == LangItem::DropGlue || LangItem::FORMAT_PANICS.contains(&role)) => {}
             DefKind::Function
-                if self.declaration_policies() && role == LangItem::PinNewUnchecked => {}
+                if self.declaration_policies()
+                    && matches!(
+                        role,
+                        LangItem::PinNewUnchecked | LangItem::SliceLen | LangItem::OffsetOf
+                    ) => {}
             DefKind::TypeAlias if self.declaration_policies() && role == LangItem::DerefTarget => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {

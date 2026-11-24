@@ -66,78 +66,80 @@ fn validate_target(
         .parameters
         .get(&declaration.definition)
         .ok_or_else(|| error("source unsizing role has no target parameter"))?;
-    let [parameter] = parameters.as_slice() else {
-        return Err(error(
-            "source unsizing role requires exactly one target parameter",
-        ));
+    let target =
+        target_parameter(facts, declaration.definition, parameters, role).map_err(error)?;
+    let clauses = facts
+        .generics
+        .declared_predicates_in_scope(declaration.definition)
+        .map(|clause| clause.value);
+    target_requirements(facts, catalog, target, role, clauses).map_err(error)
+}
+
+fn target_parameter(
+    facts: &Declarations,
+    definition: DefId,
+    parameters: &[crate::sema::generics::Parameter],
+    role: LangItem,
+) -> Result<TypeId, &'static str> {
+    let [parameter] = parameters else {
+        return Err("source unsizing role requires exactly one target parameter");
     };
     let Argument::Type(target) = parameter.argument else {
-        return Err(error("source unsizing target must be a type parameter"));
+        return Err("source unsizing target must be a type parameter");
+    };
+    let Some(Kind::Parameter(id)) = facts.types.kind(target) else {
+        return Err("source unsizing target is not its actual type parameter");
     };
     if parameter.anonymous
         || parameter.default.is_some()
-        || !matches!(facts.types.kind(target), Some(Kind::Parameter(_)))
+        || facts.types.parameter(id)
+            != Some(crate::types::parameters::Parameter {
+                owner: crate::types::ItemId(definition.0),
+                index: 0,
+                kind: crate::types::parameters::ParameterKind::Type {
+                    sized: role == LangItem::DispatchFromDyn,
+                },
+            })
     {
-        return Err(error(
-            "source unsizing target changed its parameter contract",
-        ));
+        return Err("source unsizing target changed its declaration or sizing identity");
     }
+    Ok(target)
+}
+
+fn target_requirements(
+    facts: &Declarations,
+    catalog: &Catalog,
+    target: TypeId,
+    role: LangItem,
+    clauses: impl Iterator<Item = Clause>,
+) -> Result<(), &'static str> {
     let expected = if role == LangItem::DispatchFromDyn {
         // The genuine Sized formal carries the implicit MetaSized source clause.
         LangItem::MetaSized
     } else {
         LangItem::PointeeSized
     };
-    let Some(Kind::Parameter(id)) = facts.types.kind(target) else {
-        return Err(error(
-            "source unsizing target is not its actual type parameter",
-        ));
-    };
-    if facts.types.parameter(id)
-        != Some(crate::types::parameters::Parameter {
-            owner: crate::types::ItemId(declaration.definition.0),
-            index: 0,
-            kind: crate::types::parameters::ParameterKind::Type {
-                sized: role == LangItem::DispatchFromDyn,
-            },
-        })
-    {
-        return Err(error(
-            "source unsizing target changed its declaration or sizing identity",
-        ));
-    }
     let pointee = catalog
-        .language(expected)
-        .ok_or_else(|| error("source unsizing role requires actual PointeeSized"))?;
+        .role(expected)?
+        .ok_or("source unsizing role requires actual PointeeSized")?;
     let mut found = false;
-    for clause in facts
-        .generics
-        .declared_predicates_in_scope(declaration.definition)
-    {
-        let Clause::Predicate(predicate) = clause.value else {
-            return Err(error(
-                "source unsizing role has unsupported quantified requirements",
-            ));
+    for clause in clauses {
+        let Clause::Predicate(predicate) = clause else {
+            return Err("source unsizing role has unsupported quantified requirements");
         };
-        if predicate.ty != target {
-            continue;
-        }
-        if role == LangItem::DispatchFromDyn
-            && predicate.bound == crate::types::parameters::predicates::Bound::Sized
+        if predicate.ty != target
+            || role == LangItem::DispatchFromDyn
+                && predicate.bound == crate::types::parameters::predicates::Bound::Sized
         {
-            // Sized is already authenticated on the actual formal. Its builtin
-            // marker is distinct from the retained source MetaSized clause.
             continue;
         }
         let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
-            return Err(error(
-                "source unsizing target requires ordinary PointeeSized",
-            ));
+            return Err("source unsizing target requires ordinary PointeeSized");
         };
         let application = facts
             .types
             .trait_application(application)
-            .ok_or_else(|| error("source unsizing target requirement is malformed"))?;
+            .ok_or("source unsizing target requirement is malformed")?;
         if application.item.0 != pointee.definition.0
             || facts
                 .types
@@ -145,19 +147,88 @@ fn validate_target(
                 .is_none_or(|a| a.len() != 0)
             || std::mem::replace(&mut found, true)
         {
-            return Err(error(
-                "source unsizing target changed its exact PointeeSized requirement",
-            ));
+            return Err("source unsizing target changed its exact PointeeSized requirement");
         }
     }
     if !found {
-        return Err(error(if role == LangItem::DispatchFromDyn {
+        return Err(if role == LangItem::DispatchFromDyn {
             "source DispatchFromDyn target requires actual MetaSized"
         } else {
             "source unsizing target requires actual PointeeSized"
-        }));
+        });
     }
     Ok(())
+}
+
+pub(super) const ROLES: [LangItem; 3] = [
+    LangItem::Unsize,
+    LangItem::CoerceUnsized,
+    LangItem::DispatchFromDyn,
+];
+
+pub(super) fn imported_roles(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+    complete: &mut super::RoleSet,
+) -> Result<(), &'static str> {
+    for role in ROLES {
+        if let Some(declaration) = catalog.role(role)? {
+            imported(report, facts, catalog, declaration, role, steps)?;
+            complete.insert(role);
+        }
+    }
+    Ok(())
+}
+
+fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    declaration: super::super::Role,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    use super::super::headers::{Flags, Trait};
+    use crate::resolve::bindings::HeaderAttribute;
+    let header = Trait::current(report, facts, declaration, steps)?;
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: false,
+            auto_: false,
+            constant: false,
+        },
+        1,
+    )?;
+    let marker = role == LangItem::Unsize;
+    if header.written.parameters != 1
+        || !header.members.is_empty()
+        || header.attributes.contains(HeaderAttribute::DynIncompatible) != marker
+        || facts
+            .associated
+            .imported_denies_implementation(header.definition)?
+            != marker
+    {
+        return Err("imported unsizing role changed its empty declaration or restrictions");
+    }
+    let expected = if marker {
+        LangItem::PointeeSized
+    } else {
+        LangItem::Sized
+    };
+    copying::require_header_super(facts, catalog, &header, expected, Constness::Ordinary)?;
+    let target = target_parameter(facts, header.definition, header.parameters, role)?;
+    let inputs = header.canonical_inputs(facts)?;
+    *steps = steps.saturating_add(3 + inputs.len());
+    target_requirements(
+        facts,
+        catalog,
+        target,
+        role,
+        inputs.iter().map(|input| input.value),
+    )
 }
 
 fn validate_members(
@@ -192,16 +263,12 @@ pub(crate) fn kind(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    for role in [
-        LangItem::Unsize,
-        LangItem::CoerceUnsized,
-        LangItem::DispatchFromDyn,
-    ] {
+    for role in ROLES {
         if catalog
-            .language(role)
+            .role(role)?
             .is_some_and(|d| d.definition == definition)
         {
-            catalog.validated_language(role)?;
+            catalog.validated_role(role)?;
             return Ok(Some(role));
         }
     }

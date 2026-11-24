@@ -490,9 +490,17 @@ pub enum BodylessIntrinsic {
     CallerLocation = 0,
     SizeOf = 1,
     AlignOf = 2,
+    PtrMetadata = 3,
+    OffsetOf = 4,
 }
 impl BodylessIntrinsic {
-    pub const ALL: [Self; 3] = [Self::CallerLocation, Self::SizeOf, Self::AlignOf];
+    pub const ALL: [Self; 5] = [
+        Self::CallerLocation,
+        Self::SizeOf,
+        Self::AlignOf,
+        Self::PtrMetadata,
+        Self::OffsetOf,
+    ];
 
     #[must_use]
     pub const fn kind(self) -> crate::support::bindings::SourceIntrinsic {
@@ -501,6 +509,8 @@ impl BodylessIntrinsic {
             Self::CallerLocation => SourceIntrinsic::CallerLocation,
             Self::SizeOf => SourceIntrinsic::Layout(LayoutIntrinsic::SizeOf),
             Self::AlignOf => SourceIntrinsic::Layout(LayoutIntrinsic::AlignOf),
+            Self::PtrMetadata => SourceIntrinsic::PtrMetadata,
+            Self::OffsetOf => SourceIntrinsic::OffsetOf,
         }
     }
 
@@ -510,6 +520,8 @@ impl BodylessIntrinsic {
             Self::CallerLocation => "caller_location",
             Self::SizeOf => "size_of",
             Self::AlignOf => "align_of",
+            Self::PtrMetadata => "ptr_metadata",
+            Self::OffsetOf => "offset_of",
         }
     }
 }

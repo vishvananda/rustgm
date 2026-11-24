@@ -178,11 +178,8 @@ impl Search<'_> {
             .as_deref()
             .ok_or("source Unsize lost its catalog")?;
         let pointee = catalog
-            .language(LangItem::PointeeSized)
+            .validated_role(LangItem::PointeeSized)?
             .ok_or("source Unsize requires actual PointeeSized")?;
-        if catalog.sizing_kind(pointee.definition)? != Some(LangItem::PointeeSized) {
-            return Err("source Unsize requires completed PointeeSized".into());
-        }
         frame.inputs.context.account_work(2).map_err(inference)?;
         for subject in [source, target] {
             goals.push(Requirement {
