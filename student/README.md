@@ -12,7 +12,10 @@ make -C pa1 test
 
 Each assignment's `test` target builds your compiler and compares its output
 and exit status with the expected results. The initial compiler reports an
-unimplemented mode. Test reports are written to `obj/tests/`. Set
+unimplemented mode. Look in each assignment's `tests/manifest.json` for the
+case list and input options. Each fixture's `.ref`, `.ref.stderr`, and
+`.ref.exit_status` files give the expected output, diagnostics, and status.
+Test reports are written to `obj/tests/`. Set
 `RUSTGM_TEST_APP=/absolute/path/to/rustgm` to test an existing executable.
 
 ## CPPGM backend

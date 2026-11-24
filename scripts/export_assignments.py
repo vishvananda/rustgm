@@ -52,7 +52,7 @@ def selection(assignments, through):
 
 
 def fixture_files(stage, manifest):
-    paths = {f"{stage}/README.md", f"{stage}/tests/README.md", f"{stage}/tests/manifest.json"}
+    paths = {f"{stage}/README.md", f"{stage}/tests/manifest.json"}
     for case in manifest["cases"]:
         primary = case["path"]
         for name in [primary, *support_files(case)]:

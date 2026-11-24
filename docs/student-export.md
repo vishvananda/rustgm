@@ -16,8 +16,9 @@ text oracles, with original bytes, source symlinks and upstream attribution.
 It includes a Rust starter, the course test runner and the optional C LowIR
 example. The backend lock and distribution manifest come from the same commit
 as the fixtures. The shared installer verifies those files' pinned package and
-members. The compiler implementation, unpublished fixture files, maintainer
-build outputs and local backend configuration stay in the maintainer repo.
+members. The compiler implementation, test ownership notes, unpublished
+fixtures, build outputs, and local backend configuration stay in the
+maintainer repo.
 `export.json` records the source commit, backend lock digest and case counts.
 
 Follow CPPGM's two-part release process for `rustgm-assignments`. Qualify the
