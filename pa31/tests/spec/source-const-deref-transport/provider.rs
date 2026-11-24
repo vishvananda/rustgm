@@ -44,3 +44,9 @@ pub mod ops {
         fn deref_mut(&mut self) -> &mut T { self }
     }
 }
+
+pub fn pin_store(value: &mut u8) {
+    let pinned = unsafe { pin::Pin::new_unchecked(value) };
+    let pointer = unsafe { pin::Pin::take_inner(pinned) };
+    *pointer = 41;
+}

@@ -19,9 +19,12 @@ pub unsafe extern "C" fn observe_ordinary(value: usize) {
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn observe_glue(value: usize) {
-    let pinned = unsafe { base::pin::Pin::new_unchecked(&mut *(value as *mut u8)) };
+    let pointer = unsafe { &mut *(value as *mut u8) };
+    base::pin_store(&mut *pointer);
+    let pinned = unsafe { base::pin::Pin::new_unchecked(pointer) };
     let mut pointer = unsafe { base::pin::Pin::take_inner(pinned) };
-    *<&mut u8 as DerefMut>::deref_mut(&mut pointer) = 42;
+    let slot = <&mut u8 as DerefMut>::deref_mut(&mut pointer);
+    *slot = match *slot { 41 => 42, _ => 99 };
 }
 
 #[cfg(ordinary_deref)]

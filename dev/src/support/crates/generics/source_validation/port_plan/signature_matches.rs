@@ -91,8 +91,8 @@ impl Arena {
         }
         Ok(())
     }
-    /// Version thirteen: a local nominal whose spine leads with region
-    /// arguments compares each argument; other nominals stay exact nodes.
+    /// Compare a nominal's complete argument spine after opening its actual lifetimes.
+    /// A type argument can itself contain a reference to an opened slot.
     fn children(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -143,14 +143,7 @@ impl Arena {
                     declaration: b,
                     arguments: bc,
                 },
-            ) if a == b
-                && matches!(
-                    self.nodes.get(ac.0 as usize),
-                    Some(Node::NominalRegion { .. })
-                ) =>
-            {
-                ((ac, bc), None)
-            }
+            ) if a == b => ((ac, bc), None),
             (
                 Node::NominalRegion {
                     region: ar,
