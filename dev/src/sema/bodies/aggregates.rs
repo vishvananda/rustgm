@@ -506,6 +506,12 @@ impl Checker<'_> {
         let expected = self.constructor_hint(node, expectation)?;
         let variant_id = self.constructor(path)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
+        if variant.non_exhaustive {
+            return Err(self.error(
+                node,
+                "cannot construct a non-exhaustive struct from another crate",
+            ));
+        }
         let union = self
             .facts
             .aggregates

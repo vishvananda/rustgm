@@ -32,7 +32,8 @@ impl Members {
         &mut self,
         records: Vec<(ItemId, Vec<Field>)>,
         enums: Vec<(ItemId, Vec<super::ExternalVariant>)>,
-        pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
+        (open_structs, open_enums): (&[ItemId], &[ItemId]),
+        mut pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Prepared, &'static str> {
         let variants = enums
             .iter()
@@ -52,6 +53,8 @@ impl Members {
                 .sum::<usize>(),
             constructors: variants,
         };
+        self.reserve_open_enums(open_enums.len(), &mut pay)?;
+        pay(open_structs.len(), 0)?;
         self.prepare_staged(counts, pay, |staged, destination| {
             for (owner, fields) in records {
                 if !destination.variants(owner).is_empty() {
@@ -69,8 +72,42 @@ impl Members {
                 }
                 staged.insert_external_variants(owner, &variants)?;
             }
+            for &owner in open_structs {
+                let [variant] = staged.variants(owner) else {
+                    return Err("non-exhaustive struct lost its actual field group");
+                };
+                let variant = *variant;
+                staged.variants[variant.0 as usize].non_exhaustive = true;
+            }
+            for &owner in open_enums {
+                staged.mark_external_open(owner);
+            }
             Ok(())
         })
+    }
+    fn reserve_open_enums(
+        &mut self,
+        count: usize,
+        pay: &mut impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if count == 0 {
+            return Ok(());
+        }
+        let (len, capacity) = self
+            .external_open
+            .as_ref()
+            .map_or((0, 0), |rows| (rows.len(), rows.capacity()));
+        let growth = retained::Growth::map::<ItemId, ()>(len, capacity, count);
+        pay(
+            growth.work.saturating_add(count),
+            growth
+                .bytes
+                .saturating_add(retained::new_map::<ItemId, ()>(count)),
+        )?;
+        self.external_open
+            .get_or_insert_with(Default::default)
+            .try_reserve(count)
+            .map_err(|_| "external enum coverage reservation failed")
     }
     /// The retained growth of every destination table one batch extends.
     fn staging_growth(&self, counts: &Counts) -> retained::Growth {
@@ -258,6 +295,13 @@ impl Ready<'_> {
                 (VariantId(variant.0 + variant_base), name),
                 FieldId(field.0 + field_base),
             );
+        }
+        if let Some(open) = self.rows.external_open {
+            // Preparation reserved room for all the coverage rows.
+            target
+                .external_open
+                .get_or_insert_with(Default::default)
+                .extend(open);
         }
     }
 }

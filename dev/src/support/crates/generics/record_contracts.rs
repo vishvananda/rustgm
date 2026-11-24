@@ -1,5 +1,5 @@
 //! Nominal identity and field completeness belong to the source header ledger.
-use super::{DefinitionKind, HeaderRef, Profile, SourceRows, Type};
+use super::{DefinitionKind, Exhaustiveness, HeaderRef, Profile, SourceRows, Type};
 use crate::support::{crates::generics::Work, hash::HashSet};
 pub(super) fn require_profile(
     rows: &SourceRows,
@@ -26,6 +26,13 @@ pub(super) fn require_profile(
         }
         if rows.nominals.iter().any(|row| row.incoherent_inherent) {
             return Err("source incoherent nominal requires the declaration policy profile");
+        }
+        if rows
+            .nominals
+            .iter()
+            .any(|row| row.exhaustiveness == Exhaustiveness::Open)
+        {
+            return Err("source non-exhaustive nominal requires the declaration policy profile");
         }
         if rows
             .nominals

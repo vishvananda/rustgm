@@ -38,7 +38,14 @@ pub(super) fn prepare(
     let mut keys = HashSet::default();
     let mut bindings = Vec::new();
     let mut external = Vec::new();
-    module_bindings(resolver, names, definitions, &mut keys, &mut bindings, work)?;
+    module_bindings(
+        resolver,
+        (rows, names),
+        definitions,
+        &mut keys,
+        &mut bindings,
+        work,
+    )?;
     for header in &rows.functions {
         if conversions
             && let Some(binding) = member(
@@ -232,7 +239,7 @@ fn member(
 }
 fn module_bindings(
     resolver: &mut Resolver<'_>,
-    names: &s::ModuleNamespace,
+    (rows, names): (s::ValidatedView<'_>, &s::ModuleNamespace),
     definitions: &[DefId],
     keys: &mut HashSet<(ScopeId, NameId, Namespace)>,
     bindings: &mut Vec<PendingBinding>,
@@ -273,17 +280,28 @@ fn module_bindings(
             namespace,
             binding: Binding {
                 target: definitions[entry.target.declaration.0 as usize],
-                access: if matches!(entry.visibility, s::ModuleVisibility::Public) {
-                    Access::Public
-                } else {
-                    Access::ExternalPrivate
-                },
+                access: module_access(rows, entry)?,
                 origin: Origin::Direct,
                 ambiguous: false,
             },
         });
     }
     Ok(())
+}
+fn module_access(rows: s::ValidatedView<'_>, entry: &s::ModuleBindingRow) -> Result<Access, Error> {
+    if entry.visibility != s::ModuleVisibility::Public {
+        return Ok(Access::ExternalPrivate);
+    }
+    // A provider can name and re-export its own constructor. Every imported
+    // value path to that constructor keeps the foreign crate restriction.
+    let declaration = entry.target.declaration;
+    if rows.declarations[declaration.0 as usize].definition.kind == s::DefinitionKind::Variant
+        && let Some(s::HeaderRef::Constructor(index)) = rows.header(declaration).map_err(error)?
+        && rows.nominals[index as usize].exhaustiveness == s::Exhaustiveness::Open
+    {
+        return Ok(Access::ExternalPrivate);
+    }
+    Ok(Access::Public)
 }
 pub(super) fn actual_cells(
     resolver: &Resolver<'_>,

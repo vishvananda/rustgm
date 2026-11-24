@@ -5,7 +5,7 @@ use crate::{
     sema::members::{ExternalVariant, Field, Name, Origin, PreparedMembers},
     support::{
         bindings::LangItem,
-        crates::{RecordRepr, generics::source as s},
+        crates::{RecordRepr, generics::source as s, owner_catalog::DeclarationRef},
         retained,
     },
     syntax::item::Shape,
@@ -18,6 +18,42 @@ pub(super) struct Prepared {
     pub members: PreparedMembers,
     pub shapes: PreparedShapes,
     pub owners: Vec<DefId>,
+}
+#[derive(Default)]
+struct MemberGroups {
+    records: Vec<(ItemId, Vec<Field>)>,
+    variants: Vec<(ItemId, Vec<ExternalVariant>)>,
+}
+impl MemberGroups {
+    fn add_struct(
+        &mut self,
+        context: &mapped_source::Context<'_>,
+        budget: &mut Headers,
+        owner: ItemId,
+        constructor: Option<DeclarationRef>,
+        fields: Vec<Field>,
+    ) -> Result<(), Error> {
+        // A tuple or unit struct owns one constructor and its field group.
+        if let Some(constructor) = constructor {
+            let shape = if fields.is_empty() {
+                Shape::Unit
+            } else {
+                Shape::Tuple
+            };
+            let constructor = context.definition(constructor, budget)?;
+            self.variants.push((
+                owner,
+                vec![ExternalVariant {
+                    shape,
+                    fields,
+                    constructor,
+                }],
+            ));
+        } else {
+            self.records.push((owner, fields));
+        }
+        Ok(())
+    }
 }
 pub(super) fn prepare(
     context: &mapped_source::Context<'_>,
@@ -41,11 +77,16 @@ pub(super) fn prepare(
             .len()
             .saturating_mul(4 * (size_of::<DefId>() + size_of::<(ItemId, Vec<Field>)>())),
     )?;
-    let mut members = Vec::with_capacity(rows.nominals.len());
+    let mut groups = MemberGroups {
+        records: Vec::with_capacity(rows.nominals.len()),
+        ..MemberGroups::default()
+    };
     let mut shapes = Vec::with_capacity(rows.nominals.len());
     let mut owners = Vec::with_capacity(rows.nominals.len());
     let mut limits = Vec::new();
-    let (mut enum_members, mut enum_shapes) = (Vec::new(), Vec::new());
+    let mut open_structs = Vec::new();
+    let mut open_enums = Vec::new();
+    let mut enum_shapes = Vec::new();
     let constructors = super::definition_cells::struct_constructors(rows, budget)?;
     for (row, constructor) in rows.nominals.iter().zip(constructors) {
         let owner = context.definition(row.declaration, budget)?;
@@ -54,6 +95,10 @@ pub(super) fn prepare(
             .headers
             .binary_search_by_key(&row.declaration.0, |header| header.declaration.0)
         {
+            if row.exhaustiveness == s::Exhaustiveness::Open {
+                budget.reserve(4 * size_of::<ItemId>())?;
+                open_enums.push(ItemId(owner.0));
+            }
             let (members, shape) = enum_rows(
                 context,
                 graph,
@@ -62,10 +107,14 @@ pub(super) fn prepare(
                 owner,
                 &rows.enums().headers[index],
             )?;
-            enum_members.push(members);
+            groups.variants.push(members);
             enum_shapes.push(shape);
             owners.push(owner);
             continue;
+        }
+        if row.exhaustiveness == s::Exhaustiveness::Open {
+            budget.reserve(4 * size_of::<ItemId>())?;
+            open_structs.push(ItemId(owner.0));
         }
         let raw_fields = row.fields.slice(&rows.fields).map_err(error)?;
         let (fields, types) = if constructor.is_some() {
@@ -75,26 +124,7 @@ pub(super) fn prepare(
         };
         let fields_type = facts.types.intern_list(&types).map_err(error)?;
         let repr = mapped_repr(row);
-        // Version thirteen: a tuple or unit struct publishes its single field
-        // group with its constructor, as an enum publishes each variant's.
-        if let Some(constructor) = constructor {
-            let shape = if fields.is_empty() {
-                Shape::Unit
-            } else {
-                Shape::Tuple
-            };
-            let constructor = context.definition(constructor, budget)?;
-            enum_members.push((
-                ItemId(owner.0),
-                vec![ExternalVariant {
-                    shape,
-                    fields,
-                    constructor,
-                }],
-            ));
-        } else {
-            members.push((ItemId(owner.0), fields));
-        }
+        groups.add_struct(context, budget, ItemId(owner.0), constructor, fields)?;
         if let Some(limit) = row.simd_lane_limit {
             budget.reserve(4 * size_of::<(ItemId, u64)>())?;
             limits.push((ItemId(owner.0), limit));
@@ -113,7 +143,12 @@ pub(super) fn prepare(
     };
     let members = facts
         .members
-        .prepare_external_nominals(members, enum_members, &mut pay)
+        .prepare_external_nominals(
+            groups.records,
+            groups.variants,
+            (&open_structs, &open_enums),
+            &mut pay,
+        )
         .map_err(error)?;
     let shapes = facts
         .aggregates

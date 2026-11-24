@@ -512,7 +512,14 @@ pub struct RoleBinding {
     pub role: LangItem,
     pub declaration: DeclarationAddress,
 }
-/// Raw, unpublished tables. No artifact decoder/encoder accepts these yet.
+/// Extensibility at use sites outside the defining crate.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Exhaustiveness {
+    #[default]
+    Closed,
+    Open,
+}
+/// Raw, unpublished nominal header rows.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NominalHeader {
     pub contract: HeaderContract,
@@ -528,6 +535,8 @@ pub struct NominalHeader {
     pub incoherent_inherent: bool,
     /// Packed alignment one on the actual SIMD representation.
     pub packed_simd: bool,
+    /// The nominal is open to outside crates even when all current fields or variants are known.
+    pub exhaustiveness: Exhaustiveness,
     /// The defining struct's checked monomorphization lane limit.
     pub simd_lane_limit: Option<u64>,
 }

@@ -37,6 +37,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
         fundamental: false,
         incoherent_inherent: false,
         packed_simd: false,
+        exhaustiveness: s::Exhaustiveness::Closed,
         simd_lane_limit: None,
     }
 }

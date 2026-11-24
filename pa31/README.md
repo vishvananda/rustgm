@@ -62,8 +62,8 @@ actual source signatures and selected bodies.
   checked metadata. PA29 introduces declaration artifacts. Preserve the order
   and ownership of type alias requirements, including dependent associated
   type projections and const parameters. Preserve associated constant owners
-  and the restrictions on constructors of `#[non_exhaustive]` structs.
-  Fresh clients must be able to check these rules against the artifact.
+  and the construction and pattern rules for `#[non_exhaustive]` structs and
+  enums. Fresh clients must be able to check these rules against the artifact.
 
 ## Check your implementation
 

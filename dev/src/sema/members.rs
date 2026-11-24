@@ -57,6 +57,7 @@ pub struct Variant {
     pub ordinal: u32,
     pub origin: Origin,
     pub shape: Shape,
+    pub(crate) non_exhaustive: bool,
     pub start: u32,
     pub end: u32,
 }
@@ -328,6 +329,7 @@ impl Members {
             ordinal,
             origin: provenance,
             shape,
+            non_exhaustive: false,
             start,
             end,
         });

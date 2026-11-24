@@ -10,8 +10,7 @@ use crate::{
 impl Stage {
     /// Version thirteen: a tuple or unit struct's constructor travels as its
     /// struct's single variant declaration. Every consumer re-derives its
-    /// shape, payload and visibility from the struct, so the forms whose
-    /// shape or visibility the struct's rows cannot carry stay rejected.
+    /// shape, payload and visibility from the struct's own rows.
     pub(super) fn struct_constructor(
         &mut self,
         report: &Report,
@@ -36,15 +35,7 @@ impl Stage {
         if declaration.shape == Shape::Tuple && declaration.start == declaration.end {
             return Err("source empty tuple struct constructors require their wider profile");
         }
-        let node = owner
-            .node
-            .ok_or("source struct constructor lost its actual declaration")?;
-        // No row carries the crate-wide narrowing `#[non_exhaustive]` applies.
-        if facts
-            .non_exhaustive_contract(report, node)
-            .map_err(|_| "source struct non_exhaustive contract is incomplete")?
-            .is_some()
-        {
+        if !self.declaration_policies() && non_exhaustive(report, facts, declaration.owner)? {
             return Err("source non_exhaustive struct constructors require their wider profile");
         }
         Ok(())
@@ -101,6 +92,10 @@ impl Stage {
             .ok_or("source nominal lacks its completed shape")?;
         let enumeration = shape.kind == aggregate::Kind::Enum;
         let policies = self.declaration_policies();
+        let non_exhaustive = non_exhaustive(report, facts, item)?;
+        if non_exhaustive && !policies {
+            return Err("source non-exhaustive nominal requires the declaration policy profile");
+        }
         let (repr, packed_simd) =
             record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
         if !policies {
@@ -172,6 +167,11 @@ impl Stage {
             fundamental,
             incoherent_inherent,
             packed_simd,
+            exhaustiveness: if non_exhaustive {
+                s::Exhaustiveness::Open
+            } else {
+                s::Exhaustiveness::Closed
+            },
             simd_lane_limit: if policies {
                 facts.aggregates.simd_lane_limit(item)
             } else {
@@ -278,6 +278,20 @@ impl Stage {
         }
         Ok(())
     }
+}
+
+fn non_exhaustive(
+    report: &Report,
+    facts: &Declarations,
+    owner: ItemId,
+) -> Result<bool, &'static str> {
+    let node = report.resolution.definitions[owner.0 as usize]
+        .node
+        .ok_or("source nominal lost its actual declaration")?;
+    Ok(facts
+        .non_exhaustive_contract(report, node)
+        .map_err(|_| "source nominal non_exhaustive contract is incomplete")?
+        .is_some())
 }
 /// Stricter than rustc for now: a generic SIMD record waits for its wider
 /// contract, so no consumer sees an imported generic SIMD definition.

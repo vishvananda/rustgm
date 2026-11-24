@@ -1,0 +1,14 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "cases": [
+    {"cfg": "accepted", "status": 0},
+    {"cfg": "unit_value", "status": 1, "rustc": "E0603", "rustgm": "private value name"},
+    {"cfg": "renamed_value", "status": 1, "rustc": "E0603", "rustgm": "private value name"},
+    {"cfg": "unit_literal", "status": 1, "rustc": "E0639", "rustgm": "cannot construct a non-exhaustive struct"},
+    {"cfg": "tuple_value", "status": 1, "rustc": "E0603", "rustgm": "private value name"},
+    {"cfg": "record_literal", "status": 1, "rustc": "E0639", "rustgm": "cannot construct a non-exhaustive struct"},
+    {"cfg": "closed_pattern", "status": 1, "rustc": "E0638", "rustgm": "non-exhaustive struct pattern requires rest"},
+    {"cfg": "exhaustive_match", "status": 1, "rustc": "E0004", "rustgm": "non-exhaustive match"}
+  ]
+}

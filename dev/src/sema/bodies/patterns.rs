@@ -662,6 +662,9 @@ impl Checker<'_> {
     ) -> Result<PatternKind, Error> {
         let variant_id = self.pattern_constructor(node, path, term)?;
         let variant = self.facts.members.variants[variant_id.0 as usize];
+        if variant.non_exhaustive && !rest {
+            return Err(self.error(node, "non-exhaustive struct pattern requires rest"));
+        }
         let union = self
             .facts
             .aggregates

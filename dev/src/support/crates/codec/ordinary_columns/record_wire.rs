@@ -5,6 +5,7 @@ const FUNDAMENTAL: u8 = 128;
 const INCOHERENT_INHERENT: u8 = 64;
 const SIMD_LANE_LIMIT: u8 = 32;
 const PACKED_SIMD: u8 = 16;
+const NON_EXHAUSTIVE: u8 = 8;
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     // Version thirteen alone carries a transparent or SIMD struct header.
@@ -37,7 +38,8 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<
         | (u8::from(row.fundamental) * FUNDAMENTAL)
         | (u8::from(row.incoherent_inherent) * INCOHERENT_INHERENT)
         | (u8::from(row.simd_lane_limit.is_some()) * SIMD_LANE_LIMIT)
-        | (u8::from(row.packed_simd) * PACKED_SIMD))?;
+        | (u8::from(row.packed_simd) * PACKED_SIMD)
+        | (u8::from(row.exhaustiveness == s::Exhaustiveness::Open) * NON_EXHAUSTIVE))?;
     if let Some(limit) = row.simd_lane_limit {
         out.bytes(&limit.to_le_bytes())?;
     }
@@ -56,6 +58,7 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         fundamental: false,
         incoherent_inherent: false,
         packed_simd: false,
+        exhaustiveness: s::Exhaustiveness::Closed,
         simd_lane_limit: None,
     };
     let flags = read.reader.u8()?;
@@ -63,10 +66,14 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         row.fundamental = flags & FUNDAMENTAL != 0;
         row.incoherent_inherent = flags & INCOHERENT_INHERENT != 0;
         row.packed_simd = flags & PACKED_SIMD != 0;
+        if flags & NON_EXHAUSTIVE != 0 {
+            row.exhaustiveness = s::Exhaustiveness::Open;
+        }
         if flags & SIMD_LANE_LIMIT != 0 {
             row.simd_lane_limit = Some(read.reader.u64()?);
         }
-        flags & !(FUNDAMENTAL | INCOHERENT_INHERENT | SIMD_LANE_LIMIT | PACKED_SIMD)
+        flags
+            & !(FUNDAMENTAL | INCOHERENT_INHERENT | SIMD_LANE_LIMIT | PACKED_SIMD | NON_EXHAUSTIVE)
     } else {
         flags
     };
