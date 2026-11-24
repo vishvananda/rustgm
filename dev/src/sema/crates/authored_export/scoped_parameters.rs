@@ -140,18 +140,26 @@ impl Stage {
         if kind == DefKind::Const {
             return Ok(g::Range { start, end: start });
         }
-        // Nominals own their leading lifetime slots. Inherent impls retain
-        // captured lifetimes after their own type slots.
-        let leading = if self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum) {
-            self.nominal_region_slots(facts, owner, declaration, start)?;
-            Leading::Nominal
-        } else if self.body_nodes() && kind == DefKind::SelfType && inherent_owner(facts, owner) {
-            Leading::Inherent
+        // Nominals and traits own their leading written lifetimes. Impl
+        // captures follow the implementation's own type slots.
+        let leading = if self.body_nodes() && matches!(kind, DefKind::Struct | DefKind::Enum)
+            || self.declaration_policies() && kind == DefKind::Trait
+        {
+            self.leading_region_slots(facts, owner, declaration, start)?;
+            Leading::Declaration
+        } else if self.body_nodes()
+            && kind == DefKind::SelfType
+            && implementation_owner(facts, owner, self.declaration_policies())
+        {
+            Leading::Implementation
         } else {
             Leading::None
         };
         self.type_slots(facts, owner, declaration, kind == DefKind::Trait, leading)?;
-        if leading != Leading::Nominal {
+        let trait_self = self.declaration_policies()
+            && kind == DefKind::SelfType
+            && facts.associated.trait_owner(owner).is_some();
+        if leading != Leading::Declaration && !trait_self {
             self.region_slots(facts, owner, declaration, start)?;
         }
         let end = u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
@@ -190,12 +198,11 @@ impl Stage {
         trait_owner: bool,
         leading: Leading,
     ) -> Result<(), &'static str> {
-        // A nominal's lifetimes are its leading template arguments. They own
-        // the region slots already recorded, so a type slot's canonical index
-        // counts type slots only. An inherent impl's leading lifetimes are
+        // Nominals and traits put their lifetime arguments first. Their
+        // wire indices count type slots separately. An impl's leading lifetimes are
         // its captured region slots, recorded after its types, so its type
         // slot's ordinal and index both count type slots only.
-        let nominal = leading != Leading::None;
+        let mixed_arguments = leading != Leading::None;
         let mut regions = 0_u32;
         for (ordinal, parameter) in facts
             .generics
@@ -211,9 +218,9 @@ impl Stage {
             if parameter.default.is_some() && !(trait_owner && self.body_nodes()) {
                 return Err("source parameter defaults are outside the initial profile");
             }
-            if nominal && matches!(parameter.argument, Argument::Lifetime(_)) {
+            if mixed_arguments && matches!(parameter.argument, Argument::Lifetime(_)) {
                 if u32::try_from(ordinal).ok() != Some(regions) {
-                    return Err("source nominal lifetime follows a type slot");
+                    return Err("source lifetime template argument follows a type slot");
                 }
                 regions += 1;
                 continue;
@@ -316,7 +323,7 @@ impl Stage {
         let ordinal = u32::try_from(ordinal).map_err(|_| "source parameter ordinal overflow")?;
         self.rows.slots.push(s::ParameterSlot {
             owner: declaration,
-            ordinal: if leading == Leading::Inherent {
+            ordinal: if leading == Leading::Implementation {
                 ordinal - regions
             } else {
                 ordinal
@@ -375,11 +382,9 @@ impl Stage {
         Ok(())
     }
 
-    /// Version thirteen: each declared lifetime of a struct or enum is one
-    /// region slot whose index is its position in the nominal's template
-    /// arguments, `RegionId::bound(0, index)`. The slot carries no variance or
-    /// outlives claim; every consumer re-derives both from the fields.
-    fn nominal_region_slots(
+    /// Each written lifetime is one leading template argument and one bound
+    /// region at the same index. Its slot grants no variance or outlives fact.
+    fn leading_region_slots(
         &mut self,
         facts: &Declarations,
         owner: DefId,
@@ -404,7 +409,7 @@ impl Stage {
                     .map(|p| (p.binding, p.argument))
                     != Some((definition, Argument::Lifetime(region)))
             }) {
-                return Err("source nominal lifetime changed its template argument");
+                return Err("source lifetime changed its template argument");
             }
             let ordinal = u32::try_from(self.rows.slots.len())
                 .map_err(|_| "source region slot overflow")?
@@ -516,16 +521,16 @@ impl Stage {
 /// Where an owner's lifetimes stand among its template arguments.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Leading {
-    /// Functions, traits and older profiles: no lifetime is a template argument.
+    /// The type-argument vector owns no lifetimes.
     None,
-    /// Version thirteen: a struct's or enum's leading region slots.
-    Nominal,
-    /// Version thirteen: an inherent impl's captured region slots.
-    Inherent,
+    /// Leading written lifetimes of a nominal, or of a v14 trait.
+    Declaration,
+    /// Captures of an inherent impl in v13 or a trait impl in v14.
+    Implementation,
 }
 
-/// Whether a Self scope owner is an inherent impl, which has no trait.
-pub(super) fn inherent_owner(facts: &Declarations, owner: DefId) -> bool {
+/// An actual implementation Self owner, with the profile's trait-impl fence.
+pub(super) fn implementation_owner(facts: &Declarations, owner: DefId, trait_impls: bool) -> bool {
     facts
         .associated
         .owner(owner)
@@ -534,10 +539,8 @@ pub(super) fn inherent_owner(facts: &Declarations, owner: DefId) -> bool {
             actual.self_definition == owner
                 && matches!(
                     actual.kind,
-                    crate::sema::associated::OwnerKind::Impl {
-                        trait_type: None,
-                        ..
-                    }
+                    crate::sema::associated::OwnerKind::Impl { trait_type, .. }
+                        if trait_impls || trait_type.is_none()
                 )
         })
 }

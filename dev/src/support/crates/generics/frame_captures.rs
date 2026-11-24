@@ -19,6 +19,7 @@ pub(super) fn method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
+    trait_impls: bool,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -31,7 +32,7 @@ pub(super) fn method(
     work.charge(6)?;
     // A method that claims captures under an impl that declares none is a
     // forged frame, not some other method family.
-    if implementation.trait_application.is_some()
+    if implementation.trait_application.is_some() && !trait_impls
         || implementation.region_captures == 0 && function.regions.captures == 0
     {
         return Ok(false);
@@ -79,6 +80,27 @@ pub(super) fn method(
         same_self(rows, frames, implementation.self_type, receiver.base, work)?;
     }
     Ok(true)
+}
+
+pub(super) fn require_profile(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    function: &s::FunctionHeader,
+    trait_frames: bool,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    if function.regions.captures == 0 || trait_frames {
+        return Ok(());
+    }
+    let parent = function
+        .parent
+        .ok_or("source captured callable has no actual parent")?;
+    if matches!(headers.header(parent, work)?, Some(s::HeaderRef::Implementation(index))
+        if rows.implementations[index as usize].trait_application.is_none())
+    {
+        return Ok(());
+    }
+    Err("source early/captured region schemes require a complete wider profile")
 }
 
 #[derive(Clone, Copy)]

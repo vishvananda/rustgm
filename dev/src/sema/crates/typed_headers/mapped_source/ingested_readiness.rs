@@ -466,10 +466,8 @@ impl Graph {
         Ok(())
     }
 
-    /// The sealed slot ledger bound the formal uniquely to one region slot of
-    /// its owner; only a version-thirteen function with a provided original,
-    /// struct or enum, or inherent impl that captures lifetimes, may own one
-    /// here, and the formal installs no declaration type.
+    /// The sealed ledger binds the name to its actual owner's region slot.
+    /// A lifetime formal installs no declaration type.
     fn region_binding_ready(
         binding: &s::Declaration,
         rows: s::ValidatedView<'_>,
@@ -486,29 +484,33 @@ impl Graph {
             .definition
             .parent
             .ok_or("source named lifetime lacks its actual function parent")?;
+        let declaration_policies = rows.descriptor().profile().declaration_policies();
         let index = match rows.header(parent)? {
             Some(s::HeaderRef::Function(index)) => index,
             // A struct or enum's own lifetime is its template argument; the
             // nominal header binds it and nothing else is installed for it.
             Some(s::HeaderRef::Nominal(_)) => return Ok(()),
-            // An inherent impl's lifetime is one of its captured slots; its
-            // methods' rebuilt templates bind it.
+            Some(s::HeaderRef::Trait(index))
+                if declaration_policies && rows.traits[index as usize].region_captures != 0 =>
+            {
+                return Ok(());
+            }
+            // The implementation's region belongs to its captured frame.
             Some(s::HeaderRef::Implementation(index))
                 if rows.implementations.get(index as usize).is_some_and(|row| {
-                    row.trait_application.is_none() && row.region_captures != 0
+                    (declaration_policies || row.trait_application.is_none())
+                        && row.region_captures != 0
                 }) =>
             {
                 return Ok(());
             }
             _ => return Err("source named lifetime lacks its actual function header"),
         };
-        if !matches!(
-            rows.functions[index as usize].body,
-            s::FunctionBody::Original(_)
-        ) {
-            return Err("source named lifetime requires its actual provided original");
+        match rows.functions[index as usize].body {
+            s::FunctionBody::Original(_) => Ok(()),
+            s::FunctionBody::Absent if declaration_policies => Ok(()),
+            _ => Err("source named lifetime requires its actual provided original"),
         }
-        Ok(())
     }
 
     fn formal_ready(

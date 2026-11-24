@@ -161,14 +161,17 @@ impl Stage {
             .functions
             .get(&function.definition)
             .ok_or("source function has no completed lifetime scheme")?;
-        // Version thirteen: a method of an inherent impl captures that impl's
-        // lifetimes as the leading slots of its own frames.
+        // Captures come from the actual associated declaration. A method
+        // never introduces another set of slots for the same lifetimes.
         let captured = self.body_nodes()
             && facts
                 .generics
                 .parents
                 .get(&function.definition)
-                .is_some_and(|&owner| super::scoped_parameters::inherent_owner(facts, owner));
+                .is_some_and(|&owner| {
+                    declared_captures(facts, owner, self.declaration_policies())
+                        == Some(scheme.captures)
+                });
         if scheme.captures != 0 && !captured || !scheme.early.is_empty() {
             return Err(
                 "source function early/captured callable frame transport is not implemented",
@@ -434,6 +437,19 @@ impl Stage {
             bounds: self.region_bounds(&scheme.bounds, context)?,
         })
     }
+}
+
+fn declared_captures(facts: &Declarations, definition: DefId, modern: bool) -> Option<u32> {
+    let owner = facts.associated.get(facts.associated.owner(definition)?)?;
+    match owner.kind {
+        OwnerKind::Impl { trait_type, .. }
+            if owner.self_definition == definition && (modern || trait_type.is_none()) => {}
+        OwnerKind::Trait {
+            definition: actual, ..
+        } if modern && actual == definition => {}
+        _ => return None,
+    }
+    Some(facts.associated.schema(definition)?.captures)
 }
 
 /// Which const-trait roles may own a conditional required member: `From`

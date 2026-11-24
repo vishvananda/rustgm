@@ -26,7 +26,7 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
     mut region: impl FnMut(s::RegionRef, &mut B) -> Result<crate::types::RegionId, Error>,
 ) -> Result<FunctionRegions, Error> {
     let captures = raw.regions.captures;
-    if captures != 0 && !inherent_captures(rows.descriptor(), raw)
+    if captures != 0 && !associated_captures(rows.descriptor(), raw)
         || raw.regions.early.start != raw.regions.early.end
     {
         return Err(error(
@@ -70,9 +70,12 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
             ));
         }
         if slot.definition.is_some() {
-            return Err(error(
-                "source named late lifetime requires its wider callable profile",
-            ));
+            if !rows.descriptor().profile().declaration_policies() {
+                return Err(error(
+                    "source named late lifetime requires its wider callable profile",
+                ));
+            }
+            scheme.has_declared_late = true;
         }
         scheme.late.push(u16::try_from(slot.index).map_err(|_| {
             error("source callable late slot exceeds canonical lifetime identity space")
@@ -88,24 +91,40 @@ pub(in crate::sema::crates::typed_headers) fn from_rows<B: super::super::recipe_
     Ok(scheme)
 }
 
-/// Version thirteen: a method of an inherent impl leads its frames with
-/// exactly that impl's captured lifetimes; validation admitted no other
-/// captured scheme. Each consumer rebuilds the callable template itself.
+/// A captured callable opens the verified leading slots from its true owner.
+pub(in crate::sema::crates::typed_headers) fn associated_captures(
+    descriptor: s::Descriptor<'_>,
+    raw: &s::FunctionHeader,
+) -> bool {
+    captures_of(descriptor, raw, descriptor.profile().declaration_policies())
+}
+
+/// Inherent captures may authorize an existing const inherent original.
 pub(in crate::sema::crates::typed_headers) fn inherent_captures(
     descriptor: s::Descriptor<'_>,
     raw: &s::FunctionHeader,
 ) -> bool {
+    captures_of(descriptor, raw, false)
+}
+
+fn captures_of(descriptor: s::Descriptor<'_>, raw: &s::FunctionHeader, trait_frames: bool) -> bool {
     let rows = descriptor.rows();
     descriptor.profile().body_nodes()
-        && raw.parent.is_some_and(|parent| {
-            matches!(
-                rows.header(parent),
-                Ok(Some(s::HeaderRef::Implementation(index)))
-                    if rows.implementations.get(index as usize).is_some_and(|implementation| {
-                        implementation.trait_application.is_none()
-                            && implementation.region_captures == raw.regions.captures
-                    })
-            )
+        && raw.parent.is_some_and(|parent| match rows.header(parent) {
+            Ok(Some(s::HeaderRef::Implementation(index))) => rows
+                .implementations
+                .get(index as usize)
+                .is_some_and(|owner| {
+                    owner.self_definition == parent
+                        && owner.region_captures == raw.regions.captures
+                        && (trait_frames || owner.trait_application.is_none())
+                }),
+            Ok(Some(s::HeaderRef::Trait(index))) if trait_frames => {
+                rows.traits.get(index as usize).is_some_and(|owner| {
+                    owner.declaration == parent && owner.region_captures == raw.regions.captures
+                })
+            }
+            _ => false,
         })
 }
 
@@ -148,7 +167,7 @@ pub(super) fn callable_effect(
         && descriptor.profile().body_nodes()
         && raw.parent.is_some()
         && raw.body == s::FunctionBody::Absent;
-    if raw.regions.captures != 0 && !inherent_captures(descriptor, raw)
+    if raw.regions.captures != 0 && !associated_captures(descriptor, raw)
         || raw.regions.early.start != raw.regions.early.end
         || (raw.constness != Constness::Ordinary
             && !conditional

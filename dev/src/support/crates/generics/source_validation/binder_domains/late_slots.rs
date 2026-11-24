@@ -9,7 +9,7 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
     for (ordinal, header) in rows.functions.iter().enumerate() {
         work.charge(1)?;
         let captures = header.regions.captures;
-        if captures != 0 && !inherent_captures(headers, header, work)?
+        if captures != 0 && !associated_captures(headers, header, work)?
             || !header.regions.early.slice(&rows.region_slots)?.is_empty()
         {
             return Err("source early/captured region schemes require a complete wider profile");
@@ -60,10 +60,9 @@ pub(super) fn validate(headers: &HeaderIndex<'_>, work: &mut Work) -> Result<(),
     Ok(())
 }
 
-/// Version thirteen: a method's leading captured slots are exactly its
-/// inherent impl's lifetimes. Its own late slots follow them; the impl owns
-/// the captured slots, so no late opening may name one.
-fn inherent_captures(
+/// The method's leading slots match its actual trait or implementation.
+/// Its own late openings may name only slots after those captures.
+fn associated_captures(
     headers: &HeaderIndex<'_>,
     header: &s::FunctionHeader,
     work: &mut Work,
@@ -71,11 +70,16 @@ fn inherent_captures(
     let Some(parent) = header.parent else {
         return Ok(false);
     };
-    let Some(s::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
-        return Ok(false);
-    };
-    let implementation = &headers.rows().implementations[index as usize];
-    Ok(implementation.self_definition == parent
-        && implementation.trait_application.is_none()
-        && implementation.region_captures == header.regions.captures)
+    let rows = headers.rows();
+    Ok(match headers.header(parent, work)? {
+        Some(s::HeaderRef::Implementation(index)) => {
+            let owner = &rows.implementations[index as usize];
+            owner.self_definition == parent && owner.region_captures == header.regions.captures
+        }
+        Some(s::HeaderRef::Trait(index)) => {
+            let owner = &rows.traits[index as usize];
+            owner.declaration == parent && owner.region_captures == header.regions.captures
+        }
+        _ => false,
+    })
 }

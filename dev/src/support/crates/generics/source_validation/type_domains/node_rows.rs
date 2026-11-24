@@ -566,28 +566,26 @@ impl Builder<'_, '_> {
             return Err("source trait application has no actual trait header");
         };
         let header = &rows.traits[index as usize];
-        let complete = self
+        let declared = self
             .headers
             .scopes()
-            .complete_type_slots(header.scope, work)?;
-        let inherited = self
-            .headers
-            .scopes()
-            .complete_type_slots(header.self_definition, work)?;
-        if complete != self.headers.scopes().complete_slots(header.scope, work)? {
-            return Err("source regional trait arguments require a wider complete profile");
-        }
+            .declared_slots(header.scope, work)?
+            .slice(&rows.slots)?;
         let arguments = application.arguments.slice(&rows.arguments)?;
-        if complete.checked_sub(inherited).map(|count| count as usize) != Some(arguments.len()) {
+        if declared.len() != arguments.len() {
             return Err("source trait application changed its complete own formal count");
         }
         let mut summary = self.child(application.subject, work)?;
-        for argument in arguments {
+        for (argument, formal) in arguments.iter().zip(declared) {
             work.charge(1)?;
-            let s::Argument::Type(ty) = argument else {
-                return Err("source trait argument changed its actual formal kind");
+            let child = match (*argument, formal.kind) {
+                (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => self.child(ty, work)?,
+                (s::Argument::Region(region), s::ParameterKind::Region) => {
+                    region_summary(self.headers, self.binders, region, work)?
+                }
+                _ => return Err("source trait argument changed its actual formal kind"),
             };
-            summary = self.merge(summary, self.child(*ty, work)?, work)?;
+            summary = self.merge(summary, child, work)?;
         }
         Ok(summary)
     }

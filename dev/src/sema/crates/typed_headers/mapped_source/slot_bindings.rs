@@ -144,14 +144,16 @@ pub(in crate::sema::crates::typed_headers) fn nominal_region(
         .map_err(|_| error("source nominal lifetime exceeds canonical identity space"))?;
     RegionId::bound(0, index).map(Some).map_err(error)
 }
-/// A version-thirteen nominal's type slots follow its leading region slots.
-/// The consumer's parameter index counts both, as a local nominal's does;
-/// validation fixed that ordinal as the regions plus the wire type index.
+/// A declaration's canonical parameter index counts its leading lifetimes.
+/// Validated wire slots count those lifetimes separately from type slots.
 pub(in crate::sema::crates::typed_headers) fn type_index(
     declarations: &[s::Declaration],
     slot: &s::ParameterSlot,
 ) -> u32 {
-    if nominal_owner(declarations, slot.owner) {
+    if declarations
+        .get(slot.owner.0 as usize)
+        .is_some_and(|row| row.definition.kind.leading_regions())
+    {
         slot.ordinal
     } else {
         slot.index

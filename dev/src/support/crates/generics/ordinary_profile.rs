@@ -251,6 +251,9 @@ fn trait_headers(
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
+        if header.region_captures != 0 && roles.definition_policies == 0 {
+            return Err("source trait lifetimes require the declaration policy profile");
+        }
         if flags & TraitFlags::INCOHERENT_INHERENT & !roles.definition_policies != 0 {
             return Err("source incoherent trait requires the declaration policy profile");
         }
@@ -413,8 +416,13 @@ fn associated_method(
                 Constness::Ordinary,
                 work,
             )? || bodies
-                && (captured::method(rows, headers, header, work)?
-                    || reservation_parent(rows, headers, header, work)?.is_some())))
+                && (captured::method(
+                    rows,
+                    headers,
+                    header,
+                    roles.definition_policies != 0,
+                    work,
+                )? || reservation_parent(rows, headers, header, work)?.is_some())))
 }
 
 fn reservation_parent<'a>(
@@ -509,6 +517,7 @@ fn functions(
     }
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
+        captured::require_profile(rows, headers, header, roles.definition_policies != 0, work)?;
         let free_effects = profile.callables() && header.parent.is_none();
         // Version thirteen: an associated function may also be unsafe. Its
         // constness, convention and variadic forms keep their fences.

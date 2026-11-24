@@ -259,7 +259,7 @@ fn registered_callable(
         return false;
     };
     view.rows().is_ok_and(|rows| {
-        super::staged_headers::scheme_ports::inherent_captures(rows.descriptor(), &function)
+        super::staged_headers::scheme_ports::associated_captures(rows.descriptor(), &function)
     }) && template.parameters == function.regions.captures
         && bound_regions == function.regions.total - function.regions.captures
         && store.list(parameters).map(<[_]>::len) == store.list(public).map(<[_]>::len)
