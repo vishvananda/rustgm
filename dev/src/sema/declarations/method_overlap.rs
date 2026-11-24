@@ -1,7 +1,13 @@
 //! Validate unused declarations too; closed shapes avoid quadratic concrete-impl scans.
 use super::{Checker, DefId, Error, NodeKey, TypeId};
 use crate::support::hash::HashMap;
-use crate::{sema::methods::overlap, types::substitute::Bound};
+use crate::{
+    sema::{
+        associated::{Owner, OwnerKind},
+        methods::overlap,
+    },
+    types::substitute::Bound,
+};
 
 #[derive(Default)]
 struct Bucket {
@@ -67,18 +73,20 @@ impl Checker<'_> {
                         possible
                     } else {
                         let (possible, steps) = overlap::possible(&mut self.facts, key.0, key.1)
-                            .map_err(|message| self.error(source, message))?;
+                            .map_err(|message| self.overlap_error(source, message))?;
                         self.facts.methods.overlap_pairs += 1;
                         self.facts.methods.overlap_steps =
                             self.facts.methods.overlap_steps.saturating_add(steps);
                         if self.facts.methods.overlap_steps > 1_000_000 {
-                            return Err(self.error(source, "inherent overlap work budget exceeded"));
+                            return Err(
+                                self.overlap_error(source, "inherent overlap work budget exceeded")
+                            );
                         }
                         pairs.insert(key, possible);
                         possible
                     };
                     if possible {
-                        return Err(self.error(
+                        return Err(self.overlap_error(
                             source,
                             "duplicate inherent method in overlapping implementations",
                         ));
@@ -98,33 +106,51 @@ impl Checker<'_> {
     fn overlap_header(
         &mut self,
         owner: DefId,
-        source: NodeKey,
+        source: Option<NodeKey>,
         shapes: &mut Bound,
     ) -> Result<Option<TypeId>, Error> {
         let ty = self
             .facts
             .associated
             .schema(owner)
-            .ok_or_else(|| self.error(source, "missing overlap target"))?
+            .ok_or_else(|| self.overlap_error(source, "missing overlap target"))?
             .self_type;
         let closed = if self.facts.types.contains_parameters(ty) == Some(false) {
             Some(
                 shapes
                     .apply(&mut self.facts.types, ty)
-                    .map_err(|message| self.error(source, message))?,
+                    .map_err(|message| self.overlap_error(source, message))?,
             )
         } else {
             None
         };
         Ok(closed)
     }
-    fn inherent_owner(&self, member: DefId) -> Result<crate::sema::associated::SourceOwner, Error> {
-        let id = self.facts.associated.owner(member).ok_or_else(|| {
-            Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner")
-        })?;
-        self.facts
+    fn overlap_error(&self, source: Option<NodeKey>, message: &'static str) -> Error {
+        source.map_or_else(
+            || Error::unlocated(message),
+            |source| self.error(source, message),
+        )
+    }
+
+    fn inherent_owner(&self, member: DefId) -> Result<Owner, Error> {
+        let owner = self
+            .facts
             .associated
-            .source_owner(id)
-            .map_err(Error::unlocated)
+            .owner(member)
+            .and_then(|id| self.facts.associated.get(id))
+            .copied()
+            .ok_or_else(|| {
+                Error::at(crate::resolve::unit::FileId(0), 0, "missing inherent owner")
+            })?;
+        if matches!(owner.kind, OwnerKind::ImportedInherent(_)) {
+            self.facts
+                .associated
+                .require_imported(owner)
+                .map_err(Error::unlocated)?;
+        } else {
+            owner.source_owner().map_err(Error::unlocated)?;
+        }
+        Ok(owner)
     }
 }

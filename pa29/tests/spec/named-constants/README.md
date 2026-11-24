@@ -54,3 +54,10 @@ each. RustGM's version-13 export rejects each of these by name:
 - raw-pointer constants;
 - inherent and trait associated constants;
 - statics.
+
+`specialized-inherent/outcomes.json` declares a v14 provider and consumers for
+associated constants on concrete instances of a generic struct. A fresh
+client reads the correct scalar values and replays the nominal initializer
+originals. Separate clients exercise privacy, member lookup, and result type
+checking. Run `scripts/check_source_constants.py` with pinned rustc and a
+prebuilt RustGM to check these cases.

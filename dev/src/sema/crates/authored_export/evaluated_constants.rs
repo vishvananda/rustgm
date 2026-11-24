@@ -33,6 +33,12 @@ pub(super) fn core_primitive_owner(report: &Report, facts: &Declarations, owner:
         })
 }
 
+fn closed_type(facts: &Declarations, ty: TypeId) -> bool {
+    facts.types.contains_parameters(ty) == Some(false)
+        && facts.types.needs_region_context(ty) == Some(false)
+        && facts.types.contains_projections(ty) == Some(false)
+}
+
 fn closed_inherent_initializer(
     report: &Report,
     facts: &Declarations,
@@ -59,7 +65,7 @@ fn closed_inherent_initializer(
     match facts.types.kind(self_type) {
         Some(Kind::Primitive(tag))
             if tag != Primitive::Str && report.package.coherence_is_core() => {}
-        Some(Kind::Adt(item, GenericArgs::EMPTY))
+        Some(Kind::Adt(item, _))
             if report
                 .resolution
                 .definitions
@@ -67,7 +73,8 @@ fn closed_inherent_initializer(
                 .is_some_and(|definition| {
                     definition.node.is_some()
                         && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
-                }) => {}
+                })
+                && closed_type(facts, self_type) => {}
         _ => return None,
     }
     let initializer = facts
@@ -179,11 +186,9 @@ impl Stage {
         if !self.declaration_policies() {
             return false;
         }
-        if matches!(
-            closed_inherent_initializer(report, facts, definition)
-                .and_then(|ty| facts.types.kind(ty)),
-            Some(Kind::Adt(_, GenericArgs::EMPTY))
-        ) {
+        if closed_inherent_initializer(report, facts, definition).is_some_and(|ty| {
+            matches!(facts.types.kind(ty), Some(Kind::Adt(_, _))) && closed_type(facts, ty)
+        }) {
             return true;
         }
         facts

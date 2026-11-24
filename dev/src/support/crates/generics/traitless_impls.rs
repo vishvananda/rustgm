@@ -6,6 +6,8 @@ use super::{ArtifactRef, DefinitionKind, ImplHeader, Profile, SourceRows, Type};
 use crate::support::crates::generics::Work;
 
 impl ImplHeader {
+    /// The constant header validator also checks the completed owner scope;
+    /// the type-domain validator checks every argument of a nominal Self.
     pub(crate) fn closed_inherent_constant_owner(&self, types: &[Type]) -> bool {
         self.trait_application.is_none()
             && !self.constant
@@ -17,8 +19,8 @@ impl ImplHeader {
             && self.inputs.start == self.inputs.end
             && self.declared_inputs == 0
             && (self.core_primitive_inherent
-                || matches!(types.get(self.self_type.0 as usize), Some(Type::Nominal { declaration, arguments })
-                    if declaration.artifact == ArtifactRef(0) && arguments.start == arguments.end))
+                || matches!(types.get(self.self_type.0 as usize), Some(Type::Nominal { declaration, .. })
+                    if declaration.artifact == ArtifactRef(0)))
     }
 }
 

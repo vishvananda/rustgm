@@ -186,8 +186,10 @@ fn associated_owner(
             let implementation = &rows.implementations[index as usize];
             if implementation.trait_application.is_some()
                 || (implementation.closed_inherent_constant_owner(&rows.types)
-                    && matches!(rows.types.get(header.ty.0 as usize),
-                        Some(super::Type::Nominal { arguments, .. }) if arguments.start == arguments.end)
+                    && matches!(
+                        rows.types.get(header.ty.0 as usize),
+                        Some(super::Type::Nominal { .. })
+                    )
                     && headers.scopes().complete_slots(parent, work)? == 0)
             {
                 Ok(())
