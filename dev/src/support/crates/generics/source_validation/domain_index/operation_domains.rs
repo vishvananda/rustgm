@@ -6,6 +6,7 @@ mod calls;
 #[path = "body_ports/cfg_storage.rs"]
 mod storage;
 use super::{Context, DomainIndex, HeaderRef, OriginalHeader, Types, Work, g, s};
+use crate::support::{bindings::LangItem, crates::owner_catalog::DeclarationRef};
 
 impl DomainIndex<'_, '_> {
     pub(super) fn originals(
@@ -15,16 +16,19 @@ impl DomainIndex<'_, '_> {
         branching: bool,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        let panic_fmt = if self.declaration_policies {
+        let mut runtime_format_bodies = [None; LangItem::RUNTIME_FORMAT_BODIES.len()];
+        if self.declaration_policies {
             work.charge(rows.roles.len())?;
-            rows.roles.iter().find_map(|binding| {
-                (binding.role == crate::support::bindings::LangItem::PanicFmt
-                    && binding.declaration.artifact.0 == 0)
-                    .then_some(binding.declaration.declaration)
-            })
-        } else {
-            None
-        };
+            for binding in &rows.roles {
+                if let Some(index) = LangItem::RUNTIME_FORMAT_BODIES
+                    .iter()
+                    .position(|role| *role == binding.role)
+                    && binding.declaration.artifact.0 == 0
+                {
+                    runtime_format_bodies[index] = Some(binding.declaration.declaration);
+                }
+            }
+        }
         for original in &rows.originals {
             let input = &rows.body_inputs[self.headers.original_index(original.body)?];
             let header = self.original_header(original.declaration, work)?;
@@ -36,7 +40,7 @@ impl DomainIndex<'_, '_> {
             let (frame, call_context) = match header {
                 OriginalHeader::Function(function) => (
                     function.original.binder,
-                    self.call_context(function, panic_fmt, work)?,
+                    self.call_context(function, runtime_format_bodies, work)?,
                 ),
                 OriginalHeader::Constant { .. } => (
                     self.binders.declaration(original.declaration, work)?,
@@ -80,11 +84,11 @@ impl DomainIndex<'_, '_> {
     fn call_context(
         &self,
         header: &s::FunctionHeader,
-        panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+        runtime_format_bodies: [Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()],
         work: &mut Work,
     ) -> Result<s::CallContext, &'static str> {
         work.charge(1)?;
-        if Some(header.declaration) == panic_fmt {
+        if runtime_format_bodies.contains(&Some(header.declaration)) {
             return Ok(s::CallContext::Runtime);
         }
         if let Some(parent) = header.parent

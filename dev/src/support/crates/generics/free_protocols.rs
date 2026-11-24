@@ -1,6 +1,7 @@
 //! Genuine marker declarations and indexed const-call eligibility remain separate.
 use super::{HeaderIndex, SourceRows};
 use crate::support::{
+    bindings::LangItem,
     constness::Constness,
     crates::{
         generics::{Work, source as s},
@@ -199,12 +200,12 @@ pub(super) fn original_context(
     body: &s::Original,
     work: &mut Work,
     constant_initializers: bool,
-    panic_fmt: Option<DeclarationRef>,
+    runtime_format_bodies: [Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()],
 ) -> Result<s::CallContext, &'static str> {
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
             if rows.functions[index as usize].constness == Constness::Const
-                && panic_fmt != Some(body.declaration)
+                && !runtime_format_bodies.contains(&Some(body.declaration))
             {
                 s::CallContext::ConstDefinition
             } else {

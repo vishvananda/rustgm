@@ -115,7 +115,7 @@ impl HeaderAttributeColumns {
             base,
             profile,
             None,
-            [None; 2],
+            [None; LangItem::FORMAT_PANICS.len()],
             work,
         )
     }
@@ -129,7 +129,7 @@ impl HeaderAttributeColumns {
         base: usize,
         profile: super::Profile,
         range_sub: Option<DeclarationRef>,
-        panics: [Option<DeclarationRef>; 2],
+        panics: [Option<DeclarationRef>; LangItem::FORMAT_PANICS.len()],
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
@@ -244,8 +244,8 @@ fn format_panics(
     rows: &SourceRows,
     profile: super::Profile,
     work: &mut Work,
-) -> Result<[Option<DeclarationRef>; 2], &'static str> {
-    let mut declarations = [None; 2];
+) -> Result<[Option<DeclarationRef>; LangItem::FORMAT_PANICS.len()], &'static str> {
+    let mut declarations = [None; LangItem::FORMAT_PANICS.len()];
     if profile.declaration_policies() {
         work.charge(rows.roles.len())?;
         for binding in &rows.roles {

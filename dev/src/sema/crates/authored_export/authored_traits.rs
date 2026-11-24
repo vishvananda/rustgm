@@ -211,7 +211,7 @@ impl Stage {
     }
 
     /// Diagnostic identities follow the language rows in the table's order.
-    /// Version fourteen carries `Eq` with its `ConstParamTy` role family.
+    /// Version fourteen carries `Eq` with `ConstParamTy` and `Display` with `panic_display`.
     /// Earlier export failures retain their own diagnostics.
     pub(super) fn diagnostic_roles(&mut self, report: &Report) -> Result<(), &'static str> {
         self.charge(1)?;
@@ -233,6 +233,12 @@ impl Stage {
                     .language(LangItem::ConstParamTy)
                     .and_then(|_| reservations.eq_declaration()),
             ),
+            (
+                s::DiagnosticRole::Display,
+                reservations
+                    .language(LangItem::PanicDisplay)
+                    .and_then(|_| reservations.display_declaration()),
+            ),
         ] {
             let Some(declaration) = declaration else {
                 continue;
@@ -246,6 +252,9 @@ impl Stage {
                         "source Send diagnostic contract transport is not implemented"
                     }
                     s::DiagnosticRole::Eq => "source Eq diagnostic identity requires version 14",
+                    s::DiagnosticRole::Display => {
+                        "source Display diagnostic identity requires version 14"
+                    }
                 });
             }
             let address = self.address(declaration.definition)?;

@@ -93,7 +93,11 @@ pub(crate) fn select(
         return Ok(None);
     };
     if catalog.uses_imported_roles() {
-        for role in LangItem::FORMAT_PANICS {
+        for role in [
+            LangItem::PanicFmt,
+            LangItem::PanicNounwind,
+            LangItem::PanicDisplay,
+        ] {
             if catalog
                 .role(role)?
                 .is_some_and(|declaration| declaration.definition.0 == item.0)

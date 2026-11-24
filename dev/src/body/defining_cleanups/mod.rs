@@ -322,7 +322,17 @@ fn active_definition(
     } else {
         let view = crate::sema::crates::source_original(facts, definition, steps)?
             .ok_or("imported defining cleanup requires its actual complete source original")?;
-        if view.source()? != source || !view.const_context() || default {
+        let actual_source = view.source()?;
+        let constant = view.const_context();
+        if actual_source == source
+            && !constant
+            && !default
+            && crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+        {
+            // The validated original runs at runtime despite its const header.
+            return Ok(None);
+        }
+        if actual_source != source || !constant || default {
             return Err("imported defining cleanup changed its free const original context");
         }
         FunctionContext::ConstFunction

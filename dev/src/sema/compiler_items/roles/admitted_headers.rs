@@ -221,7 +221,7 @@ const FREE_MARKERS: [LangItem; 6] = [
 ];
 
 // These roles are checked together after the individual headers.
-const GROUPED: [LangItem; 17] = [
+const GROUPED: [LangItem; 15] = [
     LangItem::FnOnce,
     LangItem::FnMut,
     LangItem::Fn,
@@ -233,8 +233,6 @@ const GROUPED: [LangItem; 17] = [
     LangItem::StructuralPartialEq,
     LangItem::Drop,
     LangItem::DropGlue,
-    LangItem::PanicFmt,
-    LangItem::PanicNounwind,
     LangItem::Deref,
     LangItem::DerefMut,
     LangItem::DerefTarget,
@@ -301,12 +299,14 @@ fn trait_headers(
                 tuple_marker(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
-            role if GROUPED.contains(&role) || super::super::layout::CONSTANTS.contains(&role) => {}
+            role if GROUPED.contains(&role)
+                || LangItem::FORMAT_PANICS.contains(&role)
+                || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
             role if role == LangItem::Panic || LangItem::GUARD_PANICS.contains(&role) => {
-                super::super::runtime_panics::imported(facts, declaration, role, steps)?;
+                super::super::runtime_panics::imported(report, facts, declaration, role, steps)?;
                 complete.insert(role);
             }
             role if role.is_runtime_import() => {
@@ -415,10 +415,12 @@ fn grouped_roles(
     super::glue::imported(facts, catalog, steps, complete)?;
     for role in LangItem::FORMAT_PANICS {
         if let Some(declaration) = catalog.role(role)? {
-            if role == LangItem::PanicFmt && !complete.contains(LangItem::FormatArguments) {
-                return Err("imported panic_fmt requires its completed format Arguments");
+            if LangItem::ARGUMENTS_PANICS.contains(&role)
+                && !complete.contains(LangItem::FormatArguments)
+            {
+                return Err("imported formatting panic requires its completed format Arguments");
             }
-            super::super::runtime_panics::imported(facts, declaration, role, steps)?;
+            super::super::runtime_panics::imported(report, facts, declaration, role, steps)?;
             complete.insert(role);
         }
     }

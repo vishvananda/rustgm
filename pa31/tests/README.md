@@ -84,6 +84,10 @@ same provider-owned family with a written `Self: 'a` requirement.
 `panic_fmt` and `panic_nounwind` call signatures, caller location, and
 invalid role bindings. Run `scripts/check_runtime_panic_transport.py` with
 the pinned Rust compiler.
+`spec/source-panic-display-transport/outcomes.json` checks the fresh
+`panic_display` call's actual `Display` bound, runtime body, and caller
+location. A fresh const function also calls the independent checked formatting
+helper. Run `scripts/check_panic_display_transport.py` with pinned Rust.
 `spec/source-nominal-const-formals/outcomes.json` checks fresh applications of
 imported enum and record const parameters and rejects a different nominal
 type. Run `scripts/check_nominal_const_formals.py` with the prebuilt compilers.

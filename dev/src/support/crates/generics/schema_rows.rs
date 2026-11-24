@@ -307,15 +307,18 @@ pub enum DiagnosticRole {
     Send,
     /// Version fourteen binds the actual `Eq` supertrait of `ConstParamTy`.
     Eq,
+    /// Version fourteen binds the actual trait required by `panic_display`.
+    Display,
 }
 impl DiagnosticRole {
-    pub const ALL: [Self; 3] = [Self::NonNull, Self::Send, Self::Eq];
+    pub const ALL: [Self; 4] = [Self::NonNull, Self::Send, Self::Eq, Self::Display];
     #[must_use]
     pub const fn spelling(self) -> &'static str {
         match self {
             Self::NonNull => "NonNull",
             Self::Send => "Send",
             Self::Eq => "Eq",
+            Self::Display => "Display",
         }
     }
     #[must_use]

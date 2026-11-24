@@ -484,6 +484,10 @@ fn diagnostic_roles(
                 DefKind::Trait,
                 "imported Eq diagnostic item requires its actual trait declaration",
             ),
+            s::DiagnosticRole::Display => (
+                DefKind::Trait,
+                "imported Display diagnostic item requires its actual trait declaration",
+            ),
         };
         origins
             .validate_declaration(declaration, definition, kind)

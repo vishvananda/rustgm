@@ -1,0 +1,24 @@
+{
+  "nominal_fixture": "source-panic-format-transport",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "size": 24,
+  "alignment": 8,
+  "tracked": {
+    "caller": "fresh_display",
+    "callee": "panic_display",
+    "line": 10,
+    "column": 5,
+    "result": "void",
+    "parameters": ["ptr", "ptr"],
+    "noreturn": true
+  },
+  "rustc_missing_display": "error[E0277]",
+  "rustgm_missing_display": "trait obligation",
+  "foreign_display": "source diagnostic identity belongs to a foreign provider",
+  "wrong_bound": "source panic_display requires its exact ordinary T: Display bound",
+  "wrong_binding": "source formatting panic policy changed its actual declaration binding",
+  "source_bound": "source trait role requires completed declaration validation",
+  "old_profile": "source formatting panic declarations require version fourteen",
+  "old_reader": "unknown source diagnostic identity spelling"
+}

@@ -1,15 +1,25 @@
 //! Defining-body context is authenticated separately from reached panic hooks.
+use super::headers::{Flags, Trait};
 use crate::{
     resolve::{
-        bindings::Declaration, expansion::Report, model::DefId, package::Error, unit::NodeKey,
+        bindings::{Declaration, Reservations},
+        expansion::Report,
+        model::{DefId, DefKind},
+        package::Error,
+        unit::NodeKey,
     },
-    sema::model::Declarations,
-    support::bindings::LangItem,
+    sema::{declaration_inputs, model::Declarations},
+    support::{bindings::LangItem, constness::Constness, crates::generics::source::DiagnosticRole},
     syntax::{
         ast::Kind as Syntax,
         item::{Abi, ItemKind},
     },
-    types::{Kind, Primitive, RegionId, TypeId, arguments::Argument, callable::Convention},
+    types::{
+        GenericArgs, Kind, Primitive, RegionId, TypeId,
+        arguments::Argument,
+        callable::Convention,
+        parameters::{ParameterKind, predicates::Bound},
+    },
 };
 
 pub(in crate::sema) fn runtime_body(
@@ -21,7 +31,7 @@ pub(in crate::sema) fn runtime_body(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    let Some((role, declaration)) = [LangItem::PanicFmt, LangItem::PanicDisplay]
+    let Some((role, declaration)) = LangItem::RUNTIME_FORMAT_BODIES
         .into_iter()
         .find_map(|role| {
             catalog
@@ -72,7 +82,7 @@ pub(in crate::sema) fn runtime_body(
 
 /// A conforming local declaration completes its actual role for export.
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for role in [LangItem::Panic, LangItem::PanicFmt, LangItem::PanicNounwind] {
+    for role in [LangItem::Panic].into_iter().chain(LangItem::FORMAT_PANICS) {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(());
         };
@@ -99,18 +109,31 @@ fn conforming(
     let header = super::headers::functions::current(facts, declaration)?;
     let definition = declaration.definition;
     match role {
-        LangItem::PanicFmt => {
+        role if tracks_caller(role) => {
             let body = header
                 .body
                 .and_then(crate::resolve::body_origin::BodyOrigin::source)
-                .ok_or("source panic_fmt requires its actual defined body")?;
+                .ok_or("source tracked panic requires its actual defined body")?;
             if !runtime_body(report, facts, definition, body)?
                 || !facts
                     .checked_caller_tracking(report, definition)
-                    .map_err(|_| "missing source panic_fmt tracking")?
+                    .map_err(|_| "missing source formatting panic tracking")?
             {
-                return Err("source panic_fmt requires its pinned runtime and tracking policies");
+                return Err(
+                    "source formatting panic requires its pinned runtime and tracking policies",
+                );
             }
+        }
+        LangItem::ConstPanicFmt
+            if facts
+                .const_panic_markers(report, definition)
+                .map_err(|_| "missing source const_panic_fmt declaration policy")?
+                != (false, true)
+                || facts
+                    .checked_caller_tracking(report, definition)
+                    .map_err(|_| "missing source const_panic_fmt tracking")? =>
+        {
+            return Err("source const_panic_fmt requires its checked const body");
         }
         LangItem::PanicNounwind
             if !facts
@@ -128,8 +151,17 @@ fn conforming(
         }
         _ => {}
     }
-    if LangItem::FORMAT_PANICS.contains(&role) {
-        input_scope(facts, definition)?;
+    if role == LangItem::PanicDisplay {
+        let display = report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .and_then(Reservations::display_declaration)
+            .ok_or("source panic_display requires its actual Display diagnostic identity")?;
+        let header = Trait::source(report, facts, display)?;
+        display_scope(facts, definition, &header)?;
+    } else if LangItem::FORMAT_PANICS.contains(&role) {
+        empty_input_scope(facts, definition)?;
     }
     signature(
         facts,
@@ -147,13 +179,13 @@ pub(crate) fn runtime_format_entry(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    if catalog
-        .role(LangItem::PanicFmt)?
-        .is_none_or(|role| role.definition != definition)
-    {
+    let candidates = LangItem::RUNTIME_FORMAT_BODIES
+        .into_iter()
+        .map(|role| ((), role));
+    let Some(((), role)) = catalog.matching_role(definition, candidates)? else {
         return Ok(false);
-    }
-    catalog.validated_role(LangItem::PanicFmt)?;
+    };
+    catalog.validated_role(role)?;
     Ok(true)
 }
 
@@ -177,7 +209,7 @@ pub(in crate::sema) fn runtime_panic_declaration(
 }
 
 fn format_arguments(facts: &Declarations, role: LangItem) -> Result<Option<DefId>, &'static str> {
-    if role != LangItem::PanicFmt {
+    if !LangItem::ARGUMENTS_PANICS.contains(&role) {
         return Ok(None);
     }
     let catalog = facts
@@ -189,13 +221,12 @@ fn format_arguments(facts: &Declarations, role: LangItem) -> Result<Option<DefId
         .map(|declaration| declaration.definition))
 }
 
-fn input_scope(facts: &Declarations, definition: DefId) -> Result<(), &'static str> {
-    if crate::sema::declaration_inputs::declared_own(
-        &facts.generics,
-        facts.crates.as_deref(),
-        definition,
-    )?
-    .len()
+fn tracks_caller(role: LangItem) -> bool {
+    LangItem::RUNTIME_FORMAT_BODIES.contains(&role)
+}
+
+fn empty_input_scope(facts: &Declarations, definition: DefId) -> Result<(), &'static str> {
+    if declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?.len()
         != 0
     {
         return Err("source panic declaration introduces a defining condition");
@@ -203,9 +234,76 @@ fn input_scope(facts: &Declarations, definition: DefId) -> Result<(), &'static s
     Ok(())
 }
 
+fn display_scope(
+    facts: &Declarations,
+    definition: DefId,
+    header: &Trait<'_>,
+) -> Result<(), &'static str> {
+    const BOUND: &str = "source panic_display requires its exact ordinary T: Display bound";
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: false,
+            constant: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    let [generic] = facts
+        .generics
+        .parameters
+        .get(&definition)
+        .map_or(&[][..], Vec::as_slice)
+    else {
+        return Err(BOUND);
+    };
+    let Argument::Type(ty) = generic.argument else {
+        return Err(BOUND);
+    };
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source panic_display has no actual provider catalog")?;
+    let meta = catalog
+        .role(LangItem::MetaSized)?
+        .map(|role| role.definition.0);
+    let inputs =
+        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?;
+    if inputs.len() > 3 {
+        return Err(BOUND);
+    }
+    let mut found = false;
+    for input in inputs.iter() {
+        let predicate = input.value.ordinary()?;
+        if predicate.ty != ty {
+            return Err(BOUND);
+        }
+        if predicate.bound == Bound::Sized {
+            continue;
+        }
+        let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
+            return Err(BOUND);
+        };
+        let application = facts.types.trait_application(application).ok_or(BOUND)?;
+        if application.arguments != GenericArgs::EMPTY {
+            return Err(BOUND);
+        }
+        if application.item.0 == header.definition.0 && !found {
+            found = true;
+        } else if meta != Some(application.item.0) {
+            return Err(BOUND);
+        }
+    }
+    if !found {
+        return Err(BOUND);
+    }
+    Ok(())
+}
+
 /// A consumer binds an imported panic role only after re-proving the installed
 /// declaration it names; the provider's completion is never trusted.
 pub(super) fn imported(
+    report: &Report,
     facts: &Declarations,
     declaration: super::Role,
     role: LangItem,
@@ -228,8 +326,20 @@ pub(super) fn imported(
         return Err("imported panic role changed its declaration or body identity");
     }
     if LangItem::FORMAT_PANICS.contains(&role) {
-        input_scope(facts, definition)?;
-        if facts.recorded_caller_tracking(definition)? != (role == LangItem::PanicFmt)
+        if role == LangItem::PanicDisplay {
+            let display = facts
+                .source_bindings
+                .as_deref()
+                .ok_or("imported panic_display lost its actual provider catalog")?
+                .imported_diagnostic(DiagnosticRole::Display, DefKind::Trait, steps)?
+                .ok_or("imported panic_display requires its actual Display diagnostic identity")?;
+            let bound = Trait::current(report, facts, display, steps)?;
+            *steps = steps.saturating_add(4);
+            display_scope(facts, definition, &bound)?;
+        } else {
+            empty_input_scope(facts, definition)?;
+        }
+        if facts.recorded_caller_tracking(definition)? != tracks_caller(role)
             || role == LangItem::PanicNounwind
                 && !crate::resolve::package::Package::target_aborts_panics()
         {
@@ -288,9 +398,9 @@ fn signature(
                 return Err("source panic changed its real static str signature");
             }
         }
-        LangItem::PanicFmt => {
+        LangItem::PanicFmt | LangItem::ConstPanicFmt => {
             let declaration = format_arguments
-                .ok_or("source panic_fmt requires actual format_arguments identity")?;
+                .ok_or("source formatting panic requires actual format_arguments identity")?;
             if bound_regions != 1
                 || !parameters.is_empty()
                 || !matches!(facts.types.kind(*parameter),
@@ -299,15 +409,24 @@ fn signature(
                         matches!(args.next(), Some(Argument::Lifetime(region))
                             if region.bound_parts() == Some((0, 0))) && args.next().is_none()))
             {
-                return Err("source panic_fmt changed its real Arguments signature");
+                return Err("source formatting panic changed its real Arguments signature");
             }
         }
         LangItem::PanicDisplay => {
             let [generic] = parameters else {
                 return Err("source panic_display requires its actual T parameter");
             };
-            if !matches!((generic.argument, facts.types.kind(*parameter)),
-                (Argument::Type(ty), Some(Kind::Reference { referent, mutable: false, .. })) if ty == referent)
+            let Argument::Type(ty) = generic.argument else {
+                return Err("source panic_display requires its actual type parameter");
+            };
+            if bound_regions != 1
+                || !matches!(facts.types.kind(*parameter),
+                    Some(Kind::Reference { referent, region, mutable: false })
+                        if ty == referent && region.bound_parts() == Some((0, 0)))
+                || !matches!(facts.types.kind(ty), Some(Kind::Parameter(id))
+                    if facts.types.parameter(id).is_some_and(|slot|
+                        slot.owner.0 == definition.0 && slot.index == 0
+                            && slot.kind == ParameterKind::Type { sized: true }))
             {
                 return Err("source panic_display requires its genuine shared T argument");
             }

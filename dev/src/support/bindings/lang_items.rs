@@ -63,7 +63,14 @@ macro_rules! language_items {
 // The appended rows follow rustc_hir/lang_items.rs at 88d9e12ae178fab0fb5cc050a94da85685d449ea;
 // weak-only foreign targets additionally follow rustc_hir/weak_lang_items.rs.
 impl LangItem {
-    pub(crate) const FORMAT_PANICS: [Self; 2] = [Self::PanicFmt, Self::PanicNounwind];
+    pub(crate) const FORMAT_PANICS: [Self; 4] = [
+        Self::PanicFmt,
+        Self::PanicNounwind,
+        Self::PanicDisplay,
+        Self::ConstPanicFmt,
+    ];
+    pub(crate) const ARGUMENTS_PANICS: [Self; 2] = [Self::PanicFmt, Self::ConstPanicFmt];
+    pub(crate) const RUNTIME_FORMAT_BODIES: [Self; 2] = [Self::PanicFmt, Self::PanicDisplay];
 
     /// One protocol family over existing language identities; no separate authority.
     pub(crate) const GUARD_PANICS: [LangItem; 28] = [

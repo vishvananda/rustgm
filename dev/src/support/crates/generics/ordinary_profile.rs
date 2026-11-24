@@ -215,7 +215,7 @@ fn validate_with(
         profile,
         binding,
         features,
-        roles.panic_fmt,
+        roles.runtime_format_bodies,
     )?;
     body_inputs(rows, work, profile.conversions(), binding.languages())
 }
@@ -688,7 +688,8 @@ fn originals(
     profile: NamespaceProfile,
     binding: BindingProfile,
     features: bool,
-    panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::RUNTIME_FORMAT_BODIES.len()],
 ) -> Result<(), &'static str> {
     let regional = profile.conversions();
     let constant_initializers = binding == BindingProfile::BodyOperations;
@@ -701,7 +702,7 @@ fn originals(
                 original,
                 work,
                 constant_initializers,
-                panic_fmt,
+                runtime_format_bodies,
             )?
         } else {
             super::super::CallContext::Runtime
@@ -923,7 +924,8 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
-    panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::RUNTIME_FORMAT_BODIES.len()],
     drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
@@ -1213,6 +1215,13 @@ pub(super) fn bindings(
     } else {
         None
     };
+    let marker_traits = matches!(
+        profile,
+        BindingProfile::Callables
+            | BindingProfile::Conversions
+            | BindingProfile::Languages
+            | BindingProfile::BodyOperations
+    );
     Ok(Bindings {
         callables,
         languages,
@@ -1221,7 +1230,8 @@ pub(super) fn bindings(
             .then_some(declarations[LangItem::Drop.index()])
             .flatten(),
         drop_glue: declarations[LangItem::DropGlue.index()],
-        panic_fmt: declarations[LangItem::PanicFmt.index()],
+        runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES
+            .map(|role| declarations[role.index()]),
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
@@ -1253,29 +1263,13 @@ pub(super) fn bindings(
             [None; Profile::CONST_DEREF_ROLES.len()]
         },
         sizing,
-        destruct: if matches!(
-            profile,
-            BindingProfile::Callables
-                | BindingProfile::Conversions
-                | BindingProfile::Languages
-                | BindingProfile::BodyOperations
-        ) {
-            declarations[LangItem::Destruct.index()]
-        } else {
-            None
-        },
+        destruct: marker_traits
+            .then_some(declarations[LangItem::Destruct.index()])
+            .flatten(),
         no_drop: declarations[LangItem::BikeshedGuaranteedNoDrop.index()],
-        freeze: if matches!(
-            profile,
-            BindingProfile::Callables
-                | BindingProfile::Conversions
-                | BindingProfile::Languages
-                | BindingProfile::BodyOperations
-        ) {
-            declarations[LangItem::Freeze.index()]
-        } else {
-            None
-        },
+        freeze: marker_traits
+            .then_some(declarations[LangItem::Freeze.index()])
+            .flatten(),
     })
 }
 
@@ -1350,6 +1344,18 @@ fn diagnostic_bindings(
                     );
                 }
             }
+            super::super::DiagnosticRole::Display => {
+                work.charge(declarations.len())?;
+                if profile != BindingProfile::BodyOperations
+                    || kind != Some(super::super::DefinitionKind::Trait)
+                    || !matches!(header, Some(super::super::HeaderRef::Trait(_)))
+                    || declarations.contains(&Some(row.declaration.declaration))
+                {
+                    return Err(
+                        "source Display diagnostic identity requires its own version-fourteen trait",
+                    );
+                }
+            }
         }
     }
     let const_marker = declarations[LangItem::ConstParamTy.index()].is_some();
@@ -1359,6 +1365,11 @@ fn diagnostic_bindings(
         return Err(
             "source ConstParamTy requires its actual StructuralPartialEq and Eq declarations",
         );
+    }
+    if seen[super::super::DiagnosticRole::Display as usize]
+        != declarations[LangItem::PanicDisplay.index()].is_some()
+    {
+        return Err("source panic_display requires its actual Display diagnostic declaration");
     }
     Ok(send)
 }
