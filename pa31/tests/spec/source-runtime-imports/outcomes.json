@@ -1,0 +1,45 @@
+{
+  "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+  "prefix_marker": "// Authored macro-context transport controls.",
+  "provider": "provider.rs",
+  "cases": [
+    {
+      "source": "client.rs",
+      "status": 0
+    },
+    {
+      "source": "unsafe-client.rs",
+      "status": 1,
+      "diagnostic": "call to unsafe function requires an unsafe context",
+      "rustc_diagnostic": "E0133"
+    },
+    {
+      "source": "type-client.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "E0308"
+    },
+    {
+      "source": "const-client.rs",
+      "status": 1,
+      "diagnostic": "non-const calls are not allowed in constant initializers",
+      "rustc_diagnostic": "E0015"
+    }
+  ],
+  "symbols": [
+    "memcpy",
+    "memmove",
+    "memset",
+    "memcmp",
+    "bcmp",
+    "strlen"
+  ],
+  "forgeries": {
+    "wrong-owner": "source body absence is not an actual required trait method",
+    "invented-body": "source body absence is not an actual required trait method",
+    "invalid-symbol": "invalid exact source symbol bytes",
+    "wrong-role-owner": "source exact import has no actual runtime role"
+  },
+  "observer": "pa31/tests/spec/weak-symbols/observer.c",
+  "stdout": "runtime 1 1 1 1 1 5\n"
+}

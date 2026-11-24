@@ -307,6 +307,10 @@ fn trait_headers(
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
             }
+            role if role.is_runtime_import() => {
+                super::super::headers::weak_imports::imported(facts, declaration, steps)?;
+                complete.insert(role);
+            }
             role if nominal_role(role) => {
                 check_nominal_role(facts, catalog, declaration, role, steps)?;
                 complete.insert(role);

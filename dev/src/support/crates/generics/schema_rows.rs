@@ -476,9 +476,11 @@ pub struct RegionScheme {
 }
 /// Exact native definition identity; neither visibility nor body permission.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ExactCallableExport {
+pub struct ExactCallable {
     pub declaration: DeclarationRef,
-    pub body: BodyRef,
+    /// Existing exported originals own bodies; version fourteen may name a
+    /// checked external runtime declaration instead.
+    pub body: Option<BodyRef>,
     pub symbol: Box<str>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -633,7 +635,7 @@ pub struct Rows {
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
     pub body_units: Vec<BodyUnit>,
-    pub exact_callables: Vec<ExactCallableExport>,
+    pub exact_callables: Vec<ExactCallable>,
 }
 pub type SourceRows = Rows;
 /// Cold column groups held out of line so packets without them, and every
@@ -727,6 +729,18 @@ pub struct TraitAliasHeader {
 }
 
 impl Rows {
+    pub(crate) fn bodyless_runtime(
+        &self,
+        declaration: DeclarationRef,
+        work: &mut crate::support::crates::generics::Work,
+    ) -> Result<bool, &'static str> {
+        work.charge(1 + self.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
+        Ok(self
+            .exact_callables
+            .binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| self.exact_callables[index].body.is_none()))
+    }
+
     pub(crate) fn type_aliases(&self) -> &[TypeAliasHeader] {
         &self.cold().type_aliases
     }

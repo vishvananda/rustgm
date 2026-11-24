@@ -555,8 +555,9 @@ fn functions(
         let parent_kind = rows.declarations[parent.0 as usize].definition.kind;
         match header.body {
             FunctionBody::Absent
-                if header.parent != Some(parent)
-                    || parent_kind != super::super::DefinitionKind::Trait =>
+                if (header.parent != Some(parent)
+                    || parent_kind != super::super::DefinitionKind::Trait)
+                    && !rows.bodyless_runtime(header.declaration, work)? =>
             {
                 return Err(
                     "source body absence is supported only for actual required trait members",
@@ -968,6 +969,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     ) || interval_roles::ROLES.contains(&role)
         || role.is_storage_wrapper()
         || LangItem::GUARD_PANICS.contains(&role)
+        || role.is_runtime_import()
     {
         return profile == BindingProfile::BodyOperations;
     }
@@ -1244,6 +1246,8 @@ fn role_header(
         (role, _) if LangItem::GUARD_PANICS.contains(&role) => {
             return Err("source guard role requires its actual defined free function");
         }
+        (role, Some(super::super::HeaderRef::Function(_)))
+            if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
         (role, header) if role.is_storage_wrapper() => {
             if profile != BindingProfile::BodyOperations
                 || kind != super::super::DefinitionKind::Struct

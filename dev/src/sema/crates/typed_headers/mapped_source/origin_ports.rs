@@ -263,6 +263,12 @@ pub(in crate::sema::crates::typed_headers) fn require_function(
         return Err("source function changed its actual declaration or original universals");
     }
     match (header.body, body) {
+        // The sealed descriptor already binds the runtime row to this
+        // declaration and checked symbol. It contributes no body authority.
+        (s::FunctionBody::Absent, None)
+            if rows
+                .exact_callable(ordinal)
+                .is_some_and(|row| row.body.is_none()) => {}
         (s::FunctionBody::Absent, None) => {
             let parent = header
                 .parent

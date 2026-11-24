@@ -44,7 +44,7 @@ pub struct Columns {
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
     pub body_units: Vec<BodyUnit>,
-    pub exact_callables: Vec<super::super::ExactCallableExport>,
+    pub exact_callables: Vec<super::super::ExactCallable>,
 }
 impl Columns {
     pub(crate) fn original_index(
@@ -283,7 +283,7 @@ impl<'a> ValidatedView<'a> {
     pub(crate) fn exact_callable(
         self,
         declaration: DeclarationRef,
-    ) -> Option<&'a super::super::ExactCallableExport> {
+    ) -> Option<&'a super::super::ExactCallable> {
         let rows = &self.source.columns.exact_callables;
         rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
             .ok()

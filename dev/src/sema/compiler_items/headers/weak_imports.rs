@@ -1,7 +1,12 @@
 //! Weak runtime-symbol declarations retain ordinary foreign headers, not operations.
 use super::super::Catalog;
 use crate::{
-    resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
+    resolve::{
+        bindings::Declaration,
+        expansion::Report,
+        model::{DefId, DefKind},
+        package::Error,
+    },
     sema::{function_headers::FunctionHeader, model::Declarations},
     support::{
         bindings::LangItem,
@@ -48,7 +53,7 @@ pub(in crate::sema::compiler_items) fn complete(
         .map_err(error)?
         .ok_or_else(|| error("foreign runtime declaration lacks its completed header"))?;
     current(report, declaration, &header).map_err(error)?;
-    let work = registered(facts, declaration, &header).map_err(error)?;
+    let work = registered(facts, declaration.definition, &header).map_err(error)?;
     crate::sema::header_attributes::charge_source_contract_query(facts, work.saturating_add(1))?;
     Ok(Some(role))
 }
@@ -92,9 +97,25 @@ fn current(
     Ok(())
 }
 
+pub(in crate::sema::compiler_items) fn imported(
+    facts: &Declarations,
+    declaration: super::super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let header = facts
+        .function_header(declaration.definition)?
+        .ok_or("imported foreign runtime declaration lacks its completed header")?;
+    if header.declaration != declaration.origin || header.body.is_some() {
+        return Err("imported foreign runtime header changed its actual origin or body");
+    }
+    let work = registered(facts, declaration.definition, &header)?;
+    *steps = steps.saturating_add(work.saturating_add(8));
+    Ok(())
+}
+
 fn registered(
     facts: &Declarations,
-    declaration: Declaration,
+    definition: DefId,
     header: &FunctionHeader<'_>,
 ) -> Result<usize, &'static str> {
     let registry = facts
@@ -102,7 +123,7 @@ fn registered(
         .as_deref()
         .ok_or("foreign runtime registry is missing")?;
     let foreign = registry
-        .function(declaration.definition)
+        .function(definition)
         .ok_or("foreign runtime declaration lacks its actual registered import")?;
     if foreign.signature != header.signature || foreign.linkage != Linkage::Import {
         return Err("foreign runtime import differs from its actual signature or linkage");
@@ -126,14 +147,14 @@ fn registered(
         arguments,
     }) = facts
         .definitions
-        .get(declaration.definition.0 as usize)
+        .get(definition.0 as usize)
         .copied()
         .flatten()
         .and_then(|ty| facts.types.kind(ty))
     else {
         return Err("foreign runtime declaration lacks its canonical function item");
     };
-    if item.0 != declaration.definition.0
+    if item.0 != definition.0
         || signature != header.signature
         || facts.types.arguments(arguments).is_none()
     {

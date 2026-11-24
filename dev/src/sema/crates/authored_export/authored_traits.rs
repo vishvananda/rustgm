@@ -160,6 +160,7 @@ impl Stage {
     /// A non-trait role row carries only its declaration address.
     fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
         match kind {
+            DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
             }

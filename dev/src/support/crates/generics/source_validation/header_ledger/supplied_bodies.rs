@@ -1,4 +1,4 @@
-//! Bodies are present exactly once; required trait declarations stay bodyless.
+//! Bodies are present exactly once; declarations with no code stay bodyless.
 use super::{DefinitionKind, HeaderRef, SourceRows, Work, s};
 use crate::support::crates::owner_catalog::{BodyKind, BodyRef, DeclarationRef};
 
@@ -27,6 +27,7 @@ pub(super) fn validate(
                     .parent
                     .and_then(|parent| headers.get(parent.0 as usize))
                     .is_none_or(|header| !matches!(header, Some(HeaderRef::Trait(_))))
+                    && !rows.bodyless_runtime(function.declaration, work)?
                 {
                     return Err("source body absence is not an actual required trait method");
                 }

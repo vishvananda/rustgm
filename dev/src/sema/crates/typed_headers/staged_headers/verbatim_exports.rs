@@ -39,14 +39,16 @@ pub(super) fn prepare(
         let row = rows
             .exact_callable(declaration)
             .ok_or_else(|| error("exact import lost its actual completed definition row"))?;
-        let body = context.catalog.body_at(owner, row.body).map_err(error)?;
-        context
-            .catalog
-            .validate_function_origin(
-                function.definition,
-                context.catalog.origin(body).map_err(error)?,
-            )
-            .map_err(error)?;
+        if let Some(reference) = row.body {
+            let body = context.catalog.body_at(owner, reference).map_err(error)?;
+            context
+                .catalog
+                .validate_function_origin(
+                    function.definition,
+                    context.catalog.origin(body).map_err(error)?,
+                )
+                .map_err(error)?;
+        }
         if owner != context.descriptor.identity() {
             return Err(error("exact source import selected a foreign artifact"));
         }
@@ -61,12 +63,20 @@ pub(super) fn prepare(
                 "exact source import changed its actual function item",
             ));
         }
-        inputs.push((
-            function.definition,
-            signature,
-            Safety::Default,
-            row.symbol.as_ref(),
-        ));
+        let safety = if row.body.is_some() {
+            Safety::Default
+        } else {
+            match facts.types.kind(signature) {
+                Some(Kind::Function { unsafe_: true, .. }) => Safety::Unsafe,
+                Some(Kind::Function { unsafe_: false, .. }) => Safety::Safe,
+                _ => {
+                    return Err(error(
+                        "source runtime import lost its actual callable safety",
+                    ));
+                }
+            }
+        };
+        inputs.push((function.definition, signature, safety, row.symbol.as_ref()));
     }
     if inputs.len() != rows.exact_callables.len() {
         return Err(error(

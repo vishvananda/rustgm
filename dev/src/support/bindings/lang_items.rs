@@ -94,6 +94,12 @@ impl LangItem {
         Self::PanicAsyncGenFnResumedDrop,
         Self::PanicGenFnNoneDrop,
     ];
+    pub(crate) const fn is_runtime_import(self) -> bool {
+        matches!(
+            self,
+            Self::MemCpy | Self::MemMove | Self::MemSet | Self::MemCmp | Self::Bcmp | Self::StrLen
+        )
+    }
 
     /// These version-fourteen role bindings determine nominal storage policies.
     pub(crate) const fn is_storage_wrapper(self) -> bool {

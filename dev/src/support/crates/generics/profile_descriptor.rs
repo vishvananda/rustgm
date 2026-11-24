@@ -438,7 +438,7 @@ impl ValidatedRows {
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
-            exact_exports::validate(&rows, &indexed, work)?;
+            exact_exports::validate(&rows, &indexed, profile, work)?;
             if profile.body_nodes() {
                 if profile.compiler_operations() {
                     functions::validate_body_operations(&rows, &indexed, work)?;

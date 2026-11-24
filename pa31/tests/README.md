@@ -8,6 +8,13 @@ admission failures. Run
 `scripts/check_export_census.py` against a prebuilt compiler. A census writes
 an analysis report and exits with failure.
 
+`spec/source-runtime-imports/outcomes.json` declares six exact runtime
+imports over an authored nominal pointee. Fresh clients exercise native
+calls and check unsafe, argument-type and const-context errors. One Rust
+declaration uses `link_name` for `strlen`.
+`scripts/check_runtime_import_transport.py` checks the pinned oracle and
+rejects malformed ownership, body and symbol rows.
+
 `spec/source-promoted-references/outcomes.json` declares a provider whose
 promoted function table has two checked noncapturing handlers. A fresh
 client reads its typed field during constant evaluation and calls both

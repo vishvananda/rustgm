@@ -186,7 +186,7 @@ fn exact_rows_reject_foreign_missing_duplicate_and_legacy_ownership() -> Result 
     let (_, artifact) = provider(&fixture("provider")?)?;
     let (rows, attributes, modules) = test::raw(&artifact)?;
     let edits: [fn(&mut s::SourceRows); 8] = [
-        |r| r.exact_callables[0].body.0 = u32::MAX,
+        |r| r.exact_callables[0].body = None,
         |r| r.exact_callables[0].declaration.0 = u32::MAX,
         |r| r.exact_callables[1].symbol = r.exact_callables[0].symbol.clone(),
         |r| r.exact_callables.swap(0, 1),
@@ -284,7 +284,7 @@ fn c_callable_safety_privacy_and_nominal_boundaries_remain_independent() -> Resu
         error.contains("source declaration kind is outside"),
         "{error}"
     );
-    assert_eq!(size_of::<s::ExactCallableExport>(), 24);
+    assert_eq!(size_of::<s::ExactCallable>(), 32);
     // Version thirteen's associated definitions and enum tables share one
     // out-of-line box; raw rows pay its one pointer, frozen columns nothing.
     assert_eq!(size_of::<s::SourceRows>(), 792);
