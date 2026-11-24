@@ -148,6 +148,10 @@ fn item(
         ir::Rvalue::ConstArgument(term) if stage.declaration_policies() => {
             match stage.const_term(facts, term, context)? {
                 s::ConstTerm::Parameter(slot) => Ok(s::ValueKind::ConstArgument(slot)),
+                s::ConstTerm::Variant(value) => Ok(s::ValueKind::VariantAggregate {
+                    variant: value.declaration,
+                    fields: g::Range { start: 0, end: 0 },
+                }),
                 s::ConstTerm::Value(_) => {
                     Err("source const argument value requires its wider profile")
                 }

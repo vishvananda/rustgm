@@ -137,6 +137,7 @@ impl Builder<'_, '_> {
     ) -> Result<(), &'static str> {
         match term {
             Some(&s::ConstTerm::Value(value)) => self.push_type(value.ty, work),
+            Some(&s::ConstTerm::Variant(value)) => self.push_type(value.ty, work),
             _ => Ok(()),
         }
     }
@@ -313,6 +314,7 @@ impl Builder<'_, '_> {
                 }
                 _ => return Err("source array length slot is not a usize const parameter"),
             },
+            Some(&s::ConstTerm::Variant(_)) => return Err("source array length is not usize"),
             None => return Err("source array type has no length row"),
         };
         self.merge(child, length, work)
@@ -384,6 +386,11 @@ impl Builder<'_, '_> {
                 };
                 (parameter_type(ty)?, summary)
             }
+            Some(&s::ConstTerm::Variant(value)) => {
+                self.child(value.ty, work)?;
+                self.check_variant_const(value, work)?;
+                (parameter_type(value.ty)?, Summary::default())
+            }
             None => return Err("source const argument has no term row"),
         };
         if formal != ty {
@@ -391,6 +398,35 @@ impl Builder<'_, '_> {
         }
         Ok(summary)
     }
+    fn check_variant_const(
+        &self,
+        value: s::ConstVariant,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !self.profile.declaration_policies() {
+            return Err("source enum const argument requires body operations");
+        }
+        let rows = self.headers.rows();
+        let s::ConstFormalType::Nominal(owner) = s::const_formal_type(&rows.types, value.ty)?
+        else {
+            return Err("source enum const argument has a non-nominal type");
+        };
+        let Some(HeaderRef::Variant(index)) = self.headers.header(value.declaration, work)? else {
+            return Err("source enum const argument has no actual variant");
+        };
+        let enums = rows.enums();
+        work.charge(enums.headers.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+        let header = enums.owner(index)?;
+        let variant = &enums.variants[index as usize];
+        if header.declaration != owner
+            || variant.shape != s::VariantShape::Unit
+            || variant.fields.start != variant.fields.end
+        {
+            return Err("source enum const argument changed its owner or has a payload");
+        }
+        Ok(())
+    }
+
     fn projection_summary(
         &self,
         reference: s::ProjectionRef,

@@ -177,6 +177,9 @@ pub(super) fn validate(
                 return Err("source const value over a const parameter requires its wider profile");
             }
             ConstantBody::Evaluated(ConstTerm::Value(value)) => value,
+            ConstantBody::Evaluated(ConstTerm::Variant(_)) => {
+                return Err("source named enum constants require their original body");
+            }
             ConstantBody::PromotedReference { .. } => {
                 return Err("source promoted reference lost its actual allocation");
             }

@@ -60,6 +60,7 @@ pub(super) enum Node {
         scalar: Scalar,
         bits: [u32; 4],
     },
+    ConstVariant(crate::support::crates::owner_catalog::DeclarationRef),
     /// Version thirteen: the unsized `str` and the never type.
     Str,
     Never,
@@ -312,6 +313,7 @@ impl Arena {
             | Node::F128
             | Node::Foreign(_)
             | Node::ConstValue { .. }
+            | Node::ConstVariant(_)
             | Node::Str
             | Node::Never => NodeFacts(NodeFacts::FORMED),
             Node::NominalArgument { ty, next } => {

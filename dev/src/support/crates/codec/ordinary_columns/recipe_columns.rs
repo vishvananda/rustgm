@@ -1,6 +1,6 @@
 //! Header recipes retain separate type/region/binder and actual trait identities.
 use super::{Input, Writer, address_read, address_write, g, id, option, range, s};
-use crate::support::constness::Constness;
+use crate::support::{constness::Constness, crates::owner_catalog::DeclarationRef};
 
 /// Version thirteen's pattern constraint kinds after tag 16 and its base.
 const NON_NULL: u8 = 0;
@@ -314,6 +314,7 @@ pub(super) fn region_read(read: &mut Input<'_, '_>) -> Result<s::Region, &'stati
 /// Version thirteen's const term kinds after argument tag 2.
 const CONST_VALUE: u8 = 0;
 const CONST_PARAMETER: u8 = 1;
+const CONST_VARIANT: u8 = 2;
 /// One const term, written in place at its single reference: `0 | ty | bits`
 /// (16 bytes LE) or `1 | slot`. Each position decides which tags it admits.
 pub(super) fn const_term_write(out: &mut Writer, term: s::ConstTerm) -> Result<(), &'static str> {
@@ -327,9 +328,14 @@ pub(super) fn const_term_write(out: &mut Writer, term: s::ConstTerm) -> Result<(
             out.u8(CONST_PARAMETER)?;
             id(out, slot.0)
         }
+        s::ConstTerm::Variant(variant) => {
+            out.u8(CONST_VARIANT)?;
+            id(out, variant.ty.0)?;
+            id(out, variant.declaration.0)
+        }
     }
 }
-/// One const term. Every tag above 1 is rejected by name.
+/// A fieldless constructor keeps its type and actual declaration.
 pub(super) fn const_term_read(read: &mut Input<'_, '_>) -> Result<s::ConstTerm, &'static str> {
     Ok(match read.reader.u8()? {
         CONST_VALUE => s::ConstTerm::Value(s::ConstValue {
@@ -337,6 +343,12 @@ pub(super) fn const_term_read(read: &mut Input<'_, '_>) -> Result<s::ConstTerm, 
             bits: read.reader.u128()?,
         }),
         CONST_PARAMETER => s::ConstTerm::Parameter(s::SlotRef(read.id()?)),
+        CONST_VARIANT if read.profile.declaration_policies() => {
+            s::ConstTerm::Variant(s::ConstVariant {
+                ty: g::TypeRef(read.id()?),
+                declaration: DeclarationRef(read.id()?),
+            })
+        }
         _ => return Err("unknown source const term"),
     })
 }

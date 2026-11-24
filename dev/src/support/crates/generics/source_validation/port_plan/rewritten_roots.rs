@@ -249,6 +249,9 @@ impl Arena {
                 return self.intern(Node::ConstValue { scalar, bits }, work);
             }
             s::ConstTerm::Parameter(slot) => slot,
+            s::ConstTerm::Variant(variant) => {
+                return self.intern(Node::ConstVariant(variant.declaration), work);
+            }
         };
         match rewrite {
             Rewrite::Nominal { owner, arguments } => {

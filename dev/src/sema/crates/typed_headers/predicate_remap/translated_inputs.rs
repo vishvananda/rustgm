@@ -145,14 +145,25 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
         term: s::ConstRef,
         budget: &mut Headers,
     ) -> Result<Argument, Error> {
-        crate::sema::crates::typed_headers::recipe_cursor::remap_const_argument(
-            self.descriptor.rows(),
+        use crate::sema::crates::typed_headers::recipe_cursor::{
+            ConstInput, const_variant, remap_const_argument,
+        };
+        let rows = self.descriptor.rows();
+        remap_const_argument(
+            rows,
             store,
             term,
             budget,
-            |_, slot, _| self.graph.slot(slot),
+            |store, input, budget| match input {
+                ConstInput::Slot(slot) => self.graph.slot(slot),
+                ConstInput::Variant(value) => {
+                    let ty = self.graph.ty(value.ty)?;
+                    const_variant(rows, store, ty, value, budget)
+                }
+            },
         )
     }
+
     fn arguments(
         &self,
         store: &mut Store,

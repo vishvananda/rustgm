@@ -921,17 +921,37 @@ pub(super) fn prepare_functions(
     }
     cursor.into_complete(budget)
 }
-/// A version-thirteen const argument: a canonical value of a primitive row,
-/// or the rigid const parameter its slot names.
+/// A canonical value or the rigid parameter named by an actual slot.
 pub(super) fn const_argument<'rows, B: Budget, P: Port<'rows, B>>(
     port: &mut P,
     store: &mut Store,
     term: s::ConstRef,
     budget: &mut B,
 ) -> Result<Argument, Error> {
-    remap_const_argument(port.rows(), store, term, budget, |store, slot, budget| {
-        port.slot(store, slot, budget)
-    })
+    let rows = port.rows();
+    remap_const_argument(
+        rows,
+        store,
+        term,
+        budget,
+        |store, input, budget| match input {
+            ConstInput::Slot(slot) => port.slot(store, slot, budget),
+            ConstInput::Variant(value) => {
+                let formal = s::const_formal_type(&rows.types, value.ty).map_err(error)?;
+                let ty = super::mapped_source::slot_bindings::intern_const_type(
+                    store,
+                    formal,
+                    |owner| port.definition(owner, budget),
+                )?;
+                const_variant(rows, store, ty, value, budget)
+            }
+        },
+    )
+}
+
+pub(super) enum ConstInput {
+    Slot(s::SlotRef),
+    Variant(s::ConstVariant),
 }
 
 pub(super) fn remap_const_argument<B: Budget>(
@@ -939,7 +959,7 @@ pub(super) fn remap_const_argument<B: Budget>(
     store: &mut Store,
     term: s::ConstRef,
     budget: &mut B,
-    slot_argument: impl FnOnce(&mut Store, s::SlotRef, &mut B) -> Result<Argument, Error>,
+    input: impl FnOnce(&mut Store, ConstInput, &mut B) -> Result<Argument, Error>,
 ) -> Result<Argument, Error> {
     budget.charge(1)?;
     match rows.consts().get(term.0 as usize).copied() {
@@ -954,13 +974,34 @@ pub(super) fn remap_const_argument<B: Budget>(
                 .map(Argument::Const)
                 .map_err(|_| error("non-canonical source const value"))
         }
-        Some(s::ConstTerm::Parameter(slot)) => match slot_argument(store, slot, budget)? {
-            argument @ Argument::Const(_) => Ok(argument),
-            _ => Err(error("source const term names a non-const slot")),
-        },
+        Some(s::ConstTerm::Parameter(slot)) => {
+            match input(store, ConstInput::Slot(slot), budget)? {
+                argument @ Argument::Const(_) => Ok(argument),
+                _ => Err(error("source const term names a non-const slot")),
+            }
+        }
+        Some(s::ConstTerm::Variant(value)) => input(store, ConstInput::Variant(value), budget),
         None => Err(error("source const argument has no term row")),
     }
 }
+
+pub(super) fn const_variant(
+    rows: s::ValidatedView<'_>,
+    store: &mut Store,
+    ty: TypeId,
+    value: s::ConstVariant,
+    budget: &mut impl Budget,
+) -> Result<Argument, Error> {
+    let Some(s::HeaderRef::Variant(index)) = rows.header(value.declaration).map_err(error)? else {
+        return Err(error("source enum const value lost its actual variant"));
+    };
+    let ordinal = rows.enums().variants[index as usize].ordinal;
+    super::predicate_remap::translation::feature_names::paid(budget, |pay| {
+        store.intern_aggregate_constant(ty, Some(ordinal), &[], pay)
+    })
+    .map(Argument::Const)
+}
+
 /// Version thirteen: an array over its completed element, whose sizedness
 /// comes from this consumer's own structural facts, never from the wire. A
 /// value length is a canonical usize and folds to `Kind::Array`; a slot length
@@ -1006,6 +1047,7 @@ fn array<'rows, B: Budget, P: Port<'rows, B>>(
                 ));
             }
         },
+        s::ConstTerm::Variant(_) => return Err(error("source array length is not usize")),
     })
 }
 /// Closed leaf rows need neither the port nor a store entry.

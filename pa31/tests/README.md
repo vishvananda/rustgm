@@ -93,7 +93,9 @@ with the prebuilt compilers.
 `spec/source-const-default-transport/outcomes.json` checks the default array
 length and a record-valued trait argument in a fresh client. Run
 `scripts/check_const_default_transport.py` with the prebuilt compilers.
-
+`spec/source-enum-const-arguments/outcomes.json` checks distinct enum values
+in const arguments inside imported generic bodies. Run
+`scripts/check_enum_const_arguments.py` with the prebuilt compilers.
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

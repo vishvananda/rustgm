@@ -114,6 +114,7 @@ fn application(
             s::Argument::Region(region) => demand(Root::Region(region))?,
             s::Argument::Const(term) => match rows.consts().get(term.0 as usize) {
                 Some(s::ConstTerm::Value(value)) => demand(Root::Type(value.ty))?,
+                Some(s::ConstTerm::Variant(value)) => demand(Root::Type(value.ty))?,
                 Some(s::ConstTerm::Parameter(_)) => {}
                 None => return Err(error("source trait argument lost its const term")),
             },

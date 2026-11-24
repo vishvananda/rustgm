@@ -206,6 +206,13 @@ pub struct ConstRef(pub u32);
 pub enum ConstTerm {
     Value(ConstValue),
     Parameter(SlotRef),
+    Variant(ConstVariant),
+}
+/// The exact fieldless constructor of a closed enum const argument.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ConstVariant {
+    pub ty: TypeRef,
+    pub declaration: DeclarationRef,
 }
 /// Canonical bits checked against the type and use site. A v14 named
 /// constant may use the payload for tuple fields in logical field order.

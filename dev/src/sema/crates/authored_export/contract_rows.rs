@@ -278,11 +278,42 @@ impl Stage {
                         .get(&parameter)
                         .ok_or("source const term uses an unreserved actual parameter slot")?,
                 ),
+                ConstKind::Aggregate(aggregate) if self.declaration_policies() => {
+                    self.const_variant(facts, aggregate, context)?
+                }
                 ConstKind::Aggregate(_) => {
                     return Err("source aggregate const arguments are outside the initial profile");
                 }
             },
         )
+    }
+
+    fn const_variant(
+        &mut self,
+        facts: &Declarations,
+        aggregate: crate::types::arguments::trees::AggregateId,
+        context: Context,
+    ) -> Result<s::ConstTerm, &'static str> {
+        use crate::types::{GenericArgs, Kind, arguments::trees::Aggregate};
+        let Some(Aggregate::Fields {
+            ty,
+            variant: Some(ordinal),
+            values: &[],
+        }) = facts.types.aggregate_constant(aggregate)
+        else {
+            return Err("source aggregate const arguments require their complete field domain");
+        };
+        let Some(Kind::Adt(item, GenericArgs::EMPTY)) = facts.types.kind(ty) else {
+            return Err("source enum const argument must name its closed enum");
+        };
+        let id = *facts
+            .members
+            .variants(item)
+            .get(ordinal as usize)
+            .ok_or("source enum const argument lost its actual variant")?;
+        let declaration = self.variant(id)?;
+        let ty = self.ty(facts, ty, context)?;
+        Ok(s::ConstTerm::Variant(s::ConstVariant { ty, declaration }))
     }
 
     pub(super) fn argument_rows(
