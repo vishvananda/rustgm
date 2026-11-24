@@ -1,9 +1,9 @@
-# RustGM Programming Assignment 19: Traits and methods
+# RustGM Programming Assignment 19 — Traits and methods
 
-Status: **implemented-draft**. Prerequisite: PA18. The bounded language profile is
-Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. This assignment adds semantic inspection and extends
-PA18's checked source-to-LowIR pipeline with inherent and user-trait dispatch.
+Build on [PA18](../pa18/README.md) to resolve inherent and user-trait
+methods, prove trait requirements, and lower static calls. Use Rust 1.98.0,
+edition 2024, on Linux x86-64 with aborting panics, checked arithmetic,
+and disabled debug assertions.
 
 ## Declarations and contracts
 
@@ -25,7 +25,7 @@ be called or coerced to the matching function pointer. Constructor visibility
 still applies; a record, enum, trait-default Self or ordinary type alias does
 not become a tuple constructor. Reject extra arguments on `Self` and invalid
 borrows through its fields. A nested item may use a closed enclosing impl's
-constructor (the pinned compiler accepts this with a lint), but cannot capture
+constructor. Nested items cannot capture
 generic parameters from that impl. Check even unused nested items.
 `tests/spec/self-constructors/` records these source and native contracts.
 
@@ -79,6 +79,12 @@ rather than choosing by declaration order. This is the current single-crate
 profile; associated projections, general normalization, extended coherence and
 recursive solver caching belong to PA20.
 
+A checked `min_specialization` request permits nonoverlapping `default fn`
+methods on trait and inherent impls. Retain the keyword and the method body,
+including unused bodies. Apply ordinary conformance and method selection.
+A default body supplied by a trait follows the trait-body rules. Overlapping
+specialization families are outside the PA19 profile.
+
 ## Proof and method selection
 
 A complete trait goal contains Self, trait identity and every argument, including
@@ -106,9 +112,8 @@ pointer's local binder or become permissions for its enclosing body.
 
 Function-pointer arguments use binder-aware alpha equality, including reordered
 names and unused local binders. Local-to-static and differently correlated
-lifetimes remain distinct. The three explicitly documented redundant-binder
-acceptance differences from pinned rustc are part of this draft contract; see
-[the validation review](../docs/pa19-validation.md). Higher-ranked trait bounds
+lifetimes remain distinct. The course accepts redundant unused binders where the callable lifetimes
+are equivalent. Higher-ranked trait bounds
 such as `for<'a> Trait<'a>` still belong to PA21.
 
 Support inherent `Type::method` calls and function values, implicit trait paths
@@ -125,9 +130,7 @@ naming that ambiguous trait directly remains a separate resolution question.
 Within a trait impl, its implemented trait also supplies lexical method
 eligibility, including for nested functions and macro-generated members. Retain
 the resolved trait identity in that impl's scope. It supplies no named import,
-bound priority, fixed trait arguments or additional supertraits in scope. The
-[implemented-trait packet](tests/spec/impl-scope/README.md) preserves those
-boundaries and ordinary conformance, method requirements and ambiguity.
+bound priority, fixed trait arguments or additional supertraits in scope.
 Method-own requirements, later call arguments and expected results cannot choose
 between distinct method names. After selecting a name, ordinary inference may
 resolve multiple applications of that same trait.
@@ -171,14 +174,18 @@ code generator or textual intermediate transport is introduced.
 
 ## CLI and text contract
 
-`dev/rustgm --emit-semantics [-o OUTPUT] SOURCE` and `--count-semantics` run
-declaration/body inference and report selected typed facts. They are inspection
-modes: region, initialization, move, loan and demanded-instance proofs remain in
-`--emit-lowir`. A successful semantic view does not authorize execution. The
-paired `inspection/` and receiver-contract controls distinguish these boundaries.
+```text
+rustgm --emit-semantics [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+rustgm --emit-lowir [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA11's input, configuration, and output options. The semantic view
+checks declarations and body inference. The LowIR mode also checks
+regions, initialization, moves, loans, and demanded instances before
+lowering.
 
 The version-one text starts with `semantic-crate 1`, followed by the existing
-canonical `type` table and typed `def` records. It then reports:
+canonical `type` table and typed `def` records. The remaining record groups follow.
 
 - `associated-owner` and `associated-member`: dense inventory identity, owner
   kind, Self declaration/type, source, safety, trait name and receiver shape.
@@ -200,7 +207,7 @@ records count the validated user-trait registry; built-in Drop retains its
 existing dedicated implementation and cleanup path.
 
 `eof owners=N members=N parameters=N predicates=N impls=N calls=N paths=N impl-uses=N`
-closes the view. Count mode emits that same counts line without `eof `. Dense
+closes the view. Dense
 inventories preserve declaration order. Maps are sorted by declaration identity
 or `(file,node)` source identity only at this output boundary. Per-owner vectors
 preserve elaboration order. Canonical types, arguments and regions reuse the
@@ -212,11 +219,11 @@ are errors. Signals, timeouts, panics and exit 86 are implementation failures,
 never acceptable rejection. Source offsets and macro notes retain earlier rules.
 The `.ref`, `.ref.stderr` and `.ref.exit_status` files freeze complete bytes.
 
-`--emit-lowir` and `--count-lowir` retain PA18's full proof and symbol/vocabulary
+`--emit-lowir` retains PA18's full proof and symbol/vocabulary
 contracts. Required/default trait dispatch selects ordinary concrete callable
 instances, and receiver conversions use the existing place/borrow lowering.
-The supplemental LowIR lane includes every native execution control and the
-later-proof rejections; it is not optional when implementing this assignment.
+Implement LowIR lowering as well as semantic inspection. The LowIR cases
+include execution controls and rejections from the later proofs.
 
 ## Efficiency, limits and later assignments
 
@@ -227,56 +234,28 @@ head. Keep assumptions rigid and use canonical identities rather than rendering
 types. Exclude impossible receiver depths and outer heads before copying probe
 graphs; every surviving candidate still needs complete proof.
 
-Retain bounded iterative worklists and memoized substitutions. The reference's
-trait visibility and method candidate work budgets are each 1,000,000; existing
-inference, predicate, instance, layout and cleanup budgets still apply. A resource
-limit is a diagnostic, never permission to omit checks. Maintainer controls cover
-1,024 unrelated traits/call scopes, deep reference chains and predicate diamonds.
-Measure immutable binaries and inputs with A/A calibration and paired blocks,
-retaining every observation and checking output equality. Follow `spec.md` and
-the same safe Rust, Clippy and syntax-aware audit requirements as earlier stages.
+Retain bounded iterative worklists and memoized substitutions. Use the
+1,000,000-work limits for trait visibility and method candidates. The
+existing inference, predicate, instance, layout, and cleanup limits still
+apply. Diagnose exhausted resources.
 
 Associated types/constants, projections, normalization and extended coherence
 belong to PA20. Higher-ranked trait bounds, GATs, opaque captures and advanced
 generic relationships belong to PA21. General unsized types, trait objects and
-constant statements remain PA22, PA23 and PA25 respectively. The remaining explicit
-later-stage boundary fixture records rustc acceptance and this stage's rejection.
-The higher-ranked bound boundary belongs to the semantic inspection lane: its
-ordinary-predicate vocabulary cannot encode quantified clauses, even when later
-source-to-LowIR functionality can compile the same program.
+constant statements remain PA22, PA23, and PA25 respectively. The PA19
+semantic format reports ordinary predicates. Quantified clauses need the
+later trait inspection contract.
 
-## Validation
+## Run the tests
 
-The manifest contains 1,236 cases: 790 accepted and 446 rejected. There are 468
-semantic inspection cases and 768 LowIR cases. The LowIR lane has 336 accepted
-programs: 334 declared runtime comparisons and two explicitly declared unused
-generic compilation controls. Its 432 rejections retain their genuine language
-outcomes. No accepted native control is silently skipped.
-The [callback formation packet](tests/spec/callback-formation/README.md) owns the
-ordinary trait-function pointer minimum; const effects belong in PA25.
+Run the PA19 test target from the repository root.
 
-Five acceptance differences are explicit: one later-stage boundary, one
-pending-lifetime inspection control and three redundant-binder compiler
-differences. They are excluded from default-rustc acceptance-parity claims.
-The migrated PA17/PA18 inherent boundaries and PA18 trait-method boundary retain
-their original source bytes in accepted fixtures.
-The former associated-type and associated-constant boundaries are covered by
-PA20's associated-item contract. The former trait-object boundary is now an
-accepted PA23 fixture, with its source bytes preserved.
-The unchanged general-constant-statements boundary now belongs to PA25's draft
-migrated fixtures because the maintainer supports its constant argument.
+```sh
+make -C pa19 test
+```
 
-Run `make test-pa19`, `make test-rustc`, `make test-native-pa19` and
-`make lint audit-rust test-harness test-upstream`. The root report includes PA19;
-PA25–PA45 remain planned and fail explicitly. See
-[the validation review](../docs/pa19-validation.md) for qualifications, reference
-review, native evidence and the distinction between inspection and execution.
-
-A checked `min_specialization` request admits nonoverlapping `default fn`
-methods on actual trait or inherent impl owners. Retain the keyword and real
-method body, check every unused body and preserve ordinary conformance and
-method selection. A default trait body is a separate existing contract. This
-bounded checkpoint does not admit overlapping specialization families: the
-checked specialization graph, always-applicability and inherited-impl dispatch
-remain required later source-library work. `tests/spec/default-methods/` owns
-the accepted blanket/inherent and invalid-unused-body controls.
+[The manifest](tests/manifest.json) covers proof, dispatch, receiver
+selection, function pointers, and diagnostic boundaries. It selects the
+inspection or LowIR mode for each case. Use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+to run executable examples.

@@ -1,7 +1,8 @@
-# RustGM Programming Assignment 18: Generics
+# RustGM Programming Assignment 18 — Generics
 
-Status: **implemented-draft**. Prerequisite: PA17. This is a bounded course profile: Rust 1.98.0, edition 2024, Linux x86-64,
-panic abort, overflow checks enabled and debug assertions disabled.
+Extend [PA17](../pa17/README.md) with type and const parameters and concrete
+instances of generic bodies. Use Rust 1.98.0, edition 2024, on Linux x86-64
+with aborting panics, checked arithmetic, and disabled debug assertions.
 
 ## Required implementation
 
@@ -73,11 +74,9 @@ earlier move.
 
 ## Template proofs and concrete execution
 
-Actual implicit reborrow places retain their referent field instances before
-immutable ownership queries. The [borrowed-place packet](tests/spec/borrowed-place-fields/README.md)
-adds five independent outcomes and checks a non-Copy referent's real destructor
-exactly once. Selected borrow data feeds the existing preparation and declaration
-wait paths; the ordinary move and lifetime requirements still apply.
+Resolve a borrowed generic field's instance before checking move and lifetime
+obligations. Reborrowing the field preserves ownership of its referent, including
+its destructor obligation.
 
 Check bodies with rigid type/const parameters and their own assumptions. The
 built-in Sized, Copy and Clone identities and the existing supported derives
@@ -123,9 +122,10 @@ must cover its complete nominal schema with distinct parameters; reordered type,
 const and lifetime parameters and aliases can express that same schema. Reject
 specialization, repeated parameters, stronger impl/method bounds, duplicate impls
 and Copy conflicts. Retain the checked inverse argument mapping for method
-selection. Prove every original destructor body, then every concrete demanded
-method with its own lifetime context and cleanup plan. A partial move keeps the
-remaining containing object's cleanup and lifetime requirements.
+selection. Prove each destructor template under its declared lifetime
+assumptions. Resolve concrete dispatch and build the cleanup plan for each
+demanded instance. A partial move keeps the containing object's remaining
+cleanup and lifetime requirements.
 
 Demand destructor code only from actual selected cleanup roots. A cached recipe,
 an unused ordinary owner or a path that diverges before cleanup does not itself
@@ -136,17 +136,15 @@ abort behavior.
 
 ## CLI and text contract
 
-`dev/rustgm --emit-lowir [-o OUTPUT] SOURCE` and `--count-lowir` use the same
-complete template, instance and concrete proof path. Successful emission has
-exit status 0, nonempty LowIR and empty stderr. Rejection has status 1, empty
-stdout and a diagnostic. Diagnostics retain source byte offsets and macro
-expansion notes. Signals, timeouts, panics and exit 86 are failures, never
-accepted rejection. Earlier type/layout/body/ownership/region/loan views retain
-their own inspection contracts; they are not generic execution authorization.
+Use PA11's `rustgm --emit-lowir` interface for executable code. Finish
+template checks and concrete instance selection before writing output. Success
+exits 0. A source error exits 1 with empty standard output and a diagnostic
+with the source and macro expansion locations. A library case can produce
+empty LowIR when it demands no concrete instance.
 
-The supplemental `--emit-patterns` lane checks canonical instantiated fields and
-module visibility for empty-match coverage. It retains PA13's selected-pattern
-format and does not authorize executable monomorphization.
+`--emit-patterns` inspects coverage for canonical instantiated fields and
+module visibility. It uses PA13's selected-pattern format. The other
+inspection commands retain their original obligations.
 
 The LowIR dialect, entry adapter `main`, aggregate calling convention, globals,
 scalar operations and cleanup vocabulary are inherited from PA11–PA17. Ordinary
@@ -160,19 +158,10 @@ of rendered types. Callable symbol reservation and LowIR emission use the existi
 lowering queue. Glue names remain `rg.drop.N`; globals remain `rg.data.N`.
 Hash-table iteration must not determine any emitted identity or ordering.
 
-Count mode reports `symbols S functions F blocks B instructions I slots L temporaries T`
-on one line, adding `globals G data_items D` when globals exist.
-It counts the same fully constructed program without rendering its text.
-The committed `.ref`, `.ref.stderr` and `.ref.exit_status` files freeze exact
-bytes, including final newlines. No textual generic-template language or new
-backend code generator is introduced.
-
 For example, `fn id<T>(x:T)->T{x}fn main(){let _=id(7u8);let _=id(9u8);}`
-requires one u8 instance. Adding `id(300u16)` requires a second instance. The
-`callables/identity.rs` fixture supplies this control with value assertions and
-its complete LowIR oracle; `constructors/` and `destructors/` supply factory and
-cleanup controls. Both previous generic boundary fixtures move here from PA12
-and PA17 with accepted outcomes.
+requires one `u8` instance. Adding `id(300u16)` demands another instance.
+See the [identity fixture](tests/spec/callables/identity.rs) and its
+[expected LowIR](tests/spec/callables/identity.rs.ref).
 
 ## Bounds, efficiency and later assignments
 
@@ -185,46 +174,30 @@ and implicit constructor template discovery and all ordinary proofs, an empty
 template set permits ordinary lowering to follow dependencies without a second
 generic demand walk.
 
-The reference limits each declaration to 128 simultaneously active distinct
-instances, 100,000 instantiated bodies overall and 64 MB of retained body/contract
+Allow up to 128 simultaneously active distinct instances per declaration,
+100,000 instantiated bodies overall, and 64 MB of retained body and contract
 storage under its accounting. Callable dependency traversal and selected cleanup
 recipe discovery each have a 1,000,000-work bound. Existing type substitution,
 layout, promotion, ownership and cleanup budgets also apply. A bound is a diagnosed
-resource limit; it cannot silently omit code or reinterpret a type. Sharing and
-wide/deep work controls remain maintainer invariants as well as scaling measurements.
+resource limit. Report the failure if the work cannot be completed within it.
 
 General inherent/trait method lookup belongs to PA19; associated items,
 normalization and general coherence to PA20; higher-ranked trait obligations,
 GATs and opaque identities/captures to PA21. PA18 uses existing lifetime/binder
 machinery as required by its signatures; it does not claim those later features.
 Unsized executable values and pointer metadata remain PA22, trait objects PA23,
-closures PA24 and general const functions PA25. The former opaque-return boundary
-now belongs to PA21 with an accepted oracle. Method and associated-item controls
-belong to their later owning assignments.
+closures PA24, and general const functions PA25.
 
-## Validation
+## Run the tests
 
-The suite declares 502 fixtures: 315 accepted and 187 rejected. The manifest
-selects 305 accepted programs for execution through both pinned rustc and the
-qualified CPPGM backend; three intentionally diverge and must only undergo code
-generation. Four accepted pattern inspections and three generic library object
-checks do not execute; those three libraries declare empty LowIR units.
-Growing-instance rejections use rustc object generation: metadata-only success
-cannot qualify them.
-No compilation-only result counts as a runtime comparison. Native panic cases
-retain the established qualified abort contract.
+Run the PA18 test target from the repository root.
 
-Run `make test-pa18`, `make test-rustc`, `make test-native-pa18`,
-`make test-maintainer-native` and all earlier active stages, plus
-`make lint audit-rust test-harness test-upstream`. Only explicit `make ref-test-pa18`
-generates oracles after declared outcomes have independent evidence. Preserve
-all performance observations with frozen inputs/binaries, A/A calibration,
-paired ABBA runs and full/count output equality. Clippy all/pedantic and the
-syntax-aware file/architecture audit are required; blanket lint suppressions
-and source reparsing in hot paths are not acceptable shortcuts.
+```sh
+make -C pa18 test
+```
 
-`tests/spec/shared-call-reborrow/` retains generic referent/value, Copy-bound and
-mutable move controls through the existing library LowIR/defining-body pipeline.
-Their reference ownership behavior uses PA16's normal reborrow owner, while type-generic
-body checking belongs here. See the
-[shared call checkpoint](../docs/pa16-shared-call-reborrow.md).
+[The manifest](tests/manifest.json) includes executable programs, growing
+instance graphs, library units, and pattern inspections. Use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+for examples intended to terminate. For an intentional divergence case,
+inspect the generated LowIR or object without running it.
