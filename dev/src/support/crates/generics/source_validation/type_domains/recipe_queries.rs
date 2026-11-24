@@ -107,7 +107,7 @@ impl Types {
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         let summary = self.summary(ty, work)?;
-        Ok(summary.body.is_none() && summary.bound.is_none())
+        Ok(summary.body.is_none() && summary.bound.is_none() && summary.nominal_depth.is_none())
     }
     pub(in super::super) fn closed_application(
         &self,
@@ -124,13 +124,20 @@ impl Types {
     }
 
     pub(in super::super) fn region(
+        &self,
         headers: &HeaderIndex<'_>,
         binders: &BinderIndex<'_>,
         context: Context,
         region: s::RegionRef,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let summary = super::node_rows::region_summary(headers, binders, region, work)?;
+        let summary = super::node_rows::region_summary(
+            headers,
+            binders,
+            region,
+            self.declaration_policies,
+            work,
+        )?;
         Self::check(headers, context, summary, work)
     }
     fn check(
@@ -144,6 +151,26 @@ impl Types {
             && !headers.scopes().contains(context.owner, slot, work)?
         {
             return Err("source consuming type root captures another parameter owner");
+        }
+        if let Some(mut depth) = summary.nominal_depth {
+            let mut frame = context
+                .frame
+                .ok_or("source nominal region root lost its enclosing binder")?;
+            let binders = &headers.rows().binders;
+            while depth > 0 {
+                work.charge(1)?;
+                frame = binders
+                    .get(frame.0 as usize)
+                    .and_then(|row| row.parent)
+                    .ok_or("source nominal region escaped its enclosing binder")?;
+                depth -= 1;
+            }
+            let row = binders
+                .get(frame.0 as usize)
+                .ok_or("source nominal region lost its declaration binder")?;
+            if row.parent.is_some() || row.kind != s::BinderKind::DeclarationHeader {
+                return Err("source nominal region did not resolve to its declaration header");
+            }
         }
         if summary.body.is_some_and(|body| Some(body) != context.body) {
             return Err("source consuming type root captures another original allocation");
@@ -159,5 +186,8 @@ impl Types {
 }
 
 fn closed(summary: Summary) -> bool {
-    summary.parameter.is_none() && summary.body.is_none() && summary.bound.is_none()
+    summary.parameter.is_none()
+        && summary.nominal_depth.is_none()
+        && summary.body.is_none()
+        && summary.bound.is_none()
 }

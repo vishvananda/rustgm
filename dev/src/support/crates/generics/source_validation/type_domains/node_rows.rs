@@ -7,6 +7,16 @@ const OUTSIDE_APPLICATIONS: &str =
     "source const arguments outside nominal and function applications require a wider profile";
 
 impl Builder<'_, '_> {
+    fn region(&self, region: s::RegionRef, work: &mut Work) -> Result<Summary, &'static str> {
+        region_summary(
+            self.headers,
+            self.binders,
+            region,
+            self.profile.declaration_policies(),
+            work,
+        )
+    }
+
     /// An application's arguments, pushed so the first is visited first.
     fn push_arguments(&mut self, arguments: g::Range, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
@@ -199,7 +209,7 @@ impl Builder<'_, '_> {
                 referent, region, ..
             } => self.merge(
                 self.child(referent, work)?,
-                region_summary(self.headers, self.binders, region, work)?,
+                self.region(region, work)?,
                 work,
             )?,
             // A pointer or slice row carries no region. A structurally unsized
@@ -359,7 +369,7 @@ impl Builder<'_, '_> {
             let child = match (argument, formal.kind) {
                 (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => self.child(*ty, work)?,
                 (s::Argument::Region(region), s::ParameterKind::Region) => {
-                    region_summary(self.headers, self.binders, *region, work)?
+                    self.region(*region, work)?
                 }
                 (s::Argument::Const(term), s::ParameterKind::Const { ty }) => {
                     self.const_summary(*term, ty, work)?
@@ -461,9 +471,7 @@ impl Builder<'_, '_> {
                 for argument in range.slice(&rows.arguments)? {
                     let child = match argument {
                         s::Argument::Type(ty) => self.child(*ty, work)?,
-                        s::Argument::Region(region) => {
-                            region_summary(self.headers, self.binders, *region, work)?
-                        }
+                        s::Argument::Region(region) => self.region(*region, work)?,
                         s::Argument::Const(_) => return Err(OUTSIDE_APPLICATIONS),
                     };
                     result = self.merge(result, child, work)?;
@@ -487,9 +495,7 @@ impl Builder<'_, '_> {
             for argument in row.captures.slice(&rows.arguments)? {
                 let child = match argument {
                     s::Argument::Type(ty) => self.child(*ty, work)?,
-                    s::Argument::Region(region) => {
-                        region_summary(self.headers, self.binders, *region, work)?
-                    }
+                    s::Argument::Region(region) => self.region(*region, work)?,
                     s::Argument::Const(_) => return Err(OUTSIDE_APPLICATIONS),
                 };
                 result = self.merge(result, child, work)?;
@@ -562,7 +568,7 @@ impl Builder<'_, '_> {
                     self.const_summary(*term, ty, work)?
                 }
                 (s::Argument::Region(region), None) if index < regions => {
-                    region_summary(self.headers, self.binders, *region, work)?
+                    self.region(*region, work)?
                 }
                 _ => return Err("source application changed its actual formal kind"),
             };
@@ -643,7 +649,7 @@ impl Builder<'_, '_> {
             let child = match (*argument, formal.kind) {
                 (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => self.child(ty, work)?,
                 (s::Argument::Region(region), s::ParameterKind::Region) => {
-                    region_summary(self.headers, self.binders, region, work)?
+                    self.region(region, work)?
                 }
                 (s::Argument::Const(term), s::ParameterKind::Const { ty })
                     if self.profile.declaration_policies() =>
@@ -684,6 +690,14 @@ impl Builder<'_, '_> {
                 })
             };
         }
+        if let Some(depth) = summary.nominal_depth {
+            if frame.parent.is_none() {
+                return Err("source function type escapes its binder root");
+            }
+            summary.nominal_depth = Some(depth.checked_sub(1).ok_or(
+                "source function type captured a nominal region at an invalid binder depth",
+            )?);
+        }
         Ok(summary)
     }
 }
@@ -692,6 +706,7 @@ pub(super) fn region_summary(
     headers: &super::HeaderIndex<'_>,
     binders: &super::BinderIndex<'_>,
     region: s::RegionRef,
+    declaration_policies: bool,
     work: &mut Work,
 ) -> Result<Summary, &'static str> {
     work.charge(1)?;
@@ -730,12 +745,17 @@ pub(super) fn region_summary(
                 }
             }
             // Version thirteen: a struct's or enum's own region slot, named
-            // directly in its header frame. Older profiles reject the slot
-            // itself (`record_contracts::require_profile`).
-            s::Region::Parameter { slot, depth: 0 } if nominal_region(headers, *slot) => Summary {
-                parameter: Some(*slot),
-                ..Summary::default()
-            },
+            // directly in its header frame. Version fourteen also preserves its
+            // nested-binder depth inside `fn` and `dyn` types.
+            s::Region::Parameter { slot, depth }
+                if (*depth == 0 || declaration_policies) && nominal_region(headers, *slot) =>
+            {
+                Summary {
+                    parameter: Some(*slot),
+                    nominal_depth: Some(*depth),
+                    ..Summary::default()
+                }
+            }
             s::Region::Parameter { .. } => {
                 return Err("source early region parameters require complete wider transport");
             }

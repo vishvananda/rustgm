@@ -80,6 +80,9 @@ unsatisfied `Send` obligation in a fresh client.
 `spec/source-enum-policy-and-dyn-inherent/outcomes.json` checks zero-variant
 uninhabited enums, `#[must_use]` enum contracts, and inherent methods on
 `dyn Trait` / `dyn Trait + Send` targets across separate crates.
+`spec/source-fn-lifetime-transport/outcomes.json` checks lifetime-capturing and
+higher-ranked `fn` pointer types across nominal fields, provider bodies,
+reification, pointer calls, and fresh client invariance enforcement.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

@@ -102,9 +102,12 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
                 bound(depth, slot, frame.count)?
             }
             s::Region::Parameter { slot, depth } => {
-                if let Some(region) =
-                    nominal_region((&rows.slots, &rows.declarations), slot, depth)?
-                {
+                if let Some(region) = nominal_region(
+                    (&rows.slots, &rows.declarations),
+                    slot,
+                    depth,
+                    context.descriptor.profile().declaration_policies(),
+                )? {
                     region
                 } else {
                     return Err(error(
@@ -123,20 +126,23 @@ pub(super) fn regions(context: &Context<'_>, budget: &mut Headers) -> Result<Vec
 }
 /// Version thirteen: a struct or enum's own region slot, named in its own
 /// declaration frame, is that nominal's template lifetime `bound(0, index)`,
-/// exactly as a local nominal's field types name it. Other declared lifetimes
-/// keep their wider profile.
+/// exactly as a local nominal's field types name it. Version fourteen also
+/// retains its exact nested-binder depth inside `fn` and `dyn` types.
 pub(in crate::sema::crates::typed_headers) fn nominal_region(
     (slots, declarations): (&[s::ParameterSlot], &[s::Declaration]),
     slot: s::SlotRef,
     depth: u16,
+    declaration_policies: bool,
 ) -> Result<Option<RegionId>, Error> {
     let row = slots
         .get(slot.0 as usize)
         .ok_or_else(|| error("source declared lifetime lost its actual slot"))?;
-    if depth != 0 || !nominal_lifetime(declarations, row) {
+    if (depth != 0 && !declaration_policies) || !nominal_lifetime(declarations, row) {
         return Ok(None);
     }
-    template_region(row).map(Some)
+    let index = u16::try_from(row.index)
+        .map_err(|_| error("source declared lifetime exceeds canonical identity space"))?;
+    RegionId::bound(depth, index).map(Some).map_err(error)
 }
 /// The wire stores the actual written lifetime in the declaration's template.
 pub(in crate::sema::crates::typed_headers) fn template_lifetime(

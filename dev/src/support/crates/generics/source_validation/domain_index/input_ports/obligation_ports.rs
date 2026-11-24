@@ -1,5 +1,5 @@
 //! All retained goal roots keep their body/frame and allocation namespaces.
-use super::{Context, DomainIndex, Types, Work, s};
+use super::{Context, DomainIndex, Work, s};
 
 impl DomainIndex<'_, '_> {
     pub(in super::super) fn obligation(
@@ -27,17 +27,20 @@ impl DomainIndex<'_, '_> {
                 Ok(())
             }
             s::InputKind::Membership { region, captures } => {
-                Types::region(self.headers, &self.binders, context, region, work)?;
+                self.types
+                    .region(self.headers, &self.binders, context, region, work)?;
                 for capture in captures.slice(&self.headers.rows().arguments)? {
                     let s::Argument::Region(region) = capture else {
                         return Err("source membership captures must retain lifetime-only kinds");
                     };
-                    Types::region(self.headers, &self.binders, context, *region, work)?;
+                    self.types
+                        .region(self.headers, &self.binders, context, *region, work)?;
                 }
                 Ok(())
             }
             s::InputKind::LocalBorrow(region) => {
-                Types::region(self.headers, &self.binders, context, region, work)
+                self.types
+                    .region(self.headers, &self.binders, context, region, work)
             }
             s::InputKind::Equality(bound) | s::InputKind::Outlives(bound) => {
                 self.bound(context, bound, work)
@@ -75,7 +78,8 @@ impl DomainIndex<'_, '_> {
             }
             s::InputKind::TypeOutlives { ty, shorter } => {
                 self.types.root(self.headers, context, ty, work)?;
-                Types::region(self.headers, &self.binders, context, shorter, work)
+                self.types
+                    .region(self.headers, &self.binders, context, shorter, work)
             }
         }
     }

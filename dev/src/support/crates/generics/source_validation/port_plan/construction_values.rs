@@ -35,8 +35,9 @@ impl Arena {
         work.charge(1)?;
         let rows = domains.headers.rows();
         if let Rewrite::Nominal { owner, arguments } = rewrite
-            && let Some(&s::Region::Parameter { slot, depth: 0 }) =
+            && let Some(&s::Region::Parameter { slot, depth }) =
                 rows.regions.get(reference.0 as usize)
+            && (depth == 0 || domains.declaration_policies)
         {
             let formal = rows
                 .slots
@@ -56,8 +57,9 @@ impl Arena {
                 .ok_or("source nominal omitted its complete actual region argument");
         }
         if let Rewrite::Application(application) = rewrite
-            && let Some(&s::Region::Parameter { slot, depth: 0 }) =
+            && let Some(&s::Region::Parameter { slot, depth }) =
                 rows.regions.get(reference.0 as usize)
+            && (depth == 0 || domains.declaration_policies)
         {
             return applied_region(domains, self, application, slot, work);
         }

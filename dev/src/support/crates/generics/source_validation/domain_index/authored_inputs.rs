@@ -1,7 +1,7 @@
 //! Raw original inputs retain complete ownership; they are requests for reproof.
 #[path = "input_ports/obligation_ports.rs"]
 mod obligations;
-use super::{Context, DomainIndex, HeaderRef, Types, Work, s};
+use super::{Context, DomainIndex, HeaderRef, Work, s};
 
 impl DomainIndex<'_, '_> {
     pub(super) fn input_ports(
@@ -251,7 +251,8 @@ impl DomainIndex<'_, '_> {
         }
         for input in types {
             self.types.root(self.headers, context, input.ty, work)?;
-            Types::region(self.headers, &self.binders, context, input.shorter, work)?;
+            self.types
+                .region(self.headers, &self.binders, context, input.shorter, work)?;
         }
         Ok(())
     }

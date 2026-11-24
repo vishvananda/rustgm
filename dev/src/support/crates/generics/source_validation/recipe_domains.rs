@@ -24,6 +24,7 @@ struct BoundUse {
 #[derive(Clone, Copy, Default)]
 struct Summary {
     parameter: Option<s::SlotRef>,
+    nominal_depth: Option<u16>,
     body: Option<BodyRef>,
     bound: Option<BoundUse>,
 }
@@ -31,6 +32,7 @@ pub(super) struct Types {
     summaries: Vec<Summary>,
     type_count: usize,
     function_count: usize,
+    declaration_policies: bool,
     pub bytes: usize,
     pub peak: usize,
     pub visits: usize,
@@ -72,6 +74,7 @@ impl Types {
                 headers,
                 binders,
                 s::RegionRef(u32::try_from(index).map_err(|_| "source region ordinal overflow")?),
+                profile.declaration_policies(),
                 work,
             )?;
         }
@@ -84,6 +87,7 @@ impl Types {
                 summaries: vec![Summary::default(); count],
                 type_count: rows.types.len(),
                 function_count: rows.function_applications.len(),
+                declaration_policies: profile.declaration_policies(),
                 bytes,
                 peak,
                 visits: 0,
@@ -206,6 +210,13 @@ impl Builder<'_, '_> {
                     return Err("source type combines unrelated parameter-owner branches");
                 }
             }
+            _ => {}
+        }
+        match (left.nominal_depth, right.nominal_depth) {
+            (Some(a), Some(b)) if a != b => {
+                return Err("source nominal region depth differs within the same binder");
+            }
+            (None, right) => left.nominal_depth = right,
             _ => {}
         }
         match (left.body, right.body) {

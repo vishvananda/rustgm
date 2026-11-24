@@ -5,7 +5,7 @@ mod assembly;
 mod calls;
 #[path = "body_ports/cfg_storage.rs"]
 mod storage;
-use super::{Context, DomainIndex, HeaderRef, OriginalHeader, Types, Work, g, s};
+use super::{Context, DomainIndex, HeaderRef, OriginalHeader, Work, g, s};
 use crate::support::{bindings::LangItem, crates::owner_catalog::DeclarationRef};
 
 impl DomainIndex<'_, '_> {
@@ -64,7 +64,8 @@ impl DomainIndex<'_, '_> {
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
                 if let s::ProjectionKind::Dereference { region, .. } = projection.kind {
-                    Types::region(self.headers, &self.binders, context, region, work)?;
+                    self.types
+                        .region(self.headers, &self.binders, context, region, work)?;
                 }
             }
             for (index, value) in original.values.iter().enumerate() {
@@ -383,7 +384,8 @@ impl DomainIndex<'_, '_> {
             match argument {
                 s::Argument::Type(ty) => self.types.root(self.headers, context, ty, work)?,
                 s::Argument::Region(region) => {
-                    Types::region(self.headers, &self.binders, context, region, work)?;
+                    self.types
+                        .region(self.headers, &self.binders, context, region, work)?;
                 }
                 s::Argument::Const(term) => match rows.consts().get(term.0 as usize) {
                     Some(&s::ConstTerm::Value(value)) => {

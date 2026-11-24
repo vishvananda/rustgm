@@ -283,6 +283,7 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
                     (&self.rows.slots, &self.rows.declarations),
                     slot,
                     depth,
+                    self.rows.descriptor().profile().declaration_policies(),
                 )? =>
             {
                 self.view

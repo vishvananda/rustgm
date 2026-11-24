@@ -1,5 +1,5 @@
 //! Header and clause roots use their real declaration scope and binder frames.
-use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
+use super::{Context, DomainIndex, HeaderRef, Work, g, s};
 
 impl DomainIndex<'_, '_> {
     fn definition_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
@@ -414,7 +414,8 @@ impl DomainIndex<'_, '_> {
             }
             s::Requirement::TypeOutlives { subject, shorter } => {
                 self.types.root(self.headers, context, *subject, work)?;
-                Types::region(self.headers, &self.binders, context, *shorter, work)
+                self.types
+                    .region(self.headers, &self.binders, context, *shorter, work)
             }
             s::Requirement::Outlives(bound) => self.bound(context, *bound, work),
             s::Requirement::ProjectionEqual { projection, value } => {
@@ -449,7 +450,9 @@ impl DomainIndex<'_, '_> {
         bound: s::RegionBound,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        Types::region(self.headers, &self.binders, context, bound.longer, work)?;
-        Types::region(self.headers, &self.binders, context, bound.shorter, work)
+        self.types
+            .region(self.headers, &self.binders, context, bound.longer, work)?;
+        self.types
+            .region(self.headers, &self.binders, context, bound.shorter, work)
     }
 }

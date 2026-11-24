@@ -114,9 +114,12 @@ pub(super) enum Node {
     Tuple {
         elements: NodeId,
     },
-    /// Only zero-own-slot, region-independent Rust/nonvariadic frames enter.
+    /// Only zero-own-slot, region-independent Rust/nonvariadic frames enter
+    /// below version fourteen; version fourteen retains regional/higher-ranked
+    /// callable frames and re-proves their formation.
     Function {
         signature: NodeId,
+        bound_regions: u32,
         unsafe_: bool,
     },
 }
@@ -187,6 +190,7 @@ pub(super) struct Arena {
     pub hits: usize,
     scratch: usize,
     held: usize,
+    declaration_policies: bool,
 }
 impl Arena {
     pub(super) fn new(
@@ -222,6 +226,7 @@ impl Arena {
             hits: 0,
             scratch: 0,
             held: 0,
+            declaration_policies: domains.declaration_policies,
         };
         uses::relocations(domains, &mut arena, work)?;
         Ok(arena)
@@ -421,12 +426,14 @@ impl Arena {
             Node::Function { signature, .. } => {
                 self.signature_tail(signature, work)?;
                 let mut facts = self.facts_of(signature, work)?;
-                if facts.0 & (NodeFacts::REGIONAL | NodeFacts::ITEM) != 0 {
+                if facts.0 & NodeFacts::ITEM != 0
+                    || (!self.declaration_policies && facts.0 & NodeFacts::REGIONAL != 0)
+                {
                     return Err(
                         "source Function substitution captured regional or function-item inputs",
                     );
                 }
-                if facts.0 & NodeFacts::PARAMETER != 0 {
+                if facts.0 & (NodeFacts::PARAMETER | NodeFacts::REGIONAL) != 0 {
                     facts.0 &= !NodeFacts::FORMED;
                 }
                 facts

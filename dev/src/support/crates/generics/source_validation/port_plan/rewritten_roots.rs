@@ -1,6 +1,6 @@
 //! One completed template node per exact type/application/context use.
 use super::{
-    super::Target,
+    super::{OriginalHeader, Target},
     Context, DomainIndex, Work, g,
     nodes::{Arena, Key, Node, NodeId, Rewrite},
     s, uses,
@@ -567,9 +567,17 @@ impl Arena {
             let ty = self.child(child, work)?;
             tail = self.intern(Node::SignatureInput { ty, next: tail }, work)?;
         }
+        let bound_regions = domains
+            .headers
+            .rows()
+            .binders
+            .get(signature.binder.0 as usize)
+            .ok_or("source Function has no actual callable frame")?
+            .count;
         self.intern(
             Node::Function {
                 signature: tail,
+                bound_regions,
                 unsafe_: signature.unsafe_,
             },
             work,
@@ -613,13 +621,14 @@ fn function_domain(
     let rows = domains.headers.rows();
     let (owner, context) = match key.rewrite {
         // Version thirteen: a nominal field's closed callable frame belongs to
-        // exactly that nominal. A frame with bound slots needs the wider
-        // higher-ranked profile.
+        // exactly that nominal. Version fourteen admits higher-ranked and
+        // lifetime-capturing nominal callable frames.
         Rewrite::Nominal { owner, .. } => {
-            if rows
-                .binders
-                .get(signature.binder.0 as usize)
-                .is_some_and(|frame| frame.count != 0)
+            if !domains.declaration_policies
+                && rows
+                    .binders
+                    .get(signature.binder.0 as usize)
+                    .is_some_and(|frame| frame.count != 0)
             {
                 return Err("source nominal callable field requires its wider binder profile");
             }
@@ -629,8 +638,11 @@ fn function_domain(
             let caller = key
                 .caller
                 .ok_or("source Function omitted its actual formation owner")?;
-            let header = domains.function(caller.owner, work)?;
-            (header.declaration, caller)
+            let owner = match domains.original_header(caller.owner, work)? {
+                OriginalHeader::Function(header) => header.declaration,
+                OriginalHeader::Constant { .. } => caller.owner,
+            };
+            (owner, caller)
         }
         Rewrite::Public(owner) => {
             let header = domains.function(owner, work)?;
@@ -658,7 +670,7 @@ fn function_domain(
                     },
                 ),
                 // A called constructor's payload is its nominal's fields,
-                // whose closed callable frames that nominal owns.
+                // whose callable frames that nominal owns.
                 Target::Constructor { enumeration, .. } => (
                     enumeration.declaration,
                     nominal_frame(domains, enumeration.declaration, work)?,
@@ -670,17 +682,35 @@ fn function_domain(
         .binders
         .get(signature.binder.0 as usize)
         .ok_or("source Function has no actual callable frame")?;
+    let valid_frame = if domains.declaration_policies {
+        if let Some(parent) = frame.parent {
+            match context.frame {
+                Some(root) => domains.binders.ancestor(root, parent, work)?,
+                None => false,
+            }
+        } else {
+            domains.types.region_independent(key.root, work)?
+        }
+    } else {
+        frame.count == 0
+            && frame.parent.is_none()
+            && domains.types.region_independent(key.root, work)?
+    };
     if frame.kind != s::BinderKind::CallableType
-        || frame.count != 0
-        || frame.parent.is_some()
+        || !valid_frame
         || frame.owner != owner
         || signature.convention != g::Convention::Rust
         || signature.variadic
-        || !domains.types.region_independent(key.root, work)?
     {
         return Err("source Function input lost its exact zero-slot Rust formation domain");
     }
-    domains.types.root(domains.headers, context, key.root, work)
+    let root_context = Context {
+        frame: frame.parent.or(context.frame),
+        ..context
+    };
+    domains
+        .types
+        .root(domains.headers, root_context, key.root, work)
 }
 
 /// A nominal's header context, which forms its field roots.

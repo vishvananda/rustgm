@@ -164,7 +164,10 @@ pub(super) fn region(
                     .binders
                     .target(reference, work)?
                     .ok_or("source signature bound region has no actual ancestor")?;
-                if rows.binders[binder.0 as usize].kind == s::BinderKind::DynamicType {
+                if matches!(
+                    rows.binders[binder.0 as usize].kind,
+                    s::BinderKind::DynamicType | s::BinderKind::CallableType
+                ) {
                     return Ok(Region::ObjectBound { depth, slot });
                 }
                 match rewrite {

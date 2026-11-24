@@ -105,10 +105,15 @@ impl BinderIndex<'_> {
                 let admitted = match owner {
                     Some(HeaderRef::Function(_)) => true,
                     Some(HeaderRef::Nominal(_)) => profile.body_nodes(),
-                    _ => false,
+                    Some(_) => profile.declaration_policies(),
+                    None => false,
+                };
+                let valid_parent = match parent {
+                    None => true,
+                    Some(parent) => profile.declaration_policies() && parent.owner == frame.owner,
                 };
                 if !admitted
-                    || parent.is_some()
+                    || !valid_parent
                     || (frame.count != 0 && !profile.declaration_policies())
                 {
                     return Err("source shared call type requires an actual closed callable frame");

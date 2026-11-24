@@ -394,8 +394,23 @@ impl Builder<'_, '_, '_> {
         }
         let results = std::iter::once((&pointer.result, &expected.result));
         for (&actual, &declared) in actual.iter().zip(declared).chain(results) {
-            if self.node(original, actual, work)? != self.node(original, declared, work)? {
-                return Err(DIFFERS);
+            let actual_node = self.node(original, actual, work)?;
+            let declared_node = self.node(original, declared, work)?;
+            if actual_node != declared_node {
+                if !self.domains.declaration_policies {
+                    return Err(DIFFERS);
+                }
+                self.arena
+                    .same(
+                        self.domains,
+                        actual_node,
+                        declared_node,
+                        Opening::Relation {
+                            body: original.body,
+                        },
+                        work,
+                    )
+                    .map_err(|_| DIFFERS)?;
             }
         }
         self.call_relations(original, location, signature, arguments, work)

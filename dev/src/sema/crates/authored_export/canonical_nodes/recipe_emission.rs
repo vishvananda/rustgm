@@ -233,19 +233,25 @@ impl Stage {
         pending: &mut Vec<Task>,
     ) -> Result<(), &'static str> {
         let parts = signatures::Parts::actual(facts, key.ty)?;
-        if (parts.bound_regions != 0 && !self.declaration_policies())
+        let contextual = facts
+            .types
+            .needs_region_context(key.ty)
+            .ok_or("source anonymous callable has no actual region summary")?;
+        if ((parts.bound_regions != 0 || contextual) && !self.declaration_policies())
             || !parts.ordinary()
-            || facts.types.needs_region_context(key.ty) != Some(false)
         {
             return Err("source anonymous callable requires its supported closed Rust frame");
         }
         self.bind_type_arena(facts)?;
-        let context = self.frame(
-            parent.owner,
-            None,
-            s::BinderKind::CallableType,
-            parts.bound_regions,
-        )?;
+        let context = Context {
+            body: contextual.then_some(parent.body).flatten(),
+            ..self.frame(
+                parent.owner,
+                contextual.then_some(parent.frame).flatten(),
+                s::BinderKind::CallableType,
+                parts.bound_regions,
+            )?
+        };
         self.type_work(pending, Task::Function(key, context, parts))?;
         let result = self.type_key(facts, parts.result, context)?;
         self.type_work(pending, Task::Enter(result, context))?;

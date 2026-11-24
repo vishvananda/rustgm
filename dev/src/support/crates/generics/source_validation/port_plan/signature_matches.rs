@@ -1,6 +1,6 @@
 //! Call openings participate in comparison identity, never in a paid witness.
 use super::{
-    DomainIndex, Work,
+    DomainIndex, Work, g,
     nodes::{Arena, Node, NodeId, Region, Rewrite},
     s, uses,
 };
@@ -20,6 +20,11 @@ pub(super) enum Opening {
         body: BodyRef,
         request: u32,
     },
+    /// Reifying an item with late-bound regions into a higher-ranked fn pointer.
+    Reify {
+        binder: g::BinderRef,
+        depth: u16,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) struct Pair {
@@ -27,6 +32,9 @@ pub(super) struct Pair {
     actual: NodeId,
     opening: Opening,
 }
+type ChildPair = (NodeId, NodeId);
+type MatchedChildren = (ChildPair, Option<ChildPair>);
+
 #[derive(Clone, Copy)]
 enum Task {
     Enter(Pair),
@@ -139,6 +147,7 @@ impl Arena {
         pending: &mut Vec<Task>,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        let mut opening = pair.opening;
         let (first, second) = match nodes {
             (
                 Node::Reference {
@@ -158,13 +167,21 @@ impl Arena {
                 ((ac, bc), None)
             }
             (Node::Dynamic { .. } | Node::DynamicBounds { .. }, _) => {
+                if matches!(nodes.0, Node::DynamicBounds { .. }) {
+                    opening = nested_opening(opening)?;
+                }
                 (self.dynamic_children(domains, pair, nodes, work)?, None)
             }
             (Node::RawPointer { .. } | Node::Slice(_) | Node::Pattern { .. }, _) => {
                 (single_child(domains, nodes)?, None)
             }
-            // Version thirteen: an array compares its element, then its
-            // length's value or const parameter node.
+            (Node::Function { .. } | Node::SignatureInput { .. } | Node::SignatureResult(_), _) => {
+                if matches!(nodes.0, Node::Function { .. }) {
+                    opening = nested_opening(opening)?;
+                }
+                callable_children(domains, pair.opening, nodes)?
+            }
+            (Node::Tuple { elements: a }, Node::Tuple { elements: b }) => ((a, b), None),
             (
                 Node::Array {
                     element: ae,
@@ -176,34 +193,9 @@ impl Arena {
                 },
             ) => ((ae, be), Some((al, bl))),
             (
-                Node::Nominal {
-                    declaration: a,
-                    arguments: ac,
-                },
-                Node::Nominal {
-                    declaration: b,
-                    arguments: bc,
-                },
-            ) if a == b => ((ac, bc), None),
-            (
-                Node::NominalRegion {
-                    region: ar,
-                    next: an,
-                },
-                Node::NominalRegion {
-                    region: br,
-                    next: bn,
-                },
-            ) => {
-                if !self.same_region(domains, (ar, br), pair.opening, work)? {
-                    return Err("source signature nominal region argument differs");
-                }
-                ((an, bn), None)
-            }
-            (
-                Node::NominalArgument { ty: at, next: an },
-                Node::NominalArgument { ty: bt, next: bn },
-            ) => ((at, bt), Some((an, bn))),
+                Node::Nominal { .. } | Node::NominalRegion { .. } | Node::NominalArgument { .. },
+                _,
+            ) => self.matched_nominal_children(domains, pair, nodes, work)?,
             (
                 Node::Projection {
                     member: a,
@@ -232,12 +224,52 @@ impl Arena {
                 Task::Enter(Pair {
                     expected,
                     actual,
-                    ..pair
+                    opening,
                 }),
                 work,
             )?;
         }
         Ok(())
+    }
+    fn matched_nominal_children(
+        &self,
+        domains: &DomainIndex<'_, '_>,
+        pair: Pair,
+        nodes: (Node, Node),
+        work: &mut Work,
+    ) -> Result<MatchedChildren, &'static str> {
+        match nodes {
+            (
+                Node::Nominal {
+                    declaration: a,
+                    arguments: ac,
+                },
+                Node::Nominal {
+                    declaration: b,
+                    arguments: bc,
+                },
+            ) if a == b => Ok(((ac, bc), None)),
+            (
+                Node::NominalRegion {
+                    region: ar,
+                    next: an,
+                },
+                Node::NominalRegion {
+                    region: br,
+                    next: bn,
+                },
+            ) => {
+                if !self.same_region(domains, (ar, br), pair.opening, work)? {
+                    return Err("source signature nominal region argument differs");
+                }
+                Ok(((an, bn), None))
+            }
+            (
+                Node::NominalArgument { ty: at, next: an },
+                Node::NominalArgument { ty: bt, next: bn },
+            ) => Ok(((at, bt), Some((an, bn)))),
+            _ => Err("source signature differs after complete application and late opening"),
+        }
     }
     fn projection_match(
         &mut self,
@@ -512,6 +544,16 @@ fn opened_region(
     let Region::Late { binder, slot } = region else {
         return Ok(region);
     };
+    if let Opening::Reify {
+        binder: expected,
+        depth,
+    } = context
+    {
+        if binder != expected {
+            return Err("source reification uses another target's late binder");
+        }
+        return Ok(Region::ObjectBound { depth, slot });
+    }
     let Opening::Call { body, request } = context else {
         return Err("source callable late template has no actual Call opening");
     };
@@ -536,6 +578,48 @@ fn opened_region(
         .get(slot as usize)
         .ok_or("source signature comparison omitted a complete late argument")?;
     uses::region(domains, arena, region, Rewrite::Original, work)
+}
+fn nested_opening(opening: Opening) -> Result<Opening, &'static str> {
+    match opening {
+        Opening::Reify { binder, depth } => Ok(Opening::Reify {
+            binder,
+            depth: depth
+                .checked_add(1)
+                .ok_or("source reification binder depth overflow")?,
+        }),
+        other => Ok(other),
+    }
+}
+fn callable_children(
+    domains: &DomainIndex<'_, '_>,
+    opening: Opening,
+    nodes: (Node, Node),
+) -> Result<MatchedChildren, &'static str> {
+    match nodes {
+        (
+            Node::Function {
+                signature: ac,
+                bound_regions: ab,
+                unsafe_: au,
+            },
+            Node::Function {
+                signature: bc,
+                bound_regions: bb,
+                unsafe_: bu,
+            },
+        ) if au == bu
+            && (ab == bb
+                || (domains.declaration_policies
+                    && matches!(opening, Opening::Relation { .. }))) =>
+        {
+            Ok(((ac, bc), None))
+        }
+        (Node::SignatureInput { ty: at, next: an }, Node::SignatureInput { ty: bt, next: bn }) => {
+            Ok(((at, bt), Some((an, bn))))
+        }
+        (Node::SignatureResult(ar), Node::SignatureResult(br)) => Ok(((ar, br), None)),
+        _ => Err("source signature differs after complete application and late opening"),
+    }
 }
 /// Version thirteen's raw pointer, slice and pattern nodes compare their own
 /// form, then their one child.

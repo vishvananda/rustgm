@@ -171,9 +171,23 @@ impl Builder<'_, '_> {
                 })
             };
         }
+        if let Some(depth) = summary.nominal_depth {
+            if binder.parent.is_none() {
+                return Err("source dynamic bound escaped its enclosing binder");
+            }
+            summary.nominal_depth = Some(depth.checked_sub(1).ok_or(
+                "source dynamic bound captured a nominal region at an invalid binder depth",
+            )?);
+        }
         self.merge(
             summary,
-            region_summary(self.headers, self.binders, row.region, work)?,
+            region_summary(
+                self.headers,
+                self.binders,
+                row.region,
+                self.profile.declaration_policies(),
+                work,
+            )?,
             work,
         )
     }

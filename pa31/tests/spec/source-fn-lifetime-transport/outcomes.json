@@ -1,0 +1,17 @@
+{
+  "features": [
+    "auto_traits",
+    "staged_api"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41 7 23\n",
+  "older_profile": "source anonymous callable requires its supported closed Rust frame",
+  "restricted_client": {
+    "path": "invariant_context.rs",
+    "rustc": "lifetime may not live long enough",
+    "rustgm": "required lifetime does not outlive its target"
+  }
+}

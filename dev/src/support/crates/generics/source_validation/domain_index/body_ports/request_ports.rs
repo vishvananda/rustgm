@@ -1,5 +1,5 @@
 //! Request/value/site coverage is exact; closed signature sharing grants no proof.
-use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
+use super::{Context, DomainIndex, HeaderRef, Work, g, s};
 
 impl DomainIndex<'_, '_> {
     pub(in super::super) fn calls(
@@ -265,7 +265,8 @@ impl DomainIndex<'_, '_> {
                     return Err("source Call opening omitted actual late-bound formals");
                 }
                 for &region in opened {
-                    Types::region(self.headers, &self.binders, context, region, work)?;
+                    self.types
+                        .region(self.headers, &self.binders, context, region, work)?;
                     if !matches!(rows.regions[region.0 as usize], s::Region::Variable { body, .. } if body == original.body)
                     {
                         return Err(

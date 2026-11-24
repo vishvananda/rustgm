@@ -169,12 +169,15 @@ impl Arena {
         let declaration = rows.function_applications[application.0 as usize]
             .declaration
             .declaration;
-        let late = match domains.target(declaration, work)? {
-            Target::Function(header) => rows.binders[header.callable.binder.0 as usize]
-                .count
-                .checked_sub(header.regions.captures)
-                .ok_or("source reified target captures exceed its public frame")?,
-            Target::Constructor { .. } => 0,
+        let (late, binder) = match domains.target(declaration, work)? {
+            Target::Function(header) => (
+                rows.binders[header.callable.binder.0 as usize]
+                    .count
+                    .checked_sub(header.regions.captures)
+                    .ok_or("source reified target captures exceed its public frame")?,
+                Some(header.callable.binder),
+            ),
+            Target::Constructor { .. } => (0, None),
         };
         let actual = Flags::of(target);
         if late != rows.binders[target.binder.0 as usize].count
@@ -187,18 +190,34 @@ impl Arena {
         let Node::Function { mut signature, .. } = self.nodes[pointer.0 as usize] else {
             return Err("source reification type lost its function pointer node");
         };
-        for &expected in template.roots.slice(&self.signature_roots)? {
+        let opening = binder.map(|binder| Opening::Reify { binder, depth: 0 });
+        for index in template.roots.start..template.roots.end {
             work.charge(1)?;
+            let expected = *self
+                .signature_roots
+                .get(index as usize)
+                .ok_or("source reification signature root is outside its table")?;
             let Node::SignatureInput { ty, next } = self.nodes[signature.0 as usize] else {
                 return Err(DIFFERS);
             };
             if ty != expected {
-                return Err(DIFFERS);
+                let Some(opening) = opening.filter(|_| domains.declaration_policies) else {
+                    return Err(DIFFERS);
+                };
+                self.same(domains, expected, ty, opening, work)
+                    .map_err(|_| DIFFERS)?;
             }
             signature = next;
         }
-        if self.nodes[signature.0 as usize] != Node::SignatureResult(template.result) {
+        let Node::SignatureResult(result) = self.nodes[signature.0 as usize] else {
             return Err(DIFFERS);
+        };
+        if result != template.result {
+            let Some(opening) = opening.filter(|_| domains.declaration_policies) else {
+                return Err(DIFFERS);
+            };
+            self.same(domains, template.result, result, opening, work)
+                .map_err(|_| DIFFERS)?;
         }
         Ok(())
     }
