@@ -87,18 +87,19 @@ def compatibility(app, baseline, out, contract, artifact):
           out / "legacy-reader.stderr", 1, "invalid compiler-operation const-body trailer presence")
 
 
-def block_alias(options, contract):
-    out = options.out / "block"
+def separate_provider(options, contract, group):
+    out = options.out / group
     out.mkdir()
-    block = contract["block"]
+    provider = contract[group]
     source = out / "provider.rs"
-    source.write_bytes(declared_provider(contract["provider"], block["source"]))
-    independent(options.rustc, out, source, block["consumers"])
+    source.write_bytes(declared_provider(contract["provider"], provider["source"]))
+    independent(options.rustc, out, source, provider["consumers"])
     if options.baseline is not None:
         check(publish_command(options.baseline, out, "previous", source), out / "previous.stderr",
-              1, block["baseline_diagnostic"])
+              1, provider["baseline_diagnostic"])
     if options.app is not None:
-        candidate(options.app, out, source, block["consumers"])
+        candidate(options.app, out, source, provider["consumers"])
+    return len(provider["consumers"])
 
 
 def main():
@@ -120,9 +121,10 @@ def main():
         if options.baseline is not None:
             options.baseline = options.baseline.resolve(strict=True)
             compatibility(options.app, options.baseline, options.out, contract["provider"], artifact)
-    block_alias(options, contract)
-    print(f"Checked {len(contract['consumers']) + len(contract['block']['consumers'])}"
-          " independently compiled alias consumers")
+    count = len(contract["consumers"])
+    for group in ("block", "const"):
+        count += separate_provider(options, contract, group)
+    print(f"Checked {count} independently compiled alias consumers")
 
 
 if __name__ == "__main__":

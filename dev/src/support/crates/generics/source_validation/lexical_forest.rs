@@ -41,7 +41,10 @@ pub(super) fn validate(
                 && row.definition.kind == DefinitionKind::Local
                 && row.local.is_some();
             let alias_formal = actual.definition.kind == DefinitionKind::TypeAlias
-                && row.definition.kind == DefinitionKind::TypeParameter;
+                && matches!(
+                    row.definition.kind,
+                    DefinitionKind::TypeParameter | DefinitionKind::ConstParameter
+                );
             let alias_self = actual.definition.kind == DefinitionKind::TraitAlias
                 && row.definition.kind == DefinitionKind::SelfType;
             if !(ordinary || initializer_local || alias_formal || alias_self)

@@ -11,7 +11,8 @@ an analysis report and exits with failure.
 with the two associated-type projections used by `core`'s `ChangeOutputType`.
 Fresh clients exercise a valid application, a missing implementation and
 an inaccessible alias. A separate provider uses a block-local type alias
-within a function and a fresh client calls that exported function.
+within a function and a fresh client calls that exported function. The
+const-parameter provider exercises a named array length and its type.
 
 `spec/explicit-dynamic-call-members/outcomes.json` declares the borrowed dynamic
 rust-call member cases, the Box callable foundation and the ordered C observer

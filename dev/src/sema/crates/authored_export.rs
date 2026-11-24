@@ -726,7 +726,7 @@ impl Stage {
         facts: &Declarations,
         id: DefId,
     ) -> Result<(), &'static str> {
-        use crate::types::arguments::Argument;
+        use crate::{syntax::item::GenericFlavor, types::arguments::Argument};
         self.charge(10)?;
         let error = "source alias formals or deferred proofs require their wider profile";
         let declaration = &report.resolution.definitions[id.0 as usize];
@@ -751,8 +751,12 @@ impl Stage {
             let Syntax::Generic(index) = ast.node(formal).kind else {
                 return Err(error);
             };
-            if !matches!(parameter.argument, Argument::Type(_))
-                || ast.generics[index as usize].default.is_some()
+            let formal = &ast.generics[index as usize];
+            if !matches!(
+                (formal.flavor, parameter.argument),
+                (GenericFlavor::Type, Argument::Type(_))
+                    | (GenericFlavor::Const, Argument::Const(_))
+            ) || formal.default.is_some()
                 || parameter.default.is_some()
                 || parameter.anonymous
             {

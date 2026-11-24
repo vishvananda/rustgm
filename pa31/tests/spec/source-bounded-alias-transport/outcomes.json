@@ -34,5 +34,28 @@
         "lowir": ["call u32 @rgc", "store u32 34"]
       }
     ]
+  },
+  "const": {
+    "source": "const-provider.rs",
+    "baseline_diagnostic": "named, associated or generic alias transport requires its wider profile",
+    "consumers": [
+      {
+        "source": "const-client.rs",
+        "status": 0,
+        "lowir": ["call void @rgc", "copyobj 12x4", "return u32 34"]
+      },
+      {
+        "source": "const-length.rs",
+        "status": 1,
+        "diagnostic": "incompatible types",
+        "rustc_diagnostic": "error[E0308]"
+      },
+      {
+        "source": "const-scalar.rs",
+        "status": 1,
+        "diagnostic": "const argument has the wrong type",
+        "rustc_diagnostic": "the constant `B` is not of type `usize`"
+      }
+    ]
   }
 }

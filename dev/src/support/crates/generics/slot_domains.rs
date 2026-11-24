@@ -168,10 +168,12 @@ impl<'a> ScopeIndex<'a> {
                     return Err("source parameter slot has a foreign owner, duplicate or gap");
                 }
                 if definition.kind == DefinitionKind::TypeAlias
-                    && (!matches!(slot.kind, ParameterKind::Type { .. })
-                        || slot.definition.is_none())
+                    && (!matches!(
+                        slot.kind,
+                        ParameterKind::Type { .. } | ParameterKind::Const { .. }
+                    ) || slot.definition.is_none())
                 {
-                    return Err("source alias requires its actual named type formal");
+                    return Err("source alias requires its actual named type or const formal");
                 }
                 own.check(slot, &rows.types)?;
                 validate_binding(slot, definitions, &mut bindings, work)?;
