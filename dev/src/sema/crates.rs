@@ -10,6 +10,7 @@ mod imported_values;
 mod promotions;
 mod relocated_initializers;
 mod statics;
+pub(in crate::sema) use statics::complete_relocations as complete_static_relocations;
 mod type_transport;
 mod typed_headers;
 use super::{foreign, model::Declarations};
@@ -77,6 +78,7 @@ pub struct Linkage {
     imported_records: HashSet<DefId>,
     imported_storage: HashMap<DefId, ImportedStorage>,
     promotions: Option<Box<promotions::Registry>>,
+    pending_relocations: Option<Box<statics::Pending>>,
     import_work: ImportWork,
 }
 #[derive(Clone, Copy)]
@@ -84,6 +86,7 @@ pub(in crate::sema) enum ImportedStorage {
     Ordinary,
     Mutable,
     Interior,
+    Pending,
 }
 /// Exact signature graph and root visits during one source-free import pass.
 #[derive(Clone, Copy, Default)]

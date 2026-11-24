@@ -486,7 +486,7 @@ impl Stage {
         }
         stage.alias_headers(facts, leaves.aliases)?;
         stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
-        let statics = stage.static_headers(report, facts, identity, leaves.statics)?;
+        let statics = stage.static_headers(facts, identity, leaves.statics)?;
         stage.functions(report, facts, identity, &provided_constants)?;
         if !provided_constants.is_empty() {
             stage.constant_headers(report, facts, identity)?;

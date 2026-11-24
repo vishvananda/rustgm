@@ -1,4 +1,5 @@
 //! Imported originals map a static to its one provider allocation and completed value.
+use super::relocated_initializers::{self, Relocation};
 use super::{Declarations, Error, ImportedStorage, Report, error, static_symbol};
 use crate::{
     literal::value::FloatBits,
@@ -22,11 +23,47 @@ use crate::{
     },
 };
 
+pub(super) struct Pending {
+    entries: Vec<Relocation>,
+    remaining: usize,
+}
+
+pub(in crate::sema) fn complete_relocations(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    let Some(pending) = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.pending_relocations.take())
+    else {
+        return Ok(());
+    };
+    let Pending {
+        entries,
+        mut remaining,
+    } = *pending;
+    for relocation in entries {
+        let value = relocated_initializers::finish(report, facts, &relocation, &mut remaining)?;
+        let kind = import_storage_kind(facts, relocation.ty, &mut remaining)?;
+        facts
+            .crates
+            .get_or_insert_default()
+            .imported_storage
+            .insert(relocation.definition, kind);
+        Evaluator::new(report, facts).complete_definition(relocation.definition, value);
+    }
+    Ok(())
+}
+
 pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
-    let mut relocation_work = crate::support::crates::MAX_COMPONENTS;
+    let mut pending = Pending {
+        entries: Vec::new(),
+        remaining: crate::support::crates::MAX_COMPONENTS,
+    };
     for artifact in imported.dependencies().artifacts() {
         let Some(descriptor) = artifact.source_descriptor() else {
             continue;
@@ -43,27 +80,38 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
                 .ok_or_else(|| error("imported source static has no installed type"))?;
             let (value, storage) = match header.initializer {
                 s::StaticInitializer::Scalars(values) => (
-                    decode_scalar_aggregate(
+                    Some(decode_scalar_aggregate(
                         &mut Evaluator::new(report, facts),
                         rows,
                         header.ty,
                         values.slice(&statics.values).map_err(error)?,
-                    )?,
+                    )?),
                     ImportedStorage::Ordinary,
                 ),
                 s::StaticInitializer::Promotion(anchor) => {
                     let target = imported
                         .generic_definition(descriptor.identity(), anchor)
                         .map_err(error)?;
-                    let value = super::relocated_initializers::import(
-                        report,
-                        facts,
+                    let relocation = Relocation {
+                        definition,
                         ty,
                         target,
                         anchor,
-                        &mut relocation_work,
-                    )?;
-                    (value, import_storage_kind(facts, ty, &mut relocation_work)?)
+                    };
+                    if let Some(value) = relocated_initializers::import(
+                        report,
+                        facts,
+                        &relocation,
+                        &mut pending.remaining,
+                    )? {
+                        (
+                            Some(value),
+                            import_storage_kind(facts, ty, &mut pending.remaining)?,
+                        )
+                    } else {
+                        pending.entries.push(relocation);
+                        (None, ImportedStorage::Pending)
+                    }
                 }
             };
             declare(
@@ -74,8 +122,13 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
                 ty,
                 storage,
             )?;
-            Evaluator::new(report, facts).complete_definition(definition, value);
+            if let Some(value) = value {
+                Evaluator::new(report, facts).complete_definition(definition, value);
+            }
         }
+    }
+    if !pending.entries.is_empty() {
+        facts.crates.get_or_insert_default().pending_relocations = Some(Box::new(pending));
     }
     Ok(())
 }

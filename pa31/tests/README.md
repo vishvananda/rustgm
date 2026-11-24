@@ -16,7 +16,10 @@ handlers after native linkage. Pinned rustc checks the source contracts.
 ownership and handler signatures. The borrowed variant uses a higher-ranked
 handler returning an enum and checks an out-of-range lifetime slot. The
 relocated variant observes the same allocation through a static initializer
-in a fresh crate and checks the relocation's actual owner.
+in a fresh crate and checks the relocation's actual owner. The interior
+and projected variants check writable storage and the separate rules for
+const and static initializers. The projected variant requires a validated
+imported trait implementation to determine the initializer's field type.
 
 `spec/source-bounded-alias-transport/outcomes.json` declares a source library
 with the two associated-type projections used by `core`'s `ChangeOutputType`.

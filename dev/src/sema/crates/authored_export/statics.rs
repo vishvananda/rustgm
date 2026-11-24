@@ -83,7 +83,6 @@ impl Stage {
 
     pub(super) fn static_headers(
         &mut self,
-        report: &Report,
         facts: &mut Declarations,
         identity: &CrateIdentity,
         declarations: Vec<(DeclarationRef, DefId)>,
@@ -121,9 +120,8 @@ impl Stage {
                 facts.types.kind(ty),
                 Some(Kind::Adt(..) | Kind::Pointer { .. })
             ) {
-                let (location, work) = super::super::relocated_initializers::checked_pointer(
-                    report, facts, ty, value,
-                )?;
+                let (location, work) =
+                    super::super::relocated_initializers::checked_pointer(facts, ty, value)?;
                 self.charge(work)?;
                 InitializerDraft::Promotion(location)
             } else {

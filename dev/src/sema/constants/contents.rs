@@ -101,6 +101,10 @@ impl Queries<'_> {
             .as_deref()
             .and_then(|linkage| linkage.imported_storage_kind(definition))
         {
+            Some(ImportedStorage::Pending) => Err(self.error(
+                query,
+                "imported static initializer requires completed implementation conformance",
+            )),
             Some(ImportedStorage::Mutable) => Err(self.error(
                 query,
                 "constant evaluation cannot read mutable static storage",

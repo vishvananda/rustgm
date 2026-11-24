@@ -111,6 +111,7 @@ def main():
     variant.add_argument("--borrowed", action="store_true")
     variant.add_argument("--relocated", action="store_true")
     variant.add_argument("--interior", action="store_true")
+    variant.add_argument("--projected", action="store_true")
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
@@ -123,6 +124,8 @@ def main():
         manifest = "relocated.json"
     elif args.interior:
         manifest = "interior.json"
+    elif args.projected:
+        manifest = "projected.json"
     contract = json.loads((FIXTURE / manifest).read_text())
     check = Check(args.app, args.out)
     source = provider_source(check.folder, FIXTURE, contract)

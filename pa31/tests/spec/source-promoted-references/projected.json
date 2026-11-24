@@ -1,0 +1,45 @@
+{
+  "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+  "prefix_marker": "// Authored macro-context transport controls.",
+  "provider": "projected-provider.rs",
+  "cases": [
+    {
+      "source": "projected-client.rs",
+      "status": 0
+    },
+    {
+      "source": "projected-const-read.rs",
+      "status": 1,
+      "rustc_diagnostic": "constant accesses mutable global memory",
+      "diagnostic": "cannot read interior-mutable static storage"
+    },
+    {
+      "source": "projected-raw-const-read.rs",
+      "status": 1,
+      "rustc_diagnostic": "constant accesses mutable global memory",
+      "diagnostic": "cannot read interior-mutable static storage"
+    }
+  ],
+  "native": {
+    "client": "projected-client.rs",
+    "driver": "driver.c",
+    "exit": 34,
+    "storage": "writable"
+  },
+  "artifact": {
+    "handler_count": 2,
+    "corruptions": {
+      "foreign-owner": "source static relocation changed its actual promotion owner",
+      "wrong-signature": "source promoted relocation changed its actual field signature"
+    },
+    "legacy_diagnostic": "invalid source constant value presence",
+    "binder_slots": 2,
+    "binder_diagnostic": "source bound region exceeds its exact ancestor binder",
+    "native_relocations": 3,
+    "relocation_diagnostic": "source static relocation requires an actual promoted constant"
+  },
+  "features": [
+    "freeze_impls",
+    "negative_impls"
+  ]
+}
