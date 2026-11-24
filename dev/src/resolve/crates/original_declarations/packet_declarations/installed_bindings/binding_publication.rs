@@ -247,9 +247,17 @@ fn private_weak_import(
         return Ok(false);
     }
     work.charge(1 + rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
-    Ok(rows
-        .exact_callable(header.declaration)
-        .is_some_and(|row| row.weak_panic))
+    Ok(rows.exact_callable(header.declaration).is_some_and(|row| {
+        row.weak_panic
+            || (row.body.is_none()
+                && rows.declarations[header.declaration.0 as usize]
+                    .definition
+                    .parent
+                    .is_some_and(|parent| {
+                        rows.declarations[parent.0 as usize].definition.kind
+                            == s::DefinitionKind::Function
+                    }))
+    }))
 }
 
 fn module_bindings(

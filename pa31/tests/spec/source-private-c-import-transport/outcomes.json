@@ -1,0 +1,11 @@
+{
+  "features": ["auto_traits"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "7 12.25\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "restricted_client": {
+    "path": "private_import.rs",
+    "rustc": "is private",
+    "rustgm": "private"
+  }
+}

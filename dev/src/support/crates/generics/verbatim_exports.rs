@@ -11,7 +11,7 @@ use crate::support::{
         MAX_BYTES, MAX_NAME_BYTES,
         owner_catalog::{BodyKind, DeclarationRef},
     },
-    hash::HashSet,
+    hash::{HashMap, HashSet},
     linkage::PANIC_HANDLER_SYMBOL,
     retained,
 };
@@ -32,12 +32,12 @@ pub(super) fn validate(
     work.charge(rows.exact_callables.len().saturating_add(1))?;
     if headers
         .retained_bytes()
-        .saturating_add(retained::new_map::<&str, ()>(rows.exact_callables.len()))
+        .saturating_add(retained::new_map::<&str, bool>(rows.exact_callables.len()))
         > MAX_BYTES
     {
         return Err("exact callable validation exceeds combined storage");
     }
-    let mut names = HashSet::with_capacity_and_hasher(
+    let mut names = HashMap::with_capacity_and_hasher(
         rows.exact_callables.len(),
         crate::support::hash::BuildFxHasher::default(),
     );
@@ -55,10 +55,23 @@ pub(super) fn validate(
         {
             return Err("invalid exact source symbol bytes");
         }
-        if previous.is_some_and(|id| id >= row.declaration.0)
-            || !row.weak_panic && !names.insert(row.symbol.as_ref())
-        {
+        if previous.is_some_and(|id| id >= row.declaration.0) {
             return Err("duplicate or reordered exact source callable identity/symbol");
+        }
+        if !row.weak_panic {
+            let exported = row.body.is_some();
+            let duplicate = match names.get(row.symbol.as_ref()).copied() {
+                None => {
+                    names.insert(row.symbol.as_ref(), exported);
+                    false
+                }
+                Some(previous_export) => {
+                    exported || previous_export || !profile.declaration_policies()
+                }
+            };
+            if duplicate {
+                return Err("duplicate or reordered exact source callable identity/symbol");
+            }
         }
         previous = Some(row.declaration.0);
         let Some(HeaderRef::Function(index)) = headers.header(row.declaration, work)? else {
@@ -67,7 +80,10 @@ pub(super) fn validate(
         let header = &rows.functions[index as usize];
         let imported = runtime.remove(&row.declaration);
         if row.weak_panic {
-            if !profile.declaration_policies() || imported || names.contains(PANIC_HANDLER_SYMBOL) {
+            if !profile.declaration_policies()
+                || imported
+                || names.contains_key(PANIC_HANDLER_SYMBOL)
+            {
                 return Err("weak panic import requires its own version-fourteen declaration");
             }
             weak_panic_import(rows, headers, header, row, panic_info, work)?;
@@ -77,8 +93,11 @@ pub(super) fn validate(
         if row.symbol.as_ref() == PANIC_HANDLER_SYMBOL && seen_weak {
             return Err("weak panic symbol requires its authenticated source callable");
         }
-        require_module(rows, headers, header, work)?;
-        if imported {
+        let private_import = profile.declaration_policies()
+            && row.body.is_none()
+            && !rows.declarations[row.declaration.0 as usize].public;
+        require_module(rows, headers, header, private_import, work)?;
+        if imported || private_import {
             if row.body.is_some()
                 || header.body != FunctionBody::Absent
                 || header.constness != crate::support::constness::Constness::Ordinary
@@ -221,6 +240,7 @@ fn require_module(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     header: &super::super::FunctionHeader,
+    allow_function_parent: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let declaration = &rows.declarations[header.declaration.0 as usize];
@@ -228,10 +248,22 @@ fn require_module(
         .definition
         .parent
         .ok_or("exact callable lacks its actual module owner")?;
-    if rows
-        .declarations
-        .get(parent.0 as usize)
-        .is_none_or(|d| d.definition.kind != DefinitionKind::Module)
+    let valid_parent = match rows.declarations.get(parent.0 as usize) {
+        Some(owner) if owner.definition.kind == DefinitionKind::Module => true,
+        Some(owner)
+            if allow_function_parent
+                && owner.definition.kind == DefinitionKind::Function
+                && matches!(
+                    headers.header(parent, work)?,
+                    Some(HeaderRef::Function(index))
+                        if matches!(rows.functions[index as usize].body, FunctionBody::Original(_))
+                ) =>
+        {
+            true
+        }
+        _ => false,
+    };
+    if !valid_parent
         || header.parent.is_some()
         || header.receiver.is_some()
         || header.regions.total != 0
