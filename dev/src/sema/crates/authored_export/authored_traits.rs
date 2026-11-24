@@ -161,6 +161,9 @@ impl Stage {
             DefKind::Function
                 if self.declaration_policies()
                     && (role == LangItem::DropGlue || LangItem::FORMAT_PANICS.contains(&role)) => {}
+            DefKind::Function
+                if self.declaration_policies() && role == LangItem::PinNewUnchecked => {}
+            DefKind::TypeAlias if self.declaration_policies() && role == LangItem::DerefTarget => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
             }
@@ -333,6 +336,12 @@ impl Stage {
         let kind = report.resolution.definitions[declaration.definition.0 as usize].kind;
         if kind != DefKind::Trait {
             self.declared_role_form(kind, role)?;
+        }
+        if role == LangItem::PinNewUnchecked {
+            crate::sema::compiler_items::pinning::checked_constructor(
+                facts,
+                declaration.definition,
+            )?;
         }
         Ok(Some(declaration))
     }

@@ -1045,6 +1045,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::MemSizeConst
             | LangItem::MemAlignConst
             | LangItem::DropGlue
+            | LangItem::PinNewUnchecked
+            | LangItem::DerefTarget
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1388,7 +1390,7 @@ fn role_header(
             return Err("source wrapper role requires its actual nominal header");
         }
         (LangItem::PointeeTrait, Some(HeaderRef::Trait(_)))
-        | (LangItem::MetadataType, Some(HeaderRef::AssociatedType(_)))
+        | (LangItem::MetadataType | LangItem::DerefTarget, Some(HeaderRef::AssociatedType(_)))
         | (
             LangItem::RangeMin
             | LangItem::RangeMax
@@ -1396,13 +1398,16 @@ fn role_header(
             | LangItem::MemAlignConst,
             Some(HeaderRef::Constant(_)),
         )
-        | (LangItem::RangeSub, Some(HeaderRef::Function(_)))
+        | (LangItem::RangeSub | LangItem::PinNewUnchecked, Some(HeaderRef::Function(_)))
         | (
             LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation,
             Some(HeaderRef::Nominal(_)),
         ) if profile == BindingProfile::BodyOperations => {}
         (LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata, _) => {
             return Err("source Pointee roles require their actual declaration header kinds");
+        }
+        (LangItem::DerefTarget | LangItem::PinNewUnchecked, _) => {
+            return Err("source pinned dereference roles require their actual declaration kinds");
         }
         (LangItem::RangeMin | LangItem::RangeMax | LangItem::RangeSub, _) => {
             return Err("source range roles require their actual associated header kinds");

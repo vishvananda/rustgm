@@ -85,6 +85,24 @@ impl Catalog {
         Ok(Some(declaration))
     }
 
+    /// A defining cleanup can refer to an installed role, with or without a
+    /// completed header. The caller still pays for and proves its obligations.
+    pub(crate) fn cleanup_role(
+        &self,
+        role: LangItem,
+        validated: bool,
+    ) -> Result<Option<DefId>, &'static str> {
+        if !matches!(role, LangItem::Destruct | LangItem::Copy) {
+            return Err("defining cleanup requires its actual Destruct or Copy role");
+        }
+        Ok(if validated {
+            self.validated_role(role)?
+        } else {
+            self.role(role)?
+        }
+        .map(|declaration| declaration.definition))
+    }
+
     /// Look up the declaration owning a represented auto marker. A provider answers as
     /// `language` does, or `validated_language` when `validated`. A source
     /// client answers from the roles its admitted descriptor re-proved (each

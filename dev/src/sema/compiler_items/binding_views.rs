@@ -501,7 +501,10 @@ fn role_parent(
     charge(work, 1)?;
     if matches!(
         role,
-        LangItem::FutureOutput | LangItem::FnOnceOutput | LangItem::MetadataType
+        LangItem::FutureOutput
+            | LangItem::FnOnceOutput
+            | LangItem::MetadataType
+            | LangItem::DerefTarget
     ) {
         let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {
             return Err("imported Output role lacks its actual associated header");

@@ -1,4 +1,5 @@
 //! Source dereference declarations and demanded method contracts retain their owners.
+use super::headers::{Flags, Trait};
 use crate::{
     resolve::{
         expansion::Report,
@@ -7,7 +8,7 @@ use crate::{
         unit::NodeKey,
     },
     sema::model::Declarations,
-    support::bindings::LangItem,
+    support::{bindings::LangItem, constness::Constness},
     types::{Kind, TypeId, callable::Convention},
 };
 
@@ -101,21 +102,7 @@ pub(in crate::sema) fn query(
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
     header.canonical_inputs(facts).map_err(error)?;
     crate::sema::header_attributes::charge_source_contract_query(facts, 8 + header.members.len())?;
-    let name = if mutable { "deref_mut" } else { "deref" };
-    let method = header
-        .members
-        .iter()
-        .copied()
-        .find(|id| {
-            report
-                .resolution
-                .definitions
-                .get(id.0 as usize)
-                .is_some_and(|d| {
-                    d.kind == DefKind::Function && report.package.names.get(d.name) == name
-                })
-        })
-        .ok_or_else(|| error("source dereference lacks its actual named method"))?;
+    let method = deref_method(report, &header, mutable).map_err(error)?;
     let signature = method_signature(
         facts,
         method,
@@ -132,6 +119,113 @@ pub(in crate::sema) fn query(
     })
 }
 
+fn deref_method(report: &Report, header: &Trait<'_>, mutable: bool) -> Result<DefId, &'static str> {
+    let name = if mutable { "deref_mut" } else { "deref" };
+    header
+        .members
+        .iter()
+        .copied()
+        .find(|id| {
+            report
+                .resolution
+                .definitions
+                .get(id.0 as usize)
+                .is_some_and(|d| {
+                    d.kind == DefKind::Function && report.package.names.get(d.name) == name
+                })
+        })
+        .ok_or("source dereference lacks its actual named method")
+}
+
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    steps: &mut usize,
+    complete: &mut super::roles::RoleSet,
+) -> Result<(), &'static str> {
+    let roles = [LangItem::Deref, LangItem::DerefTarget, LangItem::DerefMut];
+    let [base, target, mutable] = roles.map(|role| catalog.role(role));
+    let (base, target, mutable) = (base?, target?, mutable?);
+    if [base, target, mutable].iter().all(Option::is_none) {
+        return Ok(());
+    }
+    let (Some(base), Some(target)) = (base, target) else {
+        return Err("imported dereference requires its actual Deref and Target declarations");
+    };
+    let header = checked_deref(report, facts, base, steps)?;
+    let pointee = catalog
+        .validated_role(LangItem::PointeeSized)?
+        .ok_or("imported Deref requires actual PointeeSized")?;
+    if header.members.len() != 2
+        || header.written.supertraits != 1
+        || !header.requires(&facts.types, pointee.definition, None, Constness::Ordinary)
+        || target.parent != Some(base.definition)
+        || facts.associated.trait_owner(target.definition) != Some(base.definition)
+        || !header.members.contains(&target.definition)
+        || facts
+            .types
+            .projection_schema(crate::types::ItemId(target.definition.0))
+            .is_none_or(|schema| schema.trait_item.0 != base.definition.0)
+    {
+        return Err("imported Deref changed its actual Target/member/supertrait contract");
+    }
+    method_signature(
+        facts,
+        deref_method(report, &header, false)?,
+        header.self_type,
+        base.definition,
+        target.definition,
+        false,
+    )?;
+    complete.insert(LangItem::Deref);
+    complete.insert(LangItem::DerefTarget);
+    if let Some(mutable) = mutable {
+        let header = checked_deref(report, facts, mutable, steps)?;
+        let effect = if header.flags.constant {
+            Constness::Conditional
+        } else {
+            Constness::Ordinary
+        };
+        if header.members.len() != 1
+            || !header.requires(&facts.types, base.definition, None, effect)
+        {
+            return Err("imported DerefMut changed its actual Deref supertrait or member contract");
+        }
+        method_signature(
+            facts,
+            deref_method(report, &header, true)?,
+            header.self_type,
+            base.definition,
+            target.definition,
+            true,
+        )?;
+        complete.insert(LangItem::DerefMut);
+    }
+    Ok(())
+}
+
+fn checked_deref<'a>(
+    report: &'a Report,
+    facts: &'a Declarations,
+    role: super::Role,
+    steps: &mut usize,
+) -> Result<Trait<'a>, &'static str> {
+    let header = Trait::current(report, facts, role, steps)?;
+    header.profile(
+        &facts.types,
+        Flags {
+            constant: header.flags.constant,
+            unsafe_: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    header.canonical_inputs(facts)?;
+    *steps = steps.saturating_add(16 + header.members.len() + header.inputs.len());
+    Ok(header)
+}
+
 fn method_signature(
     facts: &Declarations,
     method: DefId,
@@ -144,6 +238,7 @@ fn method_signature(
         .function_header(method)?
         .ok_or("source dereference method has no prepared header")?;
     let Some(Kind::Function {
+        bound_regions,
         parameters,
         result,
         unsafe_: false,
@@ -178,6 +273,11 @@ fn method_signature(
     };
     if input_mutable != mutable || referent != subject {
         return Err("source dereference requires the exact borrowed Self receiver");
+    }
+    if header.declaration.source().is_none()
+        && (header.body.is_some() || bound_regions != 1 || region.bound_parts() != Some((0, 0)))
+    {
+        return Err("imported dereference requires its actual abstract method and shared binder");
     }
     let Some(Kind::Reference {
         mutable: result_mutable,

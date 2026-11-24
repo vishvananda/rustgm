@@ -1,0 +1,15 @@
+{
+  "foundation": "pa31/tests/spec/full-drop-source/pin-drop.rs",
+  "prefix_marker": "pub mod pin{",
+  "cleanup_start": "/// Helper function",
+  "cleanup_end": "use crate::pin::Pin;",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "41\n42\n",
+  "rustc_wrong_pointer": "error[E0277]",
+  "rustgm_wrong_pointer": "trait obligation requires an unambiguous matching assumption or implementation",
+  "foreign_role": "source role binding is duplicated or belongs to a foreign provider",
+  "unknown_role": "source role binding names an unknown declaration",
+  "missing_deref": "Pin constructor changed its actual Ptr: Deref condition"
+}

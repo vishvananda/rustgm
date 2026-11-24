@@ -221,7 +221,7 @@ const FREE_MARKERS: [LangItem; 6] = [
 ];
 
 // These roles are checked together after the individual headers.
-const GROUPED: [LangItem; 13] = [
+const GROUPED: [LangItem; 17] = [
     LangItem::FnOnce,
     LangItem::FnMut,
     LangItem::Fn,
@@ -235,6 +235,10 @@ const GROUPED: [LangItem; 13] = [
     LangItem::DropGlue,
     LangItem::PanicFmt,
     LangItem::PanicNounwind,
+    LangItem::Deref,
+    LangItem::DerefMut,
+    LangItem::DerefTarget,
+    LangItem::PinNewUnchecked,
 ];
 
 fn trait_headers(
@@ -399,6 +403,14 @@ fn grouped_roles(
 ) -> Result<super::invocation::Imported, &'static str> {
     super::parameter_types::imported(report, facts, catalog, steps, complete)?;
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
+    super::super::dereferencing::imported(report, facts, catalog, steps, complete)?;
+    if let Some(constructor) = catalog.role(LangItem::PinNewUnchecked)? {
+        if !complete.contains(LangItem::Pin) || !complete.contains(LangItem::Deref) {
+            return Err("imported Pin constructor requires the completed Pin and Deref roles");
+        }
+        super::super::pinning::imported(facts, constructor, steps)?;
+        complete.insert(LangItem::PinNewUnchecked);
+    }
     super::destructibility::imported_drop(report, facts, catalog, steps, complete)?;
     super::glue::imported(facts, catalog, steps, complete)?;
     for role in LangItem::FORMAT_PANICS {

@@ -24,14 +24,12 @@ impl Role {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(Self::Absent);
         };
-        let Some(declaration) = catalog.language(role) else {
+        let Some(definition) = catalog.cleanup_role(role, false)? else {
             return Ok(Self::Absent);
         };
-        Ok(match catalog.validated_language(role) {
-            Ok(Some(actual)) if actual.definition == declaration.definition => {
-                Self::Validated(actual.definition)
-            }
-            _ => Self::Pending(declaration.definition),
+        Ok(match catalog.cleanup_role(role, true) {
+            Ok(Some(actual)) if actual == definition => Self::Validated(definition),
+            _ => Self::Pending(definition),
         })
     }
     fn definition(self) -> Option<DefId> {

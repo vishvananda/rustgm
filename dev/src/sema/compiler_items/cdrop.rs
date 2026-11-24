@@ -91,7 +91,7 @@ fn validate_goal(
         LangItem::Destruct
     };
     let declaration = catalog
-        .validated_language(role)?
+        .validated_role(role)?
         .ok_or("source cleanup requires its actual language declaration")?;
     let application = facts
         .types

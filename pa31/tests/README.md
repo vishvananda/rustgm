@@ -49,6 +49,10 @@ roles and a structurally similar ordinary type.
 active-field rules for imported unions.
 `spec/source-wrapper-transport/outcomes.json` checks the imported variadic
 cursor's C ABI and the coherence rule for the fundamental Pin wrapper.
+`spec/source-pin-constructor-transport/outcomes.json` checks the actual
+`Ptr: Deref` constructor bound and observes the pointer recovered from an
+imported Pin in a separately linked client. Run
+`scripts/check_pin_constructor_transport.py` with the pinned Rust compiler.
 `spec/source-panic-format-transport/outcomes.json` checks the imported
 panic and formatting structures, field types, member visibility, and the
 fresh crate's own panic handler.
