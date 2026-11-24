@@ -6,6 +6,7 @@ const INCOHERENT_INHERENT: u8 = 64;
 const SIMD_LANE_LIMIT: u8 = 32;
 const PACKED_SIMD: u8 = 16;
 const NON_EXHAUSTIVE: u8 = 8;
+const LAYOUT: u8 = 4;
 
 pub(super) fn encode(out: &mut Writer, rows: s::ValidatedView<'_>) -> Result<(), &'static str> {
     // Version thirteen alone carries a transparent or SIMD struct header.
@@ -39,9 +40,13 @@ pub(super) fn nominal_write(out: &mut Writer, row: &s::NominalHeader) -> Result<
         | (u8::from(row.incoherent_inherent) * INCOHERENT_INHERENT)
         | (u8::from(row.simd_lane_limit.is_some()) * SIMD_LANE_LIMIT)
         | (u8::from(row.packed_simd) * PACKED_SIMD)
-        | (u8::from(row.exhaustiveness == s::Exhaustiveness::Open) * NON_EXHAUSTIVE))?;
+        | (u8::from(row.exhaustiveness == s::Exhaustiveness::Open) * NON_EXHAUSTIVE)
+        | (u8::from(row.layout != s::NominalLayout::default()) * LAYOUT))?;
     if let Some(limit) = row.simd_lane_limit {
         out.bytes(&limit.to_le_bytes())?;
+    }
+    if row.layout != s::NominalLayout::default() {
+        layout_write(out, row.layout)?;
     }
     Ok(())
 }
@@ -55,6 +60,7 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         inputs: read.range()?,
         declared_inputs: read.id()?,
         repr: RecordRepr::Rust,
+        layout: s::NominalLayout::default(),
         fundamental: false,
         incoherent_inherent: false,
         packed_simd: false,
@@ -72,8 +78,16 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         if flags & SIMD_LANE_LIMIT != 0 {
             row.simd_lane_limit = Some(read.reader.u64()?);
         }
+        if flags & LAYOUT != 0 {
+            row.layout = layout_read(read)?;
+        }
         flags
-            & !(FUNDAMENTAL | INCOHERENT_INHERENT | SIMD_LANE_LIMIT | PACKED_SIMD | NON_EXHAUSTIVE)
+            & !(FUNDAMENTAL
+                | INCOHERENT_INHERENT
+                | SIMD_LANE_LIMIT
+                | PACKED_SIMD
+                | NON_EXHAUSTIVE
+                | LAYOUT)
     } else {
         flags
     };
@@ -85,6 +99,34 @@ pub(super) fn nominal_read(read: &mut Input<'_, '_>) -> Result<s::NominalHeader,
         _ => return Err("unknown source nominal representation"),
     };
     Ok(row)
+}
+fn layout_write(out: &mut Writer, layout: s::NominalLayout) -> Result<(), &'static str> {
+    let (kind, width) = match layout.modifier {
+        s::LayoutModifier::Natural => (0, None),
+        s::LayoutModifier::Aligned(width) => (1, Some(width)),
+        s::LayoutModifier::Packed(width) => (2, Some(width)),
+    };
+    out.u8(kind | (u8::from(layout.indirect_arguments) << 2))?;
+    if let Some(width) = width {
+        id(out, width)?;
+    }
+    Ok(())
+}
+fn layout_read(read: &mut Input<'_, '_>) -> Result<s::NominalLayout, &'static str> {
+    let flags = read.reader.u8()?;
+    if flags == 0 || flags > 6 {
+        return Err("invalid source nominal layout flags");
+    }
+    let modifier = match flags & 3 {
+        0 => s::LayoutModifier::Natural,
+        1 => s::LayoutModifier::Aligned(read.id()?),
+        2 => s::LayoutModifier::Packed(read.id()?),
+        _ => return Err("invalid source nominal layout modifier"),
+    };
+    Ok(s::NominalLayout {
+        modifier,
+        indirect_arguments: flags & 4 != 0,
+    })
 }
 fn field_write(out: &mut Writer, row: &s::NominalField) -> Result<(), &'static str> {
     id(out, row.owner.0)?;

@@ -230,6 +230,9 @@ impl Prepared {
 impl Ready<'_> {
     pub(crate) fn install(self) {
         let target = self.destination;
+        if self.rows.has_indirect_arguments() {
+            target.argument_policy = super::ArgumentPassing::Indirect;
+        }
         let entry_base = self.entry_base;
         let variant_base = self.variant_base;
         for mut row in self.rows.entries {

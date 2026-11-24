@@ -3,7 +3,7 @@
   "refused": [
     {"name": "crate::First", "source": "type First", "diagnostic": "named, associated or generic alias transport requires its wider profile"},
     {"name": "crate::Last", "source": "type Last", "diagnostic": "named, associated or generic alias transport requires its wider profile"},
-    {"name": "crate::Aligned", "source": "struct Aligned", "diagnostic": "source nominal representation requires its wider complete contract"}
+    {"name": "crate::Unpublished", "source": "union Unpublished", "diagnostic": "source union representation requires its wider nominal profile"}
   ],
   "independent": {"rustc": 0}
 }

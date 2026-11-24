@@ -14,10 +14,11 @@ an inaccessible alias. A separate provider uses a block-local type alias
 within a function and a fresh client calls that exported function. The
 const-parameter provider exercises a named array length and its type.
 
-`spec/non-exhaustive-transport/outcomes.json` covers a source library with
-non-exhaustive structs and an enum. `scripts/check_non_exhaustive_transport.py`
-publishes the provider and checks fresh construction and matching clients
-against RustGM and the pinned Rust compiler.
+`spec/non-exhaustive-transport/outcomes.json` covers construction and matching
+with non-exhaustive structs and an enum. `spec/source-nominal-layout/outcomes.json`
+covers alignment, packing, and indirect C ABI arguments. Run the declared case
+with `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
+against the pinned Rust compiler.
 
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the

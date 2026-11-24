@@ -32,5 +32,5 @@ type First<'a> = &'a u8;
 pub type Closed = u8;
 type Last<'a> = &'a u16;
 
-#[repr(align(8))]
-pub struct Aligned(pub u8);
+#[repr(C)]
+pub union Unpublished { pub byte: u8 }

@@ -162,6 +162,11 @@ pub(super) fn prepare(
 }
 
 fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
+    let (align, packed) = match row.layout.modifier {
+        s::LayoutModifier::Natural => (None, row.packed_simd.then_some(1)),
+        s::LayoutModifier::Aligned(width) => (Some(width), None),
+        s::LayoutModifier::Packed(width) => (None, Some(width)),
+    };
     aggregate::Repr {
         representation: match row.repr {
             RecordRepr::Rust => aggregate::Representation::Rust,
@@ -169,7 +174,13 @@ fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
             RecordRepr::Transparent => aggregate::Representation::Transparent,
             RecordRepr::Simd => aggregate::Representation::Simd,
         },
-        packed: row.packed_simd.then_some(1),
+        align,
+        packed,
+        arguments: if row.layout.indirect_arguments {
+            aggregate::ArgumentPassing::Indirect
+        } else {
+            aggregate::ArgumentPassing::Ordinary
+        },
         ..aggregate::Repr::default()
     }
 }

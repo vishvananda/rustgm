@@ -520,6 +520,41 @@ pub enum Exhaustiveness {
     Closed,
     Open,
 }
+/// An explicit alignment or packing unit on a record.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum LayoutModifier {
+    #[default]
+    Natural,
+    Aligned(u32),
+    Packed(u32),
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct NominalLayout {
+    pub modifier: LayoutModifier,
+    pub indirect_arguments: bool,
+}
+impl NominalLayout {
+    pub(crate) fn validate(
+        self,
+        repr: crate::support::crates::RecordRepr,
+    ) -> Result<(), &'static str> {
+        use crate::support::crates::RecordRepr;
+        let width = match self.modifier {
+            LayoutModifier::Natural => 1,
+            LayoutModifier::Aligned(width) | LayoutModifier::Packed(width) => width,
+        };
+        if !width.is_power_of_two() || width > 1 << 29 {
+            return Err("invalid source nominal alignment or packing unit");
+        }
+        if self.modifier != LayoutModifier::Natural
+            && !matches!(repr, RecordRepr::Rust | RecordRepr::C)
+            || self.indirect_arguments && repr != RecordRepr::C
+        {
+            return Err("source layout modifier requires a compatible nominal representation");
+        }
+        Ok(())
+    }
+}
 /// Raw, unpublished nominal header rows.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NominalHeader {
@@ -531,6 +566,7 @@ pub struct NominalHeader {
     pub inputs: Range,
     pub declared_inputs: u32,
     pub repr: crate::support::crates::RecordRepr,
+    pub layout: NominalLayout,
     /// Locality policy on the defining struct, independent of its representation.
     pub fundamental: bool,
     pub incoherent_inherent: bool,

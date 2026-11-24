@@ -1,5 +1,5 @@
 //! Nominal identity and field completeness belong to the source header ledger.
-use super::{DefinitionKind, Exhaustiveness, HeaderRef, Profile, SourceRows, Type};
+use super::{DefinitionKind, Exhaustiveness, HeaderRef, NominalLayout, Profile, SourceRows, Type};
 use crate::support::{crates::generics::Work, hash::HashSet};
 pub(super) fn require_profile(
     rows: &SourceRows,
@@ -21,27 +21,26 @@ pub(super) fn require_profile(
             return Err("source foreign types require the declaration policies profile");
         }
         work.charge(rows.nominals.len())?;
-        if rows.nominals.iter().any(|row| row.fundamental) {
-            return Err("source fundamental nominal requires the declaration policy profile");
-        }
-        if rows.nominals.iter().any(|row| row.incoherent_inherent) {
-            return Err("source incoherent nominal requires the declaration policy profile");
-        }
-        if rows
-            .nominals
-            .iter()
-            .any(|row| row.exhaustiveness == Exhaustiveness::Open)
-        {
-            return Err("source non-exhaustive nominal requires the declaration policy profile");
-        }
-        if rows
-            .nominals
-            .iter()
-            .any(|row| row.packed_simd || row.simd_lane_limit.is_some())
-        {
-            return Err(
-                "source SIMD representation policy requires the declaration policy profile",
-            );
+        for row in &rows.nominals {
+            if row.fundamental {
+                return Err("source fundamental nominal requires the declaration policy profile");
+            }
+            if row.incoherent_inherent {
+                return Err("source incoherent nominal requires the declaration policy profile");
+            }
+            if row.exhaustiveness == Exhaustiveness::Open {
+                return Err(
+                    "source non-exhaustive nominal requires the declaration policy profile",
+                );
+            }
+            if row.layout != NominalLayout::default() {
+                return Err("source layout modifiers require the declaration policy profile");
+            }
+            if row.packed_simd || row.simd_lane_limit.is_some() {
+                return Err(
+                    "source SIMD representation policy requires the declaration policy profile",
+                );
+            }
         }
     }
     for body in &rows.originals {
@@ -127,6 +126,12 @@ pub(super) fn headers(
             .ok_or("unknown source nominal declaration")?;
         if row.fundamental && declaration.definition.kind != DefinitionKind::Struct {
             return Err("source fundamental nominal must name its actual struct");
+        }
+        row.layout.validate(row.repr)?;
+        if row.layout != NominalLayout::default()
+            && declaration.definition.kind != DefinitionKind::Struct
+        {
+            return Err("source layout modifiers must name their actual struct");
         }
         if (row.packed_simd || row.simd_lane_limit.is_some())
             && declaration.definition.kind != DefinitionKind::Struct

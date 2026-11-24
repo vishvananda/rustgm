@@ -10,6 +10,7 @@ use crate::{
 
 pub(super) struct NominalShape {
     repr: RecordRepr,
+    layout: s::NominalLayout,
     packed_simd: bool,
     enumeration: bool,
     exhaustiveness: s::Exhaustiveness,
@@ -96,6 +97,7 @@ impl Stage {
         let item = ItemId(owner.0);
         let NominalShape {
             repr,
+            layout,
             packed_simd,
             enumeration,
             exhaustiveness,
@@ -155,6 +157,7 @@ impl Stage {
             inputs,
             declared_inputs,
             repr,
+            layout,
             fundamental,
             incoherent_inherent,
             packed_simd,
@@ -182,13 +185,16 @@ impl Stage {
             .aggregates
             .get(item)
             .ok_or("source nominal lacks its completed shape")?;
+        if shape.kind == aggregate::Kind::Union {
+            return Err("source union representation requires its wider nominal profile");
+        }
         let enumeration = shape.kind == aggregate::Kind::Enum;
         let policies = self.declaration_policies();
         let non_exhaustive = non_exhaustive(report, facts, item)?;
         if non_exhaustive && !policies {
             return Err("source non-exhaustive nominal requires the declaration policy profile");
         }
-        let (repr, packed_simd) =
+        let (repr, packed_simd, layout) =
             record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
         if !policies {
             concrete_simd(facts, owner, repr)?;
@@ -204,6 +210,7 @@ impl Stage {
         }
         Ok(NominalShape {
             repr,
+            layout,
             packed_simd,
             enumeration,
             exhaustiveness: if non_exhaustive {
@@ -344,16 +351,25 @@ fn record_repr(
     enumeration: bool,
     body_nodes: bool,
     policies: bool,
-) -> Result<(RecordRepr, bool), &'static str> {
+) -> Result<(RecordRepr, bool, s::NominalLayout), &'static str> {
     let packed_simd =
         repr.packed == Some(1) && repr.representation == aggregate::Representation::Simd;
-    let repr = aggregate::Repr {
-        packed: if packed_simd && policies {
-            None
-        } else {
-            repr.packed
-        },
-        ..repr
+    let mut repr = repr;
+    let layout = if policies && !enumeration {
+        let modifier = match (repr.align.take(), repr.packed.take()) {
+            (Some(width), None) => s::LayoutModifier::Aligned(width),
+            (None, Some(_)) if packed_simd => s::LayoutModifier::Natural,
+            (None, Some(width)) => s::LayoutModifier::Packed(width),
+            (None, None) => s::LayoutModifier::Natural,
+            _ => return Err("source nominal has conflicting alignment and packing"),
+        };
+        s::NominalLayout {
+            modifier,
+            indirect_arguments: std::mem::take(&mut repr.arguments)
+                == aggregate::ArgumentPassing::Indirect,
+        }
+    } else {
+        s::NominalLayout::default()
     };
     let record = match repr {
         aggregate::Repr {
@@ -394,5 +410,6 @@ fn record_repr(
         } if enumeration => RecordRepr::Rust,
         _ => return Err("source nominal representation requires its wider complete contract"),
     };
-    Ok((record, packed_simd))
+    layout.validate(record)?;
+    Ok((record, packed_simd, layout))
 }

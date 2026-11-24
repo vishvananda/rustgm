@@ -34,6 +34,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
         inputs: g::Range { start: 0, end: 0 },
         declared_inputs: 0,
         repr,
+        layout: s::NominalLayout::default(),
         fundamental: false,
         incoherent_inherent: false,
         packed_simd: false,

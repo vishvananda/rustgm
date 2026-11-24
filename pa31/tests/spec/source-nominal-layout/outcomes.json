@@ -1,0 +1,10 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0,
+     "lowir": ["obj<32x32>", "obj<6x2>", "index u8 %t1, 2", "function @read_indirect(%p0 : ptr"]},
+    {"cfg": "unaligned", "status": 1, "rustc": "E0793", "rustgm": "reference to an unaligned packed field"}
+  ]
+}

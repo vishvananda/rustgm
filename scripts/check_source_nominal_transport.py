@@ -8,23 +8,23 @@ from crate_qualification import Check
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURES = ROOT / "pa31/tests/spec/non-exhaustive-transport"
-IDENTITY = "base@non_exhaustive_fixture"
+FIXTURES = ROOT / "pa31/tests/spec"
+IDENTITY = "base@source_nominal_fixture"
 RUSTC = ["rustc", "--edition=2024", "--crate-type=lib", "--emit=metadata", "--cfg", "rustc_oracle"]
-RUSTGM = ["--emit-lowir", "--edition=2024", "--crate-type=lib", "--cap-lints=allow"]
+RUSTGM = ["--emit-lowir", "--edition=2024", "--cap-lints=allow"]
 
 
-def provider(check, contract):
+def provider(check, fixture, contract):
     prefix, marker, _ = (ROOT / contract["foundation"]).read_bytes().partition(
         contract["prefix_marker"].encode())
     if not marker:
         raise ValueError("provider foundation has no declared boundary")
     source = check.folder / "provider.rs"
-    source.write_bytes(prefix + (FIXTURES / "provider.rs").read_bytes())
+    source.write_bytes(prefix + (fixture / "provider.rs").read_bytes())
     return source
 
 
-def rustc(check, source, cases):
+def rustc(check, source, client, cases):
     bootstrap = {"RUSTC_BOOTSTRAP": "1"}
     artifact = check.folder / "libbase.rmeta"
     check.run("rustc-provider", [*RUSTC, "--crate-name", "base", "-o", artifact, source],
@@ -34,26 +34,33 @@ def rustc(check, source, cases):
         codes = (f"error[{case['rustc']}]",) if case["status"] else ()
         check.run(f"rustc-{name}", [*RUSTC, "--crate-name", name, "--extern", f"base={artifact}",
                                  "--cfg", name, "-o", check.folder / f"{name}.rmeta",
-                                 FIXTURES / "client.rs"], case["status"], codes,
+                                 client], case["status"], codes,
                   environment=bootstrap, timeout=15)
 
 
-def candidate(check, source, cases):
+def candidate(check, source, client, contract):
     artifact = check.folder / "base.rgcrate"
-    check.run("rustgm-provider", [check.app, *RUSTGM, "--crate-name", "base",
-              "--crate-disambiguator", "non_exhaustive_fixture", "--source-core", IDENTITY,
+    check.run("rustgm-provider", [check.app, *RUSTGM, "--crate-type=lib", "--crate-name", "base",
+              "--crate-disambiguator", "source_nominal_fixture", "--source-core", IDENTITY,
               "--source-profile", "module-body-operations-v14", "--metadata-output", artifact,
               "-o", check.folder / "provider.lowir", source], timeout=30)
     if artifact.stat().st_size == 0:
         raise ValueError("provider emitted no RustGM crate metadata")
-    for case in cases:
+    client_kind = contract.get("client_kind", "lib")
+    for case in contract["cases"]:
         name = case["cfg"]
         codes = (case["rustgm"],) if case["status"] else ()
-        check.run(f"rustgm-{name}", [check.app, *RUSTGM, "--crate-name", name,
-                  "--crate-disambiguator", "non_exhaustive_client",
+        lowir = check.folder / f"{name}.lowir"
+        check.run(f"rustgm-{name}", [check.app, *RUSTGM, f"--crate-type={client_kind}", "--crate-name", name,
+                  "--crate-disambiguator", "source_nominal_client",
                   "--source-client", IDENTITY, "--extern", f"base={artifact}", "--cfg", name,
-                  "-o", check.folder / f"{name}.lowir", FIXTURES / "client.rs"],
+                  "-o", lowir, client],
                   case["status"], codes, timeout=15)
+        if "lowir" in case:
+            text = lowir.read_text()
+            for fragment in case["lowir"]:
+                if fragment not in text:
+                    raise ValueError(f"{name}: missing expected LowIR {fragment!r}")
 
 
 def main():
@@ -61,15 +68,19 @@ def main():
     compiler = parser.add_mutually_exclusive_group(required=True)
     compiler.add_argument("--app", type=Path)
     compiler.add_argument("--oracle-only", action="store_true")
+    parser.add_argument("--case", choices=("non-exhaustive-transport", "source-nominal-layout"),
+                        default="non-exhaustive-transport")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     check = Check(args.app or Path("rustc"), args.out)
-    contract = json.loads((FIXTURES / "outcomes.json").read_text())
-    source = provider(check, contract)
-    rustc(check, source, contract["cases"])
+    fixture = FIXTURES / args.case
+    contract = json.loads((fixture / "outcomes.json").read_text())
+    source = provider(check, fixture, contract)
+    client = fixture / "client.rs"
+    rustc(check, source, client, contract["cases"])
     if args.app:
-        candidate(check, source, contract["cases"])
-    print(f"Checked {len(contract['cases'])} independent non-exhaustive nominal clients")
+        candidate(check, source, client, contract)
+    print(f"Checked {len(contract['cases'])} independent source nominal clients for {args.case}")
 
 
 if __name__ == "__main__":
