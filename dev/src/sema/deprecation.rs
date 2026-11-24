@@ -110,7 +110,13 @@ fn check_imported(
     use crate::resolve::stability::{self, ImportedDeprecation};
     let current = facts.safety_policies.deprecated(site);
     let future = facts.safety_policies.deprecated_in_future(site);
-    if current == Level::Allow && future == Level::Allow {
+    if (current == Level::Allow && future == Level::Allow)
+        || report
+            .resolution
+            .crates
+            .as_deref()
+            .is_none_or(|imports| !imports.owns_definition(target))
+    {
         return Ok(());
     }
     match stability::declaration_deprecation(report, target)? {
@@ -139,7 +145,6 @@ fn check_imported(
     }
     if (!facts.safety_policies.explicit_deprecation(site) && future == Level::Allow)
         || stability::declaration_deprecation_absent(report, target)?
-        || super::header_attributes::bootstrap_owner(report, target)?
     {
         return Ok(());
     }

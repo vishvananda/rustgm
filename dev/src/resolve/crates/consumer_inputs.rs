@@ -245,12 +245,14 @@ pub(in crate::resolve) fn reserve_names(
     catalog
         .validate_declaration(root, definition, DefKind::Module)
         .map_err(error)?;
+    let definitions = first_definition..resolver.facts.definitions.len();
+    imported.definition_extent = definitions.clone();
     let seed = ReservationSeed {
         inventory,
         index,
         catalog,
         root,
-        definitions: first_definition..resolver.facts.definitions.len(),
+        definitions,
         scopes: first_scope..resolver.facts.scopes.len(),
     };
     resolver.facts.crates = Some(Box::new(imported));
@@ -386,6 +388,7 @@ pub(super) fn bind(
         ..
     } = inputs;
     imported.origins = catalog.into_slot().map_err(error)?;
+    imported.definition_extent = definitions.clone();
     let catalog = imported
         .origin_catalog()
         .map_err(error)?

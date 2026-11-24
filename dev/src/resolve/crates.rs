@@ -47,6 +47,8 @@ pub struct Imported {
     cold: Option<Box<ColdImports>>,
     dependencies: Arc<Dependencies>,
     definitions: HashMap<ExternalDef, DefId>,
+    /// Definitions allocated by the import transaction, including unnamed rows.
+    definition_extent: std::ops::Range<usize>,
     functions: Vec<(DefId, usize, usize)>,
     constants: Vec<(DefId, usize, usize)>,
     records: Vec<(DefId, usize, usize)>,
@@ -77,6 +79,7 @@ impl Imported {
             cold: None,
             dependencies,
             definitions: HashMap::default(),
+            definition_extent: 0..0,
             functions: Vec::new(),
             constants: Vec::new(),
             records: Vec::new(),
@@ -156,6 +159,9 @@ impl Imported {
     #[must_use]
     pub fn definition(&self, external: &ExternalDef) -> Option<DefId> {
         self.definitions.get(external).copied()
+    }
+    pub(crate) fn owns_definition(&self, definition: DefId) -> bool {
+        self.definition_extent.contains(&(definition.0 as usize))
     }
     fn crate_root(&self, alias: &Dependency) -> Result<DefId, &'static str> {
         let identity =
@@ -277,6 +283,7 @@ fn error(message: &'static str) -> Error {
 }
 impl Resolver<'_> {
     pub(super) fn import_crates(&mut self, dependencies: Arc<Dependencies>) -> Result<(), Error> {
+        let first_definition = self.facts.definitions.len();
         let external = self.new_scope(None, ModuleId(0), true)?;
         let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported::new(dependencies);
@@ -336,6 +343,7 @@ impl Resolver<'_> {
         self.expand_glob_reexports(&artifacts, &roots, &mut imported)?;
         self.bind_crate_aliases(external, &imported)?;
         self.facts.extern_scope = Some(external);
+        imported.definition_extent = first_definition..self.facts.definitions.len();
         imported.origins.freeze().map_err(error)?;
         imported.availability = super::stability::availability_imports::prepare(
             &imported,

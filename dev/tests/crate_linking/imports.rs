@@ -307,8 +307,18 @@ fn explicit_foreign_deprecation_policy_requires_transport_without_changing_legac
         dependencies(false)?,
     )?;
     assert!(rustgm::pipeline::analyze_source(&legacy).is_ok());
-    for policy in ["expect", "deny", "warn"] {
-        let source = format!("#[{policy}(deprecated)]fn main(){{let _=left::math::value(7);}}");
+    let local_root = resolve(
+        "#![deny(deprecated, deprecated_in_future)] pub use crate as local; fn main(){}",
+        dependencies(false)?,
+    )?;
+    assert!(rustgm::pipeline::analyze_source(&local_root).is_ok());
+    for policy in [
+        "expect(deprecated)",
+        "deny(deprecated)",
+        "warn(deprecated)",
+        "deny(deprecated_in_future)",
+    ] {
+        let source = format!("#[{policy}]fn main(){{let _=left::math::value(7);}}");
         let report = resolve(&source, dependencies(false)?)?;
         let Err(error) = rustgm::pipeline::analyze_source(&report) else {
             return Err(format!("foreign {policy} policy inferred absence").into());

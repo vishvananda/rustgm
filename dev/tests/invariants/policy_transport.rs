@@ -256,8 +256,8 @@ fn legacy_availability_remains_unknown_and_hot_records_do_not_grow() -> Result {
     // pointer replaces the 96 inline bytes of those two v13 groups.
     assert_eq!(size_of::<s::SourceRows>(), 792);
     assert_eq!(size_of::<s::ValidatedRows>(), 144);
-    // Imported macro rows and original reservation work share one cold box.
-    assert_eq!(size_of::<crate::resolve::crates::Imported>(), 160);
+    // The cold import owner retains the extent of its reserved definitions.
+    assert_eq!(size_of::<crate::resolve::crates::Imported>(), 176);
     assert_eq!(size_of::<crate::resolve::lookup::Observations>(), 64);
     assert_eq!(size_of::<crate::resolve::model::Reference>(), 24);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
