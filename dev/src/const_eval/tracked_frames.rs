@@ -92,9 +92,14 @@ impl Machine<'_, '_> {
                 false
             };
             let id = next.ok_or("tracked const entry lacks a genuine caller destination")?;
-            let site = code
-                .caller_site(id)?
-                .ok_or("const call lacks its sealed actual caller location")?;
+            let site = code.caller_site(id)?;
+            // The imported leaf invokes the re-proved intrinsic under its
+            // own tracked header. The next frame still owes its actual site.
+            if site.is_none()
+                && (!tracked || index != self.frames.len() || code.source.source().is_some())
+            {
+                return Err("const call lacks its sealed actual caller location".into());
+            }
             let crate::body::ir::Rvalue::Call { callee, .. } = code
                 .values
                 .get(id.0 as usize)
@@ -103,17 +108,19 @@ impl Machine<'_, '_> {
             else {
                 return Err("caller frame destination is not a Call".into());
             };
-            if code
-                .values
-                .get(callee.0 as usize)
-                .is_none_or(|value| value.ty != site.callable)
-            {
-                return Err("caller frame changed its actual call-site callee".into());
-            }
-            crate::sema::values::Reader::new(self.evaluator.facts())
-                .caller_location_value(site.location)?;
-            if !tracked {
-                return Ok(site.location);
+            if let Some(site) = site {
+                if code
+                    .values
+                    .get(callee.0 as usize)
+                    .is_none_or(|value| value.ty != site.callable)
+                {
+                    return Err("caller frame changed its actual call-site callee".into());
+                }
+                crate::sema::values::Reader::new(self.evaluator.facts())
+                    .caller_location_value(site.location)?;
+                if !tracked {
+                    return Ok(site.location);
+                }
             }
             next = match actual.return_to {
                 super::ReturnTo::Value(value) => Some(value),

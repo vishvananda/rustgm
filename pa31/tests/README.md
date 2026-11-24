@@ -62,6 +62,9 @@ compilers.
 a tracked overflow guard and a direct call. Run
 `scripts/check_location_role_transport.py` to check each hidden pointer, the
 filename bytes and source coordinates, and invalid role bindings.
+The forwarding variant imports `Location::caller()` itself and observes
+runtime and const-initializer coordinates in both compilers. Run
+`scripts/check_caller_location_forwarding.py` for that case.
 
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the

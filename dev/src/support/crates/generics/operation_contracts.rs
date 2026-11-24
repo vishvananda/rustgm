@@ -18,6 +18,7 @@ pub(super) fn require_profile(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
+    caller_location_intrinsic(rows, profile, work)?;
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
@@ -48,6 +49,55 @@ pub(super) fn require_profile(
         return Err(
             "compiler operations and declared results require their explicit version-eleven profile",
         );
+    }
+    Ok(())
+}
+
+fn caller_location_intrinsic(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(rows.functions.len())?;
+    let mut functions = rows
+        .functions
+        .iter()
+        .filter(|header| header.body == FunctionBody::CallerLocationIntrinsic);
+    let Some(header) = functions.next() else {
+        return Ok(());
+    };
+    work.charge(rows.roles.len())?;
+    role(rows, LangItem::PanicLocation)?;
+    let module_declaration = rows
+        .declarations
+        .get(header.declaration.0 as usize)
+        .is_some_and(|decl| {
+            decl.name.as_deref() == Some("caller_location")
+                && decl.definition.parent.is_some_and(|parent| {
+                    rows.declarations
+                        .get(parent.0 as usize)
+                        .is_some_and(|owner| owner.definition.kind == super::DefinitionKind::Module)
+                })
+        });
+    let signature = |signature: super::super::Signature| {
+        signature.convention == Convention::Rust
+            && !signature.unsafe_
+            && !signature.variadic
+            && signature.parameters.start == signature.parameters.end
+    };
+    if !profile.declaration_policies()
+        || functions.next().is_some()
+        || !module_declaration
+        || header.parent.is_some()
+        || header.receiver.is_some()
+        || header.regions.total != 0
+        || header.inputs.start != header.inputs.end
+        || header.formals.start != header.formals.end
+        || header.constness != Constness::Const
+        || !signature(header.original)
+        || !signature(header.callable)
+    {
+        return Err("source caller_location intrinsic requires its exact version-fourteen header");
     }
     Ok(())
 }

@@ -258,7 +258,7 @@ pub(super) fn complete(
                     .ok_or_else(|| error("compiler operation lost its actual body owner"))?;
                 (operation.body, false)
             }
-            s::FunctionBody::Absent => {
+            s::FunctionBody::Absent | s::FunctionBody::CallerLocationIntrinsic => {
                 return Err(error(
                     "source required method cannot acquire an original environment",
                 ));

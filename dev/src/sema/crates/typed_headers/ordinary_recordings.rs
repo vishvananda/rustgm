@@ -364,7 +364,9 @@ impl OrdinaryDomain {
             s::FunctionBody::CompilerOperation(_) => Err(error(
                 "compiler-operation execution requires genuine future state ownership",
             )),
-            s::FunctionBody::Absent => Err(error("ordinary domain cannot invent an absent body")),
+            s::FunctionBody::Absent | s::FunctionBody::CallerLocationIntrinsic => {
+                Err(error("ordinary domain cannot invent an absent body"))
+            }
         }
     }
     pub(in crate::sema::crates::typed_headers) fn environment(

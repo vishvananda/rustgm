@@ -1,7 +1,7 @@
 //! The attributed intrinsic returns the genuine completed source Location type.
 use super::Catalog;
 use crate::{
-    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
+    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId, package::Error},
     sema::model::{Declarations, Function},
     support::bindings::{LangItem, SourceIntrinsic},
     types::{
@@ -10,13 +10,28 @@ use crate::{
 };
 
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
+    validate_signature(
+        facts,
+        function.definition,
+        function.signature,
+        function.body.is_some(),
+    )
+    .map(drop)
+}
+
+fn validate_signature(
+    facts: &Declarations,
+    definition: DefId,
+    signature: TypeId,
+    has_body: bool,
+) -> Result<TypeId, &'static str> {
     let Some(Kind::Function {
         bound_regions: 0,
         parameters,
         result,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err("source caller_location requires a safe Rust signature without late regions");
     };
@@ -27,20 +42,20 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
         || facts
             .generics
             .parameters
-            .get(&function.definition)
+            .get(&definition)
             .is_some_and(|parameters| !parameters.is_empty())
         || facts
             .lifetimes
             .functions
-            .get(&function.definition)
+            .get(&definition)
             .is_some_and(|regions| regions.total != 0)
         || facts
             .generics
-            .declared_predicates_in_scope(function.definition)
+            .declared_predicates_in_scope(definition)
             .next()
             .is_some()
-        || !facts.is_const_function(function.definition)
-        || function.body.is_some()
+        || !facts.is_const_function(definition)
+        || has_body
     {
         return Err(
             "source caller_location requires a const bodyless declaration without parameters or predicates",
@@ -60,7 +75,8 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
     let location = facts
         .source_bindings
         .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::PanicLocation))
+        .ok_or("source caller_location requires its provider role catalog")?
+        .role(LangItem::PanicLocation)?
         .ok_or("source caller_location requires the actual panic_location declaration")?;
     if item.0 != location.definition.0
         || facts
@@ -75,16 +91,83 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
             "source caller_location changed its actual Location identity or static lifetime",
         );
     }
+    Ok(result)
+}
+
+pub(super) fn complete_imported(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    let check = |steps: &mut usize| {
+        let catalog = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("imported intrinsic lost its catalog")?;
+        catalog.require_provider_report(report)?;
+        let Some(role) = catalog.caller_location_header(steps)? else {
+            return Ok(None);
+        };
+        catalog
+            .validated_role(LangItem::PanicLocation)?
+            .ok_or("imported caller_location requires its checked Location nominal")?;
+        let header = facts
+            .declaration_header(role.definition)?
+            .ok_or("imported caller_location lost its canonical declaration")?;
+        if header.declaration != role.origin || header.universals != 0 {
+            return Err(
+                "imported caller_location changed its declaration origin or signature scope",
+            );
+        }
+        let result = validate_signature(
+            facts,
+            role.definition,
+            header.signature,
+            header.body.is_some(),
+        )?;
+        Ok(Some((
+            CallerLocationSelection {
+                definition: role.definition,
+                signature: header.signature,
+                result,
+            },
+            catalog.native_layouts.is_none(),
+        )))
+    };
+    let mut steps = 0;
+    let checked = check(&mut steps);
+    let storage = if matches!(checked, Ok(Some((_, true)))) {
+        size_of::<super::inhabited_properties::Plans>()
+    } else {
+        0
+    };
+    crate::sema::crates::charge_source_headers(facts, steps, storage)?;
+    if let Some((selected, _)) = checked.map_err(Error::unlocated)? {
+        facts
+            .source_bindings
+            .as_deref_mut()
+            .ok_or_else(|| Error::unlocated("imported intrinsic lost its catalog"))?
+            .native_layouts
+            .get_or_insert_with(Default::default)
+            .imported_caller_location = Some(selected);
+    }
     Ok(())
 }
 
 /// Declaration shape data; actual reached callers still owe their complete proof.
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CallerLocationSelection {
     pub definition: DefId,
     pub signature: TypeId,
     pub result: TypeId,
 }
 impl Catalog {
+    pub(super) fn imported_caller_location(
+        &self,
+        definition: DefId,
+    ) -> Option<CallerLocationSelection> {
+        self.native_layouts
+            .as_deref()?
+            .imported_caller_location
+            .filter(|selected| selected.definition == definition)
+    }
+
     pub(crate) fn caller_location_selection(
         &self,
         facts: &Declarations,
@@ -100,6 +183,17 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
+        if let Some(selected) = self.imported_caller_location(definition) {
+            if signature != selected.signature
+                || facts
+                    .types
+                    .arguments(arguments)
+                    .is_none_or(|rows| rows.len() != 0)
+            {
+                return Err("imported caller_location changed its actual opened signature");
+            }
+            return Ok(Some(selected));
+        }
         let Some((declaration, SourceIntrinsic::CallerLocation, expected)) =
             self.intrinsic_record(definition)?
         else {
@@ -146,6 +240,9 @@ impl Catalog {
         selected: &CallerLocationSelection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if self.imported_caller_location(selected.definition).as_ref() == Some(selected) {
+            return Ok(());
+        }
         let Some((declaration, SourceIntrinsic::CallerLocation, signature)) =
             self.intrinsic_record(selected.definition)?
         else {

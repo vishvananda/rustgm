@@ -307,6 +307,20 @@ impl Stage {
         future: g::TypeRef,
     ) -> Result<s::FunctionBody, &'static str> {
         let Some(source) = function.body else {
+            if facts
+                .source_bindings
+                .as_deref()
+                .map(|catalog| catalog.intrinsic_kind(function.definition))
+                .transpose()?
+                .flatten()
+                == Some(crate::support::bindings::SourceIntrinsic::CallerLocation)
+            {
+                return if self.declaration_policies() {
+                    Ok(s::FunctionBody::CallerLocationIntrinsic)
+                } else {
+                    Err("source caller_location intrinsic requires version fourteen")
+                };
+            }
             return Ok(s::FunctionBody::Absent);
         };
         let body = self.reserve_original(function.definition, context, BodyKind::Function)?;

@@ -381,6 +381,9 @@ impl Catalog {
         &self,
         definition: DefId,
     ) -> Result<Option<SourceIntrinsic>, &'static str> {
+        if self.imported_caller_location(definition).is_some() {
+            return Ok(Some(SourceIntrinsic::CallerLocation));
+        }
         let Some(entry) = self.intrinsics.get(&definition) else {
             return Ok(None);
         };

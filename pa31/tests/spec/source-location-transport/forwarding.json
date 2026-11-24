@@ -1,0 +1,12 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "provider": "forwarding-provider.rs",
+  "client": "forwarding-client.rs",
+  "observer": "forwarding-observer.c",
+  "stdout": "9 5 5 40\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "invalid source required/provided body tag",
+  "untracked_body": "source resolved callable identities require a wider transport profile",
+  "forged_identity": "source caller_location intrinsic requires its exact version-fourteen header"
+}

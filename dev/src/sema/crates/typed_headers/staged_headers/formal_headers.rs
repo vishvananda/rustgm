@@ -120,7 +120,7 @@ pub(super) fn header(
                 .map_err(error)?;
             Some(context.catalog.origin(id).map_err(error)?)
         }
-        s::FunctionBody::Absent => None,
+        s::FunctionBody::Absent | s::FunctionBody::CallerLocationIntrinsic => None,
         s::FunctionBody::Original(reference) => {
             let id = context
                 .imported

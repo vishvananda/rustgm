@@ -323,7 +323,9 @@ fn validate(stage: &mut Stage, facts: &Declarations, body: &Body) -> Result<(), 
     if body.closure_calls.is_some() {
         return Err("source selected closure entries require a wider transport profile");
     }
-    if body.resolved_callables.is_some() {
+    if body.resolved_callables.is_some()
+        && !(stage.declaration_policies() && forwarded_location(facts, body)?)
+    {
         return Err("source resolved callable identities require a wider transport profile");
     }
     // An empty completed cache has no roots to omit. Imported originals still
@@ -373,6 +375,35 @@ fn validate(stage: &mut Stage, facts: &Declarations, body: &Body) -> Result<(), 
         return Err("source mutable static permissions require a wider transport profile");
     }
     Ok(())
+}
+
+fn forwarded_location(facts: &Declarations, body: &Body) -> Result<bool, &'static str> {
+    use crate::support::bindings::SourceIntrinsic;
+    let (Owner::Function { definition, .. }, Some(site)) = (body.owner, body.lone_caller_site())
+    else {
+        return Ok(false);
+    };
+    if !facts.recorded_caller_tracking(definition)? || body.caller_site(site.value)? != Some(site) {
+        return Ok(false);
+    }
+    let Some(ir::Rvalue::Call { callee, .. }) = body
+        .values
+        .get(site.value.0 as usize)
+        .map(|value| value.kind)
+    else {
+        return Ok(false);
+    };
+    let Some(callee) = body.values.get(callee.0 as usize) else {
+        return Ok(false);
+    };
+    let ir::Rvalue::Function(target) = callee.kind else {
+        return Ok(false);
+    };
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    Ok(callee.ty == site.callable
+        && catalog.intrinsic_kind(target)? == Some(SourceIntrinsic::CallerLocation))
 }
 pub(super) fn place(stage: &mut Stage, place: ir::Place) -> Result<s::Place, &'static str> {
     match place {

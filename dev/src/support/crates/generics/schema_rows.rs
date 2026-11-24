@@ -456,6 +456,8 @@ pub enum FunctionBody {
     Absent,
     Original(BodyRef),
     CompilerOperation(CompilerOperationRef),
+    /// A checked bodyless Rust intrinsic, in the version-fourteen profile.
+    CallerLocationIntrinsic,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Formal {

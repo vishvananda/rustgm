@@ -808,7 +808,9 @@ impl Graph {
             {
                 return Err("compiler operation changed its actual declaration environment");
             }
-            s::FunctionBody::CompilerOperation(_) | s::FunctionBody::Absent => {}
+            s::FunctionBody::CompilerOperation(_)
+            | s::FunctionBody::Absent
+            | s::FunctionBody::CallerLocationIntrinsic => {}
         }
         Ok(())
     }

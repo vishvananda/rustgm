@@ -70,6 +70,17 @@ impl Body {
             .as_ref()
             .map_or(&[], |inputs| inputs.sites.as_slice())
     }
+    pub(crate) fn lone_caller_site(&self) -> Option<CallerSite> {
+        let inputs = self.resolved_callables.as_deref()?;
+        if inputs.targets.is_some() || inputs.nominal.is_some() || inputs.value_reborrows.is_some()
+        {
+            return None;
+        }
+        let [site] = inputs.sites.as_slice() else {
+            return None;
+        };
+        Some(*site)
+    }
     pub(crate) fn caller_site(&self, value: ValueId) -> Result<Option<CallerSite>, &'static str> {
         let sites = self.caller_sites();
         let site = sites

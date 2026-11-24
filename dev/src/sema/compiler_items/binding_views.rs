@@ -48,6 +48,15 @@ pub(super) struct Imported {
     staged: Option<std::rc::Weak<crate::resolve::bindings::consumer_policy::StagedConsumer>>,
 }
 impl Imported {
+    fn descriptor(&self, provider: &CrateIdentity) -> Result<SourceDescriptor<'_>, &'static str> {
+        self.dependencies
+            .artifacts()
+            .get(self.provider_index as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+            .filter(|descriptor| descriptor.identity() == provider)
+            .ok_or("imported role lost its actual provider descriptor")
+    }
+
     pub(super) fn require_report(
         &self,
         report: &Report,
@@ -133,6 +142,41 @@ impl Catalog {
         matches!(self.bindings, Bindings::Imported(_))
     }
 
+    pub(super) fn caller_location_header(
+        &self,
+        work: &mut usize,
+    ) -> Result<Option<Role>, &'static str> {
+        let Bindings::Imported(imported) = &self.bindings else {
+            return Ok(None);
+        };
+        let descriptor = imported.descriptor(&self.provider)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(None);
+        }
+        let rows = descriptor.rows();
+        charge(work, rows.functions.len())?;
+        rows.functions
+            .iter()
+            .find(|header| header.body == s::FunctionBody::CallerLocationIntrinsic)
+            .map(|header| {
+                let definition = imported
+                    .origins
+                    .definition_at(descriptor.provider(), header.declaration)?;
+                let declaration = imported.origins.declaration(definition)?;
+                let origin = imported.origins.validate_declaration(
+                    declaration,
+                    definition,
+                    DefKind::Function,
+                )?;
+                Ok(Role {
+                    definition,
+                    parent: None,
+                    origin,
+                })
+            })
+            .transpose()
+    }
+
     #[cfg(test)]
     pub(crate) const fn binding_layouts() -> (usize, usize, usize) {
         (
@@ -187,13 +231,7 @@ impl Catalog {
         let Bindings::Imported(imported) = &self.bindings else {
             return Err("imported diagnostic identity requires its actual provider");
         };
-        let descriptor = imported
-            .dependencies
-            .artifacts()
-            .get(imported.provider_index as usize)
-            .and_then(crate::support::crates::Interface::source_descriptor)
-            .filter(|descriptor| descriptor.identity() == &self.provider)
-            .ok_or("imported diagnostic identity lost its actual provider descriptor")?;
+        let descriptor = imported.descriptor(&self.provider)?;
         for row in descriptor.rows().diagnostics() {
             charge(work, 1)?;
             if row.role != wanted {
