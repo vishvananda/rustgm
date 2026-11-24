@@ -75,7 +75,8 @@ const PASSES: [(&str, Pass); 33] = [
         crate::sema::compiler_items::streams::complete_helpers(checker.report, &mut checker.facts)
     }),
     (VALIDATION, |checker, _, _| {
-        checker.validate_trait_implementations()
+        checker.validate_trait_implementations()?;
+        checker.complete_imported_destructors()
     }),
     ("validate_imported_union_fields", |checker, _, _| {
         checker.validate_imported_union_fields()

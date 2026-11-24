@@ -63,7 +63,7 @@ def opponents(check, exporter, importer, source, client, explicit, artifact, con
                   [contract[name]], timeout=30)
 
 
-def candidate(check, source, client, observer, contract):
+def candidate(check, source, client, observer, expected):
     artifact = check.folder / "base.rgcrate"
     provider = check.folder / "provider.lowir"
     exporter = [check.app, *OPTIONS, "--crate-name", "base", "--source-core", IDENTITY]
@@ -76,7 +76,7 @@ def candidate(check, source, client, observer, contract):
     program = check.folder / "rustgm-client"
     backend.build_many([provider, lowered], program, native_objects=[observer])
     observed = check.run("rustgm-observe", [program], timeout=30).stdout
-    if observed != contract["stdout"].encode():
+    if observed != expected:
         raise ValueError("the fresh client changed the ordinary or selected destructor trace")
     print(observed.decode(), end="")
     return exporter, importer, artifact
@@ -96,7 +96,21 @@ def private_wrapper(check, source, client, observer, contract, rustc, run_candid
     consumer.write_bytes(client.read_bytes().replace(b"base::drop_glue", b"base::cleanup"))
     pinned(private, rustc, provider, consumer, observer, contract["stdout"].encode())
     if run_candidate:
-        candidate(private, provider, consumer, observer, contract)
+        candidate(private, provider, consumer, observer, contract["stdout"].encode())
+
+
+def provider_owned(check, source, contract, rustc, run_candidate):
+    owned = Check(check.app, check.folder / "provider-owned")
+    provider = owned.folder / "provider.rs"
+    provider.write_bytes(source.read_bytes() + b"\n" + (FIXTURE / contract["provider"]).read_bytes())
+    consumer = FIXTURE / contract["client"]
+    observer = owned.folder / "observer.o"
+    owned.run("cc-observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer],
+              timeout=30)
+    expected = contract["stdout"].encode()
+    pinned(owned, rustc, provider, consumer, observer, expected)
+    if run_candidate:
+        candidate(owned, provider, consumer, observer, expected)
 
 
 def main():
@@ -119,10 +133,12 @@ def main():
               "-o", check.folder / "explicit.rmeta"], 1, [contract["rustc_explicit"]],
               timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
     if args.app is not None:
-        exporter, importer, artifact = candidate(check, source, client, observer, contract)
+        exporter, importer, artifact = candidate(
+            check, source, client, observer, contract["stdout"].encode())
         opponents(check, exporter, importer, source, client, explicit, artifact, contract,
                   args.baseline)
     private_wrapper(check, source, client, observer, contract, args.rustc, args.app is not None)
+    provider_owned(check, source, contract["owned"], args.rustc, args.app is not None)
 
 
 if __name__ == "__main__":

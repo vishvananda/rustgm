@@ -8,17 +8,16 @@ use std::io::{self, Write};
 
 pub(crate) fn write(program: &Program, pending: &Pending, out: &mut impl Write) -> io::Result<()> {
     for method in &pending.methods {
-        writeln!(
+        write!(
             out,
-            "pending-destructor item={} function={} target={} signature={} captures={} source={}:{}",
-            method.item.0,
-            method.function.0,
-            method.target.0,
-            method.signature.0,
-            method.captures,
-            method.source.file.0,
-            method.source.node.get()
+            "pending-destructor item={} function={} target={} signature={} captures={}",
+            method.item.0, method.function.0, method.target.0, method.signature.0, method.captures,
         )?;
+        if let Some(source) = method.source.source() {
+            writeln!(out, " source={}:{}", source.file.0, source.node.get())?;
+        } else {
+            writeln!(out, " source=imported")?;
+        }
     }
     for (index, facts) in pending.bodies.iter().enumerate() {
         if let Some(owned) = program

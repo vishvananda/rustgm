@@ -143,22 +143,22 @@ impl Checker<'_> {
         index: usize,
     ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         let implementation = &self.facts.destructors.implementations()[index];
+        let Some(source) = implementation.source.source() else {
+            return Ok(None);
+        };
         if self
             .facts
             .derives
             .get(&implementation.item)
             .is_some_and(|properties| properties.properties().copy)
         {
-            return Err(self.error(
-                implementation.source,
-                "a type cannot implement both Copy and Drop",
-            ));
+            return Err(self.error(source, "a type cannot implement both Copy and Drop"));
         }
         let contract = NominalContract {
             owner: implementation.self_definition,
             scope: implementation.method,
             item: implementation.item,
-            source: implementation.source,
+            source,
             parameters: implementation.parameters,
         };
         let target = implementation.target;

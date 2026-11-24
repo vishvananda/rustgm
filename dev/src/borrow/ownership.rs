@@ -112,7 +112,7 @@ fn visit<'a, S: BuildHasher>(
 ) -> Result<Checked<'a>, Error> {
     if let Some(pending) = &program.drops {
         return Err(Error {
-            node: pending.source.into(),
+            node: pending.source,
             message: crate::body::drops::PENDING_MESSAGE,
         });
     }

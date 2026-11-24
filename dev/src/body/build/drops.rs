@@ -2,7 +2,7 @@
 use super::{Builder, Error, NodeId, ValueId};
 use crate::body::{
     drops::values::Release,
-    ir::{Action, BlockId, Body, Temporary, Terminator},
+    ir::{Action, BlockId, Body, ProofSite, Temporary, Terminator},
     scopes::{Id, Lifetime},
     storage::Location,
 };
@@ -11,7 +11,7 @@ pub(super) fn finish(
     report: &crate::resolve::expansion::Report,
     facts: &crate::sema::model::Declarations,
     program: &mut crate::body::ir::Program,
-    origin: Option<super::NodeKey>,
+    origin: Option<ProofSite>,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<(), Error> {
     program.drops = crate::body::drops::collect(facts, program, origin, query)
@@ -23,7 +23,7 @@ pub(super) fn finish(
 pub(super) fn origin(
     report: &crate::resolve::expansion::Report,
     facts: &crate::sema::model::Declarations,
-) -> Result<Option<super::NodeKey>, Error> {
+) -> Result<Option<ProofSite>, Error> {
     if let Some(implementation) = facts.destructors.implementations().first() {
         return Ok(Some(implementation.source));
     }
@@ -62,7 +62,7 @@ pub(super) fn origin(
                 "future cleanup changed its actual primary ordinal",
             ));
         }
-        return function.body.map(Some).ok_or_else(|| {
+        return function.body.map(|body| Some(body.into())).ok_or_else(|| {
             report.body_error(function.node, "future cleanup lost its actual source body")
         });
     }

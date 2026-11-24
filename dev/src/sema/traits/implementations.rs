@@ -105,13 +105,27 @@ impl Implementations {
         self.pending.iter().flat_map(|pending| pending.owners())
     }
 
-    pub(in crate::sema) fn has_imported_implementation(&self, item: ItemId) -> bool {
+    pub(in crate::sema) fn imported_headers(
+        &self,
+        item: ItemId,
+    ) -> impl Iterator<Item = &Implementation> + '_ {
         self.traits
             .get(&Identity::User(item))
-            .is_some_and(|owners| {
-                owners
-                    .iter()
-                    .any(|&index| self.entries[index].value.source.is_none())
+            .into_iter()
+            .flatten()
+            .map(|&index| &self.entries[index].value)
+            .filter(|header| header.source.is_none())
+    }
+
+    pub(in crate::sema) fn imported_impl_for_nominal(&self, trait_: ItemId, item: ItemId) -> bool {
+        let identity = Identity::User(trait_);
+        [Some(Head::Nominal(item)), None]
+            .into_iter()
+            .filter_map(|head| self.heads.get(&(identity, head)))
+            .flatten()
+            .any(|&index| {
+                let entry = &self.entries[index];
+                entry.value.source.is_none() && entry.status.polarity().is_positive()
             })
     }
 

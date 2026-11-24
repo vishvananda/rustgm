@@ -4,7 +4,7 @@ pub(crate) mod schedule;
 pub mod values;
 pub(crate) mod view;
 use super::{
-    ir::{Action, Body, LocalId, LocalKind, NodeKey, Place, Program},
+    ir::{Action, Body, LocalId, LocalKind, Place, Program, ProofSite},
     storage::Location,
 };
 use crate::{
@@ -19,7 +19,7 @@ pub struct Method {
     pub target: TypeId,
     pub signature: TypeId,
     pub captures: u32,
-    pub source: NodeKey,
+    pub source: ProofSite,
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Trigger {
@@ -56,7 +56,7 @@ impl Requirements {
 /// Retaining this value forbids completed borrow proofs and executable lowering.
 /// These candidates still need move/init flags, destructor liveness and elaboration.
 pub struct Pending {
-    pub source: NodeKey,
+    pub source: ProofSite,
     pub methods: Vec<Method>,
     pub bodies: Vec<Requirements>,
     pub query_steps: usize,
@@ -66,7 +66,7 @@ pub const PENDING_MESSAGE: &str = "Drop implementations require destructor elabo
 pub(crate) fn collect(
     facts: &Declarations,
     program: &Program,
-    origin: Option<NodeKey>,
+    origin: Option<ProofSite>,
     query: Option<&mut NeedsDrop>,
 ) -> Result<Option<Pending>, (crate::body::ir::ProofSite, &'static str)> {
     let Some(origin) = origin else {
@@ -75,11 +75,10 @@ pub(crate) fn collect(
     let mut methods = Vec::new();
     for implementation in facts.destructors.implementations() {
         methods.push(
-            method(facts, implementation)
-                .map_err(|message| (implementation.source.into(), message))?,
+            method(facts, implementation).map_err(|message| (implementation.source, message))?,
         );
     }
-    let query = query.ok_or((origin.into(), "missing destruction query"))?;
+    let query = query.ok_or((origin, "missing destruction query"))?;
     let mut bodies = Vec::with_capacity(program.bodies.len());
     let mut deferred = None;
     for body in &program.bodies {

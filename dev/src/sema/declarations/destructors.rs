@@ -4,6 +4,7 @@ mod cfield;
 mod coverage;
 mod headers;
 mod receivers;
+mod registration;
 use super::{Checker, Error, Type, heads};
 use crate::{
     sema::destructors::{Coverage, Implementation},
@@ -53,18 +54,8 @@ impl Checker<'_> {
             .flatten();
         if let Some(role) = source_role
             && role.origin.source().is_none()
-            && self
-                .facts
-                .generics
-                .implementations
-                .as_deref()
-                .is_some_and(|registry| {
-                    registry.has_imported_implementation(ItemId(role.definition.0))
-                })
         {
-            return Err(Error::unlocated(
-                "provider-owned Drop implementations require their destructor registry transport",
-            ));
+            registration::register(&mut self.facts, role.definition).map_err(Error::unlocated)?;
         }
         for Pending { header, owner } in pending {
             let key = header.source;
@@ -103,7 +94,7 @@ impl Checker<'_> {
             self.facts
                 .destructors
                 .insert(Implementation {
-                    source: key,
+                    source: key.into(),
                     self_definition: header.self_definition,
                     method,
                     target,
@@ -164,6 +155,9 @@ impl Checker<'_> {
             .declare_drop_eyepatch(item, relaxed)
             .map_err(|e| self.error(source, e))
     }
+    pub(super) fn complete_imported_destructors(&self) -> Result<(), Error> {
+        registration::complete(&self.facts).map_err(Error::unlocated)
+    }
     pub(super) fn validate_destructors(&mut self) -> Result<(), Error> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
@@ -180,11 +174,13 @@ impl Checker<'_> {
         // only each nominal's identity instance was prepared with its fields.
         for index in 0..self.facts.destructors.implementations().len() {
             let implementation = &self.facts.destructors.implementations()[index];
-            let (key, target) = (implementation.source, implementation.target);
+            let Some(key) = implementation.source.source() else {
+                continue;
+            };
             self.facts
                 .lifetimes
                 .nominal_requirements
-                .prepare(&mut self.facts.types, target)
+                .prepare(&mut self.facts.types, implementation.target)
                 .map_err(|e| self.error(key, e))?;
         }
         let mut queries = Queries::new(
@@ -193,7 +189,9 @@ impl Checker<'_> {
             &self.facts.lifetimes.callables,
         );
         for (index, implementation) in self.facts.destructors.implementations().iter().enumerate() {
-            let key = implementation.source;
+            let Some(key) = implementation.source.source() else {
+                continue;
+            };
             let Some(Type::Adt(_, arguments)) = self.facts.types.kind(implementation.target) else {
                 return Err(self.error(key, "missing nominal Drop target"));
             };

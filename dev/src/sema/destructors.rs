@@ -2,7 +2,7 @@
 mod instances;
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::{body_origin::ProofSite, model::DefId},
     types::{ItemId, RegionId, TypeId, outlives::Pair, region_graph},
 };
 pub(crate) use instances::cleanup_method;
@@ -16,7 +16,7 @@ pub struct Coverage {
 }
 
 pub struct Implementation {
-    pub source: NodeKey,
+    pub source: ProofSite,
     pub self_definition: DefId,
     pub method: DefId,
     pub target: TypeId,

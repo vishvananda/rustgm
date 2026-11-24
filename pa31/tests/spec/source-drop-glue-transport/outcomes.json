@@ -7,6 +7,12 @@
   "explicit": "explicit.rs",
   "observer": "observer.c",
   "stdout": "0 0\n1 41\n",
+  "owned": {
+    "provider": "owned-provider.rs",
+    "client": "owned-client.rs",
+    "observer": "owned-observer.c",
+    "stdout": "41\n42\n"
+  },
   "old_profile": "source Drop operation transport requires version fourteen",
   "old_reader": "source role has a different actual declaration/header kind",
   "foreign": "source role binding is duplicated or belongs to a foreign provider",

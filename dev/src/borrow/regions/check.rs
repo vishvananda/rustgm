@@ -61,7 +61,7 @@ pub fn check_bodies(
 ) -> Result<Analysis, Error> {
     if let Some(pending) = &program.drops {
         return Err(Error {
-            source: Some(pending.source.into()),
+            source: Some(pending.source),
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }

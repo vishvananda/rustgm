@@ -152,7 +152,7 @@ fn run<'a, const RECORD: bool, S: BuildHasher>(
     require_resolved_promotions(program)?;
     if let Some(pending) = &program.drops {
         return Err(Error {
-            node: Some(pending.source.into()),
+            node: Some(pending.source),
             message: crate::body::drops::PENDING_MESSAGE.into(),
         });
     }
@@ -224,7 +224,7 @@ pub fn verify_destruction<'a, S: BuildHasher>(
         .ok_or_else(|| error(None, "missing destruction work"))?;
     let mut drop_regions =
         crate::types::destruction::regions::Regions::new(pending.methods.iter().map(|m| m.item))
-            .map_err(|e| error(Some(pending.source.into()), e))?;
+            .map_err(|e| error(Some(pending.source), e))?;
     let mut reused = Reused::default();
     let by_key: HashMap<_, _> = contracts.bodies.iter().map(|b| (b.key, b)).collect();
     let mut plans = Vec::with_capacity(program.bodies.len());

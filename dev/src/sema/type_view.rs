@@ -87,17 +87,21 @@ pub(super) fn definitions(
 
 fn destructors(facts: &Declarations, out: &mut impl Write) -> io::Result<()> {
     for implementation in facts.destructors.implementations() {
-        writeln!(
+        write!(
             out,
-            "destructor item={} self={} method={} target={} captures={} source={}:{} cleanup=pending",
+            "destructor item={} self={} method={} target={} captures={}",
             implementation.item.0,
             implementation.self_definition.0,
             implementation.method.0,
             implementation.target.0,
             implementation.parameters,
-            implementation.source.file.0,
-            implementation.source.node.get()
         )?;
+        if let Some(source) = implementation.source.source() {
+            write!(out, " source={}:{}", source.file.0, source.node.get())?;
+        } else {
+            write!(out, " source=imported")?;
+        }
+        writeln!(out, " cleanup=pending")?;
         for &(a, b) in &implementation.bounds {
             write!(
                 out,
