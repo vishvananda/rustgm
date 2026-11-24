@@ -161,10 +161,9 @@ impl Declarations {
                 .generics
                 .substitute(&mut self.types, owner, parent, template);
         }
-        // Plain definitions were authenticated by selection, including the
-        // canonical library registry. Only family inputs require a source
-        // associated-member schema; builtin definitions do not have that row.
-        if !plain && self.associated.type_definition(owner, member) != Some(member) {
+        // Selection returns the implementation's result declaration. Its
+        // owned family slots must belong to the same selected impl.
+        if !plain && self.associated.member_owner(member) != Some(owner) {
             return Err("associated definition does not belong to the selected owner");
         }
         let application = Application {

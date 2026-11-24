@@ -23,8 +23,9 @@ pub struct AssociatedTypeHeader {
     pub clone_: bool,
 }
 
-/// A trait implementation's definition of one declared associated result. The
-/// value is a recipe in the implementation's frame; it is never a bound proof.
+/// A trait implementation's definition of one declared associated result.
+/// The value uses its impl frame or its own family frame with impl captures.
+/// A fresh consumer proves the result bounds in that scope.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AssociatedDefinition {
     pub declaration: DeclarationRef,

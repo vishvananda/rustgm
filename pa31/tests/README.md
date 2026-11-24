@@ -70,6 +70,9 @@ definition, and a trait's own written lifetime.
 client can implement an imported associated type family and must preserve its
 lifetime requirements. Run `scripts/check_associated_family_transport.py`
 with the prebuilt RustGM and pinned Rust compilers.
+`spec/source-impl-associated-family-transport/outcomes.json` checks the other
+direction. A fresh client projects the provider's family and observes the
+lifetime declared by the member and the lifetime captured from its impl.
 `spec/source-runtime-panic-transport/outcomes.json` checks the fresh
 `panic_fmt` and `panic_nounwind` call signatures, caller location, and
 invalid role bindings. Run `scripts/check_runtime_panic_transport.py` with

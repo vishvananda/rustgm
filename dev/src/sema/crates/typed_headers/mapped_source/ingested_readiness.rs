@@ -495,7 +495,11 @@ impl Graph {
             {
                 return Ok(());
             }
-            Some(s::HeaderRef::AssociatedType(_)) if declaration_policies => return Ok(()),
+            Some(s::HeaderRef::AssociatedType(_) | s::HeaderRef::AssociatedDefinition(_))
+                if declaration_policies =>
+            {
+                return Ok(());
+            }
             // The implementation's region belongs to its captured frame.
             Some(s::HeaderRef::Implementation(index))
                 if rows.implementations.get(index as usize).is_some_and(|row| {

@@ -1,0 +1,12 @@
+{
+  "foundation": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+  "prefix_marker": "pub fn identity<T>",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "19 73\n",
+  "rejected_cfg": "wrong_capture",
+  "rustc_rejected": "lifetime may not live long enough",
+  "rustgm_rejected": "required lifetime does not outlive its target",
+  "older_profile": "source const/lifetime generic argument is not a type slot"
+}

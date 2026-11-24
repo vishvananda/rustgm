@@ -63,11 +63,12 @@ enum Inputs {
     /// An implementation's associated-result definition: the version-thirteen
     /// profile admits no own family inputs, so it inherits its impl's frame.
     Definition,
+    FamilyDefinition(crate::sema::associated::Family),
 }
 impl Inputs {
     fn all(&self) -> &[Input] {
         match self {
-            Self::SelfType | Self::Definition | Self::Alias(_) => &[],
+            Self::SelfType | Self::Definition | Self::FamilyDefinition(_) | Self::Alias(_) => &[],
             Self::Trait(prepared) => prepared.all(),
             Self::Associated { inputs, .. }
             | Self::TraitAlias(inputs)
@@ -242,7 +243,8 @@ fn finish_inputs(
             | (
                 Some(s::HeaderRef::AssociatedDefinition(_) | s::HeaderRef::Constant(_)),
                 Inputs::Definition,
-            ) => {
+            )
+            | (Some(s::HeaderRef::AssociatedDefinition(_)), Inputs::FamilyDefinition(_)) => {
                 continue;
             }
             _ => {
@@ -331,17 +333,7 @@ impl Walk<'_, '_> {
                 )?))
             }
             Some(s::HeaderRef::AssociatedDefinition(_)) => {
-                let owner = raw.parent.map(|parent| rows.header(parent)).transpose();
-                if !matches!(
-                    owner.map_err(error)?,
-                    Some(Some(s::HeaderRef::Implementation(_)))
-                ) || self.active.len() != 1
-                {
-                    return Err(error(
-                        "source associated definition scope lost its actual impl owner",
-                    ));
-                }
-                Ok(Inputs::Definition)
+                self.associated_definition_inputs(rows, raw)
             }
             Some(s::HeaderRef::Constant(index))
                 if !rows.constants()[index as usize].body.evaluated()
@@ -362,6 +354,44 @@ impl Walk<'_, '_> {
                 "source scope requires its wider actual header consumer",
             )),
         }
+    }
+    fn associated_definition_inputs(
+        &self,
+        rows: s::ValidatedView<'_>,
+        raw: &s::ParameterScope,
+    ) -> Result<Inputs, Error> {
+        let parent = raw
+            .parent
+            .ok_or_else(|| error("source associated definition has no impl scope"))?;
+        let Some(s::HeaderRef::Implementation(index)) = rows.header(parent).map_err(error)? else {
+            return Err(error(
+                "source associated definition scope lost its actual impl owner",
+            ));
+        };
+        if self.active.len() != 1 {
+            return Err(error(
+                "source associated definition scope lost its actual impl owner",
+            ));
+        }
+        let own = raw.declared.end - raw.declared.start;
+        if own == 0 {
+            return Ok(Inputs::Definition);
+        }
+        if !self.context.descriptor.profile().declaration_policies() {
+            return Err(error(
+                "source associated definition families require their wider profile",
+            ));
+        }
+        let captures = rows.implementations[index as usize].region_captures;
+        let total = captures.checked_add(own).ok_or_else(|| {
+            error("associated definition lifetime count exceeds its checked scope")
+        })?;
+        Ok(Inputs::FamilyDefinition(crate::sema::associated::Family {
+            captures,
+            total,
+            regions: Vec::new(),
+            requirements: Some(Vec::new()),
+        }))
     }
     fn associated_type_inputs(
         &mut self,

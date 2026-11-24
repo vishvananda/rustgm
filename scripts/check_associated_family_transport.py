@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check fresh implementations of an imported associated type family."""
+"""Check associated type families across independently compiled crates."""
 import argparse
 import json
 from pathlib import Path
@@ -10,7 +10,8 @@ from check_source_constants import COMMON, ROOT, provider_source
 from crate_qualification import Check
 
 
-FIXTURE = ROOT / "pa31/tests/spec/source-associated-family-transport"
+FIXTURES = ROOT / "pa31/tests/spec"
+CASES = ("source-associated-family-transport", "source-impl-associated-family-transport")
 IDENTITY = "base@associated_family"
 
 
@@ -19,17 +20,20 @@ def main():
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--case", choices=CASES, default=CASES[0])
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    contract = json.loads((FIXTURE / "outcomes.json").read_text())
-    source = provider_source(check.folder, FIXTURE, contract)
-    client = FIXTURE / contract["client"]
+    fixture = FIXTURES / args.case
+    contract = json.loads((fixture / "outcomes.json").read_text())
+    source = provider_source(check.folder, fixture, contract)
+    client = fixture / contract["client"]
+    opposite = contract.get("rejected_cfg", "missing_family_bound")
     observer = check.folder / "observer.o"
-    check.run("cc-observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer], timeout=15)
+    check.run("cc-observer", ["cc", "-c", fixture / contract["observer"], "-o", observer], timeout=15)
     expected = contract["stdout"].encode()
     pinned(check, args.rustc, source, client, observer, expected)
     check.run("rustc-rejected", [args.rustc.resolve(strict=True), *COMMON, "--emit=metadata",
-                                 "--cfg", "missing_family_bound", "--extern",
+                                 "--cfg", opposite, "--extern",
                                  f"base={check.folder / 'libbase.rlib'}", "-o",
                                  check.folder / "rejected.rmeta", client], 1, [contract["rustc_rejected"]],
               timeout=15, environment={"RUSTC_BOOTSTRAP": "1"})
@@ -42,7 +46,7 @@ def main():
     importer = [*common, "--crate-name", "client", "--source-client", IDENTITY, "--extern", f"base={artifact}"]
     client_lowir = check.folder / "client.lowir"
     check.run("client", [*importer, "-o", client_lowir, client], timeout=30)
-    check.run("rustgm-rejected", [*importer, "--cfg", "missing_family_bound", "-o",
+    check.run("rustgm-rejected", [*importer, "--cfg", opposite, "-o",
                                   check.folder / "rejected.lowir", client], 1,
               [contract["rustgm_rejected"]], timeout=15)
     check.run("older-profile", [*exporter, "--source-profile", "module-bodies-v13",

@@ -207,7 +207,7 @@ impl Stage {
                 super::Inputs::Associated {
                     family: Some(_),
                     ..
-                }
+                } | super::Inputs::FamilyDefinition(_)
             ));
             if facts.associated.families.contains_key(&definition)
                 || facts.generics.parameters.contains_key(&definition)
@@ -361,23 +361,27 @@ fn prepare_nominal_bounds(
 
 fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
     for scope in scopes {
-        if let super::Inputs::Associated {
-            bounds,
-            projection,
-            family,
-            ..
-        } = scope.inputs
-        {
-            facts.associated.types.insert(
-                scope.definition,
-                crate::sema::associated::TypeContract {
-                    projection,
-                    bounds: bounds.iter().map(|input| input.value).collect(),
-                },
-            );
-            if let Some(family) = family {
-                facts.associated.families.insert(scope.definition, family);
+        let family = match scope.inputs {
+            super::Inputs::Associated {
+                bounds,
+                projection,
+                family,
+                ..
+            } => {
+                facts.associated.types.insert(
+                    scope.definition,
+                    crate::sema::associated::TypeContract {
+                        projection,
+                        bounds: bounds.iter().map(|input| input.value).collect(),
+                    },
+                );
+                family
             }
+            super::Inputs::FamilyDefinition(family) => Some(family),
+            _ => None,
+        };
+        if let Some(family) = family {
+            facts.associated.families.insert(scope.definition, family);
         }
         if let Some(parent) = scope.parent {
             facts.generics.parents.insert(scope.definition, parent);

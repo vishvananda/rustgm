@@ -23,7 +23,25 @@ pub(super) fn validate(
         let scopes = headers.scopes();
         let own = scopes.declared_slots(definition.declaration, work)?;
         if own.start != own.end {
-            return Err("associated result definition families require their wider profile");
+            let parent = scopes
+                .parent(definition.declaration, work)?
+                .ok_or("associated result definition lost its actual impl scope")?;
+            let Some(HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+                return Err("associated result definition has a foreign actual impl scope");
+            };
+            let captures = rows.implementations[index as usize].region_captures;
+            if !families {
+                return Err("associated result definition families require their wider profile");
+            }
+            for (offset, &slot) in (0_u32..).zip(own.slice(&rows.slots)?) {
+                work.charge(1)?;
+                if slot.kind != ParameterKind::Region
+                    || slot.definition.is_none()
+                    || Some(slot.index) != captures.checked_add(offset)
+                {
+                    return Err("associated definition changed its actual owned lifetime slots");
+                }
+            }
         }
     }
     Ok(())

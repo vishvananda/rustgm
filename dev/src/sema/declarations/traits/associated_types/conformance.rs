@@ -334,92 +334,81 @@ impl crate::sema::declarations::comparisons::LibraryContracts<'_> {
         ty: crate::types::TypeId,
         substitution: &mut Option<crate::types::substitute::Bound>,
     ) -> Result<Vec<Clause>, Error> {
-        let contract = self
-            .facts
-            .associated
-            .type_contract(expected)
-            .ok_or_else(|| self.error(key, "missing associated type contract"))?;
-        let projection = contract.projection;
-        let mut required = contract.bounds.clone();
-        for requirement in &mut required {
-            *requirement = self.map_result_bound(
-                key,
-                predicate,
-                (projection, ty),
-                *requirement,
-                substitution,
-            )?;
-        }
-        Ok(required)
+        mapped_result_bounds(self.facts, predicate, expected, ty, substitution)
+            .map_err(|message| self.error(key, message))
     }
+}
 
-    /// The concrete result is already in impl scope. Insert it beneath a retained
-    /// clause binder after mapping the declaration's inputs, never before.
-    fn map_result_bound(
-        &mut self,
-        key: NodeKey,
-        parent: Predicate,
-        result_types: (crate::types::TypeId, crate::types::TypeId),
-        clause: Clause,
-        substitution: &mut Option<crate::types::substitute::Bound>,
-    ) -> Result<Clause, Error> {
-        let (projection, actual) = result_types;
-        let (mut requirement, count) = match clause {
-            Clause::UnstableFeature(_) => return Ok(clause),
-            Clause::Predicate(value) => (value, None),
-            Clause::ForAll(id) => {
-                let value = self
-                    .facts
-                    .types
-                    .quantified(id)
-                    .ok_or_else(|| self.error(key, "invalid associated result binder"))?;
-                (value.predicate, Some(value.bound_regions))
-            }
-        };
-        let depth = u16::from(count.is_some());
-        let formal = self
-            .facts
-            .types
-            .shift_type(projection, depth)
-            .map_err(|e| self.error(key, e))?
-            .0;
-        let direct = requirement.ty == formal;
-        if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
-            if substitution.is_none() {
-                *substitution = Some(
-                    crate::sema::traits::results::substitution(self.facts, parent)
-                        .map_err(|e| self.error(key, e))?,
-                );
-            }
-            if direct {
-                requirement.ty = crate::types::TypeId::UNIT;
-            }
-            requirement = substitution
-                .as_mut()
-                .ok_or_else(|| self.error(key, "missing associated result substitution"))?
-                .predicate_inside(&mut self.facts.types, requirement, depth)
-                .map_err(|e| self.error(key, e))?;
+pub(super) fn mapped_result_bounds(
+    facts: &mut Declarations,
+    predicate: Predicate,
+    expected: DefId,
+    ty: crate::types::TypeId,
+    substitution: &mut Option<crate::types::substitute::Bound>,
+) -> Result<Vec<Clause>, &'static str> {
+    let contract = facts
+        .associated
+        .type_contract(expected)
+        .ok_or("missing associated type contract")?;
+    let projection = contract.projection;
+    let mut required = contract.bounds.clone();
+    for requirement in &mut required {
+        *requirement = map_result_bound(
+            facts,
+            predicate,
+            (projection, ty),
+            *requirement,
+            substitution,
+        )?;
+    }
+    Ok(required)
+}
+
+/// The concrete result is already in impl scope. Map the declaration's inputs
+/// before inserting that result beneath a retained clause binder.
+fn map_result_bound(
+    facts: &mut Declarations,
+    parent: Predicate,
+    result_types: (crate::types::TypeId, crate::types::TypeId),
+    clause: Clause,
+    substitution: &mut Option<crate::types::substitute::Bound>,
+) -> Result<Clause, &'static str> {
+    let (projection, actual) = result_types;
+    let (mut requirement, count) = match clause {
+        Clause::UnstableFeature(_) => return Ok(clause),
+        Clause::Predicate(value) => (value, None),
+        Clause::ForAll(id) => {
+            let value = facts
+                .types
+                .quantified(id)
+                .ok_or("invalid associated result binder")?;
+            (value.predicate, Some(value.bound_regions))
+        }
+    };
+    let depth = u16::from(count.is_some());
+    let formal = facts.types.shift_type(projection, depth)?.0;
+    let direct = requirement.ty == formal;
+    if !direct || !matches!(requirement.bound, Bound::Copy | Bound::Clone | Bound::Sized) {
+        if substitution.is_none() {
+            *substitution = Some(crate::sema::traits::results::substitution(facts, parent)?);
         }
         if direct {
-            requirement.ty = self
-                .facts
-                .types
-                .shift_type(actual, depth)
-                .map_err(|e| self.error(key, e))?
-                .0;
+            requirement.ty = crate::types::TypeId::UNIT;
         }
-        Ok(if let Some(bound_regions) = count {
-            Clause::ForAll(
-                self.facts
-                    .types
-                    .intern_quantified(Quantified {
-                        bound_regions,
-                        predicate: requirement,
-                    })
-                    .map_err(|e| self.error(key, e))?,
-            )
-        } else {
-            Clause::Predicate(requirement)
-        })
+        requirement = substitution
+            .as_mut()
+            .ok_or("missing associated result substitution")?
+            .predicate_inside(&mut facts.types, requirement, depth)?;
     }
+    if direct {
+        requirement.ty = facts.types.shift_type(actual, depth)?.0;
+    }
+    Ok(if let Some(bound_regions) = count {
+        Clause::ForAll(facts.types.intern_quantified(Quantified {
+            bound_regions,
+            predicate: requirement,
+        })?)
+    } else {
+        Clause::Predicate(requirement)
+    })
 }

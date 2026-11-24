@@ -24,6 +24,79 @@ struct Contract {
 }
 
 impl Checker<'_> {
+    pub(in crate::sema::declarations::traits) fn check_imported_associated_family(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        expected: DefId,
+        actual: DefId,
+    ) -> Result<(), Error> {
+        let mut mapping =
+            mapping::build(&mut self.facts, owner, predicate, expected, actual, false)
+                .map_err(Error::unlocated)?;
+        let assumptions = families::inputs(&mut self.facts, actual, &mut mapping.actual)
+            .map_err(Error::unlocated)?;
+        let mut required = families::inputs(&mut self.facts, expected, &mut mapping.expected)
+            .map_err(Error::unlocated)?;
+        if !assumptions.clauses.is_empty()
+            || !assumptions.regions.is_empty()
+            || !required.clauses.is_empty()
+            || !required.regions.is_empty()
+            || !self.facts.associated.families.contains_key(&actual)
+        {
+            return Err(Error::unlocated(
+                "imported associated family requires its wider premise profile",
+            ));
+        }
+        let value = self.facts.definitions[actual.0 as usize]
+            .ok_or_else(|| Error::unlocated("imported associated family lost its actual result"))?;
+        let value = mapping
+            .actual
+            .apply(&mut self.facts.types, value)
+            .map_err(Error::unlocated)?;
+        self.family_lifetime_inputs(predicate, value, mapping.captures)
+            .map_err(Error::unlocated)?;
+        let mut substitution = Some(mapping.expected);
+        required.clauses = super::conformance::mapped_result_bounds(
+            &mut self.facts,
+            predicate,
+            expected,
+            value,
+            &mut substitution,
+        )
+        .map_err(Error::unlocated)?;
+        mapping.expected =
+            substitution.ok_or_else(|| Error::unlocated("missing imported family substitution"))?;
+        let environment = self
+            .facts
+            .generics
+            .environments
+            .get(&owner)
+            .cloned()
+            .ok_or_else(|| {
+                Error::unlocated("imported associated family has no actual impl environment")
+            })?;
+        let mut proof = Proof::for_declaration(Some(environment), mapping.total, 1);
+        if !proof
+            .check(&mut self.facts, value)
+            .map_err(Error::unlocated)?
+            .well_formed
+        {
+            return Err(Error::unlocated(
+                "imported associated family result must be well-formed",
+            ));
+        }
+        self.prove_family_results(None, &required, &mut proof)?;
+        let contract = Contract {
+            mapping,
+            assumptions,
+            required,
+            result: Some((value, value)),
+        };
+        let evidence = proof.take_trait_proof();
+        self.prove_family_regions(owner, None, &contract, &[], evidence.as_ref())
+    }
+
     pub(super) fn check_associated_family(
         &mut self,
         owner: DefId,
@@ -142,30 +215,41 @@ impl Checker<'_> {
                     return Err(self.error(key, "associated family definition must be well-formed"));
                 }
             }
-            self.family_lifetime_inputs(key, parent, raw, contract.mapping.captures)?;
+            self.family_lifetime_inputs(parent, raw, contract.mapping.captures)
+                .map_err(|e| self.error(key, e))?;
         }
-        for &clause in &contract.required.clauses {
+        self.prove_family_results(Some(key), &contract.required, &mut proof)?;
+        let evidence = proof.take_trait_proof();
+        self.prove_family_regions(owner, Some(key), contract, &clauses, evidence.as_ref())
+    }
+
+    fn prove_family_results(
+        &mut self,
+        site: Option<NodeKey>,
+        required: &Requirements,
+        proof: &mut Proof,
+    ) -> Result<(), Error> {
+        for &clause in &required.clauses {
             if !clause
                 .is_outlives(&self.facts.types)
-                .map_err(|e| self.error(key, e))?
+                .map_err(|e| self.family_error(site, e))?
                 && !proof
                     .prove_clause(&mut self.facts, clause)
-                    .map_err(|e| self.error(key, e))?
+                    .map_err(|e| self.family_error(site, e))?
             {
-                return Err(self.error(
-                    key,
+                return Err(self.family_error(
+                    site,
                     "associated family definition does not satisfy the declared contract",
                 ));
             }
         }
-        let evidence = proof.take_trait_proof();
-        self.prove_family_regions(owner, key, contract, &clauses, evidence.as_ref())
+        Ok(())
     }
 
     fn prove_family_regions(
         &self,
         owner: DefId,
-        key: NodeKey,
+        site: Option<NodeKey>,
         contract: &Contract,
         assumptions: &[Clause],
         evidence: Option<&crate::types::lifetime_proof::Obligations>,
@@ -177,52 +261,52 @@ impl Checker<'_> {
         );
         let mut constraints = self
             .trait_region_environment_count(owner, &mut queries, contract.mapping.total)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.family_error(site, e))?;
         for parameter in &contract.mapping.parameters {
             if let Argument::Type(ty) = parameter.argument
                 && let Some(Kind::Parameter(id)) = self.facts.types.kind(ty)
             {
                 constraints
                     .parameter(id)
-                    .map_err(|e| self.error(key, e.to_string()))?;
+                    .map_err(|e| self.family_error(site, e.to_string()))?;
             }
         }
         for &(a, b) in &contract.assumptions.regions {
             constraints
                 .assume(a, b)
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.family_error(site, e.to_string()))?;
         }
         constraints
             .assume_outlives_clauses(&mut queries, assumptions.iter().copied())
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| self.family_error(site, e))?;
         for &(a, b) in &contract.required.regions {
             constraints
                 .outlives(a, b, 0)
-                .map_err(|e| self.error(key, e.to_string()))?;
+                .map_err(|e| self.family_error(site, e.to_string()))?;
         }
         for &clause in &contract.required.clauses {
             constraints
                 .require_outlives_clause(&mut queries, clause, 0)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| self.family_error(site, e))?;
         }
         if let Some((ty, raw)) = contract.result {
-            for ty in [raw, ty] {
+            for ty in std::iter::once(raw).chain((raw != ty).then_some(ty)) {
                 let required = queries
                     .symbolic_requirements(ty)
-                    .map_err(|e| self.error(key, e))?;
+                    .map_err(|e| self.family_error(site, e))?;
                 constraints
                     .require_requirements(required, ProofScope::ROOT, 0)
-                    .map_err(|e| self.error(key, e))?;
+                    .map_err(|e| self.family_error(site, e))?;
             }
         }
         if let Some(evidence) = evidence {
             evidence
                 .require(&mut constraints, &mut queries)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| self.family_error(site, e))?;
         }
         constraints.solve().map(|_| ()).map_err(|e| {
-            self.error(
-                key,
+            self.family_error(
+                site,
                 format!("associated family lifetime contract is not satisfied: {e}"),
             )
         })
@@ -230,26 +314,31 @@ impl Checker<'_> {
 
     fn family_lifetime_inputs(
         &self,
-        key: NodeKey,
         parent: Predicate,
         raw: TypeId,
         captures: u32,
-    ) -> Result<(), Error> {
+    ) -> Result<(), &'static str> {
         let mut inputs = crate::types::bound_uses::Uses::constraining();
-        inputs
-            .predicate(&self.facts.types, parent)
-            .map_err(|e| self.error(key, e))?;
+        inputs.predicate(&self.facts.types, parent)?;
         let mut outputs = crate::types::bound_uses::Uses::default();
-        outputs
-            .collect(&self.facts.types, raw)
-            .map_err(|e| self.error(key, e))?;
+        outputs.collect(&self.facts.types, raw)?;
         if outputs
             .indices
             .iter()
             .any(|&slot| u32::from(slot) < captures && !inputs.indices.contains(&slot))
         {
-            return Err(self.error(key, "associated type uses an impl lifetime not constrained by Self or the trait arguments"));
+            return Err(
+                "associated type uses an impl lifetime not constrained by Self or the trait arguments",
+            );
         }
         Ok(())
+    }
+
+    fn family_error(&self, site: Option<NodeKey>, message: impl Into<String>) -> Error {
+        if let Some(site) = site {
+            self.error(site, message)
+        } else {
+            Error::unlocated(message)
+        }
     }
 }

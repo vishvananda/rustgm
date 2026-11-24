@@ -144,7 +144,7 @@ impl Checker<'_> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
         let members = &plan.members;
-        self.check_imported_results(owner, &members.types)?;
+        self.check_imported_results(owner, predicate, &members.types)?;
         let definitions = crate::sema::traits::conformance::Definitions::new(
             &self.facts,
             predicate,
@@ -187,6 +187,7 @@ impl Checker<'_> {
     fn check_imported_results(
         &mut self,
         owner: DefId,
+        predicate: Predicate,
         types: &[(DefId, DefId)],
     ) -> Result<(), Error> {
         if types.is_empty() {
@@ -207,8 +208,11 @@ impl Checker<'_> {
                 })?;
             if self.facts.associated.families.contains_key(&expected)
                 || self.facts.associated.families.contains_key(&actual)
-                || self.facts.types.contains_regions(ty) != Some(false)
             {
+                self.check_imported_associated_family(owner, predicate, expected, actual)?;
+                continue;
+            }
+            if self.facts.types.contains_regions(ty) != Some(false) {
                 return Err(Error::unlocated(
                     "imported regional or family associated definitions require their wider profile",
                 ));

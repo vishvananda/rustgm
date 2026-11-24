@@ -130,8 +130,14 @@ impl BinderIndex<'_> {
     ) -> Result<(), &'static str> {
         let count = match owner {
             Some(HeaderRef::Nominal(_)) => 0,
-            Some(HeaderRef::AssociatedType(index)) => {
-                let scope = self.rows.associated_types[index as usize].scope;
+            Some(HeaderRef::AssociatedType(_) | HeaderRef::AssociatedDefinition(_)) => {
+                let scope = frame.owner;
+                if matches!(owner, Some(HeaderRef::AssociatedDefinition(_))) {
+                    let own = headers.scopes().declared_slots(scope, work)?;
+                    if own.start == own.end {
+                        return Err("plain associated definition uses its actual impl binder");
+                    }
+                }
                 headers
                     .scopes()
                     .complete_slots(scope, work)?

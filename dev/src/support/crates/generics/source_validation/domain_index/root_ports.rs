@@ -28,9 +28,18 @@ impl DomainIndex<'_, '_> {
                 return Err("source associated definition has no actual impl header");
             };
             let header = &rows.implementations[index as usize];
+            let own = self
+                .headers
+                .scopes()
+                .declared_slots(row.declaration, work)?;
+            let owner = if own.start == own.end {
+                header.scope
+            } else {
+                row.declaration
+            };
             let context = Context {
-                owner: header.scope,
-                frame: Some(self.binders.declaration(header.self_definition, work)?),
+                owner,
+                frame: Some(self.binders.declaration(owner, work)?),
                 body: None,
             };
             self.types.root(self.headers, context, row.value, work)?;

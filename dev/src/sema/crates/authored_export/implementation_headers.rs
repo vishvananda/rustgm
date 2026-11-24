@@ -295,8 +295,8 @@ impl Stage {
         });
         Ok(())
     }
-    /// Version thirteen: each checked type definition links its trait result and
-    /// retains its value recipe in the implementation's own frame.
+    /// Link each checked type definition to its declared result. Version
+    /// fourteen also retains the member's own lifetime frame when present.
     fn implementation_results(
         &mut self,
         facts: &Declarations,
@@ -320,6 +320,8 @@ impl Stage {
                 .ok_or("source impl result has no completed definition type")?;
             let trait_member = Some(self.address(member)?);
             let declaration = self.declaration(definition)?;
+            let context =
+                self.result_definition_context(facts, definition, declaration, context)?;
             let value = self.ty(facts, value, context)?;
             self.rows.member_links.push(s::MemberLink {
                 trait_member,
@@ -330,6 +332,47 @@ impl Stage {
                 .push(s::AssociatedDefinition { declaration, value });
         }
         Ok(())
+    }
+    fn result_definition_context(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        declaration: super::DeclarationRef,
+        parent: super::canonical_nodes::Context,
+    ) -> Result<super::canonical_nodes::Context, &'static str> {
+        let Some(family) = facts.associated.families.get(&definition) else {
+            return Ok(parent);
+        };
+        let own = facts
+            .generics
+            .parameters
+            .get(&definition)
+            .ok_or("source family definition lost its actual formals")?;
+        let binder = self.binder(parent)?;
+        if !self.declaration_policies()
+            || own.is_empty()
+            || !own.iter().all(|parameter| {
+                matches!(
+                    parameter.argument,
+                    crate::types::arguments::Argument::Lifetime(_)
+                )
+            })
+            || !family.regions.is_empty()
+            || family
+                .requirements
+                .as_ref()
+                .is_none_or(|requirements| !requirements.is_empty())
+            || family.captures != self.rows.binders[binder.0 as usize].count
+            || family.captures as usize + own.len() != family.total as usize
+        {
+            return Err("source family definition requires its wider parameter or premise profile");
+        }
+        self.frame(
+            declaration,
+            None,
+            s::BinderKind::DeclarationHeader,
+            family.total,
+        )
     }
     fn implementation_members(
         &mut self,
