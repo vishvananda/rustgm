@@ -1,0 +1,20 @@
+{
+  "features": [
+    "auto_traits",
+    "staged_api",
+    "unsize",
+    "coerce_unsized",
+    "dispatch_from_dyn"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41 7 23\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "unshared_inherent.rs",
+    "rustc": "no method named `shared_tag` found",
+    "rustgm": "no applicable inherent method for this receiver"
+  }
+}

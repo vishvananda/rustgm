@@ -279,9 +279,13 @@ impl Checker<'_> {
             ));
         }
         let bucket = Bucket::declared(&self.facts.types, head, name);
-        let Some(bucket) =
-            bucket.filter(|bucket| core_shape || matches!(bucket, Bucket::Nominal(..)))
-        else {
+        let Some(bucket) = bucket.filter(|bucket| {
+            core_shape
+                || matches!(
+                    bucket,
+                    Bucket::Nominal(..) | Bucket::Structural(Target::Principal(_), _)
+                )
+        }) else {
             return Err(Error::unlocated(
                 "imported inherent impl Self is not a nominal of its own provider",
             ));

@@ -235,7 +235,7 @@ impl Members {
         variants: &[ExternalVariant],
     ) -> Result<(), &'static str> {
         let origin = Origin::External(DefId(owner.0));
-        if !self.variants(owner).is_empty() || variants.is_empty() {
+        if !self.variants(owner).is_empty() {
             return Err("external enum member owner is inconsistent");
         }
         for (ordinal, variant) in (0_u32..).zip(variants) {

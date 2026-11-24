@@ -64,7 +64,7 @@ pub(super) fn require_profile(
         if !profile.body_nodes() {
             return Err("inherent source impl requires its wider member profile");
         }
-        own_nominal(rows, implementation)?;
+        own_nominal(rows, profile, implementation)?;
     }
     Ok(())
 }
@@ -106,28 +106,46 @@ fn slice_generic_element(rows: &SourceRows, implementation: &ImplHeader) -> bool
     })
 }
 
-/// An inherent impl may extend only a nominal declared by this provider.
-fn own_nominal(rows: &SourceRows, implementation: &ImplHeader) -> Result<(), &'static str> {
+/// An inherent impl may extend a nominal or (in v14) a trait object whose
+/// principal trait is declared by this provider.
+fn own_nominal(
+    rows: &SourceRows,
+    profile: Profile,
+    implementation: &ImplHeader,
+) -> Result<(), &'static str> {
     let error = "imported inherent impl Self is not a nominal of its own provider";
-    let Some(Type::Nominal { declaration, .. }) =
-        rows.types.get(implementation.self_type.0 as usize)
-    else {
+    if implementation.unsafe_ || implementation.constant || !implementation.polarity.is_positive() {
         return Err(error);
+    }
+    let valid = match rows.types.get(implementation.self_type.0 as usize) {
+        Some(Type::Nominal { declaration, .. }) => {
+            declaration.artifact == ArtifactRef(0)
+                && rows
+                    .declarations
+                    .get(declaration.declaration.0 as usize)
+                    .is_some_and(|row| {
+                        matches!(
+                            row.definition.kind,
+                            DefinitionKind::Struct | DefinitionKind::Enum
+                        )
+                    })
+        }
+        Some(Type::Dynamic(reference)) if profile.declaration_policies() => rows
+            .cold()
+            .dynamics
+            .objects
+            .get(reference.0 as usize)
+            .and_then(|row| row.principal)
+            .is_some_and(|principal| {
+                principal.artifact == ArtifactRef(0)
+                    && rows
+                        .declarations
+                        .get(principal.declaration.0 as usize)
+                        .is_some_and(|row| row.definition.kind == DefinitionKind::Trait)
+            }),
+        _ => false,
     };
-    if declaration.artifact != ArtifactRef(0)
-        || implementation.unsafe_
-        || implementation.constant
-        || !implementation.polarity.is_positive()
-        || !rows
-            .declarations
-            .get(declaration.declaration.0 as usize)
-            .is_some_and(|row| {
-                matches!(
-                    row.definition.kind,
-                    DefinitionKind::Struct | DefinitionKind::Enum
-                )
-            })
-    {
+    if !valid {
         return Err(error);
     }
     Ok(())

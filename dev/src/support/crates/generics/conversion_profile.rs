@@ -117,12 +117,21 @@ pub(super) fn method(
     // not an early or captured generic lifetime transport permission.
     if let Some(receiver) = function.receiver {
         work.charge(2)?;
-        if (receiver.base != implementation.self_type
-            && !pinned_receiver(rows, implementation, function, receiver, pin_drop, work)?)
-            || receiver.references > 1
+        if receiver.references > 1
             || receiver.formal as usize >= function.formals.slice(&rows.formals)?.len()
         {
             return Err("source method receiver differs from its actual implementation Self");
+        }
+        if receiver.base != implementation.self_type
+            && !pinned_receiver(rows, implementation, function, receiver, pin_drop, work)?
+        {
+            super::captured::same_receiver_self(
+                rows,
+                implementation,
+                function,
+                receiver.base,
+                work,
+            )?;
         }
     }
     Ok(true)

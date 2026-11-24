@@ -147,11 +147,16 @@ impl Stage {
                 owner.self_definition,
             ) || slice_implementation(report, facts, owner.self_definition, schema.self_type)?);
         if !core_primitive_inherent {
-            let Some(crate::types::Kind::Adt(nominal, _)) = facts.types.kind(schema.self_type)
-            else {
-                return Err("source inherent impl requires a provider nominal Self");
+            let target = match facts.types.kind(schema.self_type) {
+                Some(Kind::Adt(nominal, _)) => Some(DefId(nominal.0)),
+                Some(Kind::Dynamic { shape, .. }) if self.declaration_policies() => facts
+                    .types
+                    .dynamic_shape(shape)
+                    .and_then(|actual| actual.principal)
+                    .map(|item| DefId(item.0)),
+                _ => None,
             };
-            if self.declaration(DefId(nominal.0)).is_err() {
+            if target.is_none_or(|head| self.declaration(head).is_err()) {
                 return Err("source inherent impl requires a provider nominal Self");
             }
         }

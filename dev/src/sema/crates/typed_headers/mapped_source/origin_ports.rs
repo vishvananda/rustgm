@@ -180,10 +180,22 @@ impl Graph {
                 Err("imported Core primitive authority changed its canonical Self type")
             };
         }
-        let Some(crate::types::Kind::Adt(nominal, _)) = store.kind(self_type) else {
+        let owner_item = match store.kind(self_type) {
+            Some(crate::types::Kind::Adt(nominal, _)) => Some(DefId(nominal.0)),
+            Some(crate::types::Kind::Dynamic { shape, .. })
+                if descriptor.profile().declaration_policies() =>
+            {
+                store
+                    .dynamic_shape(shape)
+                    .and_then(|actual| actual.principal)
+                    .map(|item| DefId(item.0))
+            }
+            _ => None,
+        };
+        let Some(owner_item) = owner_item else {
             return Err("imported inherent impl Self is not a nominal of its own provider");
         };
-        let declaration = self.origins.declaration(DefId(nominal.0))?;
+        let declaration = self.origins.declaration(owner_item)?;
         let (artifact, _, _) = self.origins.declaration_coordinate(declaration)?;
         if artifact != descriptor.identity() {
             return Err("imported inherent impl Self is not a nominal of its own provider");

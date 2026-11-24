@@ -25,17 +25,37 @@ impl Stage {
             .get(owner.0 as usize)
             .and_then(|definition| definition.node)
             .ok_or("source enum lost its actual declaration")?;
-        if facts
+        let must_use = match facts
             .must_use_contract(report, owner)
             .map_err(|_| "source enum must_use contract is incomplete")?
-            .is_some()
         {
-            return Err("source enum must_use contracts require their wider profile");
-        }
+            None => None,
+            Some(_) if !self.declaration_policies() => {
+                return Err("source enum must_use contracts require their wider profile");
+            }
+            Some(value) => {
+                let source = value
+                    .origin
+                    .source()
+                    .ok_or("source must_use origin is imported")?;
+                if value
+                    .reason
+                    .is_some_and(|reason| reason.len() > s::MAX_REASON_BYTES)
+                {
+                    return Err("source must_use reason exceeds transport profile limit");
+                }
+                self.reserve(value.reason.map_or(0, str::len))?;
+                self.charge(value.reason.map_or(1, str::len))?;
+                Some(s::MustUseContract {
+                    owner_site: self.site(declaration, source.owner)?,
+                    reason: value.reason.map(str::to_owned),
+                })
+            }
+        };
         Ok(s::HeaderContract {
             declaration,
             declaration_site: self.site(declaration, key)?,
-            must_use: None,
+            must_use,
             inline: None,
             cold: false,
             caller_tracking: false,
@@ -83,7 +103,10 @@ impl Stage {
         let tag = shape.repr.tag.map(integer_scalar).transpose()?;
         let completed = facts.aggregates.variants(shape);
         let variants = facts.members.variants(item);
-        if variants.is_empty() || completed.len() != variants.len() {
+        if completed.len() != variants.len() {
+            return Err("source enum changed its completed variant count");
+        }
+        if variants.is_empty() && !self.declaration_policies() {
             return Err("source enum without variants is outside the initial profile");
         }
         // Version thirteen: an enum's lifetimes are its leading region slots

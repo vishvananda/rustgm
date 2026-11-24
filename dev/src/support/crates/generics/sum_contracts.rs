@@ -226,19 +226,45 @@ pub(super) fn require_profile(
     profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    if profile.body_nodes() {
+    if !profile.body_nodes() {
+        work.charge(rows.declarations.len().saturating_add(1))?;
+        if !rows.enums().is_empty()
+            || rows.declarations.iter().any(|row| {
+                matches!(
+                    row.definition.kind,
+                    DefinitionKind::Enum | DefinitionKind::Variant
+                )
+            })
+        {
+            return Err("source enum headers require the version-thirteen body IR profile");
+        }
         return Ok(());
     }
-    work.charge(rows.declarations.len().saturating_add(1))?;
-    if !rows.enums().is_empty()
-        || rows.declarations.iter().any(|row| {
-            matches!(
-                row.definition.kind,
-                DefinitionKind::Enum | DefinitionKind::Variant
-            )
-        })
-    {
-        return Err("source enum headers require the version-thirteen body IR profile");
+    if !profile.declaration_policies() {
+        work.charge(
+            rows.enums()
+                .headers
+                .len()
+                .saturating_add(rows.nominals.len())
+                .saturating_add(1),
+        )?;
+        if rows
+            .enums()
+            .headers
+            .iter()
+            .any(|header| header.variants.start == header.variants.end)
+        {
+            return Err("source enum without variants is outside the initial profile");
+        }
+        if rows.nominals.iter().any(|row| {
+            row.contract.must_use.is_some()
+                && rows
+                    .declarations
+                    .get(row.declaration.0 as usize)
+                    .is_some_and(|decl| decl.definition.kind == DefinitionKind::Enum)
+        }) {
+            return Err("source enum must_use contracts require their wider profile");
+        }
     }
     Ok(())
 }
@@ -276,9 +302,6 @@ pub(super) fn headers(
         let mut names = HashSet::default();
         let mut discriminants = HashSet::default();
         let table = header.variants.slice(&columns.variants)?;
-        if table.is_empty() {
-            return Err("source enum without variants is outside the initial profile");
-        }
         let data = table
             .iter()
             .any(|variant| variant.fields.start != variant.fields.end);

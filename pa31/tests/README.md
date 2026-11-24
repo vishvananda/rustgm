@@ -77,6 +77,9 @@ selection and `OFFSET` default using a structure from the fresh client.
 with a generic principal, associated result equality, auto-trait markers, outer
 lifetime, provider dispatch, higher-ranked object bounds, and rejection of an
 unsatisfied `Send` obligation in a fresh client.
+`spec/source-enum-policy-and-dyn-inherent/outcomes.json` checks zero-variant
+uninhabited enums, `#[must_use]` enum contracts, and inherent methods on
+`dyn Trait` / `dyn Trait + Send` targets across separate crates.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

@@ -83,7 +83,6 @@ impl Definitions {
             for row in rows {
                 if destination.get(row.item).is_some()
                     || destination.nullable_enum(row.item).is_some()
-                    || row.variants.is_empty()
                 {
                     return Err("external enum batch changed its actual destination owner");
                 }

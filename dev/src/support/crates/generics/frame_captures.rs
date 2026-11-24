@@ -104,6 +104,21 @@ pub(super) fn require_profile(
     Err("source early/captured region schemes require a complete wider profile")
 }
 
+pub(super) fn same_receiver_self(
+    rows: &SourceRows,
+    implementation: &s::ImplHeader,
+    function: &s::FunctionHeader,
+    receiver: TypeRef,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let frames = Frames {
+        implementation: implementation.self_definition,
+        original: function.original.binder,
+        captures: implementation.region_captures,
+    };
+    same_self(rows, frames, implementation.self_type, receiver, work)
+}
+
 #[derive(Clone, Copy)]
 struct Frames {
     /// The impl's declaration-header frame owner, which binds its captures.
@@ -208,10 +223,124 @@ fn same_self(
                 }
                 pending.push((expected, actual));
             }
+            (s::Type::Dynamic(left), s::Type::Dynamic(right)) => {
+                same_dynamic(rows, frames, (left, right), &mut pending, work)?;
+            }
             _ => return Err(error),
         }
     }
     Ok(())
+}
+
+fn same_dynamic(
+    rows: &SourceRows,
+    frames: Frames,
+    (left, right): (s::DynamicTypeRef, s::DynamicTypeRef),
+    pending: &mut Vec<(TypeRef, TypeRef)>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "source method receiver differs from its actual implementation Self";
+    let columns = &rows.cold().dynamics;
+    let (Some(left), Some(right)) = (
+        columns.objects.get(left.0 as usize),
+        columns.objects.get(right.0 as usize),
+    ) else {
+        return Err(error);
+    };
+    let (left_bindings, right_bindings) = (
+        left.bindings.slice(&columns.bindings)?,
+        right.bindings.slice(&columns.bindings)?,
+    );
+    let (left_markers, right_markers) = (
+        left.markers.slice(&columns.markers)?,
+        right.markers.slice(&columns.markers)?,
+    );
+    let (left_binder, right_binder) = (
+        rows.binders.get(left.binder.0 as usize),
+        rows.binders.get(right.binder.0 as usize),
+    );
+    work.charge(left_bindings.len().saturating_add(left_markers.len()))?;
+    if left.principal != right.principal
+        || left.principal_arguments != right.principal_arguments
+        || left_binder.map(|frame| frame.count) != right_binder.map(|frame| frame.count)
+        || left_bindings != right_bindings
+        || left_markers != right_markers
+    {
+        return Err(error);
+    }
+    same_region(rows, frames, left.region, right.region)?;
+    let (left_args, right_args) = (
+        left.arguments.slice(&rows.arguments)?,
+        right.arguments.slice(&rows.arguments)?,
+    );
+    if left_args.len() != right_args.len() {
+        return Err(error);
+    }
+    work.charge(left_args.len())?;
+    for (a, b) in left_args.iter().zip(right_args) {
+        match (*a, *b) {
+            (s::Argument::Type(a), s::Argument::Type(b)) => pending.push((a, b)),
+            (s::Argument::Region(a), s::Argument::Region(b)) => {
+                same_dynamic_region(rows, frames, (left.binder, right.binder), (a, b))?;
+            }
+            _ => return Err(error),
+        }
+    }
+    Ok(())
+}
+
+fn same_dynamic_region(
+    rows: &SourceRows,
+    frames: Frames,
+    (left_binder, right_binder): (BinderRef, BinderRef),
+    (expected, actual): (s::RegionRef, s::RegionRef),
+) -> Result<(), &'static str> {
+    let (Some(left), Some(right)) = (
+        rows.regions.get(expected.0 as usize),
+        rows.regions.get(actual.0 as usize),
+    ) else {
+        return Err("source captured method receiver names an unknown region");
+    };
+    if let (
+        s::Region::Bound {
+            binder: a,
+            depth: left_depth,
+            slot: left_slot,
+        },
+        s::Region::Bound {
+            binder: b,
+            depth: right_depth,
+            slot: right_slot,
+        },
+    ) = (*left, *right)
+        && a == left_binder
+        && b == right_binder
+        && left_depth == right_depth
+        && left_slot == right_slot
+    {
+        if left_depth == 0 {
+            return Ok(());
+        }
+        if left_depth == 1
+            && left_slot < frames.captures
+            && rows
+                .binders
+                .get(left_binder.0 as usize)
+                .and_then(|frame| frame.parent)
+                .and_then(|parent| rows.binders.get(parent.0 as usize))
+                .is_some_and(|frame| {
+                    frame.owner == frames.implementation
+                        && frame.kind == s::BinderKind::DeclarationHeader
+                })
+            && rows
+                .binders
+                .get(right_binder.0 as usize)
+                .is_some_and(|frame| frame.parent == Some(frames.original))
+        {
+            return Ok(());
+        }
+    }
+    same_region(rows, frames, expected, actual)
 }
 
 fn same_region(
