@@ -3,9 +3,9 @@
 The graded suite for this assignment is pending.
 
 Implement reproducible crate builds for the course's Rust 1.98.0 graph.
+Extend [PA32](../pa32/README.md)'s build preparation to dependency graphs.
 Start with small library and client graphs using [PA29](../pa29/README.md)'s
-artifact and dependency identities. Use the build preparation needed by
-[PA32](../pa32/README.md) before attempting the original `core` crate.
+artifact and dependency identities.
 
 ## Build graph
 
@@ -45,7 +45,8 @@ each target unit.
 ## Check your implementation
 
 Use a small renamed-dependency graph, a package that generates source,
-and mixed editions to test the driver before building the library.
+and mixed editions to test the driver before building the upstream
+packages in [PA35](../pa35/README.md).
 Freeze package bytes and versions, compilers, features, configuration,
 generated files, and artifact identities. Replay the selected graph
 offline after acquiring its sources. Check that the replay builds the

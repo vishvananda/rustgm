@@ -22,13 +22,12 @@ Test reports are written to `obj/tests/`. Set
 ## Course order
 
 1. Work through PA1–PA30 in order.
-2. Complete PA31's source bindings and runtime integration. Before building
-   original `core` in PA32, complete the required crate-build work from PA34,
-   the core-specific target, SIMD, and assembly work described in PA32, and the
-   generic-body metadata needed by fresh library consumers.
-3. Build `core` in PA32, then run PA35's core-only crate milestone. Build
-   `alloc` in PA33, run PA35's allocation-dependent crate milestone, and
-   build `std` in PA36.
+2. Complete PA31's source bindings and runtime integration. In PA32, prepare
+   the pinned build, finish the required target and generic-body support,
+   and build standalone `core` with independently compiled consumers.
+3. Build `alloc` in PA33, extend the crate-build driver in PA34, then run
+   PA35's core-only and allocation-dependent upstream checks. Build `std`
+   in PA36.
 4. Complete **self-hosting (PA45)** using that library profile. Stage 1 runs
    the earlier assignment suites and stage 2 must reproduce stage 1.
 

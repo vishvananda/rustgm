@@ -1,8 +1,6 @@
 # RustGM Programming Assignment 32 — Pinned core bootstrap
 
-The strict self-hosting graph has built the original `core` from source.
-This assignment qualifies its separate artifact and fresh consumers.
-The graded suite is pending.
+The graded suite for this assignment is pending.
 
 Build the complete upstream `core` crate for Rust 1.98.0 on Linux x86-64
 with aborting panics. Use the original sources at
@@ -16,9 +14,16 @@ Complete the following parts of the bootstrap path.
 - The source and generic-body metadata needed to export library APIs
   and instantiate them in fresh clients. [PA29](../pa29/README.md)
   introduces the declaration format.
-- [PA34](../pa34/README.md)'s crate-build preparation, including the selected
-  edition, target configuration, and generated inputs.
 - The core prerequisites for layout, target features, and assembly below.
+
+## Prepare the core build
+
+Use the crate's Rust 2024 edition and Linux x86-64 panic-abort configuration.
+Capture its selected configuration flags, environment values, and generated
+files and pass them to the target compiler. Preserve the crate identity,
+feature selection, and explicit lint settings in the build request.
+[PA34](../pa34/README.md) extends this preparation to mixed-edition graphs,
+build scripts, and renamed dependencies.
 
 ## Required target support for core
 
@@ -38,12 +43,11 @@ target features and assembly forms for the follow-on track.
 ## Diagnostics used by core
 
 Complete [PA31's source attributes and diagnostics](../pa31/README.md#source-declarations)
-and [PA34's edition checks](../pa34/README.md#build-graph) before building
-the standalone library. Honor the active scoped lint levels and expect
-attributes in the pinned crate. Check `ffi_unwind_calls` for the panic-abort
-profile. A function defined in the crate stops a foreign unwind at its
-boundary. The follow-on unwinding assignment extends this check to callers
-that can propagate an unwind.
+before building the standalone library. Apply the crate's selected edition
+and honor the active scoped lint levels and expect attributes. Check
+`ffi_unwind_calls` for the panic-abort profile. A function defined in the
+crate stops a foreign unwind at its boundary. The follow-on unwinding
+assignment extends this check to callers that can propagate an unwind.
 
 Use the checked operand and result types to detect explicit casts between raw
 pointers and integers. Honor the crate's `deny(implicit_provenance_casts)` and
@@ -81,5 +85,6 @@ selection. Check rejected bindings and invalid type or ownership uses as
 well. Link and run the executable consumers. A successful build includes
 the full crate and independently compiled consumers.
 
-The core-only consumer milestone in [PA35](../pa35/README.md) can follow
-this assignment. Then build `alloc` in [PA33](../pa33/README.md).
+Build `alloc` in [PA33](../pa33/README.md) once `core` and its consumers
+pass. With the [PA34](../pa34/README.md) driver, you can also run the
+core-only upstream checks in [PA35](../pa35/README.md).
