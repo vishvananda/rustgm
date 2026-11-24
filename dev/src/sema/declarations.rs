@@ -624,6 +624,7 @@ impl Checker<'_> {
         super::compiler_items::complete_enum_roles(self.report, &mut self.facts)?;
         super::compiler_items::complete_comparison_roles(self.report, &mut self.facts)?;
         super::compiler_items::complete_slice_len_role(&mut self.facts)?;
+        super::compiler_items::complete_source_helpers(self.report, &mut self.facts)?;
         super::compiler_items::transmutability::complete_options(self.report, &mut self.facts)?;
         super::compiler_items::reflection::complete(self.report, &mut self.facts)
     }

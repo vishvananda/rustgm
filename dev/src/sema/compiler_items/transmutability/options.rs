@@ -1,7 +1,10 @@
 //! Four actual named boolean fields retain their source owner and canonical value.
 use crate::{
-    resolve::bindings::Declaration,
-    sema::{members::Name, model::Declarations},
+    resolve::body_origin::DeclarationOrigin,
+    sema::{
+        members::{Name, Origin},
+        model::Declarations,
+    },
     support::bindings::LangItem,
     types::{
         GenericArgs, ItemId, Kind, Primitive, TypeId, aggregate,
@@ -12,7 +15,7 @@ const FIELDS: [&str; 4] = ["alignment", "lifetimes", "safety", "validity"];
 
 pub(super) fn slots(
     facts: &Declarations,
-    declaration: Declaration,
+    declaration: super::super::Role,
 ) -> Result<[usize; 4], &'static str> {
     let item = ItemId(declaration.definition.0);
     let nominal = facts
@@ -37,7 +40,11 @@ pub(super) fn slots(
         .variants
         .get(variant.0 as usize)
         .ok_or("transmute_opts lost its actual variant")?;
-    if variant.owner != item || variant.origin.source() != Some(declaration.origin) {
+    let actual_owner = match declaration.origin {
+        DeclarationOrigin::Source(key) => Origin::Source(key),
+        DeclarationOrigin::Imported(_) => Origin::External(declaration.definition),
+    };
+    if variant.owner != item || variant.origin != actual_owner {
         return Err("transmute_opts fields belong to another declaration");
     }
     let fields = facts
@@ -59,7 +66,10 @@ pub(super) fn slots(
             .ok_or("transmute_opts has an unknown field")?;
         if slots[position] != usize::MAX
             || field.ty != TypeId::primitive(Primitive::Bool)
-            || field.origin.source().is_none()
+            || match declaration.origin {
+                DeclarationOrigin::Source(_) => field.origin.source().is_none(),
+                DeclarationOrigin::Imported(_) => field.origin != actual_owner,
+            }
         {
             return Err("transmute_opts requires unique source-owned boolean fields");
         }
@@ -80,7 +90,7 @@ pub(in crate::sema) fn decode(
         .as_deref()
         .ok_or("transmutability assumptions require the actual source catalog")?;
     let declaration = catalog
-        .validated_language(LangItem::TransmuteOpts)?
+        .validated_role(LangItem::TransmuteOpts)?
         .ok_or("transmutability assumptions require actual transmute_opts")?;
     let indices = slots(facts, declaration)?;
     let Some(ConstKind::Aggregate(id)) = facts.types.const_kind(value) else {

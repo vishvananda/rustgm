@@ -1,0 +1,14 @@
+{
+  "features": [
+    "auto_traits",
+    "staged_api",
+    "transmutability"
+  ],
+  "attributes": [
+    "unstable(feature=\"transmute_fixture\",issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "ordinary source roles cannot claim a nominal declaration"
+}

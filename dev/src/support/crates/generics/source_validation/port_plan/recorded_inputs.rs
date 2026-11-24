@@ -189,14 +189,14 @@ impl Coverage {
                 self.local_borrows.insert((body, region));
             }
             s::InputKind::ScopedWellFormed { frame, .. } => {
-                // Profile admission permits only a vacuous clause scope, which
-                // no operation request consumes.
+                // The domain pass checks the term inside its clause binder.
+                // An unscoped operation request cannot use it as formation.
                 if domains
                     .headers
                     .rows()
                     .binders
                     .get(frame.0 as usize)
-                    .is_none_or(|binder| binder.count != 0)
+                    .is_none_or(|binder| binder.count != 0 && !domains.declaration_policies)
                 {
                     return Err(
                         "source scoped operation formation requires its complete wider input profile",

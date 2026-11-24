@@ -104,8 +104,17 @@ pub(in crate::sema) fn complete_options(
     let error = |message| Declarations::error(report, declaration.origin, message);
     catalog.require_provider_report(report).map_err(error)?;
     crate::sema::header_attributes::charge_source_contract_query(facts, 64)?;
-    options::slots(facts, declaration).map_err(error)?;
+    options::slots(facts, declaration.into()).map_err(error)?;
     super::roles::complete_nominal(facts, LangItem::TransmuteOpts, declaration)
+}
+
+pub(super) fn imported_options(
+    facts: &Declarations,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(64);
+    options::slots(facts, declaration).map(|_| ())
 }
 
 #[cfg(test)]

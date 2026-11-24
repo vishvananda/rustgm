@@ -24,6 +24,28 @@ pub(in crate::sema::compiler_items) fn complete(
     Ok(Some(role))
 }
 
+pub(in crate::sema::compiler_items) fn imported_helper(
+    facts: &Declarations,
+    role: super::super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(4);
+    let header = facts
+        .declaration_header(role.definition)?
+        .ok_or("imported source helper lost its completed function header")?;
+    if role.parent.is_some()
+        || header.declaration != role.origin
+        || header.body.is_none()
+        || !matches!(
+            facts.types.kind(header.signature),
+            Some(Kind::Function { .. })
+        )
+    {
+        return Err("imported source helper changed its actual free function or body");
+    }
+    Ok(())
+}
+
 pub(in crate::sema::compiler_items) fn current(
     facts: &Declarations,
     declaration: Declaration,

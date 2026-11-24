@@ -852,8 +852,8 @@ fn defining_default(
     Err("source defining default requires its wider imported preparation profile")
 }
 
-/// Recorded preparation inputs: `scoped` admits only the vacuous formation
-/// scope that version-thirteen parenthesized callable sugar opens.
+/// Older profiles carry only vacuous callable clause scopes. Version fourteen
+/// retains the complete scoped formation term under its actual clause binder.
 fn body_inputs(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -880,12 +880,11 @@ fn body_inputs(
         normalization_ownership(input, work, regional, declaration_policies)?;
         for obligation in &input.obligations {
             work.charge(1)?;
-            // Parenthesized callable sugar opens a clause binder even when it
-            // binds no region; only that vacuous formation scope is admitted.
-            let vacuous = scoped
+            let supported_scope = scoped
                 && matches!(obligation.kind, InputKind::ScopedWellFormed { frame, .. }
-                    if rows.binders.get(frame.0 as usize).is_some_and(|b| b.count == 0));
-            if !vacuous
+                    if rows.binders.get(frame.0 as usize).is_some_and(|b|
+                        b.count == 0 || declaration_policies));
+            if !supported_scope
                 && matches!(
                     obligation.kind,
                     InputKind::Membership { .. } | InputKind::ScopedWellFormed { .. }
@@ -1242,6 +1241,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     if matches!(
         role,
         LangItem::TypeInfo
+            | LangItem::TransmuteOpts
             | LangItem::AllocLayout
             | LangItem::TypeId
             | LangItem::PointeeTrait
@@ -1271,6 +1271,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
+        || LangItem::SOURCE_HELPERS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
         || LangItem::FOR_PROTOCOL.contains(&role)
         || LangItem::COMPARISON_TRAITS.contains(&role)
@@ -1656,6 +1657,8 @@ fn defined_operation_role(
         "source drop_glue requires its actual defined const module function"
     } else if LangItem::FORMAT_PANICS.contains(&role) {
         "source panic role requires its actual defined const module function"
+    } else if LangItem::SOURCE_HELPERS.contains(&role) {
+        "source helper role requires its actual defined free function"
     } else {
         "source guard role requires its actual defined free function"
     })
@@ -1680,7 +1683,8 @@ fn role_header(
         (role, header)
             if role == LangItem::DropGlue
                 || LangItem::GUARD_PANICS.contains(&role)
-                || LangItem::FORMAT_PANICS.contains(&role) =>
+                || LangItem::FORMAT_PANICS.contains(&role)
+                || LangItem::SOURCE_HELPERS.contains(&role) =>
         {
             defined_operation_role(profile, rows, role, header)?;
         }
@@ -1732,16 +1736,11 @@ fn role_header(
         (LangItem::TypeInfo | LangItem::TypeId, _) => {
             return Err("source reflection role requires its actual struct header");
         }
-        (
-            LangItem::PanicInfo | LangItem::FormatArguments | LangItem::FormatArgument,
-            Some(HeaderRef::Nominal(_)),
-        ) if profile == BindingProfile::BodyOperations
-            && kind == super::super::DefinitionKind::Struct => {}
+        (role, header) if ordinary_struct_role(role) => {
+            check_struct_role(profile, kind, role, header)?;
+        }
         (LangItem::PanicLocation, _) => {
             return Err("source caller location role requires its actual nominal header");
-        }
-        (LangItem::PanicInfo | LangItem::FormatArguments | LangItem::FormatArgument, _) => {
-            return Err("source panic or formatting role requires its actual struct header");
         }
         (
             LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
@@ -1761,6 +1760,35 @@ fn role_header(
         _ => ordinary_declaration_role(role, header)?,
     }
     Ok(())
+}
+
+fn ordinary_struct_role(role: LangItem) -> bool {
+    matches!(
+        role,
+        LangItem::PanicInfo
+            | LangItem::FormatArguments
+            | LangItem::FormatArgument
+            | LangItem::TransmuteOpts
+    )
+}
+
+fn check_struct_role(
+    profile: BindingProfile,
+    kind: super::super::DefinitionKind,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    if profile == BindingProfile::BodyOperations
+        && kind == super::super::DefinitionKind::Struct
+        && matches!(header, Some(super::super::HeaderRef::Nominal(_)))
+    {
+        return Ok(());
+    }
+    Err(if role == LangItem::TransmuteOpts {
+        "source transmute options require their actual struct header"
+    } else {
+        "source panic or formatting role requires its actual struct header"
+    })
 }
 
 fn offset_intrinsic_header(rows: &SourceRows, index: u32) -> bool {

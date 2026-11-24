@@ -183,7 +183,8 @@ impl Stage {
             DefKind::Function
                 if self.declaration_policies()
                     && (role == LangItem::DropGlue
-                        || LangItem::FORMAT_PANICS.contains(&role)) => {}
+                        || LangItem::FORMAT_PANICS.contains(&role)
+                        || LangItem::SOURCE_HELPERS.contains(&role)) => {}
             DefKind::Function
                 if self.declaration_policies()
                     && matches!(
@@ -222,6 +223,7 @@ impl Stage {
                         role,
                         LangItem::TypeInfo
                             | LangItem::TypeId
+                            | LangItem::TransmuteOpts
                             | LangItem::DynMetadata
                             | LangItem::PanicLocation
                             | LangItem::PanicInfo

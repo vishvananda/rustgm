@@ -1,0 +1,21 @@
+{
+  "foundation": "pa31/tests/spec/contract-helpers/original-header-native.rs",
+  "prefix_marker": "#[unstable(feature=\"contracts_internals\",issue=\"128044\")]",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-contract-helper-transport/original-contracts.rs",
+      "start": 185,
+      "end": 1162,
+      "sha256": "5680972ea03b016b805cbebe3004abb5186f0d7f68cfb87e80f4df8718a5fe84",
+      "marker": "// Original build_check_ensures declaration and body."
+    }
+  ],
+  "stdout": "7\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "older_reader": "source role has a different actual declaration/header kind",
+  "restricted_client": {
+    "path": "restricted-client.rs",
+    "rustc": "not general enough",
+    "rustgm": "required lifetime does not outlive its target"
+  }
+}

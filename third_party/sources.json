@@ -1200,6 +1200,15 @@
       "adaptation": "none; complete original crate root, whose rustc 1.98.0 outcome with its core and compiler_builtins dependencies is frozen in pa29/tests/shim-glob-outcomes.json",
       "oracle": "source-fragment",
       "owning_assignment": "pa29"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/contracts.rs",
+      "destination": "pa31/tests/spec/source-contract-helper-transport/original-contracts.rs",
+      "sha256": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+      "adaptation": "none; complete original module retained; separate source-provider control uses the original function declaration and body",
+      "oracle": "source-fragment",
+      "owning_assignment": "pa31"
     }
   ]
 }

@@ -75,6 +75,17 @@ impl LangItem {
         Self::ControlFlowBreak,
     ];
 
+    /// These roles retain ordinary free function headers and bodies.
+    pub(crate) const SOURCE_HELPERS: [Self; 7] = [
+        Self::TryTraitFromYeet,
+        Self::GetContext,
+        Self::CompilerMove,
+        Self::CompilerCopy,
+        Self::ContractBuildCheckEnsures,
+        Self::ContractCheckRequires,
+        Self::ContractCheckEnsures,
+    ];
+
     pub(crate) const REQUIRED_TRY_METHODS: [Self; 3] =
         [Self::TryFromOutput, Self::TryBranch, Self::TryFromResidual];
 

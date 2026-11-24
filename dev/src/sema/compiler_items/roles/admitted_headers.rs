@@ -314,6 +314,10 @@ fn trait_headers(
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
+            role if LangItem::SOURCE_HELPERS.contains(&role) => {
+                super::super::headers::functions::imported_helper(facts, declaration, steps)?;
+                complete.insert(role);
+            }
             role if role == LangItem::Panic || LangItem::GUARD_PANICS.contains(&role) => {
                 super::super::runtime_panics::imported(report, facts, declaration, role, steps)?;
                 complete.insert(role);
@@ -378,6 +382,7 @@ fn nominal_role(role: LangItem) -> bool {
         role,
         LangItem::PhantomData
             | LangItem::AllocLayout
+            | LangItem::TransmuteOpts
             | LangItem::TypeInfo
             | LangItem::TypeId
             | LangItem::PanicLocation
@@ -396,6 +401,9 @@ fn check_nominal_role(
 ) -> Result<(), &'static str> {
     match role {
         LangItem::AllocLayout => super::super::alloc_layout::imported(facts, declaration, steps),
+        LangItem::TransmuteOpts => {
+            super::super::transmutability::imported_options(facts, declaration, steps)
+        }
         LangItem::PhantomData => {
             super::super::phantom::imported(facts, catalog, declaration, steps)
         }

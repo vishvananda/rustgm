@@ -80,7 +80,7 @@ fn actual_forward_header_and_options_keep_ordinary_body_and_source_identity() ->
         .ok_or("options")?;
     assert_ne!(role.definition, options.definition);
     assert!(facts.associated.owner(role.definition).is_some());
-    assert_eq!(options::slots(&facts, options)?, [0, 1, 2, 3]);
+    assert_eq!(options::slots(&facts, options.into())?, [0, 1, 2, 3]);
     assert_eq!(LangItem::TransmuteTrait.index(), 83);
     assert_eq!(LangItem::TransmuteOpts.index(), 84);
     eprintln!(
@@ -108,7 +108,7 @@ fn canonical_options_decode_actual_named_boolean_fields_without_position_authori
             .ok_or("catalog")?
             .validated_language(LangItem::TransmuteOpts)?
             .ok_or("options")?;
-        let slots = options::slots(&facts, role)?;
+        let slots = options::slots(&facts, role.into())?;
         let ty = facts
             .types
             .intern(Kind::Adt(ItemId(role.definition.0), GenericArgs::EMPTY))?;

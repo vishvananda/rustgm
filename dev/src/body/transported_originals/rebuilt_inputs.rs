@@ -125,16 +125,16 @@ impl<'a, 'b> Expected<'a, 'b> {
             .filter_map(Result::transpose)
             .chain(self.result.map(Ok))
     }
-    /// Version thirteen lifts only a vacuous clause binder, which parenthesized
-    /// callable sugar opens even when it binds no region. A declared result
-    /// binding is not a builtin debt: each caller proves the imported header's
-    /// own clauses, and the original's environment assumes it.
+    /// A declared result binding and a whole quantified trait clause stay in
+    /// the defining environment. Each caller re-proves the same header inputs.
+    /// Older profiles only carry the empty scope opened by callable sugar.
     fn declared_predicate(
         &self,
         index: usize,
         clause: Clause,
     ) -> Result<Option<Predicate>, &'static str> {
-        let body_nodes = self.view.rows().descriptor().profile().body_nodes();
+        let profile = self.view.rows().descriptor().profile();
+        let body_nodes = profile.body_nodes();
         let predicate = match clause {
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) if body_nodes => {
@@ -144,6 +144,14 @@ impl<'a, 'b> Expected<'a, 'b> {
                     .quantified(id)
                     .ok_or("source quantified declaration debt is unknown")?;
                 if scoped.bound_regions != 0 {
+                    if profile.declaration_policies()
+                        && matches!(
+                            scoped.predicate.bound,
+                            Bound::Trait(_) | Bound::ProjectionEqual(_)
+                        )
+                    {
+                        return Ok(None);
+                    }
                     return Err(
                         "source quantified declaration debt requires its wider original profile",
                     );
@@ -156,12 +164,16 @@ impl<'a, 'b> Expected<'a, 'b> {
                 );
             }
         };
-        let binding = matches!(predicate.bound, Bound::ProjectionEqual(_));
+        let header_premise = match predicate.bound {
+            Bound::ProjectionEqual(_) => body_nodes,
+            Bound::Trait(_) | Bound::Outlives(_) => profile.declaration_policies(),
+            _ => false,
+        };
         // These checked originals assume their own conditional Destruct premise.
         // The actual caller pays the premise at its selected effect.
         let conditional_premise = index < self.assumed_conditional_inputs
             && matches!(predicate.bound, Bound::MaybeConstTrait(_));
-        Ok((!(body_nodes && binding || conditional_premise)).then_some(predicate))
+        Ok((!header_premise && !conditional_premise).then_some(predicate))
     }
     fn predicates<'s>(
         &'s self,
@@ -483,17 +495,20 @@ fn obligation(
             }),
         },
         s::InputKind::ScopedWellFormed { ty, frame }
-            if view.rows().descriptor().profile().body_nodes()
-                && view
-                    .rows()
-                    .binders
-                    .get(frame.0 as usize)
-                    .is_some_and(|binder| binder.count == 0) =>
+            if view.rows().descriptor().profile().body_nodes() =>
         {
-            // A vacuous clause scope from parenthesized callable sugar.
+            let bound_regions = view
+                .rows()
+                .binders
+                .get(frame.0 as usize)
+                .filter(|row| {
+                    row.count == 0 || view.rows().descriptor().profile().declaration_policies()
+                })
+                .ok_or("source scoped formation lost its admitted clause binder")?
+                .count;
             Kind::ScopedWellFormed {
                 ty: view.ty(ty, steps)?,
-                bound_regions: 0,
+                bound_regions,
             }
         }
         _ => return Err("source allocation/scoped obligation requires its wider original profile"),

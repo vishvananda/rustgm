@@ -48,6 +48,11 @@ and use the provider’s pointer metadata operation.
 range syntax in a fresh client using the provider’s pinned declarations.
 `spec/source-promotion-transport/outcomes.json` checks a static borrow of an
 imported promotable call and rejects the same borrow when the marker is absent.
+`spec/source-transmute-options-transport/outcomes.json` checks construction
+and field reads of the provider’s four Boolean `Assume` settings.
+`spec/source-contract-helper-transport/outcomes.json` calls the pinned
+`build_check_ensures` in a fresh crate and rejects a predicate limited to
+`'static` borrows.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

@@ -904,6 +904,27 @@ pub(in crate::sema) fn complete_comparison_roles(
     Ok(())
 }
 
+pub(in crate::sema) fn complete_source_helpers(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    for role in LangItem::SOURCE_HELPERS {
+        if matches!(role, LangItem::TryTraitFromYeet | LangItem::GetContext) {
+            continue;
+        }
+        let Some(catalog) = facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        let Some(declaration) = catalog.language(role) else {
+            continue;
+        };
+        if super::headers::functions::complete(report, facts, catalog, role)?.is_some() {
+            record_completion(facts, role, declaration)?;
+        }
+    }
+    Ok(())
+}
+
 pub(in crate::sema) fn complete_slice_len_role(facts: &mut Declarations) -> Result<(), Error> {
     let Some(declaration) = facts
         .source_bindings

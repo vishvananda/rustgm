@@ -28,9 +28,9 @@ pub(in crate::sema::crates::typed_headers) trait LeafClauses:
 {
     fn clauses(&self) -> &[Clause];
     fn application(&self, bound: Bound) -> Result<ApplicationId, Error>;
-    /// Version thirteen lifts the vacuous clause binder that parenthesized
-    /// callable sugar opens; no other producer admits a quantified premise.
-    fn vacuous_scopes(&self) -> bool {
+    /// Body profiles retain the actual clause binder from callable sugar.
+    /// Earlier ordinary metadata permits only vacuous clause scopes.
+    fn callable_scopes(&self) -> bool {
         false
     }
     fn regional_arguments(&self) -> bool {
@@ -46,7 +46,7 @@ impl LeafClauses for Ordinary<'_> {
     fn clauses(&self) -> &[Clause] {
         self.0
     }
-    fn vacuous_scopes(&self) -> bool {
+    fn callable_scopes(&self) -> bool {
         self.1.is_some_and(s::Profile::body_nodes)
     }
     fn regional_arguments(&self) -> bool {
@@ -178,18 +178,16 @@ fn assumption(
     clause: Clause,
     budget: &mut impl Accounting,
 ) -> Result<usize, Error> {
-    let predicate = match clause {
-        Clause::Predicate(predicate) => predicate,
-        Clause::ForAll(id) if leaves.vacuous_scopes() => {
-            facts
-                .types
-                .quantified(id)
-                .filter(|scoped| scoped.bound_regions == 0)
-                .ok_or_else(|| {
-                    error("quantified source assumptions require a wider environment profile")
-                })?
-                .predicate
-        }
+    let (predicate, scoped) = match clause {
+        Clause::Predicate(predicate) => (predicate, false),
+        Clause::ForAll(id) if leaves.callable_scopes() => facts
+            .types
+            .quantified(id)
+            .filter(|scoped| scoped.bound_regions == 0 || leaves.regional_arguments())
+            .map(|scoped| (scoped.predicate, scoped.bound_regions != 0))
+            .ok_or_else(|| {
+                error("quantified source assumptions require a wider environment profile")
+            })?,
         _ => {
             return Err(error(
                 "quantified source assumptions require a wider environment profile",
@@ -201,7 +199,7 @@ fn assumption(
         return Ok(1);
     }
     let id = if let Bound::ProjectionEqual(value) = predicate.bound
-        && leaves.vacuous_scopes()
+        && leaves.callable_scopes()
     {
         // A callable result binding: a leaf value for a declared result
         // whose own trait application is a leaf premise below.
@@ -246,14 +244,23 @@ fn assumption(
         };
         match facts.types.kind(ty) {
             // A callable role's argument tuple of leaves.
-            Some(Kind::Tuple(elements)) if leaves.vacuous_scopes() && ty != TypeId::UNIT => {
+            Some(Kind::Tuple(elements)) if leaves.callable_scopes() && ty != TypeId::UNIT => {
                 let elements = facts
                     .types
                     .list(elements)
                     .ok_or_else(|| error("source environment lost its tuple elements"))?;
                 budget.charge(elements.len())?;
                 for &element in elements {
-                    leaf(facts, element)?;
+                    if scoped
+                        && let Some(Kind::Reference { referent, .. }) = facts.types.kind(element)
+                    {
+                        // The decoder checked this reference in the same clause binder.
+                        // Retain the whole quantified clause and count its extra root.
+                        leaf(facts, referent)?;
+                        roots = roots.saturating_add(2);
+                    } else {
+                        leaf(facts, element)?;
+                    }
                 }
             }
             _ => {

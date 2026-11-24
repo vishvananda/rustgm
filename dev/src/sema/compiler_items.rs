@@ -60,7 +60,7 @@ pub(in crate::sema) use display_panics::require_begin_panic_transport;
 pub(crate) use display_panics::{Selection as ConstPanicSelection, select as source_const_panic};
 pub(in crate::sema) use roles::{
     complete_comparison_roles, complete_enum_roles, complete_slice_len_role,
-    complete_try_protocol as complete_try_roles,
+    complete_source_helpers, complete_try_protocol as complete_try_roles,
 };
 pub(in crate::sema) use runtime_panics::complete as complete_runtime_panic_roles;
 pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
