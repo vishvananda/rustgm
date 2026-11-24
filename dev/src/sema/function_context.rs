@@ -257,6 +257,19 @@ impl Declarations {
         let Some(catalog) = self.source_bindings.as_deref() else {
             return Ok(None);
         };
+        if header.body.is_none()
+            && self.associated.constant_trait(owner) == Some(true)
+            && catalog
+                .matching_role(
+                    definition,
+                    LangItem::REQUIRED_FOR_METHODS
+                        .into_iter()
+                        .map(|role| ((), role)),
+                )?
+                .is_some()
+        {
+            return Ok(Some(owner));
+        }
         for kind in [LangItem::Drop]
             .into_iter()
             .chain(LangItem::COMPARISON_TRAITS)

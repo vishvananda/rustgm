@@ -1,4 +1,6 @@
 //! Desugaring consumes actual tagged methods and variants, independently of names.
+mod loop_headers;
+use super::Catalog;
 use crate::{
     resolve::{
         bindings::Declaration,
@@ -15,6 +17,8 @@ use crate::{
     },
     types::{ItemId, Kind, arguments::Argument, callable::Convention},
 };
+pub(in crate::sema::compiler_items) use loop_headers::imported;
+pub(in crate::sema) use loop_headers::source_role;
 
 pub(in crate::sema) struct Protocol {
     pub into_iter: DefId,
@@ -170,6 +174,9 @@ pub(in crate::sema) fn source(
     facts: &Declarations,
     site: NodeKey,
 ) -> Result<Protocol, Error> {
+    if report.package.source_client().is_some() || report.package.staged_consumer().is_some() {
+        return imported_protocol(report, facts, site);
+    }
     let query = Query {
         report,
         facts,
@@ -191,6 +198,39 @@ pub(in crate::sema) fn source(
         option,
         some,
         none,
+    })
+}
+fn imported_protocol(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+) -> Result<Protocol, Error> {
+    crate::sema::crates::charge_source_header_query(facts, 6)?;
+    let error = |message| Declarations::error(report, site, message);
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("imported iteration lacks its actual provider"))?;
+    catalog.require_provider_report(report).map_err(error)?;
+    let definition = |role| {
+        catalog
+            .validated_role(role)
+            .map_err(error)?
+            .map(|role| role.definition)
+            .ok_or_else(|| error("imported iteration requires its actual tagged declarations"))
+    };
+    let variant = |role| {
+        facts
+            .members
+            .constructor(definition(role)?)
+            .ok_or_else(|| error("imported iteration lost its actual Option variant"))
+    };
+    Ok(Protocol {
+        into_iter: definition(LangItem::IntoIter)?,
+        next: definition(LangItem::IteratorNext)?,
+        option: ItemId(definition(LangItem::Option)?.0),
+        some: variant(LangItem::OptionSome)?,
+        none: variant(LangItem::OptionNone)?,
     })
 }
 pub(in crate::sema) fn check_plan(

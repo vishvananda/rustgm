@@ -305,6 +305,7 @@ fn trait_headers(
             role if GROUPED.contains(&role)
                 || LangItem::FORMAT_PANICS.contains(&role)
                 || LangItem::TRY_PROTOCOL.contains(&role)
+                || LangItem::FOR_PROTOCOL.contains(&role)
                 || LangItem::COMPARISON_TRAITS.contains(&role)
                 || role.is_enum_value_role()
                 || super::super::layout::CONSTANTS.contains(&role) => {}
@@ -443,6 +444,11 @@ fn grouped_roles(
             for &role in group.roles() {
                 complete.insert(role);
             }
+        }
+    }
+    if super::super::for_roles::imported(report, facts, catalog, steps, complete)? {
+        for role in LangItem::FOR_PROTOCOL {
+            complete.insert(role);
         }
     }
     for role in LangItem::COMPARISON_TRAITS {

@@ -642,7 +642,7 @@ fn conditional_trait_member(
     };
     selected = selected.or(drop);
     if roles.declaration_policies
-        && let Some(role) = required_try_trait(facts, function, owner)?
+        && let Some(role) = required_protocol_trait(facts, function, owner)?
     {
         selected = Some(role);
     }
@@ -712,7 +712,7 @@ fn comparison_trait(
     Ok(None)
 }
 
-fn required_try_trait(
+fn required_protocol_trait(
     facts: &Declarations,
     function: &crate::sema::model::Function,
     owner: &crate::sema::associated::Owner,
@@ -722,29 +722,36 @@ fn required_try_trait(
         .source_bindings
         .as_deref()
         .ok_or("source Try method lost its actual language catalog")?;
-    let Some(role) = LangItem::REQUIRED_TRY_METHODS.into_iter().find(|&role| {
-        catalog
-            .language(role)
-            .is_some_and(|method| method.definition == function.definition)
-    }) else {
+    let Some((role, declaration)) = LangItem::REQUIRED_TRY_METHODS
+        .into_iter()
+        .chain(LangItem::REQUIRED_FOR_METHODS)
+        .filter_map(|role| {
+            catalog
+                .language(role)
+                .map(|declaration| (role, declaration))
+        })
+        .find(|(_, method)| method.definition == function.definition)
+    else {
         return Ok(None);
     };
-    let declaration = catalog
-        .header_role(role)?
-        .ok_or("source Try method lost its checked language identity")?;
+    if LangItem::REQUIRED_TRY_METHODS.contains(&role)
+        && catalog.header_role(role)? != Some(declaration)
+    {
+        return Err("source Try method lost its checked language identity");
+    }
     let OwnerKind::Trait { definition, .. } = owner.kind else {
-        return Err("source Try method requires its actual trait owner");
+        return Err("source protocol method requires its actual trait owner");
     };
     if declaration.parent != Some(definition)
         || declaration.origin != function.node
         || function.body.is_some()
         || facts.nonconst_trait_member(function.definition)?
     {
-        return Err("source Try method changed its actual required conditional header");
+        return Err("source protocol method changed its actual required conditional header");
     }
     let origin = owner
         .source
-        .ok_or("source Try method lost its actual trait origin")?;
+        .ok_or("source protocol method lost its actual trait origin")?;
     Ok(Some(Declaration {
         definition,
         parent: None,

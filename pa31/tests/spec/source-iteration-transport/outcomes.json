@@ -1,0 +1,12 @@
+{
+  "foundation": "pa31/tests/spec/source-alloc-layout-transport/provider.rs",
+  "prefix_marker": "// Reduced from library/core/src/alloc/layout.rs",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "7 41\n",
+  "wrong_bound": "IntoIterator changed its actual Iterator<Item = Self::Item> result bounds",
+  "wrong_owner": "source iteration requires its actual Iterator, IntoIterator and Option",
+  "old_profile": "source iteration declarations require version fourteen",
+  "old_reader": "source role has a different actual declaration/header kind"
+}

@@ -69,6 +69,23 @@ pub(super) fn require_role_transport(
     Ok(())
 }
 
+fn require_v14_role(role: LangItem) -> Result<(), &'static str> {
+    match role {
+        role if LangItem::FORMAT_PANICS.contains(&role) => {
+            Err("source formatting panic declarations require version fourteen")
+        }
+        role if role.is_enum_value_role() => Err("source enum roles require version fourteen"),
+        role if LangItem::TRY_PROTOCOL.contains(&role) => {
+            Err("source Try declarations require version fourteen")
+        }
+        LangItem::DropGlue => Err("source Drop operation transport requires version fourteen"),
+        LangItem::ConstParamTy | LangItem::StructuralPartialEq => {
+            Err("source const parameter marker transport requires version 14")
+        }
+        _ => Ok(()),
+    }
+}
+
 impl Stage {
     pub(super) fn traits(
         &mut self,
@@ -292,6 +309,14 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        if LangItem::FOR_PROTOCOL.contains(&role) {
+            return crate::sema::compiler_items::for_roles::source_role(
+                report,
+                facts,
+                role,
+                self.declaration_policies(),
+            );
+        }
         if role == LangItem::AllocLayout {
             return crate::sema::compiler_items::alloc_layout::source_role(
                 report,
@@ -299,29 +324,8 @@ impl Stage {
                 self.declaration_policies(),
             );
         }
-        if LangItem::FORMAT_PANICS.contains(&role)
-            && !self.declaration_policies()
-            && catalog.language(role).is_some()
-        {
-            return Err("source formatting panic declarations require version fourteen");
-        }
-        if role.is_enum_value_role()
-            && !self.declaration_policies()
-            && catalog.language(role).is_some()
-        {
-            return Err("source enum roles require version fourteen");
-        }
-        if LangItem::TRY_PROTOCOL.contains(&role)
-            && !self.declaration_policies()
-            && catalog.language(role).is_some()
-        {
-            return Err("source Try declarations require version fourteen");
-        }
-        if role == LangItem::DropGlue
-            && !self.declaration_policies()
-            && catalog.language(role).is_some()
-        {
-            return Err("source Drop operation transport requires version fourteen");
+        if !self.declaration_policies() && catalog.language(role).is_some() {
+            require_v14_role(role)?;
         }
         if matches!(role, LangItem::MemSizeConst | LangItem::MemAlignConst) {
             let Some(declaration) = catalog.language(role) else {
@@ -342,12 +346,6 @@ impl Stage {
                 return Err("source layout constant requires its actual provided trait default");
             }
             return Ok(Some(declaration));
-        }
-        if matches!(role, LangItem::ConstParamTy | LangItem::StructuralPartialEq)
-            && !self.declaration_policies()
-            && catalog.language(role).is_some()
-        {
-            return Err("source const parameter marker transport requires version 14");
         }
         let Some(declaration) = self.exported_role(report, facts, role)? else {
             return Ok(None);

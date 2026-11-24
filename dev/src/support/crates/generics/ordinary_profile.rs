@@ -343,7 +343,8 @@ fn trait_headers(
             conversions::trait_header(rows, headers, header, work)?;
         }
         let drop = roles.drop == Some(header.declaration);
-        let try_protocol = roles.try_traits.contains(&Some(header.declaration));
+        let protocol_trait = roles.try_traits.contains(&Some(header.declaration))
+            || roles.for_traits.contains(&Some(header.declaration));
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
@@ -352,7 +353,7 @@ fn trait_headers(
                 && !operator
                 && !range
                 && !drop
-                && !try_protocol
+                && !protocol_trait
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -964,6 +965,9 @@ pub(super) struct Bindings {
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
     try_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
+    for_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::REQUIRED_FOR_METHODS.len()],
+    for_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
     comparisons: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::COMPARISON_TRAITS.len()],
     pin: Option<crate::support::crates::owner_catalog::DeclarationRef>,
@@ -1099,6 +1103,7 @@ impl Bindings {
     ) -> Result<bool, &'static str> {
         if self.drop.is_some() && function.parent == self.drop
             || self.try_methods.contains(&Some(function.declaration))
+            || self.for_methods.contains(&Some(function.declaration))
         {
             return conversions::required_member(
                 rows,
@@ -1164,6 +1169,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
+        || LangItem::FOR_PROTOCOL.contains(&role)
         || LangItem::COMPARISON_TRAITS.contains(&role)
         || role.is_enum_value_role()
         || role.is_runtime_import()
@@ -1318,6 +1324,8 @@ pub(super) fn bindings(
             bound(LangItem::TryTrait),
             required_method_owner(rows, headers, bound(LangItem::TryFromResidual), work)?,
         ],
+        for_methods: LangItem::REQUIRED_FOR_METHODS.map(bound),
+        for_traits: for_trait_owners(rows, headers, work, &declarations)?,
         runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES.map(bound),
         comparisons: LangItem::COMPARISON_TRAITS.map(bound),
         pin: bound(LangItem::Pin),
@@ -1550,8 +1558,8 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
-    if LangItem::TRY_PROTOCOL.contains(&role) {
-        return try_role_header(rows, role, header);
+    if LangItem::TRY_PROTOCOL.contains(&role) || LangItem::FOR_PROTOCOL.contains(&role) {
+        return protocol_role_header(rows, role, header);
     }
     if role.is_enum_value_role() {
         return enum_role_header(kind, role, header);
@@ -1687,20 +1695,51 @@ fn required_method_owner(
         .ok_or("source required method lost its actual trait owner")
 }
 
-fn try_role_header(
+fn for_trait_owners(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    roles: &[Option<crate::support::crates::owner_catalog::DeclarationRef>; LangItem::ALL.len()],
+) -> Result<[Option<crate::support::crates::owner_catalog::DeclarationRef>; 2], &'static str> {
+    let [iterator, next, into_iter] = LangItem::FOR_PROTOCOL.map(|role| roles[role.index()]);
+    if [iterator, next, into_iter] == [None; 3] {
+        return Ok([None; 2]);
+    }
+    if iterator.is_none()
+        || next.is_none()
+        || into_iter.is_none()
+        || required_method_owner(rows, headers, next, work)? != iterator
+        || LangItem::FOR_OPTION_ROLES
+            .iter()
+            .any(|role| roles[role.index()].is_none())
+    {
+        return Err("source iteration requires its actual Iterator, IntoIterator and Option");
+    }
+    let into = required_method_owner(rows, headers, into_iter, work)?;
+    if iterator == into {
+        return Err("source iteration requires distinct actual trait owners");
+    }
+    Ok([iterator, into])
+}
+
+fn protocol_role_header(
     rows: &SourceRows,
     role: LangItem,
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
     match (role, header) {
-        (LangItem::TryTrait, Some(HeaderRef::Trait(_)))
+        (LangItem::TryTrait | LangItem::Iterator, Some(HeaderRef::Trait(_)))
         | (
             LangItem::ControlFlowContinue | LangItem::ControlFlowBreak,
             Some(HeaderRef::Variant(_)),
         ) => Ok(()),
         (
-            LangItem::TryFromOutput | LangItem::TryBranch | LangItem::TryFromResidual,
+            LangItem::TryFromOutput
+            | LangItem::TryBranch
+            | LangItem::TryFromResidual
+            | LangItem::IteratorNext
+            | LangItem::IntoIter,
             Some(HeaderRef::Function(index)),
         ) if rows.functions.get(index as usize).is_some_and(|function| {
             function.parent.is_some() && matches!(function.body, FunctionBody::Absent)
@@ -1714,6 +1753,9 @@ fn try_role_header(
             }) =>
         {
             Ok(())
+        }
+        _ if LangItem::FOR_PROTOCOL.contains(&role) => {
+            Err("source iteration role has a different actual declaration header")
         }
         _ => Err("source Try role has a different actual declaration header"),
     }

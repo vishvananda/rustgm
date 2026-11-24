@@ -116,6 +116,10 @@ with pinned Rust.
 fresh client's `?` operation against ordinary and const trait declarations,
 including the associated bounds on the residual. Run
 `scripts/check_try_protocol_transport.py` with the prebuilt compilers.
+`spec/source-iteration-transport/outcomes.json` checks item and empty paths
+through a fresh client's imported `Iterator::next`, `IntoIterator::into_iter`,
+and `Option` declarations. Run `scripts/check_iteration_role_transport.py`
+with the prebuilt compilers.
 `spec/source-enum-role-transport/outcomes.json` checks the provider's actual
 Option, Result, and Ordering declarations in fresh clients. It also rejects
 swapped Option variants and a redirected Result diagnostic owner. Run

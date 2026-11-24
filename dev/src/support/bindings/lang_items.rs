@@ -78,6 +78,13 @@ impl LangItem {
     pub(crate) const REQUIRED_TRY_METHODS: [Self; 3] =
         [Self::TryFromOutput, Self::TryBranch, Self::TryFromResidual];
 
+    pub(crate) const FOR_PROTOCOL: [Self; 3] = [Self::Iterator, Self::IteratorNext, Self::IntoIter];
+
+    pub(crate) const REQUIRED_FOR_METHODS: [Self; 2] = [Self::IteratorNext, Self::IntoIter];
+
+    pub(crate) const FOR_OPTION_ROLES: [Self; 3] =
+        [Self::Option, Self::OptionSome, Self::OptionNone];
+
     pub(crate) const fn is_enum_value_role(self) -> bool {
         matches!(
             self,
