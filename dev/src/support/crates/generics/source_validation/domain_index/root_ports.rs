@@ -419,11 +419,15 @@ impl DomainIndex<'_, '_> {
             }
             s::Requirement::Outlives(bound) => self.bound(context, *bound, work),
             s::Requirement::ProjectionEqual { projection, value } => {
-                if !matches!(
-                    self.headers.rows().types.get(projection.0 as usize),
-                    Some(s::Type::Projection(_))
-                ) {
+                let Some(&s::Type::Projection(id)) =
+                    self.headers.rows().types.get(projection.0 as usize)
+                else {
                     return Err("source result binding does not name a declared-result projection");
+                };
+                if self.declaration_policies {
+                    let trait_application =
+                        self.headers.rows().projections[id.0 as usize].trait_application;
+                    self.trait_use(context, trait_application, work)?;
                 }
                 self.types.root(self.headers, context, *projection, work)?;
                 self.types.root(self.headers, context, *value, work)

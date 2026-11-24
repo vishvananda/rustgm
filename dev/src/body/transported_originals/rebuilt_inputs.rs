@@ -49,9 +49,22 @@ impl<'a, 'b> Expected<'a, 'b> {
                 s::EnvironmentOrigin::ConstTraitDefault { .. }
             );
         let assume_fold_traits = provided && facts.imported_iterator_fold(definition)?;
+        let nested_last_helper = view
+            .rows()
+            .declarations
+            .get(view.raw().declaration.0 as usize)
+            .and_then(|row| row.definition.parent)
+            .map(|parent| {
+                let parent = view.declaration(parent, steps)?;
+                facts.imported_iterator_last(parent)
+            })
+            .transpose()?
+            .unwrap_or(false);
         let assumed_inputs = if view.const_context()
             && (crate::sema::compiler_items::drop_glue_member(facts, definition)?
                 || provided && facts.imported_clone_default(definition)?
+                || provided && facts.imported_iterator_last(definition)?
+                || nested_last_helper
                 || assume_fold_traits)
         {
             declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?

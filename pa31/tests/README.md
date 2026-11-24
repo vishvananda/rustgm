@@ -191,6 +191,9 @@ The `--case fold` variant runs the actual conditional `Iterator::fold` default
 in native and const execution across multi-item and empty iterators without
 enabling `const_precise_live_drops` in the reader, and rejects non-const
 iterators, non-const callbacks, and altered callback premises.
+The `--case last` variant runs the actual `Iterator::last` default calling
+`self.fold(Maybe::Absent, some)` with its nested function-item helper in native
+and const execution, and rejects non-const iterators and altered item premises.
 `spec/source-precise-cleanup-transport/outcomes.json` checks an imported generic
 enum move in native and const execution. Its reader has no precise-drop feature,
 and the same provider without the feature rejects the potential destructor.

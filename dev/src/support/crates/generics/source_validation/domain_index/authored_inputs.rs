@@ -49,12 +49,7 @@ impl DomainIndex<'_, '_> {
             self.obligation(context, original, input.kind, work)?;
             // A direct function-item formation is its callable's request port: an
             // erased primitive operator retains its selected method's formation.
-            if let s::InputKind::WellFormed(ty) = input.kind
-                && let Some(&s::Type::FunctionItem(application)) =
-                    self.headers.rows().types.get(ty.0 as usize)
-            {
-                self.function_use(context, application, work)?;
-            }
+            self.obligation_function_use(context, input.kind, work)?;
         }
         if let Some(builtins) = &input.builtins {
             if matches!(
@@ -87,6 +82,40 @@ impl DomainIndex<'_, '_> {
             }
         }
         Ok(())
+    }
+    fn obligation_function_use(
+        &mut self,
+        context: Context,
+        kind: s::InputKind,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let policies = self.declaration_policies;
+        let mut mark = |scope: Context, ty: crate::support::crates::generics::TypeRef| {
+            if let Some(&s::Type::FunctionItem(application)) =
+                self.headers.rows().types.get(ty.0 as usize)
+            {
+                self.function_use(scope, application, work)?;
+            }
+            Ok(())
+        };
+        match kind {
+            s::InputKind::WellFormed(ty) => mark(context, ty),
+            s::InputKind::ScopedWellFormed { ty, frame } if policies => mark(
+                Context {
+                    frame: Some(frame),
+                    ..context
+                },
+                ty,
+            ),
+            s::InputKind::Coercion {
+                actual, expected, ..
+            } if policies => {
+                mark(context, actual)?;
+                mark(context, expected)
+            }
+            s::InputKind::TypeOutlives { ty, .. } if policies => mark(context, ty),
+            _ => Ok(()),
+        }
     }
     fn environment(
         &self,

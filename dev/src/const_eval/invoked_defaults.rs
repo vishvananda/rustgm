@@ -9,6 +9,34 @@ use crate::{
     types::{Kind, callable::Convention, instance::Instance},
 };
 
+fn imported_caller(facts: &Declarations, body: &Code) -> Result<(), &'static str> {
+    let crate::body::ir::Owner::Function {
+        definition,
+        signature,
+        execution: Some(_),
+    } = body.owner
+    else {
+        return Err("imported const default caller lost its materialized function owner");
+    };
+    let Some(instance) = body.instance else {
+        return Err("imported const default caller lost its concrete instance");
+    };
+    let header = facts
+        .declaration_header(definition)?
+        .ok_or("imported const default caller lost its canonical declaration")?;
+    if header.body != Some(body.source)
+        || !facts.imported_const_default(definition)?
+        || !matches!(
+            facts.types.kind(instance.ty()),
+            Some(Kind::FunctionItem { item, signature: actual, .. })
+                if item.0 == definition.0 && actual == signature
+        )
+    {
+        return Err("imported const default caller changed its authenticated body or instance");
+    }
+    Ok(())
+}
+
 fn validate(
     facts: &Declarations,
     body: &Code,
@@ -18,8 +46,12 @@ fn validate(
     charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     charge(32)?;
-    body.owner
-        .source_caller(facts, body.source, body.instance)?;
+    if body.source.source().is_some() {
+        body.owner
+            .source_caller(facts, body.source, body.instance)?;
+    } else {
+        imported_caller(facts, body)?;
+    }
     let block = body
         .blocks
         .get(frame.block.0 as usize)

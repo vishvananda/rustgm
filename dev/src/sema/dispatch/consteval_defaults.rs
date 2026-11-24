@@ -48,9 +48,27 @@ pub(crate) fn check_const_default(
         .ok_or("const default lost its captured arguments")?
         .collect::<Vec<_>>();
     let mut work = 0;
-    let reconstructed = super::instantiate_callable(facts, definition, &values, &mut work);
+    let mut reconstructed = super::instantiate_callable(facts, definition, &values, &mut work)?;
     facts.charge_caller_inputs(work, 0)?;
-    if reconstructed? != instance.ty() {
+    let mut dispatch = Dispatcher::new(0, 1)?;
+    if reconstructed != instance.ty()
+        && facts.types.contains_projections(reconstructed) == Some(true)
+    {
+        let before = dispatch.context.steps;
+        reconstructed = dispatch
+            .normalize_override(facts, reconstructed)
+            .map_err(|_| "const default signature normalization failed")?;
+        facts.charge_caller_inputs(dispatch.context.steps.saturating_sub(before), 0)?;
+        let unresolved = dispatch.obligations.owned_regions().next().is_some()
+            || !dispatch.obligations.equalities.is_empty()
+            || !dispatch.obligations.outlives.is_empty()
+            || !dispatch.obligations.types.is_empty()
+            || !dispatch.obligations.quantifies_nothing();
+        if unresolved || dispatch.provisional_size {
+            return Err("const default signature normalization has unresolved obligations");
+        }
+    }
+    if reconstructed != instance.ty() {
         return Err("const default changed its authenticated public signature or captures");
     }
     let arguments = Arguments::new(facts, instance.ty())?;
@@ -59,7 +77,6 @@ pub(crate) fn check_const_default(
         return Err("const default lost its actual trait application");
     };
     predicate.bound = Bound::ConstTrait(application);
-    let mut dispatch = Dispatcher::new(0, 1)?;
     let selected = dispatch.implementation(facts, predicate);
     facts.charge_caller_inputs(dispatch.context.steps.saturating_add(1), 0)?;
     let (implementation, arguments, proof) =

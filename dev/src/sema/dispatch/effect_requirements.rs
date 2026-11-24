@@ -24,6 +24,7 @@ pub(super) fn check(
         .imported_iterator_fold(definition)?
         .then(|| crate::sema::compiler_items::callable_role(facts, CallTrait::FnMut))
         .transpose()?;
+    let iterator_reduction = callable.is_some() || facts.imported_iterator_last(definition)?;
     let mut fold = super::callable_substitution(facts, instance)?;
     for clause in clauses {
         facts.charge_caller_inputs(4, 0)?;
@@ -46,9 +47,13 @@ pub(super) fn check(
         });
         let closed = predicate.is_concrete(&facts.types)?
             && !predicate.contains_projections(&facts.types)?;
-        let destruct = (closed || callable.is_some())
-            && crate::sema::compiler_items::destruct_predicate(facts, predicate)?;
-        if !(closed || callback || callable.is_some() && destruct) {
+        let destruct = (closed
+            && crate::sema::compiler_items::destruct_predicate(facts, predicate)?)
+            || (iterator_reduction
+                && facts.types.contains_parameters(predicate.ty) == Some(false)
+                && facts.types.needs_region_context(predicate.ty) == Some(false)
+                && crate::sema::compiler_items::destruct_role(facts, predicate)?);
+        if !(closed || callback || iterator_reduction && destruct) {
             return Err("const default method requirements need closed normalized predicates");
         }
         let before = dispatch.context.steps;

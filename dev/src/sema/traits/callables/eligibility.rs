@@ -140,7 +140,7 @@ fn function_item(
     let Some(header) = facts.function_header(definition)? else {
         return Ok(Eligibility::Pending);
     };
-    if header.declaration.source().is_none() {
+    if header.declaration.source().is_none() && facts.associated.owner(definition).is_some() {
         return Ok(Eligibility::Unsupported(
             "imported const callable eligibility is not implemented",
         ));

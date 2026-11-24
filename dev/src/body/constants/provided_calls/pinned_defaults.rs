@@ -139,3 +139,94 @@ impl Calls {
         Ok(())
     }
 }
+
+/// An instantiated imported const default may call another const default;
+/// runtime execution and CTFE still re-prove the reached target's const impl.
+pub(in crate::body::constants) fn check_instance(
+    facts: &Declarations,
+    body: &Body,
+    statement: &Statement,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(8)?;
+    let Owner::Function {
+        definition,
+        signature,
+        execution: Some(_),
+    } = body.owner
+    else {
+        return Err("imported provided instance lost its callable owner");
+    };
+    let Some(instance) = body.instance else {
+        return Err("imported provided instance lost its concrete specialization");
+    };
+    let header = facts
+        .declaration_header(definition)?
+        .ok_or("imported provided instance lost its canonical declaration")?;
+    if !body.const_context
+        || header.body != Some(body.source)
+        || !facts.imported_const_default(definition)?
+        || !matches!(
+            facts.types.kind(instance.ty()),
+            Some(Kind::FunctionItem { item, signature: actual, .. })
+                if item.0 == definition.0 && actual == signature
+        )
+    {
+        return Err("imported provided instance changed its authenticated const default");
+    }
+    let Action::Evaluate(id) = statement.action else {
+        return Err("imported provided call has no evaluated operation");
+    };
+    let value = body
+        .values
+        .get(id.0 as usize)
+        .ok_or("imported provided call lost its evaluated value")?;
+    let Rvalue::Call {
+        callee,
+        signature: call_signature,
+        arguments,
+    } = value.kind
+    else {
+        return Err("imported provided call changed its actual Call operation");
+    };
+    let target = body
+        .values
+        .get(callee.0 as usize)
+        .ok_or("imported provided call lost its actual typed target")?;
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(target.ty) else {
+        return Err("imported provided call requires its actual direct member");
+    };
+    if !matches!(target.kind, Rvalue::Function(actual) if actual.0 == item.0)
+        || facts
+            .const_default_member(crate::types::instance::Instance::new(
+                &facts.types,
+                target.ty,
+            )?)?
+            .is_none()
+    {
+        return Err("imported provided instance call requires an actual const default target");
+    }
+    let Some(Kind::Function {
+        bound_regions: 0,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+        parameters,
+        result,
+    }) = facts.types.kind(call_signature)
+    else {
+        return Err("imported provided call lost its opened safe Rust signature");
+    };
+    let parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("imported provided call lost its parameter list")?;
+    let arguments = body
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or("imported provided call lost its argument range")?;
+    if result != value.ty || parameters.len() != arguments.len() {
+        return Err("imported provided call changed its result or argument count");
+    }
+    body.source.proof_site(statement.source)?;
+    Ok(())
+}

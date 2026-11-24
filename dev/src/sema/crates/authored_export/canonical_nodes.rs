@@ -205,22 +205,47 @@ impl Stage {
     ) -> Result<s::FunctionApplicationRef, &'static str> {
         self.charge(1)?;
         self.graph.require_arena(&facts.types)?;
-        let key = (item, arguments, context);
-        if let Some(&application) = self.graph.applications.get(&key) {
-            return Ok(application);
-        }
         let actual = facts
             .types
             .arguments(arguments)
             .ok_or("source function application arguments are unknown")?;
+        let mut regional = false;
         for argument in actual {
             self.charge(1)?;
-            if let crate::types::arguments::Argument::Type(ty) = argument
-                && (facts.types.contains_function_items(ty) != Some(false)
-                    || facts.types.contains_anonymous_callables(ty) != Some(false))
-            {
-                return Err("nested callable source arguments require a wider transport profile");
+            match argument {
+                crate::types::arguments::Argument::Type(ty) => {
+                    let has_callable = facts.types.contains_function_items(ty) != Some(false)
+                        || facts.types.contains_anonymous_callables(ty) != Some(false);
+                    if has_callable
+                        && !(self.declaration_policies()
+                            && matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })))
+                    {
+                        return Err(
+                            "nested callable source arguments require a wider transport profile",
+                        );
+                    }
+                    regional |= facts.types.needs_region_context(ty) != Some(false);
+                }
+                crate::types::arguments::Argument::Lifetime(region) => {
+                    regional |= region != RegionId::STATIC;
+                }
+                crate::types::arguments::Argument::Const(_) => {}
             }
+        }
+        // Non-regional applications do not depend on child call-signature or
+        // clause frames; sharing one row within the same owner/body keeps
+        // argument values and call signatures on the exact same handle.
+        let key_context = if self.declaration_policies() && !regional {
+            Context {
+                frame: None,
+                ..context
+            }
+        } else {
+            context
+        };
+        let key = (item, arguments, key_context);
+        if let Some(&application) = self.graph.applications.get(&key) {
+            return Ok(application);
         }
         let declaration = self.address(DefId(item.0))?;
         let arguments = self.arguments(facts, arguments, context)?;

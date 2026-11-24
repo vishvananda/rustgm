@@ -195,12 +195,27 @@ def reject_fold_bounds(check, exporter, importer, source, artifact, client, rust
               "-o", check.folder / "nonconst-closure.lowir", nonconst], 1, timeout=30)
 
 
+def reject_last_bounds(check, exporter, source, contract):
+    text = source.read_bytes()
+    bound = b"Self::Item: [const] Destruct,"
+    if text.count(bound) != 1:
+        raise ValueError("iteration fixture lost its exact last item premise")
+    extra = check.folder / "extra-last-premise.rs"
+    extra.write_bytes(text.replace(bound, b"Self::Item: [const] Destruct + Copy,"))
+    rejected = check.folder / "extra-last-premise.rgcrate"
+    check.run("wrong-last-premise", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", rejected, extra], 1, [contract["wrong_item_bound"]],
+              timeout=30)
+    if rejected.exists():
+        raise ValueError("an altered last premise produced an artifact")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref", "fold"),
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref", "fold", "last"),
                         default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
@@ -213,7 +228,7 @@ def main():
     client = FIXTURE / contract["client"]
     constant = args.case == "blanket-const"
     observed = contract
-    provided = args.case in ("size-hint", "by-ref", "fold")
+    provided = args.case in ("size-hint", "by-ref", "fold", "last")
     if provided:
         observed = contract[args.case.replace("-", "_")]
         provider = provided_inputs(observed, contract["blanket"], provider)
@@ -256,6 +271,8 @@ def main():
         reject_by_ref_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
     elif args.case == "fold":
         reject_fold_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
+    elif args.case == "last":
+        reject_last_bounds(check, exporter, source, observed)
     elif args.case == "blanket":
         reject_ordinary_premise(check, exporter, source, contract["blanket"])
     elif args.case == "roles":

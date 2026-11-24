@@ -56,5 +56,16 @@
     "implementation": "impl base::Iterator for Values",
     "wrong_callback_bound": "source fold has an extra or altered method premise",
     "ordinary_closure": "const |_, item| item"
+  },
+  "last": {
+    "features": ["const_destruct", "const_closures", "const_precise_live_drops", "unboxed_closures"],
+    "provider_extra": "fold-callables.rs",
+    "provider_member": "last-member.rs",
+    "provider_anchor": "    #[lang=\"next\"]",
+    "client": "last-client.rs",
+    "observer": "fold-observer.c",
+    "stdout": "73 42 73\n",
+    "implementation": "impl base::Iterator for Values",
+    "wrong_item_bound": "source last has an extra method premise"
   }
 }

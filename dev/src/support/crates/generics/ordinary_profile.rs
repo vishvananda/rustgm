@@ -1198,9 +1198,16 @@ impl Bindings {
         let [deref, deref_mut] = self.dereferences;
         let [try_, from_residual] = self.try_traits;
         let [partial_eq, partial_ord] = self.comparisons;
-        let [_, _, fold] = self.iterator_defaults;
+        let [_, _, fold, last] = self.iterator_defaults;
         let [_, _, fn_mut, _] = self.callables.0;
-        let target = if [self.drop_glue, self.clone_from, fold].contains(&Some(input.owner)) {
+        let nested_last = last.is_some()
+            && rows
+                .declarations
+                .get(input.owner.0 as usize)
+                .is_some_and(|row| row.definition.parent == last);
+        let target = if [self.drop_glue, self.clone_from, fold, last].contains(&Some(input.owner))
+            || nested_last
+        {
             self.destruct
         } else if Some(input.owner) == self.trivial_clone {
             self.clone

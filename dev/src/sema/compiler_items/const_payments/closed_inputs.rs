@@ -30,6 +30,10 @@ pub(super) fn closed_arguments(
                         ..
                     })
                 ) => {}
+            Some(Kind::Adt(..))
+                if store.needs_region_context(parameter) == Some(false)
+                    && store.contains_parameters(parameter) == Some(false)
+                    && store.contains_projections(parameter) == Some(false) => {}
             _ => return Ok(false),
         }
     }

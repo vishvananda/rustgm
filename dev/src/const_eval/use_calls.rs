@@ -62,16 +62,29 @@ fn inspect(
         }
     } else {
         let (definition, _, _, result) = const_payments::profile(facts, target, charge)?;
-        super::argument_witness::checked_call(
-            facts,
-            body,
-            frame,
-            position,
-            target,
-            (definition, result),
-            charge,
-        )?;
-        super::function_calls::Form::Direct
+        if super::argument_witness::is_invoke(body, position) {
+            super::argument_witness::checked_invoke(
+                facts,
+                body,
+                frame,
+                position,
+                target,
+                (definition, result),
+                charge,
+            )?;
+            super::function_calls::Form::Invoke
+        } else {
+            super::argument_witness::checked_call(
+                facts,
+                body,
+                frame,
+                position,
+                target,
+                (definition, result),
+                charge,
+            )?;
+            super::function_calls::Form::Direct
+        }
     };
     Ok(Site {
         frame: frame.instance,

@@ -16,6 +16,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub(super) enum Reduction {
     Fold,
+    Last,
 }
 
 struct Roles {
@@ -38,6 +39,7 @@ impl Reduction {
     pub(super) const fn inputs(self) -> usize {
         match self {
             Self::Fold => 3,
+            Self::Last => 1,
         }
     }
 
@@ -85,6 +87,13 @@ impl Reduction {
                     output: actual(catalog, LangItem::FnOnceOutput)?,
                 }
                 .require(facts, member)
+            }
+            (Self::Last, []) => {
+                require_formals(facts, member, rest)?;
+                if !option_item(facts, result, option, item) {
+                    return Err("source Iterator reduction changed its actual result");
+                }
+                require_consuming(facts, &roles, member, item)
             }
             _ => Err("source Iterator reduction changed its actual callable arity"),
         }
@@ -158,6 +167,49 @@ fn application(
 fn sized(facts: &Declarations, bound: Bound, role: DefId) -> bool {
     bound == Bound::Sized
         || application(facts, bound, role, Constness::Ordinary) == Some(GenericArgs::EMPTY)
+}
+
+fn option_item(facts: &Declarations, ty: TypeId, option: ItemId, item: ItemProjection) -> bool {
+    let Some(Kind::Adt(owner, args)) = facts.types.kind(ty) else {
+        return false;
+    };
+    owner == option
+        && facts.types.arguments(args).is_some_and(|mut args| {
+            args.len() == 1
+                && matches!(args.next(), Some(Argument::Type(ty)) if item.matches(facts, ty))
+        })
+}
+
+fn require_consuming(
+    facts: &Declarations,
+    roles: &Roles,
+    member: DefId,
+    item: ItemProjection,
+) -> Result<(), &'static str> {
+    let mut seen = [false; 3];
+    for predicate in inputs(facts, member)? {
+        let predicate = predicate?;
+        let destruct = application(
+            facts,
+            predicate.bound,
+            roles.destruct,
+            Constness::Conditional,
+        ) == Some(GenericArgs::EMPTY);
+        let slot = if predicate.ty == item.subject && sized(facts, predicate.bound, roles.sized) {
+            0
+        } else if destruct && predicate.ty == item.subject {
+            1
+        } else if destruct && item.matches(facts, predicate.ty) {
+            2
+        } else {
+            return Err("source last has an extra method premise");
+        };
+        record(&mut seen[slot])?;
+    }
+    if seen.contains(&false) {
+        return Err("source last omitted an actual Sized or Destruct premise");
+    }
+    Ok(())
 }
 
 struct Fold {

@@ -138,6 +138,9 @@ impl<'a> ProvidedCalls<'a> {
                 .ok_or("missing imported defining member context")?
                 .check(facts, body, statement, work);
         }
+        if body.source.source().is_none() && body.const_context && body.instance.is_some() {
+            return provided_calls::pinned_defaults::check_instance(facts, body, statement, work);
+        }
         if defining_default && self.local.is_none() {
             let owner = defining_owner(facts, body, work)?;
             self.local = Some(provided_calls::prepare(facts, body, owner, work)?);

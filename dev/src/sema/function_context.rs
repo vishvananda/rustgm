@@ -310,6 +310,10 @@ impl Declarations {
         self.imported_default_for(definition, LangItem::Iterator, &["fold"])
     }
 
+    pub(crate) fn imported_iterator_last(&self, definition: DefId) -> Result<bool, &'static str> {
+        self.imported_default_for(definition, LangItem::Iterator, &["last"])
+    }
+
     fn imported_default_for(
         &self,
         definition: DefId,

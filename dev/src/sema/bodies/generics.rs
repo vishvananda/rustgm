@@ -445,6 +445,11 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?
             || crate::sema::compiler_items::destruct_predicate(self.facts, predicate)
                 .map_err(|e| self.error(node, e))?
+            || (matches!(
+                self.facts.types.kind(predicate.ty),
+                Some(Type::Projection(_))
+            ) && crate::sema::compiler_items::destruct_role(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?)
             || crate::sema::compiler_items::tuple_predicate(self.facts, predicate)
                 .map_err(|e| self.error(node, e))?
             || crate::sema::compiler_items::pointers::predicate(self.facts, predicate)

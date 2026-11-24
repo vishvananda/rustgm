@@ -137,31 +137,49 @@ fn concrete(
         return Err("imported const invocation changed its instantiated accumulator result");
     }
     let (_, signature) = operands(facts, body, statement, (*callback, *accumulator), work)?;
-    let Some(Kind::Closure {
-        identity,
-        signature: public,
-        ..
-    }) = facts.types.kind(*callback)
-    else {
-        return Err("imported const fold requires its actual checked closure callback");
-    };
-    if public != signature
-        || !facts.types.closure_kind(identity).is_some_and(|kind| {
-            kind.implements(crate::types::closure::CallKind::from_trait(
-                CallTrait::FnMut,
-            ))
-        })
-    {
-        return Err("imported const fold changed its closure signature or capability");
+    match facts.types.kind(*callback) {
+        Some(Kind::Closure {
+            identity,
+            signature: public,
+            ..
+        }) => {
+            if public != signature
+                || !facts.types.closure_kind(identity).is_some_and(|kind| {
+                    kind.implements(crate::types::closure::CallKind::from_trait(
+                        CallTrait::FnMut,
+                    ))
+                })
+            {
+                return Err("imported const fold changed its closure signature or capability");
+            }
+            let source = super::super::qualified_invocations::source(
+                facts,
+                Instance::closure(&facts.types, *callback)?,
+            )?;
+            if let Some(report) = report {
+                source.check_const_source(report)?;
+            }
+            Ok(())
+        }
+        Some(Kind::FunctionItem {
+            item,
+            signature: public,
+            ..
+        }) => {
+            if public != signature
+                || facts.types.needs_region_context(*callback) != Some(false)
+                || facts.types.contains_parameters(*callback) != Some(false)
+                || facts.types.contains_projections(*callback) != Some(false)
+                || !facts.is_const_function(crate::resolve::model::DefId(item.0))
+            {
+                return Err(
+                    "imported const fold requires its actual checked const function callback",
+                );
+            }
+            Ok(())
+        }
+        _ => Err("imported const fold requires its actual checked callback"),
     }
-    let source = super::super::qualified_invocations::source(
-        facts,
-        Instance::closure(&facts.types, *callback)?,
-    )?;
-    if let Some(report) = report {
-        source.check_const_source(report)?;
-    }
-    Ok(())
 }
 
 fn operands<'a>(

@@ -157,7 +157,7 @@ pub(crate) use roles::{
     callable_member, callable_method_definition, callable_operator, callable_output_role,
     callable_role,
 };
-pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
+pub(crate) use roles::{destruct_predicate, destruct_role, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod comparison_contract;
 pub(crate) use comparison_contract::comparison_member;

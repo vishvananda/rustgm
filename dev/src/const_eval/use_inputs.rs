@@ -152,6 +152,15 @@ impl Inputs {
         let result: Result<(), &'static str> = (|| {
             for (index, value) in body.values.iter().enumerate() {
                 facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+                if let Rvalue::Invoke {
+                    kind, arguments, ..
+                } = value.kind
+                {
+                    if invoke_needs_payment(facts, body, kind, arguments)? {
+                        uses.needed = true;
+                    }
+                    continue;
+                }
                 let Rvalue::Call { callee, .. } = value.kind else {
                     continue;
                 };
@@ -369,6 +378,38 @@ impl Inputs {
             .ok_or("source conditional code disappeared")?;
         self.checked(catalog, code, body).map(Rc::clone)
     }
+}
+
+fn invoke_needs_payment(
+    facts: &Declarations,
+    body: &Body,
+    kind: crate::support::call_traits::CallTrait,
+    arguments: crate::body::ir::ValueList,
+) -> Result<bool, &'static str> {
+    let Some(&receiver) = body.arguments.get(arguments.start as usize) else {
+        return Ok(false);
+    };
+    let Some(receiver_ty) = body.values.get(receiver.0 as usize).map(|v| v.ty) else {
+        return Ok(false);
+    };
+    let subject = if kind == crate::support::call_traits::CallTrait::FnOnce {
+        receiver_ty
+    } else if let Some(Kind::Reference { referent, .. }) = facts.types.kind(receiver_ty) {
+        referent
+    } else {
+        return Ok(false);
+    };
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(subject) else {
+        return Ok(false);
+    };
+    let definition = crate::resolve::model::DefId(item.0);
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source catalog disappeared")?;
+    Ok(facts.members.constructor(definition).is_none()
+        && facts.is_const_function(definition)
+        && catalog.requires_const_payment(definition)?)
 }
 
 fn function_payment(

@@ -22,12 +22,14 @@ pub(in crate::sema) use closed_inputs::{closed_clause, open_closed_clause};
 pub(crate) enum ResultProfile {
     Primitive(Primitive),
     Unit,
+    Adt(TypeId),
 }
 impl ResultProfile {
     pub(crate) const fn ty(self) -> TypeId {
         match self {
             Self::Primitive(primitive) => TypeId::primitive(primitive),
             Self::Unit => TypeId::UNIT,
+            Self::Adt(ty) => ty,
         }
     }
 }
@@ -159,7 +161,18 @@ pub(crate) fn profile(
     let result = match facts.types.kind(result) {
         Some(Kind::Primitive(primitive)) => ResultProfile::Primitive(primitive),
         _ if result == TypeId::UNIT => ResultProfile::Unit,
-        _ => return Err("source const payment currently requires a primitive or unit result"),
+        Some(Kind::Adt(..))
+            if facts.types.needs_region_context(result) == Some(false)
+                && facts.types.contains_parameters(result) == Some(false)
+                && facts.types.contains_projections(result) == Some(false) =>
+        {
+            ResultProfile::Adt(result)
+        }
+        _ => {
+            return Err(
+                "source const payment currently requires a primitive, unit, or closed nominal result",
+            );
+        }
     };
     if matches!(result, ResultProfile::Primitive(Primitive::Str))
         || !closed_arguments(&facts.types, parameters, charge)?
@@ -203,17 +216,40 @@ pub(crate) fn prepare(
         .ok_or("source const payment requires its frozen declaration environment")?;
     // Preflight both temporary copied clauses and retained goal capacity before
     // allocation. This declaration walk happens once per complete materialization.
-    let count = facts
-        .generics
-        .declared_predicates_in_scope(definition)
-        .count();
+    let imported = facts
+        .declaration_header(definition)?
+        .is_some_and(|header| header.declaration.source().is_none());
+    let count = if imported {
+        crate::sema::declaration_inputs::declared_own(
+            &facts.generics,
+            facts.crates.as_deref(),
+            definition,
+        )?
+        .len()
+    } else {
+        facts
+            .generics
+            .declared_predicates_in_scope(definition)
+            .count()
+    };
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(count);
     let mut fold = closed_inputs::substitution(facts, instance, count, budget)?;
-    let clauses = facts
-        .generics
-        .declared_predicates_in_scope(definition)
+    let clauses = if imported {
+        crate::sema::declaration_inputs::declared_own(
+            &facts.generics,
+            facts.crates.as_deref(),
+            definition,
+        )?
+        .iter()
         .map(|p| p.value)
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+    } else {
+        facts
+            .generics
+            .declared_predicates_in_scope(definition)
+            .map(|p| p.value)
+            .collect::<Vec<_>>()
+    };
     let mut goals = Vec::with_capacity(count);
     for clause in clauses {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);

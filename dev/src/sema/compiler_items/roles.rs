@@ -14,7 +14,7 @@ pub(in crate::sema) use destructibility::{
 };
 mod freezing;
 mod glue;
-pub(crate) use destructibility::destruct_predicate;
+pub(crate) use destructibility::{destruct_predicate, destruct_role};
 pub(crate) use freezing::predicate as freeze_predicate;
 pub(crate) use glue::member as drop_glue_member;
 pub(super) mod admitted_headers;

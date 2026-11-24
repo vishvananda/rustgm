@@ -56,12 +56,11 @@ impl Machine<'_, '_> {
                 );
             }
             if catalog.requires_const_payment(definition)? {
-                if matches!(form, Form::Invoke) {
-                    return Err("conditional Invoke target payment is not implemented".into());
-                }
                 if let Some(index) = self.consume_const_call(body, frame, target, form)? {
-                    if matches!(form, Form::Selected { .. }) {
+                    if matches!(form, Form::Selected { .. } | Form::Invoke) {
                         self.validate_invoked_entry(index, target)?;
+                    }
+                    if matches!(form, Form::Selected { .. }) {
                         self.validate_selected_entry(index, target)?;
                     }
                     return Ok(Outcome::Enter(index));

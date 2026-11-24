@@ -274,9 +274,28 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         application: s::FunctionApplicationRef,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        self.types
-            .function_application(self.headers, context, application, work)?;
-        self.used_functions[application.0 as usize] = true;
+        let mut pending = vec![application];
+        while let Some(current) = pending.pop() {
+            self.types
+                .function_application(self.headers, context, current, work)?;
+            self.used_functions[current.0 as usize] = true;
+            if !self.declaration_policies {
+                continue;
+            }
+            let rows = self.headers.rows();
+            for argument in rows.function_applications[current.0 as usize]
+                .arguments
+                .slice(&rows.arguments)?
+            {
+                work.charge(1)?;
+                if let s::Argument::Type(ty) = *argument
+                    && let Some(&s::Type::FunctionItem(nested)) = rows.types.get(ty.0 as usize)
+                    && !self.used_functions[nested.0 as usize]
+                {
+                    pending.push(nested);
+                }
+            }
+        }
         Ok(())
     }
     fn trait_use(
@@ -288,6 +307,29 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         self.types
             .trait_application(self.headers, context, application, work)?;
         self.used_traits[application.0 as usize] = true;
+        if !self.declaration_policies {
+            return Ok(());
+        }
+        let rows = self.headers.rows();
+        let raw = rows.trait_applications[application.0 as usize];
+        let mut nested = Vec::new();
+        if let Some(&s::Type::FunctionItem(item)) = rows.types.get(raw.subject.0 as usize)
+            && !self.used_functions[item.0 as usize]
+        {
+            nested.push(item);
+        }
+        for argument in raw.arguments.slice(&rows.arguments)? {
+            work.charge(1)?;
+            if let s::Argument::Type(ty) = *argument
+                && let Some(&s::Type::FunctionItem(item)) = rows.types.get(ty.0 as usize)
+                && !self.used_functions[item.0 as usize]
+            {
+                nested.push(item);
+            }
+        }
+        for item in nested {
+            self.function_use(context, item, work)?;
+        }
         Ok(())
     }
     fn scratch(&mut self, bytes: usize, work: &mut Work) -> Result<(), &'static str> {

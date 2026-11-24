@@ -80,6 +80,7 @@ impl Method {
         match self {
             Self::SizeHint | Self::ByRef => 16,
             Self::ByValue(Reduction::Fold) => 64,
+            Self::ByValue(Reduction::Last) => 36,
         }
     }
 
@@ -88,11 +89,12 @@ impl Method {
         if definition.kind != DefKind::Function {
             return None;
         }
-        let [size_hint, by_ref, fold] = LangItem::PROVIDED_ITERATOR_METHODS;
+        let [size_hint, by_ref, fold, last] = LangItem::PROVIDED_ITERATOR_METHODS;
         Some(match report.package.names.get(definition.name) {
             name if name == size_hint => Self::SizeHint,
             name if name == by_ref => Self::ByRef,
             name if name == fold => Self::ByValue(Reduction::Fold),
+            name if name == last => Self::ByValue(Reduction::Last),
             _ => return None,
         })
     }
