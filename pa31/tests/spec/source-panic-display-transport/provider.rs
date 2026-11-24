@@ -12,6 +12,12 @@ impl WriteDisplay for u8 {
     }
 }
 
+impl WriteDisplay for &str {
+    fn fmt(&self) -> u8 {
+        19
+    }
+}
+
 fn stop_display_at_runtime() -> ! {
     loop {}
 }

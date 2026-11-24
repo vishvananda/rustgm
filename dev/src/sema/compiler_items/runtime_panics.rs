@@ -158,8 +158,8 @@ fn conforming(
             .as_deref()
             .and_then(Reservations::display_declaration)
             .ok_or("source panic_display requires its actual Display diagnostic identity")?;
-        let header = Trait::source(report, facts, display)?;
-        display_scope(facts, definition, &header)?;
+        let bound = Trait::source(report, facts, display)?;
+        display_scope(facts, definition, header.signature, &bound)?;
     } else if LangItem::FORMAT_PANICS.contains(&role) {
         empty_input_scope(facts, definition)?;
     }
@@ -237,6 +237,7 @@ fn empty_input_scope(facts: &Declarations, definition: DefId) -> Result<(), &'st
 fn display_scope(
     facts: &Declarations,
     definition: DefId,
+    signature: TypeId,
     header: &Trait<'_>,
 ) -> Result<(), &'static str> {
     const BOUND: &str = "source panic_display requires its exact ordinary T: Display bound";
@@ -260,6 +261,14 @@ fn display_scope(
     let Argument::Type(ty) = generic.argument else {
         return Err(BOUND);
     };
+    if !super::display_panics::reference_input(&facts.types, signature, ty, true)
+        || !matches!(facts.types.kind(ty), Some(Kind::Parameter(id))
+            if facts.types.parameter(id).is_some_and(|slot|
+                slot.owner.0 == definition.0 && slot.index == 0
+                    && slot.kind == ParameterKind::Type { sized: true }))
+    {
+        return Err("source panic_display requires its exact sized formal and shared late input");
+    }
     let catalog = facts
         .source_bindings
         .as_deref()
@@ -335,7 +344,7 @@ pub(super) fn imported(
                 .ok_or("imported panic_display requires its actual Display diagnostic identity")?;
             let bound = Trait::current(report, facts, display, steps)?;
             *steps = steps.saturating_add(4);
-            display_scope(facts, definition, &bound)?;
+            display_scope(facts, definition, header.signature, &bound)?;
         } else {
             empty_input_scope(facts, definition)?;
         }
@@ -416,17 +425,8 @@ fn signature(
             let [generic] = parameters else {
                 return Err("source panic_display requires its actual T parameter");
             };
-            let Argument::Type(ty) = generic.argument else {
-                return Err("source panic_display requires its actual type parameter");
-            };
-            if bound_regions != 1
-                || !matches!(facts.types.kind(*parameter),
-                    Some(Kind::Reference { referent, region, mutable: false })
-                        if ty == referent && region.bound_parts() == Some((0, 0)))
-                || !matches!(facts.types.kind(ty), Some(Kind::Parameter(id))
-                    if facts.types.parameter(id).is_some_and(|slot|
-                        slot.owner.0 == definition.0 && slot.index == 0
-                            && slot.kind == ParameterKind::Type { sized: true }))
+            if !matches!((generic.argument, facts.types.kind(*parameter)),
+                (Argument::Type(ty), Some(Kind::Reference { referent, mutable: false, .. })) if ty == referent)
             {
                 return Err("source panic_display requires its genuine shared T argument");
             }

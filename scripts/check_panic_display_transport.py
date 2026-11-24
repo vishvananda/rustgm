@@ -99,6 +99,10 @@ def main():
     check.run("rustc-client", [*client_rustc, client], timeout=30, environment=bootstrap)
     check.run("rustc-missing-display", [*client_rustc, "--cfg", "missing_display", client], 1,
               [contract["rustc_missing_display"]], timeout=30, environment=bootstrap)
+    for case in contract.get("const_cases", ()):
+        name = case["cfg"]
+        check.run(f"rustc-{name}", [*client_rustc, "--cfg", name, client], 1,
+                  [case["rustc"]], timeout=30, environment=bootstrap)
     artifact = check.folder / "base.rgcrate"
     exporter = [check.app, *RUSTGM, "--crate-type=lib", "--crate-name", "base",
                 "--crate-disambiguator", "panic_display_roles", "--source-core", IDENTITY]
@@ -119,6 +123,10 @@ def main():
         raise ValueError("the fresh const function lost its actual const formatting call")
     check.run("rustgm-missing-display", [*importer, "--extern", f"base={artifact}",
               "--cfg", "missing_display", client], 1, [contract["rustgm_missing_display"]], timeout=30)
+    for case in contract.get("const_cases", ()):
+        name = case["cfg"]
+        check.run(f"rustgm-{name}", [*importer, "--extern", f"base={artifact}", "--cfg", name, client],
+                  1, [case["rustgm"]], timeout=30)
     opponents(check, exporter, importer, source, client, artifact, contract, nominal, args.baseline)
     print("Fresh panic_display calls preserve the checked Display bound and caller ABI")
 

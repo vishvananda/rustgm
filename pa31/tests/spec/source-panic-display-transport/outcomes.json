@@ -10,7 +10,10 @@
     "line": 10,
     "column": 5,
     "result": "void",
-    "parameters": ["ptr", "ptr"],
+    "parameters": [
+      "ptr",
+      "ptr"
+    ],
     "noreturn": true
   },
   "rustc_missing_display": "error[E0277]",
@@ -20,5 +23,17 @@
   "wrong_binding": "source formatting panic policy changed its actual declaration binding",
   "source_bound": "source trait role requires completed declaration validation",
   "old_profile": "source formatting panic declarations require version fourteen",
-  "old_reader": "unknown source diagnostic identity spelling"
+  "old_reader": "unknown source diagnostic identity spelling",
+  "const_cases": [
+    {
+      "cfg": "const_display",
+      "rustc": "imported display panic",
+      "rustgm": "constant execution reached source panic_display"
+    },
+    {
+      "cfg": "const_nonstring",
+      "rustc": "in a const context must have type",
+      "rustgm": "requires a string slice payload in const code"
+    }
+  ]
 }

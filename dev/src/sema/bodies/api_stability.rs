@@ -157,7 +157,7 @@ impl Checker<'_> {
         let target = DefId(item.0);
         crate::resolve::stability::check_imported_api(self.report, self.key(node), target, false)?;
         if self.callee_use_effect()? != crate::support::constness::Constness::Ordinary {
-            self.check_const_begin_panic_payload(node, target, signature)?;
+            self.check_const_panic_payload(node, target, signature)?;
             crate::resolve::stability::check_imported_api(
                 self.report,
                 self.key(node),
@@ -240,7 +240,7 @@ impl Checker<'_> {
             ))
         }
     }
-    fn check_const_begin_panic_payload(
+    fn check_const_panic_payload(
         &mut self,
         node: NodeId,
         target: DefId,
@@ -250,12 +250,26 @@ impl Checker<'_> {
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(());
         };
-        if catalog
+        let by_reference = if catalog.uses_imported_roles() {
+            if catalog
+                .role(LangItem::PanicDisplay)
+                .map_err(|e| self.error(node, e))?
+                .is_none_or(|declaration| declaration.definition != target)
+            {
+                return Ok(());
+            }
+            catalog
+                .validated_role(LangItem::PanicDisplay)
+                .map_err(|e| self.error(node, e))?;
+            true
+        } else if catalog
             .language(LangItem::BeginPanic)
-            .is_none_or(|declaration| declaration.definition != target)
+            .is_some_and(|declaration| declaration.definition == target)
         {
+            false
+        } else {
             return Ok(());
-        }
+        };
         catalog
             .require_provider_report(self.report)
             .map_err(|e| self.error(node, e))?;
@@ -264,17 +278,31 @@ impl Checker<'_> {
             .account_work(4)
             .map_err(|e| self.error(node, e))?;
         let store = &self.facts.types;
-        if matches!(store.kind(signature), Some(TypeKind::Function { parameters, .. })
-            if matches!(store.list(parameters), Some([input])
-                if matches!(store.kind(*input), Some(TypeKind::Reference { referent, .. })
-                    if referent == TypeId::primitive(Primitive::Str))))
+        let input = if let Some(TypeKind::Function { parameters, .. }) = store.kind(signature)
+            && let Some([input]) = store.list(parameters)
+        {
+            if by_reference {
+                match store.kind(*input) {
+                    Some(TypeKind::Reference { referent, .. }) => Some(referent),
+                    _ => None,
+                }
+            } else {
+                Some(*input)
+            }
+        } else {
+            None
+        };
+        if matches!(input.and_then(|ty| store.kind(ty)), Some(TypeKind::Reference { referent, .. })
+            if referent == TypeId::primitive(Primitive::Str))
         {
             Ok(())
         } else {
-            Err(self.error(
-                node,
-                "source begin_panic requires a string slice payload in const code",
-            ))
+            let message = if by_reference {
+                "imported panic_display requires a string slice payload in const code"
+            } else {
+                "source begin_panic requires a string slice payload in const code"
+            };
+            Err(self.error(node, message))
         }
     }
 

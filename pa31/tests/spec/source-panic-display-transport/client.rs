@@ -19,3 +19,9 @@ pub fn missing_display(value: &u16) -> ! {
 pub const fn fresh_const_format(arguments: base::Arguments<'_>) -> ! {
     base::const_format_stop(arguments)
 }
+
+#[cfg(const_display)]
+pub const REACHED: u8 = base::panic_display(&"imported display panic");
+
+#[cfg(const_nonstring)]
+pub const NONSTRING: u8 = base::panic_display(&13u8);

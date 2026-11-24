@@ -4,7 +4,7 @@ use crate::{
     sema::model::Declarations,
     support::bindings::LangItem,
     types::{
-        Kind, Primitive, Store, TypeId, arguments::Argument, callable::Convention,
+        GenericArgs, Kind, Primitive, Store, TypeId, arguments::Argument, callable::Convention,
         instance::Instance,
     },
 };
@@ -45,7 +45,12 @@ impl Selection {
         }
     }
 }
-fn reference_input(store: &Store, signature: TypeId, input: TypeId, public: bool) -> bool {
+pub(super) fn reference_input(
+    store: &Store,
+    signature: TypeId,
+    input: TypeId,
+    public: bool,
+) -> bool {
     let Some(Kind::Function {
         bound_regions,
         parameters,
@@ -74,7 +79,7 @@ fn reference_input(store: &Store, signature: TypeId, input: TypeId, public: bool
             bound_regions == 0 && region.bound_parts().is_none()
         }
 }
-/// This finite local hook still requires the current direct checked const Call.
+/// Selection still requires the current direct checked const Call.
 pub(crate) fn select(
     report: &Report,
     facts: &Declarations,
@@ -93,19 +98,7 @@ pub(crate) fn select(
         return Ok(None);
     };
     if catalog.uses_imported_roles() {
-        for role in [
-            LangItem::PanicFmt,
-            LangItem::PanicNounwind,
-            LangItem::PanicDisplay,
-        ] {
-            if catalog
-                .role(role)?
-                .is_some_and(|declaration| declaration.definition.0 == item.0)
-            {
-                catalog.validated_role(role)?;
-                return Err("imported formatting panic requires its checked const operation");
-            }
-        }
+        return imported_display(report, facts, catalog, DefId(item.0), arguments, signature);
     }
     let Some((role, declaration)) = [LangItem::PanicDisplay, LangItem::BeginPanic]
         .into_iter()
@@ -145,10 +138,78 @@ pub(crate) fn select(
     } else if !super::runtime_panics::runtime_body(report, facts, declaration.definition, body)? {
         return Err("source const panic lost its current genuine panic_display role");
     }
+    selection(
+        facts,
+        declaration.definition,
+        arguments,
+        (function.signature, signature),
+        by_value,
+    )
+    .map(Some)
+}
+
+fn imported_display(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    definition: DefId,
+    arguments: GenericArgs,
+    signature: TypeId,
+) -> Result<Option<Selection>, &'static str> {
+    let candidates = [
+        LangItem::PanicDisplay,
+        LangItem::PanicFmt,
+        LangItem::PanicNounwind,
+    ]
+    .into_iter()
+    .map(|role| ((), role));
+    let Some(((), role)) = catalog.matching_role(definition, candidates)? else {
+        return Ok(None);
+    };
+    let declaration = catalog
+        .validated_role(role)?
+        .ok_or("imported formatting panic lost its actual role")?;
+    if role != LangItem::PanicDisplay {
+        return Err("imported formatting panic requires its checked const operation");
+    }
+    catalog.require_provider_report(report)?;
+    let header = facts
+        .declaration_header(definition)?
+        .ok_or("imported panic_display lost its actual checked header")?;
+    if header.declaration != declaration.origin
+        || header.body.is_none()
+        || !super::runtime_panics::runtime_format_entry(facts, definition)?
+    {
+        return Err("imported panic_display lost its exact runtime body policy");
+    }
+    let selected = selection(
+        facts,
+        definition,
+        arguments,
+        (header.signature, signature),
+        false,
+    )?;
+    if !matches!(facts.types.kind(selected.input), Some(Kind::Reference { referent, .. })
+        if referent == TypeId::primitive(Primitive::Str))
+    {
+        return Err(
+            "imported panic_display requires a string slice payload during constant execution",
+        );
+    }
+    Ok(Some(selected))
+}
+
+fn selection(
+    facts: &Declarations,
+    definition: DefId,
+    arguments: GenericArgs,
+    (declared_signature, signature): (TypeId, TypeId),
+    by_value: bool,
+) -> Result<Selection, &'static str> {
     let generics = facts
         .generics
         .parameters
-        .get(&declaration.definition)
+        .get(&definition)
         .ok_or("source const panic lost its type parameter")?;
     let [parameter] = generics.as_slice() else {
         return Err("source const panic requires its actual single type parameter");
@@ -164,21 +225,21 @@ pub(crate) fn select(
         return Err("source const panic requires its complete single-type instance");
     };
     let public_matches = if by_value {
-        value_input(&facts.types, function.signature, generic)
+        value_input(&facts.types, declared_signature, generic)
             && value_input(&facts.types, signature, input)
     } else {
-        reference_input(&facts.types, function.signature, generic, true)
+        reference_input(&facts.types, declared_signature, generic, true)
             && reference_input(&facts.types, signature, input, true)
     };
     if !public_matches {
         return Err("source const panic instance differs from its selected type/signature");
     }
-    Ok(Some(Selection {
-        definition: declaration.definition,
+    Ok(Selection {
+        definition,
         signature,
         input,
         by_value,
-    }))
+    })
 }
 
 fn value_input(store: &Store, signature: TypeId, input: TypeId) -> bool {
