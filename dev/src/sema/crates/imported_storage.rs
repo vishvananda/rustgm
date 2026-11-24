@@ -1,5 +1,7 @@
 //! Imported storage uses real external declarations and completed values, never fake bodies.
-use super::{Declarations, Error, Report, error, imported_records, imported_values};
+use super::{
+    Declarations, Error, ImportedStorage, Report, error, imported_records, imported_values,
+};
 use crate::{
     sema::{
         foreign,
@@ -37,7 +39,14 @@ fn declarations(
                 .crates
                 .get_or_insert_default()
                 .imported_storage
-                .insert(definition, entry.mutable());
+                .insert(
+                    definition,
+                    if entry.mutable() {
+                        ImportedStorage::Mutable
+                    } else {
+                        ImportedStorage::Ordinary
+                    },
+                );
         }
         if entry.mutable() {
             facts.static_permissions_mut().mutable.insert(definition);

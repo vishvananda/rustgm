@@ -1,0 +1,32 @@
+{
+  "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+  "prefix_marker": "// Authored macro-context transport controls.",
+  "provider": "relocated-provider.rs",
+  "cases": [
+    {
+      "source": "relocated-client.rs",
+      "status": 0
+    },
+    {
+      "source": "relocated-const-read.rs",
+      "status": 0
+    }
+  ],
+  "native": {
+    "client": "relocated-client.rs",
+    "driver": "driver.c",
+    "exit": 34
+  },
+  "artifact": {
+    "handler_count": 2,
+    "corruptions": {
+      "foreign-owner": "source static relocation changed its actual promotion owner",
+      "wrong-signature": "source promoted relocation changed its actual field signature"
+    },
+    "legacy_diagnostic": "invalid source constant value presence",
+    "binder_slots": 2,
+    "binder_diagnostic": "source bound region exceeds its exact ancestor binder",
+    "native_relocations": 3,
+    "relocation_diagnostic": "source static relocation requires an actual promoted constant"
+  }
+}

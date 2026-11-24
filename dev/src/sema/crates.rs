@@ -8,6 +8,7 @@ mod imported_records;
 mod imported_storage;
 mod imported_values;
 mod promotions;
+mod relocated_initializers;
 mod statics;
 mod type_transport;
 mod typed_headers;
@@ -74,9 +75,15 @@ pub struct Linkage {
     symbols: HashMap<DefId, String>,
     imported_constants: HashSet<DefId>,
     imported_records: HashSet<DefId>,
-    imported_storage: HashMap<DefId, bool>,
+    imported_storage: HashMap<DefId, ImportedStorage>,
     promotions: Option<Box<promotions::Registry>>,
     import_work: ImportWork,
+}
+#[derive(Clone, Copy)]
+pub(in crate::sema) enum ImportedStorage {
+    Ordinary,
+    Mutable,
+    Interior,
 }
 /// Exact signature graph and root visits during one source-free import pass.
 #[derive(Clone, Copy, Default)]
@@ -94,6 +101,13 @@ impl Linkage {
     /// Imported Rust storage has completed contents; foreign declarations do not.
     #[must_use]
     pub fn imported_storage(&self, definition: DefId) -> Option<bool> {
+        self.imported_storage_kind(definition)
+            .map(|kind| matches!(kind, ImportedStorage::Mutable))
+    }
+    pub(in crate::sema) fn imported_storage_kind(
+        &self,
+        definition: DefId,
+    ) -> Option<ImportedStorage> {
         self.imported_storage.get(&definition).copied()
     }
     #[must_use]

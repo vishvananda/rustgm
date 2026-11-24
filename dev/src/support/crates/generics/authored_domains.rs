@@ -141,7 +141,7 @@ impl<'a> HeaderIndex<'a> {
         let budget = table_storage::preflight(rows, base_bytes, work)?;
         let definitions = declaration_graph::validate(rows, work)?;
         let (headers, bodies) = header_ledger::validate(rows, work)?;
-        let static_peak = super::statics::validate(rows, budget.scope_base, work)?;
+        let static_peak = super::statics::validate(rows, &headers, budget.scope_base, work)?;
         let scopes = ScopeIndex::new(rows, &definitions, budget.scope_base, work)?;
         super::nominal_contracts::scopes(rows, &scopes, work)?;
         for header in &rows.traits {

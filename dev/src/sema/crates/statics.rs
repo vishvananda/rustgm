@@ -1,5 +1,5 @@
 //! Imported originals map a static to its one provider allocation and completed value.
-use super::{Declarations, Error, Report, error, static_symbol};
+use super::{Declarations, Error, ImportedStorage, Report, error, static_symbol};
 use crate::{
     literal::value::FloatBits,
     resolve::model::DefId,
@@ -16,12 +16,17 @@ use crate::{
         linkage::{Linkage, Naming},
     },
     syntax::item::Safety,
+    types::{
+        TypeId,
+        interior_mutability::{Answer, Query},
+    },
 };
 
 pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
     };
+    let mut relocation_work = crate::support::crates::MAX_COMPONENTS;
     for artifact in imported.dependencies().artifacts() {
         let Some(descriptor) = artifact.source_descriptor() else {
             continue;
@@ -34,33 +39,82 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
             let definition = imported
                 .generic_definition(descriptor.identity(), header.declaration)
                 .map_err(error)?;
-            declare(facts, descriptor.identity(), definition, *header)?;
-            let data = header.initializer.slice(&statics.values).map_err(error)?;
-            let mut evaluator = Evaluator::new(report, facts);
-            let value = decode_scalar_aggregate(&mut evaluator, rows, header.ty, data)?;
-            evaluator.complete_definition(definition, value);
+            let ty = facts.definitions[definition.0 as usize]
+                .ok_or_else(|| error("imported source static has no installed type"))?;
+            let (value, storage) = match header.initializer {
+                s::StaticInitializer::Scalars(values) => (
+                    decode_scalar_aggregate(
+                        &mut Evaluator::new(report, facts),
+                        rows,
+                        header.ty,
+                        values.slice(&statics.values).map_err(error)?,
+                    )?,
+                    ImportedStorage::Ordinary,
+                ),
+                s::StaticInitializer::Promotion(anchor) => {
+                    let target = imported
+                        .generic_definition(descriptor.identity(), anchor)
+                        .map_err(error)?;
+                    let value = super::relocated_initializers::import(
+                        report,
+                        facts,
+                        ty,
+                        target,
+                        anchor,
+                        &mut relocation_work,
+                    )?;
+                    (value, import_storage_kind(facts, ty, &mut relocation_work)?)
+                }
+            };
+            declare(
+                facts,
+                descriptor.identity(),
+                definition,
+                header.declaration,
+                ty,
+                storage,
+            )?;
+            Evaluator::new(report, facts).complete_definition(definition, value);
         }
     }
     Ok(())
+}
+
+fn import_storage_kind(
+    facts: &Declarations,
+    ty: TypeId,
+    remaining: &mut usize,
+) -> Result<ImportedStorage, Error> {
+    if !facts.aggregates.has_shared_mutation() {
+        return Ok(ImportedStorage::Ordinary);
+    }
+    let mut query = Query::new(&facts.types, &facts.aggregates);
+    let result = query.contains(ty).map_err(error)?;
+    *remaining = remaining
+        .checked_sub(query.work().steps)
+        .ok_or_else(|| error("source static relocation exceeds its complete storage budget"))?;
+    match result {
+        Answer::Ordinary => Ok(ImportedStorage::Ordinary),
+        Answer::Interior => Ok(ImportedStorage::Interior),
+        Answer::Unresolved => Err(error(
+            "source static relocation requires completed mutation policy",
+        )),
+    }
 }
 
 fn declare(
     facts: &mut Declarations,
     identity: &CrateIdentity,
     definition: DefId,
-    header: s::StaticHeader,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ty: TypeId,
+    storage: ImportedStorage,
 ) -> Result<(), Error> {
-    let ty = facts
-        .definitions
-        .get(definition.0 as usize)
-        .copied()
-        .flatten()
-        .ok_or_else(|| error("imported source static has no installed type"))?;
     let linkage = facts.crates.get_or_insert_default();
-    linkage.imported_storage.insert(definition, false);
+    linkage.imported_storage.insert(definition, storage);
     linkage
         .symbols
-        .insert(definition, static_symbol(identity, header.declaration));
+        .insert(definition, static_symbol(identity, declaration));
     facts
         .foreign
         .get_or_insert_default()

@@ -1,5 +1,5 @@
-//! Module statics retain their exact type recipes and one initializer byte range.
-use super::{ConstTerm, SourceRows, Type};
+//! Module statics retain their exact type recipes and one completed initializer.
+use super::{ConstTerm, ConstantBody, HeaderRef, SourceRows, Type};
 use crate::support::crates::{
     self, Scalar, ScalarValue,
     generics::{self as g, Work},
@@ -10,8 +10,15 @@ use crate::support::crates::{
 pub struct StaticHeader {
     pub declaration: DeclarationRef,
     pub ty: g::TypeRef,
+    pub initializer: StaticInitializer,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StaticInitializer {
     /// Canonical little-endian scalar leaves in tuple or array element order.
-    pub initializer: g::Range,
+    Scalars(g::Range),
+    /// A raw pointer reached through zero or more single-field struct values.
+    Promotion(DeclarationRef),
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -65,6 +72,7 @@ enum Visit<'a> {
 
 pub(super) fn validate(
     rows: &SourceRows,
+    headers: &[Option<HeaderRef>],
     base: usize,
     work: &mut Work,
 ) -> Result<usize, &'static str> {
@@ -82,12 +90,25 @@ pub(super) fn validate(
     };
     for header in &statics.headers {
         work.charge(1)?;
-        if header.initializer.start != end {
-            return Err("source static initializer ranges must cover the values in order");
+        match header.initializer {
+            StaticInitializer::Scalars(values) => {
+                if values.start != end {
+                    return Err("source static initializer ranges must cover the values in order");
+                }
+                walk.value(rows, header.ty, values.slice(&statics.values)?, work)?;
+                end = values.end;
+            }
+            StaticInitializer::Promotion(anchor) => {
+                let Some(Some(HeaderRef::Constant(index))) = headers.get(anchor.0 as usize) else {
+                    return Err("source static relocation requires an actual promoted constant");
+                };
+                if !matches!(rows.constants()[*index as usize].body,
+                    ConstantBody::PromotedReference { anchor: owner, .. } if owner == anchor)
+                {
+                    return Err("source static relocation changed its actual promotion owner");
+                }
+            }
         }
-        let data = header.initializer.slice(&statics.values)?;
-        walk.value(rows, header.ty, data, work)?;
-        end = header.initializer.end;
     }
     if end as usize != statics.values.len() {
         return Err("source static initializer bytes have no actual owner");

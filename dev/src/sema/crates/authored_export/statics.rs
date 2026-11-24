@@ -6,12 +6,28 @@ use crate::{
     sema::{
         foreign::Global,
         model::InitializerKind,
-        values::{Constant, Failure, Reader, View},
+        values::{Constant, Failure, LocationId, Reader, View},
     },
     support::linkage::{Linkage, Naming},
     syntax::item::Safety,
     types::{Kind, TypeId},
 };
+
+pub(super) struct StaticDraft {
+    headers: Vec<HeaderDraft>,
+    values: Vec<u8>,
+}
+
+struct HeaderDraft {
+    declaration: DeclarationRef,
+    ty: g::TypeRef,
+    initializer: InitializerDraft,
+}
+
+enum InitializerDraft {
+    Scalars(g::Range),
+    Promotion(LocationId),
+}
 
 pub(super) fn require_definition(
     report: &Report,
@@ -67,21 +83,22 @@ impl Stage {
 
     pub(super) fn static_headers(
         &mut self,
+        report: &Report,
         facts: &mut Declarations,
         identity: &CrateIdentity,
         declarations: Vec<(DeclarationRef, DefId)>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Option<StaticDraft>, &'static str> {
         if declarations.is_empty() {
-            return Ok(());
+            return Ok(None);
         }
         self.reserve(
             size_of::<s::StaticColumns>().saturating_add(
                 declarations
                     .len()
-                    .saturating_mul(size_of::<s::StaticHeader>()),
+                    .saturating_mul(size_of::<s::StaticHeader>() + size_of::<HeaderDraft>()),
             ),
         )?;
-        let mut columns = s::StaticColumns {
+        let mut draft = StaticDraft {
             headers: Vec::with_capacity(declarations.len()),
             values: Vec::new(),
         };
@@ -100,19 +117,71 @@ impl Stage {
             let value = Reader::new(facts)
                 .definition(definition)
                 .ok_or("source static requires its completed value")?;
-            let start = offset(&columns.values)?;
-            self.scalar_aggregate_bytes(facts, ty, value, &mut columns.values)?;
-            columns.headers.push(s::StaticHeader {
+            let initializer = if matches!(
+                facts.types.kind(ty),
+                Some(Kind::Adt(..) | Kind::Pointer { .. })
+            ) {
+                let (location, work) = super::super::relocated_initializers::checked_pointer(
+                    report, facts, ty, value,
+                )?;
+                self.charge(work)?;
+                InitializerDraft::Promotion(location)
+            } else {
+                let start = offset(&draft.values)?;
+                self.scalar_aggregate_bytes(facts, ty, value, &mut draft.values)?;
+                InitializerDraft::Scalars(g::Range {
+                    start,
+                    end: offset(&draft.values)?,
+                })
+            };
+            draft.headers.push(HeaderDraft {
                 declaration: row,
                 ty: raw,
-                initializer: g::Range {
-                    start,
-                    end: offset(&columns.values)?,
-                },
+                initializer,
             });
             self.install_static_symbol(facts, identity, row, definition, ty)?;
         }
-        self.cold()?.statics = Some(Box::new(columns));
+        Ok(Some(draft))
+    }
+
+    /// Evaluated constant data may finish after callable headers; resolve its
+    /// actual allocation here while keeping the static type recipes in order.
+    pub(super) fn complete_static_headers(
+        &mut self,
+        facts: &Declarations,
+        draft: Option<StaticDraft>,
+    ) -> Result<(), &'static str> {
+        let Some(draft) = draft else {
+            return Ok(());
+        };
+        self.charge(draft.headers.len())?;
+        let headers = draft
+            .headers
+            .into_iter()
+            .map(|row| {
+                let initializer = match row.initializer {
+                    InitializerDraft::Scalars(range) => s::StaticInitializer::Scalars(range),
+                    InitializerDraft::Promotion(location) => {
+                        let binding = facts
+                            .crates
+                            .as_deref()
+                            .and_then(|linkage| linkage.promoted_allocation(location))
+                            .filter(|binding| !binding.imported)
+                            .ok_or("source static relocation has no local published allocation")?;
+                        s::StaticInitializer::Promotion(binding.anchor)
+                    }
+                };
+                Ok(s::StaticHeader {
+                    declaration: row.declaration,
+                    ty: row.ty,
+                    initializer,
+                })
+            })
+            .collect::<Result<_, &'static str>>()?;
+        self.cold()?.statics = Some(Box::new(s::StaticColumns {
+            headers,
+            values: draft.values,
+        }));
         Ok(())
     }
 

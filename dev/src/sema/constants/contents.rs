@@ -1,7 +1,10 @@
 //! Reading a constant location is separate from forming its storage address.
 use super::references::{Access, Id, ProjectionView};
 use super::{Error, NodeKey, Queries, Query, State, Value, Work as Pending};
-use crate::sema::model::Scalar;
+use crate::sema::{
+    crates::ImportedStorage,
+    model::{InitializerKind, Scalar},
+};
 use crate::support::hash::HashSet;
 mod ranges;
 
@@ -96,9 +99,17 @@ impl Queries<'_> {
             .facts
             .crates
             .as_deref()
-            .and_then(|linkage| linkage.imported_storage(definition))
+            .and_then(|linkage| linkage.imported_storage_kind(definition))
         {
-            Some(false) => self
+            Some(ImportedStorage::Mutable) => Err(self.error(
+                query,
+                "constant evaluation cannot read mutable static storage",
+            )),
+            Some(ImportedStorage::Interior) if !self.static_initializer_scope() => Err(self.error(
+                query,
+                "constant execution cannot read interior-mutable static storage",
+            )),
+            Some(ImportedStorage::Ordinary | ImportedStorage::Interior) => self
                 .typing
                 .facts
                 .constant_values
@@ -107,15 +118,17 @@ impl Queries<'_> {
                 .ok_or_else(|| {
                     self.error(query, "imported static is missing its completed contents")
                 }),
-            Some(true) => Err(self.error(
-                query,
-                "constant evaluation cannot read mutable static storage",
-            )),
             None => Err(self.error(
                 query,
                 "foreign static value is unavailable during constant evaluation",
             )),
         }
+    }
+    fn static_initializer_scope(&self) -> bool {
+        matches!(self.value_scope,
+            Some(super::instances::ValueScope::Initializer { index, .. })
+                if matches!(self.typing.facts.initializers[index].kind, InitializerKind::Static { .. })
+        )
     }
     pub(super) fn finish_contents(&mut self, work: Work) -> Result<(), Error> {
         let (key, id, value) = match work {

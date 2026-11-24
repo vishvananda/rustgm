@@ -17,7 +17,7 @@ mod results_contract;
 #[path = "global_columns.rs"]
 mod statics;
 pub use compiler_rows::*;
-pub use statics::{StaticColumns, StaticHeader};
+pub use statics::{StaticColumns, StaticHeader, StaticInitializer};
 pub(crate) use statics::{StaticShape, read_bits as read_static_bits};
 #[path = "free_constants.rs"]
 mod free_constants;
