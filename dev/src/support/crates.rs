@@ -30,8 +30,8 @@ pub use retirements::{RemovedFeature, RemovedFeatures, RemovedVersion};
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
-pub(crate) const MAX_BYTES: usize = 16_000_000;
-pub(crate) const MAX_FUNCTIONS: usize = 100_000;
+pub(crate) const MAX_BYTES: usize = 1 << 30;
+pub(crate) const MAX_FUNCTIONS: usize = 1_048_576;
 pub(crate) const MAX_DEPENDENCIES: usize = 1024;
-pub(crate) const MAX_COMPONENTS: usize = 1_000_000;
-pub(crate) const MAX_NAME_BYTES: usize = 8_000_000;
+pub(crate) const MAX_COMPONENTS: usize = 67_108_864;
+pub(crate) const MAX_NAME_BYTES: usize = 67_108_864;
