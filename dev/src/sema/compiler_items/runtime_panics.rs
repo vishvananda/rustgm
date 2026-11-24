@@ -70,39 +70,137 @@ pub(in crate::sema) fn runtime_body(
     Ok(true)
 }
 
-/// A conforming source `panic` declaration completes its role. Any other form
-/// stays pending: local checking is unchanged and export rejects it by name.
-/// `panic_fmt` waits for its lifetime-parameterized `Arguments` to transport.
+/// A conforming local declaration completes its actual role for export.
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    let Some(declaration) = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::Panic))
-    else {
-        return Ok(());
-    };
-    crate::sema::header_attributes::charge_source_contract_query(facts, 4)?;
-    facts
-        .source_bindings
-        .as_deref()
-        .ok_or_else(|| Error::unlocated("source panic role catalog disappeared"))?
-        .require_provider_report(report)
-        .map_err(|message| Declarations::error(report, declaration.origin, message))?;
-    if conforming(facts, declaration).is_ok() {
-        super::roles::complete_panic_role(facts, LangItem::Panic, declaration)?;
+    for role in [LangItem::Panic, LangItem::PanicFmt, LangItem::PanicNounwind] {
+        let Some(catalog) = facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        let Some(declaration) = catalog.language(role) else {
+            continue;
+        };
+        crate::sema::header_attributes::charge_source_contract_query(facts, 4)?;
+        catalog
+            .require_provider_report(report)
+            .map_err(|message| Declarations::error(report, declaration.origin, message))?;
+        if conforming(report, facts, declaration, role).is_ok() {
+            super::roles::complete_panic_role(facts, role, declaration)?;
+        }
     }
     Ok(())
 }
 
-fn conforming(facts: &Declarations, declaration: Declaration) -> Result<(), &'static str> {
+fn conforming(
+    report: &Report,
+    facts: &Declarations,
+    declaration: Declaration,
+    role: LangItem,
+) -> Result<(), &'static str> {
     let header = super::headers::functions::current(facts, declaration)?;
+    let definition = declaration.definition;
+    match role {
+        LangItem::PanicFmt => {
+            let body = header
+                .body
+                .and_then(crate::resolve::body_origin::BodyOrigin::source)
+                .ok_or("source panic_fmt requires its actual defined body")?;
+            if !runtime_body(report, facts, definition, body)?
+                || !facts
+                    .checked_caller_tracking(report, definition)
+                    .map_err(|_| "missing source panic_fmt tracking")?
+            {
+                return Err("source panic_fmt requires its pinned runtime and tracking policies");
+            }
+        }
+        LangItem::PanicNounwind
+            if !facts
+                .source_nounwind_marker(report, definition)
+                .map_err(|_| "missing source nounwind policy")?
+                || facts
+                    .const_panic_markers(report, definition)
+                    .map_err(|_| "missing source panic_nounwind const policy")?
+                    != (false, true)
+                || facts
+                    .checked_caller_tracking(report, definition)
+                    .map_err(|_| "missing source panic_nounwind tracking")? =>
+        {
+            return Err("source panic_nounwind requires its untracked non-unwinding declaration");
+        }
+        _ => {}
+    }
+    if LangItem::FORMAT_PANICS.contains(&role) {
+        input_scope(facts, definition)?;
+    }
     signature(
         facts,
-        declaration.definition,
+        definition,
         header.signature,
-        LangItem::Panic,
-        None,
+        role,
+        format_arguments(facts, role)?,
     )
+}
+
+pub(crate) fn runtime_format_entry(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<bool, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    if catalog
+        .role(LangItem::PanicFmt)?
+        .is_none_or(|role| role.definition != definition)
+    {
+        return Ok(false);
+    }
+    catalog.validated_role(LangItem::PanicFmt)?;
+    Ok(true)
+}
+
+pub(in crate::sema) fn runtime_panic_declaration(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<bool, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    for role in LangItem::FORMAT_PANICS {
+        if catalog
+            .role(role)?
+            .is_some_and(|declaration| declaration.definition == definition)
+        {
+            catalog.validated_role(role)?;
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn format_arguments(facts: &Declarations, role: LangItem) -> Result<Option<DefId>, &'static str> {
+    if role != LangItem::PanicFmt {
+        return Ok(None);
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source panic role has no catalog")?;
+    Ok(catalog
+        .role(LangItem::FormatArguments)?
+        .map(|declaration| declaration.definition))
+}
+
+fn input_scope(facts: &Declarations, definition: DefId) -> Result<(), &'static str> {
+    if crate::sema::declaration_inputs::declared_own(
+        &facts.generics,
+        facts.crates.as_deref(),
+        definition,
+    )?
+    .len()
+        != 0
+    {
+        return Err("source panic declaration introduces a defining condition");
+    }
+    Ok(())
 }
 
 /// A consumer binds an imported panic role only after re-proving the installed
@@ -129,8 +227,23 @@ pub(super) fn imported(
     if header.declaration != declaration.origin || header.body.is_none() {
         return Err("imported panic role changed its declaration or body identity");
     }
-    if role == LangItem::Panic {
-        signature(facts, definition, header.signature, role, None)?;
+    if LangItem::FORMAT_PANICS.contains(&role) {
+        input_scope(facts, definition)?;
+        if facts.recorded_caller_tracking(definition)? != (role == LangItem::PanicFmt)
+            || role == LangItem::PanicNounwind
+                && !crate::resolve::package::Package::target_aborts_panics()
+        {
+            return Err("imported panic role changed its defining caller or unwind policy");
+        }
+    }
+    if role == LangItem::Panic || LangItem::FORMAT_PANICS.contains(&role) {
+        signature(
+            facts,
+            definition,
+            header.signature,
+            role,
+            format_arguments(facts, role)?,
+        )?;
     }
     Ok(())
 }
@@ -143,6 +256,7 @@ fn signature(
     format_arguments: Option<DefId>,
 ) -> Result<(), &'static str> {
     let Some(Kind::Function {
+        bound_regions,
         parameters,
         result,
         unsafe_: false,
@@ -164,8 +278,9 @@ fn signature(
         .get(&definition)
         .map_or(&[][..], Vec::as_slice);
     match role {
-        LangItem::Panic => {
-            if !parameters.is_empty()
+        LangItem::Panic | LangItem::PanicNounwind => {
+            if role == LangItem::PanicNounwind && bound_regions != 0
+                || !parameters.is_empty()
                 || !matches!(facts.types.kind(*parameter),
                 Some(Kind::Reference { referent, region, mutable: false })
                     if referent == TypeId::primitive(Primitive::Str) && region == RegionId::STATIC)
@@ -176,11 +291,13 @@ fn signature(
         LangItem::PanicFmt => {
             let declaration = format_arguments
                 .ok_or("source panic_fmt requires actual format_arguments identity")?;
-            if !parameters.is_empty()
+            if bound_regions != 1
+                || !parameters.is_empty()
                 || !matches!(facts.types.kind(*parameter),
                 Some(Kind::Adt(item, arguments)) if item.0 == declaration.0
                     && facts.types.arguments(arguments).is_some_and(|mut args|
-                        matches!(args.next(), Some(Argument::Lifetime(_))) && args.next().is_none()))
+                        matches!(args.next(), Some(Argument::Lifetime(region))
+                            if region.bound_parts() == Some((0, 0))) && args.next().is_none()))
             {
                 return Err("source panic_fmt changed its real Arguments signature");
             }

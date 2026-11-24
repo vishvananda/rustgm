@@ -221,7 +221,7 @@ const FREE_MARKERS: [LangItem; 6] = [
 ];
 
 // These roles are checked together after the individual headers.
-const GROUPED: [LangItem; 11] = [
+const GROUPED: [LangItem; 13] = [
     LangItem::FnOnce,
     LangItem::FnMut,
     LangItem::Fn,
@@ -233,6 +233,8 @@ const GROUPED: [LangItem; 11] = [
     LangItem::StructuralPartialEq,
     LangItem::Drop,
     LangItem::DropGlue,
+    LangItem::PanicFmt,
+    LangItem::PanicNounwind,
 ];
 
 fn trait_headers(
@@ -399,6 +401,15 @@ fn grouped_roles(
     super::super::layout::imported_members(facts, catalog, complete, steps)?;
     super::destructibility::imported_drop(report, facts, catalog, steps, complete)?;
     super::glue::imported(facts, catalog, steps, complete)?;
+    for role in LangItem::FORMAT_PANICS {
+        if let Some(declaration) = catalog.role(role)? {
+            if role == LangItem::PanicFmt && !complete.contains(LangItem::FormatArguments) {
+                return Err("imported panic_fmt requires its completed format Arguments");
+            }
+            super::super::runtime_panics::imported(facts, declaration, role, steps)?;
+            complete.insert(role);
+        }
+    }
     if super::range_members::imported(report, facts, catalog, steps)? {
         for role in super::range_members::ROLES {
             complete.insert(role);

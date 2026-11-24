@@ -267,6 +267,18 @@ impl Declarations {
         Ok(true)
     }
 
+    pub(in crate::sema) fn source_nounwind_marker(
+        &self,
+        report: &Report,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        let mut nounwind = false;
+        let known = super::implicit_receivers::visit_words(self, report, definition, |name| {
+            nounwind |= name == Some("rustc_nounwind");
+        })?;
+        Ok(known && nounwind)
+    }
+
     pub(in crate::sema) fn const_panic_markers(
         &self,
         report: &Report,

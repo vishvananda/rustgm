@@ -59,6 +59,8 @@ pub(in crate::sema) use display_panics::require_begin_panic_transport;
 pub(crate) use display_panics::{Selection as ConstPanicSelection, select as source_const_panic};
 pub(in crate::sema) use runtime_panics::complete as complete_runtime_panic_roles;
 pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
+pub(crate) use runtime_panics::runtime_format_entry;
+pub(in crate::sema) use runtime_panics::runtime_panic_declaration;
 mod bodyless_intrinsics;
 #[path = "compiler_items/location_intrinsic.rs"]
 mod caller_location;

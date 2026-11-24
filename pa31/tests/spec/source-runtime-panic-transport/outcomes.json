@@ -1,0 +1,28 @@
+{
+  "nominal_fixture": "source-panic-format-transport",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "size": 24,
+  "alignment": 8,
+  "tracked": {
+    "caller": "fresh_fmt",
+    "callee": "panic_fmt",
+    "line": 9,
+    "column": 5,
+    "result": "void",
+    "parameters": ["ptr", "ptr"],
+    "noreturn": true
+  },
+  "untracked": {
+    "caller": "fresh_nounwind",
+    "callee": "panic_nounwind",
+    "message": "source panic client"
+  },
+  "rustc_wrong_argument": "error[E0308]",
+  "rustgm_wrong_argument": "incompatible types",
+  "foreign_binding": "source role binding is duplicated or belongs to a foreign provider",
+  "wrong_binding": "source formatting panic policy changed its actual declaration binding",
+  "source_policy": "source trait role requires completed declaration validation",
+  "old_profile": "source formatting panic declarations require version fourteen",
+  "old_reader": "unknown transported inline or callable advisory flags"
+}

@@ -92,6 +92,17 @@ pub(crate) fn select(
     else {
         return Ok(None);
     };
+    if catalog.uses_imported_roles() {
+        for role in LangItem::FORMAT_PANICS {
+            if catalog
+                .role(role)?
+                .is_some_and(|declaration| declaration.definition.0 == item.0)
+            {
+                catalog.validated_role(role)?;
+                return Err("imported formatting panic requires its checked const operation");
+            }
+        }
+    }
     let Some((role, declaration)) = [LangItem::PanicDisplay, LangItem::BeginPanic]
         .into_iter()
         .find_map(|role| {

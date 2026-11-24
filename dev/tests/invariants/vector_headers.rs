@@ -24,6 +24,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
             inline: None,
             cold: false,
             caller_tracking: false,
+            format_panic: false,
             target_features: None,
             optimization: None,
         },

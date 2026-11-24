@@ -267,7 +267,8 @@ impl Graph {
         *steps = steps.saturating_add(descriptor.rows().roles.len());
         if kind != LangItem::Panic
             && !(descriptor.profile().declaration_policies()
-                && LangItem::GUARD_PANICS.contains(&kind))
+                && (LangItem::GUARD_PANICS.contains(&kind)
+                    || LangItem::FORMAT_PANICS.contains(&kind)))
         {
             return Err("invalid imported panic role");
         }

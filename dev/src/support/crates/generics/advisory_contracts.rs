@@ -2,6 +2,7 @@
 use super::super::Work;
 use super::SourceRows;
 use crate::support::{
+    bindings::LangItem,
     crates::{MAX_BYTES, owner_catalog::DeclarationRef},
     retained,
 };
@@ -65,6 +66,8 @@ pub struct HeaderContract {
     pub target_features: Option<Box<DeclaredFeatures>>,
     /// Version fourteen only, on function rows with a checked body.
     pub optimization: Option<Optimization>,
+    /// Version fourteen only, on the two checked formatting panic declarations.
+    pub format_panic: bool,
 }
 impl HeaderContract {
     #[must_use]
@@ -73,6 +76,7 @@ impl HeaderContract {
             || self.caller_tracking
             || self.target_features.is_some()
             || self.optimization.is_some()
+            || self.format_panic
     }
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -89,11 +93,13 @@ impl HeaderAttributeColumns {
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         let [_, _, range_sub] = super::interval_roles::bound_roles(rows, profile, work)?;
+        let panics = format_panics(rows, profile, work)?;
         self.validate_headers(
             (&rows.declarations, &rows.functions, &rows.traits),
             base,
             profile,
             range_sub,
+            panics,
             work,
         )
     }
@@ -109,6 +115,7 @@ impl HeaderAttributeColumns {
             base,
             profile,
             None,
+            [None; 2],
             work,
         )
     }
@@ -122,6 +129,7 @@ impl HeaderAttributeColumns {
         base: usize,
         profile: super::Profile,
         range_sub: Option<DeclarationRef>,
+        panics: [Option<DeclarationRef>; 2],
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         work.charge(self.functions.len().saturating_add(self.traits.len()))?;
@@ -133,6 +141,11 @@ impl HeaderAttributeColumns {
             .saturating_add(retained::vector(&self.traits));
         for (contract, header) in self.functions.iter().zip(functions) {
             Self::check_row(contract, header.declaration, declarations, &mut bytes, work)?;
+            if contract.format_panic != panics.contains(&Some(header.declaration)) {
+                return Err(
+                    "source formatting panic policy changed its actual declaration binding",
+                );
+            }
             if contract.inline.is_some_and(|inline| {
                 (inline.applicability == InlineApplicability::FunctionBody)
                     != matches!(header.body, super::FunctionBody::Original(_))
@@ -225,6 +238,30 @@ impl HeaderAttributeColumns {
         }
         Ok(())
     }
+}
+
+fn format_panics(
+    rows: &SourceRows,
+    profile: super::Profile,
+    work: &mut Work,
+) -> Result<[Option<DeclarationRef>; 2], &'static str> {
+    let mut declarations = [None; 2];
+    if profile.declaration_policies() {
+        work.charge(rows.roles.len())?;
+        for binding in &rows.roles {
+            if let Some(index) = LangItem::FORMAT_PANICS
+                .iter()
+                .position(|role| *role == binding.role)
+                && (binding.declaration.artifact.0 != 0
+                    || declarations[index]
+                        .replace(binding.declaration.declaration)
+                        .is_some())
+            {
+                return Err("source role binding is duplicated or belongs to a foreign provider");
+            }
+        }
+    }
+    Ok(declarations)
 }
 
 fn check_optimization(

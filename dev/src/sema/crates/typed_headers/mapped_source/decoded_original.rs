@@ -110,10 +110,14 @@ impl Graph {
             .ok_or("source provided body omitted its actual complete original row")?;
         let inputs = rows.body_input(reference)?;
         let constant = function.constness == crate::support::constness::Constness::Const;
-        let context = if constant {
-            s::CallContext::ConstDefinition
-        } else {
+        let context = if !constant
+            || raw.context == s::CallContext::Runtime
+                && descriptor.profile().declaration_policies()
+                && crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+        {
             s::CallContext::Runtime
+        } else {
+            s::CallContext::ConstDefinition
         };
         if catalog.origin(body)? != origin
             || inputs.frame != function.original.binder
@@ -213,11 +217,8 @@ impl Original<'_> {
         )
     }
     /// Defining checking mode only; current body proof and execution remain separate.
-    pub(crate) const fn const_context(&self) -> bool {
-        match self.header {
-            OriginalHeader::Function(header) => header.constant,
-            OriginalHeader::Initializer(_) => true,
-        }
+    pub(crate) fn const_context(&self) -> bool {
+        self.raw().context != s::CallContext::Runtime
     }
     pub(crate) const fn universals(&self) -> u32 {
         match self.header {

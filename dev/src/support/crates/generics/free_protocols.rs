@@ -199,10 +199,13 @@ pub(super) fn original_context(
     body: &s::Original,
     work: &mut Work,
     constant_initializers: bool,
+    panic_fmt: Option<DeclarationRef>,
 ) -> Result<s::CallContext, &'static str> {
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
-            if rows.functions[index as usize].constness == Constness::Const {
+            if rows.functions[index as usize].constness == Constness::Const
+                && panic_fmt != Some(body.declaration)
+            {
                 s::CallContext::ConstDefinition
             } else {
                 s::CallContext::Runtime

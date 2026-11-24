@@ -15,6 +15,16 @@ impl DomainIndex<'_, '_> {
         branching: bool,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
+        let panic_fmt = if self.declaration_policies {
+            work.charge(rows.roles.len())?;
+            rows.roles.iter().find_map(|binding| {
+                (binding.role == crate::support::bindings::LangItem::PanicFmt
+                    && binding.declaration.artifact.0 == 0)
+                    .then_some(binding.declaration.declaration)
+            })
+        } else {
+            None
+        };
         for original in &rows.originals {
             let input = &rows.body_inputs[self.headers.original_index(original.body)?];
             let header = self.original_header(original.declaration, work)?;
@@ -24,9 +34,10 @@ impl DomainIndex<'_, '_> {
                 body: Some(original.body),
             };
             let (frame, call_context) = match header {
-                OriginalHeader::Function(function) => {
-                    (function.original.binder, self.call_context(function, work)?)
-                }
+                OriginalHeader::Function(function) => (
+                    function.original.binder,
+                    self.call_context(function, panic_fmt, work)?,
+                ),
                 OriginalHeader::Constant { .. } => (
                     self.binders.declaration(original.declaration, work)?,
                     s::CallContext::ClosedConst,
@@ -69,9 +80,13 @@ impl DomainIndex<'_, '_> {
     fn call_context(
         &self,
         header: &s::FunctionHeader,
+        panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
         work: &mut Work,
     ) -> Result<s::CallContext, &'static str> {
         work.charge(1)?;
+        if Some(header.declaration) == panic_fmt {
+            return Ok(s::CallContext::Runtime);
+        }
         if let Some(parent) = header.parent
             && let Some(HeaderRef::Trait(index)) = self.headers.header(parent, work)?
             && self.headers.rows().traits[index as usize].flags.bits() & s::TraitFlags::CONST != 0

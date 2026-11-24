@@ -66,6 +66,10 @@ written lifetime.
 client can implement an imported associated type family and must preserve its
 lifetime requirements. Run `scripts/check_associated_family_transport.py`
 with the prebuilt RustGM and pinned Rust compilers.
+`spec/source-runtime-panic-transport/outcomes.json` checks the fresh
+`panic_fmt` and `panic_nounwind` call signatures, caller location, and
+invalid role bindings. Run `scripts/check_runtime_panic_transport.py` with
+the pinned Rust compiler.
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

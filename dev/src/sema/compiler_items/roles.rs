@@ -783,7 +783,7 @@ pub(super) fn complete_panic_role(
     role: LangItem,
     declaration: Declaration,
 ) -> Result<(), Error> {
-    if role != LangItem::Panic {
+    if role != LangItem::Panic && !LangItem::FORMAT_PANICS.contains(&role) {
         return Err(Error::unlocated("invalid source runtime panic completion"));
     }
     record_completion(facts, role, declaration)

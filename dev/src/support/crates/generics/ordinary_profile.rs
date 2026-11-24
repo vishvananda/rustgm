@@ -206,7 +206,15 @@ fn validate_with(
             roles.callables.callable(clause.owner) || roles.conditional_glue_input(rows, clause);
         ordinary(&clause.requirement, qualified)?;
     }
-    originals(rows, headers, work, profile, binding, features)?;
+    originals(
+        rows,
+        headers,
+        work,
+        profile,
+        binding,
+        features,
+        roles.panic_fmt,
+    )?;
     body_inputs(rows, work, profile.conversions(), binding.languages())
 }
 /// Version thirteen: an implementation member's public safety is its trait
@@ -674,13 +682,21 @@ fn originals(
     profile: NamespaceProfile,
     binding: BindingProfile,
     features: bool,
+    panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
 ) -> Result<(), &'static str> {
     let regional = profile.conversions();
     let constant_initializers = binding == BindingProfile::BodyOperations;
     for original in &rows.originals {
         work.charge(1)?;
         let expected = if profile.callables() {
-            callable_traits::original_context(rows, headers, original, work, constant_initializers)?
+            callable_traits::original_context(
+                rows,
+                headers,
+                original,
+                work,
+                constant_initializers,
+                panic_fmt,
+            )?
         } else {
             super::super::CallContext::Runtime
         };
@@ -901,6 +917,7 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    panic_fmt: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop_glue: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
@@ -1032,6 +1049,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
+        || LangItem::FORMAT_PANICS.contains(&role)
         || role.is_runtime_import()
     {
         return profile == BindingProfile::BodyOperations;
@@ -1180,6 +1198,7 @@ pub(super) fn bindings(
             .then_some(declarations[LangItem::Drop.index()])
             .flatten(),
         drop_glue: declarations[LangItem::DropGlue.index()],
+        panic_fmt: declarations[LangItem::PanicFmt.index()],
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
@@ -1327,13 +1346,16 @@ fn defined_operation_role(
         && rows.functions.get(index as usize).is_some_and(|function| {
             function.parent.is_none()
                 && matches!(function.body, FunctionBody::Original(_))
-                && (role != LangItem::DropGlue || function.constness == Constness::Const)
+                && (function.constness == Constness::Const
+                    || role != LangItem::DropGlue && !LangItem::FORMAT_PANICS.contains(&role))
         })
     {
         return Ok(());
     }
     Err(if role == LangItem::DropGlue {
         "source drop_glue requires its actual defined const module function"
+    } else if LangItem::FORMAT_PANICS.contains(&role) {
+        "source panic role requires its actual defined const module function"
     } else {
         "source guard role requires its actual defined free function"
     })
@@ -1349,7 +1371,11 @@ fn role_header(
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
     match (role, header) {
-        (role, header) if role == LangItem::DropGlue || LangItem::GUARD_PANICS.contains(&role) => {
+        (role, header)
+            if role == LangItem::DropGlue
+                || LangItem::GUARD_PANICS.contains(&role)
+                || LangItem::FORMAT_PANICS.contains(&role) =>
+        {
             defined_operation_role(profile, rows, role, header)?;
         }
         (role, Some(HeaderRef::Function(_)))

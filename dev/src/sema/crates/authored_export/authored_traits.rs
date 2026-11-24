@@ -158,7 +158,9 @@ impl Stage {
     fn declared_role_form(&self, kind: DefKind, role: LangItem) -> Result<(), &'static str> {
         match kind {
             DefKind::Function if role.is_runtime_import() && self.declaration_policies() => {}
-            DefKind::Function if role == LangItem::DropGlue && self.declaration_policies() => {}
+            DefKind::Function
+                if self.declaration_policies()
+                    && (role == LangItem::DropGlue || LangItem::FORMAT_PANICS.contains(&role)) => {}
             DefKind::TypeAlias if role == LangItem::FutureOutput && self.compiler_operations => {}
             DefKind::Function if role == LangItem::AsyncDropInPlace && self.compiler_operations => {
             }
@@ -264,6 +266,12 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        if LangItem::FORMAT_PANICS.contains(&role)
+            && !self.declaration_policies()
+            && catalog.language(role).is_some()
+        {
+            return Err("source formatting panic declarations require version fourteen");
+        }
         if role == LangItem::DropGlue
             && !self.declaration_policies()
             && catalog.language(role).is_some()

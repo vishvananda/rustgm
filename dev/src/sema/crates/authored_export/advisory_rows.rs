@@ -257,6 +257,7 @@ impl Stage {
             inline,
             cold: false,
             caller_tracking: false,
+            format_panic: false,
             target_features: None,
             optimization: if self.declaration_policies() {
                 match view.optimization {
@@ -401,6 +402,9 @@ impl Stage {
             ContractKnowledge::KnownPresent(()) => true,
         };
         contract.caller_tracking = facts.checked_caller_tracking(report, definition)?;
+        contract.format_panic = self.declaration_policies()
+            && crate::sema::compiler_items::runtime_panic_declaration(facts, definition)
+                .map_err(Error::unlocated)?;
         // The export gate has admitted only a free or inherent unsafe Rust-ABI
         // function; its explicitly named features are replayed, not re-parsed.
         if let Some(names) = crate::sema::target_features::declared_names(facts, definition) {

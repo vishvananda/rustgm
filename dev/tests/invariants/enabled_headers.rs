@@ -36,6 +36,7 @@ fn contract(inline: Option<s::InlineHint>, names: Option<&[&str]>) -> s::HeaderC
         }),
         cold: false,
         caller_tracking: false,
+        format_panic: false,
         target_features: names.map(|names| Box::new(declared(names))),
         optimization: None,
     }

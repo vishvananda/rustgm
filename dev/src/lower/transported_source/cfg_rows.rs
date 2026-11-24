@@ -13,7 +13,16 @@ pub(super) fn emit(
     variables: Vec<s::OwnedRegion>,
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
-    validate(stage, facts, body)?;
+    let runtime_panic = if stage.declaration_policies()
+        && !body.const_context
+        && let Owner::Function { definition, .. } = body.owner
+        && facts.is_const_function(definition)
+    {
+        crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+    } else {
+        false
+    };
+    validate(stage, facts, body, runtime_panic)?;
     if stage.body_nodes() {
         instruction_rows::preflight(stage, facts, body)?;
     }
@@ -25,7 +34,11 @@ pub(super) fn emit(
         declaration: context.owner(),
         result: stage.ty(facts, body.result, context)?,
         sites: 0,
-        context: call_context(facts, body)?,
+        context: if runtime_panic {
+            s::CallContext::Runtime
+        } else {
+            call_context(facts, body)?
+        },
         variables,
         locals: Vec::new(),
         parameter_bindings: Vec::new(),
@@ -300,11 +313,16 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         }
     })
 }
-fn validate(stage: &mut Stage, facts: &Declarations, body: &Body) -> Result<(), &'static str> {
+fn validate(
+    stage: &mut Stage,
+    facts: &Declarations,
+    body: &Body,
+    runtime_panic: bool,
+) -> Result<(), &'static str> {
     let scalar_values = stage.feature_predicates();
     let guards = stage.body_nodes();
     let const_context = match body.owner {
-        Owner::Function { definition, .. } => facts.is_const_function(definition),
+        Owner::Function { definition, .. } => facts.is_const_function(definition) && !runtime_panic,
         Owner::Initializer {
             kind: super::InitializerKind::Const,
             ..
