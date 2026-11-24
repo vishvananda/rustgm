@@ -1,81 +1,53 @@
-# RustGM Programming Assignment 32: Pinned core bootstrap
+# RustGM Programming Assignment 32 — Pinned core bootstrap
 
-Status: **planned**. This is a buildout brief, not a released grading contract.
-Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
-and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
-See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
-implementation priority, source pins and the migration of unreleased numbers.
+This is a draft handout. The assignment's grading suite will accompany
+its release.
 
-## Required implementation
+Build the complete upstream `core` crate for Rust 1.98.0 on Linux x86-64
+with aborting panics. Use the original sources at
+`88d9e12ae178fab0fb5cc050a94da85685d449ea`.
 
-Compile the entire upstream core crate for the declared Rust 1.98.0 Linux
-x86-64 panic-abort profile, using original source bytes at revision
-`88d9e12ae178fab0fb5cc050a94da85685d449ea`. Freeze source/submodule checksums,
-target cfg, required generated configuration and host-tool provenance first.
-A partial module build or reduced imitation of core is not completion.
+## Before starting core
 
-Implement every active internal feature used by this source profile, including
-its const-trait, specialization, layout and compiler-builtin protocols where
-selected. Inventory actual failures rather than assuming stable source-language
-support is sufficient. PA31 bindings and PA25–PA30 typed contracts must compose
-with ordinary upstream definitions and exported generic bodies.
+Complete the following parts of the bootstrap path.
 
-Core directly imports stdarch/portable-simd modules. Implement their active
-parsing, typing, repr(simd), layout and target-feature contracts as required by
-the pinned source; unstable public API status does not remove those modules.
-Freeze internal cfg facts, including target_has_atomic_load_store, rather than
-assuming stable rustc --print cfg reports the complete compiler configuration.
-Track source binding, internal-feature closure and full-crate/consumer execution
-as separate checked milestones within this assignment.
+- [PA31](../pa31/README.md)'s source bindings and runtime integration.
+- The source and generic-body metadata needed to export library APIs
+  and instantiate them in fresh clients. [PA29](../pa29/README.md)
+  introduces the declaration format.
+- [PA34](../pa34/README.md)'s crate-build preparation, including the selected
+  edition, target configuration, and generated inputs.
+- [PA41](../pa41/README.md)'s core prerequisites for layout, target features,
+  and assembly. Complete that subset before attempting the original library.
 
-Build independent consumer crates against RustGM's core metadata and objects.
-Exercise real Option/Result methods, slices, iterators, formatting, conversions,
-const operations, pointer/layout APIs and trait selection. Include negative
-binding/type/ownership controls. All target Rust code uses RustGM, with CPPGM
-only behind the established LowIR boundary; rustc is an independent oracle.
+## Build the library
 
-Require deterministic sysroot identities and bounded shared dependency/proof
-work. Record whole-crate compile time and peak memory alongside scaling inputs.
-A needed target operation must be qualified now, even if broad target closure
-belongs to PA41.
+Use the pinned sources and submodules without edits. Retain the target
+configuration, generated inputs, and host tool identities so the build can
+be repeated. Enable the actual internal features used by the pinned
+configuration, including const traits, specialization, compiler builtins,
+and layout rules.
 
-The maintainer implements compiler responsibilities in `dev/src/` and introduces
-typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
-Reference and CPPGM's efficient representation principles. Parse once, retain
-completed facts and avoid speculative or repeated whole-graph work. The compiler
-implementation remains idiomatic safe Rust; strict Clippy all/pedantic and the
-syntax-aware file/architecture audit are required.
+Compile the selected stdarch and portable SIMD modules as part of the crate.
+They need their actual type and target rules, including `repr(simd)` and
+target-specific configuration such as `target_has_atomic_load_store`.
+Resolve selected calls against the real source definitions.
 
 ## Tool surface
 
-Extend the existing `dev/rustgm --emit-lowir` view and explicit crate-build interfaces.
-Earlier views remain available. Freeze deterministic ordering, diagnostics,
-source/configuration identities and any new build-summary text contract before
-activation. Whole-library acceptance includes actual linked execution through
-the configured CPPGM backend; text output alone is insufficient.
+Build every target Rust unit with RustGM and pass LowIR to CPPGM for native
+code generation. Produce complete `core` metadata and linkable objects.
+The sysroot identities and artifacts must be reproducible. Share completed
+dependency and proof work across the graph.
 
-## Tests to develop with the reference
+## Check your implementation
 
-- Complete core source build.
-- Real generic bodies across crates.
-- Layout and const trait protocols.
-- Slices iterators and formatting.
-- Deterministic sysroot metadata.
+Compile separate consumers against the resulting metadata and objects.
+Exercise real `Option` and `Result` methods, slices, iteration, formatting,
+conversions, constant operations, pointer and layout APIs, and trait
+selection. Check rejected bindings and invalid type or ownership uses as
+well. Link and run the executable consumers. A successful build includes
+the full crate and independently compiled consumers.
 
-Place each fixture in the earliest assignment owning all features it exercises.
-Keep original upstream bytes, attribution and checksums. Declare expected outcomes
-before generating oracles; use pinned rustc independently and retain negative
-controls. Register the complete selected dependency graph and native consumers,
-not just reducers or successful submodules. Never hand-edit generated references.
-
-## Completion and review
-
-Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
-formats and generated references together after independent outcome review.
-Until then, this assignment must fail explicitly and stays outside pass totals.
-Run affected focused source/native controls during development. At publication,
-run the required coherent checkpoint checks from
-[TESTING_AND_REFERENCES.md](../TESTING_AND_REFERENCES.md), including prior active
-suites, strict Clippy, file/architecture audits, harness checks and affected
-performance measurements. Use the resource/storage guards and scoped cleanup.
-Do not activate a stage merely because a reduced example or an empty suite passes.
+The core-only consumer milestone in [PA35](../pa35/README.md) can follow
+this assignment. Then build `alloc` in [PA33](../pa33/README.md).

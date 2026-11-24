@@ -47,12 +47,12 @@ suite.
 
 ## Planned assignments
 
-- [ ] [PA31](../pa31/README.md)
-- [ ] [PA32](../pa32/README.md)
-- [ ] [PA33](../pa33/README.md)
-- [ ] [PA34](../pa34/README.md)
-- [ ] [PA35](../pa35/README.md)
-- [ ] [PA36](../pa36/README.md)
+- [x] [PA31](../pa31/STUDENT.md)
+- [x] [PA32](../pa32/README.md)
+- [x] [PA33](../pa33/README.md)
+- [x] [PA34](../pa34/README.md)
+- [x] [PA35](../pa35/README.md)
+- [x] [PA36](../pa36/README.md)
 - [ ] [PA37](../pa37/README.md)
 - [ ] [PA38](../pa38/README.md)
 - [ ] [PA39](../pa39/README.md)

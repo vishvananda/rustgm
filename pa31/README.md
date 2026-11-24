@@ -1,5 +1,7 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
+The [student handout](STUDENT.md) describes the planned assignment.
+
 The [const closure member checkpoint](../docs/pa25-closure-members.md) accepts
 actual closure-owned trait calls and clears six older prepared-lowering gaps.
 Concrete runtime execution qualifies; default premises, CTFE, ordinary imports
