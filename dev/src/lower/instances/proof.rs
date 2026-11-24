@@ -39,8 +39,9 @@ pub(super) struct Builder {
     original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
     future_store: Option<crate::types::arena::Identity>,
 }
+// Pending destruction retains a source or imported proof site inline.
 #[cfg(test)]
-const _: [(); 1808] = [(); size_of::<Builder>()];
+const _: [(); 1816] = [(); size_of::<Builder>()];
 
 enum RegionProof {
     Ordinary(borrow::regions::Body),
