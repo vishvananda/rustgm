@@ -23,6 +23,7 @@ pub(super) struct Plans {
     entries: HashMap<Instance, Ready>,
     pub(super) arithmetic_guards: Option<Box<super::arithmetic_guards::Routes>>,
     pub(super) imported_bodyless: Option<Box<super::bodyless_intrinsics::Headers>>,
+    pub(super) imported_declared: Option<Box<super::bodyless_intrinsics::DeclaredIntrinsics>>,
 }
 impl Catalog {
     pub(crate) fn has_runtime_layouts(&self) -> bool {

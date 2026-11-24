@@ -447,7 +447,12 @@ fn encode_profile(
         &rows.implementations,
         contract_columns::implementation_write,
     )?;
-    write(out, &rows.functions, contract_columns::function_write)?;
+    contract_columns::functions_write(
+        out,
+        &rows.functions,
+        &rows.cold().declared_intrinsics,
+        &rows.cold().comptime_functions,
+    )?;
     write(out, &rows.formals, contract_columns::formal_write)?;
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
@@ -572,6 +577,8 @@ fn decode_profile_with(
     let mut tables = recipe_columns::TypeTables::default();
     let mut diagnostics = Vec::new();
     let mut consts = Vec::new();
+    let mut declared_intrinsics = Vec::new();
+    let mut comptime_functions = Vec::new();
     let mut rows = s::SourceRows {
         associated_types: Vec::new(),
         cold: None,
@@ -619,7 +626,9 @@ fn decode_profile_with(
             44,
             contract_columns::implementation_read,
         )?,
-        functions: read.list(crates::MAX_FUNCTIONS, 98, contract_columns::function_read)?,
+        functions: read.list(crates::MAX_FUNCTIONS, 98, |read| {
+            contract_columns::function_read(read, &mut declared_intrinsics, &mut comptime_functions)
+        })?,
         formals: read.list(crates::MAX_COMPONENTS, 5, contract_columns::formal_read)?,
         members: read.list(crates::MAX_COMPONENTS, 4, owner_rows::declaration_ref_read)?,
         member_links: read.list(crates::MAX_COMPONENTS, 2, contract_columns::member_read)?,
@@ -641,6 +650,8 @@ fn decode_profile_with(
         || !tables.dynamics.is_empty()
         || !diagnostics.is_empty()
         || !consts.is_empty()
+        || !declared_intrinsics.is_empty()
+        || !comptime_functions.is_empty()
     {
         let cold = read.cold(&mut rows)?;
         cold.pattern_ranges = tables.ranges;
@@ -648,6 +659,8 @@ fn decode_profile_with(
         cold.dynamics = tables.dynamics;
         cold.diagnostics = diagnostics;
         cold.consts = consts;
+        cold.declared_intrinsics = declared_intrinsics;
+        cold.comptime_functions = comptime_functions;
     }
     Ok((rows, read.bytes))
 }

@@ -103,9 +103,42 @@ pub(super) fn implementation_read(read: &mut Input<'_, '_>) -> Result<s::ImplHea
         members: read.range()?,
     })
 }
-pub(super) fn function_write(
+pub(super) fn functions_write(
+    out: &mut Writer,
+    rows: &[s::FunctionHeader],
+    declared_intrinsics: &[s::DeclaredIntrinsic],
+    comptime_functions: &[DeclarationRef],
+) -> Result<(), &'static str> {
+    out.u32(rows.len())?;
+    let mut intrinsic_index = 0_usize;
+    let mut comptime_index = 0_usize;
+    for row in rows {
+        let intrinsic = declared_intrinsics
+            .get(intrinsic_index)
+            .filter(|entry| entry.declaration == row.declaration)
+            .copied();
+        if intrinsic.is_some() {
+            intrinsic_index += 1;
+        }
+        let comptime = comptime_functions.get(comptime_index) == Some(&row.declaration);
+        if comptime {
+            comptime_index += 1;
+        }
+        function_write(out, row, intrinsic, comptime)?;
+    }
+    if intrinsic_index != declared_intrinsics.len() {
+        return Err("source declared intrinsic has no function header in order");
+    }
+    if comptime_index != comptime_functions.len() {
+        return Err("source comptime declaration has no function header in order");
+    }
+    Ok(())
+}
+fn function_write(
     out: &mut Writer,
     row: &s::FunctionHeader,
+    intrinsic: Option<s::DeclaredIntrinsic>,
+    comptime: bool,
 ) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.scope.0)?;
@@ -131,7 +164,24 @@ pub(super) fn function_write(
         }
         out.u8(u8::from(receiver.mutable_binding))?;
     }
-    super::recipe_columns::effect_write(out, row.constness)?;
+    if comptime {
+        if row.constness != crate::support::constness::Constness::Const {
+            return Err("source comptime declaration requires const effect");
+        }
+        out.u8(3)?;
+    } else {
+        super::recipe_columns::effect_write(out, row.constness)?;
+    }
+    if let Some(intrinsic) = intrinsic {
+        return match row.body {
+            s::FunctionBody::Absent if !intrinsic.source_fallback => out.u8(9),
+            s::FunctionBody::Original(body) => {
+                out.u8(if intrinsic.source_fallback { 11 } else { 10 })?;
+                id(out, body.0)
+            }
+            _ => Err("source declared intrinsic changed its body kind"),
+        };
+    }
     match row.body {
         s::FunctionBody::CompilerOperation(reference) => {
             out.u8(2)?;
@@ -145,7 +195,11 @@ pub(super) fn function_write(
         }
     }
 }
-pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeader, &'static str> {
+pub(super) fn function_read(
+    read: &mut Input<'_, '_>,
+    declared_intrinsics: &mut Vec<s::DeclaredIntrinsic>,
+    comptime_functions: &mut Vec<DeclarationRef>,
+) -> Result<s::FunctionHeader, &'static str> {
     let declaration = DeclarationRef(read.id()?);
     let scope = DeclarationRef(read.id()?);
     let parent = read.option()?.map(DeclarationRef);
@@ -171,10 +225,14 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
     } else {
         None
     };
-    let constness = super::recipe_columns::function_effect_read(
+    let (constness, comptime) = super::recipe_columns::function_effect_read(
         read,
         "source callable effect requires a wider source profile",
     )?;
+    if comptime {
+        read.reserve(size_of::<DeclarationRef>())?;
+        comptime_functions.push(declaration);
+    }
     let body = match read.reader.u8()? {
         2 if read.profile.compiler_operations() => {
             s::FunctionBody::CompilerOperation(s::CompilerOperationRef(read.id()?))
@@ -183,6 +241,23 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
         1 => s::FunctionBody::Original(BodyRef(read.id()?)),
         tag @ 3..=8 if read.profile.declaration_policies() => {
             s::FunctionBody::Intrinsic(s::BodylessIntrinsic::ALL[usize::from(tag - 3)])
+        }
+        9 if read.profile.declaration_policies() => {
+            read.reserve(size_of::<s::DeclaredIntrinsic>())?;
+            declared_intrinsics.push(s::DeclaredIntrinsic {
+                declaration,
+                source_fallback: false,
+            });
+            s::FunctionBody::Absent
+        }
+        tag @ (10 | 11) if read.profile.declaration_policies() => {
+            let body = BodyRef(read.id()?);
+            read.reserve(size_of::<s::DeclaredIntrinsic>())?;
+            declared_intrinsics.push(s::DeclaredIntrinsic {
+                declaration,
+                source_fallback: tag == 11,
+            });
+            s::FunctionBody::Original(body)
         }
         _ => return Err("invalid source required/provided body tag"),
     };

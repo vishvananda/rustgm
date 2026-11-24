@@ -240,36 +240,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        let Some(kind) = self.validate_subtraction_origin(facts, definition, origin)? else {
             return Ok(None);
         };
-        if !scalar_arithmetic(kind) {
-            return Ok(None);
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 32)
-            .map_err(|_| "source subtraction selection work exhausted")?;
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err(
-                "source subtraction operation provenance requires its wider transport profile",
-            );
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|i| facts.functions.get(*i))
-            .ok_or("source subtraction declaration is missing")?;
-        if function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-            || declaration.parent.is_some()
-        {
-            return Err("source subtraction changed its actual declaration");
-        }
-        validate(facts, *function, kind)?;
-        self.validated_language(LangItem::Copy)?
-            .ok_or("source subtraction requires its completed actual Copy header")?;
         let mut args = facts
             .types
             .arguments(arguments)
@@ -315,6 +288,64 @@ impl Catalog {
             kind,
         }))
     }
+    fn validate_subtraction_origin(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<Option<SourceIntrinsic>, &'static str> {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if !scalar_arithmetic(kind) {
+                return Ok(None);
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 32)
+                .map_err(|_| "source subtraction selection work exhausted")?;
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err(
+                    "source subtraction operation provenance requires its wider transport profile",
+                );
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|i| facts.functions.get(*i))
+                .ok_or("source subtraction declaration is missing")?;
+            if function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+                || declaration.parent.is_some()
+            {
+                return Err("source subtraction changed its actual declaration");
+            }
+            validate(facts, *function, kind)?;
+            self.validated_language(LangItem::Copy)?
+                .ok_or("source subtraction requires its completed actual Copy header")?;
+            return Ok(Some(kind));
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
+            return Ok(None);
+        };
+        if !scalar_arithmetic(imported.kind) {
+            return Ok(None);
+        }
+        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+            .map_err(|_| "source subtraction selection work exhausted")?;
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported subtraction lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || !facts.is_const_function(definition)
+        {
+            return Err("imported subtraction changed its canonical declaration");
+        }
+        self.validated_role(LangItem::Copy)?
+            .ok_or("imported subtraction requires its completed actual Copy header")?;
+        Ok(Some(imported.kind))
+    }
+
     pub(crate) fn require_subtraction_report(
         &self,
         report: &Report,
@@ -323,7 +354,25 @@ impl Catalog {
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
         let Some((declaration, kind, _)) = self.intrinsic_record(selected.definition)? else {
-            return Err("source subtraction lost its attributed declaration");
+            let Some(imported) = self.imported_declared_intrinsic(selected.definition) else {
+                return Err("source subtraction lost its attributed declaration");
+            };
+            if imported.kind != selected.kind
+                || signature(
+                    facts,
+                    selected.signature,
+                    [selected.input, selected.rhs],
+                    imported.kind,
+                )? != selected.output
+                || facts
+                    .declaration_header(selected.definition)?
+                    .is_none_or(|actual| actual.declaration != imported.origin)
+            {
+                return Err(
+                    "imported subtraction changed its selected signature or intrinsic kind",
+                );
+            }
+            return Ok(());
         };
         if kind != selected.kind
             || signature(

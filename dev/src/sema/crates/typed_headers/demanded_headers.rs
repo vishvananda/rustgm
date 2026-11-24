@@ -374,6 +374,7 @@ fn header_port(
                 "compiler-operation execution requires genuine future state ownership",
             ));
         }
+        s::FunctionBody::Absent if rows.declared_intrinsic_row(owner).is_some() => None,
         s::FunctionBody::Absent => {
             let parent = raw
                 .parent

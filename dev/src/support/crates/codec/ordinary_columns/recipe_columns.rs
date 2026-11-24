@@ -556,19 +556,21 @@ pub(super) fn effect_read(
     }
 }
 /// Function declaration eligibility is unconditional in version seven.
+/// Version fourteen tag 3 additionally marks `#[rustc_comptime]` functions.
 /// Trait predicates keep their distinct Provided-only qualified reader.
 pub(super) fn function_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
-) -> Result<Constness, &'static str> {
+) -> Result<(Constness, bool), &'static str> {
     if !read.profile.unconditional_callables() {
-        return effect_read(read, unsupported);
+        return effect_read(read, unsupported).map(|effect| (effect, false));
     }
     match read.reader.u8()? {
-        0 => Ok(Constness::Ordinary),
-        1 => Ok(Constness::Const),
-        2 if read.profile.conversion_roles() => Ok(Constness::Conditional),
+        0 => Ok((Constness::Ordinary, false)),
+        1 => Ok((Constness::Const, false)),
+        2 if read.profile.conversion_roles() => Ok((Constness::Conditional, false)),
         2 => Err("source conditional callable effect requires its wider profile"),
+        3 if read.profile.declaration_policies() => Ok((Constness::Const, true)),
         _ => Err("unknown source constness effect"),
     }
 }

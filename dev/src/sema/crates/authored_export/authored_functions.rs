@@ -100,23 +100,24 @@ impl Stage {
             if targeted {
                 target_feature_form(facts, &function)?;
             }
-            if facts
-                .source_bindings
-                .as_deref()
-                .map(|c| c.intrinsic_kind(definition))
-                .transpose()?
-                .flatten()
-                .is_some_and(|kind| {
-                    matches!(
-                        kind,
-                        crate::support::bindings::SourceIntrinsic::ArithOffset
-                            | crate::support::bindings::SourceIntrinsic::Declaration(_)
-                            | crate::support::bindings::SourceIntrinsic::UncheckedSub
-                            | crate::support::bindings::SourceIntrinsic::SubWithOverflow
-                            | crate::support::bindings::SourceIntrinsic::ColdPath
-                            | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked
-                    )
-                })
+            if !self.declaration_policies()
+                && facts
+                    .source_bindings
+                    .as_deref()
+                    .map(|c| c.intrinsic_kind(definition))
+                    .transpose()?
+                    .flatten()
+                    .is_some_and(|kind| {
+                        matches!(
+                            kind,
+                            crate::support::bindings::SourceIntrinsic::ArithOffset
+                                | crate::support::bindings::SourceIntrinsic::Declaration(_)
+                                | crate::support::bindings::SourceIntrinsic::UncheckedSub
+                                | crate::support::bindings::SourceIntrinsic::SubWithOverflow
+                                | crate::support::bindings::SourceIntrinsic::ColdPath
+                                | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked
+                        )
+                    })
             {
                 return Err(
                     "source intrinsic declaration semantics require a wider metadata profile",
@@ -264,7 +265,36 @@ impl Stage {
         {
             return Err("source function header has duplicate actual identity");
         }
+        self.record_function_policies(facts, function.definition, declaration, body)?;
         self.rows.functions.push(header);
+        Ok(())
+    }
+
+    fn record_function_policies(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        declaration: DeclarationRef,
+        body: s::FunctionBody,
+    ) -> Result<(), &'static str> {
+        if !self.declaration_policies() {
+            return Ok(());
+        }
+        if facts.is_comptime_function(definition) {
+            self.reserve(4 * size_of::<DeclarationRef>())?;
+            self.cold()?.comptime_functions.push(declaration);
+        }
+        if !matches!(body, s::FunctionBody::Intrinsic(_))
+            && let Some(catalog) = facts.source_bindings.as_deref()
+            && catalog.intrinsic_kind(definition)?.is_some()
+        {
+            let source_fallback = catalog.uses_source_fallback(definition);
+            self.reserve(4 * size_of::<s::DeclaredIntrinsic>())?;
+            self.cold()?.declared_intrinsics.push(s::DeclaredIntrinsic {
+                declaration,
+                source_fallback,
+            });
+        }
         Ok(())
     }
 
@@ -525,7 +555,8 @@ fn written_constness(
     if effective
         && !flags.constant
         && roles.declaration_policies
-        && effective_impl_constness(report, facts, function.definition)?
+        && (facts.is_comptime_function(function.definition)
+            || effective_impl_constness(report, facts, function.definition)?)
     {
         return Ok(Constness::Const);
     }

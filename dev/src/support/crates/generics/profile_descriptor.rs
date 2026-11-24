@@ -669,6 +669,12 @@ fn require_source_profile(
     if !profile.declaration_policies() && rows.cold().statics.is_some() {
         return Err("source static rows require the declaration policies profile");
     }
+    if !profile.declaration_policies() && !rows.cold().declared_intrinsics.is_empty() {
+        return Err("source intrinsic declaration semantics require a wider metadata profile");
+    }
+    if !profile.declaration_policies() && !rows.cold().comptime_functions.is_empty() {
+        return Err("always-comptime source contracts require a wider transport profile");
+    }
     super::inherent_contracts::require_profile(rows, profile, work)?;
     super::operation_contracts::require_profile(rows, profile, work)?;
     safety_profile::require_profile(rows, profile, work)?;

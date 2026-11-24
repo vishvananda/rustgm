@@ -179,6 +179,57 @@ impl Catalog {
         Ok(roles)
     }
 
+    pub(super) fn declared_intrinsics(
+        &self,
+        work: &mut usize,
+    ) -> Result<Vec<(Role, crate::support::bindings::SourceIntrinsic, bool)>, &'static str> {
+        let Bindings::Imported(imported) = &self.bindings else {
+            return Ok(Vec::new());
+        };
+        let descriptor = imported.descriptor(&self.provider)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(Vec::new());
+        }
+        let rows = descriptor.rows();
+        let entries = &rows.cold().declared_intrinsics;
+        if entries.is_empty() {
+            return Ok(Vec::new());
+        }
+        charge(work, entries.len())?;
+        let mut result = Vec::with_capacity(entries.len());
+        for entry in entries {
+            charge(work, 4)?;
+            let decl = rows
+                .declarations
+                .get(entry.declaration.0 as usize)
+                .ok_or("imported declared intrinsic lacks its declaration row")?;
+            let kind = decl
+                .name
+                .as_deref()
+                .and_then(crate::support::bindings::SourceIntrinsic::from_name)
+                .ok_or("imported declared intrinsic names an unknown intrinsic")?;
+            let definition = imported
+                .origins
+                .definition_at(descriptor.provider(), entry.declaration)?;
+            let declaration = imported.origins.declaration(definition)?;
+            let origin = imported.origins.validate_declaration(
+                declaration,
+                definition,
+                DefKind::Function,
+            )?;
+            result.push((
+                Role {
+                    definition,
+                    parent: None,
+                    origin,
+                },
+                kind,
+                entry.source_fallback,
+            ));
+        }
+        Ok(result)
+    }
+
     #[cfg(test)]
     pub(crate) const fn binding_layouts() -> (usize, usize, usize) {
         (

@@ -698,7 +698,8 @@ fn functions(
             FunctionBody::Absent
                 if (header.parent != Some(parent)
                     || parent_kind != super::super::DefinitionKind::Trait)
-                    && !rows.bodyless_runtime(header.declaration, work)? =>
+                    && !rows.bodyless_runtime(header.declaration, work)?
+                    && rows.declared_intrinsic(header.declaration, work)?.is_none() =>
             {
                 return Err(
                     "source body absence is supported only for actual required trait members",

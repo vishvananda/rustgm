@@ -1,0 +1,11 @@
+{
+  "features": ["auto_traits", "intrinsics"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41 77 4 19 23 19 13 100 55 42\n",
+  "older_profile": "source intrinsic declaration semantics require a wider metadata profile",
+  "restricted_client": {
+    "path": "runtime_comptime.rs",
+    "rustc": "compile time",
+    "rustgm": "comptime functions can only be called at compile time"
+  }
+}

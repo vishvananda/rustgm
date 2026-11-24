@@ -169,6 +169,7 @@ pub(super) fn header(
         universals: raw.regions.total,
         constant,
         conditional: raw.constness == crate::support::constness::Constness::Conditional,
+        comptime: rows.is_comptime(owner),
     };
     Ok(Some(Callable {
         header,

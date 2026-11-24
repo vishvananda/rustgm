@@ -274,6 +274,13 @@ impl Declarations {
     }
     /// Classification from an already bound declaration; never a call permission.
     pub(crate) fn is_comptime_function(&self, definition: DefId) -> bool {
+        if self
+            .crates
+            .as_deref()
+            .is_some_and(|linkage| linkage.original_comptime(definition))
+        {
+            return true;
+        }
         self.must_use_contracts
             .as_deref()
             .and_then(|owner| owner.headers.as_deref())
@@ -333,6 +340,13 @@ impl Declarations {
                 return Err(Error::unlocated(
                     "foreign comptime query changed its actual declaration origin",
                 ));
+            }
+            if self
+                .crates
+                .as_deref()
+                .is_some_and(|linkage| linkage.original_comptime(definition))
+            {
+                return Ok(ContractKnowledge::Unknown);
             }
             return Ok(ContractKnowledge::KnownAbsent);
         };

@@ -281,6 +281,7 @@ fn callable(
         universals: raw.regions.total,
         constant: is_constant(raw.constness)?,
         conditional: false,
+        comptime: rows.is_comptime(raw.declaration),
     };
     Ok(staged_headers::Callable {
         header,

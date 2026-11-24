@@ -771,6 +771,11 @@ pub type SourceRows = Rows;
 /// hot record, pay no inline storage: version thirteen's associated-result
 /// definitions and enum variant tables, plus the validated sparse original
 /// index of a packet with compiler operations (absent from raw rows).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DeclaredIntrinsic {
+    pub declaration: DeclarationRef,
+    pub source_fallback: bool,
+}
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,
@@ -794,6 +799,8 @@ pub struct ColdColumns {
     pub nominal_region_bounds: Vec<NominalRegionBounds>,
     pub const_defaults: Vec<ConstDefault>,
     pub trait_aliases: Vec<TraitAliasHeader>,
+    pub declared_intrinsics: Vec<DeclaredIntrinsic>,
+    pub comptime_functions: Vec<DeclarationRef>,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
@@ -822,6 +829,8 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     nominal_region_bounds: Vec::new(),
     const_defaults: Vec::new(),
     trait_aliases: Vec::new(),
+    declared_intrinsics: Vec::new(),
+    comptime_functions: Vec::new(),
     statics: None,
     bodies: None,
 };
@@ -854,6 +863,8 @@ impl ColdColumns {
             && self.nominal_region_bounds.is_empty()
             && self.const_defaults.is_empty()
             && self.trait_aliases.is_empty()
+            && self.declared_intrinsics.is_empty()
+            && self.comptime_functions.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()
     }
@@ -899,6 +910,19 @@ impl Rows {
             .exact_callables
             .binary_search_by_key(&declaration.0, |row| row.declaration.0)
             .is_ok_and(|index| self.exact_callables[index].body.is_none()))
+    }
+
+    pub(crate) fn declared_intrinsic(
+        &self,
+        declaration: DeclarationRef,
+        work: &mut crate::support::crates::generics::Work,
+    ) -> Result<Option<DeclaredIntrinsic>, &'static str> {
+        let rows = &self.cold().declared_intrinsics;
+        work.charge(1 + rows.len().checked_ilog2().unwrap_or(0) as usize)?;
+        Ok(rows
+            .binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .ok()
+            .map(|index| rows[index]))
     }
 
     pub(crate) fn type_aliases(&self) -> &[TypeAliasHeader] {

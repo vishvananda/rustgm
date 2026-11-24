@@ -73,7 +73,34 @@ impl Catalog {
         };
         let definition = DefId(item.0);
         let Some((declaration, kind, expected)) = self.intrinsic_record(definition)? else {
-            return Ok(None);
+            let Some(imported) = self.imported_declared_intrinsic(definition) else {
+                return Ok(None);
+            };
+            if imported.kind != SourceIntrinsic::Abort {
+                return Ok(None);
+            }
+            if signature != imported.signature
+                || facts
+                    .types
+                    .arguments(arguments)
+                    .is_none_or(|a| a.len() != 0)
+            {
+                return Err("selected source abort changed its complete signature or arguments");
+            }
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported source abort lost its canonical declaration")?;
+            if actual.declaration != imported.origin
+                || actual.signature != imported.signature
+                || actual.body.is_some()
+                || facts.is_const_function(definition)
+            {
+                return Err("imported source abort changed its canonical declaration");
+            }
+            return Ok(Some(AbortSelection {
+                definition,
+                signature,
+            }));
         };
         if kind != SourceIntrinsic::Abort {
             return Ok(None);
@@ -122,7 +149,20 @@ impl Catalog {
         let Some((declaration, SourceIntrinsic::Abort, signature)) =
             self.intrinsic_record(selection.definition)?
         else {
-            return Err("source abort lost its actual attributed declaration");
+            let Some(imported) = self.imported_declared_intrinsic(selection.definition) else {
+                return Err("source abort lost its actual attributed declaration");
+            };
+            if imported.kind != SourceIntrinsic::Abort
+                || imported.signature != selection.signature
+                || facts
+                    .declaration_header(selection.definition)?
+                    .is_none_or(|actual| {
+                        actual.declaration != imported.origin || actual.body.is_some()
+                    })
+            {
+                return Err("imported source abort changed its canonical declaration");
+            }
+            return Ok(());
         };
         let current = facts
             .header_attribute_contracts(report, selection.definition)

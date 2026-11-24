@@ -19,6 +19,8 @@ pub(super) fn require_profile(
 ) -> Result<(), &'static str> {
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
     bodyless_intrinsics(rows, profile, work)?;
+    declared_intrinsics(rows, profile, work)?;
+    comptime_functions(rows, profile, work)?;
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
@@ -97,6 +99,124 @@ fn bodyless_intrinsics(
                 }
                 _ => "source layout intrinsic requires its exact version-fourteen header",
             });
+        }
+    }
+    Ok(())
+}
+
+fn declared_intrinsics(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let intrinsics = &rows.cold().declared_intrinsics;
+    if intrinsics.is_empty() {
+        return Ok(());
+    }
+    if !profile.declaration_policies() {
+        return Err("source intrinsic declaration semantics require a wider metadata profile");
+    }
+    work.charge(intrinsics.len())?;
+    let mut previous = None;
+    for entry in intrinsics {
+        if previous.is_some_and(|prior| prior >= entry.declaration.0) {
+            return Err("source declared intrinsics are duplicated or out of order");
+        }
+        previous = Some(entry.declaration.0);
+        let Ok(index) = rows
+            .functions
+            .binary_search_by_key(&entry.declaration.0, |row| row.declaration.0)
+        else {
+            return Err("source declared intrinsic lacks its actual function header");
+        };
+        let header = &rows.functions[index];
+        let decl = rows
+            .declarations
+            .get(entry.declaration.0 as usize)
+            .ok_or("source declared intrinsic lacks its declaration row")?;
+        let module_owned = decl.definition.parent.is_some_and(|parent| {
+            rows.declarations
+                .get(parent.0 as usize)
+                .is_some_and(|owner| owner.definition.kind == super::DefinitionKind::Module)
+        });
+        let Some(kind) = decl
+            .name
+            .as_deref()
+            .and_then(crate::support::bindings::SourceIntrinsic::from_name)
+        else {
+            return Err("source declared intrinsic names an unknown intrinsic");
+        };
+        let special = BodylessIntrinsic::ALL
+            .into_iter()
+            .any(|op| op.kind() == kind);
+        let valid_body = match header.body {
+            FunctionBody::Absent => !entry.source_fallback && !special,
+            FunctionBody::Original(_) => {
+                !entry.source_fallback || header.constness == Constness::Const
+            }
+            FunctionBody::Intrinsic(_) | FunctionBody::CompilerOperation(_) => false,
+        };
+        let valid_signature =
+            |sig: super::super::Signature| sig.convention == Convention::Rust && !sig.variadic;
+        if !module_owned
+            || header.parent.is_some()
+            || header.receiver.is_some()
+            || !valid_body
+            || !valid_signature(header.original)
+            || !valid_signature(header.callable)
+        {
+            return Err("source declared intrinsic changed its checked declaration contract");
+        }
+    }
+    Ok(())
+}
+
+fn comptime_functions(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let comptime = &rows.cold().comptime_functions;
+    if comptime.is_empty() {
+        return Ok(());
+    }
+    if !profile.declaration_policies() {
+        return Err("always-comptime source contracts require a wider transport profile");
+    }
+    work.charge(comptime.len())?;
+    let mut previous = None;
+    for &declaration in comptime {
+        if previous.is_some_and(|prior| prior >= declaration.0) {
+            return Err("source comptime declarations are duplicated or out of order");
+        }
+        previous = Some(declaration.0);
+        let Ok(index) = rows
+            .functions
+            .binary_search_by_key(&declaration.0, |row| row.declaration.0)
+        else {
+            return Err("source comptime declaration lacks its actual function header");
+        };
+        let header = &rows.functions[index];
+        let valid_owner = match header.parent {
+            None => true,
+            Some(parent) => rows
+                .implementations
+                .binary_search_by_key(&parent.0, |row| row.self_definition.0)
+                .is_ok_and(|idx| rows.implementations[idx].trait_application.is_none()),
+        };
+        let clauses = header.inputs.slice(&rows.clauses)?;
+        work.charge(clauses.len())?;
+        let has_conditional = clauses.iter().any(|clause| {
+            matches!(
+                clause.requirement,
+                super::Requirement::Trait {
+                    effect: Constness::Conditional,
+                    ..
+                }
+            )
+        });
+        if header.constness != Constness::Const || !valid_owner || has_conditional {
+            return Err("source comptime declaration changed its checked effect or owner");
         }
     }
     Ok(())

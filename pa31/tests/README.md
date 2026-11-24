@@ -101,6 +101,11 @@ module access rejection in fresh clients.
 `const unsafe impl` unwritten-const methods (including lifetime-capturing
 impls), conditional provided defaults, `[const]` and `const` trait bounds, and
 `#[rustc_non_const_trait_method]` runtime-only methods across fresh clients.
+`spec/source-declared-intrinsic-transport/outcomes.json` checks general v14
+`#[rustc_intrinsic]` declarations (bodyless, fallback-bodied, and
+`miri::intrinsic_fallback_is_spec`) and `#[rustc_comptime]` free and inherent
+functions across fresh clients, including runtime-call rejection and v13
+refusal.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

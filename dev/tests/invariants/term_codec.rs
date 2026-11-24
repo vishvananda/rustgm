@@ -15,8 +15,9 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // The v14 type and trait alias vectors and optional static table live outside
 // the hot rows. Written nominal lifetime bounds add one cold Vec.
 // Closed const defaults add one more cold Vec. Trait object bounds add
-// three: objects, associated equalities and auto-trait markers.
-const _: [(); 496] = [(); size_of::<s::ColdColumns>()];
+// three: objects, associated equalities and auto-trait markers. Declared
+// intrinsics and comptime functions add two cold Vecs.
+const _: [(); 544] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;

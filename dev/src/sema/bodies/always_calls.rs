@@ -56,14 +56,28 @@ impl Checker<'_> {
                 "non-const trait methods cannot be called in const contexts",
             ));
         }
-        match self
+        if self
             .facts
-            .comptime_contract_with_owner_reads(&mut self.owner_reads, definition)?
+            .crates
+            .as_deref()
+            .is_some_and(|linkage| linkage.original_comptime(definition))
         {
-            ContractKnowledge::KnownAbsent => return Ok(()),
-            ContractKnowledge::KnownPresent(_) => {}
-            ContractKnowledge::Unknown => {
-                return Err(self.error(node, "comptime call lost its actual source contract"));
+            self.facts
+                .declaration_header(definition)
+                .map_err(|error| self.error(node, error))?
+                .ok_or_else(|| {
+                    self.error(node, "comptime call lost its actual imported declaration")
+                })?;
+        } else {
+            match self
+                .facts
+                .comptime_contract_with_owner_reads(&mut self.owner_reads, definition)?
+            {
+                ContractKnowledge::KnownAbsent => return Ok(()),
+                ContractKnowledge::KnownPresent(_) => {}
+                ContractKnowledge::Unknown => {
+                    return Err(self.error(node, "comptime call lost its actual source contract"));
+                }
             }
         }
         if self.callee_use_effect()? != Constness::Const {

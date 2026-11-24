@@ -141,33 +141,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
-            return Ok(None);
-        };
-        if !matches!(
-            kind,
-            SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked
-        ) {
+        if !self.validate_transmute_origin(facts, definition, origin)? {
             return Ok(None);
         }
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("imported transmute requires transported source operation provenance");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source transmute has no completed declaration")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-        {
-            return Err("source transmute completed declaration changed");
-        }
-        validate(facts, *function)?;
         let mut args = facts
             .types
             .arguments(arguments)
@@ -207,6 +183,61 @@ impl Catalog {
         }))
     }
 
+    fn validate_transmute_origin(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<bool, &'static str> {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if !matches!(
+                kind,
+                SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked
+            ) {
+                return Ok(false);
+            }
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err("imported transmute requires transported source operation provenance");
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&i| facts.functions.get(i))
+                .ok_or("source transmute has no completed declaration")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+            {
+                return Err("source transmute completed declaration changed");
+            }
+            validate(facts, *function)?;
+            return Ok(true);
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
+            return Ok(false);
+        };
+        if !matches!(
+            imported.kind,
+            SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked
+        ) {
+            return Ok(false);
+        }
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported transmute lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || actual.body.is_some()
+            || !facts.is_const_function(definition)
+        {
+            return Err("imported transmute changed its canonical declaration");
+        }
+        Ok(true)
+    }
+
     pub(crate) fn require_transmute_report(
         &self,
         report: &Report,
@@ -220,7 +251,22 @@ impl Catalog {
             _,
         )) = self.intrinsic_record(selected.definition)?
         else {
-            return Err("source transmute lost its attributed declaration");
+            let Some(imported) = self.imported_declared_intrinsic(selected.definition) else {
+                return Err("source transmute lost its attributed declaration");
+            };
+            if !matches!(
+                imported.kind,
+                SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked
+            ) || !facts.is_const_function(selected.definition)
+                || facts
+                    .declaration_header(selected.definition)?
+                    .is_none_or(|actual| {
+                        actual.declaration != imported.origin || actual.body.is_some()
+                    })
+            {
+                return Err("imported transmute changed its canonical declaration");
+            }
+            return Ok(());
         };
         let current = facts
             .header_attribute_contracts(report, selected.definition)

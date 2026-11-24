@@ -54,10 +54,8 @@ impl Reader<'_> {
         }
         let bodiless = self
             .facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| self.facts.functions.get(index))
-            .is_some_and(|function| function.body.is_none());
+            .declaration_header(definition)?
+            .is_some_and(|header| header.body.is_none());
         Ok(bodiless.then_some(name))
     }
     pub(crate) fn source_bit_count(

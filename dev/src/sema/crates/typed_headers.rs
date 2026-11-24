@@ -64,6 +64,7 @@ pub(super) struct Header {
     pub universals: u32,
     pub constant: bool,
     pub conditional: bool,
+    pub comptime: bool,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Headers {
@@ -422,6 +423,12 @@ impl super::Linkage {
             .as_deref()
             .and_then(|headers| headers.get(definition))
             .is_some_and(|header| header.conditional)
+    }
+    pub(crate) fn original_comptime(&self, definition: DefId) -> bool {
+        self.originals
+            .as_deref()
+            .and_then(|headers| headers.get(definition))
+            .is_some_and(|header| header.comptime)
     }
 }
 pub(crate) fn is_source_original(

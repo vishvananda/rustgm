@@ -289,7 +289,8 @@ pub(in crate::sema::crates::typed_headers) fn require_function(
         (s::FunctionBody::Absent, None)
             if rows
                 .exact_callable(ordinal)
-                .is_some_and(|row| row.body.is_none()) => {}
+                .is_some_and(|row| row.body.is_none())
+                || rows.declared_intrinsic_row(ordinal).is_some() => {}
         (s::FunctionBody::Absent, None) => {
             let parent = header
                 .parent

@@ -29,6 +29,9 @@ pub(super) fn validate(
                     .and_then(|parent| headers.get(parent.0 as usize))
                     .is_none_or(|header| !matches!(header, Some(HeaderRef::Trait(_))))
                     && !rows.bodyless_runtime(function.declaration, work)?
+                    && rows
+                        .declared_intrinsic(function.declaration, work)?
+                        .is_none()
                 {
                     return Err("source body absence is not an actual required trait method");
                 }

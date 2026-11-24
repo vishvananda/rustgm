@@ -55,7 +55,8 @@ def main():
                                  "source-static-aggregate-transport",
                                  "source-early-lifetime-transport",
                                  "source-private-c-import-transport",
-                                 "source-const-trait-transport"))
+                                 "source-const-trait-transport",
+                                 "source-declared-intrinsic-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

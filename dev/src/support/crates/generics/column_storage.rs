@@ -77,6 +77,8 @@ impl Columns {
             || !cold.nominal_region_bounds.is_empty()
             || !cold.const_defaults.is_empty()
             || !cold.trait_aliases.is_empty()
+            || !cold.declared_intrinsics.is_empty()
+            || !cold.comptime_functions.is_empty()
             || cold.statics.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
@@ -95,6 +97,8 @@ impl Columns {
                 nominal_region_bounds: cold.nominal_region_bounds.clone(),
                 const_defaults: cold.const_defaults.clone(),
                 trait_aliases: cold.trait_aliases.clone(),
+                declared_intrinsics: cold.declared_intrinsics.clone(),
+                comptime_functions: cold.comptime_functions.clone(),
                 statics: cold.statics.clone(),
                 bodies: None,
             })
@@ -320,6 +324,22 @@ impl<'a> ValidatedView<'a> {
         rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
             .ok()
             .map(move |index| &rows[index])
+    }
+
+    pub(crate) fn declared_intrinsic_row(
+        self,
+        declaration: DeclarationRef,
+    ) -> Option<super::super::DeclaredIntrinsic> {
+        let rows = &self.source.columns.cold().declared_intrinsics;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .ok()
+            .map(|index| rows[index])
+    }
+
+    pub(crate) fn is_comptime(self, declaration: DeclarationRef) -> bool {
+        let rows = &self.source.columns.cold().comptime_functions;
+        rows.binary_search_by_key(&declaration.0, |row| row.0)
+            .is_ok()
     }
     /// # Errors
     /// Older source profiles retain unknown availability.

@@ -383,6 +383,9 @@ impl Catalog {
         self.intrinsics
             .get(&definition)
             .is_some_and(|entry| matches!(entry.header, HeaderState::SourceFallback(_)))
+            || self
+                .imported_declared_intrinsic(definition)
+                .is_some_and(|entry| entry.source_fallback)
     }
 
     pub(crate) fn intrinsic(&self, definition: DefId) -> Result<bool, &'static str> {
@@ -395,7 +398,11 @@ impl Catalog {
         let Some(entry) = self.intrinsics.get(&definition) else {
             return Ok(self
                 .imported_intrinsic(definition)
-                .map(|(kind, _)| kind.kind()));
+                .map(|(kind, _)| kind.kind())
+                .or_else(|| {
+                    self.imported_declared_intrinsic(definition)
+                        .map(|entry| entry.kind)
+                }));
         };
         if matches!(entry.header, HeaderState::Reserved) {
             return Err("source intrinsic declaration is not validated");

@@ -90,6 +90,7 @@ pub(super) fn function(
         universals: 0,
         constant: function.constant,
         conditional: false,
+        comptime: false,
     };
     let g::Declaration::Function { identity, .. } =
         &rows.declarations[function.declaration.0 as usize]

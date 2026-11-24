@@ -32,7 +32,7 @@ pub(super) fn emit(
     let call_context = if runtime_panic {
         s::CallContext::Runtime
     } else {
-        call_context(facts, body)?
+        call_context(facts, body, stage.declaration_policies())?
     };
     let mut raw = s::Original {
         body: reference,
@@ -287,7 +287,11 @@ fn guards(stage: &mut Stage, body: &Body, raw: &mut s::Original) -> Result<(), &
     raw.guards = Some(Box::new(s::Guards { rows, places }));
     Ok(())
 }
-fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'static str> {
+fn call_context(
+    facts: &Declarations,
+    body: &Body,
+    declaration_policies: bool,
+) -> Result<s::CallContext, &'static str> {
     if matches!(
         body.owner,
         Owner::Initializer {
@@ -306,6 +310,9 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         .ok_or("source defining context has no actual semantic body")?;
     Ok(match facts.function_context(definition, source)? {
         crate::sema::function_context::FunctionContext::Runtime => s::CallContext::Runtime,
+        crate::sema::function_context::FunctionContext::Comptime if declaration_policies => {
+            s::CallContext::ConstDefinition
+        }
         crate::sema::function_context::FunctionContext::Comptime => {
             return Err("always-comptime source bodies require a wider transport profile");
         }

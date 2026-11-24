@@ -420,22 +420,23 @@ fn function(
     if item.0 != definition.0 {
         return Err("source function value changed its actual declaration");
     }
-    if facts
-        .source_bindings
-        .as_deref()
-        .map(|c| c.intrinsic_kind(definition))
-        .transpose()?
-        .flatten()
-        .is_some_and(|kind| {
-            matches!(
-                kind,
-                SourceIntrinsic::UbChecks
-                    | SourceIntrinsic::ArithOffset
-                    | SourceIntrinsic::UncheckedSub
-                    | SourceIntrinsic::SubWithOverflow
-                    | SourceIntrinsic::ColdPath
-            )
-        })
+    if !stage.declaration_policies()
+        && facts
+            .source_bindings
+            .as_deref()
+            .map(|c| c.intrinsic_kind(definition))
+            .transpose()?
+            .flatten()
+            .is_some_and(|kind| {
+                matches!(
+                    kind,
+                    SourceIntrinsic::UbChecks
+                        | SourceIntrinsic::ArithOffset
+                        | SourceIntrinsic::UncheckedSub
+                        | SourceIntrinsic::SubWithOverflow
+                        | SourceIntrinsic::ColdPath
+                )
+            })
     {
         return Err("source intrinsic transport requires an explicit body policy profile");
     }
