@@ -14,13 +14,21 @@ RUSTC = ["rustc", "--edition=2024", "--crate-type=lib", "--emit=metadata", "--cf
 RUSTGM = ["--emit-lowir", "--edition=2024", "--cap-lints=allow"]
 
 
+def source_prefix(path, marker):
+    prefix, found, _ = (ROOT / path).read_bytes().partition(marker.encode())
+    if not found:
+        raise ValueError(f"{path}: provider foundation has no declared boundary")
+    return prefix
+
+
 def provider(check, fixture, contract):
-    prefix, marker, _ = (ROOT / contract["foundation"]).read_bytes().partition(
-        contract["prefix_marker"].encode())
-    if not marker:
-        raise ValueError("provider foundation has no declared boundary")
+    parts = [source_prefix(contract["foundation"], contract["prefix_marker"])]
+    parts.extend(source_prefix(prefix["path"], prefix["marker"])
+                 for prefix in contract.get("shared_prefixes", ()))
+    if features := contract.get("provider_features"):
+        parts.insert(0, f"#![feature({', '.join(features)})]\n".encode())
     source = check.folder / "provider.rs"
-    source.write_bytes(prefix + (fixture / "provider.rs").read_bytes())
+    source.write_bytes(b"".join(parts) + (fixture / "provider.rs").read_bytes())
     return source
 
 
@@ -71,7 +79,8 @@ def main():
     parser.add_argument(
         "--case",
         choices=("non-exhaustive-transport", "source-nominal-layout",
-                 "source-storage-transport", "source-union-transport", "source-wrapper-transport"),
+                 "source-storage-transport", "source-union-transport", "source-wrapper-transport",
+                 "source-panic-format-transport"),
         default="non-exhaustive-transport",
     )
     parser.add_argument("--out", required=True, type=Path)

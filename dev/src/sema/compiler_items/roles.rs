@@ -647,6 +647,8 @@ pub(super) fn nominal_completed(
     if !matches!(
         role,
         LangItem::PhantomData
+            | LangItem::FormatArguments
+            | LangItem::FormatArgument
             | LangItem::PanicLocation
             | LangItem::PanicInfo
             | LangItem::ManuallyDrop
@@ -694,6 +696,8 @@ pub(super) fn complete_nominal(
     if !matches!(
         role,
         LangItem::PhantomData
+            | LangItem::FormatArguments
+            | LangItem::FormatArgument
             | LangItem::PanicLocation
             | LangItem::PanicInfo
             | LangItem::ManuallyDrop

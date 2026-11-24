@@ -1,0 +1,14 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "shared_prefixes": [
+    {"path": "pa31/tests/spec/source-location-transport/provider.rs", "marker": "impl Clone for u8 {"}
+  ],
+  "provider_features": ["pattern_types"],
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0, "lowir": ["function @can_unwind(", "load"]},
+    {"cfg": "private_message", "status": 1, "rustc": "E0616", "rustgm": "private"},
+    {"cfg": "wrong_role", "status": 1, "rustc": "E0308", "rustgm": "incompatible types"}
+  ]
+}

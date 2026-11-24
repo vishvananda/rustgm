@@ -185,6 +185,9 @@ impl Stage {
                             | LangItem::TypeId
                             | LangItem::DynMetadata
                             | LangItem::PanicLocation
+                            | LangItem::PanicInfo
+                            | LangItem::FormatArguments
+                            | LangItem::FormatArgument
                     ) => {}
             DefKind::Const
                 if self.declaration_policies()

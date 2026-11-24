@@ -1,9 +1,9 @@
 //! Formatting identity comes from an actual nominal declaration, not an invented layout.
 use crate::{
-    resolve::{bindings::Declaration, expansion::Report, model::DefKind},
+    resolve::{bindings::Declaration, expansion::Report, model::DefKind, package::Error},
     sema::model::Declarations,
     support::bindings::LangItem,
-    types::ItemId,
+    types::{ItemId, RegionId, aggregate, arguments::Argument},
 };
 /// Structural header validation supplies no caller, trait or executable permission.
 /// Ordinary nominal formation and the complete constructor call remain required.
@@ -26,6 +26,48 @@ pub(in crate::sema) fn declaration(
     };
     require_lifetime_nominal(report, facts, declaration)?;
     Ok(Some(declaration))
+}
+
+pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    if report.package.source_core().is_none() {
+        return Ok(());
+    }
+    for role in [LangItem::FormatArguments, LangItem::FormatArgument] {
+        let Some(declaration) = declaration(report, facts, role).map_err(Error::unlocated)? else {
+            continue;
+        };
+        crate::sema::header_attributes::charge_source_contract_query(facts, 4)?;
+        if !super::roles::nominal_completed(report, facts, role, declaration)? {
+            super::roles::complete_nominal(facts, role, declaration)?;
+        }
+    }
+    Ok(())
+}
+
+/// Re-prove the imported nominal declaration before any constructor is selected.
+pub(super) fn imported(
+    facts: &Declarations,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(5);
+    let owner = declaration.definition;
+    let item = ItemId(owner.0);
+    let lifetime = RegionId::bound(0, 0)?;
+    let parameters = facts.generics.parameters.get(&owner).map(Vec::as_slice);
+    if declaration.parent.is_some()
+        || !matches!(parameters, Some([parameter]) if parameter.argument == Argument::Lifetime(lifetime))
+        || !facts.generics.nominal_contracts.contains(&owner)
+        || facts
+            .aggregates
+            .get(item)
+            .is_none_or(|shape| shape.kind != aggregate::Kind::Struct)
+    {
+        return Err(
+            "imported formatting role requires its actual module-owned single-lifetime struct",
+        );
+    }
+    Ok(())
 }
 
 /// Shared actual source module-owned, single-lifetime structure schema.

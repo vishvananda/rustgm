@@ -184,6 +184,43 @@ fn info(report: &Report, facts: &Declarations, fields: &[TypeId]) -> Result<(), 
     let location = catalog
         .validated_language(LangItem::PanicLocation)?
         .ok_or("source PanicInfo requires completed actual Location")?;
+    info_fields(
+        facts,
+        fields,
+        ItemId(arguments.definition.0),
+        ItemId(location.definition.0),
+    )
+}
+
+pub(super) fn imported_info(
+    facts: &Declarations,
+    catalog: &super::Catalog,
+    declaration: super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(12);
+    let item = ItemId(declaration.definition.0);
+    location_record::record(facts, declaration, crate::types::aggregate::Repr::default())?;
+    let arguments = catalog
+        .role(LangItem::FormatArguments)?
+        .ok_or("imported PanicInfo requires its actual format Arguments")?;
+    let location = catalog
+        .role(LangItem::PanicLocation)?
+        .ok_or("imported PanicInfo requires its actual Location")?;
+    info_fields(
+        facts,
+        fields(facts, item)?,
+        ItemId(arguments.definition.0),
+        ItemId(location.definition.0),
+    )
+}
+
+fn info_fields(
+    facts: &Declarations,
+    fields: &[TypeId],
+    arguments: ItemId,
+    location: ItemId,
+) -> Result<(), &'static str> {
     let Some(Kind::Reference {
         referent: message,
         region: message_region,
@@ -203,9 +240,8 @@ fn info(report: &Report, facts: &Declarations, fields: &[TypeId]) -> Result<(), 
     let lifetime = RegionId::bound(0, 0)?;
     if message_region != lifetime
         || site_region != RegionId::STATIC
-        || argument(facts, message, ItemId(arguments.definition.0))? != Argument::Lifetime(lifetime)
-        || argument(facts, site, ItemId(location.definition.0))?
-            != Argument::Lifetime(RegionId::STATIC)
+        || argument(facts, message, arguments)? != Argument::Lifetime(lifetime)
+        || argument(facts, site, location)? != Argument::Lifetime(RegionId::STATIC)
         || fields[2] != TypeId::primitive(Primitive::Bool)
         || fields[3] != TypeId::primitive(Primitive::Bool)
     {

@@ -49,6 +49,8 @@ roles and a structurally similar ordinary type.
 active-field rules for imported unions.
 `spec/source-wrapper-transport/outcomes.json` checks the imported variadic
 cursor's C ABI and the coherence rule for the fundamental Pin wrapper.
+`spec/source-panic-format-transport/outcomes.json` checks the imported
+panic and formatting structures, their field types, and member visibility.
 Run the declared case with
 `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.

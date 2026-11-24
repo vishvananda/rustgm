@@ -62,7 +62,7 @@ fn nonnull(facts: &Declarations, role: Role) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn record(
+pub(super) fn record(
     facts: &Declarations,
     declaration: Role,
     repr: aggregate::Repr,

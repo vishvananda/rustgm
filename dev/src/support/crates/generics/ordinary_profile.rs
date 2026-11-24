@@ -986,6 +986,9 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq
             | LangItem::PanicLocation
+            | LangItem::PanicInfo
+            | LangItem::FormatArguments
+            | LangItem::FormatArgument
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1314,8 +1317,16 @@ fn role_header(
         (LangItem::TypeInfo | LangItem::TypeId, _) => {
             return Err("source reflection role requires its actual struct header");
         }
+        (
+            LangItem::PanicInfo | LangItem::FormatArguments | LangItem::FormatArgument,
+            Some(super::super::HeaderRef::Nominal(_)),
+        ) if profile == BindingProfile::BodyOperations
+            && kind == super::super::DefinitionKind::Struct => {}
         (LangItem::PanicLocation, _) => {
             return Err("source caller location role requires its actual nominal header");
+        }
+        (LangItem::PanicInfo | LangItem::FormatArguments | LangItem::FormatArgument, _) => {
+            return Err("source panic or formatting role requires its actual struct header");
         }
         (
             LangItem::CloneFn | LangItem::FuturePoll | LangItem::AsyncDropInPlace,
