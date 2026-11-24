@@ -70,8 +70,10 @@ remain typed documentation pieces awaiting expansion. Do not stringify ASTs.
 
 Treat a trailing `$` as a literal matcher or template token. For repetitions
 without separators, skip the follow-set check across iteration boundaries.
-A capture from `*` may drive a `+` template when nonempty, or a `?` template
-when it has at most one iteration. Read `$crate:ident` as the crate marker
+A capture from `*` can drive a `+` template when nonempty. A `?` template
+uses the capture's iteration count, which can exceed one. See the
+[optional-transcription example](tests/spec/repetition/operator-optional.rs).
+Read `$crate:ident` as the crate marker
 followed by the literal tokens `: ident`. A documentation comment in a matcher
 cannot match a comment already desugared into an invocation attribute.
 
