@@ -63,6 +63,38 @@ macro_rules! language_items {
 // The appended rows follow rustc_hir/lang_items.rs at 88d9e12ae178fab0fb5cc050a94da85685d449ea;
 // weak-only foreign targets additionally follow rustc_hir/weak_lang_items.rs.
 impl LangItem {
+    /// One protocol family over existing language identities; no separate authority.
+    pub(crate) const GUARD_PANICS: [LangItem; 28] = [
+        Self::PanicBoundsCheck,
+        Self::PanicMisalignedPointerDereference,
+        Self::PanicCannotUnwind,
+        Self::PanicInCleanup,
+        Self::PanicNullPointerDereference,
+        Self::PanicInvalidEnumConstruction,
+        Self::PanicAddOverflow,
+        Self::PanicSubOverflow,
+        Self::PanicMulOverflow,
+        Self::PanicDivOverflow,
+        Self::PanicRemOverflow,
+        Self::PanicNegOverflow,
+        Self::PanicShrOverflow,
+        Self::PanicShlOverflow,
+        Self::PanicDivZero,
+        Self::PanicRemZero,
+        Self::PanicCoroutineResumed,
+        Self::PanicAsyncFnResumed,
+        Self::PanicAsyncGenFnResumed,
+        Self::PanicGenFnNone,
+        Self::PanicCoroutineResumedPanic,
+        Self::PanicAsyncFnResumedPanic,
+        Self::PanicAsyncGenFnResumedPanic,
+        Self::PanicGenFnNonePanic,
+        Self::PanicCoroutineResumedDrop,
+        Self::PanicAsyncFnResumedDrop,
+        Self::PanicAsyncGenFnResumedDrop,
+        Self::PanicGenFnNoneDrop,
+    ];
+
     /// These version-fourteen role bindings determine nominal storage policies.
     pub(crate) const fn is_storage_wrapper(self) -> bool {
         matches!(

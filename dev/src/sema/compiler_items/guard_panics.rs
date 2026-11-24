@@ -8,45 +8,13 @@ use crate::{
     support::bindings::LangItem,
 };
 
-/// One protocol family over existing language identities; no separate authority.
-pub(in crate::sema) const ROLES: [LangItem; 28] = [
-    LangItem::PanicBoundsCheck,
-    LangItem::PanicMisalignedPointerDereference,
-    LangItem::PanicCannotUnwind,
-    LangItem::PanicInCleanup,
-    LangItem::PanicNullPointerDereference,
-    LangItem::PanicInvalidEnumConstruction,
-    LangItem::PanicAddOverflow,
-    LangItem::PanicSubOverflow,
-    LangItem::PanicMulOverflow,
-    LangItem::PanicDivOverflow,
-    LangItem::PanicRemOverflow,
-    LangItem::PanicNegOverflow,
-    LangItem::PanicShrOverflow,
-    LangItem::PanicShlOverflow,
-    LangItem::PanicDivZero,
-    LangItem::PanicRemZero,
-    LangItem::PanicCoroutineResumed,
-    LangItem::PanicAsyncFnResumed,
-    LangItem::PanicAsyncGenFnResumed,
-    LangItem::PanicGenFnNone,
-    LangItem::PanicCoroutineResumedPanic,
-    LangItem::PanicAsyncFnResumedPanic,
-    LangItem::PanicAsyncGenFnResumedPanic,
-    LangItem::PanicGenFnNonePanic,
-    LangItem::PanicCoroutineResumedDrop,
-    LangItem::PanicAsyncFnResumedDrop,
-    LangItem::PanicAsyncGenFnResumedDrop,
-    LangItem::PanicGenFnNoneDrop,
-];
-
 pub(super) fn complete(
     report: &Report,
     facts: &Declarations,
     catalog: &Catalog,
-) -> Result<[Option<LangItem>; 28], Error> {
-    let mut completed = [None; 28];
-    for (slot, role) in ROLES.into_iter().enumerate() {
+) -> Result<[Option<LangItem>; LangItem::GUARD_PANICS.len()], Error> {
+    let mut completed = [None; LangItem::GUARD_PANICS.len()];
+    for (slot, role) in LangItem::GUARD_PANICS.into_iter().enumerate() {
         completed[slot] = super::headers::functions::complete(report, facts, catalog, role)?;
     }
     Ok(completed)
@@ -88,7 +56,7 @@ fn installed(facts: &Declarations, role: LangItem) -> Result<bool, &'static str>
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    if !ROLES.contains(&role) {
+    if !LangItem::GUARD_PANICS.contains(&role) {
         return Err("compiler assertion requested a different language role");
     }
     let Some(actual) = catalog.validated_role(role)? else {

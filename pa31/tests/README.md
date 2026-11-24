@@ -36,6 +36,11 @@ roles and a structurally similar ordinary type. Run the declared case with
 `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.
 
+`spec/source-guard-transport/outcomes.json` covers the exact overflow hook
+selected while lowering arithmetic in a fresh client. Run
+`scripts/check_guard_role_transport.py` with the prebuilt RustGM and pinned Rust
+compilers.
+
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the
 pinned `core` build. Run their `lint-cases.json` manifests with

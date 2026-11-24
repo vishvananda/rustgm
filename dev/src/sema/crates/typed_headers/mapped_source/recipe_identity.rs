@@ -265,7 +265,10 @@ impl Graph {
             return Err("imported panic role requires its version-thirteen profile");
         }
         *steps = steps.saturating_add(descriptor.rows().roles.len());
-        if kind != LangItem::Panic {
+        if kind != LangItem::Panic
+            && !(descriptor.profile().declaration_policies()
+                && LangItem::GUARD_PANICS.contains(&kind))
+        {
             return Err("invalid imported panic role");
         }
         self.bound_role(facts, role, kind, DefKind::Function, steps)

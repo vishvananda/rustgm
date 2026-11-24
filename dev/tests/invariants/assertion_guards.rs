@@ -21,7 +21,7 @@ fn panic_headers_complete_actual_roles_without_granting_guard_execution() -> Res
             .count(),
         28
     );
-    for role in ROLES {
+    for role in LangItem::GUARD_PANICS {
         assert!(catalog.validated_role(role)?.is_some());
         assert!(require_guard(&facts, role).is_err());
     }

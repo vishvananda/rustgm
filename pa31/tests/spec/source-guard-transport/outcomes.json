@@ -1,0 +1,13 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "profile": "module-body-operations-v14",
+  "rustc": 0,
+  "rustgm": 0,
+  "lowir": {
+    "linked_guard_role_calls": 1,
+    "provider_symbol": "addition_overflow"
+  }
+}

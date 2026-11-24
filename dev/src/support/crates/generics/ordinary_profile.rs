@@ -967,6 +967,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::DynMetadata
     ) || interval_roles::ROLES.contains(&role)
         || role.is_storage_wrapper()
+        || LangItem::GUARD_PANICS.contains(&role)
     {
         return profile == BindingProfile::BodyOperations;
     }
@@ -1054,6 +1055,7 @@ fn binding_declarations(
             .ok_or("source role binding names an unknown declaration")?;
         role_header(
             profile,
+            rows,
             declaration.definition.kind,
             role.role,
             headers.header(address.declaration, work)?,
@@ -1227,11 +1229,21 @@ const SEND: &str = "imported Send diagnostic item requires its unsafe auto trait
 /// The declaration/header kind each bound role may claim under `profile`.
 fn role_header(
     profile: BindingProfile,
+    rows: &SourceRows,
     kind: super::super::DefinitionKind,
     role: LangItem,
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     match (role, header) {
+        (role, Some(super::super::HeaderRef::Function(index)))
+            if profile == BindingProfile::BodyOperations
+                && LangItem::GUARD_PANICS.contains(&role)
+                && rows.functions.get(index as usize).is_some_and(|function| {
+                    function.parent.is_none() && matches!(function.body, FunctionBody::Original(_))
+                }) => {}
+        (role, _) if LangItem::GUARD_PANICS.contains(&role) => {
+            return Err("source guard role requires its actual defined free function");
+        }
         (role, header) if role.is_storage_wrapper() => {
             if profile != BindingProfile::BodyOperations
                 || kind != super::super::DefinitionKind::Struct

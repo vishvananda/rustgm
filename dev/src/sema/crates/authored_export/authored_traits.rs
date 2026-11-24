@@ -165,6 +165,8 @@ impl Stage {
             }
             DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
             DefKind::Function if role == LangItem::CloneFn => {}
+            DefKind::Function
+                if self.declaration_policies() && LangItem::GUARD_PANICS.contains(&role) => {}
             // FnOnce's declared result travels as its kind-9 result row.
             DefKind::TypeAlias if role == LangItem::FnOnceOutput && self.body_nodes() => {}
             DefKind::TypeAlias if role == LangItem::MetadataType && self.declaration_policies() => {

@@ -108,7 +108,7 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        for role in crate::sema::compiler_items::guard_panics::ROLES
+        for role in crate::support::bindings::LangItem::GUARD_PANICS
             .into_iter()
             .chain(crate::sema::compiler_items::WEAK_IMPORTS)
             .chain([crate::support::bindings::LangItem::BeginPanic])

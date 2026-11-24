@@ -123,24 +123,16 @@ pub(super) fn imported(
     if declaration.parent.is_some() || facts.associated.owner(definition).is_some() {
         return Err("imported panic role requires its actual free declaration");
     }
-    let ty = facts
-        .definitions
-        .get(definition.0 as usize)
-        .copied()
-        .flatten()
-        .ok_or("imported panic role lost its installed declaration type")?;
-    let Some(Kind::FunctionItem {
-        item,
-        signature: callable,
-        ..
-    }) = facts.types.kind(ty)
-    else {
-        return Err("imported panic role lost its canonical function item");
-    };
-    if item.0 != definition.0 {
-        return Err("imported panic role changed its function item identity");
+    let header = facts
+        .declaration_header(definition)?
+        .ok_or("imported panic role lost its installed declaration header")?;
+    if header.declaration != declaration.origin || header.body.is_none() {
+        return Err("imported panic role changed its declaration or body identity");
     }
-    signature(facts, definition, callable, role, None)
+    if role == LangItem::Panic {
+        signature(facts, definition, header.signature, role, None)?;
+    }
+    Ok(())
 }
 
 fn signature(

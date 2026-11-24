@@ -48,14 +48,22 @@ pub(crate) fn prepare(
     if let Some(route) = catalog.guard_route(role) {
         return Ok(Some(route));
     }
-    let Some(declaration) = catalog.validated_language(role)? else {
+    let Some(declaration) = catalog.validated_role(role)? else {
         return Ok(None);
     };
-    if !super::guard_panics::ROLES.contains(&role) {
+    if !LangItem::GUARD_PANICS.contains(&role) {
         return Err("source guard requested a different language role".into());
     }
     catalog.require_provider_report(report)?;
-    let header = super::headers::functions::current(facts, declaration)?;
+    let header = facts
+        .declaration_header(declaration.definition)?
+        .ok_or("panic guard requires its checked declaration header")?;
+    if declaration.parent.is_some()
+        || header.declaration != declaration.origin
+        || header.body.is_none()
+    {
+        return Err("panic guard changed its declared function identity".into());
+    }
     let signature = header.signature;
     let Some(Kind::Function {
         bound_regions: 0,
@@ -104,7 +112,9 @@ pub(crate) fn prepare(
         });
     let owner = usize::from(catalog.native_layouts.is_none()) * size_of::<Plans>();
     let growth = Growth::map::<LangItem, Route>(len, capacity, 1);
-    facts.charge_caller_inputs(
+    pay_route(
+        report,
+        facts,
         growth.work.saturating_add(1),
         growth.bytes.saturating_add(routes).saturating_add(owner),
     )?;
@@ -139,7 +149,7 @@ pub(crate) fn prepare_location(
     }
     let growth =
         Growth::map::<NodeKey, LocationId>(routes.locations.len(), routes.locations.capacity(), 1);
-    facts.charge_caller_inputs(growth.work.saturating_add(1), growth.bytes)?;
+    pay_route(report, facts, growth.work.saturating_add(1), growth.bytes)?;
     let location = Evaluator::new(report, facts)
         .prepare_source_location(site)
         .map_err(Failure::message)?;
@@ -155,4 +165,17 @@ pub(crate) fn prepare_location(
         .map_err(|_| "source guard location allocation failed")?;
     locations.insert(site, location);
     Ok(())
+}
+
+fn pay_route(
+    report: &Report,
+    facts: &mut Declarations,
+    work: usize,
+    bytes: usize,
+) -> Result<(), &'static str> {
+    if report.package.source_client().is_some() {
+        crate::sema::crates::pay_source_headers(facts, work, bytes)
+    } else {
+        facts.charge_caller_inputs(work, bytes)
+    }
 }

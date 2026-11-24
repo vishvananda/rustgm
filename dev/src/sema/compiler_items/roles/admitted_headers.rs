@@ -303,7 +303,7 @@ fn trait_headers(
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
-            LangItem::Panic => {
+            role if role == LangItem::Panic || LangItem::GUARD_PANICS.contains(&role) => {
                 super::super::runtime_panics::imported(facts, declaration, role, steps)?;
                 complete.insert(role);
             }
