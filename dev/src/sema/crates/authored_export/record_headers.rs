@@ -7,6 +7,14 @@ use crate::{
     syntax::item::Shape,
     types::{ItemId, aggregate},
 };
+
+pub(super) struct NominalShape {
+    repr: RecordRepr,
+    packed_simd: bool,
+    enumeration: bool,
+    exhaustiveness: s::Exhaustiveness,
+}
+
 impl Stage {
     /// Version thirteen: a tuple or unit struct's constructor travels as its
     /// struct's single variant declaration. Every consumer re-derives its
@@ -86,30 +94,13 @@ impl Stage {
         modules: &[Option<super::DeclarationRef>],
     ) -> Result<(), &'static str> {
         let item = ItemId(owner.0);
-        let shape = facts
-            .aggregates
-            .get(item)
-            .ok_or("source nominal lacks its completed shape")?;
-        let enumeration = shape.kind == aggregate::Kind::Enum;
+        let NominalShape {
+            repr,
+            packed_simd,
+            enumeration,
+            exhaustiveness,
+        } = self.nominal_shape(report, facts, owner)?;
         let policies = self.declaration_policies();
-        let non_exhaustive = non_exhaustive(report, facts, item)?;
-        if non_exhaustive && !policies {
-            return Err("source non-exhaustive nominal requires the declaration policy profile");
-        }
-        let (repr, packed_simd) =
-            record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
-        if !policies {
-            concrete_simd(facts, owner, repr)?;
-        }
-        if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
-            || facts.aggregates.permits_dangling_pointers(item) != Some(false)
-            || !(shape.kind == aggregate::Kind::Struct
-                || enumeration
-                || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
-            || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
-        {
-            return Err("source nominal destruction/shape requires its wider complete contract");
-        }
         let fields = if enumeration {
             &[]
         } else {
@@ -167,11 +158,7 @@ impl Stage {
             fundamental,
             incoherent_inherent,
             packed_simd,
-            exhaustiveness: if non_exhaustive {
-                s::Exhaustiveness::Open
-            } else {
-                s::Exhaustiveness::Closed
-            },
+            exhaustiveness,
             simd_lane_limit: if policies {
                 facts.aggregates.simd_lane_limit(item)
             } else {
@@ -182,6 +169,49 @@ impl Stage {
             self.enum_header(facts, owner, declaration, context)?;
         }
         Ok(())
+    }
+    /// These source facts are available before any metadata IDs are assigned.
+    pub(super) fn nominal_shape(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<NominalShape, &'static str> {
+        let item = ItemId(owner.0);
+        let shape = facts
+            .aggregates
+            .get(item)
+            .ok_or("source nominal lacks its completed shape")?;
+        let enumeration = shape.kind == aggregate::Kind::Enum;
+        let policies = self.declaration_policies();
+        let non_exhaustive = non_exhaustive(report, facts, item)?;
+        if non_exhaustive && !policies {
+            return Err("source non-exhaustive nominal requires the declaration policy profile");
+        }
+        let (repr, packed_simd) =
+            record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
+        if !policies {
+            concrete_simd(facts, owner, repr)?;
+        }
+        if facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
+            || facts.aggregates.permits_dangling_pointers(item) != Some(false)
+            || !(shape.kind == aggregate::Kind::Struct
+                || enumeration
+                || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
+            || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
+        {
+            return Err("source nominal destruction/shape requires its wider complete contract");
+        }
+        Ok(NominalShape {
+            repr,
+            packed_simd,
+            enumeration,
+            exhaustiveness: if non_exhaustive {
+                s::Exhaustiveness::Open
+            } else {
+                s::Exhaustiveness::Closed
+            },
+        })
     }
     fn nominal_inputs(
         &mut self,

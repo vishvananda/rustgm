@@ -28,15 +28,15 @@ def run(app, out):
     if lines[0] != HEADER:
         raise ValueError("missing declaration admission census header")
     issues = [line.split("\t") for line in lines[1:-1]]
-    if [row[3] for row in issues] != contract["refused"]:
+    if [row[3] for row in issues] != [case["name"] for case in contract["refused"]]:
         raise ValueError(f"wrong declaration export failures: {issues}")
-    for row in issues:
-        _, declaration, _, path, location, diagnostic = row
-        name = path.rsplit("::", 1)[-1]
-        if not declaration.isdigit() or diagnostic != contract["diagnostic"]:
+    source_lines = source.read_text().splitlines()
+    for row, case in zip(issues, contract["refused"], strict=True):
+        _, declaration, _, _, location, diagnostic = row
+        if not declaration.isdigit() or diagnostic != case["diagnostic"]:
             raise ValueError(f"incorrect census diagnostic: {row}")
         file, line, _ = location.rsplit(":", 2)
-        if Path(file) != source or f"type {name}" not in source.read_text().splitlines()[int(line) - 1]:
+        if Path(file) != source or case["source"] not in source_lines[int(line) - 1]:
             raise ValueError(f"incorrect declaration location: {location}")
     summary = lines[-1].split("\t")
     if len(summary) != 5 or summary[0] != "summary":

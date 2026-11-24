@@ -3,7 +3,7 @@
 Planned: no graded manifest or generated reference outputs yet.
 
 `spec/source-export-census/outcomes.json` declares a source-provider control
-for observing independent declaration export failures in order. Run
+for observing independent declaration and nominal shape failures in order. Run
 `scripts/check_export_census.py` against a prebuilt compiler. A census writes
 an analysis report and exits with failure.
 

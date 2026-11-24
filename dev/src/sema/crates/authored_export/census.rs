@@ -1,8 +1,8 @@
 //! Observe v14 declaration admission without forming a writable interface.
-use super::{BodyTransport, CrateIdentity, Declarations, DefId, ExportMode, Report, Stage};
+use super::{BodyTransport, CrateIdentity, Declarations, DefId, ExportMode, Report, Stage, s};
 use crate::resolve::{model::Definition, package::Error};
 
-/// Results from checking every declaration against the real v14 export gate.
+/// The real v14 declaration and nominal shape gates that need no exported rows.
 pub struct DeclCensus {
     pub checked: usize,
     pub refused: Vec<DeclFailure>,
@@ -29,7 +29,15 @@ impl DeclCensus {
             stage.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            let result = stage.exported_kind(report, facts, id, mode);
+            let result = stage
+                .exported_kind(report, facts, id, mode)
+                .and_then(|kind| match kind {
+                    Some(s::DefinitionKind::Struct | s::DefinitionKind::Enum) => {
+                        stage.charge(1)?;
+                        stage.nominal_shape(report, facts, id).map(drop)
+                    }
+                    _ => Ok(()),
+                });
             census.checked += 1;
             if let Err(message) = result {
                 // The same work ledger remains sticky after a failed admission.

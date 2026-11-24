@@ -1,6 +1,9 @@
 {
   "source": "provider.rs",
-  "refused": ["crate::First", "crate::Last"],
-  "diagnostic": "named, associated or generic alias transport requires its wider profile",
+  "refused": [
+    {"name": "crate::First", "source": "type First", "diagnostic": "named, associated or generic alias transport requires its wider profile"},
+    {"name": "crate::Last", "source": "type Last", "diagnostic": "named, associated or generic alias transport requires its wider profile"},
+    {"name": "crate::Aligned", "source": "struct Aligned", "diagnostic": "source nominal representation requires its wider complete contract"}
+  ],
   "independent": {"rustc": 0}
 }

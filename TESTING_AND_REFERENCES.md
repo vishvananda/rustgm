@@ -102,10 +102,11 @@ are admitted. Legacy cases retain numeric placement checks.
 
 Replay the target source and profile flags with `--export-census PATH` in place
 of the artifact output flags. The v14 source-library census runs the ordinary
-source and template checks and reports each declaration rejected by the export
-admission check, with its definition identity, name and source location. The
-command exits with a nonzero status and creates only the census file. Scope,
-header and body transport run when building the actual library artifact.
+source and template checks and reports declarations rejected by admission or
+nominal shape validation. Each record has a definition identity, name and source
+location. The command exits with a nonzero status and creates only the census
+file. Scope, remaining header and body transport run when building the library
+artifact.
 
 ### Test placement audit
 
