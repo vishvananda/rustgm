@@ -7,6 +7,7 @@ mod imported_owners;
 mod imported_records;
 mod imported_storage;
 mod imported_values;
+mod promotions;
 mod statics;
 mod type_transport;
 mod typed_headers;
@@ -74,6 +75,7 @@ pub struct Linkage {
     imported_constants: HashSet<DefId>,
     imported_records: HashSet<DefId>,
     imported_storage: HashMap<DefId, bool>,
+    promotions: Option<Box<promotions::Registry>>,
     import_work: ImportWork,
 }
 /// Exact signature graph and root visits during one source-free import pass.

@@ -166,20 +166,42 @@ impl Context<'_> {
         let storage = self.data_storage(key, ty, readonly)?;
         self.data.charge(1)?;
         let name = self.data_name(key)?;
+        let promotion = match key {
+            Key::Location(location) => self
+                .ledger
+                .crates
+                .as_deref()
+                .and_then(|linkage| linkage.promoted_allocation(location)),
+            _ => None,
+        };
         let exact = match key {
             Key::Definition(id) => self
                 .foreign
                 .and_then(|registry| registry.global(id))
                 .is_some_and(|record| record.linkage != crate::support::linkage::Linkage::Internal),
-            _ => false,
+            _ => promotion.is_some(),
         };
         let span = definition_span(layout.size, layout.align, exact);
+        if promotion.is_some_and(|record| record.imported) {
+            let global = self.output.declare_global(name, span, storage)?;
+            self.data.globals.insert(key, global);
+            return Ok(global);
+        }
         let global = self.output.global(name, span, storage)?;
         self.data.globals.insert(key, global);
         self.data.pending.push(Pending { global, value, ty });
         Ok(global)
     }
     fn data_name(&self, key: Key) -> Result<String, &'static str> {
+        if let Key::Location(location) = key
+            && let Some(record) = self
+                .ledger
+                .crates
+                .as_deref()
+                .and_then(|linkage| linkage.promoted_allocation(location))
+        {
+            return Ok(record.symbol.clone());
+        }
         if let Key::Definition(id) = key
             && let Some(record) = self.foreign.and_then(|registry| registry.global(id))
         {
@@ -235,7 +257,7 @@ impl Context<'_> {
             readonly
         })
     }
-    fn constant_pointer(&mut self, mut id: LocationId) -> Result<Pointer, &'static str> {
+    pub(super) fn constant_pointer(&mut self, mut id: LocationId) -> Result<Pointer, &'static str> {
         let mut path = Vec::new();
         let mut pointer = loop {
             self.data.charge(1)?;

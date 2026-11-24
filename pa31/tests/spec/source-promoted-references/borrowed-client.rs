@@ -1,0 +1,16 @@
+#![feature(no_core)]
+#![no_core]
+extern crate base;
+
+const MESSAGE: fn(u8, &mut base::Arguments<'_>) -> base::Opt<u8> = base::current().message;
+#[unsafe(no_mangle)]
+pub extern "C" fn observe() -> i32 {
+    let table = base::current();
+    let mut text = base::Arguments { text: "client" };
+    if (table.retry)(12) { 1 } else {
+        match MESSAGE(11, &mut text) {
+            base::Opt::Some(value) => value as i32,
+            base::Opt::None => 3,
+        }
+    }
+}

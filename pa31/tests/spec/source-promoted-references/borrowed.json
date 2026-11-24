@@ -1,0 +1,32 @@
+{
+  "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+  "prefix_marker": "// Authored macro-context transport controls.",
+  "provider": "borrowed-provider.rs",
+  "cases": [
+    {
+      "source": "borrowed-client.rs",
+      "status": 0
+    },
+    {
+      "source": "borrowed-wrong-pointer.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "error[E0308]"
+    }
+  ],
+  "native": {
+    "client": "borrowed-client.rs",
+    "driver": "driver.c",
+    "exit": 34
+  },
+  "artifact": {
+    "handler_count": 2,
+    "corruptions": {
+      "foreign-owner": "source promoted reference has no actual allocation owner",
+      "wrong-signature": "source promoted relocation changed its actual field signature"
+    },
+    "legacy_diagnostic": "invalid source constant value presence",
+    "binder_slots": 2,
+    "binder_diagnostic": "source bound region exceeds its exact ancestor binder"
+  }
+}

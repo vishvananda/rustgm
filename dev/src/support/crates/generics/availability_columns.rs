@@ -536,10 +536,7 @@ impl Validation<'_> {
                 .columns
                 .constants()
                 .get(index as usize)
-                .is_some_and(|row| {
-                    !matches!(row.body, super::ConstantBody::Evaluated(_))
-                        || self.inherent_constant(owner)
-                }),
+                .is_some_and(|row| !row.body.evaluated() || self.inherent_constant(owner)),
             None
             | Some(
                 super::HeaderRef::Nominal(_)
@@ -564,7 +561,7 @@ impl Validation<'_> {
             self.constant_parent(owner),
             Some(super::HeaderRef::Trait(_))
         ) && matches!(self.headers[owner.0 as usize], Some(super::HeaderRef::Constant(index))
-                if !matches!(self.columns.constants()[index as usize].body, super::ConstantBody::Evaluated(_)))
+                if !self.columns.constants()[index as usize].body.evaluated())
     }
 
     fn constant_parent(&self, owner: DeclarationRef) -> Option<super::HeaderRef> {

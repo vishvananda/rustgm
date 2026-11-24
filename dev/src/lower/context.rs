@@ -449,6 +449,11 @@ impl<'a> Context<'a> {
         for &definition in roots.globals {
             context.static_data(definition).map_err(error)?;
         }
+        if let Some(linkage) = facts.crates.as_deref() {
+            for &location in linkage.exported_promotions() {
+                context.constant_pointer(location).map_err(error)?;
+            }
+        }
         let startup = roots
             .startup
             .map(|startup| context.demand_startup(startup))
@@ -931,6 +936,20 @@ impl<'a> Context<'a> {
         let Some(Kind::Closure { identity, .. }) = self.types.kind(ty) else {
             return Err("closure requires a checked environment adapter");
         };
+        let promotion = self
+            .ledger
+            .crates
+            .as_deref()
+            .and_then(|linkage| linkage.promoted_handler(ty));
+        if let Some(binding) = promotion.filter(|binding| binding.source.is_none()) {
+            if entry.is_some() {
+                return Err("imported promotion handler cannot acquire a closure receiver");
+            }
+            let signature = self.signature(binding.signature)?;
+            return self
+                .output
+                .declare(binding.symbol.clone(), signature, false);
+        }
         let instance = Instance::closure(self.types, ty)?;
         let &index = self
             .instance_indices
@@ -968,15 +987,16 @@ impl<'a> Context<'a> {
         if let Some(symbol) = self.symbols[index] {
             return Ok(symbol);
         }
-        let signature = self.signature(signature)?;
-        let name = if self.body(index).instance.is_some() {
-            format!("rg.closure.{}.i{index}", identity.0)
+        let name = if let Some(binding) = promotion {
+            self.entry_abi(binding.signature, signature)?;
+            binding.symbol.clone()
+        } else if self.body(index).instance.is_some() {
+            self.internal_name(format!("rg.closure.{}.i{index}", identity.0))
         } else {
-            format!("rg.closure.{}", identity.0)
+            self.internal_name(format!("rg.closure.{}", identity.0))
         };
-        let symbol = self
-            .output
-            .declare(self.internal_name(name), signature, false)?;
+        let signature = self.signature(signature)?;
+        let symbol = self.output.declare(name, signature, false)?;
         self.symbols[index] = Some(symbol);
         self.queue.push(index);
         Ok(symbol)

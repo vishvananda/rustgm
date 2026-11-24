@@ -51,7 +51,7 @@ impl Graph {
             .ok_or("source constant lost its actual associated owner")?;
         match (rows.header(parent)?, actual.kind) {
             (Some(s::HeaderRef::Trait(_)), OwnerKind::Trait { definition, .. })
-                if definition == owner && !matches!(body, s::ConstantBody::Evaluated(_)) => {}
+                if definition == owner && !body.evaluated() => {}
             (Some(s::HeaderRef::Implementation(index)), OwnerKind::ImportedImpl(_))
                 if actual.self_definition == owner
                     && rows.implementations[index as usize]
@@ -63,9 +63,7 @@ impl Graph {
                     && rows.implementations[index as usize]
                         .inherent_constant_owner(&rows.types)
                     && matches!(body, s::ConstantBody::Original(_)) => {}
-            (_, OwnerKind::ImportedInherent(_))
-                if matches!(body, s::ConstantBody::Evaluated(_)) =>
-            {
+            (_, OwnerKind::ImportedInherent(_)) if body.evaluated() => {
                 return Ok(None);
             }
             _ => {

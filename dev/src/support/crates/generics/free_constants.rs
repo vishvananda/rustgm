@@ -2,10 +2,13 @@
 //! declaration's initializer ownership. Consumers still check original bodies.
 use super::{ConstTerm, Declaration, DefinitionKind, HeaderIndex, HeaderRef, Profile, SourceRows};
 use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
+#[path = "promoted_refs.rs"]
+mod promoted;
 use crate::support::crates::{
     Scalar, ScalarValue,
     generics::{Range, TypeRef, Work},
 };
+pub use promoted::PromotedHandler;
 
 /// One constant's header row. Its declaration is implied: row `k` belongs to
 /// the `k`-th constant declaration in declaration order.
@@ -20,6 +23,18 @@ pub enum ConstantBody {
     Required,
     Evaluated(ConstTerm),
     Original(BodyRef),
+    /// A shared reference to a provider-owned promotion. The anchor defines
+    /// the allocation; subsequent constants may refer to that same storage.
+    PromotedReference {
+        anchor: DeclarationRef,
+        handlers: Range,
+    },
+}
+
+impl ConstantBody {
+    pub(crate) const fn evaluated(self) -> bool {
+        matches!(self, Self::Evaluated(_) | Self::PromotedReference { .. })
+    }
 }
 
 /// Each constant declaration with its row, in declaration order. Validated
@@ -103,6 +118,7 @@ pub(super) fn validate(
         return Ok(());
     }
     let [min, max, _] = super::interval_roles::bound_roles(rows, profile, work)?;
+    let mut promoted_end = 0;
     for (index, row) in rows.declarations.iter().enumerate() {
         if row.definition.kind != DefinitionKind::Constant {
             continue;
@@ -127,6 +143,20 @@ pub(super) fn validate(
             }
             continue;
         }
+        if let ConstantBody::PromotedReference { anchor, handlers } = header.body {
+            if !profile.declaration_policies()
+                || headers.scopes().scope_row(declaration, work)?.is_some()
+            {
+                return Err("source promoted reference requires its closed v14 declaration");
+            }
+            if handlers.start != promoted_end || handlers.end < handlers.start {
+                return Err("source promoted handler ranges must cover the targets in order");
+            }
+            promoted_end = handlers.end;
+            value_owner(rows, headers, row, profile, work)?;
+            promoted::reference(rows, headers, declaration, *header, anchor, handlers, work)?;
+            continue;
+        }
         let value = match header.body {
             ConstantBody::Required | ConstantBody::Original(_)
                 if profile.declaration_policies() =>
@@ -147,6 +177,9 @@ pub(super) fn validate(
                 return Err("source const value over a const parameter requires its wider profile");
             }
             ConstantBody::Evaluated(ConstTerm::Value(value)) => value,
+            ConstantBody::PromotedReference { .. } => {
+                return Err("source promoted reference lost its actual allocation");
+            }
         };
         if profile.declaration_policies()
             && headers.scopes().scope_row(declaration, work)?.is_some()
@@ -169,6 +202,9 @@ pub(super) fn validate(
                 super::const_value(&rows.types, value)?;
             }
         }
+    }
+    if promoted_end as usize != rows.cold().promoted_handlers.len() {
+        return Err("source promoted handlers have no actual allocation owner");
     }
     Ok(())
 }

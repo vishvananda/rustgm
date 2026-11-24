@@ -272,6 +272,12 @@ impl DomainIndex<'_, '_> {
             }
             return Err("source constant read changed its declaration's owner or type");
         }
+        if matches!(header.body, s::ConstantBody::PromotedReference { .. })
+            && self.declaration_policies
+            && ty == header.ty
+        {
+            return Ok(());
+        }
         if !matches!(header.body, s::ConstantBody::Evaluated(_)) {
             return Err("source constant read requires its completed value");
         }

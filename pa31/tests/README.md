@@ -7,6 +7,14 @@ for observing independent declaration and nominal shape failures in order. Run
 `scripts/check_export_census.py` against a prebuilt compiler. A census writes
 an analysis report and exits with failure.
 
+`spec/source-promoted-references/outcomes.json` declares a provider whose
+promoted function table has two checked noncapturing handlers. A fresh
+client reads its typed field during constant evaluation and calls both
+handlers after native linkage. Pinned rustc checks the source contracts.
+`scripts/check_promoted_references.py` also checks malformed allocation
+ownership and handler signatures. The borrowed variant uses a higher-ranked
+handler returning an enum and checks an out-of-range lifetime slot.
+
 `spec/source-bounded-alias-transport/outcomes.json` declares a source library
 with the two associated-type projections used by `core`'s `ChangeOutputType`.
 Fresh clients exercise a valid application, a missing implementation and
