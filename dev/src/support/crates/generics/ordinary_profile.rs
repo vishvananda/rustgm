@@ -11,6 +11,8 @@ mod callable_traits;
 mod captured;
 #[path = "conversion_profile.rs"]
 mod conversions;
+#[path = "iterator_blanket.rs"]
+mod iterator_blanket;
 #[path = "logical_discriminant.rs"]
 mod logical_discriminant;
 use crate::support::crates::generics::Convention;
@@ -191,7 +193,7 @@ fn validate_with(
         if header.constant
             && !reservation
             && roles
-                .const_operator_impl(rows, headers, header, work)?
+                .const_trait_impl(rows, headers, header, work)?
                 .is_none()
             || (!header.polarity.is_positive() || header.unsafe_)
                 && !(roles.languages && header.trait_application.is_some())
@@ -206,8 +208,9 @@ fn validate_with(
     }
     for clause in &rows.clauses {
         work.charge(1)?;
-        let qualified =
-            roles.callables.callable(clause.owner) || roles.conditional_role_input(rows, clause);
+        let qualified = roles.callables.callable(clause.owner)
+            || roles.conditional_role_input(rows, clause)
+            || roles.conditional_iterator_input(rows, headers, clause, work)?;
         ordinary(&clause.requirement, qualified)?;
     }
     originals(rows, headers, work, profile, binding, features, &roles)?;
@@ -527,7 +530,7 @@ fn trait_const_method(
     if implementation.polarity == ImplPolarity::Reservation {
         return Ok(true);
     }
-    let Some(owner) = roles.const_operator_impl(rows, headers, implementation, work)? else {
+    let Some(owner) = roles.const_trait_impl(rows, headers, implementation, work)? else {
         return Ok(false);
     };
     Ok(
@@ -1048,7 +1051,7 @@ impl Bindings {
             || self.comparisons.contains(&Some(declaration))
     }
 
-    fn const_operator_impl(
+    fn const_trait_impl(
         &self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
@@ -1061,12 +1064,13 @@ impl Bindings {
         if !implementation.constant
             || implementation.unsafe_
             || !implementation.polarity.is_positive()
-            || self
-                .binary_operators
-                .iter()
-                .chain(&self.dereferences)
-                .chain(&self.comparisons)
-                .all(Option::is_none)
+            || self.for_traits[1].is_none()
+                && self
+                    .binary_operators
+                    .iter()
+                    .chain(&self.dereferences)
+                    .chain(&self.comparisons)
+                    .all(Option::is_none)
         {
             return Ok(None);
         }
@@ -1076,7 +1080,17 @@ impl Bindings {
             .get(application.0 as usize)
             .ok_or("source const operator impl lost its actual trait application")?
             .declaration;
-        if declaration.artifact.0 != 0 || !self.const_operator(declaration.declaration) {
+        if declaration.artifact.0 != 0 {
+            return Ok(None);
+        }
+        if let Some(iteration) = self.iterator_blanket()
+            && declaration.declaration == iteration.into_trait
+        {
+            return iteration
+                .check(rows, headers, implementation, work)
+                .map(|valid| valid.then_some(declaration.declaration));
+        }
+        if !self.const_operator(declaration.declaration) {
             return Ok(None);
         }
         let Some(super::super::HeaderRef::Trait(index)) =
@@ -1088,6 +1102,40 @@ impl Bindings {
             (rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
                 .then_some(declaration.declaration),
         )
+    }
+
+    fn iterator_blanket(&self) -> Option<iterator_blanket::Contract> {
+        Some(iterator_blanket::Contract {
+            iterator: self.for_traits[0]?,
+            meta_sized: self.sizing[1]?,
+            into_trait: self.for_traits[1]?,
+            into_method: self.for_methods[1]?,
+        })
+    }
+
+    fn conditional_iterator_input(
+        &self,
+        rows: &SourceRows,
+        headers: &HeaderIndex<'_>,
+        input: &super::super::Clause,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Some(iteration) = self.iterator_blanket() else {
+            return Ok(false);
+        };
+        let Some(subject) = iteration.premise(rows, input) else {
+            return Ok(false);
+        };
+        let Some(super::super::HeaderRef::Implementation(index)) =
+            headers.header(input.owner, work)?
+        else {
+            return Ok(false);
+        };
+        let implementation = &rows.implementations[index as usize];
+        if subject != implementation.self_type {
+            return Ok(false);
+        }
+        iteration.check(rows, headers, implementation, work)
     }
 
     fn conditional_role_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {

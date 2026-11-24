@@ -145,6 +145,9 @@ constant initializer and rejects an ordinary implementation at that call.
 through a fresh client's imported `Iterator::next`, `IntoIterator::into_iter`,
 and `Option` declarations. Run `scripts/check_iteration_role_transport.py`
 with the prebuilt compilers.
+The `--case blanket` variant uses the provider's const blanket with a local
+ordinary iterator. The `--case blanket-const` variant also evaluates the
+imported `into_iter` body in a constant initializer.
 `spec/source-enum-role-transport/outcomes.json` checks the provider's actual
 Option, Result, and Ordering declarations in fresh clients. It also rejects
 swapped Option variants and a redirected Result diagnostic owner. Run

@@ -8,5 +8,20 @@
   "wrong_bound": "IntoIterator changed its actual Iterator<Item = Self::Item> result bounds",
   "wrong_owner": "source iteration requires its actual Iterator, IntoIterator and Option",
   "old_profile": "source iteration declarations require version fourteen",
-  "old_reader": "source role has a different actual declaration/header kind"
+  "old_reader": "source role has a different actual declaration/header kind",
+  "blanket": {
+    "provider": "blanket.rs",
+    "client_without_local_impl": [
+      "impl base::IntoIterator for Values {",
+      "fn consume"
+    ],
+    "ordinary_bound": "I: [const] Iterator",
+    "ordinary_bound_diagnostic": "source iterator blanket requires its actual conditional Iterator and MetaSized premises",
+    "const": {
+      "client_suffix": "blanket-const-client.rs",
+      "observer": "blanket-observer.c",
+      "stdout": "7 41 42\n",
+      "implementation": "impl base::Iterator for Values"
+    }
+  }
 }

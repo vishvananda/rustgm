@@ -18,7 +18,7 @@ use crate::{
     types::{ItemId, Kind, arguments::Argument, callable::Convention},
 };
 pub(in crate::sema::compiler_items) use loop_headers::imported;
-pub(in crate::sema) use loop_headers::source_role;
+pub(in crate::sema) use loop_headers::{imported_into_trait, source_blanket_member, source_role};
 
 pub(in crate::sema) struct Protocol {
     pub into_iter: DefId,

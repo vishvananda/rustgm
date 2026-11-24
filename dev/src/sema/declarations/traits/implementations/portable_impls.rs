@@ -52,7 +52,11 @@ impl Checker<'_> {
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
         if effect != Constness::Ordinary {
-            self.require_imported_const_operator(trait_definition, effect)?;
+            self.require_imported_const_impl(
+                trait_definition,
+                effect,
+                member_plan.is_some_and(|plan| plan.declaration_policies),
+            )?;
         }
         if let Some(plan) = member_plan {
             plan.require(&self.facts, definition, predicate)
@@ -75,28 +79,37 @@ impl Checker<'_> {
             })
     }
 
-    fn require_imported_const_operator(
+    fn require_imported_const_impl(
         &self,
         definition: DefId,
         effect: Constness,
+        declaration_policies: bool,
     ) -> Result<(), Error> {
         if self.facts.source_bindings.is_none() {
             return Err(Error::unlocated(
                 "imported const impl lacks its actual role catalog",
             ));
         }
-        let role = self
+        let unsupported =
+            || Error::unlocated("imported impl effect requires its wider explicit profile");
+        if effect != Constness::Const
+            || self.facts.associated.constant_trait(definition) != Some(true)
+        {
+            return Err(unsupported());
+        }
+        let operator = self
             .facts
             .imported_const_operator_role(definition)
             .map_err(Error::unlocated)?;
-        let Some(role) = role.filter(|_| {
-            effect == Constness::Const
-                && self.facts.associated.constant_trait(definition) == Some(true)
-        }) else {
-            return Err(Error::unlocated(
-                "imported impl effect requires its wider explicit profile",
-            ));
+        let role = if operator.is_none() && declaration_policies {
+            // The v14 validator admitted only the exact generic iterator
+            // blanket at this checked role's parent.
+            crate::sema::compiler_items::for_roles::imported_into_trait(&self.facts, definition)
+                .map_err(Error::unlocated)?
+        } else {
+            operator
         };
+        let role = role.ok_or_else(unsupported)?;
         self.facts
             .associated
             .require_imported_role(role)

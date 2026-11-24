@@ -57,23 +57,78 @@ def rejected_consumers(check, importer, client, artifact, baseline, contract):
                   1, [contract["old_reader"]], timeout=30)
 
 
+def blanket_inputs(check, contract, provider, baseline_client, const):
+    provider += (FIXTURE / contract["provider"]).read_bytes()
+    baseline_client = baseline_client.read_bytes()
+    begin, end = (marker.encode() for marker in contract["client_without_local_impl"])
+    head, opening, rest = baseline_client.partition(begin)
+    _, closing, tail = rest.partition(end)
+    if not opening or not closing:
+        raise ValueError("iteration fixture lost the exact local implementation boundary")
+    client = head + closing + tail
+    if const:
+        marker = contract["const"]["implementation"].encode()
+        if client.count(marker) != 1:
+            raise ValueError("iteration fixture lost its actual Iterator implementation")
+        client = (b"#![feature(const_trait_impl)]\n" + client.replace(marker, b"const " + marker)
+                  + (FIXTURE / contract["const"]["client_suffix"]).read_bytes())
+    client_file = check.folder / "client.rs"
+    client_file.write_bytes(client)
+    return b"#![feature(const_destruct)]\n" + provider, client_file
+
+
+def reject_ordinary_premise(check, exporter, source, contract):
+    text = source.read_bytes()
+    marker = contract["ordinary_bound"].encode()
+    if text.count(marker) != 1:
+        raise ValueError("iteration fixture lost its const blanket bound")
+    wrong = check.folder / "ordinary-premise.rs"
+    wrong.write_bytes(text.replace(marker, marker.replace(b"[const] ", b"")))
+    output = check.folder / "ordinary-premise.rgcrate"
+    check.run("ordinary-premise", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", output, wrong], 1, [contract["ordinary_bound_diagnostic"]], timeout=30)
+    if output.exists():
+        raise ValueError("an unsupported ordinary premise published the const blanket")
+
+
+def reject_ordinary_const_client(check, importer, artifact, client, rustc, contract):
+    text = client.read_bytes()
+    marker = b"const " + contract["implementation"].encode()
+    if text.count(marker) != 1:
+        raise ValueError("const iteration fixture lost its exact implementation")
+    wrong = check.folder / "ordinary-iterator.rs"
+    wrong.write_bytes(text.replace(marker, marker.removeprefix(b"const ")))
+    check.run("rustc-ordinary-iterator", [rustc.resolve(strict=True), "--edition=2024",
+              "--crate-type=lib", "--emit=metadata", "--extern", f"base={check.folder / 'libbase.rlib'}",
+              "-o", check.folder / "ordinary-iterator.rmeta", wrong], 1, timeout=30,
+              environment={"RUSTC_BOOTSTRAP": "1"})
+    check.run("rustgm-ordinary-iterator", [*importer, "--extern", f"base={artifact}",
+              "-o", check.folder / "ordinary-iterator.lowir", wrong], 1, timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const"), default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     contract = json.loads((FIXTURE / "outcomes.json").read_text())
     check = Check(args.app, args.out)
     source = check.folder / "provider.rs"
     foundation = source_prefix(contract["foundation"], contract["prefix_marker"])
-    source.write_bytes(b"#![feature(const_trait_impl)]\n" + foundation
-                       + (FIXTURE / contract["provider"]).read_bytes())
+    provider = (b"#![feature(const_trait_impl)]\n" + foundation
+                + (FIXTURE / contract["provider"]).read_bytes())
     client = FIXTURE / contract["client"]
+    constant = args.case == "blanket-const"
+    if args.case != "roles":
+        provider, client = blanket_inputs(check, contract["blanket"], provider, client, constant)
+    source.write_bytes(provider)
+    observed = contract["blanket"]["const"] if constant else contract
     observer = check.folder / "observer.o"
-    check.run("observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer], timeout=15)
-    expected = contract["stdout"].encode()
+    check.run("observer", ["cc", "-c", FIXTURE / observed["observer"], "-o", observer], timeout=15)
+    expected = observed["stdout"].encode()
     pinned(check, args.rustc, source, client, observer, expected)
 
     common = [check.app, *RUSTGM, "--crate-type=lib"]
@@ -92,8 +147,14 @@ def main():
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("rustgm-observe", [native], timeout=15).stdout != expected:
         raise ValueError("fresh RustGM client changed either branch of the imported iteration")
-    rejected_providers(check, exporter, source, contract)
-    rejected_consumers(check, importer, client, artifact, args.baseline, contract)
+    if constant:
+        reject_ordinary_const_client(check, importer, artifact, client, args.rustc,
+                                     contract["blanket"]["const"])
+    elif args.case == "blanket":
+        reject_ordinary_premise(check, exporter, source, contract["blanket"])
+    else:
+        rejected_providers(check, exporter, source, contract)
+        rejected_consumers(check, importer, client, artifact, args.baseline, contract)
     print(expected.decode(), end="")
 
 

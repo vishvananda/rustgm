@@ -541,7 +541,7 @@ fn effective_impl_constness(
         .chain(s::Profile::CONST_DEREF_ROLES)
         .chain(LangItem::COMPARISON_TRAITS)
         .map(|role| catalog.language(role));
-    if roles.clone().all(|role| role.is_none()) {
+    if catalog.language(LangItem::IntoIter).is_none() && roles.clone().all(|role| role.is_none()) {
         return Ok(false);
     }
     let implementations = facts
@@ -557,15 +557,25 @@ fn effective_impl_constness(
     let Some((application, Constness::Const)) = implementation.predicate.bound.trait_parts() else {
         return Err("source effective const method changed its actual impl effect");
     };
-    Ok(implementation.source == owner.source
-        && facts
-            .types
-            .trait_application(application)
-            .is_some_and(|application| {
-                roles
-                    .flatten()
-                    .any(|role| role.definition.0 == application.item.0)
-            }))
+    let Some(target) = facts.types.trait_application(application) else {
+        return Ok(false);
+    };
+    if implementation.source != owner.source {
+        return Ok(false);
+    }
+    if roles
+        .flatten()
+        .any(|role| role.definition.0 == target.item.0)
+    {
+        return Ok(true);
+    }
+    crate::sema::compiler_items::for_roles::source_blanket_member(
+        facts,
+        catalog,
+        implementation,
+        target.item,
+        definition,
+    )
 }
 
 /// The actual const trait supplies the declaration's conditional effect. The

@@ -6,6 +6,7 @@ use crate::{
         Role,
         headers::{Flags, Trait},
     },
+    support::constness::Constness,
     types::{
         GenericArgs, TypeId,
         callable::Convention,
@@ -290,4 +291,101 @@ fn check_results(
         return Err("IntoIterator changed its actual Iterator<Item = Self::Item> result bounds");
     }
     Ok(())
+}
+
+/// The selected override can acquire the unwritten const effect of the actual
+/// provider blanket. Body and associated-result proof remain separate.
+pub(in crate::sema) fn source_blanket_member(
+    facts: &Declarations,
+    catalog: &Catalog,
+    actual: &crate::sema::traits::implementations::Implementation,
+    target: ItemId,
+    member: DefId,
+) -> Result<bool, &'static str> {
+    use crate::types::arguments::Argument;
+    let (Some(iterator), Some(into)) = (
+        catalog.language(LangItem::Iterator),
+        catalog.language(LangItem::IntoIter),
+    ) else {
+        return Ok(false);
+    };
+    if into.parent.map(|owner| ItemId(owner.0)) != Some(target) {
+        return Ok(false);
+    }
+    if actual.methods.as_slice() != [(into.definition, Some(member))]
+        || actual.types.len() != 2
+        || !actual.constants.is_empty()
+    {
+        return Err(
+            "source iterator blanket requires its checked override and two associated results",
+        );
+    }
+    let Some([parameter]) = facts
+        .generics
+        .parameters
+        .get(&actual.owner)
+        .map(Vec::as_slice)
+    else {
+        return Err("source iterator blanket requires its single actual generic parameter");
+    };
+    if parameter.argument != Argument::Type(actual.predicate.ty) || parameter.default.is_some() {
+        return Err("source iterator blanket changed its impl-owned Self formal");
+    }
+    let declared = crate::sema::declaration_inputs::declared_own(
+        &facts.generics,
+        facts.crates.as_deref(),
+        actual.owner,
+    )?;
+    let meta_sized = catalog
+        .language(LangItem::MetaSized)
+        .ok_or("source iterator blanket lost its actual MetaSized declaration")?;
+    let exact = |index, trait_: Declaration, effect| {
+        let Some(crate::sema::declaration_inputs::Input {
+            value: Clause::Predicate(premise),
+            ..
+        }) = declared.get(index)
+        else {
+            return false;
+        };
+        premise.ty == actual.predicate.ty
+            && premise
+                .bound
+                .trait_parts()
+                .is_some_and(|(application, actual)| {
+                    actual == effect
+                        && facts
+                            .types
+                            .trait_application(application)
+                            .is_some_and(|application| {
+                                application.item.0 == trait_.definition.0
+                                    && application.arguments == GenericArgs::EMPTY
+                            })
+                })
+    };
+    if declared.len() != 2
+        || !exact(0, iterator, Constness::Conditional)
+        || !exact(1, meta_sized, Constness::Ordinary)
+    {
+        return Err(
+            "source iterator blanket requires its actual conditional Iterator and MetaSized premises",
+        );
+    }
+    Ok(true)
+}
+
+/// The role marks the method. Its checked imported parent owns the impl.
+pub(in crate::sema) fn imported_into_trait(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<Role>, &'static str> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(None);
+    };
+    let Some(method) = catalog.validated_role(LangItem::IntoIter)? else {
+        return Ok(None);
+    };
+    if method.parent != Some(definition) || method.origin.source().is_some() {
+        return Ok(None);
+    }
+    trait_owner(facts, method).map(Some)
 }
