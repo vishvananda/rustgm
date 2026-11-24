@@ -6,6 +6,7 @@ use crate::{
     support::bindings::{LangItem, LayoutIntrinsic, SourceIntrinsic},
     types::{Primitive, TypeId, instance::Instance},
 };
+pub(super) const CONSTANTS: [LangItem; 2] = [LangItem::MemSizeConst, LangItem::MemAlignConst];
 /// Data describing a validated target; execution still requires its own checked call.
 #[derive(Clone, Copy)]
 pub(crate) struct Selection {
@@ -33,7 +34,7 @@ pub(in crate::sema) fn validate_member(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };
-    let Some(declaration) = [LangItem::MemSizeConst, LangItem::MemAlignConst]
+    let Some(declaration) = CONSTANTS
         .into_iter()
         .filter_map(|kind| catalog.language(kind))
         .find(|entry| entry.definition == definition)
@@ -80,6 +81,33 @@ pub(in crate::sema) fn validate_member(
         return Err(error(
             "source layout language member currently requires usize type",
         ));
+    }
+    Ok(())
+}
+
+pub(super) fn imported_members(
+    facts: &Declarations,
+    catalog: &Catalog,
+    complete: &mut super::roles::RoleSet,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    for kind in CONSTANTS {
+        *steps = steps.saturating_add(4);
+        let Some(member) = catalog.role(kind)? else {
+            continue;
+        };
+        if member.parent.is_none()
+            || member.parent != facts.associated.trait_owner(member.definition)
+            || facts
+                .definitions
+                .get(member.definition.0 as usize)
+                .copied()
+                .flatten()
+                != Some(TypeId::primitive(Primitive::Usize))
+        {
+            return Err("imported layout constant changed its actual trait owner or usize type");
+        }
+        complete.insert(kind);
     }
     Ok(())
 }

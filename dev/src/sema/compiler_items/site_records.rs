@@ -34,7 +34,7 @@ pub(in crate::sema) fn complete_location(
 
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     if report.package.source_client().is_some() {
-        return super::caller_location::complete_imported(report, facts);
+        return super::bodyless_intrinsics::complete(report, facts);
     }
     complete_location(report, facts)?;
     checked_role(report, facts, LangItem::PanicInfo)

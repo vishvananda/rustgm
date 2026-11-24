@@ -456,8 +456,37 @@ pub enum FunctionBody {
     Absent,
     Original(BodyRef),
     CompilerOperation(CompilerOperationRef),
-    /// A checked bodyless Rust intrinsic, in the version-fourteen profile.
-    CallerLocationIntrinsic,
+    Intrinsic(BodylessIntrinsic),
+}
+/// Checked bodyless Rust intrinsics in the version-fourteen profile.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BodylessIntrinsic {
+    CallerLocation = 0,
+    SizeOf = 1,
+    AlignOf = 2,
+}
+impl BodylessIntrinsic {
+    pub const ALL: [Self; 3] = [Self::CallerLocation, Self::SizeOf, Self::AlignOf];
+
+    #[must_use]
+    pub const fn kind(self) -> crate::support::bindings::SourceIntrinsic {
+        use crate::support::bindings::{LayoutIntrinsic, SourceIntrinsic};
+        match self {
+            Self::CallerLocation => SourceIntrinsic::CallerLocation,
+            Self::SizeOf => SourceIntrinsic::Layout(LayoutIntrinsic::SizeOf),
+            Self::AlignOf => SourceIntrinsic::Layout(LayoutIntrinsic::AlignOf),
+        }
+    }
+
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::CallerLocation => "caller_location",
+            Self::SizeOf => "size_of",
+            Self::AlignOf => "align_of",
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Formal {

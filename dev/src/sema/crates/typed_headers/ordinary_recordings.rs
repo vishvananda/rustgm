@@ -364,7 +364,7 @@ impl OrdinaryDomain {
             s::FunctionBody::CompilerOperation(_) => Err(error(
                 "compiler-operation execution requires genuine future state ownership",
             )),
-            s::FunctionBody::Absent | s::FunctionBody::CallerLocationIntrinsic => {
+            s::FunctionBody::Absent | s::FunctionBody::Intrinsic(_) => {
                 Err(error("ordinary domain cannot invent an absent body"))
             }
         }

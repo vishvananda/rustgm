@@ -1,7 +1,7 @@
 //! Deferred recipes retain canonical contracts without publishing executable code.
 use super::{
-    Argument, CompilerOperationKind, FunctionBody, HeaderIndex, HeaderRef, ParameterKind, Profile,
-    Region, SourceRows, Type,
+    Argument, BodylessIntrinsic, CompilerOperationKind, FunctionBody, HeaderIndex, HeaderRef,
+    ParameterKind, Profile, Region, SourceRows, Type,
 };
 use crate::support::{
     bindings::LangItem,
@@ -18,7 +18,7 @@ pub(super) fn require_profile(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
-    caller_location_intrinsic(rows, profile, work)?;
+    bodyless_intrinsics(rows, profile, work)?;
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
@@ -53,26 +53,46 @@ pub(super) fn require_profile(
     Ok(())
 }
 
-fn caller_location_intrinsic(
+fn bodyless_intrinsics(
     rows: &SourceRows,
     profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.functions.len())?;
-    let mut functions = rows
-        .functions
-        .iter()
-        .filter(|header| header.body == FunctionBody::CallerLocationIntrinsic);
-    let Some(header) = functions.next() else {
-        return Ok(());
-    };
-    work.charge(rows.roles.len())?;
-    role(rows, LangItem::PanicLocation)?;
+    let mut seen = [false; BodylessIntrinsic::ALL.len()];
+    for header in &rows.functions {
+        let FunctionBody::Intrinsic(operation) = header.body else {
+            continue;
+        };
+        if operation == BodylessIntrinsic::CallerLocation {
+            work.charge(rows.roles.len())?;
+            role(rows, LangItem::PanicLocation)?;
+        }
+        if !profile.declaration_policies()
+            || std::mem::replace(&mut seen[operation as usize], true)
+            || !bodyless_header(rows, header, operation)
+            || !bodyless_inputs(rows, header, operation, work)?
+        {
+            return Err(if operation == BodylessIntrinsic::CallerLocation {
+                "source caller_location intrinsic requires its exact version-fourteen header"
+            } else {
+                "source layout intrinsic requires its exact version-fourteen header"
+            });
+        }
+    }
+    Ok(())
+}
+
+fn bodyless_header(
+    rows: &SourceRows,
+    header: &super::FunctionHeader,
+    operation: BodylessIntrinsic,
+) -> bool {
     let module_declaration = rows
         .declarations
         .get(header.declaration.0 as usize)
         .is_some_and(|decl| {
-            decl.name.as_deref() == Some("caller_location")
+            decl.name.as_deref() == Some(operation.name())
                 && decl.definition.parent.is_some_and(|parent| {
                     rows.declarations
                         .get(parent.0 as usize)
@@ -84,22 +104,53 @@ fn caller_location_intrinsic(
             && !signature.unsafe_
             && !signature.variadic
             && signature.parameters.start == signature.parameters.end
+            && (operation == BodylessIntrinsic::CallerLocation
+                || rows.types.get(signature.result.0 as usize)
+                    == Some(&Type::Scalar(Scalar::Usize)))
     };
-    if !profile.declaration_policies()
-        || functions.next().is_some()
-        || !module_declaration
-        || header.parent.is_some()
-        || header.receiver.is_some()
-        || header.regions.total != 0
-        || header.inputs.start != header.inputs.end
-        || header.formals.start != header.formals.end
-        || header.constness != Constness::Const
-        || !signature(header.original)
-        || !signature(header.callable)
-    {
-        return Err("source caller_location intrinsic requires its exact version-fourteen header");
+    module_declaration
+        && header.parent.is_none()
+        && header.receiver.is_none()
+        && header.regions.total == 0
+        && header.formals.start == header.formals.end
+        && header.constness == Constness::Const
+        && signature(header.original)
+        && signature(header.callable)
+}
+
+fn bodyless_inputs(
+    rows: &SourceRows,
+    header: &super::FunctionHeader,
+    operation: BodylessIntrinsic,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let inputs = header.inputs.slice(&rows.clauses)?;
+    if operation == BodylessIntrinsic::CallerLocation {
+        return Ok(inputs.is_empty());
     }
-    Ok(())
+    if inputs.len() != 2 || header.declared_inputs != 1 {
+        return Ok(false);
+    }
+    work.charge(rows.roles.len().saturating_mul(3))?;
+    let meta = role(rows, LangItem::MetaSized)?;
+    let pointee = role(rows, LangItem::PointeeSized)?;
+    let sized = role(rows, LangItem::Sized)?;
+    Ok(inputs.iter().zip([meta, pointee]).all(|(clause, expected)| {
+        let super::Requirement::Trait {
+            application,
+            effect: Constness::Ordinary,
+        } = clause.requirement else { return false };
+        let Some(application) = rows.trait_applications.get(application.0 as usize) else {
+            return false;
+        };
+        clause.owner == header.declaration
+            && clause.binder.is_none()
+            && application.declaration == expected
+            && application.arguments.start == application.arguments.end
+            && matches!(rows.types.get(application.subject.0 as usize), Some(Type::Parameter(slot))
+                if rows.slots.get(slot.0 as usize).is_some_and(|parameter| parameter.owner == header.scope
+                    && parameter.index == 0 && parameter.kind == ParameterKind::Type { sized: Some(sized) }))
+    }))
 }
 fn role(rows: &SourceRows, role: LangItem) -> Result<super::DeclarationAddress, &'static str> {
     rows.roles

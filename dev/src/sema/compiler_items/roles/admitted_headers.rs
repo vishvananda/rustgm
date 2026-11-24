@@ -290,6 +290,7 @@ fn trait_headers(
             | LangItem::RangeSub
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq => {}
+            role if super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
@@ -390,6 +391,7 @@ fn grouped_roles(
     complete: &mut super::RoleSet,
 ) -> Result<super::invocation::Imported, &'static str> {
     super::parameter_types::imported(report, facts, catalog, steps, complete)?;
+    super::super::layout::imported_members(facts, catalog, complete, steps)?;
     if super::range_members::imported(report, facts, catalog, steps)? {
         for role in super::range_members::ROLES {
             complete.insert(role);

@@ -810,7 +810,7 @@ impl Graph {
             }
             s::FunctionBody::CompilerOperation(_)
             | s::FunctionBody::Absent
-            | s::FunctionBody::CallerLocationIntrinsic => {}
+            | s::FunctionBody::Intrinsic(_) => {}
         }
         Ok(())
     }

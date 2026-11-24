@@ -989,6 +989,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::PanicInfo
             | LangItem::FormatArguments
             | LangItem::FormatArgument
+            | LangItem::MemSizeConst
+            | LangItem::MemAlignConst
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
         || role == LangItem::BikeshedGuaranteedNoDrop
@@ -1302,7 +1304,13 @@ fn role_header(
         }
         (LangItem::PointeeTrait, Some(super::super::HeaderRef::Trait(_)))
         | (LangItem::MetadataType, Some(super::super::HeaderRef::AssociatedType(_)))
-        | (LangItem::RangeMin | LangItem::RangeMax, Some(super::super::HeaderRef::Constant(_)))
+        | (
+            LangItem::RangeMin
+            | LangItem::RangeMax
+            | LangItem::MemSizeConst
+            | LangItem::MemAlignConst,
+            Some(super::super::HeaderRef::Constant(_)),
+        )
         | (LangItem::RangeSub, Some(super::super::HeaderRef::Function(_)))
         | (
             LangItem::DynMetadata | LangItem::TypeInfo | LangItem::TypeId | LangItem::PanicLocation,
@@ -1439,6 +1447,53 @@ fn owned_role_members(
         };
         if rows.associated_types[index as usize].parent != pointee {
             return Err("source Metadata belongs to another actual Pointee declaration");
+        }
+    }
+    layout_members(
+        rows,
+        headers,
+        work,
+        [
+            declarations[LangItem::MemSizeConst.index()],
+            declarations[LangItem::MemAlignConst.index()],
+        ],
+    )?;
+    Ok(())
+}
+
+fn layout_members(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    members: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
+) -> Result<(), &'static str> {
+    let mut shared = None;
+    for member in members.into_iter().flatten() {
+        work.charge(4)?;
+        let parent = rows.declarations[member.0 as usize]
+            .definition
+            .parent
+            .ok_or("source layout constant requires its actual trait owner")?;
+        let Some(super::super::HeaderRef::Trait(index)) = headers.header(parent, work)? else {
+            return Err("source layout constant requires its actual trait header");
+        };
+        let actual = rows.traits[index as usize].members.slice(&rows.members)?;
+        work.charge(actual.len())?;
+        if !actual.contains(&member) || shared.replace(parent).is_some_and(|owner| owner != parent)
+        {
+            return Err("source layout constants changed their actual trait member ownership");
+        }
+        let Some(super::super::HeaderRef::Constant(index)) = headers.header(member, work)? else {
+            return Err("source layout constant lacks its actual default header");
+        };
+        let constant = &rows.constants()[index as usize];
+        if !matches!(constant.body, super::super::ConstantBody::Original(_))
+            || rows.types.get(constant.ty.0 as usize)
+                != Some(&super::super::Type::Scalar(
+                    crate::support::crates::Scalar::Usize,
+                ))
+        {
+            return Err("source layout constant requires its actual provided usize default");
         }
     }
     Ok(())

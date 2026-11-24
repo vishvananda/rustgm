@@ -142,39 +142,41 @@ impl Catalog {
         matches!(self.bindings, Bindings::Imported(_))
     }
 
-    pub(super) fn caller_location_header(
+    pub(super) fn bodyless_headers(
         &self,
         work: &mut usize,
-    ) -> Result<Option<Role>, &'static str> {
+    ) -> Result<[Option<Role>; s::BodylessIntrinsic::ALL.len()], &'static str> {
+        let mut roles = [None; s::BodylessIntrinsic::ALL.len()];
         let Bindings::Imported(imported) = &self.bindings else {
-            return Ok(None);
+            return Ok(roles);
         };
         let descriptor = imported.descriptor(&self.provider)?;
         if !descriptor.profile().declaration_policies() {
-            return Ok(None);
+            return Ok(roles);
         }
         let rows = descriptor.rows();
         charge(work, rows.functions.len())?;
-        rows.functions
-            .iter()
-            .find(|header| header.body == s::FunctionBody::CallerLocationIntrinsic)
-            .map(|header| {
-                let definition = imported
-                    .origins
-                    .definition_at(descriptor.provider(), header.declaration)?;
-                let declaration = imported.origins.declaration(definition)?;
-                let origin = imported.origins.validate_declaration(
-                    declaration,
-                    definition,
-                    DefKind::Function,
-                )?;
-                Ok(Role {
-                    definition,
-                    parent: None,
-                    origin,
-                })
-            })
-            .transpose()
+        for header in &rows.functions {
+            let s::FunctionBody::Intrinsic(operation) = header.body else {
+                continue;
+            };
+            charge(work, 3)?;
+            let definition = imported
+                .origins
+                .definition_at(descriptor.provider(), header.declaration)?;
+            let declaration = imported.origins.declaration(definition)?;
+            let origin = imported.origins.validate_declaration(
+                declaration,
+                definition,
+                DefKind::Function,
+            )?;
+            roles[operation as usize] = Some(Role {
+                definition,
+                parent: None,
+                origin,
+            });
+        }
+        Ok(roles)
     }
 
     #[cfg(test)]
@@ -513,6 +515,14 @@ fn role_parent(
             .and_then(|row| row.definition.parent)
             .ok_or("imported range bound lacks its actual trait owner")?;
         return Ok(Some(parent));
+    }
+    if matches!(role, LangItem::MemSizeConst | LangItem::MemAlignConst) {
+        return rows
+            .declarations
+            .get(declaration.0 as usize)
+            .and_then(|row| row.definition.parent)
+            .map(Some)
+            .ok_or("imported layout constant lost its actual trait owner");
     }
     if role_kind(role) != DefKind::Function {
         return Ok(None);

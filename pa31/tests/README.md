@@ -70,6 +70,11 @@ The forwarding variant imports `Location::caller()` itself and observes
 runtime and const-initializer coordinates in both compilers. Run
 `scripts/check_caller_location_forwarding.py` for that case.
 
+`spec/source-layout-intrinsics/outcomes.json` declares bodyless layout
+intrinsics and their `SizedTypeProperties` defaults. Run
+`scripts/check_layout_intrinsic_transport.py` to compare a fresh native
+client with pinned rustc and check malformed metadata and older readers.
+
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the
 pinned `core` build. Run their `lint-cases.json` manifests with

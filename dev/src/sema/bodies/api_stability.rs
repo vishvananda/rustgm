@@ -178,9 +178,6 @@ impl Checker<'_> {
         if intrinsic.is_some()
             && self.callee_use_effect()? != crate::support::constness::Constness::Ordinary
         {
-            let marker = self
-                .facts
-                .intrinsic_const_stable_indirect(self.report, target)?;
             let policy = inventory.and_then(|inventory| inventory.const_declaration(target));
             if let Some(policy) =
                 policy.filter(|policy| matches!(policy.level, Level::Unstable { .. }))
@@ -207,8 +204,10 @@ impl Checker<'_> {
             let exempt = self.const_body_exemption(node, owner, policy, inventory)?;
             if owner.is_some()
                 && !exempt
-                && !marker
                 && policy.is_none_or(|policy| !matches!(policy.level, Level::Stable(_)))
+                && !self
+                    .facts
+                    .intrinsic_const_stable_indirect(self.report, target)?
                 && !self.exposed_fallback(inventory, target)?
             {
                 return Err(self.error(

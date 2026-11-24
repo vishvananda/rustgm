@@ -1,7 +1,7 @@
 //! The attributed intrinsic returns the genuine completed source Location type.
 use super::Catalog;
 use crate::{
-    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId, package::Error},
+    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
     sema::model::{Declarations, Function},
     support::bindings::{LangItem, SourceIntrinsic},
     types::{
@@ -19,7 +19,7 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
     .map(drop)
 }
 
-fn validate_signature(
+pub(super) fn validate_signature(
     facts: &Declarations,
     definition: DefId,
     signature: TypeId,
@@ -94,62 +94,6 @@ fn validate_signature(
     Ok(result)
 }
 
-pub(super) fn complete_imported(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    let check = |steps: &mut usize| {
-        let catalog = facts
-            .source_bindings
-            .as_deref()
-            .ok_or("imported intrinsic lost its catalog")?;
-        catalog.require_provider_report(report)?;
-        let Some(role) = catalog.caller_location_header(steps)? else {
-            return Ok(None);
-        };
-        catalog
-            .validated_role(LangItem::PanicLocation)?
-            .ok_or("imported caller_location requires its checked Location nominal")?;
-        let header = facts
-            .declaration_header(role.definition)?
-            .ok_or("imported caller_location lost its canonical declaration")?;
-        if header.declaration != role.origin || header.universals != 0 {
-            return Err(
-                "imported caller_location changed its declaration origin or signature scope",
-            );
-        }
-        let result = validate_signature(
-            facts,
-            role.definition,
-            header.signature,
-            header.body.is_some(),
-        )?;
-        Ok(Some((
-            CallerLocationSelection {
-                definition: role.definition,
-                signature: header.signature,
-                result,
-            },
-            catalog.native_layouts.is_none(),
-        )))
-    };
-    let mut steps = 0;
-    let checked = check(&mut steps);
-    let storage = if matches!(checked, Ok(Some((_, true)))) {
-        size_of::<super::inhabited_properties::Plans>()
-    } else {
-        0
-    };
-    crate::sema::crates::charge_source_headers(facts, steps, storage)?;
-    if let Some((selected, _)) = checked.map_err(Error::unlocated)? {
-        facts
-            .source_bindings
-            .as_deref_mut()
-            .ok_or_else(|| Error::unlocated("imported intrinsic lost its catalog"))?
-            .native_layouts
-            .get_or_insert_with(Default::default)
-            .imported_caller_location = Some(selected);
-    }
-    Ok(())
-}
-
 /// Declaration shape data; actual reached callers still owe their complete proof.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CallerLocationSelection {
@@ -158,16 +102,6 @@ pub(crate) struct CallerLocationSelection {
     pub result: TypeId,
 }
 impl Catalog {
-    pub(super) fn imported_caller_location(
-        &self,
-        definition: DefId,
-    ) -> Option<CallerLocationSelection> {
-        self.native_layouts
-            .as_deref()?
-            .imported_caller_location
-            .filter(|selected| selected.definition == definition)
-    }
-
     pub(crate) fn caller_location_selection(
         &self,
         facts: &Declarations,

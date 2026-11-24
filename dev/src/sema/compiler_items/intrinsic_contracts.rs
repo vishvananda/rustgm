@@ -261,12 +261,13 @@ fn signature(
         }
         SourceIntrinsic::CallerLocation => super::caller_location::validate(facts, function),
         SourceIntrinsic::Abort => super::abort_declaration::validate(facts, function),
-        _ => scalar_signature(facts, function, kind),
+        _ => scalar_signature(facts, function.definition, function.signature, kind),
     }
 }
-fn scalar_signature(
+pub(super) fn scalar_signature(
     facts: &Declarations,
-    function: Function,
+    definition: DefId,
+    signature: TypeId,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
     let needs_drop = kind == SourceIntrinsic::NeedsDrop;
@@ -276,7 +277,7 @@ fn scalar_signature(
         result,
         unsafe_: false,
         convention: Convention::RUST,
-    }) = facts.types.kind(function.signature)
+    }) = facts.types.kind(signature)
     else {
         return Err(if needs_drop {
             "source needs_drop requires a safe Rust signature without late lifetimes"
@@ -291,7 +292,7 @@ fn scalar_signature(
     let generic = facts
         .generics
         .parameters
-        .get(&function.definition)
+        .get(&definition)
         .ok_or(if needs_drop {
             "source needs_drop requires one type parameter"
         } else {
@@ -326,7 +327,7 @@ fn scalar_signature(
         });
     };
     if facts.types.parameter(id).is_none_or(|p| {
-        p.owner.0 != function.definition.0
+        p.owner.0 != definition.0
             || !matches!(p.kind, ParameterKind::Type { sized } if sized != needs_drop)
     }) {
         return Err(if needs_drop {
@@ -335,7 +336,7 @@ fn scalar_signature(
             "source layout intrinsic requires its own Sized type parameter"
         });
     }
-    if needs_drop && !facts.is_const_function(function.definition) {
+    if needs_drop && !facts.is_const_function(definition) {
         return Err("source needs_drop declaration must be const");
     }
     Ok(())
@@ -381,11 +382,10 @@ impl Catalog {
         &self,
         definition: DefId,
     ) -> Result<Option<SourceIntrinsic>, &'static str> {
-        if self.imported_caller_location(definition).is_some() {
-            return Ok(Some(SourceIntrinsic::CallerLocation));
-        }
         let Some(entry) = self.intrinsics.get(&definition) else {
-            return Ok(None);
+            return Ok(self
+                .imported_intrinsic(definition)
+                .map(|(kind, _)| kind.kind()));
         };
         if matches!(entry.header, HeaderState::Reserved) {
             return Err("source intrinsic declaration is not validated");
@@ -407,7 +407,22 @@ impl Catalog {
         };
         let definition = DefId(item.0);
         let Some(entry) = self.intrinsics.get(&definition) else {
-            return Ok(None);
+            let Some((operation, header)) = self.imported_intrinsic(definition) else {
+                return Ok(None);
+            };
+            let kind = operation.kind();
+            if !matches!(kind, SourceIntrinsic::Layout(_)) {
+                return Ok(None);
+            }
+            if signature != header.signature {
+                return Err("imported layout intrinsic changed its actual opened signature");
+            }
+            return Ok(Some(Selected {
+                definition,
+                element: layout_element(&facts.types, arguments, kind)?,
+                kind,
+                fallback: false,
+            }));
         };
         let original = entry
             .header

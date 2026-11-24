@@ -263,6 +263,26 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        if matches!(role, LangItem::MemSizeConst | LangItem::MemAlignConst) {
+            let Some(declaration) = catalog.language(role) else {
+                return Ok(None);
+            };
+            if !self.declaration_policies() {
+                return Err("source layout constant transport requires version fourteen");
+            }
+            crate::sema::compiler_items::validate_layout_member(
+                report,
+                facts,
+                declaration.definition,
+            )
+            .map_err(|_| "source layout constant lost its exact validated usize header")?;
+            if facts.associated.trait_owner(declaration.definition) != declaration.parent
+                || !self.provided_constant(report, facts, declaration.definition)
+            {
+                return Err("source layout constant requires its actual provided trait default");
+            }
+            return Ok(Some(declaration));
+        }
         if matches!(role, LangItem::ConstParamTy | LangItem::StructuralPartialEq)
             && !self.declaration_policies()
             && catalog.language(role).is_some()

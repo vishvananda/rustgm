@@ -1,0 +1,13 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "12 4 12 4 12 4\n",
+  "old_profile": "source associated constants require their wider profile",
+  "old_intrinsic_profile": "source bodyless intrinsic requires version fourteen",
+  "old_reader": "invalid source required/provided body tag",
+  "foreign_role": "source role binding is duplicated or belongs to a foreign provider",
+  "wrong_intrinsic": "source layout intrinsic requires its exact version-fourteen header"
+}

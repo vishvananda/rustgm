@@ -130,7 +130,7 @@ pub(super) fn function_write(
             id(out, reference.0)
         }
         s::FunctionBody::Absent => out.u8(0),
-        s::FunctionBody::CallerLocationIntrinsic => out.u8(3),
+        s::FunctionBody::Intrinsic(operation) => out.u8(3 + operation as u8),
         s::FunctionBody::Original(body) => {
             out.u8(1)?;
             id(out, body.0)
@@ -173,7 +173,9 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
         }
         0 => s::FunctionBody::Absent,
         1 => s::FunctionBody::Original(BodyRef(read.id()?)),
-        3 if read.profile.declaration_policies() => s::FunctionBody::CallerLocationIntrinsic,
+        tag @ 3..=5 if read.profile.declaration_policies() => {
+            s::FunctionBody::Intrinsic(s::BodylessIntrinsic::ALL[usize::from(tag - 3)])
+        }
         _ => return Err("invalid source required/provided body tag"),
     };
     Ok(s::FunctionHeader {

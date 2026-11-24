@@ -22,7 +22,7 @@ pub(super) fn validate(
     for function in &rows.functions {
         work.charge(1)?;
         match function.body {
-            s::FunctionBody::CallerLocationIntrinsic => {}
+            s::FunctionBody::Intrinsic(_) => {}
             s::FunctionBody::Absent => {
                 if function
                     .parent

@@ -179,7 +179,7 @@ impl Prepared {
                     "compiler-operation execution requires genuine future state ownership",
                 ));
             }
-            s::FunctionBody::Absent | s::FunctionBody::CallerLocationIntrinsic => None,
+            s::FunctionBody::Absent | s::FunctionBody::Intrinsic(_) => None,
         };
         if body != pair.body {
             return Err(error(

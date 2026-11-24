@@ -307,18 +307,20 @@ impl Stage {
         future: g::TypeRef,
     ) -> Result<s::FunctionBody, &'static str> {
         let Some(source) = function.body else {
-            if facts
+            let kind = facts
                 .source_bindings
                 .as_deref()
                 .map(|catalog| catalog.intrinsic_kind(function.definition))
                 .transpose()?
-                .flatten()
-                == Some(crate::support::bindings::SourceIntrinsic::CallerLocation)
+                .flatten();
+            if let Some(operation) = s::BodylessIntrinsic::ALL
+                .into_iter()
+                .find(|operation| kind == Some(operation.kind()))
             {
                 return if self.declaration_policies() {
-                    Ok(s::FunctionBody::CallerLocationIntrinsic)
+                    Ok(s::FunctionBody::Intrinsic(operation))
                 } else {
-                    Err("source caller_location intrinsic requires version fourteen")
+                    Err("source bodyless intrinsic requires version fourteen")
                 };
             }
             return Ok(s::FunctionBody::Absent);

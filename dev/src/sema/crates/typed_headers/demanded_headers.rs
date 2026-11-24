@@ -365,7 +365,7 @@ fn header_port(
     }
     let body = match raw.body {
         s::FunctionBody::Original(reference) => Some(port.body(reference, work)?),
-        s::FunctionBody::CallerLocationIntrinsic => None,
+        s::FunctionBody::Intrinsic(_) => None,
         s::FunctionBody::CompilerOperation(_) => {
             return Err(error(
                 "compiler-operation execution requires genuine future state ownership",
