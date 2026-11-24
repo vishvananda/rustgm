@@ -57,6 +57,7 @@ impl DomainIndex<'_, '_> {
                 self.types.root(self.headers, context, local.ty, work)?;
             }
             let mut snapshots = false;
+            let mut tested_temporary = false;
             for (index, projection) in original.projections.iter().enumerate() {
                 snapshots |= matches!(projection.base, s::Place::Temporary(_));
                 self.place(original, projection.base, Some(index), work)?;
@@ -68,15 +69,23 @@ impl DomainIndex<'_, '_> {
             }
             for (index, value) in original.values.iter().enumerate() {
                 snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
+                tested_temporary |= matches!(
+                    value.kind,
+                    s::ValueKind::IsVariant {
+                        place: s::Place::Temporary(_),
+                        ..
+                    }
+                );
                 self.value(context, original, index, value, work)?;
             }
             self.calls(context, original, work, conversions)?;
             self.storage_ports(original, work)?;
             self.assembly(context, original, header.unsafe_function(), work)?;
             self.input_ports(context, original, input, work)?;
-            if snapshots {
-                self.scratch(super::snapshots::allocation(original), work)?;
-                super::snapshots::validate(original, work, branching)?;
+            if snapshots || tested_temporary {
+                let scope = super::snapshots::Scope::for_body(branching, tested_temporary);
+                self.scratch(super::snapshots::allocation(original, scope), work)?;
+                super::snapshots::validate(original, work, scope)?;
             }
         }
         Ok(())
@@ -191,7 +200,13 @@ impl DomainIndex<'_, '_> {
             }
             s::ValueKind::IsVariant { place, variant } => {
                 self.variant(variant, work)?;
-                self.place(original, place, None, work)?;
+                if let s::Place::Temporary(temporary) = place
+                    && self.declaration_policies
+                {
+                    prefix_value(original, temporary, index, work)?;
+                } else {
+                    self.place(original, place, None, work)?;
+                }
             }
             s::ValueKind::Unit => {}
         }

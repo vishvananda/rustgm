@@ -198,7 +198,7 @@ fn assumption(
         leaf(facts, predicate.ty)?;
         return Ok(1);
     }
-    let id = if let Bound::ProjectionEqual(value) = predicate.bound
+    let (id, projected_subject) = if let Bound::ProjectionEqual(value) = predicate.bound
         && leaves.callable_scopes()
     {
         // A callable result binding: a leaf value for a declared result
@@ -210,10 +210,10 @@ fn assumption(
             ));
         };
         leaf(facts, projection.subject)?;
-        projection.trait_application
+        (projection.trait_application, 0)
     } else {
-        leaf(facts, predicate.ty)?;
-        leaves.application(predicate.bound)?
+        let roots = leaf_or_projection(facts, leaves, predicate.ty, budget)?;
+        (leaves.application(predicate.bound)?, roots)
     };
     let application = facts
         .types
@@ -224,7 +224,10 @@ fn assumption(
         .arguments(application.arguments)
         .ok_or_else(|| error("source environment lost its full trait arguments"))?;
     budget.charge(arguments.len().saturating_add(1))?;
-    let mut roots = arguments.len().saturating_add(1);
+    let mut roots = arguments
+        .len()
+        .saturating_add(1)
+        .saturating_add(projected_subject);
     for argument in arguments {
         let ty = match argument {
             Argument::Type(ty) => ty,
@@ -243,7 +246,7 @@ fn assumption(
             }
         };
         match facts.types.kind(ty) {
-            // A callable role's argument tuple of leaves.
+            // Each callable argument element keeps its own checked projected inputs.
             Some(Kind::Tuple(elements)) if leaves.callable_scopes() && ty != TypeId::UNIT => {
                 let elements = facts
                     .types
@@ -259,21 +262,21 @@ fn assumption(
                         leaf(facts, referent)?;
                         roots = roots.saturating_add(2);
                     } else {
-                        leaf(facts, element)?;
+                        roots = roots
+                            .saturating_add(leaf_or_projection(facts, leaves, element, budget)?);
                     }
                 }
             }
             _ => {
-                roots = roots.saturating_add(projected_argument(facts, leaves, ty, budget)?);
+                roots = roots.saturating_add(leaf_or_projection(facts, leaves, ty, budget)?);
             }
         }
     }
     Ok(roots)
 }
 
-/// A declaration projection in a v14 trait argument keeps its actual input roots.
-/// The enclosing clause still cannot use an unsupported projected subject.
-fn projected_argument(
+/// A v14 declaration projection keeps its actual subject and input roots.
+fn leaf_or_projection(
     facts: &Declarations,
     leaves: &impl LeafClauses,
     ty: TypeId,

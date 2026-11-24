@@ -7,20 +7,43 @@ struct Visit {
     next: usize,
 }
 
-pub(super) fn allocation(original: &s::Original) -> usize {
+#[derive(Clone, Copy)]
+pub(super) enum Scope {
+    Linear,
+    Block,
+    Variant,
+}
+
+impl Scope {
+    pub(super) const fn for_body(branching: bool, tested_temporary: bool) -> Self {
+        if tested_temporary {
+            Self::Variant
+        } else if branching {
+            Self::Block
+        } else {
+            Self::Linear
+        }
+    }
+}
+
+pub(super) fn allocation(original: &s::Original, scope: Scope) -> usize {
+    let block_bytes = match scope {
+        Scope::Variant => size_of::<(usize, usize)>() + size_of::<u32>() + size_of::<bool>(),
+        _ => size_of::<bool>(),
+    };
     original
         .values
         .len()
         .saturating_add(original.projections.len())
         .saturating_mul(4 * size_of::<Visit>() + 3)
-        .saturating_add(original.blocks.len())
+        .saturating_add(original.blocks.len().saturating_mul(block_bytes))
 }
 
 /// Caller prepays the complete cold scratch bound before any collection exists.
 pub(super) fn validate(
     original: &s::Original,
     work: &mut Work,
-    branching: bool,
+    scope: Scope,
 ) -> Result<(), &'static str> {
     let count = original
         .values
@@ -81,15 +104,18 @@ pub(super) fn validate(
     }
     work.charge(count)?;
     state.fill(0);
-    if branching
-        && original
-            .blocks
-            .iter()
-            .any(|block| block.terminator.successors()[1].is_some())
-    {
-        return blocks(original, &mut state, work);
+    match scope {
+        Scope::Variant => variant_blocks(original, &mut state, work),
+        Scope::Block
+            if original
+                .blocks
+                .iter()
+                .any(|block| block.terminator.successors()[1].is_some()) =>
+        {
+            blocks(original, &mut state, work)
+        }
+        _ => execute(original, &mut state, work),
     }
-    execute(original, &mut state, work)
 }
 
 /// Version thirteen: in a branching body each snapshot dependency must be
@@ -97,30 +123,101 @@ pub(super) fn validate(
 /// Every block is walked once and forgets its definitions at its end.
 fn blocks(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<(), &'static str> {
     let mut defined = Vec::new();
+    for &current in &original.blocks {
+        block(original, current, state, &mut defined, work)?;
+        rewind(state, &mut defined, 0, work)?;
+    }
+    Ok(())
+}
+
+fn block(
+    original: &s::Original,
+    current: g::Block,
+    state: &mut [u8],
+    defined: &mut Vec<usize>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for statement in current.statements.slice(&original.statements)? {
+        work.charge(1)?;
+        uses(original, state, statement.action, work)?;
+        if let Some(node) = definition(original, statement.action)? {
+            state[node] = 1;
+            defined.push(node);
+        }
+    }
+    match current.terminator {
+        g::Terminator::Return(value)
+        | g::Terminator::Branch {
+            condition: value, ..
+        } => require(state, Some(value as usize)),
+        g::Terminator::Jump(_)
+        | g::Terminator::FalseEdge { .. }
+        | g::Terminator::Unreachable
+        | g::Terminator::Panic => Ok(()),
+    }
+}
+
+fn rewind(
+    state: &mut [u8],
+    defined: &mut Vec<usize>,
+    keep: usize,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(defined.len() - keep)?;
+    for node in defined.drain(keep..) {
+        state[node] = 0;
+    }
+    Ok(())
+}
+
+/// A tested temporary can reach the successful downcast along the exact
+/// single-incoming-edge path. Entry and merges begin with no inherited values.
+fn variant_blocks(
+    original: &s::Original,
+    state: &mut [u8],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let count = original.blocks.len();
+    work.charge(count.saturating_mul(3))?;
+    let mut incoming = vec![0_u32; count];
     for current in &original.blocks {
-        for statement in current.statements.slice(&original.statements)? {
+        for successor in current.terminator.successors().into_iter().flatten() {
             work.charge(1)?;
-            uses(original, state, statement.action, work)?;
-            if let Some(node) = definition(original, statement.action)? {
-                state[node] = 1;
-                defined.push(node);
+            let slot = incoming
+                .get_mut(successor as usize)
+                .ok_or("source SSA edge leaves its body")?;
+            *slot = slot.saturating_add(1);
+        }
+    }
+    let mut visited = vec![false; count];
+    let mut pending = Vec::with_capacity(count);
+    let mut defined = Vec::new();
+    for (root, &edges) in incoming.iter().enumerate() {
+        if root != 0 && edges == 1 {
+            continue;
+        }
+        pending.push((root, 0));
+        while let Some((index, keep)) = pending.pop() {
+            work.charge(1)?;
+            rewind(state, &mut defined, keep, work)?;
+            visited[index] = true;
+            let current = original.blocks[index];
+            block(original, current, state, &mut defined, work)?;
+            for successor in current.terminator.successors().into_iter().flatten() {
+                work.charge(1)?;
+                let child = successor as usize;
+                if child != 0 && incoming[child] == 1 {
+                    pending.push((child, defined.len()));
+                }
             }
         }
-        match current.terminator {
-            g::Terminator::Return(value)
-            | g::Terminator::Branch {
-                condition: value, ..
-            } => {
-                require(state, Some(value as usize))?;
-            }
-            g::Terminator::Jump(_)
-            | g::Terminator::FalseEdge { .. }
-            | g::Terminator::Unreachable
-            | g::Terminator::Panic => {}
-        }
-        work.charge(defined.len())?;
-        for node in defined.drain(..) {
-            state[node] = 0;
+        rewind(state, &mut defined, 0, work)?;
+    }
+    // A disconnected cycle gets the ordinary block-local check.
+    for (&current, visited) in original.blocks.iter().zip(visited) {
+        if !visited {
+            block(original, current, state, &mut defined, work)?;
+            rewind(state, &mut defined, 0, work)?;
         }
     }
     Ok(())

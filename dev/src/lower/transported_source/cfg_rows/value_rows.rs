@@ -580,7 +580,12 @@ fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind
             place: target,
             variant,
         } => s::ValueKind::IsVariant {
-            place: place(stage, target)?,
+            place: match target {
+                ir::Place::Temporary(value) if stage.declaration_policies() => {
+                    s::Place::Temporary(value.0)
+                }
+                _ => place(stage, target)?,
+            },
             variant: stage.variant(variant)?,
         },
         ir::Rvalue::Cast { operand, .. } => s::ValueKind::EnumCast(operand.0),
