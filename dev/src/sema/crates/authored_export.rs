@@ -151,6 +151,7 @@ pub(crate) struct Stage {
     steps: usize,
     bytes: usize,
     scratch: usize,
+    retired_workspace_peak: usize,
     graph: canonical_nodes::Graph,
     inputs: contract_rows::Index,
     functions: authored_functions::Index,
@@ -204,7 +205,9 @@ impl Stage {
         SourceWork {
             steps: self.steps,
             reserved_bytes: self.bytes,
-            scratch_bytes: self.scratch,
+            scratch_bytes: self
+                .scratch
+                .max(self.retired_workspace_peak.saturating_sub(self.bytes)),
             contextual_types,
             ancestor_steps,
             roots,
@@ -478,6 +481,7 @@ impl Stage {
             stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts, &order)?;
         drop(order);
+        stage.release_temporary(admission_rows::inventory_bytes(stage.definitions.len()))?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
         if stage.nominal_transport {
             stage.nominals(report, facts)?;
@@ -532,6 +536,7 @@ impl Stage {
             steps: 0,
             bytes: size_of::<Self>(),
             scratch: 0,
+            retired_workspace_peak: 0,
             graph: canonical_nodes::Graph::default(),
             inputs: contract_rows::Index::default(),
             functions: authored_functions::Index::default(),
@@ -585,6 +590,18 @@ impl Stage {
         if self.bytes.saturating_add(self.scratch) > crates::MAX_BYTES {
             return Err("source export retained and scratch budget exceeded");
         }
+        Ok(())
+    }
+    /// Release a paid workspace after its owner drops it. The peak remains
+    /// observable, while later reservations account for the currently live rows.
+    fn release_temporary(&mut self, bytes: usize) -> Result<(), &'static str> {
+        self.retired_workspace_peak = self
+            .retired_workspace_peak
+            .max(self.bytes.saturating_add(self.scratch));
+        self.bytes = self
+            .bytes
+            .checked_sub(bytes)
+            .ok_or("source export retired an unpaid workspace")?;
         Ok(())
     }
     /// The cold column groups, allocated on first write with their box paid.
@@ -1021,13 +1038,6 @@ fn scope_owners(
     facts: &Declarations,
     stage: &mut Stage,
 ) -> Result<Vec<Option<DefId>>, &'static str> {
-    stage.reserve(
-        report
-            .resolution
-            .scopes
-            .len()
-            .saturating_mul(size_of::<Option<DefId>>()),
-    )?;
     let mut owners = vec![None; report.resolution.scopes.len()];
     let root = report
         .resolution

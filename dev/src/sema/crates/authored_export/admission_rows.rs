@@ -17,6 +17,10 @@ pub(super) struct CollectedDeclarations {
     pub(super) order: Vec<(DefId, s::DefinitionKind)>,
 }
 
+pub(super) const fn inventory_bytes(count: usize) -> usize {
+    count.saturating_mul(size_of::<(DefId, s::DefinitionKind)>())
+}
+
 impl Stage {
     pub(super) fn exported_kind(
         &mut self,
@@ -141,6 +145,15 @@ impl Stage {
         let mut leaves = DeclarationLeaves::default();
         let mut features =
             non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
+        let definitions = report.resolution.definitions.len();
+        let lexical_bytes = definitions.saturating_mul(size_of::<u32>()).saturating_add(
+            report
+                .resolution
+                .scopes
+                .len()
+                .saturating_mul(size_of::<Option<DefId>>()),
+        );
+        self.reserve(lexical_bytes)?;
         let mut owners = scope_owners(report, facts, self)?;
         let root = report
             .resolution
@@ -150,16 +163,7 @@ impl Stage {
             .package
             .source_core()
             .ok_or("source provider policy disappeared")?;
-        self.reserve(
-            report
-                .resolution
-                .definitions
-                .len()
-                .saturating_mul(size_of::<u32>())
-                .saturating_add(admission.len().saturating_mul(size_of::<Option<DefId>>())),
-        )?;
-        let mut ordinals = vec![0_u32; report.resolution.definitions.len()];
-        let mut parents = Vec::with_capacity(admission.len());
+        let mut ordinals = vec![0_u32; definitions];
         for &(id, kind) in &admission {
             let index = id.0 as usize;
             let definition = &report.resolution.definitions[index];
@@ -191,18 +195,14 @@ impl Stage {
                 report.package.names.get(definition.name)
             };
             self.reserve(name.len())?;
-            let row = DeclarationRef(
-                u32::try_from(self.rows.declarations.len())
-                    .map_err(|_| "source declaration table overflow")?,
-            );
-            self.definitions[index] = Some(row);
+            let row = self.definitions[index].ok_or("source declaration lost its reserved row")?;
+            let parent = parent.map(|id| self.declaration(id)).transpose()?;
             if kind == s::DefinitionKind::Variant {
                 self.publish_variant(facts, id, row)?;
             }
             leaves.record(self, id, row, kind)?;
-            parents.push(parent);
             self.rows.declarations.push(s::Declaration {
-                definition: s::Definition { kind, parent: None },
+                definition: s::Definition { kind, parent },
                 ordinal,
                 name: Some(name.to_owned()),
                 public: definition.access == Access::Public,
@@ -210,13 +210,9 @@ impl Stage {
                 local: None,
             });
         }
-        for (index, parent) in parents.into_iter().enumerate() {
-            self.charge(1)?;
-            if let Some(parent) = parent {
-                let parent = self.declaration(parent)?;
-                self.rows.declarations[index].definition.parent = Some(parent);
-            }
-        }
+        drop(ordinals);
+        drop(owners);
+        self.release_temporary(lexical_bytes)?;
         features.finish()?;
         Ok(CollectedDeclarations {
             leaves,
@@ -231,13 +227,17 @@ impl Stage {
         mode: ExportMode,
     ) -> Result<Vec<(DefId, s::DefinitionKind)>, &'static str> {
         let count = report.resolution.definitions.len();
-        self.reserve(count.saturating_mul(size_of::<(DefId, s::DefinitionKind)>()))?;
+        self.reserve(inventory_bytes(count))?;
         let mut admitted = Vec::with_capacity(count);
         for index in 0..count {
             self.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             if let Some(kind) = self.exported_kind(report, facts, id, mode)? {
+                self.definitions[index] = Some(DeclarationRef(
+                    u32::try_from(admitted.len())
+                        .map_err(|_| "source declaration table overflow")?,
+                ));
                 admitted.push((id, kind));
             }
         }

@@ -18,13 +18,12 @@ impl Stage {
     ) -> Result<(), &'static str> {
         self.nominal_lifetime_bounds(facts)?;
         let count = self.definitions.len();
-        self.reserve(
-            count
-                .saturating_mul(
-                    size_of::<bool>() + 2 * size_of::<Option<DefId>>() + size_of::<Option<u32>>(),
-                )
-                .saturating_add(admitted.len().saturating_mul(size_of::<DefId>())),
-        )?;
+        let workspace = count
+            .saturating_mul(
+                size_of::<bool>() + 2 * size_of::<Option<DefId>>() + size_of::<Option<u32>>(),
+            )
+            .saturating_add(admitted.len().saturating_mul(size_of::<DefId>()));
+        self.reserve(workspace)?;
         let mut active = vec![false; count];
         let mut owners = Vec::with_capacity(admitted.len());
         for &(id, kind) in admitted {
@@ -35,8 +34,11 @@ impl Stage {
             }
         }
         let owner_count = owners.len();
+        let pending_bytes = owner_count.saturating_mul(size_of::<DefId>());
         self.reserve(
-            owner_count.saturating_mul(size_of::<s::ParameterScope>() + size_of::<DefId>()),
+            owner_count
+                .saturating_mul(size_of::<s::ParameterScope>())
+                .saturating_add(pending_bytes),
         )?;
         self.rows.scopes.reserve_exact(owner_count);
         // Prepending while visiting increasing IDs keeps siblings in stack order.
@@ -54,6 +56,7 @@ impl Stage {
                 pending.push(id);
             }
         }
+        drop(active);
         let mut totals = vec![None::<u32>; count];
         pending.reverse();
         while let Some(owner) = pending.pop() {
@@ -96,7 +99,8 @@ impl Stage {
         if self.rows.scopes.len() != owner_count {
             return Err("source generic scope graph is cyclic or incomplete");
         }
-        Ok(())
+        drop((pending, totals, first_child, next_sibling));
+        self.release_temporary(workspace.saturating_add(pending_bytes))
     }
 
     fn has_scope(
