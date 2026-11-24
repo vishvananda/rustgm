@@ -1,7 +1,7 @@
 //! Actual selected macro calls produce immutable early lint events once.
 use super::{Engine, Error, NodeKey, Report, Sources};
 use crate::resolve::{
-    lint_policy::{Level, Lint},
+    lint_policy::{DeprecationNotice, Level, Lint},
     package::Warning,
 };
 
@@ -28,7 +28,7 @@ impl<S: Sources> Engine<'_, S> {
             producer.validate_cap(&self.loader.package, target)?;
             return Ok(());
         }
-        let Some((origin, note)) = producer.deprecation_in(
+        let Some((origin, notice)) = producer.deprecation_in(
             &self.loader.package,
             target,
             self.definitions[definition].module,
@@ -40,22 +40,33 @@ impl<S: Sources> Engine<'_, S> {
             file: self.calls[index].file,
             node: self.calls[index].visit.node,
         };
-        producer.diagnostic_read(key, note.len())?;
-        let note = note.to_owned();
+        producer.diagnostic_read(key, notice.note.len())?;
+        let future = notice.future;
+        let note = notice.note.to_owned();
         let policy = self.lint_call_policy(index)?;
         if policy.deprecated_origin == Some(origin) {
             return Ok(());
         }
-        let level = policy.deprecated;
+        let (level, lint) = if future {
+            (policy.deprecated_in_future, Lint::DeprecatedInFuture)
+        } else {
+            (policy.deprecated, Lint::Deprecated)
+        };
         if level == Level::Expect {
-            return self.lint_fulfill_call(index, Lint::Deprecated);
+            return self.lint_fulfill_call(index, lint);
         }
         if level == Level::Allow {
             return Ok(());
         }
         if level.denies() {
             return Err(self.diagnostic(
-                self.calls[index].diagnostic(&format!("use of deprecated macro: {note}")),
+                self.calls[index].diagnostic(
+                    &DeprecationNotice {
+                        note: &note,
+                        future,
+                    }
+                    .subject("macro"),
+                ),
             ));
         }
         self.attribute_effects

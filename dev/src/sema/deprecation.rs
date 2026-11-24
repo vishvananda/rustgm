@@ -3,6 +3,7 @@ mod completion;
 use crate::{
     resolve::{
         expansion::Report,
+        lint_policy::DeprecationNotice,
         model::{DefId, Origin},
         package::Error,
         unit::NodeKey,
@@ -92,13 +93,11 @@ pub(super) fn check(
     let Some(origin) = facts.safety_policies.deprecated_origin(key) else {
         return Ok(());
     };
-    let Some(note) = producer.deprecation_note(&report.package, origin, key)? else {
-        return Ok(());
-    };
+    let notice = producer.deprecation_notice(&report.package, origin, key)?;
     if facts.safety_policies.deprecated_origin(site) == Some(origin) {
         return Ok(());
     }
-    emit(report, facts, site, target, note)
+    emit(report, facts, site, target, notice)
 }
 
 fn check_imported(
@@ -107,16 +106,38 @@ fn check_imported(
     site: NodeKey,
     target: DefId,
 ) -> Result<(), Error> {
+    use super::safety::Level;
     use crate::resolve::stability::{self, ImportedDeprecation};
-    if facts.safety_policies.deprecated(site) == super::safety::Level::Allow {
+    let current = facts.safety_policies.deprecated(site);
+    let future = facts.safety_policies.deprecated_in_future(site);
+    if current == Level::Allow && future == Level::Allow {
         return Ok(());
     }
     match stability::declaration_deprecation(report, target)? {
-        Some(ImportedDeprecation::Active(note)) => return emit(report, facts, site, target, note),
-        Some(ImportedDeprecation::Inactive) => return Ok(()),
+        Some(ImportedDeprecation::Active(note)) => {
+            return emit(
+                report,
+                facts,
+                site,
+                target,
+                DeprecationNotice {
+                    note,
+                    future: false,
+                },
+            );
+        }
+        Some(ImportedDeprecation::Future(note)) => {
+            return emit(
+                report,
+                facts,
+                site,
+                target,
+                DeprecationNotice { note, future: true },
+            );
+        }
         None => {}
     }
-    if !facts.safety_policies.explicit_deprecation(site)
+    if (!facts.safety_policies.explicit_deprecation(site) && future == Level::Allow)
         || stability::declaration_deprecation_absent(report, target)?
         || super::header_attributes::bootstrap_owner(report, target)?
     {
@@ -134,12 +155,26 @@ fn emit(
     facts: &mut Declarations,
     site: NodeKey,
     target: DefId,
-    note: &str,
+    notice: DeprecationNotice<'_>,
 ) -> Result<(), Error> {
-    if let Some(producer) = report.lint_producer() {
-        producer.diagnostic_read(site, note.len().saturating_add(40))?;
+    let level = if notice.future {
+        facts.safety_policies.deprecated_in_future(site)
+    } else {
+        facts.safety_policies.deprecated(site)
+    };
+    if level == super::safety::Level::Allow {
+        return Ok(());
     }
-    let message = format!("use of deprecated declaration: {note}");
+    if let Some(producer) = report.lint_producer() {
+        producer.diagnostic_read(
+            site,
+            notice
+                .note
+                .len()
+                .saturating_add(if notice.future { 50 } else { 40 }),
+        )?;
+    }
+    let message = notice.subject("declaration");
     let offset = report
         .package
         .unit(site.file)
@@ -148,14 +183,7 @@ fn emit(
         .node(site.node)
         .span
         .start;
-    facts.must_use_diagnostic(
-        report,
-        site,
-        offset,
-        target.0,
-        WarningCode::Deprecated,
-        message,
-    )
+    facts.must_use_diagnostic(report, site, offset, target.0, notice.warning(), message)
 }
 
 impl Declarations {

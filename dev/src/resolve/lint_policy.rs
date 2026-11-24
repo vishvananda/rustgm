@@ -5,7 +5,9 @@ mod expectations;
 mod ineffective_headers;
 mod suggestions;
 pub(crate) use deprecated_since::Since as DeprecationRelease;
-pub(crate) use expectations::{ExpectationId, PendingExpectation, Progress, SourceDeprecation};
+pub(crate) use expectations::{
+    DeprecationNotice, ExpectationId, PendingExpectation, Progress, SourceDeprecation,
+};
 pub(crate) use ineffective_headers::{DeclarationAnnotation, ImplAnnotation};
 pub(crate) mod producer;
 use crate::resolve::{package::Error, unit::NodeKey};
@@ -44,7 +46,10 @@ pub(crate) struct Policy {
     pub(crate) ineffective_unstable_trait_impl: Level,
     pub(crate) overflowing_literals: Level,
     pub(crate) implicit_provenance_casts: Level,
-    expectations: [Option<ExpectationId>; 21],
+    pub(crate) unreachable_pub: Level,
+    pub(crate) ptr_to_integer_transmute_in_consts: Level,
+    pub(crate) deprecated_in_future: Level,
+    expectations: [Option<ExpectationId>; 24],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -70,11 +75,14 @@ impl Policy {
             ambiguous_derive_helpers: Level::Allow,
             diagnostic_attributes: [Level::Allow; 3],
             deprecated: Level::Allow,
+            deprecated_in_future: Level::Allow,
             unfulfilled: Level::Allow,
             hidden_glob_reexports: Level::Allow,
             ineffective_unstable_trait_impl: Level::Allow,
             overflowing_literals: Level::Allow,
             implicit_provenance_casts: Level::Allow,
+            unreachable_pub: Level::Allow,
+            ptr_to_integer_transmute_in_consts: Level::Allow,
             ..self
         }
     }
@@ -99,7 +107,10 @@ impl Policy {
         ineffective_unstable_trait_impl: Level::Deny,
         overflowing_literals: Level::Deny,
         implicit_provenance_casts: Level::Allow,
-        expectations: [None; 21],
+        unreachable_pub: Level::Allow,
+        ptr_to_integer_transmute_in_consts: Level::Warn,
+        deprecated_in_future: Level::Allow,
+        expectations: [None; 24],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -122,6 +133,7 @@ pub(crate) enum Lint {
     AmbiguousDeriveHelpers,
     DiagnosticAttributes(u8),
     Deprecated,
+    DeprecatedInFuture,
     UnfulfilledExpectations,
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
@@ -130,6 +142,8 @@ pub(crate) enum Lint {
     InvalidDocAttributes,
     OverflowingLiterals,
     ImplicitProvenanceCasts,
+    UnreachablePub,
+    PtrToIntegerTransmuteInConsts,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -164,6 +178,7 @@ impl Policy {
         }
         let level = match change.lint {
             Lint::Deprecated => &mut self.deprecated,
+            Lint::DeprecatedInFuture => &mut self.deprecated_in_future,
             Lint::HiddenGlobReexports => &mut self.hidden_glob_reexports,
             Lint::IneffectiveUnstableTraitImpl => &mut self.ineffective_unstable_trait_impl,
             Lint::UnfulfilledExpectations => &mut self.unfulfilled,
@@ -178,6 +193,8 @@ impl Policy {
             Lint::InvalidDocAttributes => &mut self.invalid_doc_attributes,
             Lint::OverflowingLiterals => &mut self.overflowing_literals,
             Lint::ImplicitProvenanceCasts => &mut self.implicit_provenance_casts,
+            Lint::UnreachablePub => &mut self.unreachable_pub,
+            Lint::PtrToIntegerTransmuteInConsts => &mut self.ptr_to_integer_transmute_in_consts,
             Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
             Lint::AmbiguousDeriveHelpers => &mut self.ambiguous_derive_helpers,
@@ -194,6 +211,9 @@ impl Policy {
                     offset: change.offset,
                     message: match change.lint {
                         Lint::Deprecated => "forbidden deprecated lint cannot be weakened",
+                        Lint::DeprecatedInFuture => {
+                            "forbidden deprecated_in_future lint cannot be weakened"
+                        }
                         Lint::HiddenGlobReexports => {
                             "forbidden hidden_glob_reexports lint cannot be weakened"
                         }
@@ -222,6 +242,10 @@ impl Policy {
                         }
                         Lint::ImplicitProvenanceCasts => {
                             "forbidden implicit_provenance_casts lint cannot be weakened"
+                        }
+                        Lint::UnreachablePub => "forbidden unreachable_pub lint cannot be weakened",
+                        Lint::PtrToIntegerTransmuteInConsts => {
+                            "forbidden ptr_to_integer_transmute_in_consts lint cannot be weakened"
                         }
                         Lint::UnusedVisibilities => {
                             "forbidden unused_visibilities lint cannot be weakened"
@@ -271,6 +295,9 @@ impl Lint {
             Self::InvalidDocAttributes => 18,
             Self::OverflowingLiterals => 19,
             Self::ImplicitProvenanceCasts => 20,
+            Self::UnreachablePub => 21,
+            Self::PtrToIntegerTransmuteInConsts => 22,
+            Self::DeprecatedInFuture => 23,
         }
     }
 }
@@ -288,6 +315,7 @@ impl Lint {
         use crate::support::diagnostics::WarningCode as W;
         Some(match code {
             W::Deprecated => Self::Deprecated,
+            W::DeprecatedInFuture => Self::DeprecatedInFuture,
             W::HiddenGlobReexports => Self::HiddenGlobReexports,
             W::IneffectiveUnstableTraitImpl => Self::IneffectiveUnstableTraitImpl,
             W::UnfulfilledLintExpectations => Self::UnfulfilledExpectations,
@@ -308,6 +336,8 @@ impl Lint {
             W::InvalidDocAttributes => Self::InvalidDocAttributes,
             W::OverflowingLiterals => Self::OverflowingLiterals,
             W::ImplicitProvenanceCasts => Self::ImplicitProvenanceCasts,
+            W::UnreachablePub => Self::UnreachablePub,
+            W::PtrToIntegerTransmuteInConsts => Self::PtrToIntegerTransmuteInConsts,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
@@ -320,4 +350,4 @@ impl Lint {
 }
 
 #[cfg(test)]
-const _: [(); 196] = [(); size_of::<Policy>()];
+const _: [(); 224] = [(); size_of::<Policy>()];

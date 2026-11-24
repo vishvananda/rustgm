@@ -26,7 +26,10 @@ unchanged.
 Carry scoped lint levels and expectations through expansion, imports,
 and checked bodies. Associate deprecation and visibility events with
 their actual source or import. Report unmet expectations after their
-scope has completed. A lint cap can suppress optional diagnostics.
+scope has completed. Use the declaring crate's release policy to distinguish
+current deprecation from `deprecated_in_future`. Apply the appropriate
+lint level to the selected call, import, or macro expansion.
+A lint cap can suppress optional diagnostics.
 Hard errors and semantic checks still apply.
 
 ## Tool surface

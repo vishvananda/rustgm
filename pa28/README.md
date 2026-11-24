@@ -36,6 +36,11 @@ reified calls must select the same typed operation.
   unevaluated branch of a const body. Reifying a callable and calling it
   during constant evaluation are separate checks.
 
+For a source-declared `transmute`, diagnose raw-pointer to integer
+transmutes in const functions and associated constants according to the
+scoped `ptr_to_integer_transmute_in_consts` level. Keep the transmute's
+safety, size and constant-evaluation checks in force.
+
 ## AtomicU32
 
 Resolve the canonical `AtomicU32` and atomic `Ordering` identities. The

@@ -1,0 +1,10 @@
+{
+  "source_core": true,
+  "cases": [
+    {"path": "pointer.rs", "cfg": "lint_expected", "status": 0, "lint": null},
+    {"path": "pointer.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "ptr_to_integer_transmute_in_consts",
+     "diagnostic": "pointers cannot be transmuted to integers during const evaluation"},
+    {"path": "pointer.rs", "status": 0, "lint": null}
+  ]
+}

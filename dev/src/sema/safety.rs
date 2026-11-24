@@ -338,6 +338,9 @@ impl Policies {
     pub(super) fn deprecated(&self, key: NodeKey) -> Level {
         self.at(key).deprecated
     }
+    pub(super) fn deprecated_in_future(&self, key: NodeKey) -> Level {
+        self.at(key).deprecated_in_future
+    }
     pub(super) fn unfulfilled(&self, key: NodeKey) -> Level {
         self.at(key).unfulfilled
     }
@@ -349,6 +352,19 @@ impl Policies {
     }
     pub(super) fn implicit_provenance_casts(&self, key: NodeKey) -> Level {
         self.at(key).implicit_provenance_casts
+    }
+    pub(super) fn checks_unreachable_pub(&self) -> bool {
+        !self.cap.suppresses_lints()
+            && self
+                .rows
+                .iter()
+                .any(|row| row.policy.unreachable_pub != Level::Allow)
+    }
+    pub(super) fn unreachable_pub(&self, key: NodeKey) -> Level {
+        self.at(key).unreachable_pub
+    }
+    pub(super) fn ptr_to_integer_transmute_in_consts(&self, key: NodeKey) -> Level {
+        self.at(key).ptr_to_integer_transmute_in_consts
     }
     pub(super) fn hidden_glob_reexports(&self, key: NodeKey) -> Level {
         self.at(key).hidden_glob_reexports

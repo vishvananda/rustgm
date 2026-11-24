@@ -22,6 +22,9 @@ the source bodies that use those declarations.
   trait aliases and compiler-provided traits. Use the expanded item identities
   and ordinary resolver scopes. Later edition-specific implicit prelude
   selection belongs to PA34.
+- Compute which public declarations a fresh crate can reach. Follow public
+  re-exports and the types exposed by public signatures, then apply scoped
+  `unreachable_pub` settings to public declarations outside that reach.
 - Preserve exact declaration and member identities across aliases and imports.
   A source provider must supply the actual declaration. Keep an explicitly
   selected source provider free of duplicate bootstrap declarations.

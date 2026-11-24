@@ -360,6 +360,63 @@ impl Checker<'_> {
                 selected.destination,
             )
             .map_err(|e| self.error(node, e))?;
+            self.check_const_pointer_transmute(node, selected.source, selected.destination)?;
+        }
+        Ok(())
+    }
+    fn check_const_pointer_transmute(
+        &mut self,
+        node: crate::syntax::ast::NodeId,
+        source: crate::types::TypeId,
+        destination: crate::types::TypeId,
+    ) -> Result<(), Error> {
+        use crate::{resolve::lint_policy::Level, support::diagnostics::WarningCode, types::Kind};
+        let key = self.key(node);
+        if self
+            .facts
+            .safety_policies
+            .ptr_to_integer_transmute_in_consts(key)
+            == Level::Allow
+            || !matches!(self.facts.types.kind(source), Some(Kind::Pointer { .. }))
+            || !matches!(
+                self.facts.types.kind(destination),
+                Some(Kind::Primitive(ty)) if ty.integer().is_some()
+            )
+        {
+            return Ok(());
+        }
+        let in_const_function = self.state.environment_owner.is_some_and(|owner| {
+            self.facts.is_const_function(owner)
+                && self
+                    .facts
+                    .function_indices
+                    .get(&owner)
+                    .and_then(|&index| self.facts.functions.get(index))
+                    .is_some_and(|function| function.body == Some(self.state.body))
+        });
+        let in_associated_const = match self.state.completion {
+            super::readiness::Completion::Initializer(index) => self
+                .facts
+                .initializers
+                .get(index)
+                .is_some_and(|initializer| {
+                    self.facts
+                        .associated
+                        .owner(initializer.definition)
+                        .is_some()
+                }),
+            _ => false,
+        };
+        if in_const_function || in_associated_const {
+            let unit = self.report.package.unit(key.file);
+            self.facts.must_use_diagnostic(
+                self.report,
+                key,
+                unit.configured.ast.node(node).span.start,
+                0,
+                WarningCode::PtrToIntegerTransmuteInConsts,
+                "pointers cannot be transmuted to integers during const evaluation".into(),
+            )?;
         }
         Ok(())
     }

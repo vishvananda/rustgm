@@ -116,7 +116,7 @@ const PASSES: [(&str, Pass); 29] = [
         checker.complete_layouts()
     }),
     ("check_api_exposure", |checker, _, _| {
-        crate::sema::api_exposure::check(checker.report, &checker.facts).map(drop)
+        crate::sema::api_exposure::check_declarations(checker.report, &mut checker.facts)
     }),
     ("reject_alias_execution", |checker, _, _| {
         checker.reject_alias_execution()

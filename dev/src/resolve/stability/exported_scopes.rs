@@ -17,15 +17,26 @@ impl Budget for Draft<'_> {
 pub(crate) fn visit<B: Budget>(
     facts: &Resolution,
     budget: &mut B,
-    mut declaration: impl FnMut(DefId, &mut B) -> Result<(), Error>,
+    declaration: impl FnMut(DefId, &mut B) -> Result<(), Error>,
 ) -> Result<HashSet<ScopeId>, Error> {
     let root = *facts
         .module_scopes
         .first()
         .ok_or_else(|| Error::unlocated("library root scope is absent"))?;
+    visit_roots(facts, budget, [root], declaration)
+}
+
+pub(crate) fn visit_roots<B: Budget>(
+    facts: &Resolution,
+    budget: &mut B,
+    roots: impl IntoIterator<Item = ScopeId>,
+    mut declaration: impl FnMut(DefId, &mut B) -> Result<(), Error>,
+) -> Result<HashSet<ScopeId>, Error> {
     let mut seen = HashSet::default();
     let mut pending = Vec::new();
-    enqueue(root, &mut seen, &mut pending, budget)?;
+    for root in roots {
+        enqueue(root, &mut seen, &mut pending, budget)?;
+    }
     while let Some(scope) = pending.pop() {
         budget.charge(1, 0)?;
         for (_, _, binding) in facts.bindings.scope(scope) {

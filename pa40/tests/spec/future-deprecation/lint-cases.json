@@ -1,0 +1,7 @@
+{
+  "cases": [
+    {"path": "future-lint.rs", "status": 0, "lint": null},
+    {"path": "future-lint.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "deprecated_in_future", "diagnostic": "scheduled for deprecation"}
+  ]
+}

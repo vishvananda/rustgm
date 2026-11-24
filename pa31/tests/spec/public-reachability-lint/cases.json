@@ -1,0 +1,9 @@
+{
+  "cases": [
+    {"path": "reachable.rs", "status": 0, "lint": null},
+    {"path": "denied.rs", "status": 1, "lint": "unreachable_pub",
+     "diagnostic": "public item is unreachable from the crate root"},
+    {"path": "unfulfilled.rs", "status": 1, "lint": "unfulfilled_lint_expectations",
+     "diagnostic": "this lint expectation is unfulfilled"}
+  ]
+}

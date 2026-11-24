@@ -375,15 +375,14 @@ impl Imports {
             }
             _ => true,
         };
+        let note = notice
+            .note
+            .as_deref()
+            .unwrap_or("use of deprecated declaration");
         Ok(if active {
-            ImportedDeprecation::Active(
-                notice
-                    .note
-                    .as_deref()
-                    .unwrap_or("use of deprecated declaration"),
-            )
+            ImportedDeprecation::Active(note)
         } else {
-            ImportedDeprecation::Inactive
+            ImportedDeprecation::Future(note)
         })
     }
 }

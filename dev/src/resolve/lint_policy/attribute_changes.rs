@@ -568,6 +568,7 @@ fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violati
 fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {
         Some("deprecated") => &[Lint::Deprecated],
+        Some("deprecated_in_future") => &[Lint::DeprecatedInFuture],
         Some("hidden_glob_reexports") => &[Lint::HiddenGlobReexports],
         Some("ineffective_unstable_trait_impl") => &[Lint::IneffectiveUnstableTraitImpl],
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
@@ -582,6 +583,8 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
         Some("invalid_doc_attributes") => &[Lint::InvalidDocAttributes],
         Some("overflowing_literals") => &[Lint::OverflowingLiterals],
         Some("implicit_provenance_casts") => &[Lint::ImplicitProvenanceCasts],
+        Some("unreachable_pub") => &[Lint::UnreachablePub],
+        Some("ptr_to_integer_transmute_in_consts") => &[Lint::PtrToIntegerTransmuteInConsts],
         Some("unused_visibilities") => &[Lint::UnusedVisibilities],
         Some("duplicate_macro_attributes") => &[Lint::DuplicateMacroAttributes],
         Some("ambiguous_derive_helpers" | "future_incompatible") => &[Lint::AmbiguousDeriveHelpers],

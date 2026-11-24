@@ -2,12 +2,14 @@
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, DefKind},
+        model::{Access, DefId, DefKind, ScopeId},
         package::Error,
-        stability::{Inventory, PublicBudget, visit_public_bindings},
+        stability::{Inventory, PublicBudget, visit_public_bindings, visit_public_crate_roots},
+        unit::NodeKey,
     },
     sema::model::Declarations,
     support::{
+        diagnostics::WarningCode,
         hash::{HashMap, HashSet},
         retained,
     },
@@ -50,38 +52,66 @@ impl PublicBudget for Budget {
 struct Interfaces<'a> {
     report: &'a Report,
     facts: &'a Declarations,
-    inventory: &'a Inventory,
+    inventory: Option<&'a Inventory>,
     pending: Vec<Task>,
     seen: HashSet<Task>,
     inherent: HashMap<DefId, Vec<DefId>>,
 }
-pub(super) fn check(report: &Report, facts: &Declarations) -> Result<Cost, Error> {
-    check_with_limits(report, facts, 1_000_000, 64 * 1024 * 1024)
+const STEPS: usize = 1_000_000;
+const BYTES: usize = 64 * 1024 * 1024;
+
+struct Reachability {
+    budget: Budget,
+    declarations: HashSet<Task>,
+    exported_scopes: HashSet<ScopeId>,
 }
+
+pub(super) fn check_declarations(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    let lint = facts.safety_policies.checks_unreachable_pub();
+    if let Some(mut reached) = collect(report, facts, lint, STEPS, BYTES)?
+        && lint
+    {
+        reached.lint_unreachable_pub(report, facts)?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+fn check(report: &Report, facts: &Declarations) -> Result<Cost, Error> {
+    check_with_limits(report, facts, STEPS, BYTES)
+}
+#[cfg(test)]
 fn check_with_limits(
     report: &Report,
     facts: &Declarations,
     steps: usize,
     bytes: usize,
 ) -> Result<Cost, Error> {
-    let Some(inventory) = report
-        .package
-        .library_policy()
-        .and_then(crate::resolve::stability::Library::staged_inventory)
-    else {
-        return Ok(Cost::default());
-    };
+    Ok(collect(report, facts, false, steps, bytes)?
+        .map_or_else(Cost::default, |reached| reached.budget.cost))
+}
+
+fn collect(
+    report: &Report,
+    facts: &Declarations,
+    lint: bool,
+    steps: usize,
+    bytes: usize,
+) -> Result<Option<Reachability>, Error> {
+    let library = report.package.library_policy();
+    let inventory = library.and_then(crate::resolve::stability::Library::staged_inventory);
+    if inventory.is_none() && !lint {
+        return Ok(None);
+    }
     let mut budget = Budget {
         cost: Cost::default(),
         steps,
         bytes,
     };
     budget.charge(1, size_of::<Interfaces<'_>>())?;
-    report
-        .package
-        .library_policy()
-        .ok_or_else(|| Error::unlocated("library policy disappeared"))?
-        .charge_retained(&mut budget)?;
+    if let Some(library) = library.filter(|_| inventory.is_some()) {
+        library.charge_retained(&mut budget)?;
+    }
     let mut interfaces = Interfaces {
         report,
         facts,
@@ -91,9 +121,17 @@ fn check_with_limits(
         inherent: HashMap::default(),
     };
     interfaces.index_inherent(&mut budget)?;
-    visit_public_bindings(&report.resolution, &mut budget, |definition, budget| {
-        interfaces.enqueue(Task::Declaration(definition), budget)
-    })?;
+    let mut visit =
+        |definition, budget: &mut Budget| interfaces.enqueue(Task::Declaration(definition), budget);
+    let exported_scopes = if lint {
+        let roots = report
+            .package
+            .crate_roots()
+            .map(|(module, _)| report.resolution.module_scopes[module.0 as usize]);
+        visit_public_crate_roots(&report.resolution, &mut budget, roots, &mut visit)?
+    } else {
+        visit_public_bindings(&report.resolution, &mut budget, &mut visit)?
+    };
     while let Some(task) = interfaces.pending.pop() {
         budget.charge(1, 0)?;
         match task {
@@ -102,8 +140,76 @@ fn check_with_limits(
             Task::Type(ty) => interfaces.ty(ty, &mut budget)?,
         }
     }
-    Ok(budget.cost)
+    Ok(Some(Reachability {
+        budget,
+        declarations: interfaces.seen,
+        exported_scopes,
+    }))
 }
+
+impl Reachability {
+    fn lint_unreachable_pub(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+    ) -> Result<(), Error> {
+        for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            self.budget.charge(1, 0)?;
+            let id =
+                DefId(u32::try_from(index).map_err(|_| {
+                    Error::unlocated("public declaration identity exceeds 32 bits")
+                })?);
+            if definition.access != Access::Public
+                || definition.kind.is_local()
+                || matches!(definition.kind, DefKind::Constructor | DefKind::Variant)
+                || facts
+                    .associated
+                    .trait_owner(id)
+                    .is_some_and(|owner| owner != id)
+                || self.declarations.contains(&Task::Declaration(id))
+            {
+                continue;
+            }
+            if let Some(key) = definition.node
+                && matches!(
+                    report
+                        .package
+                        .unit(key.file)
+                        .configured
+                        .ast
+                        .node(key.node)
+                        .kind,
+                    crate::syntax::ast::Kind::Item(_)
+                )
+            {
+                unreachable_pub(report, facts, key)?;
+            }
+        }
+        for import in &report.resolution.imports {
+            self.budget.charge(1, 0)?;
+            if import.access == Access::Public && !self.exported_scopes.contains(&import.scope) {
+                unreachable_pub(report, facts, import.node)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+fn unreachable_pub(report: &Report, facts: &mut Declarations, key: NodeKey) -> Result<(), Error> {
+    if facts.safety_policies.unreachable_pub(key) == crate::resolve::lint_policy::Level::Allow {
+        return Ok(());
+    }
+    let unit = report.package.unit(key.file);
+    facts.must_use_diagnostic(
+        report,
+        key,
+        unit.configured.ast.node(key.node).span.start,
+        0,
+        WarningCode::UnreachablePub,
+        "public item is unreachable from the crate root".into(),
+    )
+}
+
 impl Interfaces<'_> {
     fn index_inherent(&mut self, budget: &mut Budget) -> Result<(), Error> {
         let facts = self.facts;
@@ -226,27 +332,38 @@ impl Interfaces<'_> {
             }
         }
         if actual.access == Access::Public {
-            if self.inventory.declaration(id).is_none() {
-                return Err(Declarations::error(
-                    self.report,
-                    node,
-                    "public declaration exposed by an API has missing library stability attribute",
-                ));
-            }
-            if actual.kind == DefKind::Function
-                && self.facts.is_const_function(id)
-                && self.inventory.const_declaration(id).is_none()
-            {
-                return Err(Declarations::error(
-                    self.report,
-                    node,
-                    "public const member exposed by an API has missing const library stability attribute",
-                ));
-            }
+            self.check_stability(id, node)?;
             self.enqueue(Task::Schema(id), budget)?;
         } else if actual.kind == DefKind::TypeAlias {
             // Private alias spelling does not hide its normalized public target.
             self.enqueue(Task::Schema(id), budget)?;
+        }
+        Ok(())
+    }
+
+    fn check_stability(&self, id: DefId, node: NodeKey) -> Result<(), Error> {
+        let Some(inventory) = self.inventory else {
+            return Ok(());
+        };
+        if self.report.package.has_guests() && !self.report.package.staged_crate(node.file) {
+            return Ok(());
+        }
+        if inventory.declaration(id).is_none() {
+            return Err(Declarations::error(
+                self.report,
+                node,
+                "public declaration exposed by an API has missing library stability attribute",
+            ));
+        }
+        if self.report.resolution.definitions[id.0 as usize].kind == DefKind::Function
+            && self.facts.is_const_function(id)
+            && inventory.const_declaration(id).is_none()
+        {
+            return Err(Declarations::error(
+                self.report,
+                node,
+                "public const member exposed by an API has missing const library stability attribute",
+            ));
         }
         Ok(())
     }

@@ -34,6 +34,28 @@ pub(super) struct Deprecation {
     pub suggestion: Option<(Box<str>, Span)>,
     pub release: super::deprecated_since::Since,
 }
+#[derive(Clone, Copy)]
+pub(crate) struct DeprecationNotice<'a> {
+    pub(crate) note: &'a str,
+    pub(crate) future: bool,
+}
+impl DeprecationNotice<'_> {
+    pub(crate) fn warning(self) -> crate::support::diagnostics::WarningCode {
+        use crate::support::diagnostics::WarningCode;
+        if self.future {
+            WarningCode::DeprecatedInFuture
+        } else {
+            WarningCode::Deprecated
+        }
+    }
+    pub(crate) fn subject(self, subject: &str) -> String {
+        if self.future {
+            format!("use of {subject} scheduled for deprecation: {}", self.note)
+        } else {
+            format!("use of deprecated {subject}: {}", self.note)
+        }
+    }
+}
 pub(crate) struct SourceDeprecation<'a> {
     pub key: NodeKey,
     pub declaration: NodeKey,
@@ -360,14 +382,18 @@ impl Producer {
     ) -> Result<Vec<(NodeKey, crate::resolve::package::Warning)>, Violation> {
         let mut result = Vec::new();
         for event in &self.early {
-            let Some(note) = self.deprecation_note(package, event.origin, event.target)? else {
-                continue;
-            };
-            self.diagnostic_read(event.key, note.len().saturating_add(40))?;
+            let notice = self.deprecation_notice(package, event.origin, event.target)?;
+            self.diagnostic_read(
+                event.key,
+                notice
+                    .note
+                    .len()
+                    .saturating_add(if notice.future { 50 } else { 40 }),
+            )?;
             let mut raw = crate::resolve::package::Error::at(
                 event.key.file,
                 event.offset,
-                format!("use of deprecated macro: {note}"),
+                notice.subject("macro"),
             );
             raw.introduction = event.introduction;
             let diagnostic = project(raw);
@@ -382,7 +408,7 @@ impl Producer {
             result.push((
                 event.key,
                 crate::resolve::package::Warning {
-                    code: crate::support::diagnostics::WarningCode::Deprecated,
+                    code: notice.warning(),
                     diagnostic,
                 },
             ));
@@ -413,11 +439,11 @@ impl Producer {
         package: &Package,
         key: NodeKey,
         mut module: crate::resolve::package::ModuleId,
-    ) -> Result<Option<(Tail, &'a str)>, Violation> {
+    ) -> Result<Option<(Tail, DeprecationNotice<'a>)>, Violation> {
         if let Some(tail) = self.deprecation_owner(package, key)? {
             return self
-                .deprecation_note(package, tail, key)
-                .map(|note| note.map(|note| (tail, note)));
+                .deprecation_notice(package, tail, key)
+                .map(|notice| Some((tail, notice)));
         }
         for _ in 0..package.modules.len() {
             self.attribute_read(key, 1)?;
@@ -437,8 +463,8 @@ impl Producer {
             {
                 if let Some(tail) = self.deprecation_owner(package, source)? {
                     return self
-                        .deprecation_note(package, tail, key)
-                        .map(|note| note.map(|note| (tail, note)));
+                        .deprecation_notice(package, tail, key)
+                        .map(|notice| Some((tail, notice)));
                 }
             }
             let Some(parent) = entry.parent else {
@@ -451,12 +477,12 @@ impl Producer {
             "deprecation module ancestry exceeds actual inventory",
         ))
     }
-    pub(crate) fn deprecation_note<'a>(
+    pub(crate) fn deprecation_notice<'a>(
         &'a self,
         package: &Package,
         tail: Tail,
         key: NodeKey,
-    ) -> Result<Option<&'a str>, Violation> {
+    ) -> Result<DeprecationNotice<'a>, Violation> {
         let owner = self.record(tail, key)?;
         self.authenticate(package, owner)?;
         let row = owner
@@ -465,11 +491,13 @@ impl Producer {
             .as_ref()
             .ok_or_else(|| invalid(key, "deprecation origin lost its annotation"))?;
         row.validate_staged(package, owner.key)?;
-        Ok(row.active(package, owner.key).then(|| {
-            row.note
-                .as_deref()
-                .unwrap_or("use of deprecated declaration")
-        }))
+        let future = !row.active(package, owner.key);
+        let note = row.note.as_deref().unwrap_or(if future {
+            "no deprecation reason supplied"
+        } else {
+            "use of deprecated declaration"
+        });
+        Ok(DeprecationNotice { note, future })
     }
 }
 

@@ -739,7 +739,7 @@ fn owner<'a>(
 
 pub(crate) enum ImportedDeprecation<'a> {
     Active(&'a str),
-    Inactive,
+    Future(&'a str),
 }
 
 pub(crate) fn declaration_deprecation(

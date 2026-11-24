@@ -23,6 +23,7 @@ impl LintCap {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WarningCode {
     Deprecated,
+    DeprecatedInFuture,
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
     UnfulfilledLintExpectations,
@@ -44,12 +45,15 @@ pub enum WarningCode {
     InvalidDocAttributes,
     OverflowingLiterals,
     ImplicitProvenanceCasts,
+    UnreachablePub,
+    PtrToIntegerTransmuteInConsts,
 }
 impl WarningCode {
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
             Self::Deprecated => "deprecated",
+            Self::DeprecatedInFuture => "deprecated_in_future",
             Self::HiddenGlobReexports => "hidden_glob_reexports",
             Self::IneffectiveUnstableTraitImpl => "ineffective_unstable_trait_impl",
             Self::UnfulfilledLintExpectations => "unfulfilled_lint_expectations",
@@ -71,6 +75,8 @@ impl WarningCode {
             Self::InvalidDocAttributes => "invalid_doc_attributes",
             Self::OverflowingLiterals => "overflowing_literals",
             Self::ImplicitProvenanceCasts => "implicit_provenance_casts",
+            Self::UnreachablePub => "unreachable_pub",
+            Self::PtrToIntegerTransmuteInConsts => "ptr_to_integer_transmute_in_consts",
         }
     }
 }

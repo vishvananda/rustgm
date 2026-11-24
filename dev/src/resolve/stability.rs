@@ -20,7 +20,9 @@ mod retired_requests;
 use super::unit::FileId;
 use super::{model::DefId, package::Error, unit::NodeKey};
 use crate::support::hash::HashMap;
-pub(crate) use exported_scopes::{Budget as PublicBudget, visit as visit_public_bindings};
+pub(crate) use exported_scopes::{
+    Budget as PublicBudget, visit as visit_public_bindings, visit_roots as visit_public_crate_roots,
+};
 pub(in crate::resolve) use removed_features::collect as collect_removed;
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::rc::Rc;

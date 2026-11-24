@@ -240,6 +240,7 @@ impl Declarations {
         }
         let level = match code {
             WarningCode::Deprecated => self.safety_policies.deprecated(key),
+            WarningCode::DeprecatedInFuture => self.safety_policies.deprecated_in_future(key),
             WarningCode::HiddenGlobReexports => self.safety_policies.hidden_glob_reexports(key),
             WarningCode::IneffectiveUnstableTraitImpl => {
                 self.safety_policies.ineffective_unstable_trait_impl(key)
@@ -253,6 +254,10 @@ impl Declarations {
             WarningCode::OverflowingLiterals => self.safety_policies.overflowing_literals(key),
             WarningCode::ImplicitProvenanceCasts => {
                 self.safety_policies.implicit_provenance_casts(key)
+            }
+            WarningCode::UnreachablePub => self.safety_policies.unreachable_pub(key),
+            WarningCode::PtrToIntegerTransmuteInConsts => {
+                self.safety_policies.ptr_to_integer_transmute_in_consts(key)
             }
             WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
             WarningCode::UnstableSyntaxPreExpansion => Level::Warn,

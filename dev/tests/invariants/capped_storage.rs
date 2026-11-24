@@ -37,7 +37,7 @@ fn caps_preserve_retained_attribute_debt_and_compact_records() -> Result {
     // Amended: both ledgers record their admitted-source grant.
     assert_eq!(size_of::<Producer>(), 384);
     assert_eq!(size_of::<Owner>(), 160);
-    assert_eq!(size_of::<Policy>(), 196);
+    assert_eq!(size_of::<Policy>(), 224);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<super::super::expectations::Domain>(), 8);
     let initial = producer.work();
