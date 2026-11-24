@@ -75,6 +75,46 @@ impl LangItem {
         Self::ControlFlowBreak,
     ];
 
+    pub(crate) const ASYNC_CALL_TRAITS: [Self; 3] =
+        [Self::AsyncFn, Self::AsyncFnMut, Self::AsyncFnOnce];
+
+    pub(crate) const RESUMABLE_ASSOCIATED: [(Self, Self); 6] = [
+        (Self::AsyncFnOnceOutput, Self::AsyncFnOnce),
+        (Self::CallOnceFuture, Self::AsyncFnOnce),
+        (Self::CallRefFuture, Self::AsyncFnMut),
+        (Self::AsyncFnKindUpvars, Self::AsyncFnKindHelper),
+        (Self::CoroutineYield, Self::Coroutine),
+        (Self::CoroutineReturn, Self::Coroutine),
+    ];
+
+    /// Required ordinary methods with their actual trait declaration owners.
+    pub(crate) const RESUMABLE_REQUIRED: [Self; 4] = [
+        Self::CoroutineResume,
+        Self::AsyncIteratorPollNext,
+        Self::IntoAsyncIterIntoIter,
+        Self::IntoFutureIntoFuture,
+    ];
+
+    pub(crate) const FIELD_REFLECTION: [Self; 5] = [
+        Self::FieldRepresentingType,
+        Self::Field,
+        Self::FieldBase,
+        Self::FieldType,
+        Self::FieldOffset,
+    ];
+
+    pub(crate) const ASYNC_GENERATOR_HELPERS: [Self; 3] = [
+        Self::AsyncGenReady,
+        Self::AsyncGenPending,
+        Self::AsyncGenFinished,
+    ];
+
+    pub(crate) fn resumable_associated(self) -> bool {
+        Self::RESUMABLE_ASSOCIATED
+            .iter()
+            .any(|(member, _)| *member == self)
+    }
+
     /// These roles retain ordinary free function headers and bodies.
     pub(crate) const SOURCE_HELPERS: [Self; 7] = [
         Self::TryTraitFromYeet,

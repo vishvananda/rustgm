@@ -1,16 +1,19 @@
 //! Actual Field protocol authority and application-specific builtin evidence.
 #[path = "reflection_fields/authentication.rs"]
 mod authentication;
+#[path = "reflection_fields/payments.rs"]
+mod payments;
 #[path = "reflection_fields/prerequisites.rs"]
 mod prerequisites;
 #[path = "reflection_fields/representing.rs"]
 mod representing;
-use super::{Declaration, Error, LangItem, Report};
+use super::{Declaration, Error, LangItem, Report, Role};
 use crate::{
     resolve::model::DefId,
     sema::{header_attributes, model::Declarations},
     types::{ItemId, TypeId, arena, parameters::predicates::Predicate, projection},
 };
+pub(super) use authentication::prepare_imported;
 pub(in crate::sema) use prerequisites::requirements;
 pub(crate) use representing::Coordinates;
 pub(in crate::sema) use representing::Description;
@@ -18,8 +21,8 @@ use std::rc::Rc;
 
 pub(in crate::sema::compiler_items) struct Contracts {
     arena: arena::Identity,
-    declarations: [Declaration; 5],
-    images: [header_attributes::SourceImage; 5],
+    declarations: [Role; 5],
+    images: Option<[header_attributes::SourceImage; 5]>,
 }
 
 /// The proof node owns ordinary prerequisites; this token binds its exact subject.
@@ -49,7 +52,11 @@ pub(super) fn coordinates(facts: &Declarations, subject: TypeId) -> Result<Coord
         .and_then(|roles| roles.field.as_ref())
         .ok_or("field_offset requires the actual completed Field protocol")?;
     contract.current(facts)?;
-    match representing::application(facts, subject)? {
+    match representing::application(
+        facts,
+        subject,
+        ItemId(contract.declarations[0].definition.0),
+    )? {
         representing::Application::Ready(coordinates) => Ok(coordinates),
         _ => Err("field_offset requires its actual closed representing application".into()),
     }
@@ -61,8 +68,8 @@ pub(in crate::sema) fn is_result(facts: &Declarations, item: ItemId) -> bool {
             .into_iter()
             .any(|role| {
                 catalog
-                    .language(role)
-                    .is_some_and(|d| d.definition.0 == item.0)
+                    .role(role)
+                    .is_ok_and(|bound| bound.is_some_and(|d| d.definition.0 == item.0))
             })
     })
 }
@@ -101,20 +108,19 @@ pub(in crate::sema) fn inspect(
         .and_then(|roles| roles.field.as_ref())
     else {
         let member = catalog
-            .language(LangItem::FieldBase)
+            .role(LangItem::FieldBase)?
             .ok_or("Field requires its actual Base declaration")?;
         return Ok(Readiness::Contracts(member.definition));
     };
     contract.current(facts)?;
-    representing::describe(facts, goal.ty)
+    representing::describe(facts, goal.ty, contract.declarations[0])
 }
 
 pub(in crate::sema) fn matches_goal(facts: &Declarations, goal: Predicate) -> Result<bool, String> {
-    let Some(declaration) = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::Field))
-    else {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some(declaration) = catalog.role(LangItem::Field)? else {
         return Ok(false);
     };
     let Some((application, effect)) = goal.bound.trait_parts() else {
@@ -148,12 +154,6 @@ pub(in crate::sema) fn complete_selection(
     let Readiness::Ready(description) = inspect(facts, goal)? else {
         return Err("Field proof lost its actual selected declaration field".into());
     };
-    header_attributes::charge_source_retention(
-        facts,
-        1,
-        size_of::<Selected>() + 2 * size_of::<usize>(),
-    )
-    .map_err(|e| e.to_string())?;
     let contract = facts
         .source_bindings
         .as_deref()
@@ -163,9 +163,15 @@ pub(in crate::sema) fn complete_selection(
                 .as_deref()
                 .and_then(|roles| roles.field.as_ref())
         })
+        .map(Rc::clone)
         .ok_or("Field proof lost its completed protocol")?;
+    payments::retain(
+        contract.declarations[0].origin,
+        facts.must_use_contracts.as_deref(),
+        facts.crates.as_deref_mut(),
+    )?(1, size_of::<Selected>() + 2 * size_of::<usize>())?;
     Ok(Some(Selection(Rc::new(Selected {
-        contract: Rc::clone(contract),
+        contract,
         subject: goal.ty,
         description,
     }))))
@@ -202,6 +208,18 @@ impl Selection {
         {
             return Err("Field constant has another actual declaration owner".into());
         }
+        if self.0.contract.images.is_none() {
+            let linkage = facts
+                .crates
+                .as_deref()
+                .ok_or("Field constant lost its imported graph")?;
+            if linkage.constant_initializer(facts, member)?.is_none() {
+                return Err(
+                    "imported Field constant requires its actual provided initializer".into(),
+                );
+            }
+            return Ok(());
+        }
         let initializer = facts
             .initializer_index(member)
             .and_then(|index| facts.initializers.get(index))
@@ -209,7 +227,7 @@ impl Selection {
         if initializer.definition != member
             || !matches!(initializer.kind, crate::sema::model::InitializerKind::Const)
             || (member == self.0.contract.declarations[4].definition
-                && initializer.node != self.0.contract.declarations[4].origin)
+                && Some(initializer.node) != self.0.contract.declarations[4].origin.source())
         {
             return Err("Field constant changed its actual provided declaration".into());
         }
@@ -239,7 +257,9 @@ impl Selection {
         {
             return Err("Field result differs from its proved full application".into());
         }
-        let Readiness::Ready(description) = representing::describe(facts, self.0.subject)? else {
+        let Readiness::Ready(description) =
+            representing::describe(facts, self.0.subject, self.0.contract.declarations[0])?
+        else {
             return Err("Field result lost its actual semantic field".into());
         };
         if description != self.0.description {
@@ -287,8 +307,20 @@ pub(crate) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), 
         .require_provider_report(report)
         .map_err(Error::unlocated)?;
     contract.current(facts).map_err(Error::unlocated)?;
-    for (declaration, expected) in contract.declarations.iter().zip(&contract.images) {
-        let actual = header_attributes::role_source_image(facts, report, *declaration)?;
+    let Some(images) = &contract.images else {
+        return Ok(());
+    };
+    for (declaration, expected) in contract.declarations.iter().zip(images) {
+        let source = declaration
+            .origin
+            .source()
+            .ok_or_else(|| Error::unlocated("source Field declaration lost its recorded origin"))?;
+        let declaration = Declaration {
+            definition: declaration.definition,
+            parent: declaration.parent,
+            origin: source,
+        };
+        let actual = header_attributes::role_source_image(facts, report, declaration)?;
         if !expected.same(&actual) {
             return Err(Error::unlocated(
                 "Field source belongs to another recorded incarnation",

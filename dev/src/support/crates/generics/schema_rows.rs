@@ -495,14 +495,16 @@ pub enum BodylessIntrinsic {
     AlignOf = 2,
     PtrMetadata = 3,
     OffsetOf = 4,
+    FieldOffset = 5,
 }
 impl BodylessIntrinsic {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::CallerLocation,
         Self::SizeOf,
         Self::AlignOf,
         Self::PtrMetadata,
         Self::OffsetOf,
+        Self::FieldOffset,
     ];
 
     #[must_use]
@@ -514,6 +516,7 @@ impl BodylessIntrinsic {
             Self::AlignOf => SourceIntrinsic::Layout(LayoutIntrinsic::AlignOf),
             Self::PtrMetadata => SourceIntrinsic::PtrMetadata,
             Self::OffsetOf => SourceIntrinsic::OffsetOf,
+            Self::FieldOffset => SourceIntrinsic::FieldOffset,
         }
     }
 
@@ -525,6 +528,7 @@ impl BodylessIntrinsic {
             Self::AlignOf => "align_of",
             Self::PtrMetadata => "ptr_metadata",
             Self::OffsetOf => "offset_of",
+            Self::FieldOffset => "field_offset",
         }
     }
 }

@@ -355,15 +355,16 @@ fn language_subject(
             .is_some_and(|role| role.definition.0 == item.0)
     };
     let copying = || provides(LangItem::Copy) || provides(LangItem::Clone);
+    let provides_checked = |role| {
+        catalog
+            .role(role)
+            .map(|binding| binding.is_some_and(|binding| binding.definition.0 == item.0))
+            .map_err(|_| infer::Error::InvalidIdentity)
+    };
     Ok(match subject {
-        Subject::Rigid(Head::Function) => {
-            catalog
-                .role(LangItem::FnPtrTrait)
-                .map_err(|_| infer::Error::InvalidIdentity)?
-                .is_some_and(|role| role.definition.0 == item.0)
-                || copying()
-        }
-        Subject::Rigid(Head::Tuple | Head::Closure(_) | Head::FunctionItem(_)) => copying(),
+        Subject::Rigid(Head::Function) => provides_checked(LangItem::FnPtrTrait)? || copying(),
+        Subject::Rigid(Head::Tuple) => provides_checked(LangItem::Tuple)? || copying(),
+        Subject::Rigid(Head::Closure(_) | Head::FunctionItem(_)) => copying(),
         _ => false,
     })
 }

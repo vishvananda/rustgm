@@ -203,6 +203,18 @@ impl Stage {
             }
             DefKind::Function if role == LangItem::FuturePoll && self.compiler_operations => {}
             DefKind::Function if role == LangItem::CloneFn => {}
+            DefKind::TypeAlias
+                if self.declaration_policies()
+                    && matches!(role, LangItem::FieldBase | LangItem::FieldType) => {}
+            DefKind::Const if self.declaration_policies() && role == LangItem::FieldOffset => {}
+            DefKind::TypeAlias if self.declaration_policies() && role.resumable_associated() => {}
+            DefKind::Function if self.declaration_policies() && role == LangItem::AsyncGenReady => {
+            }
+            DefKind::Const
+                if self.declaration_policies()
+                    && matches!(role, LangItem::AsyncGenPending | LangItem::AsyncGenFinished) => {}
+            DefKind::Function
+                if self.declaration_policies() && LangItem::RESUMABLE_REQUIRED.contains(&role) => {}
             DefKind::Function
                 if self.declaration_policies() && LangItem::GUARD_PANICS.contains(&role) => {}
             // FnOnce's declared result travels as its kind-9 result row.
@@ -227,6 +239,9 @@ impl Stage {
                         LangItem::TypeInfo
                             | LangItem::TypeId
                             | LangItem::TransmuteOpts
+                            | LangItem::FieldRepresentingType
+                            | LangItem::Context
+                            | LangItem::ResumeTy
                             | LangItem::CStr
                             | LangItem::DynMetadata
                             | LangItem::PanicLocation
@@ -473,7 +488,7 @@ impl Stage {
             context,
         )?;
         let (inputs, written_supertraits) =
-            self.trait_inputs(facts, header, context, self_slot, inventory)?;
+            self.trait_inputs(facts, context, self_slot, inventory)?;
         let region_bounds = self.region_bounds(&canonical.regions, context)?;
         let start =
             u32::try_from(self.rows.members.len()).map_err(|_| "source member table overflow")?;
@@ -521,14 +536,13 @@ impl Stage {
     fn trait_inputs(
         &mut self,
         facts: &Declarations,
-        header: &Trait<'_>,
         context: Context,
         self_slot: s::SlotRef,
         mut inventory: supertrait_sources::Inventory<'_>,
     ) -> Result<(g::Range, g::Range), &'static str> {
         let start =
             u32::try_from(self.rows.clauses.len()).map_err(|_| "source clause table overflow")?;
-        for (ordinal, input) in header.inputs.iter().enumerate() {
+        for (ordinal, input) in inventory.order.inputs().enumerate() {
             self.charge(1)?;
             let is_self = inventory.is_self(facts, ordinal)?;
             let index = self.clause(facts, input, context, is_self.then_some(self_slot))?;

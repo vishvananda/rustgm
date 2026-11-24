@@ -41,11 +41,7 @@ pub(in crate::sema) fn complete_helpers(
     if report.package.source_core().is_none() {
         return Ok(());
     }
-    for role in [
-        LangItem::AsyncGenReady,
-        LangItem::AsyncGenPending,
-        LangItem::AsyncGenFinished,
-    ] {
+    for role in LangItem::ASYNC_GENERATOR_HELPERS {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(());
         };
@@ -182,6 +178,94 @@ fn require_owner(
         return Err(error(
             "source async-gen helper changed its actual inherent owner",
         ));
+    }
+    Ok(())
+}
+
+/// Retain only the actual inherent helpers on Poll<Option<T>>.
+pub(super) fn imported_helpers(
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+    complete: &mut super::roles::RoleSet,
+) -> Result<(), &'static str> {
+    use crate::types::{Kind, TypeId, arguments::Argument};
+
+    for role in LangItem::ASYNC_GENERATOR_HELPERS {
+        *steps = steps.saturating_add(4);
+        let Some(member) = catalog.role(role)? else {
+            continue;
+        };
+        let owner = facts
+            .associated
+            .owner(member.definition)
+            .and_then(|id| facts.associated.get(id))
+            .ok_or("imported async generator helper lost its inherent owner")?;
+        if !matches!(owner.kind, OwnerKind::ImportedInherent(_))
+            || member.parent != Some(owner.self_definition)
+        {
+            return Err("imported async generator helper changed its inherent owner");
+        }
+        let schema = facts
+            .associated
+            .schema(owner.self_definition)
+            .ok_or("imported async generator helper lost its actual Self schema")?;
+        let single_argument = |ty: TypeId, role| -> Result<TypeId, &'static str> {
+            let actual = catalog
+                .role(role)?
+                .ok_or("async generator helper lacks its actual Poll or Option role")?;
+            let Some(Kind::Adt(item, arguments)) = facts.types.kind(ty) else {
+                return Err("async generator helper has a non-nominal result");
+            };
+            let mut arguments = facts
+                .types
+                .arguments(arguments)
+                .ok_or("async generator helper lost its nominal arguments")?;
+            match (
+                item.0 == actual.definition.0,
+                arguments.next(),
+                arguments.next(),
+            ) {
+                (true, Some(Argument::Type(ty)), None) => Ok(ty),
+                _ => Err("async generator helper changed its nominal result"),
+            }
+        };
+        let option = single_argument(schema.self_type, LangItem::Poll)?;
+        let value = single_argument(option, LangItem::Option)?;
+        if role == LangItem::AsyncGenReady {
+            imported_async_ready(facts, member, (value, schema.self_type))?;
+        } else if facts
+            .definitions
+            .get(member.definition.0 as usize)
+            .copied()
+            .flatten()
+            != Some(schema.self_type)
+        {
+            return Err("imported async generator constant changed its actual Self type");
+        }
+        complete.insert(role);
+    }
+    Ok(())
+}
+
+fn imported_async_ready(
+    facts: &Declarations,
+    member: super::Role,
+    (input, result): (crate::types::TypeId, crate::types::TypeId),
+) -> Result<(), &'static str> {
+    use crate::types::{Kind, callable::Convention};
+
+    let header = facts
+        .declaration_header(member.definition)?
+        .ok_or("imported async generator ready helper lost its actual callable header")?;
+    if header.declaration != member.origin
+        || header.body.is_none()
+        || !matches!(facts.types.kind(header.signature),
+            Some(Kind::Function { parameters, result: actual, bound_regions: 0,
+                unsafe_: false, convention: Convention::RUST })
+            if actual == result && facts.types.list(parameters) == Some(&[input][..]))
+    {
+        return Err("imported async generator ready helper changed its actual defined signature");
     }
     Ok(())
 }

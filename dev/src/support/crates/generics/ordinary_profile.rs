@@ -291,8 +291,8 @@ fn trait_headers(
             require_unsize_header(header)?;
             continue;
         }
-        if roles.fn_pointer == Some(header.declaration) {
-            require_fn_pointer_header(rows, header)?;
+        if let Some(restricted) = roles.restricted_trait(header.declaration) {
+            require_restricted_header(rows, header, restricted)?;
             continue;
         }
         if roles.no_drop == Some(header.declaration) {
@@ -407,21 +407,22 @@ fn require_unsize_header(header: &super::super::TraitHeader) -> Result<(), &'sta
     Ok(())
 }
 
-fn require_fn_pointer_header(
+fn require_restricted_header(
     rows: &SourceRows,
     header: &super::super::TraitHeader,
+    (flags, members, supertraits): (u16, usize, usize),
 ) -> Result<(), &'static str> {
-    if header.flags.bits() != (TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE)
+    if header.flags.bits() != flags
         || header.written_parameters != 0
         || header.region_captures != 0
-        || header.members.slice(&rows.members)?.len() != 1
+        || header.members.slice(&rows.members)?.len() != members
         || header
             .written_supertraits
             .slice(&rows.clause_indices)?
             .len()
-            != 2
+            != supertraits
     {
-        return Err("source FnPtr requires its actual restricted trait with one member");
+        return Err("source restricted compiler trait changed its actual declaration profile");
     }
     Ok(())
 }
@@ -619,10 +620,13 @@ fn functions(
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
         let trait_const =
             bodies && !inherent_const && trait_const_method(rows, headers, header, roles, work)?;
+        let async_callable =
+            callable_roles::async_required_member(header, roles.async_callables, work)?;
         let supported_signature = |signature: super::super::Signature| {
             (safety || !signature.unsafe_)
                 && !signature.variadic
                 && (callable
+                    || async_callable
                     || admitted_convention(rows, header.declaration, signature.convention, profile))
         };
         if (!free_effects
@@ -638,17 +642,7 @@ fn functions(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
             );
         }
-        if free_effects
-            && (header.original.unsafe_ != header.callable.unsafe_
-                || header.original.convention != header.callable.convention)
-        {
-            return Err(
-                "source free callable changed its actual original/public safety or convention",
-            );
-        }
-        if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
-            return Err("source associated callable changed its actual original/public safety");
-        }
+        require_public_callable(header, free_effects, bodies)?;
         let associated = provided_default
             || trait_const
             || associated_method(rows, headers, header, work, profile, roles, bodies)?;
@@ -698,6 +692,24 @@ fn functions(
     }
     Ok(())
 }
+
+fn require_public_callable(
+    header: &super::super::FunctionHeader,
+    free_effects: bool,
+    bodies: bool,
+) -> Result<(), &'static str> {
+    if free_effects
+        && (header.original.unsafe_ != header.callable.unsafe_
+            || header.original.convention != header.callable.convention)
+    {
+        return Err("source free callable changed its actual original/public safety or convention");
+    }
+    if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
+        return Err("source associated callable changed its actual original/public safety");
+    }
+    Ok(())
+}
+
 fn primitive_method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -1025,6 +1037,7 @@ pub(super) struct Bindings {
     unsize: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     discriminant: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     fn_pointer: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    field: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     runtime_format_bodies: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::RUNTIME_FORMAT_BODIES.len()],
@@ -1051,6 +1064,7 @@ pub(super) struct Bindings {
         Profile::CONST_DEREF_ROLES.len()],
     range: Option<interval_roles::Family>,
     callables: callable_roles::Roles,
+    async_callables: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
     /// Version thirteen: exact empty auto declarations, unsafe traits and
     /// every trait impl's own safety and polarity.
     languages: bool,
@@ -1059,6 +1073,20 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
+    fn restricted_trait(
+        &self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> Option<(u16, usize, usize)> {
+        let restricted = TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE;
+        if self.fn_pointer == Some(declaration) {
+            Some((restricted, 1, 2))
+        } else if self.field == Some(declaration) {
+            Some((restricted | TraitFlags::UNSAFE, 3, 3))
+        } else {
+            None
+        }
+    }
+
     fn default_traits(&self) -> callable_traits::DefaultTraits {
         callable_traits::DefaultTraits {
             drop: self.drop,
@@ -1271,6 +1299,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::TransmuteOpts
             | LangItem::FnPtrTrait
             | LangItem::CStr
+            | LangItem::Context
+            | LangItem::ResumeTy
             | LangItem::FnPtrAddr
             | LangItem::AllocLayout
             | LangItem::TypeId
@@ -1303,6 +1333,10 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::SOURCE_HELPERS.contains(&role)
+        || LangItem::RESUMABLE_REQUIRED.contains(&role)
+        || LangItem::ASYNC_GENERATOR_HELPERS.contains(&role)
+        || LangItem::FIELD_REFLECTION.contains(&role)
+        || role.resumable_associated()
         || LangItem::TRY_PROTOCOL.contains(&role)
         || LangItem::FOR_PROTOCOL.contains(&role)
         || LangItem::COMPARISON_TRAITS.contains(&role)
@@ -1431,6 +1465,7 @@ pub(super) fn bindings(
         .map(|role| bound(role).filter(|_| languages)),
     );
     let modern = profile == BindingProfile::BodyOperations;
+    let body_role = |role| bound(role).filter(|_| modern);
     let range = if modern {
         interval_roles::family(rows, headers, interval_roles::ROLES.map(bound), work)?
     } else {
@@ -1443,29 +1478,29 @@ pub(super) fn bindings(
             | BindingProfile::Languages
             | BindingProfile::BodyOperations
     );
-    let modern_role = |role| bound(role).filter(|_| modern);
     let [clone_from] = const_default_members(
         rows,
         headers,
-        modern_role(LangItem::Clone),
+        body_role(LangItem::Clone),
         ["clone_from"],
         work,
     )?;
     let iterator_defaults = const_default_members(
         rows,
         headers,
-        modern_role(LangItem::Iterator),
+        body_role(LangItem::Iterator),
         LangItem::PROVIDED_ITERATOR_METHODS,
         work,
     )?;
     Ok(Bindings {
         callables,
+        async_callables: LangItem::ASYNC_CALL_TRAITS.map(body_role),
         languages,
         range,
-        drop: modern_role(LangItem::Drop),
+        drop: body_role(LangItem::Drop),
         drop_glue: bound(LangItem::DropGlue),
-        clone: modern_role(LangItem::Clone),
-        clone_fn: modern_role(LangItem::CloneFn),
+        clone: body_role(LangItem::Clone),
+        clone_fn: body_role(LangItem::CloneFn),
         clone_from,
         iterator_defaults,
         trivial_clone: bound(LangItem::TrivialClone),
@@ -1499,14 +1534,15 @@ pub(super) fn bindings(
         ))
         .then_some(bound(LangItem::From))
         .flatten(),
-        binary_operators: Profile::CONST_BINARY_ROLES.map(modern_role),
-        dereferences: Profile::CONST_DEREF_ROLES.map(modern_role),
+        binary_operators: Profile::CONST_BINARY_ROLES.map(body_role),
+        dereferences: Profile::CONST_DEREF_ROLES.map(body_role),
         sizing,
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
         unsize: bound(LangItem::Unsize),
         discriminant: bound(LangItem::DiscriminantKind),
         fn_pointer: bound(LangItem::FnPtrTrait),
+        field: bound(LangItem::Field),
         freeze: marker_traits.then_some(bound(LangItem::Freeze)).flatten(),
     })
 }
@@ -1719,10 +1755,15 @@ fn role_header(
         {
             defined_operation_role(profile, rows, role, header)?;
         }
-        (LangItem::FnPtrAddr, Some(HeaderRef::Function(index)))
-            if rows.functions.get(index as usize).is_some_and(|function| {
-                function.body == FunctionBody::Absent && function.constness == Constness::Ordinary
-            }) => {}
+        (role, Some(HeaderRef::Function(index)))
+            if (role == LangItem::FnPtrAddr || LangItem::RESUMABLE_REQUIRED.contains(&role))
+                && required_ordinary_header(rows, index) => {}
+        (role, Some(HeaderRef::AssociatedType(_)))
+            if role.resumable_associated()
+                || matches!(role, LangItem::FieldBase | LangItem::FieldType) => {}
+        (role, header) if LangItem::ASYNC_GENERATOR_HELPERS.contains(&role) => {
+            async_generator_header(rows, role, header)?;
+        }
         (LangItem::OffsetOf, Some(HeaderRef::Function(index)))
             if offset_intrinsic_header(rows, index) => {}
         (role, header)
@@ -1751,7 +1792,8 @@ fn role_header(
             LangItem::RangeMin
             | LangItem::RangeMax
             | LangItem::MemSizeConst
-            | LangItem::MemAlignConst,
+            | LangItem::MemAlignConst
+            | LangItem::FieldOffset,
             Some(HeaderRef::Constant(_)),
         )
         | (
@@ -1800,6 +1842,37 @@ fn role_header(
     Ok(())
 }
 
+fn required_ordinary_header(rows: &SourceRows, index: u32) -> bool {
+    rows.functions.get(index as usize).is_some_and(|function| {
+        function.body == FunctionBody::Absent
+            && function.constness == Constness::Ordinary
+            && function.parent.is_some()
+    })
+}
+
+fn async_generator_header(
+    rows: &SourceRows,
+    role: LangItem,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    use super::super::HeaderRef;
+    let supported = match (role, header) {
+        (LangItem::AsyncGenReady, Some(HeaderRef::Function(index))) => {
+            rows.functions.get(index as usize).is_some_and(|function| {
+                matches!(function.body, FunctionBody::Original(_)) && function.parent.is_some()
+            })
+        }
+        (LangItem::AsyncGenPending | LangItem::AsyncGenFinished, Some(HeaderRef::Constant(_))) => {
+            true
+        }
+        _ => false,
+    };
+    if !supported {
+        return Err("source async generator helper changed its actual function or constant header");
+    }
+    Ok(())
+}
+
 fn ordinary_struct_role(role: LangItem) -> bool {
     matches!(
         role,
@@ -1807,7 +1880,10 @@ fn ordinary_struct_role(role: LangItem) -> bool {
             | LangItem::FormatArguments
             | LangItem::FormatArgument
             | LangItem::TransmuteOpts
+            | LangItem::FieldRepresentingType
             | LangItem::CStr
+            | LangItem::Context
+            | LangItem::ResumeTy
     )
 }
 
@@ -2118,6 +2194,12 @@ fn owned_role_members(
             declarations[LangItem::MemSizeConst.index()],
             declarations[LangItem::MemAlignConst.index()],
         ],
+    )?;
+    layout_members(
+        rows,
+        headers,
+        work,
+        [declarations[LangItem::FieldOffset.index()], None],
     )?;
     Ok(())
 }

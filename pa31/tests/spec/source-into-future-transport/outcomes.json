@@ -1,0 +1,22 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/into-future-source/original-into.rs",
+      "start": 3067,
+      "end": 4148,
+      "sha256": "502564e31069894647d0d78b3144df3936401cb1076e4ad9a32421942c6f2a65",
+      "marker": "// Original pinned IntoFuture declaration."
+    }
+  ],
+  "older_profile": "source compiler language contract transport is not implemented",
+  "older_reader": "source role has a different actual declaration/header kind"
+}

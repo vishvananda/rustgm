@@ -1,0 +1,23 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits",
+    "async_fn_traits"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41 41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/async-calls/original.rs",
+      "start": 54,
+      "end": 2520,
+      "sha256": "2f4e84fe226caa981505550b56ab2e4de638dec64bf601a22260eafefb8cffb1",
+      "marker": "// Original pinned async callable declarations."
+    }
+  ],
+  "older_profile": "source compiler language contract transport is not implemented",
+  "older_reader": "source associated role has a different actual member kind"
+}

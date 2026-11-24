@@ -65,7 +65,7 @@ impl Search<'_> {
         // effect eligibility. Item arguments retain their formation duties;
         // their declaration signature was proved before forming the item.
         let source_rule = Self::source_future_goal(facts, frame)?
-            || Self::source_field_goal(facts, &frame.goal)
+            || Self::source_field_goal(facts, &frame.goal)?
             || Self::source_auto_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,

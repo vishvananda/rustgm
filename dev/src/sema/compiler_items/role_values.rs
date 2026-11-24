@@ -107,3 +107,30 @@ fn variant(
     }
     Ok(())
 }
+
+/// These roles retain their actual nominal identity and formals. A compiler
+/// operation still has to prove the complete representation it consumes.
+pub(super) fn imported_resumable(
+    facts: &Declarations,
+    declaration: super::Role,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(4);
+    nominal(facts, declaration.definition, role)?;
+    let parameters = facts
+        .generics
+        .parameters
+        .get(&declaration.definition)
+        .map_or(&[][..], Vec::as_slice);
+    let expected = match role {
+        LangItem::Context => matches!(parameters, [parameter]
+            if matches!(parameter.argument, crate::types::arguments::Argument::Lifetime(_))),
+        LangItem::ResumeTy => parameters.is_empty(),
+        _ => false,
+    };
+    if !expected {
+        return Err("imported resumable nominal changed its actual formals");
+    }
+    Ok(())
+}

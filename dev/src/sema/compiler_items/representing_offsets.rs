@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub(crate) fn field_offset_intrinsic(kind: SourceIntrinsic) -> bool {
-    matches!(kind, SourceIntrinsic::Declaration(identity) if identity.name() == "field_offset")
+    kind == SourceIntrinsic::FieldOffset
 }
 
 /// Physical coordinates only; every use must authenticate its checked caller again.
@@ -38,14 +38,11 @@ impl Catalog {
         else {
             return Ok(None);
         };
-        let Some((declaration, SourceIntrinsic::Declaration(identity), expected)) =
+        let Some((declaration, SourceIntrinsic::FieldOffset, expected)) =
             self.intrinsic_record(DefId(item.0))?
         else {
-            return Ok(None);
+            return self.imported_field_offset(facts, DefId(item.0), arguments, signature);
         };
-        if identity.name() != "field_offset" {
-            return Ok(None);
-        }
         crate::sema::header_attributes::charge_source_contract_query(facts, 16)
             .map_err(|_| "source field_offset selection budget exhausted")?;
         if origin.source().is_none()
@@ -79,7 +76,6 @@ impl Catalog {
         {
             return Err("source field_offset changed its actual const bodyless declaration");
         }
-        super::prototype_validation::validate(facts, *function, identity)?;
         self.field_offset_constraints(facts, function.definition)?;
         let mut arguments = facts
             .types
@@ -92,6 +88,36 @@ impl Catalog {
             .map_err(|_| "source field_offset lost its actual Field protocol or coordinates")?;
         Ok(Some(FieldOffsetSelection {
             definition: function.definition,
+            coordinates,
+        }))
+    }
+
+    fn imported_field_offset(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        arguments: crate::types::GenericArgs,
+        signature: TypeId,
+    ) -> Result<Option<FieldOffsetSelection>, &'static str> {
+        use crate::support::crates::generics::source::BodylessIntrinsic;
+        let Some((BodylessIntrinsic::FieldOffset, header)) = self.imported_intrinsic(definition)
+        else {
+            return Ok(None);
+        };
+        if header.signature != signature {
+            return Err("imported field_offset changed its actual checked signature");
+        }
+        let mut arguments = facts
+            .types
+            .arguments(arguments)
+            .ok_or("imported field_offset lost its actual generic arguments")?;
+        let (Some(Argument::Type(subject)), None) = (arguments.next(), arguments.next()) else {
+            return Err("imported field_offset requires its one actual type argument");
+        };
+        let coordinates = field_protocol::coordinates(facts, subject)
+            .map_err(|_| "imported field_offset lost its checked Field coordinates")?;
+        Ok(Some(FieldOffsetSelection {
+            definition,
             coordinates,
         }))
     }
@@ -157,6 +183,15 @@ impl Catalog {
         self.require_provider_report(report)?;
         super::authenticate_field(report, facts)
             .map_err(|_| "source field_offset Field source or arena changed")?;
+        if self.uses_imported_roles() {
+            return if self.intrinsic_kind(selected.definition)?
+                == Some(SourceIntrinsic::FieldOffset)
+            {
+                Ok(())
+            } else {
+                Err("imported field_offset lost its actual checked declaration")
+            };
+        }
         let Some((declaration, kind, signature)) = self.intrinsic_record(selected.definition)?
         else {
             return Err("source field_offset lost its attributed declaration");
@@ -181,4 +216,54 @@ impl Catalog {
         }
         Ok(())
     }
+}
+
+pub(super) fn validate_imported(
+    facts: &Declarations,
+    catalog: &Catalog,
+    role: super::Role,
+    signature: TypeId,
+    steps: &mut usize,
+) -> Result<TypeId, &'static str> {
+    let field = catalog
+        .validated_role(LangItem::Field)?
+        .ok_or("imported field_offset requires its actual Field trait")?;
+    let Some([parameter]) = facts
+        .generics
+        .parameters
+        .get(&role.definition)
+        .map(Vec::as_slice)
+    else {
+        return Err("imported field_offset requires its actual type parameter");
+    };
+    let Argument::Type(formal) = parameter.argument else {
+        return Err("imported field_offset requires its actual type parameter");
+    };
+    let expected = TypeId::primitive(Primitive::Usize);
+    if role.parent.is_some()
+        || parameter.default.is_some()
+        || parameter.anonymous
+        || !matches!(facts.types.kind(signature), Some(Kind::Function {
+            parameters, result, bound_regions: 0, unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+        }) if result == expected && facts.types.list(parameters) == Some(&[]))
+    {
+        return Err("imported field_offset changed its declared signature");
+    }
+    let inputs = crate::sema::declaration_inputs::declared_own(
+        &facts.generics,
+        facts.crates.as_deref(),
+        role.definition,
+    )?;
+    *steps = steps.saturating_add(8 + inputs.len());
+    if !inputs.iter().any(|input| {
+        matches!(input.value, Clause::Predicate(predicate)
+        if predicate.ty == formal && predicate.bound.trait_parts().is_some_and(|(id, effect)|
+            effect == Constness::Ordinary && facts.types.trait_application(id).is_some_and(|app|
+                app.item.0 == field.definition.0
+                    && facts.types.arguments(app.arguments).is_some_and(|args| args.len() == 0))))
+    }) {
+        return Err("imported field_offset requires its declared Field input");
+    }
+    Ok(expected)
 }

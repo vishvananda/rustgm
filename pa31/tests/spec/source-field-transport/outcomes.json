@@ -1,0 +1,14 @@
+{
+  "foundation": "pa31/tests/spec/field-source/original-headers-v4.rs",
+  "prefix_marker": "#[rustc_const_unstable(feature=\"const_destruct\"",
+  "stdout": "4\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/field-source/original-headers-v4.rs",
+      "start": 855,
+      "end": 3934,
+      "sha256": "de9b3b529ff86c5b6515ea213f50881c01177200445f4fdf2136141ef222fbd5",
+      "marker": "// Original pinned Field declarations, selection and intrinsic header."
+    }
+  ]
+}

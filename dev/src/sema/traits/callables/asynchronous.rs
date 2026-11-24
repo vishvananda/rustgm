@@ -41,7 +41,7 @@ pub(in crate::sema) fn kind(
             .is_some_and(|actual| actual.definition == DefId(item.0))
         {
             catalog
-                .validated_language(role)?
+                .validated_role(role)?
                 .ok_or("async callable role is incomplete")?;
             return Ok(Some(kind));
         }
@@ -93,7 +93,7 @@ impl Selected {
             .source_bindings
             .as_deref()
             .ok_or("missing async source catalog")?
-            .validated_language(LangItem::FutureOutput)?
+            .validated_role(LangItem::FutureOutput)?
             .ok_or("missing actual Future Output")?;
         let parent = role(facts, LangItem::Future)?;
         if actual.parent != Some(parent) || schema.trait_item != ItemId(parent.0) {
@@ -149,7 +149,7 @@ impl Selected {
                 CallTrait::FnMut,
             ),
         ] {
-            let Some(member) = catalog.validated_language(member_role)? else {
+            let Some(member) = catalog.validated_role(member_role)? else {
                 continue;
             };
             if member.definition != DefId(application.item.0) {
@@ -194,7 +194,7 @@ fn role(facts: &Declarations, role: LangItem) -> Result<DefId, &'static str> {
         .source_bindings
         .as_deref()
         .ok_or("async callable requires actual source roles")?
-        .validated_language(role)?
+        .validated_role(role)?
         .map(|d| d.definition)
         .ok_or("async callable source role is absent")
 }

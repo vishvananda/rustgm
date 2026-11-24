@@ -84,3 +84,31 @@ pub(super) fn required_member(
     }
     Ok(true)
 }
+
+/// Async call traits use an ordinary rust-call signature. Their result family
+/// and use-dependent implementation evidence stay in the associated tables.
+pub(super) fn async_required_member(
+    function: &s::FunctionHeader,
+    owners: [Option<DeclarationRef>; 3],
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = function.parent else {
+        return Ok(false);
+    };
+    if !owners.contains(&Some(parent)) {
+        return Ok(false);
+    }
+    work.charge(2)?;
+    if function.body != FunctionBody::Absent
+        || function.constness != Constness::Ordinary
+        || function.original.convention != Convention::RustCall
+        || function.callable.convention != Convention::RustCall
+        || function.original.unsafe_
+        || function.callable.unsafe_
+        || function.original.variadic
+        || function.callable.variadic
+    {
+        return Err("source async callable changed its required rust-call declaration");
+    }
+    Ok(true)
+}

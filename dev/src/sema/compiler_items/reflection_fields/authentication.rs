@@ -10,13 +10,7 @@ use crate::{
     },
 };
 
-const ROLES: [LangItem; 5] = [
-    LangItem::FieldRepresentingType,
-    LangItem::Field,
-    LangItem::FieldBase,
-    LangItem::FieldType,
-    LangItem::FieldOffset,
-];
+const ROLES: [LangItem; 5] = LangItem::FIELD_REFLECTION;
 
 pub(super) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let catalog = facts
@@ -78,14 +72,14 @@ pub(super) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), E
     )?;
     let contract = Rc::new(Contracts {
         arena: facts.types.arena_identity(),
-        images: [
+        images: Some([
             header_attributes::role_source_image(facts, report, nominal)?,
             header_attributes::role_source_image(facts, report, trait_)?,
             header_attributes::role_source_image(facts, report, base)?,
             header_attributes::role_source_image(facts, report, field)?,
             header_attributes::role_source_image(facts, report, offset)?,
-        ],
-        declarations,
+        ]),
+        declarations: declarations.map(super::Role::from),
     });
     contract.current(facts).map_err(Error::unlocated)?;
     let catalog = facts
@@ -177,7 +171,7 @@ fn validate_nominal(facts: &Declarations, definition: DefId) -> Result<(), &'sta
 
 impl Contracts {
     pub(super) fn current(&self, facts: &Declarations) -> Result<(), String> {
-        header_attributes::charge_source_contract_query(facts, 8).map_err(|e| e.to_string())?;
+        super::payments::query(facts, self.declarations[0].origin, 8)?;
         if !facts.types.has_identity(&self.arena) {
             return Err("Field contract belongs to another type store".into());
         }
@@ -185,17 +179,35 @@ impl Contracts {
             .source_bindings
             .as_deref()
             .ok_or("Field contract lost its catalog")?;
-        for ((role, declaration), image) in
-            ROLES.into_iter().zip(self.declarations).zip(&self.images)
-        {
-            if catalog.language(role) != Some(declaration) {
+        let Some(images) = &self.images else {
+            if !catalog.uses_imported_roles() {
+                return Err("imported Field proof changed its declaration catalog".into());
+            }
+            return Ok(());
+        };
+        for ((role, declaration), image) in ROLES.into_iter().zip(self.declarations).zip(images) {
+            if catalog.role(role)? != Some(declaration) {
                 return Err("Field contract changed its actual role identities".into());
             }
+            let origin = declaration
+                .origin
+                .source()
+                .ok_or("Field declaration lost its actual source origin")?;
+            let declaration = Declaration {
+                definition: declaration.definition,
+                parent: declaration.parent,
+                origin,
+            };
             header_attributes::require_recorded_pointee_image(facts, declaration, image)
                 .map_err(|e| e.to_string())?;
         }
         validate_nominal(facts, self.declarations[0].definition)?;
-        canonical_header(facts, self.declarations[1])?;
+        let owner = self.declarations[1];
+        validate_canonical_header(
+            facts,
+            owner,
+            trait_header(&facts.generics, owner.definition)?,
+        )?;
         for declaration in &self.declarations[2..4] {
             validate_result(facts, *declaration, self.declarations[1].definition)?;
         }
@@ -210,7 +222,11 @@ impl Contracts {
     }
 }
 
-fn validate_result(facts: &Declarations, member: Declaration, owner: DefId) -> Result<(), String> {
+fn validate_result(
+    facts: &Declarations,
+    member: super::super::Role,
+    owner: DefId,
+) -> Result<(), String> {
     let contract = facts
         .associated
         .require_projection_header(member.definition)?;
@@ -246,6 +262,11 @@ fn validate_result(facts: &Declarations, member: Declaration, owner: DefId) -> R
     {
         return Err("Field result changed its full actual member/parent application".into());
     }
+    let sized_role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("Field result lacks its actual source catalog")?
+        .validated_role(LangItem::Sized)?;
     for clause in &contract.bounds {
         use crate::types::parameters::{clauses::Clause, predicates::Bound};
         let Clause::Predicate(predicate) = *clause else {
@@ -260,11 +281,7 @@ fn validate_result(facts: &Declarations, member: Declaration, owner: DefId) -> R
                     .types
                     .trait_application(application)
                     .is_some_and(|application| {
-                        facts
-                            .source_bindings
-                            .as_deref()
-                            .and_then(|catalog| catalog.language(LangItem::Sized))
-                            .is_some_and(|sized| sized.definition.0 == application.item.0)
+                        sized_role.is_some_and(|sized| sized.definition.0 == application.item.0)
                             && facts
                                 .types
                                 .arguments(application.arguments)
@@ -281,12 +298,24 @@ fn validate_result(facts: &Declarations, member: Declaration, owner: DefId) -> R
     Ok(())
 }
 
+pub(super) fn trait_header(
+    generics: &crate::sema::generics::Generics,
+    definition: DefId,
+) -> Result<&crate::sema::traits::Header, &'static str> {
+    generics
+        .traits
+        .as_deref()
+        .and_then(|contracts| contracts.header(ItemId(definition.0)))
+        .ok_or("Field lost its canonical declaration inputs")
+}
+
 /// Canonical declaration inputs precede synthesized caller assumptions.
-pub(super) fn canonical_header(
+pub(super) fn validate_canonical_header(
     facts: &Declarations,
-    declaration: Declaration,
-) -> Result<&crate::sema::traits::Header, String> {
-    header_attributes::charge_source_contract_query(facts, 6).map_err(|error| error.to_string())?;
+    declaration: super::Role,
+    header: &crate::sema::traits::Header,
+) -> Result<(), String> {
+    super::payments::query(facts, declaration.origin, 6)?;
     let owner = facts
         .associated
         .owner(declaration.definition)
@@ -294,7 +323,7 @@ pub(super) fn canonical_header(
         .ok_or("Field lost its actual trait owner")?;
     if !matches!(owner.kind,crate::sema::associated::OwnerKind::Trait{definition,auto_:false,..}
         if definition==declaration.definition)
-        || owner.source != Some(declaration.origin)
+        || owner.source != declaration.origin.source()
     {
         return Err("Field canonical inputs belong to another source owner".into());
     }
@@ -302,13 +331,22 @@ pub(super) fn canonical_header(
         .associated
         .schema(declaration.definition)
         .ok_or("Field lost its actual Self schema")?;
-    let header = facts
-        .generics
-        .traits
-        .as_deref()
-        .and_then(|contracts| contracts.header(ItemId(declaration.definition.0)))
-        .ok_or("Field lost its canonical declaration inputs")?;
-    header.inputs.source_ref()?;
+    match declaration.origin {
+        crate::resolve::body_origin::DeclarationOrigin::Source(_) => {
+            header.inputs.source_ref()?;
+        }
+        crate::resolve::body_origin::DeclarationOrigin::Imported(id) => {
+            let origins = facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::origin_catalog)
+                .ok_or("Field canonical inputs lost their imported catalog")?;
+            origins.validate_declaration(id, declaration.definition, DefKind::Trait)?;
+            header
+                .inputs
+                .require_catalog(origins, declaration.definition)?;
+        }
+    }
     if schema.self_type != header.self_type
         || schema.captures != 0
         || !header.parameters.is_empty()
@@ -343,5 +381,122 @@ pub(super) fn canonical_header(
     {
         return Err("Field canonical inputs changed their actual Self binding".into());
     }
-    Ok(header)
+    Ok(())
+}
+
+/// A separate consumer checks the actual declaration family. Builtin Field
+/// selection additionally needs a proof for its concrete representing argument.
+fn imported_declarations(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &super::super::Catalog,
+    steps: &mut usize,
+    complete: &mut super::super::roles::RoleSet,
+) -> Result<Option<[super::Role; 5]>, &'static str> {
+    *steps = steps.saturating_add(16);
+    let [nominal, owner, base, field, offset] = ROLES.map(|role| catalog.role(role));
+    let roles = [nominal?, owner?, base?, field?, offset?];
+    let [
+        Some(nominal),
+        Some(owner),
+        Some(base),
+        Some(field),
+        Some(offset),
+    ] = roles
+    else {
+        return if roles.iter().all(Option::is_none) {
+            Ok(None)
+        } else {
+            Err("imported Field requires its complete actual declaration family")
+        };
+    };
+    validate_nominal(facts, nominal.definition)?;
+    let trait_ = Trait::current(report, facts, owner, steps)?;
+    trait_.canonical_inputs(facts)?;
+    trait_.profile(
+        &facts.types,
+        super::super::headers::Flags {
+            unsafe_: true,
+            constant: false,
+            auto_: false,
+        },
+        0,
+    )?;
+    if !trait_
+        .attributes
+        .contains(crate::resolve::bindings::HeaderAttribute::DynIncompatible)
+        || !facts
+            .associated
+            .imported_denies_implementation(owner.definition)?
+        || trait_.written.supertraits != 3
+        || trait_.members.len() != 3
+        || ![base, field, offset]
+            .iter()
+            .all(|declaration| trait_.members.contains(&declaration.definition))
+    {
+        return Err("imported Field changed its actual restricted trait header");
+    }
+    *steps = steps.saturating_add(3 * trait_.inputs.len());
+    for role in [LangItem::Send, LangItem::Sync, LangItem::Copy] {
+        let bound = catalog
+            .role(role)?
+            .ok_or("imported Field requires its actual Send, Sync and Copy declarations")?;
+        if !trait_.requires(
+            &facts.types,
+            bound.definition,
+            None,
+            crate::support::constness::Constness::Ordinary,
+        ) {
+            return Err("imported Field changed an actual supertrait");
+        }
+    }
+    for member in [base, field] {
+        validate_result(facts, member, owner.definition)
+            .map_err(|_| "imported Field changed an actual associated result")?;
+    }
+    if offset.parent != Some(owner.definition)
+        || facts.associated.trait_owner(offset.definition) != Some(owner.definition)
+        || facts
+            .definitions
+            .get(offset.definition.0 as usize)
+            .copied()
+            .flatten()
+            != Some(TypeId::primitive(Primitive::Usize))
+    {
+        return Err("imported Field changed its actual usize OFFSET declaration");
+    }
+    for role in ROLES {
+        complete.insert(role);
+    }
+    Ok(Some([nominal, owner, base, field, offset]))
+}
+
+/// Seal the checked family for later ordinary selection against a concrete field.
+pub(in crate::sema::compiler_items) fn prepare_imported(
+    report: &Report,
+    facts: &mut Declarations,
+    complete: &mut super::super::roles::RoleSet,
+) -> Result<Option<Rc<Contracts>>, Error> {
+    let mut steps = 0;
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("imported Field protocol has no actual catalog"))?;
+    let checked = imported_declarations(report, facts, catalog, &mut steps, complete);
+    let bytes = if checked.as_ref().is_ok_and(Option::is_some) {
+        size_of::<Contracts>()
+            + 2 * size_of::<usize>()
+            + usize::from(facts.types.existing_arena_identity().is_none())
+                * crate::types::arena::Identity::allocation_bytes()
+    } else {
+        0
+    };
+    crate::sema::crates::charge_source_headers(facts, steps, bytes)?;
+    Ok(checked.map_err(Error::unlocated)?.map(|declarations| {
+        Rc::new(Contracts {
+            arena: facts.types.arena_identity(),
+            declarations,
+            images: None,
+        })
+    }))
 }

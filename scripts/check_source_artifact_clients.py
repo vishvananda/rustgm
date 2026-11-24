@@ -45,7 +45,10 @@ def main():
                                  "source-transmute-options-transport",
                                  "source-contract-helper-transport",
                                  "source-fn-pointer-transport", "source-receiver-transport",
-                                 "source-poll-transport", "source-cstr-transport"))
+                                 "source-poll-transport", "source-cstr-transport",
+                                 "source-into-future-transport", "source-async-generator-helpers",
+                                 "source-async-fn-transport", "source-trait-prefix-transport",
+                                 "source-trait-lifetime-transport", "source-field-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
@@ -76,12 +79,12 @@ def main():
     backend.build_many([provider, consumer], native, native_objects=[observer])
     if check.run("execute", [native], timeout=15).stdout != expected:
         raise ValueError("the fresh native client differed from the declared stdout")
-    old = check.folder / "old.rgcrate"
-    check.run("older-profile", [*exporter, "--source-profile", "module-bodies-v13",
-                                "--metadata-output", old, source], 1, [contract["older_profile"]],
-              timeout=30)
-    if old.exists():
-        raise ValueError("older source profile published the new metadata")
+    if refusal := contract.get("older_profile"):
+        old = check.folder / "old.rgcrate"
+        check.run("older-profile", [*exporter, "--source-profile", "module-bodies-v13",
+                                  "--metadata-output", old, source], 1, [refusal], timeout=30)
+        if old.exists():
+            raise ValueError("older source profile published the new metadata")
     if error := contract.get("unmarked_error"):
         marker = b"#[rustc_promotable]\n"
         text = source.read_bytes()
@@ -112,9 +115,9 @@ def main():
                   1, [restricted["rustc"]], timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
         check.run("restricted-client", [*importer, "--extern", f"base={artifact}", negative],
                   1, [restricted["rustgm"]], timeout=30)
-    if args.baseline is not None:
+    if args.baseline is not None and (refusal := contract.get("older_reader")):
         check.run("older-reader", [args.baseline.resolve(strict=True), *importer[1:],
-                  "--extern", f"base={artifact}", client], 1, [contract["older_reader"]], timeout=30)
+                  "--extern", f"base={artifact}", client], 1, [refusal], timeout=30)
     print(expected.decode(), end="")
 
 

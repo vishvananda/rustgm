@@ -143,3 +143,91 @@ fn complete_roles<const N: usize>(
     }
     Ok(completed)
 }
+
+/// Re-prove the imported owners and associated declarations. Their ordinary
+/// clause environments and call signatures remain the source of usable proof.
+pub(super) fn imported_declarations(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    steps: &mut usize,
+    complete: &mut super::roles::RoleSet,
+) -> Result<(), &'static str> {
+    for role in [
+        LangItem::AsyncFn,
+        LangItem::AsyncFnMut,
+        LangItem::AsyncFnOnce,
+        LangItem::AsyncFnKindHelper,
+        LangItem::Coroutine,
+        LangItem::AsyncIterator,
+    ] {
+        *steps = steps.saturating_add(1);
+        if let Some(owner) = catalog.role(role)? {
+            let header = super::headers::Trait::current(report, facts, owner, steps)?;
+            header.canonical_inputs(facts)?;
+            complete.insert(role);
+        }
+    }
+    for (role, owner) in LangItem::RESUMABLE_ASSOCIATED {
+        *steps = steps.saturating_add(2);
+        if let Some(member) = catalog.role(role)? {
+            let actual = catalog
+                .role(owner)?
+                .ok_or("imported resumable associated result requires its actual trait role")?;
+            if !complete.contains(owner)
+                || member.parent != Some(actual.definition)
+                || facts.associated.trait_owner(member.definition) != Some(actual.definition)
+                || facts.generics.parents.get(&member.definition) != Some(&actual.definition)
+                || facts
+                    .types
+                    .projection_schema(ItemId(member.definition.0))
+                    .is_none_or(|schema| schema.trait_item.0 != actual.definition.0)
+            {
+                return Err("imported resumable associated result changed owner or projection");
+            }
+            complete.insert(role);
+        }
+    }
+    for role in LangItem::RESUMABLE_REQUIRED {
+        *steps = steps.saturating_add(4);
+        if let Some(member) = catalog.role(role)? {
+            imported_required(facts, catalog, role, member)?;
+            complete.insert(role);
+        }
+    }
+    Ok(())
+}
+
+fn imported_required(
+    facts: &Declarations,
+    catalog: &Catalog,
+    role: LangItem,
+    member: super::Role,
+) -> Result<(), &'static str> {
+    let owner = member
+        .parent
+        .ok_or("imported resumable method lost its actual trait")?;
+    let expected = match role {
+        LangItem::CoroutineResume => Some(LangItem::Coroutine),
+        LangItem::AsyncIteratorPollNext => Some(LangItem::AsyncIterator),
+        _ => None,
+    };
+    if let Some(expected) = expected
+        && catalog
+            .role(expected)?
+            .is_none_or(|actual| actual.definition != owner)
+    {
+        return Err("imported resumable method changed role owner");
+    }
+    let function = facts
+        .declaration_header(member.definition)?
+        .ok_or("imported resumable method lost its actual callable")?;
+    if facts.associated.trait_owner(member.definition) != Some(owner)
+        || facts.generics.parents.get(&member.definition) != Some(&owner)
+        || function.declaration != member.origin
+        || function.body.is_some()
+    {
+        return Err("imported resumable method changed its actual required callable");
+    }
+    Ok(())
+}

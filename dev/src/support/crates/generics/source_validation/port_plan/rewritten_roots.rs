@@ -92,12 +92,7 @@ impl Arena {
                             self.nominal_children(domains, key, arguments, regions, pending, work)?;
                         }
                         Recipe::Projection(reference) => {
-                            let (_, subject, arguments) = projection(domains, reference)?;
-                            let regions = Regions::Rejected;
-                            self.nominal_children(domains, key, arguments, regions, pending, work)?;
-                            let subject =
-                                uses::key(domains, subject, key.rewrite, key.caller, work)?;
-                            self.push(pending, Task::Enter(subject), work)?;
+                            self.projection_children(domains, key, reference, pending, work)?;
                         }
                         Recipe::Function(signature) => {
                             self.function_children(domains, key, signature, pending, work)?;
@@ -154,6 +149,35 @@ impl Arena {
         }
         self.child(root, work)
     }
+    fn projection_children(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        reference: s::ProjectionRef,
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let projection = projection(domains, reference)?;
+        self.nominal_children(
+            domains,
+            key,
+            projection.arguments,
+            Regions::Rejected,
+            pending,
+            work,
+        )?;
+        self.nominal_children(
+            domains,
+            key,
+            projection.family,
+            Regions::Local,
+            pending,
+            work,
+        )?;
+        let subject = uses::key(domains, projection.subject, key.rewrite, key.caller, work)?;
+        self.push(pending, Task::Enter(subject), work)
+    }
+
     fn nominal_children(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -294,12 +318,21 @@ impl Arena {
         reference: s::ProjectionRef,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
-        let (member, subject, arguments) = projection(domains, reference)?;
-        let tail = self.argument_chain(domains, key, arguments, Regions::Rejected, work)?;
-        let subject = uses::key(domains, subject, key.rewrite, key.caller, work)?;
+        let projection = projection(domains, reference)?;
+        let tail =
+            self.argument_chain(domains, key, projection.arguments, Regions::Rejected, work)?;
+        let family = self.argument_chain(domains, key, projection.family, Regions::Local, work)?;
+        let subject = uses::key(domains, projection.subject, key.rewrite, key.caller, work)?;
         let ty = self.child(subject, work)?;
         let arguments = self.intern(Node::NominalArgument { ty, next: tail }, work)?;
-        self.intern(Node::Projection { member, arguments }, work)
+        self.intern(
+            Node::Projection {
+                member: projection.member,
+                arguments,
+                family,
+            },
+            work,
+        )
     }
     fn recipe(
         &mut self,
@@ -320,10 +353,7 @@ impl Arena {
                     declaration,
                     arguments,
                 } => Recipe::Nominal(declaration, arguments),
-                s::Type::Projection(reference) => {
-                    projection(domains, reference)?;
-                    Recipe::Projection(reference)
-                }
+                s::Type::Projection(reference) => Recipe::Projection(reference),
                 s::Type::OpaqueFuture(_) => {
                     return Err(
                         "declared result in ordinary body operations requires its complete application transport",
@@ -620,12 +650,19 @@ fn nominal_frame(
         body: None,
     })
 }
-/// The projection's Self and complete trait arguments; the member alone names
-/// its trait because every projection row was checked against its header.
+/// Complete trait and associated arguments remain independent, since family
+/// lifetimes are substituted in the use's binder rather than the trait's.
+struct Projection {
+    member: s::DeclarationAddress,
+    subject: g::TypeRef,
+    arguments: g::Range,
+    family: g::Range,
+}
+
 fn projection(
     domains: &DomainIndex<'_, '_>,
     reference: s::ProjectionRef,
-) -> Result<(s::DeclarationAddress, g::TypeRef, g::Range), &'static str> {
+) -> Result<Projection, &'static str> {
     let rows = domains.headers.rows();
     let projection = rows
         .projections
@@ -635,16 +672,18 @@ fn projection(
         .trait_applications
         .get(projection.trait_application.0 as usize)
         .ok_or("source input projection lost its trait application")?;
-    if projection.arguments.start != projection.arguments.end
-        || application.subject != projection.subject
+    let has_family = projection.arguments.start != projection.arguments.end;
+    if application.subject != projection.subject
+        || has_family && (!domains.declaration_policies || projection.declaration.artifact.0 != 0)
     {
         return Err("source input projection changed its Self or family arguments");
     }
-    Ok((
-        projection.declaration,
-        projection.subject,
-        application.arguments,
-    ))
+    Ok(Projection {
+        member: projection.declaration,
+        subject: projection.subject,
+        arguments: application.arguments,
+        family: projection.arguments,
+    })
 }
 
 /// Version thirteen: only a local nominal's leading region arguments enter a

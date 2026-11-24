@@ -544,18 +544,28 @@ fn role_parent(
             | LangItem::DiscriminantType
             | LangItem::DerefTarget
             | LangItem::ReceiverTarget
-    ) {
+            | LangItem::FieldBase
+            | LangItem::FieldType
+    ) || role.resumable_associated()
+    {
         let Some(s::HeaderRef::AssociatedType(index)) = rows.header(declaration)? else {
             return Err("imported Output role lacks its actual associated header");
         };
         return Ok(Some(rows.associated_types[index as usize].parent));
     }
-    if matches!(role, LangItem::RangeMin | LangItem::RangeMax) {
+    if matches!(
+        role,
+        LangItem::RangeMin
+            | LangItem::RangeMax
+            | LangItem::AsyncGenPending
+            | LangItem::AsyncGenFinished
+            | LangItem::FieldOffset
+    ) {
         let parent = rows
             .declarations
             .get(declaration.0 as usize)
             .and_then(|row| row.definition.parent)
-            .ok_or("imported range bound lacks its actual trait owner")?;
+            .ok_or("imported associated constant lacks its actual owner")?;
         return Ok(Some(parent));
     }
     if matches!(role, LangItem::MemSizeConst | LangItem::MemAlignConst) {

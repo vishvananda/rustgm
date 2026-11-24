@@ -61,6 +61,18 @@ implementation and normalizes its declared `Target`.
 provider's pinned `Poll` and `CoroutineState` variants in a fresh crate.
 `spec/source-cstr-transport/outcomes.json` checks the bytes and terminating
 nul of a C string literal using the pinned imported `CStr` declaration.
+`spec/source-into-future-transport/outcomes.json` implements the pinned
+`IntoFuture` in a fresh crate and calls it through its associated result bound.
+`spec/source-async-generator-helpers/outcomes.json` calls the pinned ready
+helper in a fresh crate and checks both imported associated constants.
+`spec/source-async-fn-transport/outcomes.json` checks the owned and
+mutable-borrowed result families of the pinned async callable traits.
+`spec/source-trait-prefix-transport/outcomes.json` exercises an inherited
+associated equality and an owned associated-type bound in one fresh client.
+`spec/source-trait-lifetime-transport/outcomes.json` checks an imported
+lifetime bound and rejects a short-lived implementation of a `'static` trait.
+`spec/source-field-transport/outcomes.json` checks the pinned `Field`
+selection and `OFFSET` default using a structure from the fresh client.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

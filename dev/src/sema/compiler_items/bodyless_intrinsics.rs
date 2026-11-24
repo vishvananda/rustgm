@@ -98,6 +98,13 @@ fn check(
                 actual.signature,
                 steps,
             )?,
+            BodylessIntrinsic::FieldOffset => super::representing_offsets::validate_imported(
+                facts,
+                catalog,
+                role,
+                actual.signature,
+                steps,
+            )?,
             BodylessIntrinsic::SizeOf | BodylessIntrinsic::AlignOf => {
                 validate_layout(facts, role.definition, actual.signature, operation)?;
                 TypeId::primitive(Primitive::Usize)

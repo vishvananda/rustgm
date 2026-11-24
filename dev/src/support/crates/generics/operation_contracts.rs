@@ -92,6 +92,9 @@ fn bodyless_intrinsics(
                 BodylessIntrinsic::OffsetOf => {
                     "source offset_of intrinsic requires its exact version-fourteen header"
                 }
+                BodylessIntrinsic::FieldOffset => {
+                    "source field_offset intrinsic requires its exact version-fourteen header"
+                }
                 _ => "source layout intrinsic requires its exact version-fourteen header",
             });
         }
@@ -209,6 +212,20 @@ fn bodyless_inputs(
             role(rows, LangItem::PointeeSized)?,
             None,
         ));
+    }
+    if operation == BodylessIntrinsic::FieldOffset {
+        work.charge(
+            inputs
+                .len()
+                .saturating_add(rows.roles.len().saturating_mul(2)),
+        )?;
+        let field = role(rows, LangItem::Field)?;
+        let sized = role(rows, LangItem::Sized)?;
+        return Ok(header.declared_inputs > 0
+            && inputs.iter().all(|input| input.owner == header.declaration)
+            && inputs
+                .iter()
+                .any(|input| sizing_input(rows, header, input, field, Some(sized))));
     }
     if inputs.len() != 2 || header.declared_inputs != 1 {
         return Ok(false);

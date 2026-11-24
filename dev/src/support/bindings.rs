@@ -54,6 +54,7 @@ pub enum SourceIntrinsic {
     DiscriminantValue,
     AggregateRawPtr,
     OffsetOf,
+    FieldOffset,
     ThreeWayCompare,
     ArithOffset,
     UncheckedSub,
@@ -78,6 +79,8 @@ impl SourceIntrinsic {
             Some(Self::ArithOffset)
         } else if name == "three_way_compare" {
             Some(Self::ThreeWayCompare)
+        } else if name == "field_offset" {
+            Some(Self::FieldOffset)
         } else if name == "offset_of" {
             Some(Self::OffsetOf)
         } else if name == "aggregate_raw_ptr" {

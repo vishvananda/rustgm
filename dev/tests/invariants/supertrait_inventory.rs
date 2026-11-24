@@ -80,7 +80,7 @@ fn real_generated_self_defaults_are_distinct_from_literal_supertraits() -> Resul
     for (role, literal, requirements) in [(LangItem::Clone, 1, 2), (LangItem::Freeze, 0, 0)] {
         let (header, canonical) = view(&report, &facts, role)?;
         let mut work = Visits::default();
-        let prefix = authenticate(&facts, &header, canonical, |steps| work.charge(steps))?;
+        let (prefix, _) = authenticate(&facts, &header, canonical, |steps| work.charge(steps))?;
         assert_eq!(header.written.supertraits, literal);
         assert_eq!(canonical.source_inputs()?.predicates.len(), requirements);
         assert!(work.steps > requirements);

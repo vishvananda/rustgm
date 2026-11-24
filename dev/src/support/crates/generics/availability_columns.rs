@@ -654,7 +654,20 @@ impl Validation<'_> {
 
     fn inherent_constant(&self, owner: DeclarationRef) -> bool {
         matches!(self.constant_parent(owner), Some(super::HeaderRef::Implementation(index))
-            if self.columns.implementations[index as usize].closed_inherent_constant_owner(&self.columns.types))
+            if self.columns.implementations[index as usize].closed_inherent_constant_owner(&self.columns.types)
+                || self.declaration_policies
+                    && self.original_inherent_constant(owner, index))
+    }
+
+    fn original_inherent_constant(&self, owner: DeclarationRef, implementation: u32) -> bool {
+        let actual = &self.columns.implementations[implementation as usize];
+        actual.trait_application.is_none()
+            && self.columns.declarations[owner.0 as usize]
+                .definition
+                .parent
+                == Some(actual.self_definition)
+            && matches!(self.headers[owner.0 as usize], Some(super::HeaderRef::Constant(index))
+                if matches!(self.columns.constants()[index as usize].body, super::ConstantBody::Original(_)))
     }
 
     fn trait_constant(&self, owner: DeclarationRef) -> bool {

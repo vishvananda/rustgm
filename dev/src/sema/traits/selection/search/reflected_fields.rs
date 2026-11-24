@@ -6,15 +6,18 @@ use crate::{
 };
 
 impl Search<'_> {
-    pub(super) fn source_field_goal(facts: &Declarations, goal: &Goal) -> bool {
-        let Some((item, _)) = goal.trait_arguments() else {
-            return false;
+    pub(super) fn source_field_goal(
+        facts: &Declarations,
+        goal: &Goal,
+    ) -> Result<bool, &'static str> {
+        let (Some((item, _)), Some(catalog)) =
+            (goal.trait_arguments(), facts.source_bindings.as_deref())
+        else {
+            return Ok(false);
         };
-        facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(LangItem::Field))
-            .is_some_and(|declaration| declaration.definition.0 == item.0)
+        Ok(catalog
+            .role(LangItem::Field)?
+            .is_some_and(|declaration| declaration.definition.0 == item.0))
     }
 
     pub(super) fn source_field_result(
@@ -22,7 +25,7 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
-        if !Self::source_field_goal(facts, &frame.goal)
+        if !Self::source_field_goal(facts, &frame.goal)?
             || frame.selected.is_some()
             || frame.partial.is_some()
             || frame.deferred

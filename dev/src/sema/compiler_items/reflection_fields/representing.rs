@@ -1,5 +1,6 @@
 //! Full representing arguments select a semantic field, never a physical-layout shortcut.
-use super::{Declarations, LangItem, Readiness};
+use super::{Declarations, Readiness, Role, payments};
+use crate::resolve::body_origin::DeclarationOrigin;
 use crate::types::{
     ItemId, Kind, Primitive, TypeId, aggregate,
     arguments::{Argument, ConstKind},
@@ -31,7 +32,11 @@ pub(super) enum Application {
 }
 
 /// Coordinate data does not establish the ordinary Field implementation proof.
-pub(super) fn application(facts: &Declarations, subject: TypeId) -> Result<Application, String> {
+pub(super) fn application(
+    facts: &Declarations,
+    subject: TypeId,
+    representing: ItemId,
+) -> Result<Application, String> {
     let Some(Kind::Adt(item, arguments)) = facts.types.kind(subject) else {
         return Ok(
             if matches!(
@@ -44,12 +49,7 @@ pub(super) fn application(facts: &Declarations, subject: TypeId) -> Result<Appli
             },
         );
     };
-    let actual = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::FieldRepresentingType))
-        .ok_or("Field requires its actual representing declaration")?;
-    if item.0 != actual.definition.0 {
+    if item != representing {
         return Ok(Application::Absent);
     }
     let mut arguments = facts
@@ -83,14 +83,17 @@ pub(super) fn application(facts: &Declarations, subject: TypeId) -> Result<Appli
     }))
 }
 
-pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Readiness, String> {
-    crate::sema::header_attributes::charge_source_contract_query(facts, 6)
-        .map_err(|e| e.to_string())?;
+pub(super) fn describe(
+    facts: &mut Declarations,
+    subject: TypeId,
+    representing: Role,
+) -> Result<Readiness, String> {
+    payments::query(facts, representing.origin, 6)?;
     let Coordinates {
         base,
         variant,
         field,
-    } = match application(facts, subject)? {
+    } = match application(facts, subject, ItemId(representing.definition.0))? {
         Application::Absent => return Ok(Readiness::Absent),
         Application::Deferred => return Ok(Readiness::Deferred),
         Application::Ready(coordinates) => coordinates,
@@ -103,7 +106,7 @@ pub(super) fn describe(facts: &mut Declarations, subject: TypeId) -> Result<Read
         .kind(base)
         .ok_or("Field base is outside its type store")?
     {
-        Kind::Adt(item, _) => structure(facts, base, item, field),
+        Kind::Adt(item, _) => structure(facts, base, item, field, representing.origin),
         Kind::Tuple(list) => {
             let Some(field_ty) = facts
                 .types
@@ -129,6 +132,7 @@ fn structure(
     base: TypeId,
     item: ItemId,
     field: u32,
+    origin: DeclarationOrigin,
 ) -> Result<Readiness, String> {
     let Some(definition) = facts.aggregates.get(item) else {
         return Ok(Readiness::Fields(item));
@@ -145,11 +149,12 @@ fn structure(
         return Ok(Readiness::Absent);
     }
     let mut fields = facts.aggregates.semantic_fields(&facts.types, base)?;
-    let pay = crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
-        .map_err(|e| e.to_string())?;
-    let field_ty = fields.field_paid(&mut facts.types, 0, field as usize, &|work, bytes| {
-        pay.charge(work, bytes)
-    })?;
+    let pay = payments::retain(
+        origin,
+        facts.must_use_contracts.as_deref(),
+        facts.crates.as_deref_mut(),
+    )?;
+    let field_ty = fields.field_paid(&mut facts.types, 0, field as usize, &pay)?;
     Ok(Readiness::Ready(Description {
         base,
         field: field_ty,

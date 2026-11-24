@@ -13,13 +13,13 @@ impl Search<'_> {
         let Some((item, arguments)) = frame.goal.trait_arguments() else {
             return Ok(None);
         };
-        let Some(declaration) = catalog.language(LangItem::Tuple) else {
+        let Some(declaration) = catalog.role(LangItem::Tuple)? else {
             return Ok(None);
         };
         if DefId(item.0) != declaration.definition {
             return Ok(None);
         }
-        catalog.validated_language(LangItem::Tuple)?;
+        catalog.validated_role(LangItem::Tuple)?;
         if !arguments.is_empty() {
             return Err("source Tuple has unexpected arguments".into());
         }

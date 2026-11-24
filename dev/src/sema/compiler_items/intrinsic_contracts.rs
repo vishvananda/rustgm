@@ -255,6 +255,12 @@ fn signature(
         SourceIntrinsic::ArithOffset => super::wrapping_contract::validate(facts, function),
         SourceIntrinsic::ThreeWayCompare => super::compare_intrinsic::validate(facts, function),
         SourceIntrinsic::OffsetOf => super::displacement::validate(facts, function),
+        SourceIntrinsic::FieldOffset => {
+            let identity =
+                crate::support::bindings::IntrinsicDeclaration::from_name("field_offset")
+                    .ok_or("pinned field_offset lacks its actual prototype")?;
+            super::prototype_validation::validate(facts, function, identity)
+        }
         SourceIntrinsic::DiscriminantValue => super::tag_intrinsic::validate(facts, function),
         SourceIntrinsic::AggregateRawPtr => super::compose_pointer::validate(facts, function),
         SourceIntrinsic::PtrMetadata => super::ptr_metadata::validate(facts, function).map(|_| ()),
@@ -435,6 +441,7 @@ impl Catalog {
         if matches!(
             entry.kind,
             SourceIntrinsic::ArithOffset
+                | SourceIntrinsic::FieldOffset
                 | SourceIntrinsic::Declaration(_)
                 | SourceIntrinsic::UncheckedSub
                 | SourceIntrinsic::SubWithOverflow

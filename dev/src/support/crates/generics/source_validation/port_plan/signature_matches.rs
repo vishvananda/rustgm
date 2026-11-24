@@ -167,12 +167,14 @@ impl Arena {
                 Node::Projection {
                     member: a,
                     arguments: ac,
+                    family: af,
                 },
                 Node::Projection {
                     member: b,
                     arguments: bc,
+                    family: bf,
                 },
-            ) if a == b => ((ac, bc), None),
+            ) if a == b => ((ac, bc), Some((af, bf))),
             (Node::Scalar(crate::support::crates::Scalar::Usize), projection)
             | (projection, Node::Scalar(crate::support::crates::Scalar::Usize))
                 if self.slice_metadata(domains, projection, work)? =>
@@ -203,7 +205,12 @@ impl Arena {
         projection: Node,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        let Node::Projection { member, arguments } = projection else {
+        let Node::Projection {
+            member,
+            arguments,
+            family,
+        } = projection
+        else {
             return Ok(false);
         };
         if domains.metadata_member != Some(member) {
@@ -214,6 +221,7 @@ impl Arena {
             return Ok(false);
         };
         Ok(self.nodes.get(next.0 as usize) == Some(&Node::NominalEnd)
+            && self.nodes.get(family.0 as usize) == Some(&Node::NominalEnd)
             && matches!(
                 self.nodes.get(ty.0 as usize),
                 Some(Node::Slice(_) | Node::Str)

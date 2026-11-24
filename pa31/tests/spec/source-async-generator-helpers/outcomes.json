@@ -1,0 +1,30 @@
+{
+  "features": [
+    "staged_api",
+    "auto_traits",
+    "const_destruct"
+  ],
+  "attributes": [
+    "unstable(feature=\"role_fixture\", issue=\"none\")"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41\n",
+  "originals": [
+    {
+      "path": "pa31/tests/spec/source-poll-transport/original-poll.rs",
+      "start": 453,
+      "end": 1063,
+      "sha256": "ffb0f566a62319122134e6bd74e2c68179086baf9fafa58b52d2b5bfbf686146",
+      "marker": "// Original pinned Poll enum."
+    },
+    {
+      "path": "pa31/tests/spec/async-iterator/original.rs",
+      "start": 4653,
+      "end": 5768,
+      "sha256": "a2e11133cc0eb01458045a52e748940f097afb89bebc5f286239e8f5ece9836a",
+      "marker": "// Original pinned async generator helpers."
+    }
+  ],
+  "older_profile": "source compiler language contract transport is not implemented",
+  "older_reader": "ordinary source roles cannot claim a nominal declaration"
+}

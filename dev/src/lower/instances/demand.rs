@@ -112,6 +112,9 @@ fn require_source_body(
             crate::support::bindings::SourceIntrinsic::OffsetOf => {
                 "source offset_of intrinsic must be evaluated in a const block"
             }
+            crate::support::bindings::SourceIntrinsic::FieldOffset => {
+                "source field_offset intrinsic requires its checked Field layout operation"
+            }
             crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
                 "source callback selection requires its proved reached runtime operation"
             }

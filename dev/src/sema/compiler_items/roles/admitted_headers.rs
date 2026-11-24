@@ -180,6 +180,7 @@ pub(in crate::sema::compiler_items) fn traits(
         None
     };
     let discriminant = super::super::discriminant::prepare_imported(report, facts, &mut roles)?;
+    let field = super::super::field_protocol::prepare_imported(report, facts, &mut roles)?;
     let entries: Vec<_> = [CallTrait::FnOnce, CallTrait::FnMut, CallTrait::Fn]
         .into_iter()
         .filter_map(|kind| {
@@ -204,7 +205,7 @@ pub(in crate::sema::compiler_items) fn traits(
         pointee,
         discriminant,
         range: None,
-        field: None,
+        field,
         comparisons: crate::sema::compiler_items::comparison_contract::Sealed::default(),
     }));
     Ok(())
@@ -384,6 +385,8 @@ fn nominal_role(role: LangItem) -> bool {
             | LangItem::AllocLayout
             | LangItem::TransmuteOpts
             | LangItem::CStr
+            | LangItem::Context
+            | LangItem::ResumeTy
             | LangItem::TypeInfo
             | LangItem::TypeId
             | LangItem::PanicLocation
@@ -403,6 +406,9 @@ fn check_nominal_role(
     match role {
         LangItem::AllocLayout => super::super::alloc_layout::imported(facts, declaration, steps),
         LangItem::CStr => super::super::c_strings::imported(facts, declaration, steps),
+        LangItem::Context | LangItem::ResumeTy => {
+            super::super::role_values::imported_resumable(facts, declaration, role, steps)
+        }
         LangItem::TransmuteOpts => {
             super::super::transmutability::imported_options(facts, declaration, steps)
         }
@@ -433,6 +439,19 @@ fn grouped_role(role: LangItem) -> bool {
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
         || LangItem::FOR_PROTOCOL.contains(&role)
+        || LangItem::RESUMABLE_REQUIRED.contains(&role)
+        || LangItem::ASYNC_GENERATOR_HELPERS.contains(&role)
+        || LangItem::FIELD_REFLECTION.contains(&role)
+        || role.resumable_associated()
+        || matches!(
+            role,
+            LangItem::AsyncFn
+                | LangItem::AsyncFnMut
+                | LangItem::AsyncFnOnce
+                | LangItem::AsyncFnKindHelper
+                | LangItem::Coroutine
+                | LangItem::AsyncIterator
+        )
         || matches!(
             role,
             LangItem::FnPtrTrait
@@ -517,6 +536,8 @@ fn grouped_roles(
             complete.insert(role);
         }
     }
+    super::super::resumable::imported_declarations(report, facts, catalog, steps, complete)?;
+    super::super::streams::imported_helpers(facts, catalog, steps, complete)?;
     let callables = super::invocation::imported(report, facts, catalog, steps)?;
     for (role, admitted) in [
         (
