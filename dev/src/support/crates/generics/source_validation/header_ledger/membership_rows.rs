@@ -255,8 +255,11 @@ impl<'a> Members<'a> {
         };
         let constant = self.rows.constants()[index as usize];
         let correct = match constant.body {
-            s::ConstantBody::Original(_) if implementation.trait_application.is_some() => true,
-            s::ConstantBody::Evaluated(_) | s::ConstantBody::Original(_) => {
+            s::ConstantBody::Original(_) => {
+                implementation.trait_application.is_some()
+                    || implementation.inherent_constant_owner(&self.rows.types)
+            }
+            s::ConstantBody::Evaluated(_) => {
                 implementation.closed_inherent_constant_owner(&self.rows.types)
             }
             s::ConstantBody::Required => false,

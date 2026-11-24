@@ -155,30 +155,31 @@ fn associated_constant(
     context: Context,
 ) -> Result<s::ValueKind, &'static str> {
     use crate::sema::associated::OwnerKind;
-    if instance.arguments == crate::types::GenericArgs::EMPTY {
-        let inherent = facts
-            .associated
-            .owner(instance.definition)
-            .and_then(|owner| facts.associated.get(owner))
-            .is_some_and(|owner| {
-                matches!(
-                    owner.kind,
-                    OwnerKind::Impl {
-                        trait_type: None,
-                        ..
-                    }
-                )
-            });
-        if crate::sema::values::Reader::new(facts)
+    let inherent = facts
+        .associated
+        .owner(instance.definition)
+        .and_then(|owner| facts.associated.get(owner))
+        .is_some_and(|owner| {
+            matches!(
+                owner.kind,
+                OwnerKind::Impl {
+                    trait_type: None,
+                    ..
+                }
+            )
+        });
+    if instance.arguments == crate::types::GenericArgs::EMPTY
+        && (crate::sema::values::Reader::new(facts)
             .associated(instance)
             .is_some()
-            || (inherent && stage.has_constant_original(instance.definition)?)
-        {
-            return stage.constant_read(instance.definition);
-        }
+            || (inherent && stage.has_constant_original(instance.definition)?))
+    {
+        return stage.constant_read(instance.definition);
     }
-    if facts.associated.trait_owner(instance.definition).is_none() {
-        return Err("source associated constant requires its actual trait owner");
+    if facts.associated.trait_owner(instance.definition).is_none()
+        && !(inherent && stage.has_constant_original(instance.definition)?)
+    {
+        return Err("source associated constant requires its actual trait or inherent owner");
     }
     Ok(s::ValueKind::AssociatedConstant {
         declaration: stage.declaration(instance.definition)?,

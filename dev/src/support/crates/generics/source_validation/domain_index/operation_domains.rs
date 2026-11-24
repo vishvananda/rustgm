@@ -262,6 +262,7 @@ impl DomainIndex<'_, '_> {
                 .ok_or("source constant read lacks its actual inherent owner")?;
             if matches!(self.headers.header(parent, work)?, Some(HeaderRef::Implementation(index))
                 if rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types))
+                && self.headers.scopes().complete_slots(parent, work)? == 0
                 && ty == header.ty
             {
                 return Ok(());
@@ -297,21 +298,32 @@ impl DomainIndex<'_, '_> {
             );
         }
         let rows = self.headers.rows();
-        let Some(HeaderRef::Constant(_)) = self.headers.header(declaration, work)? else {
+        let Some(HeaderRef::Constant(index)) = self.headers.header(declaration, work)? else {
             return Err("source associated constant read has no actual constant declaration");
         };
         let parent = rows.declarations[declaration.0 as usize]
             .definition
             .parent
             .ok_or("source associated constant read has no actual member owner")?;
-        if !matches!(
-            self.headers.header(parent, work)?,
-            Some(HeaderRef::Trait(_))
-        ) {
-            return Err("source associated constant read has no actual trait owner");
+        let arity = self.headers.scopes().complete_slots(declaration, work)?;
+        let valid = match self.headers.header(parent, work)? {
+            Some(HeaderRef::Trait(_)) => true,
+            Some(HeaderRef::Implementation(implementation)) => {
+                arity != 0
+                    && rows.implementations[implementation as usize]
+                        .inherent_constant_owner(&rows.types)
+                    && matches!(
+                        rows.constants()[index as usize].body,
+                        s::ConstantBody::Original(_)
+                    )
+            }
+            _ => false,
+        };
+        if !valid {
+            return Err("source associated constant read has no actual trait or inherent owner");
         }
         let arguments = arguments.slice(&rows.arguments)?;
-        if arguments.len() != self.headers.scopes().complete_slots(declaration, work)? as usize {
+        if arguments.len() != arity as usize {
             return Err("source associated constant read changed its full argument arity");
         }
         work.charge(arguments.len())?;
