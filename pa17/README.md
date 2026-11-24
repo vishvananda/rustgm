@@ -1,7 +1,7 @@
-# RustGM Programming Assignment 17: Destruction
+# RustGM Programming Assignment 17 — Destruction
 
-Status: **implemented-draft**. This is a bounded course language profile.
-Prerequisite: PA16. Profile: Rust 1.98.0, edition 2024, Linux x86-64, panic abort.
+Extend [PA16](../pa16/README.md) to check and lower implicit destruction.
+Use Rust 1.98.0, edition 2024, on Linux x86-64 with aborting panics.
 
 ## Required implementation
 
@@ -80,12 +80,10 @@ imposes its declared lifetime requirements.
 
 ## LowIR contract
 
-`dev/rustgm --emit-lowir SOURCE` emits the existing typed LowIR dialect only
-after the complete destruction proof succeeds. `--count-lowir` performs the same
-proof and lowering and reports the ordinary LowIR counts. Both accept `-o OUTPUT`.
-Language rejection returns 1, emits a diagnostic and leaves stdout empty.
-Signals, timeouts, panics and exit 86 are implementation/infrastructure failures.
-No invocation of rustc or CPPGM implements a Rust frontend phase.
+Use PA11's `rustgm --emit-lowir` interface and input/output options. Emit
+LowIR after the destruction proof succeeds. A source error exits 1 with a
+diagnostic and empty standard output. Implement the proof and lowering in
+your Rust frontend.
 
 Consume typed statement, cleanup and flag events; never reparse rendered proof
 text. Shared destructor glue is emitted on demand as `rg.drop.N`, with one
@@ -110,7 +108,7 @@ there is no unwinding cleanup, landing pad or exception ABI until PA39. Standard
 library destruction helpers, custom smart pointers, closures, unsized owned
 values and async cleanup retain their later assignment owners.
 
-## Efficiency and validation
+## Efficiency
 
 Parse once and consume retained typed facts. Use compact IDs, flat arenas,
 sparse move paths/flags and iterative worklists. Share nominal recipes across
@@ -119,30 +117,23 @@ arguments needed by the loan proof. Never enumerate array lengths during
 analysis or emit one instruction sequence per element. Preserve zero-sized
 runtime call counts even though their byte stride is zero.
 
-The reference caps recipe query work at 1,000,000 steps, selected planning and
+Cap recipe query work at 1,000,000 steps, selected planning and
 cleanup emission at 32,000,000 work units, and selected plan/recipe storage at
 64 MB under their respective accounting. The ordered timeline caps at 4,000,000
 points; PA16's storage/loan limits still apply. Release per-body proof scratch
 promptly. Bodies with no runtime cleanup retain no execution event tape.
 
-The suite declares 205 cases: 135 accepted programs and 70 rejections. Two
-accepted programs declare runtime panic; the other 133 require clean execution.
-All acceptance outcomes agree with rustc. The former inherent-method boundary
-is now accepted in `dev/tests/dot_methods.rs`, pending the PA19 course release.
-Required families cover identity, headers, field moves, destructor loans,
-replacement, temporaries, constants, counters and ordering.
-The 33 `order/` sources define a no-op `trace(u8)` observer. Their course oracles
-remain uninstrumented LowIR. The explicit maintainer native suite independently
-checks actual callback order: rustc uses a printing observer, while the completed
-LowIR program receives a test-only observer checking each callback and the final
-count. Cleanup generation is never replaced or supplied by that observer. The
-22 accepted counter programs execute unchanged source through both compilers.
+## Run the tests
 
-Run `make test-pa17`, `make test-rustc`, `make test-native-pa17`,
-`make test-maintainer-native`, and root lint/audit/harness checks. Only explicit
-`make ref-test-pa17` regenerates the text, diagnostic and status sidecars. Review
-those outputs together with independent acceptance, execution and performance
-evidence before accepting a reference update.
+Run the PA17 test target from the repository root.
 
-The earlier type-generic destructor boundary is now owned by PA18, where its
-unchanged source has an independently checked accepted LowIR oracle.
+```sh
+make -C pa17 test
+```
+
+[The manifest](tests/manifest.json) covers destructor identity and headers,
+field moves, loans, replacement, temporary scope, constant expressions,
+and cleanup order. The `order/` fixtures use a no-op `trace(u8)` function so
+you can inspect the LowIR call order. For additional executable checks,
+write a destructor that records a counter or an ordered sequence and use
+the [PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable).

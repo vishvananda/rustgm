@@ -1,9 +1,9 @@
-# RustGM Programming Assignment 14: Moves and initialization
+# RustGM Programming Assignment 14 — Moves and initialization
 
-Status: **implemented**. Prerequisite: PA13. The profile is Rust 1.98.0,
-edition 2024, Linux x86-64. This assignment publishes the ownership proof already
-required beneath the earlier executable subset. Later lifetime, loan and
-destruction proofs remain separate.
+Use the typed control flow and selections from [PA13](../pa13/README.md) to
+check moves, definite initialization, and assignment permissions. Use Rust
+1.98.0, edition 2024, on Linux x86-64. Later assignments check lifetimes,
+loans, and destruction.
 
 ## Required implementation
 
@@ -69,14 +69,17 @@ trait behavior are not silently admitted by an ownership view.
 
 ## Text contract
 
-`dev/rustgm --emit-ownership SOURCE` emits a deterministic inspection only after
-all ownership checks succeed. `--count-ownership` runs the same checks and emits
-its count line. The optional `-o OUTPUT` follows the earlier atomic-output
-contract. Diagnosed failure returns 1 with no partial stdout. Infrastructure
-failures never become language rejections.
+```text
+rustgm --emit-ownership [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA11's input, configuration, and output options. Write the inspection
+only after ownership checking succeeds. A source error exits 1 with a
+diagnostic and no partial output. With `-o`, the destination opens before
+compilation.
 
 The view begins with `ownership-crate 1`. Bodies retain program order and begin
-`body N source=FILE:NODE`. Each body contains:
+`body N source=FILE:NODE`. Write the following records in each body.
 
 - `  path mN type=TYPE root=lN|vN`, optionally followed by ` parent=mN` and one
   of ` tuple-field=N`, ` nominal-field=N`, ` array-index=N` or
@@ -94,8 +97,8 @@ structure and selected descendants; unmentioned fields remain represented by
 the parent's shallow state. Array overlap normalization may share subranges.
 
 Each body ends `end-body`. The final line is
-`eof bodies=N paths=N copies=N moves=N`; count mode emits the same line without
-`eof `. Counts include the same checked bodies and selected uses, even when
+`eof bodies=N paths=N copies=N moves=N`. Counts include the checked bodies
+and selected uses, even when
 later executable code omits an imaginary path. Do not reparse this view as IR.
 
 ## Efficiency and limits
@@ -113,17 +116,18 @@ cleanup must not recurse on source depth.
 
 The inspection API retains per-body facts for rendering. Executable verification
 runs the identical proof while releasing each body's inspection records before
-lowering. Follow `spec.md`, safe Rust, Clippy all/pedantic and the file audit.
+lowering.
 
-## Tests and completion
+## Run the tests
 
-The manifest declares 124 cases: 112 ownership views (58 acceptances and 54
-rejections) and 12 executable LowIR controls. All have independent pinned-rustc
-checks with no acceptance exceptions. The twelve executable cases assert full
-values through the qualified CPPGM backend and rustc, including branch/loop
-reinitialization, storage, partial moves, struct updates and guard capture.
+Run the PA14 test target from the repository root.
 
-Run `make test-pa14`, `make test-rustc`, `make test-native-pa14` and the root
-lint/audit/harness checks. Only explicit `make ref-test-pa14` regenerates the
-committed sidecars. The [validation record](../docs/pa14-validation.md) records
-independent outcomes, sparse-state invariants and scaling measurements.
+```sh
+make -C pa14 test
+```
+
+[The manifest](tests/manifest.json) checks ownership views and executable
+LowIR cases. Cases exercise initialization across branches and loops,
+partial moves and field writes, struct updates, and guard captures. Use
+the [PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable)
+when running an executable case.

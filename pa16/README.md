@@ -1,7 +1,8 @@
-# RustGM Programming Assignment 16: Borrow checking
+# RustGM Programming Assignment 16 — Borrow checking
 
-Status: **implemented-draft**. This is a bounded course language profile.
-Prerequisite: PA15. Profile: Rust 1.98.0, edition 2024, Linux x86-64.
+Build on [PA15](../pa15/README.md) to prove that borrows remain live only
+while their storage is available and that loan accesses are compatible.
+Use Rust 1.98.0, edition 2024, on Linux x86-64.
 
 ## Required implementation
 
@@ -20,10 +21,7 @@ ends, including edge-specific ends and diverging control flow.
 
 A repeated call defines a fresh result value on each loop visit. Retire loans
 through the replaced temporary while preserving loans on real input places;
-check a shallow write before replacing borrowed temporary storage. The
-[loop result packet](tests/spec/loop-results/README.md) includes independent
-callback results, fixed-input opposition and storage escapes. Its raw-pointer
-and actual source counterparts belong to PA27 and PA31.
+check a shallow write before replacing borrowed temporary storage.
 
 Shared loans permit shared reads and exclude conflicting writes. Mutable loans
 exclude conflicting reads/writes while permitting access through their own
@@ -33,12 +31,14 @@ participate in the same proof. Disjoint fields and selected pattern slices may
 be borrowed separately; arbitrary runtime indices remain conservative. Empty
 and zero-sized selections still require valid storage and permissions.
 
-An established shared-reference parameter or annotation also reborrows its
-source place. This works without a source Copy/Clone impl for shared references;
-ordinary generic value arguments and inferred bindings still move. Preserve
-source-time context through groups, branches and tails, including unsizing, and
-prove the fresh borrow's lifetime and loans normally. See the
-[shared call checkpoint](../docs/pa16-shared-call-reborrow.md).
+A shared-reference expectation can request a reborrow of the source place,
+for example when a call introduces a fresh expected lifetime or a local
+annotation leaves its pointee unresolved. Prove the fresh borrow's lifetime
+and loan. Preserve the selection through nested groups, branches, tails,
+unsizing, and type refinement. An identical determined reference type uses
+ordinary value rules. With no Copy implementation, that use can move the
+value. Ordinary generic value arguments and inferred bindings also use the
+value rules.
 
 Implicit mutable call-argument reborrows can reserve a loan before evaluating
 later arguments and activate it at the consuming call. Explicit `&mut` borrows
@@ -84,14 +84,18 @@ silently authorize those capabilities.
 
 ## Text contract
 
-`dev/rustgm --emit-loans SOURCE` emits `loans-crate 1` only after contracts,
-storage, ownership, loan conflicts and alignment pass. `--count-loans` runs the
-same inspection and emits its count line. Both accept `-o OUTPUT`. Language
-failure returns 1 with empty stdout and a diagnostic; infrastructure failure
-never becomes a language rejection.
+```text
+rustgm --emit-loans [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+rustgm --emit-lowir [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA11's input, configuration, and output options. After checking contracts,
+storage, ownership, loan conflicts, and alignment, begin loan inspection
+with `loans-crate 1`. A source failure exits 1 with empty standard output
+and a diagnostic.
 
 Bodies follow typed-program order, beginning `body N source=FILE:NODE`. Bodies
-with no borrow operations have no loan records. Other bodies contain:
+with no borrow operations have no loan records. Write the records below for other bodies.
 
 - `  place pN root=lN|vN|static:N`, optionally ` parent=pN`, then a projection
   and ` shared=true|false`. Projection spellings are `dereference mutable=BOOL`,
@@ -126,10 +130,9 @@ loan: forward loan reachability is separate.
 
 Each body ends `end-body`. The final line is
 `eof bodies=N loans=N places=N points=N region_words=N state_words=N`.
-Count mode omits `eof `. `--emit-lowir` is the supplemental execution mode;
-inspection sources are never counted as native runs.
+Use `--emit-lowir` for the executable cases in the manifest.
 
-## Efficiency and validation
+## Efficiency
 
 Use sparse canonical place recipes, compact IDs, iterative fixed points and
 bounded bitsets. Retain only observed references and projection relationships;
@@ -139,28 +142,18 @@ Runtime regions cap retained sparse words/pending deltas at 500,000. Optional
 inspection snapshots cap at 2,000,000 nonzero words (48 MB). Executable
 verification runs the same proof without allocating inspection traces.
 
-The manifest declares 329 cases, including 123 native executions and two library
-object producers. Six additional LowIR inputs are declared rejections. The
-integrator reviews and publishes the new shared-call text oracles after focused
-qualification. The suite covers
-last-use and conflicting access, reborrows/two-phase activation, disjoint fields
-and patterns, loops, guards, temporary extension, promotion, thin/wide reference
-execution and persistent backing. Outcomes are declared before oracle generation
-and checked independently with pinned rustc. Native cases also validate and run
-through the pinned CPPGM backend, checking clean success or declared panic.
+## Run the tests
 
-Run `make test-pa16`, `make test-rustc`, `make test-native-pa16`,
-`make test-maintainer-native`, and root lint/audit/harness checks. Only explicit
-`make ref-test-pa16` regenerates sidecars. Handout, manifests, independent checks
-and reviewed text oracles must be coherent before activation.
+Run the PA16 test target from the repository root.
 
-### Identical shared reference values
+```sh
+make -C pa16 test
+```
 
-A known reference expectation does not automatically create a shared reborrow.
-An identical determined reference type remains an ordinary value; absent an
-actual Copy implementation, repeated use can therefore move it. A fresh expected
-call lifetime or an unresolved pointee annotation can request a real reborrow.
-Preserve the final coercion selection when earlier inferred contexts are
-refined, including branch and quantified-result joins. PA24 retains the related
-capture distinction: an implicit call borrow can reach a static referent while
-an identical returned reference still captures its source storage.
+[The manifest](tests/manifest.json) covers last-use liveness, reborrows,
+two-phase activation, loops, disjoint fields, temporary storage, and
+reference execution. For executable cases, use the
+[PA11 backend procedure](../pa11/README.md#run-the-tests-and-an-executable).
+PA24 builds on the distinction between a call that reborrows a referent
+and an unchanged reference value that still carries its original storage
+provenance.

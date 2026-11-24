@@ -1,7 +1,7 @@
-# RustGM Programming Assignment 15: Lifetime contracts
+# RustGM Programming Assignment 15 — Lifetime contracts
 
-Status: **implemented-draft**. This is a bounded course language profile.
-Prerequisite: PA14. Profile: Rust 1.98.0, edition 2024, Linux x86-64.
+Build on [PA14](../pa14/README.md) to check lifetime contracts using the
+canonical type and body facts. Use Rust 1.98.0, edition 2024, on Linux x86-64.
 
 ## Required implementation
 
@@ -55,14 +55,16 @@ reference erasure. The executable pipeline must also consume PA14/PA16 proofs.
 
 ## Text contract
 
-`dev/rustgm --emit-regions SOURCE` runs the typed-body and lifetime-contract
-pipeline and emits `regions-crate 1`. `--count-regions` performs the same checks
-and emits only the final count line. Both accept `-o OUTPUT`. Language failures
-return 1 with no partial stdout; signals, panics and resource infrastructure
-failures never count as expected language rejection.
+```text
+rustgm --emit-regions [--cfg OPTION]... [--edition=2024] [-o OUTPUT] [SOURCE|-]
+```
+
+Use PA11's input and output options. After checking the typed bodies
+and lifetime contracts, begin the output with `regions-crate 1`. A source
+error exits 1 with a diagnostic and no partial output.
 
 Bodies follow contract construction order, including initializer and constructor
-bodies, and begin `body N source=FILE:NODE`. Each body contains:
+bodies, and begin `body N source=FILE:NODE`. Write the records below for each body.
 
 - `  universal bN=gN` in body-parameter order.
 - `  variable rN=gN` in ascending semantic inference identity order.
@@ -86,26 +88,28 @@ when their endpoints match. Do not use rendered text as semantic transport.
 
 Each body ends `end-body`. The final line is
 `eof bodies=N universals=N variables=N regions=N assumptions=N requirements=N`.
-Count mode omits `eof `. Counts cover the same nodes and edge occurrences;
-solver work counters and hash iteration order are not part of the text oracle.
+Count each retained graph node and edge occurrence. Emit records in the
+specified order.
 
-## Efficiency and validation
+## Efficiency
 
 Consume canonical type, variance, substitution and selected-conversion facts;
 do not parse source again. Use bounded iterative graph propagation and cache
 queries in their exact type/binder environment. Ordinary closed types should
 avoid repeated walks. The contract graph caps retained nodes and edges at
-1,000,000 per body and charges bounded propagation work. Inspection sorts edge
-records; count mode reads retained counts without materializing those records.
+1,000,000 per body and charges bounded propagation work. Sort the edge
+records only for inspection.
 
-The release suite declares 202 cases covering declarations/elision, explicit and
-implied bounds, variance, reference returns, callable binders, casts and nominal
-constraints. Each expected result is declared before oracle generation and
-independently checked with pinned rustc. Structural maintainer controls also
-check small graphs against exhaustive set-inclusion models, variable identity,
-placeholder universes and a hand-written exact text vector.
+## Run the tests
 
-Run `make test-pa15`, `make test-rustc`, and the root lint/audit/harness checks.
-Only `make ref-test-pa15` regenerates this assignment's references. Activation
-requires the complete handout, manifests, independent evidence and reviewed
-text oracles together; an empty or planned suite cannot count as passing.
+Run the PA15 test target from the repository root.
+
+```sh
+make -C pa15 test
+```
+
+[The manifest](tests/manifest.json) covers declarations, elision, outlives
+bounds, variance, reference returns, callable binders, casts, and nominal
+constraints. When writing additional cases, check that independent calls
+produce distinct inference variables and that hidden placeholder lifetimes
+stay inside their binders.
