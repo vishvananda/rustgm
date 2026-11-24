@@ -172,7 +172,9 @@ impl Stage {
             // The consumer re-proves the named unit struct and interns its
             // logical argument; no variance or ownership fact travels.
             DefKind::Struct if role == LangItem::PhantomData && self.body_nodes() => {}
-            DefKind::Struct if role.is_storage_wrapper() && self.declaration_policies() => {}
+            DefKind::Struct
+                if self.declaration_policies()
+                    && (role.is_storage_wrapper() || role == LangItem::MaybeUninit) => {}
             DefKind::Struct
                 if self.declaration_policies()
                     && matches!(

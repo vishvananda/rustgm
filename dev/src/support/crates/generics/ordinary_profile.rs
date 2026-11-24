@@ -276,6 +276,10 @@ fn trait_headers(
             )?;
             continue;
         }
+        if roles.no_drop == Some(header.declaration) {
+            require_no_drop_header(header)?;
+            continue;
+        }
         if roles.freeze == Some(header.declaration) {
             callable_traits::freeze(rows, headers, &role_header, work)?;
             continue;
@@ -332,6 +336,18 @@ fn trait_headers(
     }
     Ok(())
 }
+fn require_no_drop_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {
+    if header.flags.bits() != (TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE)
+        || header.written_parameters != 0
+        || header.region_captures != 0
+        || header.members.start != header.members.end
+        || header.written_supertraits.start != header.written_supertraits.end
+    {
+        return Err("source NoDrop requires its exact empty deny-impl declaration");
+    }
+    Ok(())
+}
+
 /// An associated original is admitted only by the method family its profile
 /// owns: primitive methods, conversion methods and, under version thirteen
 /// (`bodies`), inherent methods whose impl captures lifetimes.
@@ -871,6 +887,7 @@ pub(super) struct Bindings {
     sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
     destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         Profile::CONST_BINARY_ROLES.len()],
@@ -970,6 +987,10 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::StructuralPartialEq
     ) || interval_roles::ROLES.contains(&role)
         || role.is_storage_wrapper()
+        || matches!(
+            role,
+            LangItem::MaybeUninit | LangItem::BikeshedGuaranteedNoDrop
+        )
         || LangItem::GUARD_PANICS.contains(&role)
         || role.is_runtime_import()
     {
@@ -1152,6 +1173,7 @@ pub(super) fn bindings(
         } else {
             None
         },
+        no_drop: declarations[LangItem::BikeshedGuaranteedNoDrop.index()],
         freeze: if matches!(
             profile,
             BindingProfile::Callables
@@ -1270,6 +1292,11 @@ fn role_header(
         }
         (role, Some(super::super::HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
+        (LangItem::MaybeUninit, Some(super::super::HeaderRef::Nominal(index)))
+            if profile == BindingProfile::BodyOperations
+                && rows.nominals.get(index as usize).is_some_and(|nominal| {
+                    nominal.layout.form == super::super::NominalForm::Union
+                }) => {}
         (role, header) if role.is_storage_wrapper() => {
             if profile != BindingProfile::BodyOperations
                 || kind != super::super::DefinitionKind::Struct

@@ -147,6 +147,11 @@ impl Arena {
             return Err("source field base lacks its actual nominal header");
         };
         let row = &rows.nominals[index as usize];
+        if row.layout.form == s::NominalForm::Union {
+            return Err(
+                "source union field operations require their explicit active-field contract",
+            );
+        }
         let ty = if let Some(variant) = variant {
             // A downcast field: its variant belongs to exactly this enum and
             // inherits the enum's visibility. Which variant the place holds is
@@ -235,6 +240,9 @@ impl Builder<'_, '_, '_> {
             return Err("source aggregate has no actual nominal header");
         };
         let rows = self.domains.headers.rows();
+        if rows.nominals[index as usize].layout.form == s::NominalForm::Union {
+            return Err("source union values require their explicit active-field contract");
+        }
         let expected = match variant {
             Some(variant) => {
                 variant_header(self.domains, declaration.declaration, variant, work)?.fields

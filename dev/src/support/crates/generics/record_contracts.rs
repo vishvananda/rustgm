@@ -153,6 +153,15 @@ pub(super) fn headers(
             return Err("source nominal changed its actual owner, scope or field range");
         }
         let fields = row.fields.slice(&rows.fields)?;
+        let union = row.layout.form == super::NominalForm::Union;
+        if union
+            && (fields.is_empty()
+                || row.exhaustiveness != Exhaustiveness::Closed
+                || row.packed_simd
+                || row.simd_lane_limit.is_some())
+        {
+            return Err("source union requires its closed named field group");
+        }
         let mut names = HashSet::default();
         for (ordinal, field) in fields.iter().enumerate() {
             work.charge(field.name.len().saturating_add(1))?;
@@ -174,7 +183,7 @@ pub(super) fn headers(
             }
             // Version thirteen: a tuple struct names its fields by their
             // ordinals; its constructor binding re-checks the whole group.
-            if !super::positional(&field.name, ordinal) {
+            if union || !super::positional(&field.name, ordinal) {
                 crate::support::crates::identity::validate_component(&field.name)?;
             }
         }

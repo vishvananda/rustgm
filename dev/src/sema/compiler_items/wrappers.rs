@@ -201,9 +201,9 @@ pub(super) fn imported(
         || !facts
             .aggregates
             .get(item)
-            .is_some_and(|shape| shape.kind == aggregate::Kind::Struct)
+            .is_some_and(|shape| shape.kind == nominal_kind(role))
     {
-        return Err("imported storage wrapper requires its actual module-owned struct");
+        return Err("imported storage wrapper requires its actual module-owned nominal");
     }
     let single_formal = facts
         .generics
@@ -219,6 +219,9 @@ pub(super) fn imported(
         }
         LangItem::MaybeDangling => {
             single_formal && facts.aggregates.permits_dangling_pointers(item) == Some(true)
+        }
+        LangItem::MaybeUninit => {
+            facts.aggregates.destruction(item) == Some(FieldDestruction::Suppressed)
         }
         _ => false,
     };

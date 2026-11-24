@@ -33,7 +33,7 @@ pub type Closed = u8;
 type Last<'a> = &'a u16;
 
 #[repr(C)]
-pub union Unpublished { pub byte: u8 }
+pub enum Unpublished { A, B }
 
 #[lang = "c_void"]
 pub enum Void {

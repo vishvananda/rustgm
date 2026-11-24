@@ -106,7 +106,12 @@ fn layout_write(out: &mut Writer, layout: s::NominalLayout) -> Result<(), &'stat
         s::LayoutModifier::Aligned(unit) => (1, Some(unit.bytes())),
         s::LayoutModifier::Packed(unit) => (2, Some(unit.bytes())),
     };
-    out.u8(kind | (u8::from(layout.indirect_arguments) << 2))?;
+    let form = match layout.form {
+        s::NominalForm::Ordinary => 0,
+        s::NominalForm::IndirectArguments => 4,
+        s::NominalForm::Union => 8,
+    };
+    out.u8(kind | form)?;
     if let Some(width) = width {
         id(out, width)?;
     }
@@ -114,19 +119,22 @@ fn layout_write(out: &mut Writer, layout: s::NominalLayout) -> Result<(), &'stat
 }
 fn layout_read(read: &mut Input<'_, '_>) -> Result<s::NominalLayout, &'static str> {
     let flags = read.reader.u8()?;
-    if flags == 0 || flags > 6 {
+    if flags == 0 {
         return Err("invalid source nominal layout flags");
     }
+    let form = match flags & !3 {
+        0 => s::NominalForm::Ordinary,
+        4 => s::NominalForm::IndirectArguments,
+        8 => s::NominalForm::Union,
+        _ => return Err("invalid source nominal layout flags"),
+    };
     let modifier = match flags & 3 {
         0 => s::LayoutModifier::Natural,
         1 => s::LayoutModifier::Aligned(s::LayoutUnit::new(read.id()?)?),
         2 => s::LayoutModifier::Packed(s::LayoutUnit::new(read.id()?)?),
         _ => return Err("invalid source nominal layout modifier"),
     };
-    Ok(s::NominalLayout {
-        modifier,
-        indirect_arguments: flags & 4 != 0,
-    })
+    Ok(s::NominalLayout { modifier, form })
 }
 fn field_write(out: &mut Writer, row: &s::NominalField) -> Result<(), &'static str> {
     id(out, row.owner.0)?;

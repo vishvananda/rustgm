@@ -364,7 +364,7 @@ pub(in crate::sema) fn bind_definition(
         .get(definition.0 as usize)
         .ok_or_else(|| Error::unlocated("source header definition is unknown"))?;
     if matches!(report.package.unit(declaration.file).configured.ast.node(declaration.node).kind,
-        Kind::Item(index) if matches!(report.package.unit(declaration.file).configured.ast.items[index as usize].kind,ItemKind::Struct {..}))
+        Kind::Item(index) if matches!(report.package.unit(declaration.file).configured.ast.items[index as usize].kind,ItemKind::Struct { .. } | ItemKind::Union { .. }))
         && actual.kind != DefKind::Struct
     {
         return Ok(());
@@ -455,7 +455,7 @@ fn admitted(report: &Report, key: NodeKey) -> bool {
     unit.include_context.is_none()
         && matches!(unit.configured.ast.node(key.node).kind,
         Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-            ItemKind::Function { .. } | ItemKind::Trait { .. } | ItemKind::Struct { .. }))
+            ItemKind::Function { .. } | ItemKind::Trait { .. } | ItemKind::Struct { .. } | ItemKind::Union { .. }))
 }
 pub(super) fn query<'a>(
     facts: &'a Declarations,
@@ -601,6 +601,7 @@ fn validate_header_with(
                 !matches!(
                     aggregate.kind,
                     crate::types::aggregate::Kind::Struct
+                        | crate::types::aggregate::Kind::Union
                         | crate::types::aggregate::Kind::PhantomData
                 )
             }) || !matches!(facts.definitions.get(definition.0 as usize).copied().flatten().and_then(|ty|facts.types.kind(ty)),Some(crate::types::Kind::Adt(owner,_)) if owner == item)

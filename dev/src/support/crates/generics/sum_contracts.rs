@@ -378,7 +378,11 @@ fn struct_constructor(
     let Some(Some(HeaderRef::Nominal(nominal))) = headers.get(parent.0 as usize).copied() else {
         return Err("source struct constructor lacks its struct's nominal header");
     };
-    let fields = rows.nominals[nominal as usize].fields.slice(&rows.fields)?;
+    let header = &rows.nominals[nominal as usize];
+    if header.layout.form == super::NominalForm::Union {
+        return Err("source union cannot bind a struct constructor");
+    }
+    let fields = header.fields.slice(&rows.fields)?;
     work.charge(fields.len().saturating_add(1))?;
     if !fields
         .iter()

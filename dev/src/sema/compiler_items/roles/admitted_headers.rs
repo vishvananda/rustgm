@@ -241,28 +241,11 @@ fn trait_headers(
                 catalog.validated_role(role)?;
             }
             LangItem::Clone | LangItem::Copy | LangItem::LegacyReceiver => {
-                let header = Trait::current(report, facts, declaration, steps)?;
-                header.profile(&facts.types, flags(), 0)?;
-                let expected = match role {
-                    LangItem::Clone => LangItem::Sized,
-                    LangItem::Copy => LangItem::Clone,
-                    _ => LangItem::PointeeSized,
-                };
-                *steps = steps.saturating_add(header.inputs.len());
-                copying::require_header_super(
-                    facts,
-                    catalog,
-                    &header,
-                    expected,
-                    Constness::Ordinary,
-                )?;
-                if role == LangItem::Clone {
-                    clone_member(facts, catalog, &header, steps)?;
-                    complete.insert(LangItem::CloneFn);
-                } else if !header.members.is_empty() {
-                    return Err("source copying marker must not declare members");
-                }
+                copying_role(report, facts, catalog, (role, declaration), steps)?;
                 complete.insert(role);
+                if role == LangItem::Clone {
+                    complete.insert(LangItem::CloneFn);
+                }
             }
             LangItem::CloneFn => {}
             role if FREE_MARKERS.contains(&role) => {
@@ -278,6 +261,11 @@ fn trait_headers(
                     .imported_owner()
                     .ok_or("imported compiler role lost its actual owner/schema graph")?
                     .compiler_operation_role(facts, declaration, role, steps)?;
+                complete.insert(role);
+            }
+            LangItem::BikeshedGuaranteedNoDrop => {
+                let header = Trait::current(report, facts, declaration, steps)?;
+                header.profile(&facts.types, header.flags, 0)?;
                 complete.insert(role);
             }
             LangItem::From => {
@@ -327,10 +315,34 @@ fn trait_headers(
     Ok((complete, callables, needs_pointee))
 }
 
+fn copying_role(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    (role, declaration): (LangItem, super::super::Role),
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let header = Trait::current(report, facts, declaration, steps)?;
+    header.profile(&facts.types, flags(), 0)?;
+    let expected = match role {
+        LangItem::Clone => LangItem::Sized,
+        LangItem::Copy => LangItem::Clone,
+        _ => LangItem::PointeeSized,
+    };
+    *steps = steps.saturating_add(header.inputs.len());
+    copying::require_header_super(facts, catalog, &header, expected, Constness::Ordinary)?;
+    if role == LangItem::Clone {
+        clone_member(facts, catalog, &header, steps)?;
+    } else if !header.members.is_empty() {
+        return Err("source copying marker must not declare members");
+    }
+    Ok(())
+}
+
 fn nominal_role(role: LangItem) -> bool {
     matches!(
         role,
-        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId
+        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId | LangItem::MaybeUninit
     ) || role.is_storage_wrapper()
 }
 

@@ -92,7 +92,7 @@ impl Search<'_> {
                     .source_bindings
                     .as_deref()
                     .ok_or("source NoDrop catalog disappeared")?
-                    .validated_language(LangItem::ManuallyDrop)?
+                    .validated_role(LangItem::ManuallyDrop)?
                     .is_some_and(|declaration| declaration.definition.0 == item.0) =>
             {
                 return Ok(Some(self.complete_source_builtin(frame, goal, false)));

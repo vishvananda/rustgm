@@ -550,10 +550,18 @@ impl LayoutUnit {
         1 << self.0
     }
 }
+/// Layout and argument behavior distinct from an ordinary record.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum NominalForm {
+    #[default]
+    Ordinary,
+    IndirectArguments,
+    Union,
+}
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct NominalLayout {
     pub modifier: LayoutModifier,
-    pub indirect_arguments: bool,
+    pub form: NominalForm,
 }
 impl NominalLayout {
     pub(crate) fn validate(
@@ -563,7 +571,8 @@ impl NominalLayout {
         use crate::support::crates::RecordRepr;
         if self.modifier != LayoutModifier::Natural
             && !matches!(repr, RecordRepr::Rust | RecordRepr::C)
-            || self.indirect_arguments && repr != RecordRepr::C
+            || self.form == NominalForm::IndirectArguments && repr != RecordRepr::C
+            || self.form == NominalForm::Union && repr == RecordRepr::Simd
         {
             return Err("source layout modifier requires a compatible nominal representation");
         }

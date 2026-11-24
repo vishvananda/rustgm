@@ -162,6 +162,14 @@ impl Proof {
         proof.scope = Some((universals, first_region));
         proof
     }
+    pub(super) fn for_imported_declaration(
+        environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
+        universals: u32,
+    ) -> Self {
+        let mut proof = Self::for_declaration(Some(environment), universals, 1);
+        proof.availability = crate::sema::traits::implementations::Availability::Validated;
+        proof
+    }
     /// A negative coherence query's premise-less builtin proof decides
     /// sizedness under the other header's Sized premises; see
     /// [`crate::types::parameters::shape::Shapes::with_placeholders`]. Its

@@ -44,7 +44,9 @@ const-parameter provider exercises a named array length and its type.
 with non-exhaustive structs and an enum. `spec/source-nominal-layout/outcomes.json`
 covers alignment, packing, and indirect C ABI arguments.
 `spec/source-storage-transport/outcomes.json` covers imported storage wrapper
-roles and a structurally similar ordinary type. Run the declared case with
+roles and a structurally similar ordinary type.
+`spec/source-union-transport/outcomes.json` covers overlapping storage and
+active-field rules for imported unions. Run the declared case with
 `scripts/check_source_nominal_transport.py` to check fresh RustGM clients
 against the pinned Rust compiler.
 

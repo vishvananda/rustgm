@@ -16,6 +16,7 @@ pub(crate) enum ImportedPolicy {
     #[default]
     Ordinary,
     Phantom,
+    Union,
     SharedMutation,
     SuppressDestruction,
     DanglingPointers,
@@ -104,9 +105,9 @@ impl Definitions {
             .iter()
             .fold((0, 0), |(interior, nominal), row| match row.policy {
                 ImportedPolicy::SharedMutation => (interior + 1, nominal),
-                ImportedPolicy::SuppressDestruction | ImportedPolicy::DanglingPointers => {
-                    (interior, nominal + 1)
-                }
+                ImportedPolicy::Union
+                | ImportedPolicy::SuppressDestruction
+                | ImportedPolicy::DanglingPointers => (interior, nominal + 1),
                 _ => (interior, nominal),
             });
         let mut growth = retained::Growth::map::<ItemId, ()>(
@@ -246,10 +247,10 @@ fn stage_structs(
         }
         staged.insert_with_mutation(
             item,
-            if policy == ImportedPolicy::Phantom {
-                Kind::PhantomData
-            } else {
-                Kind::Struct
+            match policy {
+                ImportedPolicy::Phantom => Kind::PhantomData,
+                ImportedPolicy::Union => Kind::Union,
+                _ => Kind::Struct,
             },
             repr,
             &[Variant {
@@ -263,6 +264,7 @@ fn stage_structs(
             },
         )?;
         match policy {
+            ImportedPolicy::Union => staged.suppress_field_destruction(item)?,
             ImportedPolicy::SuppressDestruction => staged.suppress_destruction(item)?,
             ImportedPolicy::DanglingPointers => staged.permit_dangling_pointers(item)?,
             _ => {}
@@ -300,6 +302,7 @@ impl Prepared {
 impl Ready<'_> {
     pub(crate) fn install(self) {
         let target = self.destination;
+        target.unions |= self.rows.has_unions();
         if self.rows.has_indirect_arguments() {
             target.argument_policy = super::ArgumentPassing::Indirect;
         }

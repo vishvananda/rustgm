@@ -185,27 +185,29 @@ impl Stage {
             .aggregates
             .get(item)
             .ok_or("source nominal lacks its completed shape")?;
-        if shape.kind == aggregate::Kind::Union {
-            return Err("source union representation requires its wider nominal profile");
-        }
+        let union = shape.kind == aggregate::Kind::Union;
         let enumeration = shape.kind == aggregate::Kind::Enum;
         let policies = self.declaration_policies();
-        let non_exhaustive = non_exhaustive(report, facts, item)?;
+        if union && !policies {
+            return Err("source union representation requires its wider nominal profile");
+        }
+        let non_exhaustive = !union && non_exhaustive(report, facts, item)?;
         if non_exhaustive && !policies {
             return Err("source non-exhaustive nominal requires the declaration policy profile");
         }
         let (repr, packed_simd, layout) =
-            record_repr(shape.repr, enumeration, self.body_nodes(), policies)?;
+            record_repr(shape.repr, shape.kind, self.body_nodes(), policies)?;
         if !policies {
             concrete_simd(facts, owner, repr)?;
         }
         if !(shape.kind == aggregate::Kind::Struct
+            || union
             || enumeration
             || (shape.kind == aggregate::Kind::PhantomData && self.body_nodes()))
         {
             return Err("source nominal shape requires its wider complete contract");
         }
-        self.nominal_storage(facts, item)?;
+        self.nominal_storage(facts, item, union)?;
         Ok(NominalShape {
             repr,
             layout,
@@ -218,7 +220,12 @@ impl Stage {
             },
         })
     }
-    fn nominal_storage(&mut self, facts: &Declarations, item: ItemId) -> Result<(), &'static str> {
+    fn nominal_storage(
+        &mut self,
+        facts: &Declarations,
+        item: ItemId,
+        union: bool,
+    ) -> Result<(), &'static str> {
         let mut proved = |role| -> Result<bool, &'static str> {
             if !self.declaration_policies() {
                 return Ok(false);
@@ -233,7 +240,8 @@ impl Stage {
                 .is_some_and(|d| d.definition.0 == item.0))
         };
         let admitted = match facts.aggregates.destruction(item) {
-            Some(aggregate::FieldDestruction::Fields) => true,
+            Some(aggregate::FieldDestruction::Fields) => !union,
+            Some(aggregate::FieldDestruction::Suppressed) => union,
             Some(aggregate::FieldDestruction::Never) => proved(LangItem::ManuallyDrop)?,
             _ => false,
         } && match facts.aggregates.permits_dangling_pointers(item) {
@@ -380,10 +388,12 @@ fn concrete_simd(facts: &Declarations, owner: DefId, repr: RecordRepr) -> Result
 /// transparent struct and a SIMD struct with no modifier.
 fn record_repr(
     repr: aggregate::Repr,
-    enumeration: bool,
+    kind: aggregate::Kind,
     body_nodes: bool,
     policies: bool,
 ) -> Result<(RecordRepr, bool, s::NominalLayout), &'static str> {
+    let enumeration = kind == aggregate::Kind::Enum;
+    let union = kind == aggregate::Kind::Union;
     let packed_simd =
         repr.packed == Some(1) && repr.representation == aggregate::Representation::Simd;
     let mut repr = repr;
@@ -395,11 +405,15 @@ fn record_repr(
             (None, None) => s::LayoutModifier::Natural,
             _ => return Err("source nominal has conflicting alignment and packing"),
         };
-        s::NominalLayout {
-            modifier,
-            indirect_arguments: std::mem::take(&mut repr.arguments)
-                == aggregate::ArgumentPassing::Indirect,
-        }
+        let form = match (union, std::mem::take(&mut repr.arguments)) {
+            (false, aggregate::ArgumentPassing::Ordinary) => s::NominalForm::Ordinary,
+            (false, aggregate::ArgumentPassing::Indirect) => s::NominalForm::IndirectArguments,
+            (true, aggregate::ArgumentPassing::Ordinary) => s::NominalForm::Union,
+            (true, aggregate::ArgumentPassing::Indirect) => {
+                return Err("source union cannot pass indirectly as a struct");
+            }
+        };
+        s::NominalLayout { modifier, form }
     } else {
         s::NominalLayout::default()
     };

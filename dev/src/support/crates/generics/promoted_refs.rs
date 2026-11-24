@@ -3,7 +3,7 @@ use super::{
     ConstantBody, ConstantHeader, HeaderIndex, HeaderRef, Range, SourceRows, TypeRef, Work,
 };
 use crate::support::crates::{
-    generics::source::{ArtifactRef, DefinitionKind, Region, Type},
+    generics::source::{ArtifactRef, DefinitionKind, NominalForm, Region, Type},
     owner_catalog::DeclarationRef,
 };
 
@@ -95,8 +95,9 @@ fn fields<'rows>(
     let Some(HeaderRef::Nominal(index)) = headers.header(declaration.declaration, work)? else {
         return Err(error);
     };
-    let fields = rows.nominals[index as usize].fields.slice(&rows.fields)?;
-    if fields.is_empty() {
+    let nominal = &rows.nominals[index as usize];
+    let fields = nominal.fields.slice(&rows.fields)?;
+    if nominal.layout.form == NominalForm::Union || fields.is_empty() {
         return Err(error);
     }
     Ok(fields)

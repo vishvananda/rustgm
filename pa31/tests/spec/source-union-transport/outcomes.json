@@ -1,0 +1,10 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0, "lowir": ["obj<8x8>"]},
+    {"cfg": "unguarded", "status": 1, "rustc": "E0133", "rustgm": "union field"},
+    {"cfg": "two_fields", "status": 1, "rustc": "E0784", "rustgm": "one field"}
+  ]
+}

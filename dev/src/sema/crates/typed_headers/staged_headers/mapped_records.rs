@@ -177,7 +177,11 @@ fn mapped_struct(
         item,
         repr: mapped_repr(row),
         fields,
-        policy,
+        policy: if row.layout.form == s::NominalForm::Union {
+            ImportedPolicy::Union
+        } else {
+            policy
+        },
     }
 }
 
@@ -196,7 +200,7 @@ fn mapped_repr(row: &s::NominalHeader) -> aggregate::Repr {
         },
         align,
         packed,
-        arguments: if row.layout.indirect_arguments {
+        arguments: if row.layout.form == s::NominalForm::IndirectArguments {
             aggregate::ArgumentPassing::Indirect
         } else {
             aggregate::ArgumentPassing::Ordinary
