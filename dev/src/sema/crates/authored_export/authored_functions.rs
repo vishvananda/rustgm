@@ -452,8 +452,7 @@ fn declared_captures(facts: &Declarations, definition: DefId, modern: bool) -> O
     Some(facts.associated.schema(definition)?.captures)
 }
 
-/// Which const-trait roles may own a conditional required member: `From`
-/// from version nine, the callable roles from thirteen and Div from fourteen.
+/// Select the callable effects admitted by the artifact's source profile.
 #[derive(Clone, Copy)]
 struct RequiredRoles {
     conversions: bool,
@@ -478,11 +477,9 @@ fn written_constness(
     else {
         return Err("source callable effect owner is not a function");
     };
-    if roles.conversions && required_trait_member(report, facts, function, roles)? {
+    if roles.conversions && conditional_trait_member(report, facts, function, roles)? {
         if flags.constant || facts.is_const_function(function.definition) {
-            return Err(
-                "required conversion member changed its written/effective const eligibility",
-            );
+            return Err("conditional member changed its written/effective const eligibility");
         }
         return Ok(Constness::Conditional);
     }
@@ -537,10 +534,12 @@ fn effective_impl_constness(
         .as_deref()
         .ok_or("source effective const method lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let [subtract, divide] = s::Profile::CONST_BINARY_ROLES.map(|role| catalog.language(role));
-    let [deref, deref_mut] = s::Profile::CONST_DEREF_ROLES.map(|role| catalog.language(role));
-    let roles = [subtract, divide, deref, deref_mut];
-    if roles.iter().all(Option::is_none) {
+    let roles = s::Profile::CONST_BINARY_ROLES
+        .into_iter()
+        .chain(s::Profile::CONST_DEREF_ROLES)
+        .chain(LangItem::COMPARISON_TRAITS)
+        .map(|role| catalog.language(role));
+    if roles.clone().all(|role| role.is_none()) {
         return Ok(false);
     }
     let implementations = facts
@@ -562,16 +561,14 @@ fn effective_impl_constness(
             .trait_application(application)
             .is_some_and(|application| {
                 roles
-                    .into_iter()
                     .flatten()
                     .any(|role| role.definition.0 == application.item.0)
             }))
 }
 
-/// A required const-trait declaration is conditional, never a const body or an
-/// executable impl. The indexed actual parent supplies the declaration fact;
-/// a member's name and signature cannot create the language role.
-fn required_trait_member(
+/// The actual const trait supplies the declaration's conditional effect. The
+/// exact parent and source header remain required for both member forms.
+fn conditional_trait_member(
     report: &Report,
     facts: &Declarations,
     function: &crate::sema::model::Function,
@@ -610,6 +607,12 @@ fn required_trait_member(
     } else {
         None
     };
+    let comparison = if roles.declaration_policies {
+        comparison_trait(catalog, definition)?
+    } else {
+        None
+    };
+    selected = selected.or(comparison);
     if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
         return Err("source non-const operator method requires its actual policy transport");
     }
@@ -632,19 +635,12 @@ fn required_trait_member(
             }
         }
     }
-    let drop = roles
-        .declaration_policies
-        .then(|| catalog.language(LangItem::Drop))
-        .flatten()
-        .filter(|role| role.definition == definition);
-    if drop.is_some() {
-        crate::sema::compiler_items::require_source_drop_contract(report, facts)
-            .map_err(|_| "conditional Drop member lost its actual checked trait contract")?;
-        if facts.nonconst_trait_member(function.definition)? {
-            return Err("source non-const Drop method requires its actual policy transport");
-        }
-        selected = drop;
-    }
+    let drop = if roles.declaration_policies {
+        conditional_drop_trait(report, facts, function.definition, definition)?
+    } else {
+        None
+    };
+    selected = selected.or(drop);
     if roles.declaration_policies
         && let Some(role) = required_try_trait(facts, function, owner)?
     {
@@ -659,7 +655,7 @@ fn required_trait_member(
     if role.definition != definition {
         return Err("conditional member belongs to another actual trait");
     }
-    if function.body.is_some() && drop.is_none() {
+    if function.body.is_some() && drop.is_none() && comparison.is_none() {
         return Err("conversion trait defaults require their actual body transport");
     }
     if role.parent.is_some()
@@ -678,6 +674,42 @@ fn required_trait_member(
         return Err("conversion member changed its actual source function header");
     }
     Ok(true)
+}
+
+fn conditional_drop_trait(
+    report: &Report,
+    facts: &Declarations,
+    member: DefId,
+    owner: DefId,
+) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+    let drop = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(LangItem::Drop))
+        .filter(|role| role.definition == owner);
+    if drop.is_some() {
+        crate::sema::compiler_items::require_source_drop_contract(report, facts)
+            .map_err(|_| "conditional Drop member lost its actual checked trait contract")?;
+        if facts.nonconst_trait_member(member)? {
+            return Err("source non-const Drop method requires its actual policy transport");
+        }
+    }
+    Ok(drop)
+}
+
+fn comparison_trait(
+    catalog: &crate::sema::compiler_items::Catalog,
+    definition: DefId,
+) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+    for role in LangItem::COMPARISON_TRAITS {
+        if catalog
+            .language(role)
+            .is_some_and(|actual| actual.definition == definition)
+        {
+            return catalog.header_role(role);
+        }
+    }
+    Ok(None)
 }
 
 fn required_try_trait(

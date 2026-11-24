@@ -1,0 +1,8 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observe.c",
+  "stdout": "1 0 0 1 0 1\n0 1 0 0  1 0 1 0\n",
+  "foreign_role": "source role binding is duplicated or belongs to a foreign provider",
+  "old_reader": "unknown source ordinary environment origin"
+}

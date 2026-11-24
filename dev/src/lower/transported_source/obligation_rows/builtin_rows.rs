@@ -1,9 +1,6 @@
 //! Environment provenance and Copy queries remain separate from required goals.
 use super::{Context, Declarations, DefId, Sites, Stage, s};
-use crate::{
-    sema::associated::OwnerKind,
-    types::{parameters::environment::Environment, parameters::predicates::Bound},
-};
+use crate::{sema::associated::OwnerKind, types::parameters::environment::Environment};
 use std::sync::Arc;
 
 fn validate_environment(
@@ -52,39 +49,15 @@ fn translated_environment(
             ..
         } = owner.kind
     {
-        let self_type = facts
-            .associated
-            .schema(trait_)
-            .ok_or("source const default has no actual Self schema")?
-            .self_type;
-        let mut found = false;
+        let defining = facts.defining_self_clause(trait_)?;
         for clause in environment.trait_clauses()? {
             stage.charge(1)?;
-            let predicate = clause.ordinary().map_err(
-                |_| "source const default local premise must retain its actual unquantified owner",
-            )?;
-            if predicate.ty == self_type
-                && let Bound::MaybeConstTrait(application) = predicate.bound
-            {
-                let actual = facts
-                    .types
-                    .trait_application(application)
-                    .ok_or("source local Self application is unknown")?;
-                if actual.item.0 == trait_.0
-                    && facts
-                        .types
-                        .arguments(actual.arguments)
-                        .is_some_and(|arguments| arguments.len() == 0)
-                {
-                    found = true;
-                }
+            if clause == defining {
+                return Ok(s::EnvironmentOrigin::ConstTraitDefault {
+                    member,
+                    trait_: stage.address(trait_)?,
+                });
             }
-        }
-        if found {
-            return Ok(s::EnvironmentOrigin::ConstTraitDefault {
-                member,
-                trait_: stage.address(trait_)?,
-            });
         }
     }
     Ok(s::EnvironmentOrigin::Declaration(member))

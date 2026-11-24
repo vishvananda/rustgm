@@ -881,6 +881,28 @@ pub(in crate::sema) fn complete_enum_roles(
     Ok(())
 }
 
+pub(in crate::sema) fn complete_comparison_roles(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    for role in LangItem::COMPARISON_TRAITS {
+        let Some(declaration) = facts
+            .source_bindings
+            .as_deref()
+            .and_then(|catalog| catalog.language(role))
+        else {
+            continue;
+        };
+        let mut steps = 0;
+        let checked = super::comparison_contract::validate_role(report, facts, role, &mut steps);
+        crate::sema::header_attributes::charge_source_contract_query(facts, steps)?;
+        if checked.is_ok() {
+            record_completion(facts, role, declaration)?;
+        }
+    }
+    Ok(())
+}
+
 fn record_completion(
     facts: &mut Declarations,
     role: LangItem,

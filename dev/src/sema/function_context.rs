@@ -1,6 +1,7 @@
 //! Defining const checking is distinct from executable function eligibility.
 use super::{associated::OwnerKind, model::Declarations};
 use crate::resolve::{body_origin::ProofSite, model::DefId, unit::NodeKey};
+use crate::support::bindings::LangItem;
 use crate::types::{
     TypeId,
     parameters::{
@@ -157,7 +158,7 @@ impl Declarations {
     }
 
     /// Construct the actual const trait's defining premise, without body authority.
-    pub(in crate::sema) fn defining_self_clause(
+    pub(crate) fn defining_self_clause(
         &self,
         trait_definition: DefId,
     ) -> Result<Clause, &'static str> {
@@ -224,6 +225,7 @@ impl Declarations {
         for kind in Profile::CONST_BINARY_ROLES
             .into_iter()
             .chain(Profile::CONST_DEREF_ROLES)
+            .chain(LangItem::COMPARISON_TRAITS)
         {
             if let Some(role) = catalog.role(kind)?
                 && role.definition == definition
@@ -255,14 +257,19 @@ impl Declarations {
         let Some(catalog) = self.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let drop = catalog.role(crate::support::bindings::LangItem::Drop)?;
-        Ok(drop
-            .filter(|role| {
-                role.definition == owner
-                    && role.origin.source().is_none()
-                    && self.associated.constant_trait(owner) == Some(true)
-            })
-            .map(|_| owner))
+        for kind in [LangItem::Drop]
+            .into_iter()
+            .chain(LangItem::COMPARISON_TRAITS)
+        {
+            if let Some(role) = catalog.role(kind)?
+                && role.definition == owner
+                && role.origin.source().is_none()
+                && self.associated.constant_trait(owner) == Some(true)
+            {
+                return Ok(Some(owner));
+            }
+        }
+        Ok(None)
     }
 
     fn imported_member_self_site(

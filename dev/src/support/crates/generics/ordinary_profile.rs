@@ -215,7 +215,7 @@ fn validate_with(
         work,
         profile.conversions(),
         binding.languages(),
-        roles.drop,
+        roles.default_traits(),
         binding == BindingProfile::BodyOperations,
     )
 }
@@ -544,9 +544,9 @@ fn functions(
         // constness, convention and variadic forms keep their fences.
         let safety = free_effects || (bodies && header.parent.is_some());
         let callable = callable_roles::required_member(header, roles.callables, work)?;
-        let provided_drop = roles.provided_drop(rows, headers, header, work)?;
+        let provided_default = roles.provided_default(rows, headers, header, work)?;
         let conditional = callable
-            || provided_drop
+            || provided_default
             || profile.conversions() && roles.required_member(rows, headers, header, work)?;
         let inherent_const = bodies && inherent_const(rows, headers, header, work)?;
         let trait_const =
@@ -581,7 +581,7 @@ fn functions(
         if bodies && header.parent.is_some() && header.original.unsafe_ != header.callable.unsafe_ {
             return Err("source associated callable changed its actual original/public safety");
         }
-        let associated = provided_drop
+        let associated = provided_default
             || trait_const
             || associated_method(rows, headers, header, work, profile, roles, bodies)?;
         if matches!(header.body, FunctionBody::Original(_))
@@ -712,7 +712,7 @@ fn originals(
                 work,
                 constant_initializers,
                 roles.runtime_format_bodies,
-                roles.drop,
+                roles.default_traits(),
             )?
         } else {
             super::super::CallContext::Runtime
@@ -786,19 +786,16 @@ fn defining_default(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     origin: EnvironmentOrigin,
-    drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    defaults: callable_traits::DefaultTraits,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let EnvironmentOrigin::ConstTraitDefault { member, trait_ } = origin else {
         return Ok(());
     };
     if trait_.artifact == rows.policy.provider
-        && drop == Some(trait_.declaration)
+        && defaults.contains(trait_.declaration)
         && let Some(super::super::HeaderRef::Function(index)) = headers.header(member, work)?
-        && callable_traits::provided_drop_default(
-            &rows.functions[index as usize],
-            trait_.declaration,
-        )
+        && callable_traits::provided_default(&rows.functions[index as usize], trait_.declaration)
     {
         return Ok(());
     }
@@ -813,14 +810,14 @@ fn body_inputs(
     work: &mut Work,
     regional: bool,
     scoped: bool,
-    drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    defaults: callable_traits::DefaultTraits,
     declaration_policies: bool,
 ) -> Result<(), &'static str> {
     for input in &rows.body_inputs {
         work.charge(1)?;
-        defining_default(rows, headers, input.environment, drop, work)?;
+        defining_default(rows, headers, input.environment, defaults, work)?;
         if let Some(builtins) = &input.builtins {
-            defining_default(rows, headers, builtins.environment, drop, work)?;
+            defining_default(rows, headers, builtins.environment, defaults, work)?;
             for request in &builtins.predicates {
                 work.charge(1)?;
                 ordinary(&request.value, false)?;
@@ -960,6 +957,8 @@ pub(super) struct Bindings {
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
     try_traits: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 2],
+    comparisons: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::COMPARISON_TRAITS.len()],
     pin: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
@@ -976,12 +975,20 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
+    fn default_traits(&self) -> callable_traits::DefaultTraits {
+        callable_traits::DefaultTraits {
+            drop: self.drop,
+            comparisons: self.comparisons,
+        }
+    }
+
     fn const_operator(
         &self,
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
     ) -> bool {
         self.binary_operators.contains(&Some(declaration))
             || self.dereferences.contains(&Some(declaration))
+            || self.comparisons.contains(&Some(declaration))
     }
 
     fn const_operator_impl(
@@ -1001,6 +1008,7 @@ impl Bindings {
                 .binary_operators
                 .iter()
                 .chain(&self.dereferences)
+                .chain(&self.comparisons)
                 .all(Option::is_none)
         {
             return Ok(None);
@@ -1028,12 +1036,15 @@ impl Bindings {
     fn conditional_role_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {
         let [deref, deref_mut] = self.dereferences;
         let [try_, from_residual] = self.try_traits;
+        let [partial_eq, partial_ord] = self.comparisons;
         let target = if Some(input.owner) == self.drop_glue {
             self.destruct
         } else if Some(input.owner) == deref_mut {
             deref
         } else if Some(input.owner) == try_ {
             from_residual
+        } else if Some(input.owner) == partial_ord {
+            partial_eq
         } else {
             return false;
         };
@@ -1051,23 +1062,23 @@ impl Bindings {
             })
     }
 
-    fn provided_drop(
+    fn provided_default(
         &self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
         function: &super::super::FunctionHeader,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        let Some(owner) = self
-            .drop
-            .filter(|&parent| callable_traits::provided_drop_default(function, parent))
-        else {
+        let Some(owner) = function.parent.filter(|&parent| {
+            self.default_traits().contains(parent)
+                && callable_traits::provided_default(function, parent)
+        }) else {
             return Ok(false);
         };
         if !matches!(headers.header(owner, work)?, Some(super::super::HeaderRef::Trait(index))
             if rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
         {
-            return Err("source provided Drop default requires its actual const trait");
+            return Err("source provided default requires its actual const trait");
         }
         Ok(true)
     }
@@ -1143,6 +1154,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::TRY_PROTOCOL.contains(&role)
+        || LangItem::COMPARISON_TRAITS.contains(&role)
         || role.is_enum_value_role()
         || role.is_runtime_import()
     {
@@ -1297,6 +1309,7 @@ pub(super) fn bindings(
             required_method_owner(rows, headers, bound(LangItem::TryFromResidual), work)?,
         ],
         runtime_format_bodies: LangItem::RUNTIME_FORMAT_BODIES.map(bound),
+        comparisons: LangItem::COMPARISON_TRAITS.map(bound),
         pin: bound(LangItem::Pin),
         definition_policies: profile.definition_policies(),
         markers: if languages {
@@ -1549,7 +1562,10 @@ fn role_header(
         (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {
             return Err("source wrapper role requires its actual nominal header");
         }
-        (LangItem::PointeeTrait, Some(HeaderRef::Trait(_)))
+        (
+            LangItem::PointeeTrait | LangItem::PartialEq | LangItem::PartialOrd,
+            Some(HeaderRef::Trait(_)),
+        )
         | (LangItem::MetadataType | LangItem::DerefTarget, Some(HeaderRef::AssociatedType(_)))
         | (
             LangItem::RangeMin

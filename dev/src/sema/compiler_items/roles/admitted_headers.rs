@@ -302,6 +302,7 @@ fn trait_headers(
             role if GROUPED.contains(&role)
                 || LangItem::FORMAT_PANICS.contains(&role)
                 || LangItem::TRY_PROTOCOL.contains(&role)
+                || LangItem::COMPARISON_TRAITS.contains(&role)
                 || role.is_enum_value_role()
                 || super::super::layout::CONSTANTS.contains(&role) => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
@@ -437,6 +438,12 @@ fn grouped_roles(
             for &role in group.roles() {
                 complete.insert(role);
             }
+        }
+    }
+    for role in LangItem::COMPARISON_TRAITS {
+        if catalog.role(role)?.is_some() {
+            super::super::comparison_contract::validate_role(report, facts, role, steps)?;
+            complete.insert(role);
         }
     }
     if super::range_members::imported(report, facts, catalog, steps)? {

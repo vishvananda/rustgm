@@ -63,6 +63,8 @@ macro_rules! language_items {
 // The appended rows follow rustc_hir/lang_items.rs at 88d9e12ae178fab0fb5cc050a94da85685d449ea;
 // weak-only foreign targets additionally follow rustc_hir/weak_lang_items.rs.
 impl LangItem {
+    pub(crate) const COMPARISON_TRAITS: [Self; 2] = [Self::PartialEq, Self::PartialOrd];
+
     pub(crate) const TRY_PROTOCOL: [Self; 7] = [
         Self::TryTrait,
         Self::TryFromOutput,

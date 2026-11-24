@@ -33,6 +33,13 @@ and projected variants check writable storage and the separate rules for
 const and static initializers. The projected variant requires a validated
 imported trait implementation to determine the initializer's field type.
 
+`spec/source-comparison-role-transport/outcomes.json` checks the
+`PartialEq::ne` default through its actual required `eq` member. A
+fresh client selects implementations with both the default and an
+explicit, different `Rhs` type. It also calls the provided ordering
+methods and checks comparisons where `partial_cmp` returns `None`. Run
+`scripts/check_comparison_role_transport.py` with the pinned compiler.
+
 `spec/source-bounded-alias-transport/outcomes.json` declares a source library
 with the two associated-type projections used by `core`'s `ChangeOutputType`.
 Fresh clients exercise a valid application, a missing implementation and

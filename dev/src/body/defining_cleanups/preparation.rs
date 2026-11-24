@@ -238,6 +238,16 @@ fn defining_environment(
     actual: Definition,
     work: &mut Work,
 ) -> Result<Arc<crate::types::parameters::environment::Environment>, &'static str> {
+    completed_environment(facts, id, actual, work)?
+        .ok_or("defining cleanup original has no actual defining environment")
+}
+
+pub(super) fn completed_environment(
+    facts: &Declarations,
+    id: DefId,
+    actual: Definition,
+    work: &mut Work,
+) -> Result<Option<Arc<crate::types::parameters::environment::Environment>>, &'static str> {
     if actual.source.source().is_none()
         && matches!(
             actual.context,
@@ -250,13 +260,9 @@ fn defining_environment(
         if original.source()? != actual.source {
             return Err("imported defining cleanup changed its actual default body");
         }
-        return Ok(Arc::clone(original.environment()?));
+        return Ok(Some(Arc::clone(original.environment()?)));
     }
-    facts
-        .generics
-        .body_environment(id)
-        .cloned()
-        .ok_or("defining cleanup original has no actual defining environment")
+    Ok(facts.generics.body_environment(id).cloned())
 }
 
 fn counted_definition(

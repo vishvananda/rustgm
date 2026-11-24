@@ -21,6 +21,17 @@ pub(crate) struct Call {
     pub result: TypeId,
 }
 
+impl Declarations {
+    pub(crate) fn conditional_member_request(
+        &self,
+        definition: DefId,
+        arguments: GenericArgs,
+        charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<Predicate, &'static str> {
+        conditional_arguments::select(self, definition, arguments, charge)
+    }
+}
+
 /// A scoped defining check, without a selected implementation or execution token.
 pub(crate) struct DefiningCalls<'a> {
     facts: &'a Declarations,
@@ -273,8 +284,9 @@ impl<'a> DefiningCalls<'a> {
         else {
             return Err("source member request lost its complete function item");
         };
-        let predicate =
-            conditional_arguments::select(self.facts, DefId(item.0), arguments, charge)?;
+        let predicate = self
+            .facts
+            .conditional_member_request(DefId(item.0), arguments, charge)?;
         if matches!(
             self.facts.types.kind(predicate.ty),
             Some(Kind::Parameter(_))
@@ -290,7 +302,9 @@ impl<'a> DefiningCalls<'a> {
         arguments: GenericArgs,
         charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
-        let predicate = conditional_arguments::select(self.facts, definition, arguments, charge)?;
+        let predicate = self
+            .facts
+            .conditional_member_request(definition, arguments, charge)?;
         self.require_premise(predicate, charge)
     }
 

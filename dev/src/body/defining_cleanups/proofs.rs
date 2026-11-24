@@ -316,10 +316,14 @@ fn actual_definition(
         .associated
         .trait_owner(definition)
         .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true));
-    let actual = super::active_definition(facts, definition, body.source, &mut 0, default)?
-        .ok_or("active const cleanup lost its actual source definition")?;
-    if let Some(expected) = facts.generics.body_environment(definition) {
-        if !Arc::ptr_eq(expected, environment) {
+    let actual =
+        super::active_definition(facts, definition, body.source, &mut work.steps, default)?
+            .ok_or("active const cleanup lost its actual source definition")?;
+    work.charge(0)?;
+    if let Some(expected) =
+        super::preparation::completed_environment(facts, definition, actual, work)?
+    {
+        if !Arc::ptr_eq(&expected, environment) {
             return Err("active const cleanup changed its defining environment".into());
         }
     } else if facts.generics.caller_scope_pending(definition)

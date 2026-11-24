@@ -193,8 +193,19 @@ fn empty_auto(
     Ok(())
 }
 
-/// Effect and original transport for a default of the bound Drop role.
-pub(super) fn provided_drop_default(header: &s::FunctionHeader, drop: DeclarationRef) -> bool {
+/// The currently admitted owners of a conditional default original.
+#[derive(Clone, Copy)]
+pub(super) struct DefaultTraits {
+    pub(super) drop: Option<DeclarationRef>,
+    pub(super) comparisons: [Option<DeclarationRef>; LangItem::COMPARISON_TRAITS.len()],
+}
+impl DefaultTraits {
+    pub(super) fn contains(self, owner: DeclarationRef) -> bool {
+        self.drop == Some(owner) || self.comparisons.contains(&Some(owner))
+    }
+}
+
+pub(super) fn provided_default(header: &s::FunctionHeader, drop: DeclarationRef) -> bool {
     header.parent == Some(drop)
         && header.constness == Constness::Conditional
         && matches!(header.body, s::FunctionBody::Original(_))
@@ -208,16 +219,18 @@ pub(super) fn original_context(
     work: &mut Work,
     constant_initializers: bool,
     runtime_format_bodies: [Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()],
-    drop: Option<DeclarationRef>,
+    default_traits: DefaultTraits,
 ) -> Result<s::CallContext, &'static str> {
-    let mut defining_drop = None;
+    let mut defining_default = None;
     let context = match headers.header(body.declaration, work)? {
         Some(s::HeaderRef::Function(index)) => {
             let function = &rows.functions[index as usize];
-            defining_drop = drop.filter(|&parent| provided_drop_default(function, parent));
+            defining_default = function.parent.filter(|&parent| {
+                default_traits.contains(parent) && provided_default(function, parent)
+            });
             if (function.constness == Constness::Const
                 && !runtime_format_bodies.contains(&Some(body.declaration)))
-                || defining_drop.is_some()
+                || defining_default.is_some()
             {
                 s::CallContext::ConstDefinition
             } else {
@@ -240,7 +253,7 @@ pub(super) fn original_context(
             body,
             work,
             constant_initializers,
-            defining_drop,
+            defining_default.map(|owner| (owner, default_traits.drop == Some(owner))),
         )?;
     }
     Ok(context)
@@ -253,7 +266,7 @@ fn constant_calls(
     body: &s::Original,
     work: &mut Work,
     constructors: bool,
-    drop: Option<DeclarationRef>,
+    default: Option<(DeclarationRef, bool)>,
 ) -> Result<(), &'static str> {
     for request in &body.calls {
         work.charge(3)?;
@@ -269,7 +282,7 @@ fn constant_calls(
             Some(s::HeaderRef::Function(index)) => {
                 let target = &rows.functions[index as usize];
                 if target.constness != Constness::Const
-                    && !conditional_pin_drop(rows, headers, target, request, drop, work)?
+                    && !conditional_default_call(rows, headers, target, request, default, work)?
                 {
                     return Err("source const-definition call requires its actual const target");
                 }
@@ -289,15 +302,15 @@ fn constant_calls(
     Ok(())
 }
 
-fn conditional_pin_drop(
+fn conditional_default_call(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     target: &s::FunctionHeader,
     request: &s::CallRequest,
-    drop: Option<DeclarationRef>,
+    default: Option<(DeclarationRef, bool)>,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
-    let Some(owner) = drop.filter(|&owner| target.parent == Some(owner)) else {
+    let Some((owner, drop)) = default.filter(|&(owner, _)| target.parent == Some(owner)) else {
         return Ok(false);
     };
     work.charge(4)?;
@@ -308,15 +321,16 @@ fn conditional_pin_drop(
         return Ok(false);
     };
     let Some(s::HeaderRef::Trait(index)) = headers.header(owner, work)? else {
-        return Err("source conditional pinned destruction lost its actual Drop trait");
+        return Err("source conditional default call lost its actual trait");
     };
     Ok(target.constness == Constness::Conditional
-        && rows
-            .declarations
-            .get(target.declaration.0 as usize)
-            .is_some_and(|row| row.name.as_deref() == Some("pin_drop"))
+        && (!drop
+            || rows
+                .declarations
+                .get(target.declaration.0 as usize)
+                .is_some_and(|row| row.name.as_deref() == Some("pin_drop")))
         && application.declaration.artifact.0 == 0
         && application.declaration.declaration == owner
         && application.subject == rows.traits[index as usize].self_type
-        && application.arguments.start == application.arguments.end)
+        && (!drop || application.arguments.start == application.arguments.end))
 }

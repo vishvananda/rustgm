@@ -1,9 +1,9 @@
-//! Reprove the canonical conditional Self request in an imported Drop original.
+//! Reprove the canonical conditional Self request in an imported default.
 use super::{Body, Declarations, DefId, Kind, Owner, Rvalue, Statement, Work};
 use crate::{
     body::ir::{Action, BodyOrigin},
     support::crates::generics::source::{CallContext, EnvironmentOrigin},
-    types::{TypeId, arguments::Argument, parameters::clauses::Clause},
+    types::parameters::{clauses::Clause, predicates::Predicate},
 };
 
 pub(super) fn defining(
@@ -50,7 +50,7 @@ pub(super) fn defining(
 
 pub(in crate::body::constants) struct Calls {
     owner: DefId,
-    subject: TypeId,
+    premise: Predicate,
     body: BodyOrigin,
 }
 impl Calls {
@@ -89,7 +89,7 @@ impl Calls {
             if clause == premise {
                 return Ok(Self {
                     owner,
-                    subject: predicate.ty,
+                    premise: predicate,
                     body: body.source,
                 });
             }
@@ -123,10 +123,6 @@ impl Calls {
             return Err("imported provided call requires its actual direct member");
         };
         let definition = DefId(item.0);
-        let mut arguments = facts
-            .types
-            .arguments(arguments)
-            .ok_or("imported provided call has no ordered target arguments")?;
         body.source.proof_site(statement.source)?;
         // The sealed body maps the exact request target, signature and effect
         // to this operation. Its conditional Self goal is proved here against
@@ -134,8 +130,9 @@ impl Calls {
         if body.source != self.body
             || !matches!(target.kind, Rvalue::Function(actual) if actual == definition)
             || facts.imported_conditional_member_trait(definition)? != Some(self.owner)
-            || arguments.next() != Some(Argument::Type(self.subject))
-            || arguments.next().is_some()
+            || facts.conditional_member_request(definition, arguments, &mut |steps| {
+                work.charge(steps)
+            })? != self.premise
         {
             return Err("imported provided call changed its actual member or conditional Self");
         }

@@ -1,7 +1,7 @@
 //! Borrow actual comparison headers without granting bootstrap library factories.
 use super::{DefId, Error, LangItem, Report, headers};
 use crate::{
-    resolve::{model::DefKind, unit::NodeKey},
+    resolve::{body_origin::DeclarationOrigin, model::DefKind, unit::NodeKey},
     sema::{header_attributes::ContractKnowledge, model::Declarations},
     support::{
         comparisons::{Comparison, Method},
@@ -57,13 +57,13 @@ pub(crate) fn comparison_member(
     let catalog = facts.source_bindings.as_deref()?;
     let owner = facts.associated.trait_owner(member)?;
     let definition = report.resolution.definitions.get(member.0 as usize)?;
-    if definition.kind != DefKind::Function || definition.node.is_none() {
+    if definition.kind != DefKind::Function {
         return None;
     }
     [Comparison::PartialEq, Comparison::PartialOrd]
         .into_iter()
         .find_map(|kind| {
-            let declaration = catalog.language(role(kind)?)?;
+            let declaration = catalog.role(role(kind)?).ok().flatten()?;
             (declaration.definition == owner).then_some(())?;
             kind.methods()
                 .iter()
@@ -95,7 +95,7 @@ pub(in crate::sema) fn source_comparison(
     let charge = facts
         .source_bindings
         .as_deref()
-        .and_then(|c| c.language(role(method.owner())?))
+        .and_then(|c| c.role(role(method.owner())?).ok().flatten())
         .and_then(|d| facts.associated.owner(d.definition))
         .and_then(|id| facts.associated.owner_members(id))
         .map_or(1, |m| m.len() + 1);
@@ -123,17 +123,44 @@ pub(in crate::sema) fn source_comparison(
     }
     Ok(comparison)
 }
+pub(super) fn validate_role(
+    report: &Report,
+    facts: &Declarations,
+    role: LangItem,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let method = match role {
+        LangItem::PartialEq => Method::Eq,
+        LangItem::PartialOrd => Method::PartialCmp,
+        _ => return Err("unsupported comparison trait role"),
+    };
+    *steps = steps.saturating_add(method.owner().methods().len() * 16);
+    checked(report, facts, method)
+        .map(|_| ())
+        .map_err(|failure| match failure {
+            Failure::Header(_) => "comparison role requires completed current headers",
+            Failure::Contract(message) => message,
+        })
+}
+
 fn current(
     report: &Report,
     facts: &Declarations,
     definition: DefId,
-    origin: NodeKey,
+    origin: DeclarationOrigin,
 ) -> Result<(), Failure> {
     let header = facts.header_attribute_contracts(report, definition)?;
-    if header
-        .origin
-        .source()
-        .is_none_or(|s| s.declaration != origin)
+    let matches_origin = match origin {
+        DeclarationOrigin::Source(origin) => header
+            .origin
+            .source()
+            .is_some_and(|site| site.declaration == origin),
+        DeclarationOrigin::Imported(origin) => header
+            .origin
+            .imported()
+            .is_some_and(|site| site.declaration() == origin),
+    };
+    if !matches_origin
         || matches!(header.must_use, ContractKnowledge::Unknown)
         || matches!(header.inline, ContractKnowledge::Unknown)
     {
@@ -153,10 +180,10 @@ fn checked(
     catalog.require_provider_report(report)?;
     let kind = selected.owner();
     let declaration = catalog
-        .language(role(kind).ok_or("unsupported source comparison owner")?)
+        .role(role(kind).ok_or("unsupported source comparison owner")?)?
         .ok_or("source comparison requires its actual language declaration")?;
     current(report, facts, declaration.definition, declaration.origin)?;
-    let header = headers::Trait::source(report, facts, declaration)?;
+    let header = headers::Trait::current(report, facts, declaration, &mut 0)?;
     header.profile(
         &facts.types,
         headers::Flags {
@@ -238,19 +265,16 @@ fn members(
             return Err("source comparison member belongs to another current owner".into());
         }
         seen |= 1 << index;
-        let origin = definition
-            .node
-            .ok_or("source comparison member has no current source")?;
-        current(report, facts, member, origin)?;
         let function = facts
             .declaration_header(member)?
             .ok_or("source comparison member header is pending")?;
+        current(report, facts, member, function.declaration)?;
         let lifetimes = facts
             .lifetimes
             .functions
             .get(&member)
             .ok_or("source comparison method has no actual lifetime scheme")?;
-        if function.declaration.source() != Some(origin)
+        if function.declaration.source() != definition.node
             || function.universals != 2
             || lifetimes.total != 2
             || lifetimes.captures != 0
@@ -295,10 +319,10 @@ fn premises(
     kind: Comparison,
 ) -> Result<(), &'static str> {
     let pointee = catalog
-        .language(LangItem::PointeeSized)
+        .role(LangItem::PointeeSized)?
         .ok_or("source comparison lacks actual PointeeSized")?
         .definition;
-    let equality = catalog.language(LangItem::PartialEq).map(|d| d.definition);
+    let equality = catalog.role(LangItem::PartialEq)?.map(|d| d.definition);
     let mut found = [false; 3];
     // The canonical producer precedes supertrait elaboration. Its actual inputs
     // describe this declaration, rather than consequences copied from PartialEq.
@@ -394,10 +418,10 @@ fn partial_result(facts: &Declarations, signature: TypeId) -> Result<(), &'stati
         .as_deref()
         .ok_or("comparison catalog disappeared")?;
     let option = catalog
-        .language(LangItem::Option)
+        .role(LangItem::Option)?
         .ok_or("partial_cmp requires actual Option")?;
     let ordering = catalog
-        .language(LangItem::Ordering)
+        .role(LangItem::Ordering)?
         .ok_or("partial_cmp requires actual Ordering")?;
     let Some(Kind::Function { result, .. }) = facts.types.kind(signature) else {
         return Err("partial_cmp signature is invalid");
