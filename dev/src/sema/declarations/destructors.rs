@@ -85,9 +85,14 @@ impl Checker<'_> {
             if owner != Some(item) {
                 return Err(self.error(key, "Drop target disagrees with its declared nominal head"));
             }
-            let coverage = self
-                .drop_target_coverage(header.self_definition, item, arguments, captures)
-                .map_err(|e| self.error(key, e))?;
+            let coverage = coverage::target(
+                &mut self.facts,
+                header.self_definition,
+                item,
+                arguments,
+                captures,
+            )
+            .map_err(|e| self.error(key, e))?;
             if header.may_dangle {
                 self.record_drop_eyepatch(&header, item, &coverage, environment.as_ref())?;
             }

@@ -100,7 +100,7 @@ def private_wrapper(check, source, client, observer, contract, rustc, run_candid
 
 
 def provider_owned(check, source, contract, rustc, run_candidate):
-    owned = Check(check.app, check.folder / "provider-owned")
+    owned = Check(check.app, check.folder / contract["name"])
     provider = owned.folder / "provider.rs"
     provider.write_bytes(source.read_bytes() + b"\n" + (FIXTURE / contract["provider"]).read_bytes())
     consumer = FIXTURE / contract["client"]
@@ -138,7 +138,8 @@ def main():
         opponents(check, exporter, importer, source, client, explicit, artifact, contract,
                   args.baseline)
     private_wrapper(check, source, client, observer, contract, args.rustc, args.app is not None)
-    provider_owned(check, source, contract["owned"], args.rustc, args.app is not None)
+    for owned in contract["owned"]:
+        provider_owned(check, source, owned, args.rustc, args.app is not None)
 
 
 if __name__ == "__main__":

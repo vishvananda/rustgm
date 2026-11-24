@@ -84,8 +84,9 @@ client with pinned rustc and check malformed metadata and older readers.
 helper, a local destructor, and an ordinary provider function. Run
 `scripts/check_drop_glue_transport.py` to compare direct and private-wrapper
 calls with pinned rustc and check explicit destructor calls and invalid role
-bindings. The provider-owned variant observes a destructor defined in the
-provider from an independently compiled client.
+bindings. Other cases observe provider-owned destructors for a closed type
+and a generic record with its implementation type parameters declared in
+reverse order.
 
 The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`,
 `spec/bootstrap-doc-options/`, and `spec/source-diagnostic-lints/` cases declare diagnostics needed before the

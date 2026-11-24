@@ -111,9 +111,14 @@ impl Checker<'_> {
                 "AsyncDrop requires a synchronous Drop implementation",
             ));
         }
-        let coverage = self
-            .drop_target_coverage(owner.self_definition, item, arguments, captures)
-            .map_err(|e| self.error(owner.source, e))?;
+        let coverage = super::coverage::target(
+            &mut self.facts,
+            owner.self_definition,
+            item,
+            arguments,
+            captures,
+        )
+        .map_err(|e| self.error(owner.source, e))?;
         self.facts
             .destructors
             .insert_async(AsyncImplementation {

@@ -21,98 +21,99 @@ pub(super) struct NominalContract {
     pub parameters: u32,
 }
 
-impl Checker<'_> {
-    pub(super) fn drop_target_coverage(
-        &mut self,
-        owner: DefId,
-        item: ItemId,
-        arguments: GenericArgs,
-        lifetimes: u32,
-    ) -> Result<Coverage, &'static str> {
-        let Some(Kind::Adt(_, nominal)) =
-            self.facts.definitions[item.0 as usize].and_then(|ty| self.facts.types.kind(ty))
-        else {
-            return Err("missing nominal Drop schema");
-        };
-        let declared = self
-            .facts
-            .generics
-            .parameters
-            .get(&owner)
-            .map_or(&[][..], Vec::as_slice);
-        let mut inverse = vec![None; declared.len()];
-        let mut regions = vec![None; lifetimes as usize];
-        let types = &self.facts.types;
-        let actual = types
-            .arguments(arguments)
-            .ok_or("missing Drop target arguments")?;
-        let nominal = types
-            .arguments(nominal)
-            .ok_or("missing nominal Drop arguments")?;
-        if actual.len() != nominal.len() {
-            return Err("Drop target argument arity mismatch");
-        }
-        let mut seen = HashSet::default();
-        let mut nominal_lifetimes = 0;
-        for (actual, nominal) in actual.zip(nominal) {
-            if let (Argument::Lifetime(actual), Argument::Lifetime(nominal)) = (actual, nominal) {
-                let Some((0, index)) = actual.bound_parts() else {
-                    return Err(
-                        "Drop target requires distinct lifetime parameters without specialization",
-                    );
-                };
-                let slot = regions.get_mut(usize::from(index)).ok_or(
-                    "Drop target requires distinct lifetime parameters without specialization",
-                )?;
-                if slot.replace(nominal).is_some() {
-                    return Err(
-                        "Drop target requires distinct lifetime parameters without specialization",
-                    );
-                }
-                nominal_lifetimes += 1;
-            } else {
-                let index = parameter_index(types, owner, actual)?;
-                if !seen.insert(index) {
-                    return Err(
-                        "Drop target requires distinct type and const parameters without specialization",
-                    );
-                }
-                *inverse
-                    .get_mut(index)
-                    .ok_or("invalid Drop parameter slot")? = Some(nominal);
-            }
-        }
-        let mut next = nominal_lifetimes;
-        let regions = regions
-            .into_iter()
-            .map(|region| {
-                if let Some(region) = region {
-                    return Ok(region);
-                }
-                let slot = u16::try_from(next).map_err(|_| "too many Drop lifetime parameters")?;
-                next += 1;
-                RegionId::bound(0, slot)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-        for (parameter, slot) in declared.iter().zip(&mut inverse) {
-            if let Argument::Lifetime(region) = parameter.argument {
-                let Some((0, index)) = region.bound_parts() else {
-                    return Err("invalid Drop lifetime parameter");
-                };
-                *slot = Some(Argument::Lifetime(
-                    *regions
-                        .get(usize::from(index))
-                        .ok_or("missing Drop lifetime slot")?,
-                ));
-            }
-        }
-        let inverse = inverse
-            .into_iter()
-            .collect::<Option<Vec<_>>>()
-            .ok_or("Drop impl has unconstrained type or const parameters")?;
-        let arguments = self.facts.types.intern_arguments(&inverse)?;
-        Ok(Coverage { arguments, regions })
+pub(super) fn target(
+    facts: &mut crate::sema::model::Declarations,
+    owner: DefId,
+    item: ItemId,
+    arguments: GenericArgs,
+    lifetimes: u32,
+) -> Result<Coverage, &'static str> {
+    let Some(Kind::Adt(_, nominal)) = facts
+        .definitions
+        .get(item.0 as usize)
+        .copied()
+        .flatten()
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Err("missing nominal Drop schema");
+    };
+    let declared = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .map_or(&[][..], Vec::as_slice);
+    let mut inverse = vec![None; declared.len()];
+    let mut regions = vec![None; lifetimes as usize];
+    let types = &facts.types;
+    let actual = types
+        .arguments(arguments)
+        .ok_or("missing Drop target arguments")?;
+    let nominal = types
+        .arguments(nominal)
+        .ok_or("missing nominal Drop arguments")?;
+    if actual.len() != nominal.len() {
+        return Err("Drop target argument arity mismatch");
     }
+    let mut seen = HashSet::default();
+    let mut nominal_lifetimes = 0;
+    for (actual, nominal) in actual.zip(nominal) {
+        if let (Argument::Lifetime(actual), Argument::Lifetime(nominal)) = (actual, nominal) {
+            let Some((0, index)) = actual.bound_parts() else {
+                return Err(
+                    "Drop target requires distinct lifetime parameters without specialization",
+                );
+            };
+            let slot = regions.get_mut(usize::from(index)).ok_or(
+                "Drop target requires distinct lifetime parameters without specialization",
+            )?;
+            if slot.replace(nominal).is_some() {
+                return Err(
+                    "Drop target requires distinct lifetime parameters without specialization",
+                );
+            }
+            nominal_lifetimes += 1;
+        } else {
+            let index = parameter_index(types, owner, actual)?;
+            if !seen.insert(index) {
+                return Err(
+                    "Drop target requires distinct type and const parameters without specialization",
+                );
+            }
+            *inverse
+                .get_mut(index)
+                .ok_or("invalid Drop parameter slot")? = Some(nominal);
+        }
+    }
+    let mut next = nominal_lifetimes;
+    let regions = regions
+        .into_iter()
+        .map(|region| {
+            if let Some(region) = region {
+                return Ok(region);
+            }
+            let slot = u16::try_from(next).map_err(|_| "too many Drop lifetime parameters")?;
+            next += 1;
+            RegionId::bound(0, slot)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    for (parameter, slot) in declared.iter().zip(&mut inverse) {
+        if let Argument::Lifetime(region) = parameter.argument {
+            let Some((0, index)) = region.bound_parts() else {
+                return Err("invalid Drop lifetime parameter");
+            };
+            *slot = Some(Argument::Lifetime(
+                *regions
+                    .get(usize::from(index))
+                    .ok_or("missing Drop lifetime slot")?,
+            ));
+        }
+    }
+    let inverse = inverse
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or("Drop impl has unconstrained type or const parameters")?;
+    let arguments = facts.types.intern_arguments(&inverse)?;
+    Ok(Coverage { arguments, regions })
 }
 
 fn parameter_index(types: &Store, owner: DefId, argument: Argument) -> Result<usize, &'static str> {
