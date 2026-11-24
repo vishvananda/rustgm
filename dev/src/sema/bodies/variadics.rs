@@ -10,11 +10,10 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        let definition = crate::sema::compiler_items::vararg::declaration(self.facts)
-            .map_err(|message| {
+        let definition =
+            crate::sema::compiler_items::vararg::declaration(self.facts).map_err(|message| {
                 crate::sema::model::Declarations::error(self.report, function.node, message)
-            })?
-            .definition;
+            })?;
         let item = crate::types::ItemId(definition.0);
         let requirement = if self
             .facts

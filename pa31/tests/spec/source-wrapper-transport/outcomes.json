@@ -1,0 +1,9 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "client_kind": "bin",
+  "cases": [
+    {"cfg": "accepted", "status": 0, "lowir": ["obj<24x8>", "va_start"]},
+    {"cfg": "nonfundamental", "status": 1, "rustc": "E0117", "rustgm": "library trait implementation requires a local type"}
+  ]
+}

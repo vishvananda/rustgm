@@ -35,7 +35,11 @@ type Last<'a> = &'a u16;
 #[repr(C)]
 pub enum Unpublished { A, B }
 
+#[repr(u8)]
 #[lang = "c_void"]
 pub enum Void {
     Hidden,
 }
+
+#[lang = "RangeFull"]
+pub struct Full;

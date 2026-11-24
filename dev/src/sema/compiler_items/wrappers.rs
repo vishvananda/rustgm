@@ -9,16 +9,6 @@ use crate::{
         aggregate::{self, FieldDestruction, SharedMutation},
     },
 };
-const ROLES: [LangItem; 8] = [
-    LangItem::ManuallyDrop,
-    LangItem::MaybeDangling,
-    LangItem::MaybeUninit,
-    LangItem::Pin,
-    LangItem::UnsafeCell,
-    LangItem::UnsafePinned,
-    LangItem::VaList,
-    LangItem::CVoid,
-];
 fn nominal_kind(role: LangItem) -> aggregate::Kind {
     match role {
         LangItem::MaybeUninit => aggregate::Kind::Union,
@@ -96,7 +86,7 @@ pub(in crate::sema) fn register(
     facts: &mut Declarations,
     item: ItemId,
 ) -> Result<(), Error> {
-    for role in ROLES {
+    for role in LangItem::NOMINAL_WRAPPERS {
         let Some(declaration) = claim(report, facts, item, role)? else {
             continue;
         };
@@ -140,7 +130,7 @@ pub(in crate::sema) fn register(
 }
 /// Role completion is distinct from constructors, fields and executable bodies.
 pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for role in ROLES {
+    for role in LangItem::NOMINAL_WRAPPERS {
         let Some(declaration) = facts
             .source_bindings
             .as_deref()
@@ -223,6 +213,7 @@ pub(super) fn imported(
         LangItem::MaybeUninit => {
             facts.aggregates.destruction(item) == Some(FieldDestruction::Suppressed)
         }
+        LangItem::Pin | LangItem::VaList | LangItem::CVoid => true,
         _ => false,
     };
     if !valid {

@@ -2,7 +2,7 @@
 mod binding;
 mod calls;
 use crate::{
-    resolve::bindings::Declaration,
+    resolve::model::DefId,
     sema::model::Declarations,
     support::bindings::LangItem,
     types::{ItemId, Kind, RegionId, TypeId, arguments::Argument},
@@ -11,19 +11,35 @@ pub(crate) use binding::{BindingRequest, require as require_binding};
 pub(crate) use calls::Read;
 
 pub(crate) fn charge(facts: &Declarations, steps: usize) -> Result<(), &'static str> {
-    crate::sema::header_attributes::charge_source_contract_query(facts, steps)
-        .map_err(|_| "variadic preflight exceeds its existing source budget")
+    let imported = facts.source_bindings.as_deref().is_some_and(|catalog| {
+        matches!(
+            catalog.bindings,
+            super::binding_views::Bindings::Imported(_)
+        )
+    });
+    let result = if imported {
+        crate::sema::crates::charge_source_header_query(facts, steps)
+    } else {
+        crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+    };
+    result.map_err(|_| "variadic preflight exceeds its existing source budget")
 }
 
-pub(crate) fn declaration(facts: &Declarations) -> Result<Declaration, &'static str> {
-    crate::sema::header_attributes::charge_source_contract_query(facts, 2)
-        .map_err(|_| "vararg source declaration query exceeded its budget")?;
-    facts
+pub(in crate::sema) fn declaration(facts: &Declarations) -> Result<DefId, &'static str> {
+    charge(facts, 2)?;
+    let catalog = facts
         .source_bindings
         .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::VaList))
-        .ok_or("variadic definition requires the actual source VaList declaration")
+        .ok_or("variadic definition requires its source bindings")?;
+    if let Some(declaration) = catalog.language(LangItem::VaList) {
+        return Ok(declaration.definition);
+    }
+    Ok(catalog
+        .validated_role(LangItem::VaList)?
+        .ok_or("variadic definition requires the actual source VaList declaration")?
+        .definition)
 }
+
 pub(crate) fn binding_type(
     facts: &mut Declarations,
     region: RegionId,
@@ -31,7 +47,7 @@ pub(crate) fn binding_type(
     let declaration = declaration(facts)?;
     let template = facts
         .definitions
-        .get(declaration.definition.0 as usize)
+        .get(declaration.0 as usize)
         .copied()
         .flatten()
         .ok_or("source VaList type is not complete")?;
@@ -60,12 +76,7 @@ pub(crate) fn application(
     let (Some(Argument::Lifetime(region)), None) = (arguments.next(), arguments.next()) else {
         return Err("demanded VaList requires its actual sole lifetime argument");
     };
-    if owner.0 != declaration.definition.0
-        || !facts
-            .generics
-            .nominal_contracts
-            .contains(&declaration.definition)
-    {
+    if owner.0 != declaration.0 || !facts.generics.nominal_contracts.contains(&declaration) {
         return Err("variadic list lost its completed actual nominal header");
     }
     Ok((owner, region))
@@ -77,17 +88,16 @@ pub(crate) fn target(
     layouts: &mut crate::abi::layout::Layouts,
     ty: TypeId,
 ) -> Result<(u64, u32), &'static str> {
-    crate::sema::header_attributes::charge_source_contract_query(facts, 32)
-        .map_err(|_| "variadic target query exceeded its existing source budget")?;
+    charge(facts, 32)?;
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("variadic target source catalog is missing")?;
     catalog
-        .validated_language(LangItem::VaList)?
+        .validated_role(LangItem::VaList)?
         .ok_or("variadic source nominal is not complete")?;
     let void = catalog
-        .validated_language(LangItem::CVoid)?
+        .validated_role(LangItem::CVoid)?
         .ok_or("variadic target needs its actual c_void enum")?;
     let (owner, _) = application(facts, ty)?;
     let template = facts
@@ -214,15 +224,22 @@ fn marker_chain(facts: &Declarations, ty: TypeId, region: RegionId) -> Result<()
     let &[phantom] = fields(facts, covariant)? else {
         return Err("variadic carrier lost its actual phantom field");
     };
-    let declaration = facts
+    let catalog = facts
         .source_bindings
         .as_deref()
-        .and_then(|c| c.language(LangItem::PhantomData))
-        .ok_or("variadic marker needs its real PhantomData declaration")?;
+        .ok_or("variadic marker needs its source bindings")?;
+    let declaration = if let Some(declaration) = catalog.language(LangItem::PhantomData) {
+        declaration.definition
+    } else {
+        catalog
+            .validated_role(LangItem::PhantomData)?
+            .ok_or("variadic marker needs its real PhantomData declaration")?
+            .definition
+    };
     let Some(Kind::Adt(owner, arguments)) = facts.types.kind(phantom) else {
         return Err("variadic phantom field has no nominal identity");
     };
-    if owner.0 != declaration.definition.0 {
+    if owner.0 != declaration.0 {
         return Err("variadic marker names another PhantomData declaration");
     }
     let mut arguments = facts

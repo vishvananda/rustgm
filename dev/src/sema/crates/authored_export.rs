@@ -471,6 +471,9 @@ impl Stage {
         body_transport: BodyTransport,
     ) -> Result<Self, &'static str> {
         let mut stage = Self::header_draft(report, facts, identity, mode, body_transport)?;
+        if stage.declaration_policies() {
+            stage.prepare_callable_arena(facts)?;
+        }
         let leaves = stage.declarations(report, facts, mode)?;
         stage.scopes(report, facts)?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;

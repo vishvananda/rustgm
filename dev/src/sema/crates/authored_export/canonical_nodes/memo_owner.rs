@@ -54,9 +54,18 @@ impl Stage {
             .types
             .contains_anonymous_callables(ty)
             .ok_or("source type root has no actual callable summary")?;
-        if !anonymous {
-            return Ok(());
+        if anonymous {
+            self.prepare_callable_arena(facts)?;
         }
+        Ok(())
+    }
+
+    /// Authored header recipes may contain nested callable types independently
+    /// of any exported function. Prepare their shared canonical arena once.
+    pub(in super::super) fn prepare_callable_arena(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<(), &'static str> {
         self.charge(1)?;
         if facts.types.existing_arena_identity().is_none() {
             self.reserve(Identity::allocation_bytes())?;

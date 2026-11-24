@@ -342,8 +342,8 @@ fn copying_role(
 fn nominal_role(role: LangItem) -> bool {
     matches!(
         role,
-        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId | LangItem::MaybeUninit
-    ) || role.is_storage_wrapper()
+        LangItem::PhantomData | LangItem::TypeInfo | LangItem::TypeId
+    ) || LangItem::NOMINAL_WRAPPERS.contains(&role)
 }
 
 fn check_nominal_role(

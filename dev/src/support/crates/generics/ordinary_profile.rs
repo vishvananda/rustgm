@@ -986,11 +986,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::ConstParamTy
             | LangItem::StructuralPartialEq
     ) || interval_roles::ROLES.contains(&role)
-        || role.is_storage_wrapper()
-        || matches!(
-            role,
-            LangItem::MaybeUninit | LangItem::BikeshedGuaranteedNoDrop
-        )
+        || LangItem::NOMINAL_WRAPPERS.contains(&role)
+        || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
         || role.is_runtime_import()
     {
@@ -1292,18 +1289,12 @@ fn role_header(
         }
         (role, Some(super::super::HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
-        (LangItem::MaybeUninit, Some(super::super::HeaderRef::Nominal(index)))
-            if profile == BindingProfile::BodyOperations
-                && rows.nominals.get(index as usize).is_some_and(|nominal| {
-                    nominal.layout.form == super::super::NominalForm::Union
-                }) => {}
-        (role, header) if role.is_storage_wrapper() => {
-            if profile != BindingProfile::BodyOperations
-                || kind != super::super::DefinitionKind::Struct
-                || !matches!(header, Some(super::super::HeaderRef::Nominal(_)))
-            {
-                return Err("source storage wrapper role requires its actual struct header");
-            }
+        (role, Some(super::super::HeaderRef::Nominal(index)))
+            if LangItem::NOMINAL_WRAPPERS.contains(&role)
+                && profile == BindingProfile::BodyOperations
+                && wrapper_header(rows, kind, role, index) => {}
+        (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {
+            return Err("source wrapper role requires its actual nominal header");
         }
         (LangItem::PointeeTrait, Some(super::super::HeaderRef::Trait(_)))
         | (LangItem::MetadataType, Some(super::super::HeaderRef::AssociatedType(_)))
@@ -1372,6 +1363,23 @@ fn role_header(
         }
     }
     Ok(())
+}
+fn wrapper_header(
+    rows: &SourceRows,
+    kind: super::super::DefinitionKind,
+    role: LangItem,
+    index: u32,
+) -> bool {
+    use super::super::{DefinitionKind, NominalForm};
+    let expected = if role == LangItem::CVoid {
+        DefinitionKind::Enum
+    } else {
+        DefinitionKind::Struct
+    };
+    kind == expected
+        && rows.nominals.get(index as usize).is_some_and(|nominal| {
+            (nominal.layout.form == NominalForm::Union) == (role == LangItem::MaybeUninit)
+        })
 }
 /// `clone_fn` and `fn_once_output` are owned by their exact bound parents.
 fn owned_role_members(

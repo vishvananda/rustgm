@@ -101,13 +101,17 @@ impl LangItem {
         )
     }
 
-    /// These version-fourteen role bindings determine nominal storage policies.
-    pub(crate) const fn is_storage_wrapper(self) -> bool {
-        matches!(
-            self,
-            Self::UnsafeCell | Self::UnsafePinned | Self::ManuallyDrop | Self::MaybeDangling
-        )
-    }
+    /// Nominal wrapper declarations with their owner and storage policy.
+    pub(crate) const NOMINAL_WRAPPERS: [Self; 8] = [
+        Self::ManuallyDrop,
+        Self::MaybeDangling,
+        Self::MaybeUninit,
+        Self::Pin,
+        Self::UnsafeCell,
+        Self::UnsafePinned,
+        Self::VaList,
+        Self::CVoid,
+    ];
 }
 
 language_items! {
