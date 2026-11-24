@@ -47,6 +47,7 @@ mod deprecation;
 mod derive_lists;
 mod diagnostics;
 mod eager;
+mod legacy_patterns;
 pub(crate) mod metavalues;
 pub(crate) mod removed_functions;
 use application_kind::CallGrammar;

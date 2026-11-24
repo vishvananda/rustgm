@@ -26,7 +26,10 @@ pub(super) struct Lookahead {
 const VALIDATION: &str = "validate_trait_implementations";
 
 /// Each pass in its fixed order, named for census records.
-const PASSES: [(&str, Pass); 29] = [
+const PASSES: [(&str, Pass); 31] = [
+    ("lint_legacy_or_patterns", |checker, _, _| {
+        super::or_pattern_migration::check(checker.report, &mut checker.facts)
+    }),
     ("complete_deferred_declarations", |checker, steps, limit| {
         checker.complete_deferred_declarations(steps, limit)
     }),
@@ -97,6 +100,9 @@ const PASSES: [(&str, Pass); 29] = [
     }),
     ("validate_objects", |checker, _, _| {
         checker.validate_objects()
+    }),
+    ("lint_multiple_supertraits", |checker, _, _| {
+        crate::sema::dyn_compat::supertrait_lints::check(checker.report, &mut checker.facts)
     }),
     ("complete_discriminants", |checker, steps, limit| {
         checker.complete_discriminants(steps, limit)

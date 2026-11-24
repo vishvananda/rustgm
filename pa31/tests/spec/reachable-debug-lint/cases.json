@@ -1,0 +1,8 @@
+{
+  "source_core": true,
+  "cases": [
+    {"path": "debug.rs", "status": 0, "lint": null},
+    {"path": "debug.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "missing_debug_implementations", "diagnostic": "reachable type does not implement Debug"}
+  ]
+}

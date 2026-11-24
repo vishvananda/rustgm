@@ -1,0 +1,9 @@
+{
+  "edition": "2018",
+  "cases": [
+    {"path": "patterns.rs", "status": 0, "lint": null},
+    {"path": "patterns.rs", "cfg": "lint_expected", "status": 0, "lint": null},
+    {"path": "patterns.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "rust_2021_incompatible_or_patterns", "diagnostic": "use pat_param for a single alternative"}
+  ]
+}

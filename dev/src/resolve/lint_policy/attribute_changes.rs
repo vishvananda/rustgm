@@ -569,6 +569,15 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {
         Some("deprecated") => &[Lint::Deprecated],
         Some("deprecated_in_future") => &[Lint::DeprecatedInFuture],
+        Some("missing_debug_implementations") => &[Lint::MissingDebugImplementations],
+        Some("multiple_supertrait_upcastable") => &[Lint::MultipleSupertraitUpcastable],
+        Some("missing_docs") => &[Lint::MissingDocs],
+        Some("rust_2021_incompatible_or_patterns") => &[Lint::Rust2021IncompatibleOrPatterns],
+        // All locally defined functions abort on a foreign unwind under the
+        // fixed target policy. No call site can leak one from such a body.
+        Some("ffi_unwind_calls") if crate::expand::config::target_aborts_panics() => {
+            &[Lint::FfiUnwindCalls]
+        }
         Some("hidden_glob_reexports") => &[Lint::HiddenGlobReexports],
         Some("ineffective_unstable_trait_impl") => &[Lint::IneffectiveUnstableTraitImpl],
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],

@@ -4,6 +4,7 @@ mod receivers;
 #[cfg(test)]
 #[path = "../../tests/invariants/dyn_receivers.rs"]
 mod source_tests;
+pub(super) mod supertrait_lints;
 use super::model::Declarations;
 use crate::support::hash::HashMap;
 use crate::{

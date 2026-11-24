@@ -398,6 +398,9 @@ impl Members {
     pub fn has_contextual_fields(&self) -> bool {
         self.scoped_names.is_some()
     }
+    pub(in crate::sema) fn variant_origin(&self, variant: VariantId) -> Option<Origin> {
+        self.variants.get(variant.0 as usize).map(|row| row.origin)
+    }
     #[must_use]
     pub fn fields(&self, variant: VariantId) -> Option<&[Field]> {
         let variant = self.variants.get(variant.0 as usize)?;

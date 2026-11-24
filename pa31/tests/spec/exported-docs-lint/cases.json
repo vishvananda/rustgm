@@ -1,0 +1,7 @@
+{
+  "cases": [
+    {"path": "docs.rs", "status": 0, "lint": null},
+    {"path": "docs.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "missing_docs", "diagnostic": "exported declaration is missing documentation"}
+  ]
+}

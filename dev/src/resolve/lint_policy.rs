@@ -49,7 +49,12 @@ pub(crate) struct Policy {
     pub(crate) unreachable_pub: Level,
     pub(crate) ptr_to_integer_transmute_in_consts: Level,
     pub(crate) deprecated_in_future: Level,
-    expectations: [Option<ExpectationId>; 24],
+    pub(crate) missing_debug_implementations: Level,
+    pub(crate) ffi_unwind_calls: Level,
+    pub(crate) multiple_supertrait_upcastable: Level,
+    pub(crate) missing_docs: Level,
+    pub(crate) rust_2021_incompatible_or_patterns: Level,
+    expectations: [Option<ExpectationId>; 29],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -76,6 +81,11 @@ impl Policy {
             diagnostic_attributes: [Level::Allow; 3],
             deprecated: Level::Allow,
             deprecated_in_future: Level::Allow,
+            missing_debug_implementations: Level::Allow,
+            ffi_unwind_calls: Level::Allow,
+            multiple_supertrait_upcastable: Level::Allow,
+            missing_docs: Level::Allow,
+            rust_2021_incompatible_or_patterns: Level::Allow,
             unfulfilled: Level::Allow,
             hidden_glob_reexports: Level::Allow,
             ineffective_unstable_trait_impl: Level::Allow,
@@ -110,7 +120,12 @@ impl Policy {
         unreachable_pub: Level::Allow,
         ptr_to_integer_transmute_in_consts: Level::Warn,
         deprecated_in_future: Level::Allow,
-        expectations: [None; 24],
+        missing_debug_implementations: Level::Allow,
+        ffi_unwind_calls: Level::Allow,
+        multiple_supertrait_upcastable: Level::Allow,
+        missing_docs: Level::Allow,
+        rust_2021_incompatible_or_patterns: Level::Allow,
+        expectations: [None; 29],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -134,6 +149,11 @@ pub(crate) enum Lint {
     DiagnosticAttributes(u8),
     Deprecated,
     DeprecatedInFuture,
+    MissingDebugImplementations,
+    FfiUnwindCalls,
+    MultipleSupertraitUpcastable,
+    MissingDocs,
+    Rust2021IncompatibleOrPatterns,
     UnfulfilledExpectations,
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
@@ -195,6 +215,11 @@ impl Policy {
             Lint::ImplicitProvenanceCasts => &mut self.implicit_provenance_casts,
             Lint::UnreachablePub => &mut self.unreachable_pub,
             Lint::PtrToIntegerTransmuteInConsts => &mut self.ptr_to_integer_transmute_in_consts,
+            Lint::MissingDebugImplementations => &mut self.missing_debug_implementations,
+            Lint::FfiUnwindCalls => &mut self.ffi_unwind_calls,
+            Lint::MultipleSupertraitUpcastable => &mut self.multiple_supertrait_upcastable,
+            Lint::MissingDocs => &mut self.missing_docs,
+            Lint::Rust2021IncompatibleOrPatterns => &mut self.rust_2021_incompatible_or_patterns,
             Lint::UnusedVisibilities => &mut self.unused_visibilities,
             Lint::DuplicateMacroAttributes => &mut self.duplicate_macro_attributes,
             Lint::AmbiguousDeriveHelpers => &mut self.ambiguous_derive_helpers,
@@ -209,58 +234,7 @@ impl Policy {
                 return Err(Violation {
                     key,
                     offset: change.offset,
-                    message: match change.lint {
-                        Lint::Deprecated => "forbidden deprecated lint cannot be weakened",
-                        Lint::DeprecatedInFuture => {
-                            "forbidden deprecated_in_future lint cannot be weakened"
-                        }
-                        Lint::HiddenGlobReexports => {
-                            "forbidden hidden_glob_reexports lint cannot be weakened"
-                        }
-                        Lint::IneffectiveUnstableTraitImpl => {
-                            "forbidden ineffective_unstable_trait_impl lint cannot be weakened"
-                        }
-                        Lint::UnfulfilledExpectations => {
-                            "forbidden unfulfilled_lint_expectations lint cannot be weakened"
-                        }
-                        Lint::DangerousImplicitAutorefs => {
-                            "forbidden dangerous_implicit_autorefs lint cannot be weakened"
-                        }
-                        Lint::AtomicOrdering => "forbidden atomic ordering lint cannot be weakened",
-                        Lint::UnreachablePatterns => {
-                            "forbidden unreachable pattern lint cannot be weakened"
-                        }
-                        Lint::MustUse => "forbidden unused_must_use lint cannot be weakened",
-                        Lint::UnusedAttributes => {
-                            "forbidden unused_attributes lint cannot be weakened"
-                        }
-                        Lint::InvalidDocAttributes => {
-                            "forbidden invalid_doc_attributes lint cannot be weakened"
-                        }
-                        Lint::OverflowingLiterals => {
-                            "forbidden overflowing_literals lint cannot be weakened"
-                        }
-                        Lint::ImplicitProvenanceCasts => {
-                            "forbidden implicit_provenance_casts lint cannot be weakened"
-                        }
-                        Lint::UnreachablePub => "forbidden unreachable_pub lint cannot be weakened",
-                        Lint::PtrToIntegerTransmuteInConsts => {
-                            "forbidden ptr_to_integer_transmute_in_consts lint cannot be weakened"
-                        }
-                        Lint::UnusedVisibilities => {
-                            "forbidden unused_visibilities lint cannot be weakened"
-                        }
-                        Lint::DuplicateMacroAttributes => {
-                            "forbidden duplicate_macro_attributes lint cannot be weakened"
-                        }
-                        Lint::AmbiguousDeriveHelpers => {
-                            "forbidden ambiguous_derive_helpers lint cannot be weakened"
-                        }
-                        Lint::DiagnosticAttributes(_) => {
-                            "forbidden diagnostic attribute lint cannot be weakened"
-                        }
-                        _ => "forbidden unsafe lint cannot be weakened",
-                    },
+                    message: change.lint.forbidden_message(),
                 });
             }
             return Ok(());
@@ -274,6 +248,60 @@ impl Policy {
 }
 
 impl Lint {
+    fn forbidden_message(self) -> &'static str {
+        match self {
+            Self::Deprecated => "forbidden deprecated lint cannot be weakened",
+            Self::DeprecatedInFuture => "forbidden deprecated_in_future lint cannot be weakened",
+            Self::HiddenGlobReexports => "forbidden hidden_glob_reexports lint cannot be weakened",
+            Self::IneffectiveUnstableTraitImpl => {
+                "forbidden ineffective_unstable_trait_impl lint cannot be weakened"
+            }
+            Self::UnfulfilledExpectations => {
+                "forbidden unfulfilled_lint_expectations lint cannot be weakened"
+            }
+            Self::DangerousImplicitAutorefs => {
+                "forbidden dangerous_implicit_autorefs lint cannot be weakened"
+            }
+            Self::AtomicOrdering => "forbidden atomic ordering lint cannot be weakened",
+            Self::UnreachablePatterns => "forbidden unreachable pattern lint cannot be weakened",
+            Self::MustUse => "forbidden unused_must_use lint cannot be weakened",
+            Self::UnusedAttributes => "forbidden unused_attributes lint cannot be weakened",
+            Self::InvalidDocAttributes => {
+                "forbidden invalid_doc_attributes lint cannot be weakened"
+            }
+            Self::OverflowingLiterals => "forbidden overflowing_literals lint cannot be weakened",
+            Self::ImplicitProvenanceCasts => {
+                "forbidden implicit_provenance_casts lint cannot be weakened"
+            }
+            Self::UnreachablePub => "forbidden unreachable_pub lint cannot be weakened",
+            Self::PtrToIntegerTransmuteInConsts => {
+                "forbidden ptr_to_integer_transmute_in_consts lint cannot be weakened"
+            }
+            Self::MissingDebugImplementations => {
+                "forbidden missing_debug_implementations lint cannot be weakened"
+            }
+            Self::FfiUnwindCalls => "forbidden ffi_unwind_calls lint cannot be weakened",
+            Self::MultipleSupertraitUpcastable => {
+                "forbidden multiple_supertrait_upcastable lint cannot be weakened"
+            }
+            Self::MissingDocs => "forbidden missing_docs lint cannot be weakened",
+            Self::Rust2021IncompatibleOrPatterns => {
+                "forbidden rust_2021_incompatible_or_patterns lint cannot be weakened"
+            }
+            Self::UnusedVisibilities => "forbidden unused_visibilities lint cannot be weakened",
+            Self::DuplicateMacroAttributes => {
+                "forbidden duplicate_macro_attributes lint cannot be weakened"
+            }
+            Self::AmbiguousDeriveHelpers => {
+                "forbidden ambiguous_derive_helpers lint cannot be weakened"
+            }
+            Self::DiagnosticAttributes(_) => {
+                "forbidden diagnostic attribute lint cannot be weakened"
+            }
+            _ => "forbidden unsafe lint cannot be weakened",
+        }
+    }
+
     pub(crate) const fn index(self) -> usize {
         match self {
             Self::Operation => 0,
@@ -298,6 +326,11 @@ impl Lint {
             Self::UnreachablePub => 21,
             Self::PtrToIntegerTransmuteInConsts => 22,
             Self::DeprecatedInFuture => 23,
+            Self::MissingDebugImplementations => 24,
+            Self::FfiUnwindCalls => 25,
+            Self::MultipleSupertraitUpcastable => 26,
+            Self::MissingDocs => 27,
+            Self::Rust2021IncompatibleOrPatterns => 28,
         }
     }
 }
@@ -338,6 +371,10 @@ impl Lint {
             W::ImplicitProvenanceCasts => Self::ImplicitProvenanceCasts,
             W::UnreachablePub => Self::UnreachablePub,
             W::PtrToIntegerTransmuteInConsts => Self::PtrToIntegerTransmuteInConsts,
+            W::MissingDebugImplementations => Self::MissingDebugImplementations,
+            W::MultipleSupertraitUpcastable => Self::MultipleSupertraitUpcastable,
+            W::MissingDocs => Self::MissingDocs,
+            W::Rust2021IncompatibleOrPatterns => Self::Rust2021IncompatibleOrPatterns,
             W::UnstableSyntaxPreExpansion => return None,
         })
     }
@@ -350,4 +387,4 @@ impl Lint {
 }
 
 #[cfg(test)]
-const _: [(); 224] = [(); size_of::<Policy>()];
+const _: [(); 268] = [(); size_of::<Policy>()];

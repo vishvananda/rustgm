@@ -1,0 +1,9 @@
+{
+  "source_core": true,
+  "cases": [
+    {"path": "traits.rs", "status": 0, "lint": null},
+    {"path": "traits.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "multiple_supertrait_upcastable",
+     "diagnostic": "dyn-compatible trait has multiple direct supertraits"}
+  ]
+}

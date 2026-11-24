@@ -235,63 +235,35 @@ impl Declarations {
         code: WarningCode,
         message: (String, crate::resolve::model::ExpansionId),
     ) -> Result<(), Error> {
+        self.must_use_diagnostic_at(report, (key, key), offset, issue, code, message)
+    }
+    pub(in crate::sema) fn must_use_diagnostic_at(
+        &mut self,
+        report: &Report,
+        (scope, key): (NodeKey, NodeKey),
+        offset: u32,
+        issue: u32,
+        code: WarningCode,
+        message: (String, crate::resolve::model::ExpansionId),
+    ) -> Result<(), Error> {
         if report.package.lint_cap().suppresses_lints() {
             return Ok(());
         }
-        let level = match code {
-            WarningCode::Deprecated => self.safety_policies.deprecated(key),
-            WarningCode::DeprecatedInFuture => self.safety_policies.deprecated_in_future(key),
-            WarningCode::HiddenGlobReexports => self.safety_policies.hidden_glob_reexports(key),
-            WarningCode::IneffectiveUnstableTraitImpl => {
-                self.safety_policies.ineffective_unstable_trait_impl(key)
-            }
-            WarningCode::UnfulfilledLintExpectations => self.safety_policies.unfulfilled(key),
-            WarningCode::InvalidAtomicOrdering => self.safety_policies.atomic_ordering(key),
-            WarningCode::UnreachablePatterns => self.safety_policies.unreachable_patterns(key),
-            WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
-            WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
-            WarningCode::InvalidDocAttributes => self.safety_policies.invalid_doc_attributes(key),
-            WarningCode::OverflowingLiterals => self.safety_policies.overflowing_literals(key),
-            WarningCode::ImplicitProvenanceCasts => {
-                self.safety_policies.implicit_provenance_casts(key)
-            }
-            WarningCode::UnreachablePub => self.safety_policies.unreachable_pub(key),
-            WarningCode::PtrToIntegerTransmuteInConsts => {
-                self.safety_policies.ptr_to_integer_transmute_in_consts(key)
-            }
-            WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
-            WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
-            WarningCode::DuplicateMacroAttributes => {
-                self.safety_policies.duplicate_macro_attributes(key)
-            }
-            WarningCode::AmbiguousDeriveHelpers => {
-                self.safety_policies.ambiguous_derive_helpers(key)
-            }
-            WarningCode::MalformedDiagnosticAttributes => {
-                self.safety_policies.diagnostic_attributes(key, 0)
-            }
-            WarningCode::MalformedDiagnosticFormatLiterals => {
-                self.safety_policies.diagnostic_attributes(key, 1)
-            }
-            WarningCode::MisplacedDiagnosticAttributes => {
-                self.safety_policies.diagnostic_attributes(key, 2)
-            }
-            WarningCode::UnsafeOpInUnsafeFn => self.safety_policies.operation(key),
-            WarningCode::StaticMutRefs => self.safety_policies.reference(key),
-            WarningCode::DangerousImplicitAutorefs => self.safety_policies.dangerous_autorefs(key),
-            WarningCode::DeprecatedSafe2024 => self.safety_policies.deprecated_safe_2024(key),
-        };
+        let level = self.safety_policies.warning_level(scope, code);
         if level == Level::Expect {
             let lint = crate::resolve::lint_policy::Lint::warning(code).ok_or_else(|| {
                 Error::at(key.file, offset, "warning has no lint expectation consumer")
             })?;
-            let id = self.safety_policies.expectation(key, lint).ok_or_else(|| {
-                Error::at(
-                    key.file,
-                    offset,
-                    "effective lint expectation identity is missing",
-                )
-            })?;
+            let id = self
+                .safety_policies
+                .expectation(scope, lint)
+                .ok_or_else(|| {
+                    Error::at(
+                        key.file,
+                        offset,
+                        "effective lint expectation identity is missing",
+                    )
+                })?;
             report
                 .lint_producer()
                 .ok_or_else(|| Error::at(key.file, offset, "lint expectation producer is missing"))?
@@ -321,6 +293,47 @@ impl Declarations {
         self.must_use_contracts
             .get_or_insert_default()
             .record_warning(key, offset, issue, code, diagnostic)
+    }
+}
+impl super::safety::Policies {
+    fn warning_level(&self, scope: NodeKey, code: WarningCode) -> Level {
+        match code {
+            WarningCode::Deprecated => self.deprecated(scope),
+            WarningCode::DeprecatedInFuture => self.deprecated_in_future(scope),
+            WarningCode::HiddenGlobReexports => self.hidden_glob_reexports(scope),
+            WarningCode::IneffectiveUnstableTraitImpl => {
+                self.ineffective_unstable_trait_impl(scope)
+            }
+            WarningCode::UnfulfilledLintExpectations => self.unfulfilled(scope),
+            WarningCode::InvalidAtomicOrdering => self.atomic_ordering(scope),
+            WarningCode::UnreachablePatterns => self.unreachable_patterns(scope),
+            WarningCode::UnusedMustUse => self.must_use(scope),
+            WarningCode::UnusedAttributes => self.unused_attributes(scope),
+            WarningCode::InvalidDocAttributes => self.invalid_doc_attributes(scope),
+            WarningCode::OverflowingLiterals => self.overflowing_literals(scope),
+            WarningCode::ImplicitProvenanceCasts => self.implicit_provenance_casts(scope),
+            WarningCode::UnreachablePub => self.unreachable_pub(scope),
+            WarningCode::PtrToIntegerTransmuteInConsts => {
+                self.ptr_to_integer_transmute_in_consts(scope)
+            }
+            WarningCode::MissingDebugImplementations => self.missing_debug_implementations(scope),
+            WarningCode::MultipleSupertraitUpcastable => self.multiple_supertrait_upcastable(scope),
+            WarningCode::MissingDocs => self.missing_docs(scope),
+            WarningCode::Rust2021IncompatibleOrPatterns => {
+                self.rust_2021_incompatible_or_patterns(scope)
+            }
+            WarningCode::UnusedVisibilities => self.unused_visibilities(scope),
+            WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
+            WarningCode::DuplicateMacroAttributes => self.duplicate_macro_attributes(scope),
+            WarningCode::AmbiguousDeriveHelpers => self.ambiguous_derive_helpers(scope),
+            WarningCode::MalformedDiagnosticAttributes => self.diagnostic_attributes(scope, 0),
+            WarningCode::MalformedDiagnosticFormatLiterals => self.diagnostic_attributes(scope, 1),
+            WarningCode::MisplacedDiagnosticAttributes => self.diagnostic_attributes(scope, 2),
+            WarningCode::UnsafeOpInUnsafeFn => self.operation(scope),
+            WarningCode::StaticMutRefs => self.reference(scope),
+            WarningCode::DangerousImplicitAutorefs => self.dangerous_autorefs(scope),
+            WarningCode::DeprecatedSafe2024 => self.deprecated_safe_2024(scope),
+        }
     }
 }
 impl Contracts {

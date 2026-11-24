@@ -1,4 +1,6 @@
 //! Effective API reachability uses completed types, never paths or function bodies.
+mod debug_lint;
+mod doc_lint;
 use crate::{
     resolve::{
         expansion::Report,
@@ -56,6 +58,8 @@ struct Interfaces<'a> {
     pending: Vec<Task>,
     seen: HashSet<Task>,
     inherent: HashMap<DefId, Vec<DefId>>,
+    associated_types: Option<Box<debug_lint::AssociatedTypes>>,
+    exports: HashSet<DefId>,
 }
 const STEPS: usize = 1_000_000;
 const BYTES: usize = 64 * 1024 * 1024;
@@ -64,14 +68,26 @@ struct Reachability {
     budget: Budget,
     declarations: HashSet<Task>,
     exported_scopes: HashSet<ScopeId>,
+    exports: HashSet<DefId>,
 }
 
 pub(super) fn check_declarations(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    let lint = facts.safety_policies.checks_unreachable_pub();
-    if let Some(mut reached) = collect(report, facts, lint, STEPS, BYTES)?
+    let unreachable = facts.safety_policies.checks_unreachable_pub();
+    let debug = facts.safety_policies.checks_missing_debug();
+    let docs = facts.safety_policies.checks_missing_docs();
+    let lint = unreachable || debug || docs;
+    if let Some(mut reached) = collect(report, facts, lint, docs, STEPS, BYTES)?
         && lint
     {
-        reached.lint_unreachable_pub(report, facts)?;
+        if unreachable {
+            reached.lint_unreachable_pub(report, facts)?;
+        }
+        if debug {
+            reached.lint_missing_debug(report, facts)?;
+        }
+        if docs {
+            reached.lint_missing_docs(report, facts)?;
+        }
     }
     Ok(())
 }
@@ -87,7 +103,7 @@ fn check_with_limits(
     steps: usize,
     bytes: usize,
 ) -> Result<Cost, Error> {
-    Ok(collect(report, facts, false, steps, bytes)?
+    Ok(collect(report, facts, false, false, steps, bytes)?
         .map_or_else(Cost::default, |reached| reached.budget.cost))
 }
 
@@ -95,6 +111,7 @@ fn collect(
     report: &Report,
     facts: &Declarations,
     lint: bool,
+    docs: bool,
     steps: usize,
     bytes: usize,
 ) -> Result<Option<Reachability>, Error> {
@@ -119,10 +136,23 @@ fn collect(
         pending: Vec::new(),
         seen: HashSet::default(),
         inherent: HashMap::default(),
+        exports: HashSet::default(),
+        associated_types: if lint {
+            Some(Box::new(debug_lint::AssociatedTypes::collect(
+                facts,
+                &mut budget,
+            )?))
+        } else {
+            None
+        },
     };
     interfaces.index_inherent(&mut budget)?;
-    let mut visit =
-        |definition, budget: &mut Budget| interfaces.enqueue(Task::Declaration(definition), budget);
+    let mut visit = |definition, budget: &mut Budget| {
+        if docs {
+            interfaces.export(definition, budget)?;
+        }
+        interfaces.enqueue(Task::Declaration(definition), budget)
+    };
     let exported_scopes = if lint {
         let roots = report
             .package
@@ -144,6 +174,7 @@ fn collect(
         budget,
         declarations: interfaces.seen,
         exported_scopes,
+        exports: interfaces.exports,
     }))
 }
 
@@ -314,8 +345,35 @@ impl Interfaces<'_> {
         self.pending.push(task);
         Ok(())
     }
+    fn export(&mut self, id: DefId, budget: &mut Budget) -> Result<(), Error> {
+        if !self.exports.contains(&id) {
+            let growth =
+                retained::Growth::map::<DefId, ()>(self.exports.len(), self.exports.capacity(), 1);
+            budget.charge(1 + growth.work, growth.bytes)?;
+            self.exports
+                .try_reserve(1)
+                .map_err(|_| Error::unlocated("documented API index allocation failed"))?;
+            self.exports.insert(id);
+        }
+        Ok(())
+    }
     fn declaration(&mut self, id: DefId, budget: &mut Budget) -> Result<(), Error> {
         budget.cost.declarations += 1;
+        if let Some(outputs) = self
+            .associated_types
+            .as_mut()
+            .and_then(|types| types.take(id))
+        {
+            for output in outputs {
+                budget.charge(1, 0)?;
+                if output
+                    .other
+                    .is_none_or(|other| self.seen.contains(&Task::Declaration(other)))
+                {
+                    self.enqueue(Task::Type(output.ty), budget)?;
+                }
+            }
+        }
         let actual = self
             .report
             .resolution
@@ -328,6 +386,9 @@ impl Interfaces<'_> {
         if let Some(members) = self.inherent.remove(&id) {
             budget.charge(members.len().saturating_add(1), 0)?;
             for member in members {
+                if self.exports.contains(&id) {
+                    self.export(member, budget)?;
+                }
                 self.enqueue(Task::Declaration(member), budget)?;
             }
         }

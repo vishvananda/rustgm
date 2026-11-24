@@ -53,10 +53,30 @@ struct Check<'a> {
     names: &'a Names,
     rule: &'a Rule,
     facts: &'a mut [Option<First>],
+    legacy: Option<(&'a str, &'a mut Vec<u32>)>,
 }
 /// # Errors
 /// Rejects forbidden fragment followers and repetitions that can consume nothing.
 pub fn check(definition: &Definition, names: &Names) -> Result<(), LexError> {
+    walk(definition, names, None)
+}
+
+/// Report old inferred `pat` followers from the same checked FIRST analysis.
+pub(crate) fn legacy_or_patterns(
+    definition: &Definition,
+    names: &Names,
+    source: &str,
+) -> Result<Vec<u32>, LexError> {
+    let mut offsets = Vec::new();
+    walk(definition, names, Some((source, &mut offsets)))?;
+    Ok(offsets)
+}
+
+fn walk(
+    definition: &Definition,
+    names: &Names,
+    mut legacy: Option<(&str, &mut Vec<u32>)>,
+) -> Result<(), LexError> {
     let mut facts = vec![None; definition.nodes.len()];
     for rule in &definition.rules {
         let mut check = Check {
@@ -64,6 +84,9 @@ pub fn check(definition: &Definition, names: &Names) -> Result<(), LexError> {
             names,
             rule,
             facts: &mut facts,
+            legacy: legacy
+                .as_mut()
+                .map(|(source, offsets)| (*source, &mut **offsets)),
         };
         check.sequence(rule.matcher, First::terminal(END))?;
     }
@@ -149,6 +172,18 @@ impl Check<'_> {
                             node.span.start,
                             "token is forbidden after this macro fragment",
                         ));
+                    }
+                    if following.tokens & OR != 0
+                        && fragment == Fragment::Syntax(F::PatternParameter)
+                        && let Some((source, offsets)) = self.legacy.as_mut()
+                        && source
+                            .get(node.span.start as usize..node.span.end as usize)
+                            .is_some_and(|capture| capture.ends_with("pat"))
+                    {
+                        offsets.try_reserve(1).map_err(|_| {
+                            error(node.span.start, "macro lint site allocation failed")
+                        })?;
+                        offsets.push(node.span.start);
                     }
                 }
                 Kind::Group { children, .. } => self.sequence(children, First::terminal(END))?,

@@ -13,7 +13,7 @@ def diagnostics(stderr):
             if (row := json.loads(line)).get("code")]
 
 
-def check_case(check, manifest, case, index, *, source_core, oracle_only):
+def check_case(check, manifest, case, index, *, source_core, edition, oracle_only):
     name = f"{manifest.parent.name}-{index}"
     source = manifest.parent / case["path"]
     if not source.resolve().is_relative_to(manifest.parent.resolve()) or not source.is_file():
@@ -24,7 +24,7 @@ def check_case(check, manifest, case, index, *, source_core, oracle_only):
     if (status, lint is not None) not in ((0, False), (1, True)):
         raise ValueError(f"{name}: declare a diagnostic for each rejection")
 
-    rustc = ["rustc", "--crate-name", "lint_case", "--crate-type=lib", "--edition=2024",
+    rustc = ["rustc", "--crate-name", "lint_case", "--crate-type=lib", f"--edition={edition}",
              "--emit=metadata", "--error-format=json", "-Cpanic=abort",
              "-o", check.folder / f"{name}.rmeta", *cfg, source]
     reference = check.run(f"{name}-rustc", rustc, status, timeout=15,
@@ -35,7 +35,7 @@ def check_case(check, manifest, case, index, *, source_core, oracle_only):
     if oracle_only:
         return
 
-    args = [check.app, "--emit-types", "--edition=2024", *cfg]
+    args = [check.app, "--emit-types", f"--edition={edition}", *cfg]
     if source_core:
         args += ["--source-core", "lint_case@lintcase",
                  "--crate-name", "lint_case", "--crate-disambiguator", "lintcase"]
@@ -56,14 +56,22 @@ def main():
     args = parser.parse_args()
     check = Check(args.app or Path("rustc"), args.out)
     count = 0
+    failures = []
     for manifest in args.manifests:
         plan = json.loads(manifest.read_text())
         if not plan["cases"]:
             raise ValueError(f"{manifest}: empty lint suite")
+        source_core = plan.get("source_core", False)
         for index, case in enumerate(plan["cases"]):
-            check_case(check, manifest, case, index,
-                       source_core=plan.get("source_core", False), oracle_only=args.oracle_only)
+            try:
+                check_case(check, manifest, case, index, source_core=source_core,
+                           edition=plan.get("edition", "2024"),
+                           oracle_only=args.oracle_only)
+            except ValueError as error:
+                failures.append(str(error))
             count += 1
+    if failures:
+        parser.exit(1, "\n".join(failures) + "\n")
     print(f"Verified {count} declared bootstrap lint cases")
 
 

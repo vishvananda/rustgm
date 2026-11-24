@@ -18,7 +18,10 @@ artifact and dependency identities. Use the build preparation needed by
   the remaining edition rules.
 - Preserve the edition of a method identifier from its source or macro
   origin. Edition-sensitive dispatch for arrays and boxed slices uses
-  that identifier and the adjusted receiver.
+  that identifier and the adjusted receiver. Apply
+  `rust_2021_incompatible_or_patterns` to pre-2021 macro definitions whose
+  inferred `pat` fragment can be followed by `|`. An explicit `pat_param`
+  preserves the single-alternative behavior across editions.
 - Build host tools and target crates as separate graph units. Use an
   explicitly pinned host toolchain for build-time tools. Compile every
   target Rust dependency with RustGM.

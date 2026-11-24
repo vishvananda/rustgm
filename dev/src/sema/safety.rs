@@ -360,6 +360,46 @@ impl Policies {
                 .iter()
                 .any(|row| row.policy.unreachable_pub != Level::Allow)
     }
+    pub(super) fn checks_missing_debug(&self) -> bool {
+        !self.cap.suppresses_lints()
+            && self
+                .rows
+                .iter()
+                .any(|row| row.policy.missing_debug_implementations != Level::Allow)
+    }
+    pub(super) fn missing_debug_implementations(&self, key: NodeKey) -> Level {
+        self.at(key).missing_debug_implementations
+    }
+    pub(super) fn checks_multiple_supertraits(&self) -> bool {
+        !self.cap.suppresses_lints()
+            && self
+                .rows
+                .iter()
+                .any(|row| row.policy.multiple_supertrait_upcastable != Level::Allow)
+    }
+    pub(super) fn multiple_supertrait_upcastable(&self, key: NodeKey) -> Level {
+        self.at(key).multiple_supertrait_upcastable
+    }
+    pub(super) fn checks_missing_docs(&self) -> bool {
+        !self.cap.suppresses_lints()
+            && self
+                .rows
+                .iter()
+                .any(|row| row.policy.missing_docs != Level::Allow)
+    }
+    pub(super) fn missing_docs(&self, key: NodeKey) -> Level {
+        self.at(key).missing_docs
+    }
+    pub(super) fn checks_legacy_pattern_lint(&self) -> bool {
+        !self.cap.suppresses_lints()
+            && self
+                .rows
+                .iter()
+                .any(|row| row.policy.rust_2021_incompatible_or_patterns != Level::Allow)
+    }
+    pub(super) fn rust_2021_incompatible_or_patterns(&self, key: NodeKey) -> Level {
+        self.at(key).rust_2021_incompatible_or_patterns
+    }
     pub(super) fn unreachable_pub(&self, key: NodeKey) -> Level {
         self.at(key).unreachable_pub
     }

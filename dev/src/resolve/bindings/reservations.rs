@@ -103,6 +103,10 @@ impl Reservations {
     pub(crate) fn eq_declaration(&self) -> Option<Declaration> {
         self.diagnostics[super::annotations::DiagnosticItem::Eq.index()]
     }
+    /// Reserved diagnostic declaration, used after the trait headers are checked.
+    pub(crate) fn debug_declaration(&self) -> Option<Declaration> {
+        self.diagnostics[super::annotations::DiagnosticItem::Debug.index()]
+    }
     pub(crate) fn role_attributes(&self, role: LangItem) -> HeaderAttributes {
         self.header_attributes[role.index()]
     }

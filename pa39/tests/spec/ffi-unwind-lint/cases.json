@@ -1,0 +1,8 @@
+{
+  "source_core": true,
+  "cases": [
+    {"path": "abort.rs", "status": 0, "lint": null},
+    {"path": "abort.rs", "cfg": "lint_expected", "status": 1,
+     "lint": "unfulfilled_lint_expectations", "diagnostic": "this lint expectation is unfulfilled"}
+  ]
+}

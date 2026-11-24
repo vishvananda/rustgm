@@ -24,6 +24,10 @@ impl LintCap {
 pub enum WarningCode {
     Deprecated,
     DeprecatedInFuture,
+    MissingDebugImplementations,
+    MultipleSupertraitUpcastable,
+    MissingDocs,
+    Rust2021IncompatibleOrPatterns,
     HiddenGlobReexports,
     IneffectiveUnstableTraitImpl,
     UnfulfilledLintExpectations,
@@ -54,6 +58,10 @@ impl WarningCode {
         match self {
             Self::Deprecated => "deprecated",
             Self::DeprecatedInFuture => "deprecated_in_future",
+            Self::MissingDebugImplementations => "missing_debug_implementations",
+            Self::MultipleSupertraitUpcastable => "multiple_supertrait_upcastable",
+            Self::MissingDocs => "missing_docs",
+            Self::Rust2021IncompatibleOrPatterns => "rust_2021_incompatible_or_patterns",
             Self::HiddenGlobReexports => "hidden_glob_reexports",
             Self::IneffectiveUnstableTraitImpl => "ineffective_unstable_trait_impl",
             Self::UnfulfilledLintExpectations => "unfulfilled_lint_expectations",

@@ -25,6 +25,11 @@ the source bodies that use those declarations.
 - Compute which public declarations a fresh crate can reach. Follow public
   re-exports and the types exposed by public signatures, then apply scoped
   `unreachable_pub` settings to public declarations outside that reach.
+  Include types exposed by checked associated-type implementations and use
+  the actual `Debug` trait identity for `missing_debug_implementations`.
+  Use the exported names and retained documentation attributes for
+  `missing_docs`. For `multiple_supertrait_upcastable`, reuse typed direct
+  bounds and dyn compatibility.
 - Preserve exact declaration and member identities across aliases and imports.
   A source provider must supply the actual declaration. Keep an explicitly
   selected source provider free of duplicate bootstrap declarations.

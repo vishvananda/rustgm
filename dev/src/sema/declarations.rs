@@ -45,6 +45,7 @@ mod method_prefix;
 mod methods;
 mod objects;
 mod offset_paths;
+mod or_pattern_migration;
 mod passes;
 mod primitive_constants;
 mod projections;

@@ -2,6 +2,7 @@ pub mod bindings;
 pub mod capture;
 pub mod compile;
 mod follow;
+pub(crate) use follow::legacy_or_patterns;
 pub mod input;
 pub mod matcher;
 pub mod model;
