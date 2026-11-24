@@ -205,7 +205,7 @@ impl ContractParts {
             facts,
             None,
             &self.parameters,
-            (&self.clauses, false),
+            (&self.clauses, None),
             0,
             0,
             budget,

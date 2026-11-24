@@ -437,7 +437,7 @@ impl Walk<'_, '_> {
             facts,
             self.active.last().map(|a| &a.environment),
             &self.abilities,
-            (&self.clauses, context.descriptor.profile().body_nodes()),
+            (&self.clauses, Some(context.descriptor.profile())),
             previous_parameters,
             previous_clauses,
             budget,

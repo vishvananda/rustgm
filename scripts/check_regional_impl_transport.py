@@ -23,6 +23,7 @@ def main():
     check = Check(args.app, args.out)
     contract = json.loads((FIXTURE / "outcomes.json").read_text())
     source = provider_source(check.folder, FIXTURE, contract)
+    source.write_bytes(b"#![feature(auto_traits)]\n" + source.read_bytes())
     client = FIXTURE / contract["client"]
     observer = check.folder / "observer.o"
     check.run("cc-observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer], timeout=15)

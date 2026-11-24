@@ -292,9 +292,12 @@ fn formal_cells(
                 u32::try_from(index).map_err(|_| error("source formal slot reference overflow"))?;
             let ty = match graph.slot(s::SlotRef(index))? {
                 Argument::Type(ty) => ty,
-                // A version-thirteen nominal lifetime has no type cell.
+                // A template lifetime has no declaration type cell.
                 Argument::Lifetime(_)
-                    if mapped_source::slot_bindings::nominal_lifetime(&rows.declarations, slot) =>
+                    if mapped_source::slot_bindings::template_lifetime(
+                        &rows.declarations,
+                        slot,
+                    ) =>
                 {
                     continue;
                 }

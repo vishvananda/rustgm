@@ -140,9 +140,24 @@ pub(in crate::sema::crates::typed_headers) fn nominal_region(
     if depth != 0 || !nominal_lifetime(declarations, row) {
         return Ok(None);
     }
-    let index = u16::try_from(row.index)
-        .map_err(|_| error("source nominal lifetime exceeds canonical identity space"))?;
-    RegionId::bound(0, index).map(Some).map_err(error)
+    template_region(row).map(Some)
+}
+/// The wire stores the actual written lifetime in the declaration's template.
+pub(in crate::sema::crates::typed_headers) fn template_lifetime(
+    declarations: &[s::Declaration],
+    slot: &s::ParameterSlot,
+) -> bool {
+    slot.kind == s::ParameterKind::Region
+        && declarations
+            .get(slot.owner.0 as usize)
+            .is_some_and(|row| row.definition.kind.leading_regions())
+}
+pub(in crate::sema::crates::typed_headers) fn template_region(
+    slot: &s::ParameterSlot,
+) -> Result<RegionId, Error> {
+    let index = u16::try_from(slot.index)
+        .map_err(|_| error("source declared lifetime exceeds canonical identity space"))?;
+    RegionId::bound(0, index).map_err(error)
 }
 /// A declaration's canonical parameter index counts its leading lifetimes.
 /// Validated wire slots count those lifetimes separately from type slots.

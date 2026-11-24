@@ -213,12 +213,12 @@ impl Lazy {
         for (index, slot) in rows.slots.iter().enumerate() {
             // A declared const slot must exist even if its only use is in
             // an original body and no header type recipe has demanded it.
-            // A version-thirteen nominal's region slot maps to its template
-            // lifetime; every other region slot stays unmapped here.
+            // Written nominal and trait lifetimes enter the template. Body
+            // lifetimes remain attached to their own region domain.
             if matches!(
                 slot.kind,
                 s::ParameterKind::Type { .. } | s::ParameterKind::Const { .. }
-            ) || super::slot_bindings::nominal_lifetime(&rows.declarations, slot)
+            ) || super::slot_bindings::template_lifetime(&rows.declarations, slot)
             {
                 port.slot(
                     &mut facts.types,
@@ -231,16 +231,23 @@ impl Lazy {
             }
         }
         prepare_declared_regions(rows, &mut port, work)?;
-        super::ingest_roots::prepare(rows, &mut |reference| match cursor.demand(
-            &mut port,
-            &mut facts.types,
-            reference,
-            work,
-        )? {
-            Demand::Ready(_) => Ok(()),
-            Demand::Blocked(_) => Err(error(
-                "ordinary header requires its actual declared recipe dependency",
-            )),
+        super::ingest_roots::prepare(rows, &mut |root| {
+            let ready = match root {
+                super::ingest_roots::Root::Type(ty) => matches!(
+                    cursor.demand(&mut port, &mut facts.types, ty, work)?,
+                    Demand::Ready(_)
+                ),
+                super::ingest_roots::Root::Region(region) => {
+                    matches!(port.region(region, work)?, Demand::Ready(_))
+                }
+            };
+            if ready {
+                Ok(())
+            } else {
+                Err(error(
+                    "ordinary header requires its actual declared recipe dependency",
+                ))
+            }
         })?;
         let reader = cursor.reader(port.recipe_view(), &facts.types, work)?;
         Ok(Self {

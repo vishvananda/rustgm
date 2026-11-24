@@ -1,5 +1,5 @@
 //! Reuse empty extensions; source trait identities never become builtin abilities.
-use super::{Abilities, Clause, Declarations, Environment, Error, Headers, ParameterId, error};
+use super::{Abilities, Clause, Declarations, Environment, Error, Headers, ParameterId, error, s};
 use crate::types::{
     Kind, TypeId,
     arguments::Argument,
@@ -33,15 +33,21 @@ pub(in crate::sema::crates::typed_headers) trait LeafClauses:
     fn vacuous_scopes(&self) -> bool {
         false
     }
+    fn regional_arguments(&self) -> bool {
+        false
+    }
 }
-struct Ordinary<'a>(&'a [Clause], bool);
+struct Ordinary<'a>(&'a [Clause], Option<s::Profile>);
 impl sealed::Sealed for Ordinary<'_> {}
 impl LeafClauses for Ordinary<'_> {
     fn clauses(&self) -> &[Clause] {
         self.0
     }
     fn vacuous_scopes(&self) -> bool {
-        self.1
+        self.1.is_some_and(s::Profile::body_nodes)
+    }
+    fn regional_arguments(&self) -> bool {
+        self.1.is_some_and(s::Profile::declaration_policies)
     }
     /// This consumer's row validation admits a conditional effect only on an
     /// actual callable role's own hierarchy (`Fn: [const] FnMut<Args>`).
@@ -59,7 +65,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
     facts: &Declarations,
     parent: Option<&Arc<Environment>>,
     parameters: &[(ParameterId, Abilities)],
-    (clauses, vacuous_scopes): (&[Clause], bool),
+    (clauses, profile): (&[Clause], Option<s::Profile>),
     previous_parameters: usize,
     previous_clauses: usize,
     budget: &mut impl Accounting,
@@ -68,7 +74,7 @@ pub(in crate::sema::crates::typed_headers) fn prepare(
         facts,
         parent,
         parameters,
-        &Ordinary(clauses, vacuous_scopes),
+        &Ordinary(clauses, profile),
         previous_parameters,
         previous_clauses,
         budget,
@@ -202,10 +208,14 @@ fn assumption(
     budget.charge(arguments.len().saturating_add(1))?;
     let roots = arguments.len().saturating_add(1);
     for argument in arguments {
-        let Argument::Type(ty) = argument else {
-            return Err(error(
-                "source regional assumption requires a wider environment profile",
-            ));
+        let ty = match argument {
+            Argument::Type(ty) => ty,
+            Argument::Lifetime(_) if leaves.regional_arguments() => continue,
+            _ => {
+                return Err(error(
+                    "source regional assumption requires a wider environment profile",
+                ));
+            }
         };
         match facts.types.kind(ty) {
             // A callable role's argument tuple of leaves.

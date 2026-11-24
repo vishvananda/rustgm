@@ -22,3 +22,18 @@ pub extern "C" fn observed_method() -> u8 {
 pub fn scalar() -> u8 {
     requires_reference(&1u8)
 }
+
+struct Local;
+
+impl<'a> base::Borrowed<'a, u8> for Local {
+    fn inspect(&self, _: &'a u8) -> u8 {
+        71
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn observed_trait_lifetime() -> u8 {
+    let local = Local;
+    let value = 1u8;
+    base::Borrowed::inspect(&local, &value)
+}

@@ -60,7 +60,8 @@ against the pinned Rust compiler.
 `spec/source-weak-panic-transport/outcomes.json` checks the two private weak
 panic imports, the fresh handler link, and forged exact-symbol rows.
 `spec/source-regional-impl-transport/outcomes.json` checks trait selection
-and native execution of a method capturing its provider impl lifetime.
+and native execution with an impl's captured lifetime and a trait's own
+written lifetime.
 
 `spec/source-guard-transport/outcomes.json` covers the exact overflow hook
 selected while lowering arithmetic in a fresh client. Run

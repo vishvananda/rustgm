@@ -4,7 +4,7 @@
   "provider": "provider.rs",
   "client": "client.rs",
   "observer": "observer.c",
-  "stdout": "29 41\n",
+  "stdout": "29 41 71\n",
   "rustc_rejected": "error[E0277]",
   "rustgm_rejected": "trait obligation requires an unambiguous matching assumption or implementation",
   "older_profile": "source const/lifetime generic argument is not a type slot"

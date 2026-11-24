@@ -206,13 +206,9 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             return Ok(argument);
         }
         let s::ParameterKind::Type { sized } = slot.kind else {
-            if let Some(region) = slot_bindings::nominal_region(
-                (&self.rows.slots, &self.rows.declarations),
-                reference,
-                0,
-            )? {
+            if slot_bindings::template_lifetime(&self.rows.declarations, slot) {
                 self.view.definition(slot.owner, budget)?;
-                let argument = Argument::Lifetime(region);
+                let argument = Argument::Lifetime(slot_bindings::template_region(slot)?);
                 publish(memo, argument)?;
                 return Ok(argument);
             }
