@@ -23,12 +23,11 @@ that change semantic eligibility. For example, a primitive documentation
 label describes an item and leaves the type namespace and body checks
 unchanged.
 
-Carry scoped lint levels and expectations through expansion, imports,
-and checked bodies. Associate deprecation and visibility events with
-their actual source or import. Report unmet expectations after their
-scope has completed. Use the declaring crate's release policy to distinguish
-current deprecation from `deprecated_in_future`. Apply the appropriate
-lint level to the selected call, import, or macro expansion.
+Extend [PA31's source library diagnostics](../pa31/README.md#source-declarations)
+to the remaining attribute and edition cases. Carry scoped lint levels and
+expectations through expansion, imports, and checked bodies. Associate
+deprecation and visibility events with their actual source or import.
+Report unmet expectations after their scope has completed.
 A lint cap can suppress optional diagnostics.
 Hard errors and semantic checks still apply.
 

@@ -37,10 +37,20 @@ target features and assembly forms for the follow-on track.
 
 ## Diagnostics used by core
 
+Complete [PA31's source attributes and diagnostics](../pa31/README.md#source-declarations)
+and [PA34's edition checks](../pa34/README.md#build-graph) before building
+the standalone library. Honor the active scoped lint levels and expect
+attributes in the pinned crate. Check `ffi_unwind_calls` for the panic-abort
+profile. A function defined in the crate stops a foreign unwind at its
+boundary. The follow-on unwinding assignment extends this check to callers
+that can propagate an unwind.
+
 Use the checked operand and result types to detect explicit casts between raw
 pointers and integers. Honor the crate's `deny(implicit_provenance_casts)` and
 the local `allow` and `expect` attributes on the pointer APIs. Complete each
-expectation using an actual cast in its scope.
+expectation using an actual cast in its scope. Use [PA28's const transmute
+check](../pa28/README.md#memory-operations) for the corresponding expectations
+on pointer-to-integer transmutes.
 
 ## Build the library
 

@@ -17,11 +17,10 @@ available.
 
 Use the declared runtime, personality, and cleanup representation.
 Implement `C-unwind` interoperability and enforce the selected caller
-and callee's unwind boundary. Apply `ffi_unwind_calls` when a foreign call
-can leak an unwind through its enclosing function. An abort-profile
-function defined in the compiled crate stops a foreign unwind at its
-boundary. Check the required lowering and runtime
-capabilities with the pinned CPPGM backend.
+and callee's unwind boundary. Extend [PA32's `ffi_unwind_calls` check](../pa32/README.md#diagnostics-used-by-core)
+to foreign calls that can propagate an unwind through their enclosing
+function. Check the required lowering and runtime capabilities with the
+pinned CPPGM backend.
 
 ## Tool surface
 

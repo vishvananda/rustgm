@@ -11,6 +11,9 @@ input in a nonempty `manifest.json` when the stage is ready for activation;
 no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
 configuration/build provenance and linked native output evidence.
 
+`spec/ffi-unwind-lint/cases.json` declares the panic-abort diagnostics
+needed by `core`. Check them with `scripts/check_bootstrap_lints.py`.
+
 Staged for rung M1 of the [self-hosting plan](../../docs/self-hosting-plan.md),
 not graded while this stage is planned: `spec/core-consumers/` holds 18 `no_std` programs over core.
 `core-consumer-outcomes.json` declares each program's inputs, exit status and standard error;

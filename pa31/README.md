@@ -17,6 +17,12 @@ the source bodies that use those declarations.
   eligibility, body policies, and unsafe permission distinct. Retain the
   exact macro expansion that grants an internal allowance. A declaration's
   name or an unrelated feature request cannot grant its permission.
+- Check the stability and documentation attributes used by the pinned
+  source. Distinguish current and scheduled deprecation and apply the
+  scoped lint at the call, import or macro expansion. For unstable trait
+  implementations, use the stability of the types and traits named in
+  the checked header. Validate `doc(cfg)`, `doc(auto_cfg)` and
+  `doc(notable_trait)` where the source uses them.
 - Support the declarations used by the pinned library, including
   `no_core`, explicit prelude imports, internal attributes, nominal roles,
   trait aliases and compiler-provided traits. Use the expanded item identities
@@ -53,8 +59,11 @@ actual source signatures and selected bodies.
 - Establish the panic-abort entry and handler path using real library
   declarations and executed bodies. PA39 adds unwinding.
 - Preserve the relevant declaration, feature, and body facts when importing
-  checked metadata. PA29 introduces declaration artifacts. The bootstrap
-  sequence also requires transport for the source bodies and policies it uses.
+  checked metadata. PA29 introduces declaration artifacts. Preserve the order
+  and ownership of type alias requirements, including dependent associated
+  type projections and const parameters. Preserve associated constant owners
+  and the restrictions on constructors of `#[non_exhaustive]` structs.
+  Fresh clients must be able to check these rules against the artifact.
 
 ## Check your implementation
 

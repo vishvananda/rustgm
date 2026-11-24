@@ -7,6 +7,11 @@ Existing fixture ownership and qualification records use the maintainer
 numbers. The [course order](../student/README.md#course-order) explains
 which parts of crate building and target support precede `core`.
 
+PA32–PA36 require separate sysroot artifacts and fresh consumers. Qualify
+the required source diagnostics and metadata before releasing those
+assignments. Student PA37 then rebuilds the compiler and its dependencies
+in a single whole-graph compilation session per stage.
+
 Build a preview from a committed revision to review all of the handouts
 on the self-hosting track.
 

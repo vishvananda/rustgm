@@ -257,6 +257,7 @@ impl Visitor<'_> {
             self.charge(key, 1, 0)?;
             let unit = self.report.package.unit(key.file);
             match unit.configured.ast.node(key.node).kind {
+                Kind::Name(span, _) if unit.lifetime_spelling(span) => {}
                 Kind::Name(..) => self.path(key)?,
                 Kind::Path { segments, .. } => {
                     self.path(key)?;

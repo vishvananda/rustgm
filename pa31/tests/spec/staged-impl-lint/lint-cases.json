@@ -1,0 +1,8 @@
+{
+  "bootstrap": true,
+  "cases": [
+    {"path": "lifetime-arguments.rs", "status": 0, "lint": null},
+    {"path": "lifetime-arguments.rs", "cfg": "lint_denied", "status": 1,
+     "lint": "ineffective_unstable_trait_impl", "diagnostic": "unstable annotation has no effect"}
+  ]
+}

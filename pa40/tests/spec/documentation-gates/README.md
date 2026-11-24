@@ -24,9 +24,9 @@ Malformed cfg predicates and string suffixes remain hard errors. In contrast,
 malformed auto_cfg and notable_trait options produce optional documentation lints
 under the pinned compiler. Their rendering, full target checks, documentation
 output and imported metadata remain required. `strict-lint-cases.json` covers
-uncapped valid options and scoped `invalid_doc_attributes` expectations and
-rejections. Run these cases with `scripts/check_bootstrap_lints.py` against a
-prebuilt compiler.
+uncapped valid options. [PA31's bootstrap cases](../../../../pa31/tests/spec/bootstrap-doc-options/lint-cases.json)
+cover scoped `invalid_doc_attributes` expectations and rejections. Run these
+manifests with `scripts/check_bootstrap_lints.py` against a prebuilt compiler.
 
 The C observer calls a function annotated with false documentation predicates and
 an actual notable-trait implementation. It must print `7 9`; documentation must

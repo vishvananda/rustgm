@@ -14,6 +14,11 @@ an inaccessible alias. A separate provider uses a block-local type alias
 within a function and a fresh client calls that exported function. The
 const-parameter provider exercises a named array length and its type.
 
+The `spec/future-deprecation-lint/`, `spec/staged-impl-lint/`, and
+`spec/bootstrap-doc-options/` cases declare diagnostics needed before the
+pinned `core` build. Run their `lint-cases.json` manifests with
+`scripts/check_bootstrap_lints.py` against a prebuilt compiler.
+
 `spec/explicit-dynamic-call-members/outcomes.json` declares the borrowed dynamic
 rust-call member cases, the Box callable foundation and the ordered C observer
 traces. The ownership suite selects them through `box_contents`.
