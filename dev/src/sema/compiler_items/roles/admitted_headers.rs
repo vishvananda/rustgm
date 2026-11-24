@@ -361,6 +361,7 @@ fn nominal_role(role: LangItem) -> bool {
     matches!(
         role,
         LangItem::PhantomData
+            | LangItem::AllocLayout
             | LangItem::TypeInfo
             | LangItem::TypeId
             | LangItem::PanicLocation
@@ -378,6 +379,7 @@ fn check_nominal_role(
     steps: &mut usize,
 ) -> Result<(), &'static str> {
     match role {
+        LangItem::AllocLayout => super::super::alloc_layout::imported(facts, declaration, steps),
         LangItem::PhantomData => {
             super::super::phantom::imported(facts, catalog, declaration, steps)
         }

@@ -1,0 +1,12 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observe.c",
+  "layout": "pa31/tests/spec/alloc-layout-identity/original-layout.rs",
+  "layout_start": "#[lang = \"alloc_layout\"]",
+  "layout_marker": "// Layout declaration from alloc-layout-identity/original-layout.rs.",
+  "stdout": "16\n8\n",
+  "shape_error": "allocation layout changed its target powers-of-two alignment values",
+  "old_profile": "allocation layout transport requires version fourteen",
+  "forged": "source role binding is duplicated or belongs to a foreign provider"
+}

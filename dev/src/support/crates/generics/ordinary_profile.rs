@@ -1140,6 +1140,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
     if matches!(
         role,
         LangItem::TypeInfo
+            | LangItem::AllocLayout
             | LangItem::TypeId
             | LangItem::PointeeTrait
             | LangItem::MetadataType
@@ -1566,7 +1567,7 @@ fn role_header(
         (role, Some(HeaderRef::Function(_)))
             if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
         (role, Some(HeaderRef::Nominal(index)))
-            if LangItem::NOMINAL_WRAPPERS.contains(&role)
+            if (role == LangItem::AllocLayout || LangItem::NOMINAL_WRAPPERS.contains(&role))
                 && profile == BindingProfile::BodyOperations
                 && wrapper_header(rows, kind, role, index) => {}
         (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {

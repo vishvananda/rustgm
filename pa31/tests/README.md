@@ -76,6 +76,10 @@ check that using the default requires that feature. Run
 DiscriminantKind declaration and its associated bounds. A fresh client
 normalizes the result for an imported enum, a local enum and a record.
 Run `scripts/check_discriminant_transport.py` with the prebuilt compilers.
+`spec/source-alloc-layout-transport/outcomes.json` checks the pinned Layout
+fields and the transparent Alignment storage with its complete x86-64 enum.
+A fresh client observes the imported type’s const size and alignment. Run
+`scripts/check_alloc_layout_transport.py` with the prebuilt compilers.
 `spec/source-panic-format-transport/outcomes.json` checks the imported
 panic and formatting structures, field types, member visibility, and the
 fresh crate's own panic handler.

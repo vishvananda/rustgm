@@ -292,6 +292,13 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        if role == LangItem::AllocLayout {
+            return crate::sema::compiler_items::alloc_layout::source_role(
+                report,
+                facts,
+                self.declaration_policies(),
+            );
+        }
         if LangItem::FORMAT_PANICS.contains(&role)
             && !self.declaration_policies()
             && catalog.language(role).is_some()
