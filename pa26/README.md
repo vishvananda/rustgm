@@ -1,5 +1,7 @@
 # RustGM Programming Assignment 26: Language and library hooks
 
+The [student handout](STUDENT.md) describes the exported assignment.
+
 The [explicit const-dereference checkpoint](../docs/pa26-explicit-const-dereference.md)
 retains ordinary operator counterparts here and actual source roles in PA31.
 Thirteen source CLI/prepared outcomes and nine native programs qualify; all eleven
