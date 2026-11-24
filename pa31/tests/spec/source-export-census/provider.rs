@@ -35,11 +35,7 @@ type Last<'a> = &'a u16;
 #[repr(C)]
 pub union Unpublished { pub byte: u8 }
 
-#[lang = "structural_peq"]
-pub trait Structural {}
-
-#[rustc_diagnostic_item = "Eq"]
-pub trait Equal {}
-
-#[lang = "const_param_ty"]
-pub trait Key: Structural + Equal {}
+#[lang = "c_void"]
+pub enum Void {
+    Hidden,
+}

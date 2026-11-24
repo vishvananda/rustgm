@@ -295,14 +295,17 @@ pub enum DiagnosticRole {
     /// Core's `Send` is a diagnostic item, not a lang item; consumers install
     /// it into their own `LangItem::Send` slot.
     Send,
+    /// Version fourteen binds the actual `Eq` supertrait of `ConstParamTy`.
+    Eq,
 }
 impl DiagnosticRole {
-    pub const ALL: [Self; 2] = [Self::NonNull, Self::Send];
+    pub const ALL: [Self; 3] = [Self::NonNull, Self::Send, Self::Eq];
     #[must_use]
     pub const fn spelling(self) -> &'static str {
         match self {
             Self::NonNull => "NonNull",
             Self::Send => "Send",
+            Self::Eq => "Eq",
         }
     }
     #[must_use]

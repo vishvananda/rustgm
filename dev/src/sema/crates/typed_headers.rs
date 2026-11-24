@@ -173,6 +173,13 @@ impl Headers {
         }
         Ok(())
     }
+
+    pub(in crate::sema) fn pay(&mut self, steps: usize, bytes: usize) -> Result<(), &'static str> {
+        self.charge_work(steps)?;
+        self.reserve_bytes(bytes)?;
+        self.observed.add(bytes);
+        Ok(())
+    }
     fn symbol(&mut self, identity: &crate::support::crates::ExternalDef) -> Result<String, Error> {
         symbol(identity, self)
     }
@@ -507,18 +514,19 @@ pub(in crate::sema) fn pay_source_headers(
     steps: usize,
     bytes: usize,
 ) -> Result<(), &'static str> {
-    let headers = facts
-        .crates
-        .as_deref_mut()
+    source_header_payments(facts.crates.as_deref_mut())?.pay(steps, bytes)
+}
+
+pub(in crate::sema) fn source_header_payments(
+    linkage: Option<&mut super::Linkage>,
+) -> Result<&mut Headers, &'static str> {
+    let headers = linkage
         .and_then(|l| l.originals.as_deref_mut())
         .ok_or("source validation lacks its installed header budget")?;
     if headers.source.is_none() {
         return Err("source validation cannot use legacy header authority");
     }
-    headers.charge_work(steps)?;
-    headers.reserve_bytes(bytes)?;
-    headers.observed.add(bytes);
-    Ok(())
+    Ok(headers)
 }
 
 /// Charge attempted classification at its mutable caller, including rejection.

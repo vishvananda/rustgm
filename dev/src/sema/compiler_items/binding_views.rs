@@ -178,6 +178,41 @@ impl Catalog {
         }
     }
 
+    pub(in crate::sema) fn imported_eq(
+        &self,
+        work: &mut usize,
+    ) -> Result<Option<Role>, &'static str> {
+        let Bindings::Imported(imported) = &self.bindings else {
+            return Err("imported diagnostic identity requires its actual provider");
+        };
+        let descriptor = imported
+            .dependencies
+            .artifacts()
+            .get(imported.provider_index as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+            .filter(|descriptor| descriptor.identity() == &self.provider)
+            .ok_or("imported Eq diagnostic identity lost its actual provider descriptor")?;
+        for row in descriptor.rows().diagnostics() {
+            charge(work, 1)?;
+            if row.role != s::DiagnosticRole::Eq {
+                continue;
+            }
+            let definition = imported
+                .origins
+                .definition_at(descriptor.provider(), row.declaration.declaration)?;
+            let declaration = imported.origins.declaration(definition)?;
+            imported
+                .origins
+                .validate_declaration(declaration, definition, DefKind::Trait)?;
+            return Ok(Some(Role {
+                definition,
+                parent: None,
+                origin: DeclarationOrigin::Imported(declaration),
+            }));
+        }
+        Ok(None)
+    }
+
     /// Compare declaration identities in the caller's precedence order.
     /// Imported claims still authenticate their remapped origin at each lookup.
     pub(in crate::sema) fn matching_role<T>(
@@ -402,6 +437,10 @@ fn diagnostic_roles(
             s::DiagnosticRole::Send => (
                 DefKind::Trait,
                 "imported Send diagnostic item requires its unsafe auto trait declaration",
+            ),
+            s::DiagnosticRole::Eq => (
+                DefKind::Trait,
+                "imported Eq diagnostic item requires its actual trait declaration",
             ),
         };
         origins

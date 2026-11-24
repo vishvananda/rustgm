@@ -27,7 +27,7 @@ fn evaluated(report: &Report, facts: &mut Declarations, name: &str) -> Result<(T
     Ok((ty, value))
 }
 fn converted(facts: &mut Declarations, ty: TypeId, value: Constant) -> Result<ConstId> {
-    Ok(canonicalize(facts, &mut 0, 1_000_000, ty, value)?)
+    Ok(canonicalize(facts, false, &mut 0, 1_000_000, ty, value)?)
 }
 #[test]
 fn source_products_and_variants_become_exact_canonical_operands_without_rebuilding_arenas() -> Result
@@ -70,7 +70,7 @@ fn source_products_and_variants_become_exact_canonical_operands_without_rebuildi
     );
     let mut steps = 0;
     assert_eq!(
-        canonicalize(&mut facts, &mut steps, 4, ty, constant)?,
+        canonicalize(&mut facts, false, &mut steps, 4, ty, constant)?,
         ids[0]
     );
     assert!(steps <= 2);
@@ -91,7 +91,7 @@ fn compressed_products_keep_large_bounds_and_actual_out_of_bounds_faults() -> Re
             .repeat(Value::Scalar(Scalar::Boolean(true)), 1_000_000_000)?,
     );
     let mut steps = 0;
-    let id = canonicalize(&mut facts, &mut steps, 256, ty, value)?;
+    let id = canonicalize(&mut facts, false, &mut steps, 256, ty, value)?;
     assert!(steps < 128);
     let operand = Constant::argument(&facts.types, id)?.ok_or("operand")?;
     assert!(matches!(
@@ -122,13 +122,14 @@ fn malformed_nominal_views_scalar_kinds_and_failed_work_never_become_value_permi
     let (report, mut facts) = analyzed()?;
     let (ty, value) = evaluated(&report, &mut facts, "A")?;
     let (other, foreign) = evaluated(&report, &mut facts, "F")?;
-    assert!(canonicalize(&mut facts, &mut 0, 1024, ty, foreign).is_err());
+    assert!(canonicalize(&mut facts, false, &mut 0, 1024, ty, foreign).is_err());
     let id = converted(&mut facts, other, foreign)?;
     let operand = Constant::argument(&facts.types, id)?.ok_or("canonical operand")?;
-    assert!(canonicalize(&mut facts, &mut 0, 1024, ty, operand).is_err());
+    assert!(canonicalize(&mut facts, false, &mut 0, 1024, ty, operand).is_err());
     assert!(
         canonicalize(
             &mut facts,
+            false,
             &mut 0,
             1024,
             TypeId::primitive(Primitive::Bool),
@@ -138,7 +139,7 @@ fn malformed_nominal_views_scalar_kinds_and_failed_work_never_become_value_permi
     );
     let before = facts.types.interned_extent();
     let mut failed = 0;
-    assert!(canonicalize(&mut facts, &mut failed, 0, ty, value).is_err());
+    assert!(canonicalize(&mut facts, false, &mut failed, 0, ty, value).is_err());
     assert!(failed > 0);
     assert_eq!(facts.types.interned_extent(), before);
     Ok(())
@@ -267,7 +268,7 @@ fn conversion_work_follows_unique_evaluated_nodes_instead_of_expanded_tree_size(
     }
     let before = facts.types.interned_extent();
     let mut steps = 0;
-    let id = canonicalize(&mut facts, &mut steps, 32_768, ty, value)?;
+    let id = canonicalize(&mut facts, false, &mut steps, 32_768, ty, value)?;
     assert!(steps < 32_768);
     assert!((128..=129).contains(&(facts.types.interned_extent() - before)));
     let mut current = Constant::argument(&facts.types, id)?.ok_or("canonical shared root")?;
@@ -287,7 +288,10 @@ fn conversion_work_follows_unique_evaluated_nodes_instead_of_expanded_tree_size(
     assert_eq!(current.as_scalar()?, Scalar::Boolean(true));
     let operand = Constant::argument(&facts.types, id)?.ok_or("canonical shared root")?;
     steps = 0;
-    assert_eq!(canonicalize(&mut facts, &mut steps, 1, ty, operand)?, id);
+    assert_eq!(
+        canonicalize(&mut facts, false, &mut steps, 1, ty, operand)?,
+        id
+    );
     assert_eq!(steps, 1);
     Ok(())
 }

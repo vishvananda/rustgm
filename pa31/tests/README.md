@@ -15,6 +15,11 @@ declaration uses `link_name` for `strlen`.
 `scripts/check_runtime_import_transport.py` checks the pinned oracle and
 rejects malformed ownership, body and symbol rows.
 
+`spec/source-const-parameter-role/outcomes.json` declares a provider with
+renamed marker traits and a fresh client with two aggregate const arguments.
+`scripts/check_const_parameter_role_transport.py` checks the native result,
+the pinned source diagnostics and malformed diagnostic-role bindings.
+
 `spec/source-promoted-references/outcomes.json` declares a provider whose
 promoted function table has two checked noncapturing handlers. A fresh
 client reads its typed field during constant evaluation and calls both

@@ -35,6 +35,7 @@ pub(crate) use typed_headers::ProofSession;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
 #[cfg(test)]
 pub(crate) use typed_headers::provided_layouts;
+pub(in crate::sema) use typed_headers::source_header_payments;
 pub(in crate::sema) use typed_headers::{
     ImportedMemberPlan, SelectedConsumer, imported_member_plan,
 };

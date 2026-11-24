@@ -299,7 +299,9 @@ fn trait_headers(
             | LangItem::FnOnceOutput
             | LangItem::RangeMin
             | LangItem::RangeMax
-            | LangItem::RangeSub => {}
+            | LangItem::RangeSub
+            | LangItem::ConstParamTy
+            | LangItem::StructuralPartialEq => {}
             LangItem::PointeeTrait | LangItem::MetadataType | LangItem::DynMetadata => {
                 needs_pointee = true;
             }
@@ -357,6 +359,7 @@ fn grouped_roles(
     steps: &mut usize,
     complete: &mut super::RoleSet,
 ) -> Result<super::invocation::Imported, &'static str> {
+    super::parameter_types::imported(report, facts, catalog, steps, complete)?;
     if super::range_members::imported(report, facts, catalog, steps)? {
         for role in super::range_members::ROLES {
             complete.insert(role);

@@ -24,7 +24,10 @@ impl Checker<'_> {
             return Ok(());
         };
         let derived = self.report.derived_const_parameter_impl(source)?;
-        let Some(declaration) = catalog.language(LangItem::ConstParamTy) else {
+        let Some(declaration) = catalog
+            .role(LangItem::ConstParamTy)
+            .map_err(|e| self.error(source, e))?
+        else {
             return if derived {
                 Err(self.error(
                     source,
@@ -53,7 +56,7 @@ impl Checker<'_> {
             };
         }
         catalog
-            .validated_language(LangItem::ConstParamTy)
+            .validated_role(LangItem::ConstParamTy)
             .map_err(|e| self.error(source, e))?;
         crate::sema::header_attributes::reserve_source_contracts(
             &mut self.facts,

@@ -5,8 +5,10 @@ use crate::{
             Value,
             values::{Constant, FieldRecipe, Reader, View},
         },
+        crates::{Linkage, source_header_payments},
         header_attributes,
         model::{Declarations, Scalar},
+        must_use,
     },
     support::{hash::HashMap, retained::Growth},
     types::{
@@ -37,6 +39,7 @@ struct Budget<'a> {
     steps: &'a mut usize,
     limit: usize,
     bytes: usize,
+    source_client: bool,
 }
 impl Budget<'_> {
     fn local(&mut self, work: usize, bytes: usize) -> Result<(), &'static str> {
@@ -49,17 +52,41 @@ impl Budget<'_> {
     }
     fn charge(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         work: usize,
         bytes: usize,
     ) -> Result<(), &'static str> {
-        self.local(work, bytes)?;
-        if facts.source_bindings.is_some() {
-            header_attributes::source_payments(facts.must_use_contracts.as_deref())
-                .map_err(|_| "canonical const lacks its completed source payer")?
-                .charge(work, bytes)?;
-        }
-        Ok(())
+        self.payer(
+            facts.source_bindings.is_some(),
+            facts.must_use_contracts.as_deref(),
+            facts.crates.as_deref_mut(),
+        )?(work, bytes)
+    }
+
+    fn payer<'a>(
+        &'a mut self,
+        source: bool,
+        contracts: Option<&'a must_use::Contracts>,
+        linkage: Option<&'a mut Linkage>,
+    ) -> Result<impl FnMut(usize, usize) -> Result<(), &'static str> + 'a, &'static str> {
+        let provider = (source && !self.source_client)
+            .then(|| header_attributes::source_payments(contracts))
+            .transpose()
+            .map_err(|_| "canonical const lacks its completed source payer")?;
+        let mut imported = self
+            .source_client
+            .then(|| source_header_payments(linkage))
+            .transpose()?;
+        Ok(move |work, bytes| {
+            self.local(work, bytes)?;
+            if let Some(payer) = &provider {
+                payer.charge(work, bytes)?;
+            }
+            if let Some(payer) = &mut imported {
+                payer.pay(work, bytes)?;
+            }
+            Ok(())
+        })
     }
 }
 struct Conversion<'a, 'b> {
@@ -70,6 +97,7 @@ struct Conversion<'a, 'b> {
 }
 pub(super) fn canonicalize(
     facts: &mut Declarations,
+    source_client: bool,
     steps: &mut usize,
     limit: usize,
     ty: TypeId,
@@ -83,6 +111,7 @@ pub(super) fn canonicalize(
             steps,
             limit,
             bytes: 0,
+            source_client,
         }
         .charge(facts, 1, 0)?;
         if facts
@@ -100,6 +129,7 @@ pub(super) fn canonicalize(
             steps,
             limit,
             bytes: 0,
+            source_client,
         },
         ready: HashMap::default(),
         pending: Vec::new(),
@@ -166,23 +196,12 @@ impl Conversion<'_, '_> {
         self.ready.insert(key, None);
         if let Value::Scalar(scalar) = key.value.0 {
             let kind = scalar_kind(&self.facts.types, key.ty, scalar)?;
-            let payments = self
-                .facts
-                .source_bindings
-                .as_ref()
-                .map(|_| {
-                    header_attributes::source_payments(self.facts.must_use_contracts.as_deref())
-                })
-                .transpose()
-                .map_err(|_| "canonical const lacks its completed source payer")?;
-            let budget = &mut self.budget;
-            let id = self.facts.types.intern_const_charged(kind, |work, bytes| {
-                budget.local(work, bytes)?;
-                if let Some(payer) = &payments {
-                    payer.charge(work, bytes)?;
-                }
-                Ok(())
-            })?;
+            let pay = self.budget.payer(
+                self.facts.source_bindings.is_some(),
+                self.facts.must_use_contracts.as_deref(),
+                self.facts.crates.as_deref_mut(),
+            )?;
+            let id = self.facts.types.intern_const_charged(kind, pay)?;
             self.ready.insert(key, Some(id));
             return Ok(());
         }
@@ -331,21 +350,11 @@ impl Conversion<'_, '_> {
                 (variant, None)
             }
         };
-        let payments = self
-            .facts
-            .source_bindings
-            .as_ref()
-            .map(|_| header_attributes::source_payments(self.facts.must_use_contracts.as_deref()))
-            .transpose()
-            .map_err(|_| "canonical const lacks its completed source payer")?;
-        let budget = &mut self.budget;
-        let pay = |work, bytes| {
-            budget.local(work, bytes)?;
-            if let Some(payer) = &payments {
-                payer.charge(work, bytes)?;
-            }
-            Ok(())
-        };
+        let pay = self.budget.payer(
+            self.facts.source_bindings.is_some(),
+            self.facts.must_use_contracts.as_deref(),
+            self.facts.crates.as_deref_mut(),
+        )?;
         let id = if let Some(element) = repeated {
             self.facts
                 .types

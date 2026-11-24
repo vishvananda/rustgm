@@ -966,6 +966,8 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::PointeeTrait
             | LangItem::MetadataType
             | LangItem::DynMetadata
+            | LangItem::ConstParamTy
+            | LangItem::StructuralPartialEq
     ) || interval_roles::ROLES.contains(&role)
         || role.is_storage_wrapper()
         || LangItem::GUARD_PANICS.contains(&role)
@@ -1074,7 +1076,7 @@ pub(super) fn bindings(
     profile: BindingProfile,
 ) -> Result<Bindings, &'static str> {
     let declarations = binding_declarations(rows, headers, work, profile)?;
-    let send = diagnostic_bindings(rows, headers, work, profile)?;
+    let send = diagnostic_bindings(rows, headers, work, profile, &declarations)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let sizing = [
         declarations[LangItem::Sized.index()],
@@ -1173,12 +1175,10 @@ fn diagnostic_bindings(
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: BindingProfile,
+    declarations: &[Option<crate::support::crates::owner_catalog::DeclarationRef>],
 ) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
     let diagnostics = rows.diagnostics();
-    if diagnostics.is_empty() {
-        return Ok(None);
-    }
-    if !profile.languages() {
+    if !diagnostics.is_empty() && !profile.languages() {
         return Err("source diagnostic identity requires a language role table");
     }
     let mut seen = [false; super::super::DiagnosticRole::ALL.len()];
@@ -1223,7 +1223,29 @@ fn diagnostic_bindings(
                 }
                 send = Some(row.declaration.declaration);
             }
+            super::super::DiagnosticRole::Eq => {
+                if profile != BindingProfile::BodyOperations
+                    || kind != Some(super::super::DefinitionKind::Trait)
+                    || !matches!(header, Some(super::super::HeaderRef::Trait(_)))
+                    || declarations[LangItem::StructuralPartialEq.index()]
+                        == Some(row.declaration.declaration)
+                    || declarations[LangItem::ConstParamTy.index()]
+                        == Some(row.declaration.declaration)
+                {
+                    return Err(
+                        "source Eq diagnostic identity requires its own version-fourteen trait",
+                    );
+                }
+            }
         }
+    }
+    let const_marker = declarations[LangItem::ConstParamTy.index()].is_some();
+    if seen[super::super::DiagnosticRole::Eq as usize] != const_marker
+        || const_marker && declarations[LangItem::StructuralPartialEq.index()].is_none()
+    {
+        return Err(
+            "source ConstParamTy requires its actual StructuralPartialEq and Eq declarations",
+        );
     }
     Ok(send)
 }

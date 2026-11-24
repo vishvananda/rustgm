@@ -91,11 +91,32 @@ impl Checker<'_> {
                         "const parameter declaration lost its rigid identity",
                     ));
                 };
-                let key = self.report.resolution.definitions[parameter.binding.0 as usize]
-                    .node
-                    .ok_or_else(|| {
-                        Error::unlocated("const parameter lacks its actual local source")
-                    })?;
+                let Some(key) =
+                    self.report.resolution.definitions[parameter.binding.0 as usize].node
+                else {
+                    if let Some(origins) = self
+                        .facts
+                        .crates
+                        .as_deref()
+                        .and_then(|l| l.origin_catalog())
+                        && let Some(binding) = origins
+                            .declaration_if_imported(parameter.binding)
+                            .map_err(Error::unlocated)?
+                    {
+                        // The sealed source-interface slot has already checked its scalar type.
+                        origins
+                            .validate_declaration(
+                                binding,
+                                parameter.binding,
+                                crate::resolve::model::DefKind::Generic,
+                            )
+                            .map_err(Error::unlocated)?;
+                        continue;
+                    }
+                    return Err(Error::unlocated(
+                        "const parameter lacks its actual local source",
+                    ));
+                };
                 let ty = self
                     .facts
                     .types
@@ -127,7 +148,7 @@ impl Checker<'_> {
                     "const parameter proof requires its actual source catalog",
                 )
             })?
-            .validated_language(LangItem::ConstParamTy)
+            .validated_role(LangItem::ConstParamTy)
             .map_err(|e| self.error(key, e))?
             .ok_or_else(|| self.error(key, "const parameter type requires actual ConstParamTy"))?;
         crate::sema::header_attributes::reserve_source_contracts(&mut self.facts, 8, 0)?;

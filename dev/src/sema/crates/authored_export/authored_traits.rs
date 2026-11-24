@@ -85,9 +85,6 @@ impl Stage {
         if !self.body_nodes() && catalog.language(LangItem::UnsafeUnpin).is_some() {
             return Err("source UnsafeUnpin contract transport is not implemented");
         }
-        if catalog.language(LangItem::ConstParamTy).is_some() {
-            return Err("source ConstParamTy contract transport is not implemented");
-        }
         let reserved = report
             .resolution
             .source_bindings
@@ -197,11 +194,9 @@ impl Stage {
         Ok(())
     }
 
-    /// Version thirteen transports `NonNull`'s and `Send`'s diagnostic
-    /// identities as role table rows after the language rows, in the closed
-    /// table's order; older profiles reject `NonNull`'s by name here and
-    /// `Send`'s in the role stage. This runs after every other export stage,
-    /// so an export that fails earlier keeps its own diagnostic.
+    /// Diagnostic identities follow the language rows in the table's order.
+    /// Version fourteen carries `Eq` with its `ConstParamTy` role family.
+    /// Earlier export failures retain their own diagnostics.
     pub(super) fn diagnostic_roles(&mut self, report: &Report) -> Result<(), &'static str> {
         self.charge(1)?;
         let Some(reservations) = report.resolution.source_bindings.as_deref() else {
@@ -216,6 +211,12 @@ impl Stage {
                 s::DiagnosticRole::Send,
                 reservations.language(LangItem::Send),
             ),
+            (
+                s::DiagnosticRole::Eq,
+                reservations
+                    .language(LangItem::ConstParamTy)
+                    .and_then(|_| reservations.eq_declaration()),
+            ),
         ] {
             let Some(declaration) = declaration else {
                 continue;
@@ -228,6 +229,7 @@ impl Stage {
                     s::DiagnosticRole::Send => {
                         "source Send diagnostic contract transport is not implemented"
                     }
+                    s::DiagnosticRole::Eq => "source Eq diagnostic identity requires version 14",
                 });
             }
             let address = self.address(declaration.definition)?;
@@ -251,8 +253,11 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
-        if role == LangItem::ConstParamTy && catalog.language(role).is_some() {
-            return Err("source ConstParamTy contract transport is not implemented");
+        if matches!(role, LangItem::ConstParamTy | LangItem::StructuralPartialEq)
+            && !self.declaration_policies()
+            && catalog.language(role).is_some()
+        {
+            return Err("source const parameter marker transport requires version 14");
         }
         let Some(declaration) = self.exported_role(report, facts, role)? else {
             return Ok(None);

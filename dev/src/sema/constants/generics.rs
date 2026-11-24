@@ -130,6 +130,8 @@ fn complete(queries: &mut Queries<'_>, key: NodeKey, ty: TypeId) -> Result<Const
         .saturating_add(crate::support::crates::MAX_COMPONENTS);
     valtrees::canonicalize(
         queries.typing.facts,
+        queries.report.package.source_client().is_some()
+            || queries.report.package.staged_consumer().is_some(),
         &mut queries.steps,
         value_limit,
         ty,

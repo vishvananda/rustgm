@@ -1,0 +1,19 @@
+{
+  "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+  "prefix_marker": "// Authored macro-context transport controls.",
+  "provider": "provider.rs",
+  "cases": [
+    {"source": "client.rs", "status": 0},
+    {"source": "missing-impl.rs", "status": 1, "rustc_diagnostic": "E0741", "diagnostic": "const parameter type must implement actual ConstParamTy"},
+    {"source": "unproven-child.rs", "status": 1, "rustc_diagnostic": "E0204", "diagnostic": "requires every real child to implement actual ConstParamTy"}
+  ],
+  "observer": "observer.c",
+  "stdout": "37 19\n",
+  "old_profile_diagnostic": "source const parameter marker transport requires version 14",
+  "old_reader_diagnostic": "unknown source diagnostic identity spelling",
+  "forgeries": {
+    "foreign-eq": "source diagnostic identity belongs to a foreign provider",
+    "same-role": "source Eq diagnostic identity requires its own version-fourteen trait",
+    "unrelated-eq": "requires its exact StructuralPartialEq and Eq supertraits"
+  }
+}
