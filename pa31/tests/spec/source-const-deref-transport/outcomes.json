@@ -1,0 +1,14 @@
+{
+  "foundation": "pa31/tests/spec/full-drop-source/pin-drop.rs",
+  "foundation_end": "pub mod ops{",
+  "pin": "pa31/tests/spec/source-pin-constructor-transport/provider.rs",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "pa31/tests/spec/source-pin-constructor-transport/observer.c",
+  "stdout": "73\n42\n",
+  "rustc_ordinary_impl": "error[E0277]",
+  "rustgm_ordinary_impl": "trait obligation requires an unambiguous matching assumption or implementation",
+  "old_profile": "source role form is outside the complete first transport family",
+  "old_reader": "source const/auto/unsafe traits require a wider explicit profile",
+  "wrong_role": "source role binding is duplicated or belongs to a foreign provider"
+}

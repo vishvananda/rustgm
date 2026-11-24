@@ -52,7 +52,7 @@ impl Checker<'_> {
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
         if effect != Constness::Ordinary {
-            self.require_imported_const_binary(trait_definition, effect)?;
+            self.require_imported_const_operator(trait_definition, effect)?;
         }
         if let Some(plan) = member_plan {
             plan.require(&self.facts, definition, predicate)
@@ -75,7 +75,7 @@ impl Checker<'_> {
             })
     }
 
-    fn require_imported_const_binary(
+    fn require_imported_const_operator(
         &self,
         definition: DefId,
         effect: Constness,
@@ -87,7 +87,7 @@ impl Checker<'_> {
         }
         let role = self
             .facts
-            .imported_binary_role(definition)
+            .imported_const_operator_role(definition)
             .map_err(Error::unlocated)?;
         let Some(role) = role.filter(|_| {
             effect == Constness::Const

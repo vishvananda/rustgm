@@ -129,8 +129,8 @@ fn captures_of(descriptor: s::Descriptor<'_>, raw: &s::FunctionHeader, trait_fra
 }
 
 pub(super) fn transported_const_impl(descriptor: s::Descriptor<'_>, owner: &s::ImplHeader) -> bool {
-    // The version-fourteen validator admits a positive const bit only on its
-    // actual binary operator role. The validated rows carry that restriction here.
+    // The version-fourteen validator authenticates the const operator role.
+    // Staged reconstruction checks its implementations against that trait.
     descriptor.profile().declaration_policies()
         && owner.constant
         && (owner.polarity == crate::sema::associated::ImplPolarity::Reservation

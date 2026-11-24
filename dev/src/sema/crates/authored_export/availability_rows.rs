@@ -388,6 +388,10 @@ impl Stage {
             ) || (!self.rows.declarations[owner.0 as usize].public
                 && self.rows.declarations[owner.0 as usize].definition.kind
                     == s::DefinitionKind::TypeAlias)
+                || (self.declaration_policies()
+                    && definition.kind == DefKind::TypeAlias
+                    && self.rows.declarations[owner.0 as usize].definition.kind
+                        == s::DefinitionKind::AssociatedType)
                 || (definition.kind == DefKind::SelfType
                     && matches!(report.package.unit(source.file).configured.ast.node(source.node).kind,Kind::Item(item) if matches!(report.package.unit(source.file).configured.ast.items[item as usize].kind,crate::syntax::item::ItemKind::Impl {..})));
             if actual {

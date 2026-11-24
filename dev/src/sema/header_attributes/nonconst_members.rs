@@ -278,9 +278,9 @@ impl Declarations {
             .and_then(|&index| self.functions.get(index))
             .filter(|function| function.definition == definition)
         else {
-            // The binary operator profile admits required members and rejects a
+            // The const operator profile admits required members and rejects a
             // written non-const marker before publishing that conditional row.
-            if self.imported_binary_trait(definition)?.is_some() {
+            if self.imported_const_operator_trait(definition)?.is_some() {
                 return Ok(false);
             }
             return Err("trait member constness lacks its actual function");

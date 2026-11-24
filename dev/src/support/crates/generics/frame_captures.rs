@@ -19,7 +19,7 @@ pub(super) fn method(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
-    trait_impls: bool,
+    (trait_impls, effect): (bool, Constness),
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -39,7 +39,7 @@ pub(super) fn method(
     }
     let scopes = headers.scopes();
     if implementation.self_definition != parent
-        || implementation.constant
+        || implementation.constant != (effect == Constness::Const)
         || !implementation.polarity.is_positive()
         || implementation.unsafe_
         || !implementation
@@ -47,6 +47,7 @@ pub(super) fn method(
             .slice(&rows.region_bounds)?
             .is_empty()
         || function.constness == Constness::Conditional
+        || effect == Constness::Const && function.constness != effect
         || function.regions.captures != implementation.region_captures
         || !function.regions.early.slice(&rows.region_slots)?.is_empty()
         || !function

@@ -188,7 +188,9 @@ fn validate_with(
         }
         if header.constant
             && !reservation
-            && !roles.const_binary_impl(rows, headers, header, work)?
+            && roles
+                .const_operator_impl(rows, headers, header, work)?
+                .is_none()
             || (!header.polarity.is_positive() || header.unsafe_)
                 && !(roles.languages && header.trait_application.is_some())
         {
@@ -203,7 +205,7 @@ fn validate_with(
     for clause in &rows.clauses {
         work.charge(1)?;
         let qualified =
-            roles.callables.callable(clause.owner) || roles.conditional_glue_input(rows, clause);
+            roles.callables.callable(clause.owner) || roles.conditional_role_input(rows, clause);
         ordinary(&clause.requirement, qualified)?;
     }
     originals(
@@ -331,7 +333,7 @@ fn trait_headers(
             );
         }
         let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
-        let binary = roles.binary_operators.contains(&Some(header.declaration));
+        let operator = roles.const_operator(header.declaration);
         let range = roles
             .range
             .is_some_and(|family| family.owner == header.declaration);
@@ -342,7 +344,7 @@ fn trait_headers(
         // Version thirteen also admits an unsafe trait that is not auto.
         if flags & TraitFlags::AUTO != 0
             || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0 && !conversion && !binary && !range && !drop
+            || flags & TraitFlags::CONST != 0 && !conversion && !operator && !range && !drop
         {
             return Err("source const/auto/unsafe traits require a wider explicit profile");
         }
@@ -428,7 +430,7 @@ fn associated_method(
                     rows,
                     headers,
                     header,
-                    roles.definition_policies != 0,
+                    (roles.definition_policies != 0, Constness::Ordinary),
                     work,
                 )? || reservation_parent(rows, headers, header, work)?.is_some())))
 }
@@ -476,9 +478,13 @@ fn trait_const_method(
     if implementation.polarity == ImplPolarity::Reservation {
         return Ok(true);
     }
+    let Some(owner) = roles.const_operator_impl(rows, headers, implementation, work)? else {
+        return Ok(false);
+    };
     Ok(
-        roles.const_binary_impl(rows, headers, implementation, work)?
-            && conversions::method(rows, headers, header, false, Constness::Const, work)?,
+        conversions::method(rows, headers, header, false, Constness::Const, work)?
+            || roles.dereferences.contains(&Some(owner))
+                && captured::method(rows, headers, header, (true, Constness::Const), work)?,
     )
 }
 
@@ -922,6 +928,8 @@ pub(super) struct Bindings {
     conversion: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     binary_operators: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         Profile::CONST_BINARY_ROLES.len()],
+    dereferences: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        Profile::CONST_DEREF_ROLES.len()],
     range: Option<interval_roles::Family>,
     callables: callable_roles::Roles,
     /// Version thirteen: exact empty auto declarations, unsafe traits and
@@ -932,22 +940,34 @@ pub(super) struct Bindings {
     markers: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 4],
 }
 impl Bindings {
-    fn const_binary_impl(
+    fn const_operator(
+        &self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    ) -> bool {
+        self.binary_operators.contains(&Some(declaration))
+            || self.dereferences.contains(&Some(declaration))
+    }
+
+    fn const_operator_impl(
         &self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
         implementation: &super::super::ImplHeader,
         work: &mut Work,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
         let Some(application) = implementation.trait_application else {
-            return Ok(false);
+            return Ok(None);
         };
         if !implementation.constant
             || implementation.unsafe_
             || !implementation.polarity.is_positive()
-            || self.binary_operators.iter().all(Option::is_none)
+            || self
+                .binary_operators
+                .iter()
+                .chain(&self.dereferences)
+                .all(Option::is_none)
         {
-            return Ok(false);
+            return Ok(None);
         }
         work.charge(1)?;
         let declaration = rows
@@ -955,25 +975,29 @@ impl Bindings {
             .get(application.0 as usize)
             .ok_or("source const operator impl lost its actual trait application")?
             .declaration;
-        if declaration.artifact.0 != 0
-            || !self
-                .binary_operators
-                .contains(&Some(declaration.declaration))
-        {
-            return Ok(false);
+        if declaration.artifact.0 != 0 || !self.const_operator(declaration.declaration) {
+            return Ok(None);
         }
         let Some(super::super::HeaderRef::Trait(index)) =
             headers.header(declaration.declaration, work)?
         else {
             return Err("source const operator impl lost its actual trait header");
         };
-        Ok(rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
+        Ok(
+            (rows.traits[index as usize].flags.bits() & TraitFlags::CONST != 0)
+                .then_some(declaration.declaration),
+        )
     }
 
-    fn conditional_glue_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {
-        if Some(input.owner) != self.drop_glue {
+    fn conditional_role_input(&self, rows: &SourceRows, input: &super::super::Clause) -> bool {
+        let [deref, deref_mut] = self.dereferences;
+        let target = if Some(input.owner) == self.drop_glue {
+            self.destruct
+        } else if Some(input.owner) == deref_mut {
+            deref
+        } else {
             return false;
-        }
+        };
         let super::super::Requirement::Trait {
             application,
             effect: Constness::Conditional,
@@ -984,8 +1008,7 @@ impl Bindings {
         rows.trait_applications
             .get(application.0 as usize)
             .is_some_and(|app| {
-                app.declaration.artifact.0 == 0
-                    && Some(app.declaration.declaration) == self.destruct
+                app.declaration.artifact.0 == 0 && Some(app.declaration.declaration) == target
             })
     }
 
@@ -1005,15 +1028,13 @@ impl Bindings {
         {
             return Ok(true);
         }
-        let binary = function
-            .parent
-            .filter(|&owner| self.binary_operators.contains(&Some(owner)));
+        let operator = function.parent.filter(|&owner| self.const_operator(owner));
         conversions::required_member(
             rows,
             headers,
             function,
-            binary.or(self.conversion),
-            binary.is_some(),
+            operator.or(self.conversion),
+            operator.is_some(),
             work,
         )
     }
@@ -1225,6 +1246,11 @@ pub(super) fn bindings(
             Profile::CONST_BINARY_ROLES.map(|role| declarations[role.index()])
         } else {
             [None; Profile::CONST_BINARY_ROLES.len()]
+        },
+        dereferences: if profile == BindingProfile::BodyOperations {
+            Profile::CONST_DEREF_ROLES.map(|role| declarations[role.index()])
+        } else {
+            [None; Profile::CONST_DEREF_ROLES.len()]
         },
         sizing,
         destruct: if matches!(

@@ -8,6 +8,11 @@ impl Profile {
         crate::support::bindings::LangItem::Div,
     ];
 
+    pub(crate) const CONST_DEREF_ROLES: [crate::support::bindings::LangItem; 2] = [
+        crate::support::bindings::LangItem::Deref,
+        crate::support::bindings::LangItem::DerefMut,
+    ];
+
     /// Version fourteen carries declaration policy independently of language roles.
     pub(crate) const fn declaration_policies(self) -> bool {
         matches!(self, Self::Source2024ModuleBodyOperations)

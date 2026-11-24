@@ -537,7 +537,9 @@ fn effective_impl_constness(
         .as_deref()
         .ok_or("source effective const method lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
-    let roles = s::Profile::CONST_BINARY_ROLES.map(|role| catalog.language(role));
+    let [subtract, divide] = s::Profile::CONST_BINARY_ROLES.map(|role| catalog.language(role));
+    let [deref, deref_mut] = s::Profile::CONST_DEREF_ROLES.map(|role| catalog.language(role));
+    let roles = [subtract, divide, deref, deref_mut];
     if roles.iter().all(Option::is_none) {
         return Ok(false);
     }
@@ -596,17 +598,20 @@ fn required_trait_member(
         .ok_or("conversion member lost its actual language catalog")?;
     catalog.require_provider_report(report)?;
     let mut selected = if roles.declaration_policies {
-        // The role walk already authenticated this exact operator header.
-        s::Profile::CONST_BINARY_ROLES.into_iter().find_map(|role| {
-            catalog
-                .language(role)
-                .filter(|role| role.definition == definition)
-        })
+        // The exact language role owns this member's unwritten effect.
+        s::Profile::CONST_BINARY_ROLES
+            .into_iter()
+            .chain(s::Profile::CONST_DEREF_ROLES)
+            .find_map(|role| {
+                catalog
+                    .language(role)
+                    .filter(|role| role.definition == definition)
+            })
     } else {
         None
     };
     if selected.is_some() && facts.nonconst_trait_member(function.definition)? {
-        return Err("source non-const binary operator method requires its actual policy transport");
+        return Err("source non-const operator method requires its actual policy transport");
     }
     if roles.declaration_policies
         && let Some((parent, [_, _, subtract])) =

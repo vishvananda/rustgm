@@ -187,7 +187,14 @@ impl AvailabilityRows {
             }
             return self.ordinary_absence(work);
         }
-        self.staged(columns, headers, modules, base.saturating_add(bytes), work)
+        self.staged(
+            columns,
+            headers,
+            modules,
+            base.saturating_add(bytes),
+            work,
+            profile.declaration_policies(),
+        )
     }
     fn staged(
         self,
@@ -196,6 +203,7 @@ impl AvailabilityRows {
         modules: &ModuleContractRows,
         base: usize,
         work: &mut Work,
+        declaration_policies: bool,
     ) -> Result<AvailabilityColumns, &'static str> {
         if self
             .declarations
@@ -221,6 +229,7 @@ impl AvailabilityRows {
             headers,
             modules,
             ancestry,
+            declaration_policies,
         };
         let mut origins = crate::support::hash::HashSet::with_capacity_and_hasher(
             self.policies.len(),
@@ -359,9 +368,6 @@ impl AvailabilityRows {
         work.charge(1)?;
         let policy = self.policy(reference)?;
         if constant {
-            if !view.constant(owner) {
-                return Err("const availability requires its actual const declaration kind");
-            }
             if policy.kind == AvailabilityKind::Regular
                 && !matches!(policy.level, AvailabilityLevel::Unstable { .. })
             {
@@ -404,6 +410,17 @@ impl AvailabilityRows {
         if origin != owner && policy.level.stable() {
             return Err("stable declaration policy cannot be inherited");
         }
+        if constant
+            && !view.constant(owner)
+            && !(policy.kind == AvailabilityKind::Const
+                && view.associated_type(owner)
+                && view.columns.declarations[owner.0 as usize]
+                    .definition
+                    .parent
+                    == Some(origin))
+        {
+            return Err("const availability requires its actual const declaration kind");
+        }
         if policy.kind == AvailabilityKind::Const && !view.constant(origin) {
             return Err("const policy origin is not its actual const header");
         }
@@ -420,6 +437,7 @@ impl AvailabilityRows {
                     | DefinitionKind::TypeAlias
                     | DefinitionKind::Static
             )
+            && !view.associated_type(origin)
             && !view.inherent_constant(origin)
             && !view.trait_constant(origin)
         {
@@ -501,6 +519,7 @@ struct Validation<'a> {
     headers: &'a [Option<super::HeaderRef>],
     modules: &'a ModuleContractRows,
     ancestry: AvailabilityAncestry,
+    declaration_policies: bool,
 }
 impl Validation<'_> {
     fn trait_implementation(&self, owner: DeclarationRef) -> bool {
@@ -513,6 +532,17 @@ impl Validation<'_> {
             _ => false,
         }
     }
+    /// Associated type headers and definitions may own their API policy.
+    fn associated_type(&self, owner: DeclarationRef) -> bool {
+        self.declaration_policies
+            && matches!(
+                self.headers.get(owner.0 as usize).copied().flatten(),
+                Some(
+                    super::HeaderRef::AssociatedType(_) | super::HeaderRef::AssociatedDefinition(_)
+                )
+            )
+    }
+
     fn constant(&self, owner: DeclarationRef) -> bool {
         match self.headers.get(owner.0 as usize).copied().flatten() {
             Some(super::HeaderRef::Function(index)) => self

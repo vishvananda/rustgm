@@ -178,6 +178,7 @@ pub(super) fn imported(
         target.definition,
         false,
     )?;
+    let const_deref = header.flags.constant;
     complete.insert(LangItem::Deref);
     complete.insert(LangItem::DerefTarget);
     if let Some(mutable) = mutable {
@@ -189,6 +190,15 @@ pub(super) fn imported(
         };
         if header.members.len() != 1
             || !header.requires(&facts.types, base.definition, None, effect)
+            || (header.flags.constant
+                && (!const_deref
+                    || header.written.supertraits != 2
+                    || !header.requires(
+                        &facts.types,
+                        pointee.definition,
+                        None,
+                        Constness::Ordinary,
+                    )))
         {
             return Err("imported DerefMut changed its actual Deref supertrait or member contract");
         }
