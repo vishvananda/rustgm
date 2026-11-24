@@ -600,6 +600,7 @@ pub struct ColdColumns {
     /// declaration order. Each row holds its own term in place.
     pub constants: Vec<ConstantHeader>,
     pub type_aliases: Vec<TypeAliasHeader>,
+    pub alias_normalizations: Vec<AliasNormalization>,
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
@@ -618,6 +619,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     array_lengths: Vec::new(),
     constants: Vec::new(),
     type_aliases: Vec::new(),
+    alias_normalizations: Vec::new(),
     trait_aliases: Vec::new(),
     statics: None,
     bodies: None,
@@ -636,14 +638,22 @@ impl ColdColumns {
             && self.array_lengths.is_empty()
             && self.constants.is_empty()
             && self.type_aliases.is_empty()
+            && self.alias_normalizations.is_empty()
             && self.trait_aliases.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()
     }
 }
-/// A v14 public, closed module alias and its transparent target recipe.
+/// A v14 module alias and its transparent target recipe.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TypeAliasHeader {
+    pub declaration: DeclarationRef,
+    pub target: TypeRef,
+}
+
+/// An ordered deferred projection under its actual transparent alias scope.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AliasNormalization {
     pub declaration: DeclarationRef,
     pub target: TypeRef,
 }

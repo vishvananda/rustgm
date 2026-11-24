@@ -69,7 +69,31 @@ impl Requirements {
         self.data.is_none()
     }
 
-    pub(crate) fn source_projection_allocation(&self) -> crate::support::retained::Allocation {
+    pub(crate) fn source_normalizations(
+        &self,
+        owner: DefId,
+    ) -> Result<&[(ScopeId, TypeId)], &'static str> {
+        let contract = self
+            .data
+            .as_ref()
+            .and_then(|data| data.contracts.get(&owner))
+            .filter(|contract| {
+                contract.parameters == owner
+                    && contract.sealed
+                    && contract.direct.is_empty()
+                    && contract.dependencies.is_empty()
+                    && contract.sized.is_empty()
+                    && contract.scopes.is_none()
+                    && !contract.normalizations.is_empty()
+            })
+            .ok_or("source alias has deferred proof inputs beyond its target recipe")?;
+        Ok(&contract.normalizations)
+    }
+
+    pub(crate) fn source_projection_allocation(
+        &self,
+        count: usize,
+    ) -> crate::support::retained::Allocation {
         use crate::support::retained::{Allocation, Growth};
         let (len, capacity) = self.data.as_ref().map_or((0, 0), |data| {
             (data.contracts.len(), data.contracts.capacity())
@@ -79,8 +103,8 @@ impl Requirements {
             bytes: growth
                 .bytes
                 .saturating_add(usize::from(self.is_empty()) * size_of::<super::Data>())
-                .saturating_add(4 * size_of::<(ScopeId, TypeId)>()),
-            visits: growth.work.saturating_add(1),
+                .saturating_add(count.saturating_mul(4 * size_of::<(ScopeId, TypeId)>())),
+            visits: growth.work.saturating_add(count),
         }
     }
 

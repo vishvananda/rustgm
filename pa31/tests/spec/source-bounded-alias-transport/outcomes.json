@@ -1,0 +1,61 @@
+{
+  "provider": {
+    "foundation": "pa29/tests/spec/macro-contexts/provider.rs",
+    "prefix_marker": "// Authored macro-context transport controls.",
+    "source": "provider.rs",
+    "legacy": "legacy.rs"
+  },
+  "consumers": [
+    {
+      "source": "proved.rs",
+      "status": 0,
+      "lowir": ["return u32 34"]
+    },
+    {
+      "source": "missing.rs",
+      "status": 1,
+      "diagnostic": "associated type",
+      "rustc_diagnostic": "error[E0277]"
+    },
+    {
+      "source": "private.rs",
+      "status": 1,
+      "diagnostic": "private type name `ChangeOutputType`",
+      "rustc_diagnostic": "error[E0603]"
+    }
+  ],
+  "block": {
+    "source": "block-provider.rs",
+    "baseline_diagnostic": "source alias changed its completed closed type or source witness",
+    "consumers": [
+      {
+        "source": "block-client.rs",
+        "status": 0,
+        "lowir": ["call u32 @rgc", "store u32 34"]
+      }
+    ]
+  },
+  "const": {
+    "source": "const-provider.rs",
+    "baseline_diagnostic": "named, associated or generic alias transport requires its wider profile",
+    "consumers": [
+      {
+        "source": "const-client.rs",
+        "status": 0,
+        "lowir": ["call void @rgc", "copyobj 12x4", "return u32 34"]
+      },
+      {
+        "source": "const-length.rs",
+        "status": 1,
+        "diagnostic": "incompatible types",
+        "rustc_diagnostic": "error[E0308]"
+      },
+      {
+        "source": "const-scalar.rs",
+        "status": 1,
+        "diagnostic": "const argument has the wrong type",
+        "rustc_diagnostic": "the constant `B` is not of type `usize`"
+      }
+    ]
+  }
+}

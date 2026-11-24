@@ -70,6 +70,7 @@ impl Columns {
             || !cold.array_lengths.is_empty()
             || !cold.constants.is_empty()
             || !cold.type_aliases.is_empty()
+            || !cold.alias_normalizations.is_empty()
             || !cold.trait_aliases.is_empty()
             || cold.statics.is_some())
         .then(|| {
@@ -82,6 +83,7 @@ impl Columns {
                 array_lengths: cold.array_lengths.clone(),
                 constants: cold.constants.clone(),
                 type_aliases: cold.type_aliases.clone(),
+                alias_normalizations: cold.alias_normalizations.clone(),
                 trait_aliases: cold.trait_aliases.clone(),
                 statics: cold.statics.clone(),
                 bodies: None,
@@ -115,6 +117,24 @@ impl Columns {
     #[must_use]
     pub(crate) fn type_aliases(&self) -> &[super::super::TypeAliasHeader] {
         &self.cold().type_aliases
+    }
+
+    #[must_use]
+    pub(crate) fn alias_normalizations(
+        &self,
+        owner: DeclarationRef,
+    ) -> &[super::super::AliasNormalization] {
+        let rows = &self.cold().alias_normalizations;
+        let start = rows.partition_point(|row| row.declaration.0 < owner.0);
+        let end = rows[start..].partition_point(|row| row.declaration == owner);
+        &rows[start..start + end]
+    }
+
+    #[must_use]
+    pub(crate) fn alias_normalization_lookup_work(&self) -> usize {
+        let len = self.cold().alias_normalizations.len();
+        let iterations = usize::BITS - len.leading_zeros();
+        usize::try_from(iterations.saturating_mul(2)).unwrap_or(usize::MAX)
     }
 
     #[must_use]

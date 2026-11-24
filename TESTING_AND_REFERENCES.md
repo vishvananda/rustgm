@@ -98,6 +98,15 @@ reordered prerequisites declare `work_units` from their actual owning units;
 only those units' transitive dependency owners and the active PA1–PA24 foundation
 are admitted. Legacy cases retain numeric placement checks.
 
+### Source declaration export census
+
+Replay the target source and profile flags with `--export-census PATH` in place
+of the artifact output flags. The v14 source-library census runs the ordinary
+source and template checks and reports each declaration rejected by the export
+admission check, with its definition identity, name and source location. The
+command exits with a nonzero status and creates only the census file. Scope,
+header and body transport run when building the actual library artifact.
+
 ### Test placement audit
 
 Run `make setup-audit` once to install the pinned Rust parser for

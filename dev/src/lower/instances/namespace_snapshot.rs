@@ -31,7 +31,7 @@ pub(crate) fn inspect_source_namespace(
             .map_err(|e| diagnostic(report, None, e.into()))?;
             let exports = crate::lower::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((None, exports, state))
+            Ok(std::ops::ControlFlow::Continue((None, exports, state)))
         },
         |state, facts, proved, input| {
             state

@@ -1,4 +1,5 @@
 //! Source headers reserve genuine declarations before any body row is published.
+mod admission_rows;
 mod admitted_contracts;
 mod advisory_rows;
 mod availability_rows;
@@ -6,6 +7,8 @@ pub(crate) use admitted_contracts::HeaderCompletion;
 mod authored_functions;
 mod authored_traits;
 mod bound_aliases;
+mod census;
+pub use census::{DeclCensus, DeclFailure};
 mod canonical_nodes;
 mod collected_formals;
 mod collected_provider;
@@ -32,7 +35,8 @@ mod verbatim_exports;
 use crate::{
     resolve::{
         expansion::Report,
-        model::{Access, DefId, DefKind, Namespace, Origin, ScopeId},
+        model::{Access, DefId, DefKind, Definition, Namespace, Origin, ScopeId},
+        unit::NodeKey,
     },
     sema::{associated::OwnerKind, model::Declarations},
     support::{
@@ -43,8 +47,8 @@ use crate::{
             owner_catalog::DeclarationRef,
         },
     },
-    syntax::item::Shape,
-    types::TypeId,
+    syntax::{ast::Kind as Syntax, item::ItemKind},
+    types::{Kind, TypeId, lifetime_proof::ScopeId as ProofScope},
 };
 pub(crate) use advisory_rows::require_defaultness_transport;
 pub(crate) use canonical_nodes::Context;
@@ -465,6 +469,40 @@ impl Stage {
         mode: ExportMode,
         body_transport: BodyTransport,
     ) -> Result<Self, &'static str> {
+        let mut stage = Self::header_draft(report, facts, identity, mode, body_transport)?;
+        let leaves = stage.declarations(report, facts, mode)?;
+        stage.scopes(report, facts)?;
+        stage.traits(report, facts, mode != ExportMode::Legacy)?;
+        if stage.nominal_transport {
+            stage.nominals(report, facts)?;
+        }
+        if stage.compiler_operations || stage.body_nodes() {
+            stage.associated_headers(report, facts)?;
+        }
+        let provided_constants = stage.provided_constants(report, facts)?;
+        if stage.body_nodes() && provided_constants.is_empty() {
+            stage.constant_headers(report, facts)?;
+        }
+        stage.alias_headers(facts, leaves.aliases)?;
+        stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
+        stage.static_headers(facts, identity, leaves.statics)?;
+        stage.functions(report, facts, identity, &provided_constants)?;
+        if !provided_constants.is_empty() {
+            stage.constant_headers(report, facts)?;
+        }
+        stage.implementations(report, facts)?;
+        stage.diagnostic_roles(report)?;
+        stage.install_private_symbols(facts, identity)?;
+        Ok(stage)
+    }
+
+    fn header_draft(
+        report: &Report,
+        facts: &Declarations,
+        identity: &CrateIdentity,
+        mode: ExportMode,
+        body_transport: BodyTransport,
+    ) -> Result<Self, &'static str> {
         require_export_mode(
             report,
             facts,
@@ -524,29 +562,6 @@ impl Stage {
             );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
-        let leaves = stage.declarations(report, facts, mode)?;
-        stage.scopes(report, facts)?;
-        stage.traits(report, facts, mode != ExportMode::Legacy)?;
-        if stage.nominal_transport {
-            stage.nominals(report, facts)?;
-        }
-        if stage.compiler_operations || stage.body_nodes() {
-            stage.associated_headers(report, facts)?;
-        }
-        let provided_constants = stage.provided_constants(report, facts)?;
-        if stage.body_nodes() && provided_constants.is_empty() {
-            stage.constant_headers(report, facts)?;
-        }
-        stage.alias_headers(facts, leaves.aliases)?;
-        stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
-        stage.static_headers(facts, identity, leaves.statics)?;
-        stage.functions(report, facts, identity, &provided_constants)?;
-        if !provided_constants.is_empty() {
-            stage.constant_headers(report, facts)?;
-        }
-        stage.implementations(report, facts)?;
-        stage.diagnostic_roles(report)?;
-        stage.install_private_symbols(facts, identity)?;
         Ok(stage)
     }
 
@@ -604,211 +619,6 @@ impl Stage {
             .ok_or("source header names an unreserved actual declaration")
     }
 
-    fn exported_kind(
-        &mut self,
-        report: &Report,
-        facts: &Declarations,
-        id: DefId,
-        mode: ExportMode,
-    ) -> Result<Option<s::DefinitionKind>, &'static str> {
-        let definition = &report.resolution.definitions[id.0 as usize];
-        if self.declaration_policies() {
-            match definition.kind {
-                DefKind::TraitAlias => return Ok(Some(s::DefinitionKind::TraitAlias)),
-                DefKind::ForeignType => {
-                    require_foreign_declaration(report, facts, id)?;
-                    return Ok(Some(s::DefinitionKind::ForeignType));
-                }
-                DefKind::Static => {
-                    statics::require_definition(report, facts, id)?;
-                    return Ok(Some(s::DefinitionKind::Static));
-                }
-                DefKind::ExternCrate => {
-                    self.private_self_alias(report, id)?;
-                    return Ok(None);
-                }
-                DefKind::Label => {
-                    // The checked CFG owns each destination as a block identity.
-                    if definition.namespace != Namespace::Label
-                        || definition.node.is_none()
-                        || definition.members.is_some()
-                        || !matches!(definition.access, Access::Within(_))
-                    {
-                        return Err("source label changed its actual lexical declaration");
-                    }
-                    return Ok(None);
-                }
-                _ => {}
-            }
-        }
-        let associated = (mode == ExportMode::CompilerOperations || self.body_nodes())
-            && facts.associated.type_contract(id).is_some();
-        if associated || self.body_nodes() && implementation_result(report, facts, id) {
-            return Ok(Some(s::DefinitionKind::AssociatedType));
-        }
-        if matches!(
-            mode,
-            ExportMode::Conversions | ExportMode::Nominals | ExportMode::CompilerOperations
-        ) && definition.kind == DefKind::TypeAlias
-        {
-            if self.declaration_policies() && scoped_module_alias(facts, definition, id) {
-                self.scoped_alias(report, facts, id)?;
-            } else {
-                self.closed_alias(report, facts, id)?;
-            }
-            return Ok(
-                (definition.access == Access::Public).then_some(s::DefinitionKind::TypeAlias)
-            );
-        }
-        if definition.kind == DefKind::Struct
-            && matches!(mode, ExportMode::Nominals | ExportMode::CompilerOperations)
-        {
-            return Ok(Some(s::DefinitionKind::Struct));
-        }
-        if self.body_nodes() {
-            match definition.kind {
-                DefKind::Enum => return Ok(Some(s::DefinitionKind::Enum)),
-                // One declaration names a variant: a unit or tuple variant's
-                // value-namespace constructor, whose type-namespace alias has
-                // no row, or a record variant's own type-namespace definition.
-                DefKind::Variant if definition.namespace == Namespace::Value => {
-                    return Ok(Some(s::DefinitionKind::Variant));
-                }
-                DefKind::Variant => {
-                    let variant = facts
-                        .members
-                        .constructor(id)
-                        .ok_or("source variant lacks its actual constructor")?;
-                    return Ok(
-                        (facts.members.variants[variant.0 as usize].shape == Shape::Record)
-                            .then_some(s::DefinitionKind::Variant),
-                    );
-                }
-                // A tuple or unit struct's constructor is the variant
-                // declaration of its struct's single field group.
-                DefKind::Constructor if definition.namespace == Namespace::Value => {
-                    self.struct_constructor(report, facts, id)?;
-                    return Ok(Some(s::DefinitionKind::Variant));
-                }
-                // Version thirteen: a const generic parameter, whose slot
-                // records its primitive type.
-                DefKind::Generic if definition.namespace == Namespace::Value => {
-                    return Ok(Some(s::DefinitionKind::ConstParameter));
-                }
-                // Version thirteen: a named const item. An unnamed const has
-                // no row: its provider already evaluated it and no consumer
-                // can name it.
-                DefKind::Const => {
-                    return if report.package.names.get(definition.name) == "_" {
-                        Ok(None)
-                    } else if facts.associated.owner(id).is_some()
-                        && !self.range_required_constant(facts, id)
-                        && !self.authored_required_constant(report, facts, id)
-                        && !self.provided_constant(report, facts, id)
-                        && self.inherent_constant(report, facts, id).is_none()
-                    {
-                        Err("source associated constants require their wider profile")
-                    } else {
-                        Ok(Some(s::DefinitionKind::Constant))
-                    };
-                }
-                _ => {}
-            }
-        }
-        kind(definition.kind, definition.namespace)
-    }
-    fn declarations(
-        &mut self,
-        report: &Report,
-        facts: &mut Declarations,
-        mode: ExportMode,
-    ) -> Result<DeclarationLeaves, &'static str> {
-        let mut leaves = DeclarationLeaves::default();
-        let mut features =
-            non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
-        let mut owners = scope_owners(report, facts, self)?;
-        let root = report
-            .resolution
-            .crate_root
-            .ok_or("source provider has no actual root")?;
-        let provider = report
-            .package
-            .source_core()
-            .ok_or("source provider policy disappeared")?;
-        self.reserve(
-            report
-                .resolution
-                .definitions
-                .len()
-                .saturating_mul(size_of::<u32>() + size_of::<Option<DefId>>()),
-        )?;
-        let mut ordinals = vec![0_u32; report.resolution.definitions.len()];
-        let mut parents = Vec::with_capacity(report.resolution.definitions.len());
-        for (index, definition) in report.resolution.definitions.iter().enumerate() {
-            self.charge(1)?;
-            let id =
-                DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            let Some(kind) = self.exported_kind(report, facts, id, mode)? else {
-                continue;
-            };
-            features.observe(report, facts, id, self)?;
-            if !mode.module_contracts()
-                && definition.kind == DefKind::Trait
-                && crate::resolve::impl_restrictions::clause(report, id)
-                    .map_err(|_| "source trait implementation domain is invalid")?
-                    .is_some()
-            {
-                return Err("restricted trait implementation policy transport is not implemented");
-            }
-            let parent = self.declaration_parent(report, facts, &mut owners, id, kind)?;
-            let ordinal = if let Some(parent) = parent {
-                let next = ordinals
-                    .get_mut(parent.0 as usize)
-                    .ok_or("source lexical owner is unknown")?;
-                let ordinal = *next;
-                *next = next.checked_add(1).ok_or("source child ordinal overflow")?;
-                ordinal
-            } else {
-                0
-            };
-            // The resolver names its exact root `crate`; its external module
-            // spelling belongs to the authenticated artifact identity.
-            let name = if id == root {
-                provider.provider.name()
-            } else {
-                report.package.names.get(definition.name)
-            };
-            self.reserve(4 * size_of::<s::Declaration>() + name.len())?;
-            let row = DeclarationRef(
-                u32::try_from(self.rows.declarations.len())
-                    .map_err(|_| "source declaration table overflow")?,
-            );
-            self.definitions[index] = Some(row);
-            if kind == s::DefinitionKind::Variant {
-                self.publish_variant(facts, id, row)?;
-            }
-            leaves.record(self, facts, id, row, kind)?;
-            parents.push(parent);
-            self.rows.declarations.push(s::Declaration {
-                definition: s::Definition { kind, parent: None },
-                ordinal,
-                name: Some(name.to_owned()),
-                public: definition.access == Access::Public,
-                sites: 1,
-                local: None,
-            });
-        }
-        for (index, parent) in parents.into_iter().enumerate() {
-            self.charge(1)?;
-            if let Some(parent) = parent {
-                let parent = self.declaration(parent)?;
-                self.rows.declarations[index].definition.parent = Some(parent);
-            }
-        }
-        features.finish()?;
-        Ok(leaves)
-    }
-
     fn declaration_parent(
         &mut self,
         report: &Report,
@@ -844,7 +654,7 @@ impl Stage {
     fn alias_headers(
         &mut self,
         facts: &Declarations,
-        aliases: Vec<(DeclarationRef, TypeId)>,
+        aliases: Vec<(DeclarationRef, DefId)>,
     ) -> Result<(), &'static str> {
         if !aliases.is_empty() {
             self.reserve(
@@ -854,20 +664,58 @@ impl Stage {
             )?;
             self.cold()?.type_aliases.reserve_exact(aliases.len());
         }
-        for (declaration, target) in aliases {
-            let target = self.ty(
-                facts,
-                target,
-                canonical_nodes::Context {
-                    owner: declaration,
-                    frame: None,
-                    body: None,
-                },
-            )?;
+        for (declaration, definition) in aliases {
+            let target = facts.definitions[definition.0 as usize]
+                .ok_or("source alias lost its completed target")?;
+            let context = canonical_nodes::Context {
+                owner: declaration,
+                frame: None,
+                body: None,
+            };
+            let reference = self.ty(facts, target, context)?;
             self.cold()?.type_aliases.push(s::TypeAliasHeader {
                 declaration,
-                target,
+                target: reference,
             });
+            self.alias_normalization_rows(facts, definition, target, context)?;
+        }
+        Ok(())
+    }
+
+    fn alias_normalization_rows(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        target: TypeId,
+        context: canonical_nodes::Context,
+    ) -> Result<(), &'static str> {
+        let projected = facts.types.contains_projections(target) == Some(true);
+        if facts
+            .alias_requirements
+            .source_target(definition, target, projected)
+        {
+            return Ok(());
+        }
+        let normalizations = facts.alias_requirements.source_normalizations(definition)?;
+        self.charge(normalizations.len())?;
+        self.reserve(
+            normalizations
+                .len()
+                .saturating_mul(4 * size_of::<s::AliasNormalization>()),
+        )?;
+        for &(scope, ty) in normalizations {
+            if scope != ProofScope::ROOT
+                || !matches!(facts.types.kind(ty), Some(Kind::Projection(_)))
+            {
+                return Err("source alias requires a nonroot or nonprojection proof");
+            }
+            let target = self.ty(facts, ty, context)?;
+            self.cold()?
+                .alias_normalizations
+                .push(s::AliasNormalization {
+                    declaration: context.owner,
+                    target,
+                });
         }
         Ok(())
     }
@@ -878,10 +726,7 @@ impl Stage {
         facts: &Declarations,
         id: DefId,
     ) -> Result<(), &'static str> {
-        use crate::{
-            syntax::{ast::Kind as Syntax, item::ItemKind},
-            types::arguments::Argument,
-        };
+        use crate::{syntax::item::GenericFlavor, types::arguments::Argument};
         self.charge(10)?;
         let error = "source alias formals or deferred proofs require their wider profile";
         let declaration = &report.resolution.definitions[id.0 as usize];
@@ -891,25 +736,32 @@ impl Stage {
             return Err(error);
         };
         let item = &ast.items[index as usize];
-        let [formal] = ast.list(item.generics) else {
-            return Err(error);
-        };
-        let Syntax::Generic(index) = ast.node(*formal).kind else {
-            return Err(error);
-        };
-        let formal = &ast.generics[index as usize];
-        let [parameter] = facts.generics.parameters[&id].as_slice() else {
-            return Err(error);
-        };
-        if !matches!(parameter.argument, Argument::Type(_))
+        let formals = ast.list(item.generics);
+        let parameters = facts.generics.parameters.get(&id).ok_or(error)?;
+        self.charge(formals.len())?;
+        if formals.len() != parameters.len()
+            || formals.is_empty()
             || declaration.namespace != Namespace::Type
             || facts.generics.parents.contains_key(&id)
-            || formal.default.is_some()
-            || !ast.list(formal.bounds).is_empty()
-            || !ast.list(item.where_clause).is_empty()
             || !matches!(item.kind, ItemKind::TypeAlias { bounds, ty: Some(_) } if ast.list(bounds).is_empty())
         {
             return Err(error);
+        }
+        for (&formal, parameter) in formals.iter().zip(parameters) {
+            let Syntax::Generic(index) = ast.node(formal).kind else {
+                return Err(error);
+            };
+            let formal = &ast.generics[index as usize];
+            if !matches!(
+                (formal.flavor, parameter.argument),
+                (GenericFlavor::Type, Argument::Type(_))
+                    | (GenericFlavor::Const, Argument::Const(_))
+            ) || formal.default.is_some()
+                || parameter.default.is_some()
+                || parameter.anonymous
+            {
+                return Err(error);
+            }
         }
         let target = facts.definitions[id.0 as usize].ok_or(error)?;
         if facts.node(source).and_then(|node| node.ty) != Some(target)
@@ -920,14 +772,7 @@ impl Stage {
                 .definition(id)
                 .is_some_and(|original| original != target)
         {
-            return Err(error);
-        }
-        let projected = facts.types.contains_projections(target).ok_or(error)?;
-        if !facts
-            .alias_requirements
-            .source_target(id, target, projected)
-        {
-            return Err(error);
+            return Err("source alias target has foreign, regional or unreduced inputs");
         }
         Ok(())
     }
@@ -976,7 +821,14 @@ impl Stage {
             .copied()
             .flatten()
             .ok_or("source alias has no completed canonical type")?;
-        if facts.node(source).and_then(|node| node.ty) != Some(ty)
+        let witness = facts.node(source).and_then(|node| node.ty);
+        let completed = witness == Some(ty)
+            || self.declaration_policies()
+                && witness == Some(TypeId::UNIT)
+                && matches!(declaration.access, Access::Within(_))
+                && !is_module_scoped(report, declaration)
+                && block_alias_target(report, facts, source) == Some(ty);
+        if !completed
             || facts.types.contains_parameters(ty) != Some(false)
             || facts.types.needs_region_context(ty) != Some(false)
         {
@@ -986,9 +838,27 @@ impl Stage {
     }
 }
 
+fn block_alias_target(report: &Report, facts: &Declarations, source: NodeKey) -> Option<TypeId> {
+    // Body typing assigns the item statement a unit type. The RHS still
+    // witnesses the completed canonical type of the alias declaration.
+    let ast = &report.package.unit(source.file).configured.ast;
+    let Syntax::Item(index) = ast.node(source.node).kind else {
+        return None;
+    };
+    let ItemKind::TypeAlias { ty: Some(rhs), .. } = ast.items[index as usize].kind else {
+        return None;
+    };
+    facts
+        .node(NodeKey {
+            node: rhs,
+            ..source
+        })?
+        .ty
+}
+
 #[derive(Default)]
 struct DeclarationLeaves {
-    aliases: Vec<(DeclarationRef, TypeId)>,
+    aliases: Vec<(DeclarationRef, DefId)>,
     trait_aliases: Vec<(DeclarationRef, DefId)>,
     statics: Vec<(DeclarationRef, DefId)>,
 }
@@ -997,22 +867,19 @@ impl DeclarationLeaves {
     fn record(
         &mut self,
         stage: &mut Stage,
-        facts: &Declarations,
         definition: DefId,
         row: DeclarationRef,
         kind: s::DefinitionKind,
     ) -> Result<(), &'static str> {
         match kind {
             s::DefinitionKind::TypeAlias => {
-                let target = facts.definitions[definition.0 as usize]
-                    .ok_or("source alias lost its completed target")?;
                 stage.scratch(
                     self.aliases
                         .len()
                         .saturating_add(1)
-                        .saturating_mul(4 * size_of::<(DeclarationRef, TypeId)>()),
+                        .saturating_mul(4 * size_of::<(DeclarationRef, DefId)>()),
                 )?;
-                self.aliases.push((row, target));
+                self.aliases.push((row, definition));
             }
             s::DefinitionKind::TraitAlias => {
                 stage.scratch(
@@ -1121,18 +988,25 @@ fn kind(kind: DefKind, namespace: Namespace) -> Result<Option<s::DefinitionKind>
 }
 
 fn scoped_module_alias(
+    report: &Report,
     facts: &Declarations,
-    definition: &crate::resolve::model::Definition,
+    definition: &Definition,
     id: DefId,
 ) -> bool {
     definition.kind == DefKind::TypeAlias
-        && definition.access == Access::Public
+        && matches!(definition.access, Access::Public | Access::Within(_))
         && facts.associated.owner(id).is_none()
         && facts
             .generics
             .parameters
             .get(&id)
             .is_some_and(|parameters| !parameters.is_empty())
+        && is_module_scoped(report, definition)
+}
+
+fn is_module_scoped(report: &Report, definition: &Definition) -> bool {
+    let module = report.resolution.scopes[definition.scope.0 as usize].module;
+    report.resolution.module_scopes.get(module.0 as usize) == Some(&definition.scope)
 }
 
 fn scope_owners(
@@ -1166,7 +1040,7 @@ fn scope_owners(
         {
             let alias = DefId(u32::try_from(index).map_err(|_| "source owner identity overflow")?);
             if definition.kind == DefKind::TraitAlias
-                || scoped_module_alias(facts, definition, alias)
+                || scoped_module_alias(report, facts, definition, alias)
             {
                 let source = definition
                     .node

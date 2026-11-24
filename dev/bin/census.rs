@@ -16,7 +16,11 @@ pub fn select(slot: &mut Option<String>, path: Option<String>) -> Result<(), Str
 pub fn select_progress(slot: &mut Option<String>, path: Option<String>) -> Result<(), String> {
     select_path(slot, path, "--census-progress")
 }
-fn select_path(slot: &mut Option<String>, path: Option<String>, flag: &str) -> Result<(), String> {
+pub(super) fn select_path(
+    slot: &mut Option<String>,
+    path: Option<String>,
+    flag: &str,
+) -> Result<(), String> {
     if slot.is_some() {
         return Err(format!("duplicate {flag}"));
     }
@@ -149,7 +153,7 @@ fn location(location: &Location) -> String {
 }
 
 /// Fields stay on one tab-separated line; escapes are reversible.
-fn field(text: &str) -> String {
+pub(super) fn field(text: &str) -> String {
     let mut escaped = String::with_capacity(text.len());
     for character in text.chars() {
         match character {

@@ -16,12 +16,15 @@ mod verbatim_exports;
 use super::{Declarations, Error, Header, Headers, error, mapped_source, predicate_remap};
 use crate::{
     resolve::model::DefId,
-    sema::{declaration_inputs::Input, generics::Parameter},
+    sema::{alias_requirements::Requirements, declaration_inputs::Input, generics::Parameter},
     support::crates::generics::source as s,
-    types::parameters::{
-        ParameterId,
-        clauses::Clause,
-        environment::{Abilities, Environment},
+    types::{
+        lifetime_proof::ScopeId,
+        parameters::{
+            ParameterId,
+            clauses::Clause,
+            environment::{Abilities, Environment},
+        },
     },
 };
 use std::sync::Arc;
@@ -32,7 +35,7 @@ pub(super) use template_ports::register as register_callable;
 pub(super) struct Stage {
     graph: std::rc::Rc<mapped_source::Graph>,
     scopes: Vec<Scope>,
-    aliases: crate::sema::alias_requirements::Requirements,
+    aliases: Requirements,
 }
 struct Scope {
     definition: DefId,
@@ -115,7 +118,7 @@ impl Stage {
             budget,
         )?;
         let mut scopes = Vec::with_capacity(rows.scopes.len());
-        let mut aliases = crate::sema::alias_requirements::Requirements::default();
+        let mut aliases = Requirements::default();
         let mut walk = Walk {
             context,
             graph: &graph,
@@ -126,13 +129,15 @@ impl Stage {
         };
         for raw in &rows.scopes {
             let scope = walk.enter(facts, raw, budget)?;
-            if let Inputs::Alias(Some(target)) = scope.inputs {
-                let allocation = aliases.source_projection_allocation();
-                budget.charge(allocation.visits)?;
-                budget.reserve(allocation.bytes)?;
-                aliases
-                    .source_projection(scope.definition, target)
-                    .map_err(error)?;
+            if let Inputs::Alias(default) = scope.inputs {
+                install_alias_normalizations(
+                    rows,
+                    &graph,
+                    (scope.definition, raw.owner),
+                    default,
+                    &mut aliases,
+                    budget,
+                )?;
             }
             scopes.push(scope);
         }
@@ -153,6 +158,45 @@ impl Stage {
         })
     }
 }
+
+fn install_alias_normalizations(
+    rows: s::ValidatedView<'_>,
+    graph: &mapped_source::Graph,
+    (definition, row): (DefId, crate::support::crates::owner_catalog::DeclarationRef),
+    default: Option<crate::types::TypeId>,
+    aliases: &mut Requirements,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    budget.charge(rows.alias_normalization_lookup_work())?;
+    let records = rows.alias_normalizations(row);
+    let count = if records.is_empty() {
+        usize::from(default.is_some())
+    } else {
+        records.len()
+    };
+    if count == 0 {
+        return Ok(());
+    }
+    let allocation = aliases.source_projection_allocation(count);
+    budget.charge(allocation.visits)?;
+    budget.reserve(allocation.bytes)?;
+    if records.is_empty() {
+        let ty = default.ok_or_else(|| error("source alias normalization lost its target"))?;
+        return aliases.source_projection(definition, ty).map_err(error);
+    }
+    for record in records {
+        aliases
+            .normalization(
+                definition,
+                definition,
+                graph.ty(record.target)?,
+                ScopeId::ROOT,
+            )
+            .map_err(error)?;
+    }
+    aliases.seal(definition).map_err(error)
+}
+
 fn finish_inputs(
     context: &mapped_source::Context<'_>,
     graph: &mut mapped_source::Graph,

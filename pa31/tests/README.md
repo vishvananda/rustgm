@@ -2,6 +2,18 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/source-export-census/outcomes.json` declares a source-provider control
+for observing independent declaration export failures in order. Run
+`scripts/check_export_census.py` against a prebuilt compiler. A census writes
+an analysis report and exits with failure.
+
+`spec/source-bounded-alias-transport/outcomes.json` declares a source library
+with the two associated-type projections used by `core`'s `ChangeOutputType`.
+Fresh clients exercise a valid application, a missing implementation and
+an inaccessible alias. A separate provider uses a block-local type alias
+within a function and a fresh client calls that exported function. The
+const-parameter provider exercises a named array length and its type.
+
 `spec/explicit-dynamic-call-members/outcomes.json` declares the borrowed dynamic
 rust-call member cases, the Box callable foundation and the ordered C observer
 traces. The ownership suite selects them through `box_contents`.

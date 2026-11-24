@@ -1,0 +1,6 @@
+{
+  "source": "provider.rs",
+  "refused": ["crate::First", "crate::Last"],
+  "diagnostic": "named, associated or generic alias transport requires its wider profile",
+  "independent": {"rustc": 0}
+}

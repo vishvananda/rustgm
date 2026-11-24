@@ -2,7 +2,7 @@
 use super::{Catalog, DefId, DefKind, Graph, SignaturePort, s, slot_bindings};
 use crate::{
     sema::model::Declarations,
-    types::{ItemId, Kind},
+    types::{ItemId, Kind, lifetime_proof::ScopeId},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -139,7 +139,7 @@ impl Graph {
             }
             s::DefinitionKind::Constant => self.constant_ready(rows, row, *cell)?,
             s::DefinitionKind::TypeAlias => {
-                self.alias_ready(rows, facts, (definition, row), *cell)?;
+                self.alias_ready(rows, facts, (definition, row), *cell, steps)?;
             }
             s::DefinitionKind::TraitAlias => {
                 self.trait_alias(facts, row, definition)?;
@@ -266,6 +266,7 @@ impl Graph {
         facts: &Declarations,
         (definition, row): (DefId, crate::support::crates::owner_catalog::DeclarationRef),
         cell: Option<crate::types::TypeId>,
+        steps: &mut usize,
     ) -> Result<(), &'static str> {
         let Some(s::HeaderRef::TypeAlias(index)) = rows.header(row)? else {
             return Err("source alias readiness lost its actual type header");
@@ -285,15 +286,49 @@ impl Graph {
         }
         if scoped {
             Self::scope_ready(facts, definition)?;
+            *steps = steps.saturating_add(rows.alias_normalization_lookup_work());
+            self.alias_normalizations_ready(
+                facts,
+                definition,
+                target,
+                rows.alias_normalizations(row),
+                steps,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn alias_normalizations_ready(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        target: crate::types::TypeId,
+        records: &[s::AliasNormalization],
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        let error = "source alias readiness changed its deferred projection proof";
+        if records.is_empty() {
             let projected = facts
                 .types
                 .contains_projections(target)
                 .ok_or("source alias target has no installed projection summary")?;
-            if !facts
+            return if facts
                 .alias_requirements
                 .source_target(definition, target, projected)
             {
-                return Err("source alias readiness changed its deferred projection proof");
+                Ok(())
+            } else {
+                Err(error)
+            };
+        }
+        let actual = facts.alias_requirements.source_normalizations(definition)?;
+        *steps = steps.saturating_add(records.len());
+        if actual.len() != records.len() {
+            return Err(error);
+        }
+        for (&(scope, ty), record) in actual.iter().zip(records) {
+            if scope != ScopeId::ROOT || Some(ty) != self.ty(record.target).ok() {
+                return Err(error);
             }
         }
         Ok(())

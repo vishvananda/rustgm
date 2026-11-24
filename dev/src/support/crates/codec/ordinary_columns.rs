@@ -121,13 +121,15 @@ pub(super) fn encode_module_availability(
     let profile = rows.descriptor().profile();
     let aliases = rows.type_aliases();
     let trait_aliases = rows.trait_aliases();
+    let alias_normalizations = &rows.cold().alias_normalizations;
     let statics = rows.statics();
     if profile.compiler_operations() {
         out.u8(u8::from(const_bodies.is_some())
             | (u8::from(availability.deprecations.is_some()) << 1)
             | (u8::from(!aliases.is_empty()) << 2)
             | (u8::from(statics.is_some()) << 3)
-            | (u8::from(!trait_aliases.is_empty()) << 4))?;
+            | (u8::from(!trait_aliases.is_empty()) << 4)
+            | (u8::from(!alias_normalizations.is_empty()) << 5))?;
     }
     exemption_wire::encode(out, const_bodies)?;
     if let Some(deprecations) = &availability.deprecations {
@@ -148,6 +150,12 @@ pub(super) fn encode_module_availability(
             id(out, row.self_definition.0)?;
             id(out, row.self_type.0)?;
             range(out, row.inputs)
+        })?;
+    }
+    if !alias_normalizations.is_empty() {
+        write(out, alias_normalizations, |out, row| {
+            id(out, row.declaration.0)?;
+            id(out, row.target.0)
         })?;
     }
     if profile.compiler_operations() {
@@ -291,7 +299,7 @@ fn decode_availability_trailers(
     }
     let flags = read.reader.u8()?;
     let maximum = if read.profile.declaration_policies() {
-        31
+        63
     } else {
         1
     };
@@ -336,6 +344,18 @@ fn decode_availability_trailers(
             return Err("trait alias trailer must contain an actual alias");
         }
         read.cold(rows)?.trait_aliases = aliases;
+    }
+    if flags & 32 != 0 {
+        let normalizations = read.list(crates::MAX_COMPONENTS, 8, |read| {
+            Ok(s::AliasNormalization {
+                declaration: DeclarationRef(read.id()?),
+                target: g::TypeRef(read.id()?),
+            })
+        })?;
+        if normalizations.is_empty() {
+            return Err("alias normalization trailer must contain an actual root");
+        }
+        read.cold(rows)?.alias_normalizations = normalizations;
     }
     Ok(())
 }

@@ -16,6 +16,7 @@ impl DomainIndex<'_, '_> {
                 return Err("source alias target requires a foreign parameter, frame or body");
             }
         }
+        self.alias_normalization_roots(work)?;
         // An impl's result can name only the formals of its own frame.
         for row in rows.associated_definitions() {
             let parent = rows
@@ -36,6 +37,51 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+
+    fn alias_normalization_roots(&self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let normalizations = &rows.cold().alias_normalizations;
+        work.charge(normalizations.len())?;
+        let mut previous = None;
+        for group in normalizations.chunk_by(|left, right| left.declaration == right.declaration) {
+            let owner = group[0].declaration;
+            if previous.is_some_and(|previous| previous >= owner.0)
+                || self.headers.scopes().scope_row(owner, work)?.is_none()
+            {
+                return Err("source alias normalizations lack an ordered actual scope");
+            }
+            previous = Some(owner.0);
+            let Some(HeaderRef::TypeAlias(index)) = self.headers.header(owner, work)? else {
+                return Err("source alias normalizations lack an actual alias header");
+            };
+            let target = rows.type_aliases()[index as usize].target;
+            let context = Context {
+                owner,
+                frame: None,
+                body: None,
+            };
+            let mut covers_target = false;
+            for row in group {
+                if !matches!(
+                    rows.types.get(row.target.0 as usize),
+                    Some(s::Type::Projection(_))
+                ) {
+                    return Err("source alias normalization requires an actual projection");
+                }
+                self.types.root(self.headers, context, row.target, work)?;
+                covers_target |= row.target == target;
+            }
+            if matches!(
+                rows.types.get(target.0 as usize),
+                Some(s::Type::Projection(_))
+            ) && !covers_target
+            {
+                return Err("source alias normalizations omit the projected target");
+            }
+        }
+        Ok(())
+    }
+
     pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         self.trait_alias_roots(work)?;
