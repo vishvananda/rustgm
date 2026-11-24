@@ -30,6 +30,7 @@ mod nominal_contracts;
 #[path = "sum_contracts.rs"]
 mod sum_contracts;
 pub use free_constants::{ConstantBody, ConstantHeader};
+pub(crate) use free_constants::{inline_scalar_width, inline_tuple_width};
 pub use sum_contracts::{
     Constructor, ConstructorPayload, EnumColumns, EnumHeader, VariantField, VariantHeader,
     VariantShape, nominal_kind, positional,
@@ -197,14 +198,14 @@ pub enum Argument {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ConstRef(pub u32);
 /// A transported const term: an evaluated value or a rigid const slot.
-/// Non-scalar and unevaluated constants are not terms.
+/// Generic argument terms use only scalar const parameter types.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ConstTerm {
     Value(ConstValue),
     Parameter(SlotRef),
 }
-/// Canonical target-width bits of an integer, bool or char value: masked
-/// two's-complement for signed integers (`types::arguments::Constant`).
+/// Canonical bits checked against the type and use site. A v14 named
+/// constant may use the payload for tuple fields in logical field order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ConstValue {
     pub ty: TypeRef,

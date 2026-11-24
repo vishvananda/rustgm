@@ -1,8 +1,11 @@
 //! Named constant headers retain either checked bits or the actual associated
 //! declaration's initializer ownership. Consumers still check original bodies.
 use super::{ConstTerm, Declaration, DefinitionKind, HeaderIndex, HeaderRef, Profile, SourceRows};
-use crate::support::crates::generics::{TypeRef, Work};
 use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
+use crate::support::crates::{
+    Scalar, ScalarValue,
+    generics::{Range, TypeRef, Work},
+};
 
 /// One constant's header row. Its declaration is implied: row `k` belongs to
 /// the `k`-th constant declaration in declaration order.
@@ -159,10 +162,69 @@ pub(super) fn validate(
                 u16::try_from(value.bits).map_err(|_| "non-canonical source f16 const value")?;
             }
             Some(super::Type::F128) if profile.declaration_policies() => {}
+            Some(&super::Type::Tuple(fields)) if profile.declaration_policies() => {
+                validate_inline_tuple(rows, fields, value.bits, work)?;
+            }
             _ => {
                 super::const_value(&rows.types, value)?;
             }
         }
+    }
+    Ok(())
+}
+
+pub(crate) fn inline_scalar_width(ty: Scalar, total: usize) -> Result<usize, &'static str> {
+    let width = ty.bit_width().div_ceil(8) as usize;
+    if width == 0 || total.saturating_add(width) > size_of::<u128>() {
+        return Err("source tuple constant requires nonempty inline scalar fields");
+    }
+    Ok(total + width)
+}
+
+fn inline_fields<'a>(
+    types: &'a [super::Type],
+    roots: &'a [TypeRef],
+    fields: Range,
+) -> Result<impl Iterator<Item = Result<Scalar, &'static str>> + 'a, &'static str> {
+    let fields = fields.slice(roots)?;
+    if fields.is_empty() || fields.len() > size_of::<u128>() {
+        return Err("source tuple constant requires a bounded nonempty field list");
+    }
+    Ok(fields
+        .iter()
+        .map(|field| match types.get(field.0 as usize) {
+            Some(&super::Type::Scalar(ty)) => Ok(ty),
+            _ => Err("source tuple constant requires actual scalar field types"),
+        }))
+}
+
+pub(crate) fn inline_tuple_width(
+    types: &[super::Type],
+    roots: &[TypeRef],
+    fields: Range,
+) -> Result<usize, &'static str> {
+    inline_fields(types, roots, fields)?.try_fold(0, |width, ty| inline_scalar_width(ty?, width))
+}
+
+fn validate_inline_tuple(
+    rows: &SourceRows,
+    fields: Range,
+    bits: u128,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let bytes = bits.to_le_bytes();
+    let mut data = bytes.as_slice();
+    let mut width = 0;
+    for ty in inline_fields(&rows.types, &rows.roots, fields)? {
+        work.charge(1)?;
+        let ty = ty?;
+        let end = inline_scalar_width(ty, width)?;
+        let bits = super::read_static_bits(&mut data, end - width)?;
+        ScalarValue::new(ty, bits)?;
+        width = end;
+    }
+    if data.iter().any(|&byte| byte != 0) {
+        return Err("source tuple constant has nonzero unused payload bytes");
     }
     Ok(())
 }

@@ -71,3 +71,9 @@ clients use a type that lacks the required trait and a type outside the
 inherent impl. Altered artifacts test a foreign const owner and an unknown
 slot. Select these fixtures with
 `scripts/check_source_constants.py --case generic-inherent`.
+
+`inline-tuple/outcomes.json` checks named free and primitive inherent
+constants with a tuple of scalar fields. The client checks tuple elements
+in source order. Other cases reject mismatched field types and arity,
+invalid scalar bits, and nonzero bytes beyond the tuple's logical payload.
+Select these fixtures with `scripts/check_source_constants.py --case inline-tuple`.

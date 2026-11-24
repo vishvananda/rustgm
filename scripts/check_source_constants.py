@@ -14,6 +14,8 @@ COMMON = ["--edition=2024", "--crate-type=lib"]
 
 
 def provider_source(folder, fixture, contract):
+    if "foundation" not in contract:
+        return fixture / contract["provider"]
     foundation = (ROOT / contract["foundation"]).read_bytes()
     prefix, marker, _ = foundation.partition(contract["prefix_marker"].encode())
     if not marker:
@@ -39,7 +41,7 @@ def independent(check, rustc, source, fixture, contract):
                   timeout=20, environment=environment)
 
 
-def candidate(check, source, fixture, contract):
+def candidate(check, source, fixture, contract, baseline):
     artifact = check.folder / "base.rgcrate"
     options = [check.app, *COMMON, "--emit-lowir", "--cap-lints=allow"]
     command = [*options, "--crate-name", "base", "--crate-disambiguator", "source_constants",
@@ -60,6 +62,8 @@ def candidate(check, source, fixture, contract):
                 raise ValueError(f"{test.stem}: expected {count} LowIR lines ending in {fragment!r}")
     if "packet_opponents" in contract:
         packet_opponents(check, options, fixture, artifact, contract["packet_opponents"])
+    if "tuple_opponents" in contract:
+        tuple_opponents(check, options, fixture, artifact, contract["tuple_opponents"], baseline)
 
 
 def packet_opponents(check, options, fixture, artifact, contract):
@@ -82,12 +86,34 @@ def packet_opponents(check, options, fixture, artifact, contract):
                   fixture / contract["client"]], 1, [contract["diagnostic"]], timeout=20)
 
 
+def tuple_opponents(check, options, fixture, artifact, contract, baseline):
+    packet = artifact.read_bytes()
+    payload = bytes(contract["payload"]).ljust(16, b"\0")
+    offset = packet.find(payload)
+    if offset < 0 or packet.find(payload, offset + 1) != -1:
+        raise ValueError("expected one exact named tuple payload in the artifact")
+    client = fixture / contract["client"]
+    command = [*options, "--crate-name", "opponent", "--crate-disambiguator",
+               "source_constants", "--source-client", IDENTITY]
+    for opponent in contract["corruptions"]:
+        at = offset + opponent["index"]
+        corrupted = check.folder / f"{opponent['name']}.rgcrate"
+        corrupted.write_bytes(packet[:at] + bytes([opponent["byte"]]) + packet[at + 1:])
+        check.run(opponent["name"], [*command, "--extern", f"base={corrupted}", client],
+                  1, [opponent["diagnostic"]], timeout=20)
+    if baseline is not None:
+        check.run("legacy-reader", [baseline.resolve(strict=True), *command[1:],
+                  "--extern", f"base={artifact}", client],
+                  1, [contract["legacy_diagnostic"]], timeout=20)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", default="specialized-inherent",
-                        choices=("specialized-inherent", "generic-inherent"))
+                        choices=("specialized-inherent", "generic-inherent", "inline-tuple"))
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--app", type=Path)
+    parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     fixture = FIXTURES / args.case
@@ -96,7 +122,7 @@ def main():
     source = provider_source(check.folder, fixture, contract)
     independent(check, args.rustc, source, fixture, contract)
     if args.app is not None:
-        candidate(check, source, fixture, contract)
+        candidate(check, source, fixture, contract, args.baseline)
     print(f"Checked {len(contract['cases'])} independent source constant clients")
 
 

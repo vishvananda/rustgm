@@ -284,6 +284,11 @@ impl DomainIndex<'_, '_> {
             }
             (Some(s::Type::F16), Some(s::Type::F16))
             | (Some(s::Type::F128), Some(s::Type::F128)) => Ok(()),
+            (Some(s::Type::Tuple(_)), Some(s::Type::Tuple(_)))
+                if self.declaration_policies && ty == header.ty =>
+            {
+                Ok(())
+            }
             _ => Err("source constant read changed its declaration's type"),
         }
     }

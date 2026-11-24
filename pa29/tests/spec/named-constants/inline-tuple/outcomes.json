@@ -1,0 +1,47 @@
+{
+  "provider": "provider.rs",
+  "tuple_opponents": {
+    "client": "observed.rs",
+    "payload": [4, 1, 149, 61],
+    "legacy_diagnostic": "source const value type is not a primitive row",
+    "corruptions": [
+      {
+        "name": "noncanonical-bool",
+        "index": 1,
+        "byte": 2,
+        "diagnostic": "metadata scalar value exceeds its type width"
+      },
+      {
+        "name": "noncanonical-tail",
+        "index": 15,
+        "byte": 1,
+        "diagnostic": "source tuple constant has nonzero unused payload bytes"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "source": "observed.rs",
+      "status": 0,
+      "lowir": {
+        "return u8 101": 1,
+        "return u8 37": 1,
+        "return u8 219": 2,
+        "return u8 9": 1,
+        "return u16 15765": 1
+      }
+    },
+    {
+      "source": "wrong-arity.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "error[E0308]"
+    },
+    {
+      "source": "wrong-field.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "error[E0308]"
+    }
+  ]
+}

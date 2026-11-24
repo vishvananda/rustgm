@@ -512,6 +512,16 @@ impl Stage {
                     .encode_primitive(ty, value)
                     .map(|(bits, _)| bits)
                     .map_err(|_| "source constant value disagrees with its declared type")?,
+                ValueType::InlineTuple => {
+                    let mut bytes = Vec::new();
+                    self.scalar_aggregate_bytes(facts, ty, value, &mut bytes)?;
+                    let mut payload = [0; size_of::<u128>()];
+                    payload
+                        .get_mut(..bytes.len())
+                        .ok_or("source tuple constant exceeds its inline payload")?
+                        .copy_from_slice(&bytes);
+                    u128::from_le_bytes(payload)
+                }
             };
             let ty = self.ty(
                 facts,
@@ -535,17 +545,31 @@ impl Stage {
 enum ValueType {
     Scalar(Scalar),
     WideFloat,
+    InlineTuple,
 }
 
-fn value_type(facts: &Declarations, ty: TypeId, wide: bool) -> Result<ValueType, &'static str> {
+fn value_type(facts: &Declarations, ty: TypeId, v14: bool) -> Result<ValueType, &'static str> {
     if ty == TypeId::UNIT {
         return Ok(ValueType::Scalar(Scalar::Unit));
     }
     match facts.types.kind(ty) {
-        Some(Kind::Primitive(Primitive::F16 | Primitive::F128)) if wide => Ok(ValueType::WideFloat),
+        Some(Kind::Primitive(Primitive::F16 | Primitive::F128)) if v14 => Ok(ValueType::WideFloat),
         Some(Kind::Primitive(_)) => super::super::export_scalar(facts, ty)
             .map(ValueType::Scalar)
             .map_err(|_| "source wide primitive const value requires its wider profile"),
+        Some(Kind::Tuple(fields)) if v14 => {
+            let fields = facts
+                .types
+                .list(fields)
+                .ok_or("source tuple constant lost its actual field types")?;
+            let mut width = 0;
+            for &field in fields {
+                let ty = super::super::export_scalar(facts, field)
+                    .map_err(|_| "source tuple constant requires actual scalar field types")?;
+                width = s::inline_scalar_width(ty, width)?;
+            }
+            Ok(ValueType::InlineTuple)
+        }
         Some(Kind::Reference { .. }) => {
             Err("source reference const value requires its wider profile")
         }

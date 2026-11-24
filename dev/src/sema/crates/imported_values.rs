@@ -13,12 +13,17 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
-enum NamedValue {
+enum NamedValue<'rows> {
     Unit,
     Scalar(PrimitiveValue),
+    InlineTuple {
+        rows: s::ValidatedView<'rows>,
+        value: s::ConstValue,
+        width: usize,
+    },
 }
 
-impl NamedValue {
+impl NamedValue<'_> {
     fn decode(value: ScalarValue) -> Result<Self, Error> {
         if value.ty() == Scalar::Unit {
             Ok(Self::Unit)
@@ -71,7 +76,7 @@ pub(super) fn seed(report: &Report, facts: &mut Declarations) -> Result<(), Erro
 /// declared types. Wide floats use source recipes instead of ABI scalar tags.
 fn source_constants(
     imported: &crate::resolve::crates::Imported,
-) -> Result<Vec<(DefId, NamedValue)>, Error> {
+) -> Result<Vec<(DefId, NamedValue<'_>)>, Error> {
     let mut constants = Vec::new();
     for artifact in imported.dependencies().artifacts() {
         let Some(descriptor) = artifact.source_descriptor() else {
@@ -104,6 +109,12 @@ fn source_constants(
                 Some(s::Type::F128) => {
                     NamedValue::Scalar(PrimitiveValue::Float(FloatBits::from_quad(value.bits)))
                 }
+                Some(&s::Type::Tuple(fields)) => NamedValue::InlineTuple {
+                    rows,
+                    width: s::inline_tuple_width(&rows.types, &rows.roots, fields)
+                        .map_err(error)?,
+                    value,
+                },
                 _ => return Err(error("source constant seed lost its validated value")),
             };
             constants.push((definition, value));
@@ -115,13 +126,17 @@ fn source_constants(
 fn complete(
     evaluator: &mut Evaluator<'_>,
     definition: DefId,
-    value: NamedValue,
+    value: NamedValue<'_>,
 ) -> Result<(), Error> {
     let value = match value {
         NamedValue::Unit => evaluator
             .fields(&[], None)
             .map_err(|e| error(e.message()))?,
         NamedValue::Scalar(value) => Constant::scalar(value),
+        NamedValue::InlineTuple { rows, value, width } => {
+            let bytes = value.bits.to_le_bytes();
+            super::statics::decode_scalar_aggregate(evaluator, rows, value.ty, &bytes[..width])?
+        }
     };
     if let Some(id) = evaluator.facts().associated.owner(definition) {
         let facts = evaluator.facts();
