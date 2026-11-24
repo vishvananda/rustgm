@@ -294,18 +294,27 @@ impl Declarations {
 
     /// The loaded Clone role seals the provided default before any body demand.
     pub(crate) fn imported_clone_default(&self, definition: DefId) -> Result<bool, &'static str> {
-        self.imported_default_for(definition, LangItem::Clone)
+        self.imported_default_for(definition, LangItem::Clone, &[])
     }
 
     pub(crate) fn imported_const_default(&self, definition: DefId) -> Result<bool, &'static str> {
         Ok(self.imported_clone_default(definition)?
-            || self.imported_default_for(definition, LangItem::Iterator)?)
+            || self.imported_default_for(
+                definition,
+                LangItem::Iterator,
+                &LangItem::PROVIDED_ITERATOR_METHODS,
+            )?)
+    }
+
+    pub(crate) fn imported_iterator_fold(&self, definition: DefId) -> Result<bool, &'static str> {
+        self.imported_default_for(definition, LangItem::Iterator, &["fold"])
     }
 
     fn imported_default_for(
         &self,
         definition: DefId,
         kind: LangItem,
+        names: &[&str],
     ) -> Result<bool, &'static str> {
         let Some(catalog) = self.source_bindings.as_deref() else {
             return Ok(false);
@@ -325,10 +334,7 @@ impl Declarations {
         else {
             return Ok(false);
         };
-        if kind == LangItem::Iterator
-            && !catalog
-                .imported_member_named(header.declaration, &LangItem::PROVIDED_ITERATOR_METHODS)?
-        {
+        if !names.is_empty() && !catalog.imported_member_named(header.declaration, names)? {
             return Ok(false);
         }
         Ok(catalog.validated_role(kind)? == Some(role))

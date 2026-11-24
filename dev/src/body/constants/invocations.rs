@@ -1,4 +1,5 @@
 //! Defining const permission consumes actual typed source facts, not signatures alone.
+mod fold;
 mod receivers;
 use crate::{
     body::ir::{Action, Body, Owner, Rvalue},
@@ -76,6 +77,9 @@ pub(super) fn check_calls(
         work.charge(1)?;
         if !seen.insert(id) {
             return Err("const invocation value is evaluated at multiple source sites");
+        }
+        if body.source.source().is_none() && fold::check(report, facts, body, statement, work)? {
+            continue;
         }
         if super::qualified_invocations::check(report, facts, body, statement, work)? {
             continue;

@@ -112,7 +112,9 @@ def provided_inputs(contract, blanket, provider):
         raise ValueError("iteration fixture lost its exact next declaration anchor")
     member = (FIXTURE / contract["provider_member"]).read_bytes()
     drop = source_prefix(FIXTURE / blanket["provider"], "const impl<I:")
-    return b"#![feature(const_destruct)]\n" + provider.replace(anchor, member + anchor) + drop
+    extra = (FIXTURE / contract["provider_extra"]).read_bytes() if "provider_extra" in contract else b""
+    features = ", ".join(contract.get("features", ["const_destruct"]))
+    return f"#![feature({features})]\n".encode() + provider.replace(anchor, member + anchor) + drop + extra
 
 
 def reject_size_hint_rows(check, exporter, importer, source, artifact, client, contract):
@@ -165,12 +167,40 @@ def reject_by_ref_bounds(check, exporter, importer, source, artifact, client, ru
               ["access conflicts with a live reference loan"], timeout=30)
 
 
+def reject_fold_bounds(check, exporter, importer, source, artifact, client, rustc, contract):
+    text = source.read_bytes()
+    bound = b"Self: Sized + [const] Destruct,"
+    if text.count(bound) != 1:
+        raise ValueError("iteration fixture lost its exact fold sizing premise")
+    extra = check.folder / "extra-fold-premise.rs"
+    extra.write_bytes(text.replace(bound, b"Self: Sized + [const] Destruct, B: Copy,"))
+    rejected = check.folder / "extra-fold-premise.rgcrate"
+    check.run("wrong-fold-premise", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", rejected, extra], 1, [contract["wrong_callback_bound"]],
+              timeout=30)
+    if rejected.exists():
+        raise ValueError("an altered fold premise produced an artifact")
+
+    client_text = client.read_bytes()
+    marker = contract["ordinary_closure"].encode()
+    if client_text.count(marker) != 1:
+        raise ValueError("fold fixture lost its exact const closure callback")
+    nonconst = check.folder / "nonconst-closure.rs"
+    nonconst.write_bytes(client_text.replace(marker, marker.removeprefix(b"const ")))
+    check.run("rustc-nonconst-closure", [rustc.resolve(strict=True), "--edition=2024",
+              "--crate-type=lib", "--emit=metadata", "--extern", f"base={check.folder / 'libbase.rlib'}",
+              "-o", check.folder / "nonconst-closure.rmeta", nonconst], 1, timeout=30,
+              environment={"RUSTC_BOOTSTRAP": "1"})
+    check.run("rustgm-nonconst-closure", [*importer, "--extern", f"base={artifact}",
+              "-o", check.folder / "nonconst-closure.lowir", nonconst], 1, timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref"),
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref", "fold"),
                         default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
@@ -183,7 +213,7 @@ def main():
     client = FIXTURE / contract["client"]
     constant = args.case == "blanket-const"
     observed = contract
-    provided = args.case in ("size-hint", "by-ref")
+    provided = args.case in ("size-hint", "by-ref", "fold")
     if provided:
         observed = contract[args.case.replace("-", "_")]
         provider = provided_inputs(observed, contract["blanket"], provider)
@@ -224,6 +254,8 @@ def main():
                       timeout=30)
     elif args.case == "by-ref":
         reject_by_ref_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
+    elif args.case == "fold":
+        reject_fold_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
     elif args.case == "blanket":
         reject_ordinary_premise(check, exporter, source, contract["blanket"])
     elif args.case == "roles":

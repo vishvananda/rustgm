@@ -27,7 +27,8 @@ struct Expected<'a, 'b> {
     view: &'a SourceOriginal<'b>,
     facts: &'a Declarations,
     declared: Inputs<'a>,
-    assumed_conditional_inputs: usize,
+    assumed_inputs: usize,
+    assume_fold_traits: bool,
     sized: Bound,
     root: ProofSite,
     associated: Option<Ref<'a, [Predicate]>>,
@@ -42,12 +43,16 @@ impl<'a, 'b> Expected<'a, 'b> {
     ) -> Result<Self, &'static str> {
         let root = view.source()?.root_site();
         let definition = view.definition();
-        let assumed_conditional_inputs = if view.const_context()
+        let provided = view.const_context()
+            && matches!(
+                view.inputs().environment,
+                s::EnvironmentOrigin::ConstTraitDefault { .. }
+            );
+        let assume_fold_traits = provided && facts.imported_iterator_fold(definition)?;
+        let assumed_inputs = if view.const_context()
             && (crate::sema::compiler_items::drop_glue_member(facts, definition)?
-                || matches!(
-                    view.inputs().environment,
-                    s::EnvironmentOrigin::ConstTraitDefault { .. }
-                ) && facts.imported_clone_default(definition)?)
+                || provided && facts.imported_clone_default(definition)?
+                || assume_fold_traits)
         {
             declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?
                 .len()
@@ -62,7 +67,8 @@ impl<'a, 'b> Expected<'a, 'b> {
                 facts.crates.as_deref(),
                 definition,
             )?,
-            assumed_conditional_inputs,
+            assumed_inputs,
+            assume_fold_traits,
             sized: view.sizing_requirement(facts, steps)?,
             root,
             associated: view.associated_goals(steps)?,
@@ -169,11 +175,13 @@ impl<'a, 'b> Expected<'a, 'b> {
             Bound::Trait(_) | Bound::Outlives(_) => profile.declaration_policies(),
             _ => false,
         };
-        // These checked originals assume their own conditional Destruct premise.
-        // The actual caller pays the premise at its selected effect.
-        let conditional_premise = index < self.assumed_conditional_inputs
-            && matches!(predicate.bound, Bound::MaybeConstTrait(_));
-        Ok((!header_premise && !conditional_premise).then_some(predicate))
+        // The checked defining header owns these trait assumptions, and the
+        // caller pays them at the selected effect. Only the builtin debts
+        // belong to the borrow contract.
+        let assumed = index < self.assumed_inputs
+            && (matches!(predicate.bound, Bound::MaybeConstTrait(_))
+                || self.assume_fold_traits && predicate.bound.trait_parts().is_some());
+        Ok((!header_premise && !assumed).then_some(predicate))
     }
     fn predicates<'s>(
         &'s self,

@@ -73,6 +73,7 @@ impl Machine<'_, '_> {
                 return Err("constant return has no destination".into());
             };
             parent.values[target.0 as usize] = Some(result);
+            parent.temporaries.remove(&target);
             return Ok(None);
         }
         self.validate_result(result, result_ty)?;

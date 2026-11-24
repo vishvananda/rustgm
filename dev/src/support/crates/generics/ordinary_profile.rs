@@ -1198,7 +1198,9 @@ impl Bindings {
         let [deref, deref_mut] = self.dereferences;
         let [try_, from_residual] = self.try_traits;
         let [partial_eq, partial_ord] = self.comparisons;
-        let target = if [self.drop_glue, self.clone_from].contains(&Some(input.owner)) {
+        let [_, _, fold] = self.iterator_defaults;
+        let [_, _, fn_mut, _] = self.callables.0;
+        let target = if [self.drop_glue, self.clone_from, fold].contains(&Some(input.owner)) {
             self.destruct
         } else if Some(input.owner) == self.trivial_clone {
             self.clone
@@ -1221,7 +1223,9 @@ impl Bindings {
         rows.trait_applications
             .get(application.0 as usize)
             .is_some_and(|app| {
-                app.declaration.artifact.0 == 0 && Some(app.declaration.declaration) == target
+                let declared = Some(app.declaration.declaration);
+                app.declaration.artifact.0 == 0
+                    && (declared == target || Some(input.owner) == fold && declared == fn_mut)
             })
     }
 

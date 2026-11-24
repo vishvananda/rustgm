@@ -44,5 +44,17 @@
     "implementation": "impl base::Iterator for Values",
     "escaping_suffix": "by-ref-escaping.rs",
     "wrong_sized": "source by_ref requires its actual ordinary Self: Sized premise"
+  },
+  "fold": {
+    "features": ["const_destruct", "const_closures", "const_precise_live_drops", "unboxed_closures"],
+    "provider_extra": "fold-callables.rs",
+    "provider_member": "fold-member.rs",
+    "provider_anchor": "    #[lang=\"next\"]",
+    "client": "fold-client.rs",
+    "observer": "fold-observer.c",
+    "stdout": "73 42 73\n",
+    "implementation": "impl base::Iterator for Values",
+    "wrong_callback_bound": "source fold has an extra or altered method premise",
+    "ordinary_closure": "const |_, item| item"
   }
 }

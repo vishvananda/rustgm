@@ -2,7 +2,7 @@
 use super::{Declarations, Dispatcher};
 use crate::{
     sema::compiler_items::const_payments::{closed_clause, open_closed_clause},
-    support::constness::Constness,
+    support::{call_traits::CallTrait, constness::Constness},
     types::{
         Kind,
         instance::Instance,
@@ -20,6 +20,10 @@ pub(super) fn check(
     };
     let definition = crate::resolve::model::DefId(item.0);
     let clauses = declared_inputs(facts, definition)?;
+    let callable = facts
+        .imported_iterator_fold(definition)?
+        .then(|| crate::sema::compiler_items::callable_role(facts, CallTrait::FnMut))
+        .transpose()?;
     let mut fold = super::callable_substitution(facts, instance)?;
     for clause in clauses {
         facts.charge_caller_inputs(4, 0)?;
@@ -36,13 +40,22 @@ pub(super) fn check(
         let clause = fold.clause(&mut facts.types, clause);
         facts.charge_caller_inputs(fold.steps.saturating_sub(before), 0)?;
         let predicate = open_closed_clause(facts, clause?)?;
-        if !predicate.is_concrete(&facts.types)? || predicate.contains_projections(&facts.types)? {
+        let callback = callable.is_some_and(|role| {
+            matches!(predicate.bound, Bound::ConstTrait(application)
+                if facts.types.trait_application(application).is_some_and(|app| app.item.0 == role.0))
+        });
+        let closed = predicate.is_concrete(&facts.types)?
+            && !predicate.contains_projections(&facts.types)?;
+        let destruct = (closed || callable.is_some())
+            && crate::sema::compiler_items::destruct_predicate(facts, predicate)?;
+        if !(closed || callback || callable.is_some() && destruct) {
             return Err("const default method requirements need closed normalized predicates");
         }
         let before = dispatch.context.steps;
-        let proof = if crate::sema::compiler_items::destruct_predicate(facts, predicate)? {
-            // This exact source role has builtin bound evidence, rather than
-            // an implementation owner. Actual Drop/field debts stay in its proof.
+        let proof = if callback || destruct {
+            // The ordinary source selection normalizes the closed Iterator
+            // projection before checking the actual callback. Builtin Destruct
+            // keeps its own Drop and field debts in the same proof.
             dispatch
                 .source_evidence(facts, predicate, None)
                 .map(|evidence| evidence.proof)

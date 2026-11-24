@@ -181,6 +181,10 @@ variant calls the actual provided default in native and const execution and
 checks both fields of its returned tuple.
 The `--case by-ref` variant updates the original iterator through the default's
 returned borrow in both paths and checks that the borrow cannot escape.
+The `--case fold` variant runs the actual conditional `Iterator::fold` default
+in native and const execution across multi-item and empty iterators without
+enabling `const_precise_live_drops` in the reader, and rejects non-const
+iterators, non-const callbacks, and altered callback premises.
 `spec/source-precise-cleanup-transport/outcomes.json` checks an imported generic
 enum move in native and const execution. Its reader has no precise-drop feature,
 and the same provider without the feature rejects the potential destructor.

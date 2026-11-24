@@ -1,5 +1,8 @@
 //! Reprove the provided methods admitted for the actual Iterator role.
-use super::{Catalog, Declaration, Declarations, DefId, DefKind, ItemId, Kind, LangItem, Report};
+use super::{
+    Catalog, Declaration, Declarations, DefId, DefKind, ItemId, Kind, LangItem, Report,
+    reductions::Reduction,
+};
 use crate::{
     sema::{
         compiler_items::headers::Trait,
@@ -37,7 +40,7 @@ pub(in crate::sema) fn source_default(
         .language(LangItem::Option)
         .ok_or("source Iterator defaults require their actual Option declaration")?;
     catalog.require_provider_report(report)?;
-    let mut steps = 16;
+    let mut steps = method.header_work();
     let checked = super::loop_headers::trait_header(report, facts, iterator.into(), &mut steps)
         .and_then(|header| {
             method.require(facts, catalog, &header, ItemId(option.definition.0), member)
@@ -59,6 +62,7 @@ pub(super) fn imported(
     *steps = steps.saturating_add(iterator.members.len());
     for &member in iterator.members {
         if let Some(method) = Method::of(report, member) {
+            *steps = steps.saturating_add(method.header_work());
             method.require(facts, catalog, iterator, option, member)?;
         }
     }
@@ -69,22 +73,28 @@ pub(super) fn imported(
 enum Method {
     SizeHint,
     ByRef,
+    ByValue(Reduction),
 }
 impl Method {
+    const fn header_work(self) -> usize {
+        match self {
+            Self::SizeHint | Self::ByRef => 16,
+            Self::ByValue(Reduction::Fold) => 64,
+        }
+    }
+
     fn of(report: &Report, member: DefId) -> Option<Self> {
         let definition = report.resolution.definitions.get(member.0 as usize)?;
         if definition.kind != DefKind::Function {
             return None;
         }
-        let [size_hint, by_ref] = LangItem::PROVIDED_ITERATOR_METHODS;
-        let name = report.package.names.get(definition.name);
-        if name == size_hint {
-            Some(Self::SizeHint)
-        } else if name == by_ref {
-            Some(Self::ByRef)
-        } else {
-            None
-        }
+        let [size_hint, by_ref, fold] = LangItem::PROVIDED_ITERATOR_METHODS;
+        Some(match report.package.names.get(definition.name) {
+            name if name == size_hint => Self::SizeHint,
+            name if name == by_ref => Self::ByRef,
+            name if name == fold => Self::ByValue(Reduction::Fold),
+            _ => return None,
+        })
     }
 
     fn require(
@@ -98,14 +108,16 @@ impl Method {
         let function = facts
             .declaration_header(member)?
             .ok_or("source Iterator default has no actual completed header")?;
+        let regions = u32::from(!matches!(self, Self::ByValue(_)));
         if function.body.is_none()
             || facts.associated.trait_owner(member) != Some(iterator.definition)
-            || function.universals != 1
-            || facts
-                .generics
-                .parameters
-                .get(&member)
-                .is_some_and(|own| !own.is_empty())
+            || function.universals != regions
+            || regions != 0
+                && facts
+                    .generics
+                    .parameters
+                    .get(&member)
+                    .is_some_and(|own| !own.is_empty())
             || function.declaration.source().is_some() && facts.nonconst_trait_member(member)?
         {
             return Err(
@@ -117,12 +129,22 @@ impl Method {
             result,
             unsafe_: false,
             convention: Convention::RUST,
-            bound_regions: 1,
+            bound_regions,
         }) = facts.types.kind(function.signature)
         else {
             return Err("source Iterator default requires its actual safe Rust signature");
         };
-        let Some([receiver]) = facts.types.list(parameters) else {
+        if bound_regions != regions {
+            return Err("source Iterator default changed its actual lifetime binder");
+        }
+        let inputs = facts
+            .types
+            .list(parameters)
+            .ok_or("source Iterator default lacks its actual input list")?;
+        if let Self::ByValue(reduction) = self {
+            return reduction.require(facts, catalog, iterator, option, member, (inputs, result));
+        }
+        let [receiver] = inputs else {
             return Err("source Iterator default requires one actual input");
         };
         let expected_mutable = matches!(self, Self::ByRef);
@@ -134,6 +156,7 @@ impl Method {
                     "source size_hint requires its actual late-bound shared Self input"
                 }
                 Self::ByRef => "source by_ref requires its actual late-bound mutable Self input",
+                Self::ByValue(_) => "source Iterator reduction has an unexpected reference input",
             });
         }
         let inputs =
@@ -152,6 +175,9 @@ impl Method {
                     );
                 }
                 by_ref_sized(facts, catalog, iterator.self_type, inputs)
+            }
+            Self::ByValue(_) => {
+                Err("source Iterator reduction did not validate its by-value header")
             }
         }
     }

@@ -1,6 +1,7 @@
 //! Desugaring consumes actual tagged methods and variants, independently of names.
 mod defaults;
 mod loop_headers;
+mod reductions;
 use super::Catalog;
 use crate::{
     resolve::{

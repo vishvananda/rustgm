@@ -210,7 +210,7 @@ fn function(
     Ok((*input, result))
 }
 
-fn next_item(
+pub(super) fn next_item(
     facts: &Declarations,
     role: Role,
     iterator: &Trait<'_>,

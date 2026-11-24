@@ -3,7 +3,7 @@ use super::{Context, Declarations, Predicate, infer};
 use crate::{
     resolve::model::DefId,
     sema::compiler_items::CallEffect,
-    support::{bindings::LangItem, call_traits::CallTrait, constness::Constness},
+    support::constness::Constness,
     types::{Kind, instance::Instance},
 };
 
@@ -110,22 +110,11 @@ fn actual_role(facts: &Declarations, goal: &Predicate) -> Result<(), &'static st
     let (item, _) = goal
         .trait_arguments()
         .ok_or("const callable requires its actual trait application")?;
-    let role = match facts
+    let kind = facts
         .associated
         .callable(DefId(item.0))
-        .ok_or("missing callable trait identity")?
-    {
-        CallTrait::FnOnce => LangItem::FnOnce,
-        CallTrait::FnMut => LangItem::FnMut,
-        CallTrait::Fn => LangItem::Fn,
-    };
-    let declaration = facts
-        .source_bindings
-        .as_deref()
-        .ok_or("const callable requires actual source declarations")?
-        .validated_language(role)?
-        .ok_or("const callable source role is absent")?;
-    if declaration.definition != DefId(item.0) {
+        .ok_or("missing callable trait identity")?;
+    if crate::sema::compiler_items::callable_role(facts, kind)? != DefId(item.0) {
         return Err("const callable trait differs from its validated source role");
     }
     Ok(())

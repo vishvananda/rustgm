@@ -2,6 +2,7 @@
 use super::*;
 use crate::{
     sema::traits::{assumptions::Assumptions, selection},
+    support::bindings::LangItem,
     types::{
         ItemId, TypeId,
         infer::Instantiation,
