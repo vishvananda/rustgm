@@ -1,5 +1,5 @@
 //! Desugaring consumes actual tagged methods and variants, independently of names.
-mod cardinality;
+mod defaults;
 mod loop_headers;
 use super::Catalog;
 use crate::{
@@ -18,7 +18,7 @@ use crate::{
     },
     types::{ItemId, Kind, arguments::Argument, callable::Convention},
 };
-pub(in crate::sema) use cardinality::source_default;
+pub(in crate::sema) use defaults::source_default;
 pub(in crate::sema::compiler_items) use loop_headers::imported;
 pub(in crate::sema) use loop_headers::{imported_into_trait, source_blanket_member, source_role};
 

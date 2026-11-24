@@ -281,7 +281,10 @@ impl Declarations {
                 && (!matches!(kind, LangItem::Clone | LangItem::Iterator) || header.body.is_some())
                 && self.associated.constant_trait(owner) == Some(true)
                 && (kind != LangItem::Iterator
-                    || catalog.imported_member_named(header.declaration, "size_hint")?)
+                    || catalog.imported_member_named(
+                        header.declaration,
+                        &LangItem::PROVIDED_ITERATOR_METHODS,
+                    )?)
             {
                 return Ok(Some(owner));
             }
@@ -323,7 +326,8 @@ impl Declarations {
             return Ok(false);
         };
         if kind == LangItem::Iterator
-            && !catalog.imported_member_named(header.declaration, "size_hint")?
+            && !catalog
+                .imported_member_named(header.declaration, &LangItem::PROVIDED_ITERATOR_METHODS)?
         {
             return Ok(false);
         }

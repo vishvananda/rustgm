@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify required for-loop roles in a separately built native client."""
+"""Qualify actual iteration roles and defaults with fresh native clients."""
 import argparse
 import json
 from pathlib import Path
@@ -106,7 +106,7 @@ def reject_ordinary_const_client(check, importer, artifact, client, rustc, contr
               "-o", check.folder / "ordinary-iterator.lowir", wrong], 1, timeout=30)
 
 
-def size_hint_inputs(contract, blanket, provider):
+def provided_inputs(contract, blanket, provider):
     anchor = contract["provider_anchor"].encode()
     if provider.count(anchor) != 1:
         raise ValueError("iteration fixture lost its exact next declaration anchor")
@@ -140,12 +140,37 @@ def reject_size_hint_rows(check, exporter, importer, source, artifact, client, c
               1, [contract["wrong_arity"]], timeout=30)
 
 
+def reject_by_ref_bounds(check, exporter, importer, source, artifact, client, rustc, contract):
+    text = source.read_bytes()
+    sized = b"        Self: Sized,"
+    if text.count(sized) != 1:
+        raise ValueError("iteration fixture lost its exact by_ref premise")
+    other_bound = check.folder / "other-by-ref-premise.rs"
+    other_bound.write_bytes(text.replace(sized, b"        Self: MetaSized,"))
+    rejected = check.folder / "other-by-ref-premise.rgcrate"
+    check.run("wrong-by-ref-premise", [*exporter, "--source-profile", PROFILE,
+              "--metadata-output", rejected, other_bound], 1, [contract["wrong_sized"]], timeout=30)
+    if rejected.exists():
+        raise ValueError("an altered by_ref premise produced an artifact")
+
+    escaping = check.folder / "escaping-by-ref.rs"
+    escaping.write_bytes(client.read_bytes() + (FIXTURE / contract["escaping_suffix"]).read_bytes())
+    check.run("rustc-escaping-by-ref", [rustc.resolve(strict=True), "--edition=2024",
+              "--crate-type=lib", "--emit=metadata", "--extern", f"base={check.folder / 'libbase.rlib'}",
+              "-o", check.folder / "escaping-by-ref.rmeta", escaping], 1,
+              ["does not live long enough"], timeout=30,
+              environment={"RUSTC_BOOTSTRAP": "1"})
+    check.run("rustgm-escaping-by-ref", [*importer, "--extern", f"base={artifact}",
+              "-o", check.folder / "escaping-by-ref.lowir", escaping], 1,
+              ["access conflicts with a live reference loan"], timeout=30)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--rustc", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint"),
+    parser.add_argument("--case", choices=("roles", "blanket", "blanket-const", "size-hint", "by-ref"),
                         default="roles")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
@@ -158,9 +183,10 @@ def main():
     client = FIXTURE / contract["client"]
     constant = args.case == "blanket-const"
     observed = contract
-    if args.case == "size-hint":
-        observed = contract["size_hint"]
-        provider = size_hint_inputs(observed, contract["blanket"], provider)
+    provided = args.case in ("size-hint", "by-ref")
+    if provided:
+        observed = contract[args.case.replace("-", "_")]
+        provider = provided_inputs(observed, contract["blanket"], provider)
         client = FIXTURE / observed["client"]
     elif args.case != "roles":
         provider, client = blanket_inputs(check, contract["blanket"], provider, client, constant)
@@ -187,8 +213,8 @@ def main():
     native = check.folder / "rustgm-iteration-client"
     backend.build_many([provider_lowir, client_lowir], native, native_objects=[observer])
     if check.run("rustgm-observe", [native], timeout=15).stdout != expected:
-        raise ValueError("fresh RustGM client changed either branch of the imported iteration")
-    if constant or args.case == "size-hint":
+        raise ValueError("fresh RustGM client disagreed with the declared iteration outcome")
+    if constant or provided:
         reject_ordinary_const_client(check, importer, artifact, client, args.rustc, observed)
     if args.case == "size-hint":
         reject_size_hint_rows(check, exporter, importer, source, artifact, client, observed)
@@ -196,6 +222,8 @@ def main():
             check.run("old-size-hint-reader", [args.baseline.resolve(strict=True), *importer[1:],
                       "--extern", f"base={artifact}", client], 1, [observed["old_reader"]],
                       timeout=30)
+    elif args.case == "by-ref":
+        reject_by_ref_bounds(check, exporter, importer, source, artifact, client, args.rustc, observed)
     elif args.case == "blanket":
         reject_ordinary_premise(check, exporter, source, contract["blanket"])
     elif args.case == "roles":

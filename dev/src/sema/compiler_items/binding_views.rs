@@ -227,7 +227,7 @@ impl Catalog {
     pub(in crate::sema) fn imported_member_named(
         &self,
         origin: DeclarationOrigin,
-        name: &str,
+        names: &[&str],
     ) -> Result<bool, &'static str> {
         let (Bindings::Imported(imported), DeclarationOrigin::Imported(declaration)) =
             (&self.bindings, origin)
@@ -244,7 +244,8 @@ impl Catalog {
                 .rows()
                 .declarations
                 .get(ordinal.0 as usize)
-                .is_some_and(|row| row.name.as_deref() == Some(name)))
+                .and_then(|row| row.name.as_deref())
+                .is_some_and(|name| names.contains(&name)))
     }
 
     pub(super) fn imported_diagnostic(

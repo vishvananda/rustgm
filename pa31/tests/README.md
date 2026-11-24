@@ -163,6 +163,8 @@ ordinary iterator. The `--case blanket-const` variant also evaluates the
 imported `into_iter` body in a constant initializer. The `--case size-hint`
 variant calls the actual provided default in native and const execution and
 checks both fields of its returned tuple.
+The `--case by-ref` variant updates the original iterator through the default's
+returned borrow in both paths and checks that the borrow cannot escape.
 `spec/source-enum-role-transport/outcomes.json` checks the provider's actual
 Option, Result, and Ordering declarations in fresh clients. It also rejects
 swapped Option variants and a redirected Result diagnostic owner. Run

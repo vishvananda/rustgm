@@ -1032,7 +1032,8 @@ pub(super) struct Bindings {
     clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone_fn: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     clone_from: Option<crate::support::crates::owner_catalog::DeclarationRef>,
-    size_hint: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    iterator_defaults: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
+        LangItem::PROVIDED_ITERATOR_METHODS.len()],
     trivial_clone: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     try_methods: [Option<crate::support::crates::owner_catalog::DeclarationRef>;
         LangItem::REQUIRED_TRY_METHODS.len()],
@@ -1062,7 +1063,7 @@ impl Bindings {
         callable_traits::DefaultTraits {
             drop: self.drop,
             clone_from: self.clone_from,
-            size_hint: self.size_hint,
+            iterator_defaults: self.iterator_defaults,
             comparisons: self.comparisons,
         }
     }
@@ -1419,20 +1420,16 @@ pub(super) fn bindings(
         return Err("source functions require the real complete sizing trio");
     }
     slot_bindings(rows, headers, work, profile, sizing[0])?;
-    let callables = if profile.languages() {
-        callable_roles::Roles(
-            [
-                LangItem::Tuple,
-                LangItem::FnOnce,
-                LangItem::FnMut,
-                LangItem::Fn,
-            ]
-            .map(bound),
-        )
-    } else {
-        callable_roles::Roles::default()
-    };
     let languages = profile.languages();
+    let callables = callable_roles::Roles(
+        [
+            LangItem::Tuple,
+            LangItem::FnOnce,
+            LangItem::FnMut,
+            LangItem::Fn,
+        ]
+        .map(|role| bound(role).filter(|_| languages)),
+    );
     let modern = profile == BindingProfile::BodyOperations;
     let range = if modern {
         interval_roles::family(rows, headers, interval_roles::ROLES.map(bound), work)?
@@ -1446,19 +1443,31 @@ pub(super) fn bindings(
             | BindingProfile::Languages
             | BindingProfile::BodyOperations
     );
-    let mut default = |role, name| {
-        const_default_member(rows, headers, bound(role).filter(|_| modern), name, work)
-    };
+    let modern_role = |role| bound(role).filter(|_| modern);
+    let [clone_from] = const_default_members(
+        rows,
+        headers,
+        modern_role(LangItem::Clone),
+        ["clone_from"],
+        work,
+    )?;
+    let iterator_defaults = const_default_members(
+        rows,
+        headers,
+        modern_role(LangItem::Iterator),
+        LangItem::PROVIDED_ITERATOR_METHODS,
+        work,
+    )?;
     Ok(Bindings {
         callables,
         languages,
         range,
-        drop: bound(LangItem::Drop).filter(|_| modern),
+        drop: modern_role(LangItem::Drop),
         drop_glue: bound(LangItem::DropGlue),
-        clone: bound(LangItem::Clone).filter(|_| modern),
-        clone_fn: bound(LangItem::CloneFn).filter(|_| modern),
-        clone_from: default(LangItem::Clone, "clone_from")?,
-        size_hint: default(LangItem::Iterator, "size_hint")?,
+        clone: modern_role(LangItem::Clone),
+        clone_fn: modern_role(LangItem::CloneFn),
+        clone_from,
+        iterator_defaults,
         trivial_clone: bound(LangItem::TrivialClone),
         try_methods: LangItem::REQUIRED_TRY_METHODS.map(bound),
         try_traits: [
@@ -1490,16 +1499,8 @@ pub(super) fn bindings(
         ))
         .then_some(bound(LangItem::From))
         .flatten(),
-        binary_operators: if profile == BindingProfile::BodyOperations {
-            Profile::CONST_BINARY_ROLES.map(bound)
-        } else {
-            [None; Profile::CONST_BINARY_ROLES.len()]
-        },
-        dereferences: if profile == BindingProfile::BodyOperations {
-            Profile::CONST_DEREF_ROLES.map(bound)
-        } else {
-            [None; Profile::CONST_DEREF_ROLES.len()]
-        },
+        binary_operators: Profile::CONST_BINARY_ROLES.map(modern_role),
+        dereferences: Profile::CONST_DEREF_ROLES.map(modern_role),
         sizing,
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
@@ -1908,41 +1909,50 @@ fn enum_role_header(
     Ok(())
 }
 
-fn const_default_member(
+fn const_default_members<const N: usize>(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     owner: Option<crate::support::crates::owner_catalog::DeclarationRef>,
-    name: &str,
+    names: [&str; N],
     work: &mut Work,
-) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+) -> Result<[Option<crate::support::crates::owner_catalog::DeclarationRef>; N], &'static str> {
     use super::super::HeaderRef;
+    let mut defaults = [None; N];
     let Some(owner) = owner else {
-        return Ok(None);
+        return Ok(defaults);
     };
     let Some(HeaderRef::Trait(index)) = headers.header(owner, work)? else {
         return Err("source const default lost its actual trait header");
     };
     let header = &rows.traits[index as usize];
     if header.flags.bits() & TraitFlags::CONST == 0 {
-        return Ok(None);
+        return Ok(defaults);
     }
     let members = header.members.slice(&rows.members)?;
     work.charge(members.len())?;
-    let Some(&member) = members.iter().find(|member| {
-        rows.declarations
+    for &member in members {
+        let Some(name) = rows
+            .declarations
             .get(member.0 as usize)
-            .is_some_and(|row| row.name.as_deref() == Some(name))
-    }) else {
-        return Ok(None);
-    };
-    if !matches!(headers.header(member, work)?, Some(HeaderRef::Function(index))
-        if rows.functions[index as usize].parent == Some(owner)
-            && rows.functions[index as usize].constness == Constness::Conditional
-            && matches!(rows.functions[index as usize].body, FunctionBody::Original(_)))
-    {
-        return Err("source const default requires its actual provided method");
+            .and_then(|row| row.name.as_deref())
+        else {
+            continue;
+        };
+        let Some(slot) = names.iter().position(|&expected| expected == name) else {
+            continue;
+        };
+        if !matches!(headers.header(member, work)?, Some(HeaderRef::Function(index))
+            if rows.functions[index as usize].parent == Some(owner)
+                && rows.functions[index as usize].constness == Constness::Conditional
+                && matches!(rows.functions[index as usize].body, FunctionBody::Original(_)))
+        {
+            return Err("source const default requires its actual provided method");
+        }
+        if defaults[slot].replace(member).is_some() {
+            return Err("source const default repeats an actual provided method");
+        }
     }
-    Ok(Some(member))
+    Ok(defaults)
 }
 
 fn required_method_owner(

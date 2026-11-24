@@ -34,5 +34,15 @@
     "wrong_receiver": "source size_hint requires its actual late-bound shared Self input",
     "wrong_arity": "source tuple value changed its complete actual field count",
     "old_reader": "source nonordinary callable effect/safety/convention requires a wider profile"
+  },
+  "by_ref": {
+    "provider_member": "by-ref-member.rs",
+    "provider_anchor": "    #[lang=\"next\"]",
+    "client": "by-ref-client.rs",
+    "observer": "size-hint-observer.c",
+    "stdout": "73 42\n",
+    "implementation": "impl base::Iterator for Values",
+    "escaping_suffix": "by-ref-escaping.rs",
+    "wrong_sized": "source by_ref requires its actual ordinary Self: Sized premise"
   }
 }
