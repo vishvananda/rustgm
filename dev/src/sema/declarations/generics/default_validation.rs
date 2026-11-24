@@ -2,7 +2,8 @@
 use super::{Checker, DefId, Error, NodeKey};
 use crate::support::hash::HashMap;
 use crate::{
-    sema::nominals::Proof,
+    resolve::model::DefKind,
+    sema::{declaration_inputs, nominals::Proof},
     types::{
         TypeId,
         arguments::Argument,
@@ -39,6 +40,69 @@ impl Checker<'_> {
         key: NodeKey,
         proof: &mut Proof,
     ) -> Result<(), Error> {
+        self.prove_parameter_defaults(owner, Some(key), proof)
+    }
+
+    pub(in crate::sema::declarations) fn validate_imported_type_defaults(
+        &mut self,
+    ) -> Result<(), Error> {
+        if self.report.package.source_client().is_none() {
+            return Ok(());
+        }
+        let count = self.facts.generics.parameters.len();
+        crate::sema::crates::charge_source_headers(
+            &mut self.facts,
+            count,
+            count.saturating_mul(size_of::<DefId>()),
+        )?;
+        let linkage = self
+            .facts
+            .crates
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("imported type defaults lack linkage"))?;
+        let catalog = linkage.origin_catalog().ok_or_else(|| {
+            Error::unlocated("imported type defaults lack their declaration catalog")
+        })?;
+        let mut owners = Vec::with_capacity(count);
+        for (&definition, parameters) in &self.facts.generics.parameters {
+            let actual = &self.report.resolution.definitions[definition.0 as usize];
+            if actual.node.is_some() || !parameters.iter().any(|p| p.default.is_some()) {
+                continue;
+            }
+            let Some(imported) = catalog
+                .declaration_if_imported(definition)
+                .map_err(Error::unlocated)?
+            else {
+                continue;
+            };
+            if !matches!(
+                actual.kind,
+                DefKind::Struct | DefKind::Enum | DefKind::Trait
+            ) {
+                return Err(Error::unlocated(
+                    "imported type default changed its actual declaration kind",
+                ));
+            }
+            catalog
+                .validate_declaration(imported, definition, actual.kind)
+                .map_err(Error::unlocated)?;
+            owners.push(definition);
+        }
+        owners.sort_unstable_by_key(|owner| owner.0);
+        for owner in owners {
+            let (universals, mut proof) = self.imported_parameter_proof(owner)?;
+            self.prove_parameter_defaults(owner, None, &mut proof)?;
+            self.finish_imported_parameter_proof(owner, universals, &mut proof)?;
+        }
+        Ok(())
+    }
+
+    fn prove_parameter_defaults(
+        &mut self,
+        owner: DefId,
+        key: Option<NodeKey>,
+        proof: &mut Proof,
+    ) -> Result<(), Error> {
         let parameters = self
             .facts
             .generics
@@ -50,8 +114,8 @@ impl Checker<'_> {
         }
         let count = parameters.len();
         let subjects = self
-            .default_bound_subjects(owner)
-            .map_err(|e| self.error(key, e))?;
+            .default_bound_subjects(owner, key.is_none())
+            .map_err(|e| self.default_error(key, e))?;
         for index in 0..count {
             let parameter = self.facts.generics.parameters[&owner][index];
             let Some(default) = parameter.default else {
@@ -59,21 +123,20 @@ impl Checker<'_> {
             };
             let source = self.report.resolution.definitions[parameter.binding.0 as usize]
                 .node
-                .unwrap_or(key);
+                .or(key);
             let Some(id) = self.closed_parameter_default(parameter, source, proof)? else {
                 continue;
             };
             let mut replace = substitute::Bound::parameter_only(&self.facts.types, id, default)
-                .map_err(|e| self.error(source, e))?;
-            for &index in subjects.get(&id).into_iter().flatten() {
-                let predicate = self.facts.generics.predicates[&owner][index];
+                .map_err(|e| self.default_error(source, e))?;
+            for &clause in subjects.get(&id).into_iter().flatten() {
                 let bound = replace
-                    .clause(&mut self.facts.types, predicate.value)
-                    .map_err(|e| self.error(source, e))?;
+                    .clause(&mut self.facts.types, clause)
+                    .map_err(|e| self.default_error(source, e))?;
                 if !check_requirement(&mut self.facts, proof, bound)
-                    .map_err(|e| self.error(source, e))?
+                    .map_err(|e| self.default_error(source, e))?
                 {
-                    return Err(self.error(
+                    return Err(self.default_error(
                         source,
                         "non-generic bound is not satisfied by a parameter default",
                     ));
@@ -85,14 +148,14 @@ impl Checker<'_> {
     fn closed_parameter_default(
         &mut self,
         parameter: crate::sema::generics::Parameter,
-        source: NodeKey,
+        source: Option<NodeKey>,
         proof: &mut Proof,
     ) -> Result<Option<ParameterId>, Error> {
         let Some(default) = parameter.default else {
             return Ok(None);
         };
         let id = crate::sema::generics::parameter_id(&self.facts.types, parameter.argument)
-            .map_err(|e| self.error(source, e))?;
+            .map_err(|e| self.default_error(source, e))?;
         match default {
             Argument::Const(constant) => {
                 return Ok(self.facts.types.const_is_value(constant).then_some(id));
@@ -100,14 +163,14 @@ impl Checker<'_> {
             Argument::Type(ty) if self.closed_default(ty) => {
                 let properties = proof
                     .check(&mut self.facts, ty)
-                    .map_err(|e| self.error(source, e))?;
+                    .map_err(|e| self.default_error(source, e))?;
                 let sized = self
                     .facts
                     .types
                     .parameter(id)
                     .is_some_and(|p| matches!(p.kind, ParameterKind::Type { sized: true }));
                 if !properties.well_formed || (sized && !properties.sized) {
-                    return Err(self.error(
+                    return Err(self.default_error(
                         source,
                         "parameter default must be well-formed and satisfy sizedness",
                     ));
@@ -115,7 +178,7 @@ impl Checker<'_> {
             }
             Argument::Type(_) => return Ok(None),
             Argument::Lifetime(_) => {
-                return Err(self.error(source, "lifetimes cannot have defaults"));
+                return Err(self.default_error(source, "lifetimes cannot have defaults"));
             }
         }
         Ok(Some(id))
@@ -124,24 +187,32 @@ impl Checker<'_> {
         self.facts.types.contains_parameters(ty) == Some(false)
             && self.facts.types.escaping_binders(ty) == Some(0)
     }
+    fn default_error(&self, source: Option<NodeKey>, message: impl Into<String>) -> Error {
+        match source {
+            Some(source) => self.error(source, message),
+            None => Error::unlocated(message),
+        }
+    }
+
     fn default_bound_subjects(
         &self,
         owner: DefId,
-    ) -> Result<HashMap<ParameterId, Vec<usize>>, &'static str> {
-        let mut result: HashMap<ParameterId, Vec<usize>> = HashMap::default();
+        imported: bool,
+    ) -> Result<HashMap<ParameterId, Vec<Clause>>, &'static str> {
+        let mut result: HashMap<ParameterId, Vec<Clause>> = HashMap::default();
         let mut subjects = HashMap::default();
         let mut uses = Sole::default();
-        let clauses = self
-            .facts
-            .generics
-            .predicates
-            .get(&owner)
-            .map_or(&[][..], Vec::as_slice);
-        for (index, predicate) in clauses.iter().enumerate() {
-            let original = self
-                .facts
-                .unreduced
-                .predicate(predicate.source)
+        let linkage = if imported {
+            self.facts.crates.as_deref()
+        } else {
+            None
+        };
+        let clauses = declaration_inputs::own(&self.facts.generics, linkage, owner)?;
+        for predicate in clauses {
+            let original = predicate
+                .source
+                .source()
+                .and_then(|source| self.facts.unreduced.predicate(source))
                 .unwrap_or(predicate.value);
             if !original.checks_parameter_default(&self.facts.types)? {
                 continue;
@@ -154,7 +225,7 @@ impl Checker<'_> {
                 id
             };
             if let Some(id) = id {
-                result.entry(id).or_default().push(index);
+                result.entry(id).or_default().push(predicate.value);
             }
         }
         Ok(result)

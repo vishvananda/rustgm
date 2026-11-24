@@ -82,10 +82,20 @@ impl DomainIndex<'_, '_> {
         Ok(())
     }
 
-    pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+    fn parameter_defaults(&self, context: Context, work: &mut Work) -> Result<(), &'static str> {
+        let declared = self.headers.scopes().declared_slots(context.owner, work)?;
+        for index in declared.start..declared.end {
+            work.charge(1)?;
+            if let Some(default) = self.headers.rows().slots[index as usize].default {
+                self.types
+                    .default_root(self.headers, context, s::SlotRef(index), default, work)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn nominal_header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        self.trait_alias_roots(work)?;
-        self.nominal_lifetime_roots(work)?;
         for header in &rows.nominals {
             let context = Context {
                 owner: header.scope,
@@ -98,7 +108,18 @@ impl DomainIndex<'_, '_> {
                 self.types.root(self.headers, context, field.ty, work)?;
             }
             self.requirements(context, header.inputs, work)?;
+            if self.declaration_policies {
+                self.parameter_defaults(context, work)?;
+            }
         }
+        Ok(())
+    }
+
+    pub(super) fn header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        self.trait_alias_roots(work)?;
+        self.nominal_lifetime_roots(work)?;
+        self.nominal_header_roots(work)?;
         for header in &rows.traits {
             let context = Context {
                 owner: header.scope,
@@ -126,6 +147,9 @@ impl DomainIndex<'_, '_> {
             }
             self.requirements(context, header.inputs, work)?;
             self.bounds(context, header.region_bounds, work)?;
+            if self.declaration_policies {
+                self.parameter_defaults(context, work)?;
+            }
         }
         for header in &rows.implementations {
             let context = Context {

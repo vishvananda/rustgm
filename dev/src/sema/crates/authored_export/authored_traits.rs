@@ -408,7 +408,12 @@ impl Stage {
             .get(&parameter)
             .copied()
             .ok_or("source trait Self slot was not reserved")?;
-        self.trait_defaults(facts, header.definition, header.self_type, self_type)?;
+        self.trait_defaults(
+            facts,
+            header.definition,
+            (header.self_type, self_type),
+            context,
+        )?;
         let (inputs, written_supertraits) =
             self.trait_inputs(facts, header, context, self_slot, inventory)?;
         let region_bounds = self.region_bounds(&canonical.regions, context)?;

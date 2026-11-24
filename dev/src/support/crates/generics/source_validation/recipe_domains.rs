@@ -186,7 +186,10 @@ impl Builder<'_, '_> {
                 let rows = self.headers.rows();
                 let owner_a = rows.slots[a.0 as usize].owner;
                 let owner_b = rows.slots[b.0 as usize].owner;
-                if self.headers.scopes().contains(owner_a, b, work)? {
+                if owner_a == owner_b {
+                    // The latest formal suffices for both scope and ordered defaults.
+                    left.parameter = Some(if a.0 > b.0 { a } else { b });
+                } else if self.headers.scopes().contains(owner_a, b, work)? {
                     left.parameter = Some(a);
                 } else if self.headers.scopes().contains(owner_b, a, work)? {
                     left.parameter = Some(b);

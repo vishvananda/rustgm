@@ -145,24 +145,42 @@ impl Checker<'_> {
         catalog
             .validate_declaration(parameter, binding, DefKind::Generic)
             .map_err(Error::unlocated)?;
-        let environment = facts
+        let (universals, mut proof) = self.imported_parameter_proof(owner)?;
+        prove_const_parameter_type(&mut self.facts, ty, &mut proof, true)
+            .map_err(Error::unlocated)?;
+        self.finish_imported_parameter_proof(owner, universals, &mut proof)
+    }
+
+    pub(super) fn imported_parameter_proof(&self, owner: DefId) -> Result<(u32, Proof), Error> {
+        let environment = self
+            .facts
             .generics
             .environments
             .get(&owner)
             .cloned()
             .ok_or_else(|| {
-                Error::unlocated("imported const formal lacks its declaration environment")
+                Error::unlocated("imported parameter lacks its declaration environment")
             })?;
         let universals = u32::try_from(
-            facts
+            self.facts
                 .generics
                 .parameters_in_scope(owner)
                 .filter(|parameter| matches!(parameter.argument, Argument::Lifetime(_)))
                 .count(),
         )
-        .map_err(|_| Error::unlocated("imported const formal lifetime domain is too large"))?;
-        let mut proof = Proof::for_imported_declaration(environment, universals);
-        prove_const_parameter_type(facts, ty, &mut proof, true).map_err(Error::unlocated)?;
+        .map_err(|_| Error::unlocated("imported parameter lifetime domain is too large"))?;
+        Ok((
+            universals,
+            Proof::for_imported_declaration(environment, universals),
+        ))
+    }
+
+    pub(super) fn finish_imported_parameter_proof(
+        &mut self,
+        owner: DefId,
+        universals: u32,
+        proof: &mut Proof,
+    ) -> Result<(), Error> {
         let mut work = proof.own_work();
         if let Some(obligations) = proof.take_trait_proof() {
             let mut queries = crate::types::outlives::Queries::new(

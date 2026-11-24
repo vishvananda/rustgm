@@ -155,6 +155,9 @@ impl Stage {
             contract
         };
         let context = self.nominal_frame(declaration)?;
+        if policies {
+            self.nominal_parameter_defaults(facts, owner, context)?;
+        }
         if !explicit_bounds.is_empty() {
             let bounds = self.region_bounds(explicit_bounds, context)?;
             self.reserve(4 * size_of::<s::NominalRegionBounds>())?;

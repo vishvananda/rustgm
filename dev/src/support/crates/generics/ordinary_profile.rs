@@ -1608,14 +1608,23 @@ fn slot_bindings(
             }
         }
         if let Some(default) = slot.default {
-            let Some(super::super::HeaderRef::Trait(index)) = headers.header(slot.owner, work)?
-            else {
-                return Err("source parameter default belongs to a non-trait owner");
-            };
-            if !profile.languages() || rows.traits[index as usize].self_type != default {
-                return Err(
-                    "source parameter default other than its trait's Self requires a wider consumer",
-                );
+            use super::super::{HeaderRef, ParameterKind};
+            match headers.header(slot.owner, work)? {
+                Some(HeaderRef::Trait(index)) => {
+                    let wide = profile == BindingProfile::BodyOperations
+                        && matches!(slot.kind, ParameterKind::Type { .. });
+                    if !profile.languages()
+                        || (!wide && rows.traits[index as usize].self_type != default)
+                    {
+                        return Err(
+                            "source parameter default other than its trait's Self requires a wider consumer",
+                        );
+                    }
+                }
+                Some(HeaderRef::Nominal(_))
+                    if profile == BindingProfile::BodyOperations
+                        && matches!(slot.kind, ParameterKind::Type { .. }) => {}
+                _ => return Err("source parameter default belongs to a non-trait owner"),
             }
         }
         if let super::super::ParameterKind::Type {

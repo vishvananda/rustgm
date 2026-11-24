@@ -160,7 +160,9 @@ impl Stage {
         } else {
             Leading::None
         };
-        self.type_slots(facts, owner, declaration, kind == DefKind::Trait, leading)?;
+        let defaults = kind == DefKind::Trait && self.body_nodes()
+            || matches!(kind, DefKind::Struct | DefKind::Enum) && self.declaration_policies();
+        self.type_slots(facts, owner, declaration, defaults, leading)?;
         let trait_self = self.declaration_policies()
             && kind == DefKind::SelfType
             && facts.associated.trait_owner(owner).is_some();
@@ -205,7 +207,7 @@ impl Stage {
         facts: &Declarations,
         owner: DefId,
         declaration: DeclarationRef,
-        trait_owner: bool,
+        defaults: bool,
         leading: Leading,
     ) -> Result<(), &'static str> {
         // Nominals and traits put their lifetime arguments first. Their
@@ -223,9 +225,8 @@ impl Stage {
             .enumerate()
         {
             self.charge(1)?;
-            // A version-thirteen trait default is recorded once its trait header
-            // has built the Self type (`trait_defaults`).
-            if parameter.default.is_some() && !(trait_owner && self.body_nodes()) {
+            // Each header records its explicit defaults in the actual declaration binder.
+            if parameter.default.is_some() && !defaults {
                 return Err("source parameter defaults are outside the initial profile");
             }
             if mixed_arguments && matches!(parameter.argument, Argument::Lifetime(_)) {
@@ -352,46 +353,82 @@ impl Stage {
         Ok(())
     }
 
-    /// Records each declared default of a trait's own type slots once the trait
-    /// header has its Self type. Only that Self is admitted; wider defaults need
-    /// a wider consumer.
+    pub(super) fn nominal_parameter_defaults(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        context: super::canonical_nodes::Context,
+    ) -> Result<(), &'static str> {
+        let parameters = facts.generics.parameters.get(&owner).into_iter().flatten();
+        for parameter in parameters {
+            self.charge(1)?;
+            let Some(default) = parameter.default else {
+                continue;
+            };
+            let (Argument::Type(formal), Argument::Type(default)) = (parameter.argument, default)
+            else {
+                return Err("source nominal parameter default requires its wider const domain");
+            };
+            let Some(Kind::Parameter(id)) = facts.types.kind(formal) else {
+                return Err("source nominal default lacks its actual type formal");
+            };
+            let value = self.ty(facts, default, context)?;
+            self.set_parameter_default(id, value)?;
+        }
+        Ok(())
+    }
+
+    fn set_parameter_default(
+        &mut self,
+        id: crate::types::parameters::ParameterId,
+        value: g::TypeRef,
+    ) -> Result<(), &'static str> {
+        let slot = self
+            .graph
+            .parameters
+            .get(&id)
+            .copied()
+            .ok_or("source defaulted parameter has no reserved slot")?;
+        let row = self
+            .rows
+            .slots
+            .get_mut(slot.0 as usize)
+            .ok_or("source defaulted slot is outside its table")?;
+        if row.default.replace(value).is_some() {
+            return Err("source parameter default was recorded twice");
+        }
+        Ok(())
+    }
+
+    /// Record trait defaults once their actual declaration frame and Self are available.
     pub(super) fn trait_defaults(
         &mut self,
         facts: &Declarations,
         owner: DefId,
-        self_type: crate::types::TypeId,
-        self_ref: g::TypeRef,
+        (self_type, self_ref): (crate::types::TypeId, g::TypeRef),
+        context: super::canonical_nodes::Context,
     ) -> Result<(), &'static str> {
         for parameter in facts.generics.parameters.get(&owner).into_iter().flatten() {
             self.charge(1)?;
             let Some(default) = parameter.default else {
                 continue;
             };
-            if default != Argument::Type(self_type) {
-                return Err(
-                    "source parameter default other than its trait's Self requires a wider consumer",
-                );
-            }
+            let value = match default {
+                Argument::Type(ty) if ty == self_type => self_ref,
+                Argument::Type(ty) if self.declaration_policies() => self.ty(facts, ty, context)?,
+                _ => {
+                    return Err(
+                        "source parameter default other than its trait's Self requires a wider consumer",
+                    );
+                }
+            };
             let Argument::Type(ty) = parameter.argument else {
                 return Err("source defaulted generic argument is not a type slot");
             };
             let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
                 return Err("source defaulted slot has no actual parameter identity");
             };
-            let slot = self
-                .graph
-                .parameters
-                .get(&id)
-                .copied()
-                .ok_or("source defaulted parameter has no reserved slot")?;
-            let row = self
-                .rows
-                .slots
-                .get_mut(slot.0 as usize)
-                .ok_or("source defaulted slot is outside its table")?;
-            if row.default.replace(self_ref).is_some() {
-                return Err("source parameter default was recorded twice");
-            }
+            self.set_parameter_default(id, value)?;
         }
         Ok(())
     }

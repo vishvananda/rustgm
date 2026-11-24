@@ -18,6 +18,24 @@ impl Types {
     ) -> Result<(), &'static str> {
         Self::check(headers, context, self.summary(ty, work)?, work)
     }
+    pub(in super::super) fn default_root(
+        &self,
+        headers: &HeaderIndex<'_>,
+        context: Context,
+        formal: s::SlotRef,
+        value: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let summary = self.summary(value, work)?;
+        if summary
+            .parameter
+            .is_some_and(|parameter| parameter.0 >= formal.0)
+        {
+            return Err("source type default uses its own or a later generic parameter");
+        }
+        Self::check(headers, context, summary, work)
+    }
+
     pub(in super::super) fn function_application(
         &self,
         headers: &HeaderIndex<'_>,

@@ -1,0 +1,11 @@
+{
+  "foundation": "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+  "prefix_marker": "pub fn identity<T>",
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "observer.c",
+  "stdout": "19 41 17 71\n",
+  "rustc_rejected": "mismatched types",
+  "rustgm_rejected": "incompatible types",
+  "older_profile": "source parameter defaults are outside the initial profile"
+}

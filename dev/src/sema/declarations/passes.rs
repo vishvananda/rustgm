@@ -26,7 +26,7 @@ pub(super) struct Lookahead {
 const VALIDATION: &str = "validate_trait_implementations";
 
 /// Each pass in its fixed order, named for census records.
-const PASSES: [(&str, Pass); 33] = [
+const PASSES: [(&str, Pass); 34] = [
     ("lint_legacy_or_patterns", |checker, _, _| {
         super::or_pattern_migration::check(checker.report, &mut checker.facts)
     }),
@@ -86,6 +86,9 @@ const PASSES: [(&str, Pass); 33] = [
     }),
     ("validate_const_parameter_types", |checker, _, _| {
         checker.validate_const_parameter_types()
+    }),
+    ("validate_imported_type_defaults", |checker, _, _| {
+        checker.validate_imported_type_defaults()
     }),
     ("validate_trait_impl_owners", |checker, _, _| {
         checker.validate_trait_impl_owners()
