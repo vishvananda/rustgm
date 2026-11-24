@@ -40,8 +40,8 @@ suite.
 - [x] [PA24](../pa24/README.md)
 - [x] [PA25](../pa25/STUDENT.md)
 - [x] [PA26](../pa26/STUDENT.md)
-- [ ] [PA27](../pa27/README.md)
-- [ ] [PA28](../pa28/README.md)
+- [x] [PA27](../pa27/STUDENT.md)
+- [x] [PA28](../pa28/STUDENT.md)
 - [ ] [PA29](../pa29/README.md)
 - [ ] [PA30](../pa30/README.md)
 
