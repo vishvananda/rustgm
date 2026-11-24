@@ -1,0 +1,9 @@
+{
+  "provider": "provider.rs",
+  "client": "client.rs",
+  "observer": "../source-iteration-transport/blanket-observer.c",
+  "stdout": "73 73 42\n",
+  "older_reader": "source defining context requires a wider source profile",
+  "conservative_rustc": "error[E0493]",
+  "conservative_rustgm": "active cleanup requires const Destruct in its actual defining environment"
+}

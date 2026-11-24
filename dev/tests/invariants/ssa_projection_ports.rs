@@ -63,6 +63,7 @@ fn snapshot() -> s::Original {
         result: g::TypeRef(0),
         sites: 1,
         context: s::CallContext::Runtime,
+        precise_live_drops: false,
         variables: Vec::new(),
         locals: locals(),
         parameter_bindings: Vec::new(),

@@ -29,16 +29,18 @@ pub(super) fn emit(
     let reference = context
         .body()
         .ok_or("source CFG has no actual original body identity")?;
+    let call_context = if runtime_panic {
+        s::CallContext::Runtime
+    } else {
+        call_context(facts, body)?
+    };
     let mut raw = s::Original {
         body: reference,
         declaration: context.owner(),
         result: stage.ty(facts, body.result, context)?,
         sites: 0,
-        context: if runtime_panic {
-            s::CallContext::Runtime
-        } else {
-            call_context(facts, body)?
-        },
+        context: call_context,
+        precise_live_drops: call_context != s::CallContext::Runtime && stage.precise_live_drops(),
         variables,
         locals: Vec::new(),
         parameter_bindings: Vec::new(),

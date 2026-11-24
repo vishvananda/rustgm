@@ -798,6 +798,8 @@ fn originals(
             super::super::CallContext::Runtime
         };
         if original.context != expected
+            || original.precise_live_drops
+                && (!constant_initializers || expected == super::super::CallContext::Runtime)
             || !regional && !original.variables.is_empty()
             || !regional && !original.projections.is_empty()
             || !features && (!original.calls.is_empty() || !original.arguments.is_empty())

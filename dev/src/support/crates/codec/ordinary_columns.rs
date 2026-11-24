@@ -460,7 +460,9 @@ fn encode_profile(
     } else {
         write(out, &rows.roles, contract_columns::role_write)?;
     }
-    if rows.descriptor().profile().body_nodes() {
+    if rows.descriptor().profile().declaration_policies() {
+        write(out, &rows.originals, operation_columns::body_policy_write)?;
+    } else if rows.descriptor().profile().body_nodes() {
         write(out, &rows.originals, operation_columns::body_write)?;
     } else if rows.descriptor().profile().branches() {
         write(out, &rows.originals, operation_columns::branch_write)?;

@@ -499,6 +499,9 @@ pub struct Original {
     pub result: TypeRef,
     pub sites: u32,
     pub context: CallContext,
+    /// The provider requests precise liveness during defining cleanup checks.
+    /// The consumer still reconstructs the places and proves every active drop.
+    pub precise_live_drops: bool,
     pub variables: Vec<OwnedRegion>,
     pub locals: Vec<g::Local>,
     pub parameter_bindings: Vec<g::ParameterBinding>,

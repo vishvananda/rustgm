@@ -13,7 +13,9 @@ enum Generation {
     Nominals,
     Branches,
     Bodies,
+    BodyPolicies,
 }
+const PRECISE_LIVE_DROPS: u8 = 1 << 7;
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
     original_profile(out, row, Generation::Ordinary)
 }
@@ -29,6 +31,9 @@ pub(super) fn branch_write(out: &mut Writer, row: &s::Original) -> Result<(), &'
 pub(super) fn body_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
     original_profile(out, row, Generation::Bodies)
 }
+pub(super) fn body_policy_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, Generation::BodyPolicies)
+}
 fn original_profile(
     out: &mut Writer,
     row: &s::Original,
@@ -36,22 +41,19 @@ fn original_profile(
 ) -> Result<(), &'static str> {
     let safety = generation >= Generation::Safety;
     let nominals = generation >= Generation::Nominals;
+    let bodies = generation >= Generation::Bodies;
     for value in [row.body.0, row.declaration.0, row.result.0, row.sites] {
         id(out, value)?;
     }
-    out.u8(match row.context {
-        s::CallContext::Runtime => 0,
-        s::CallContext::ConstDefinition => 1,
-        s::CallContext::ClosedConst => 2,
-    })?;
+    out.u8(context_write(row, generation)?)?;
     write(out, &row.variables, allocations::owned_write)?;
-    if generation == Generation::Bodies {
+    if bodies {
         write(out, &row.locals, storage::body_local_write)?;
     } else {
         write(out, &row.locals, storage::local_write)?;
     }
     write(out, &row.parameter_bindings, storage::parameter_write)?;
-    if generation == Generation::Bodies {
+    if bodies {
         write(out, &row.projections, ir_nodes::projection_write)?;
         write(out, &row.values, ir_nodes::value_write)?;
         write(out, &row.statements, ir_nodes::statement_write)?;
@@ -89,7 +91,7 @@ fn original_profile(
     // statement starts a guard; presence is never read from trailing bytes.
     match (&row.guards, starts_guard(&row.statements)) {
         (None, false) => {}
-        (Some(guards), true) if generation == Generation::Bodies => {
+        (Some(guards), true) if bodies => {
             write(out, &guards.rows, guard_write)?;
             write_copy(out, &guards.places, ir_nodes::place_write)?;
         }
@@ -101,7 +103,7 @@ fn original_profile(
     // Text literals follow exactly when a value is text, in value order.
     match (&row.texts, has_text(&row.values)) {
         (None, false) => {}
-        (Some(texts), true) if generation == Generation::Bodies => {
+        (Some(texts), true) if bodies => {
             write(out, &texts.rows, |out, text| out.string(text))?;
         }
         (Some(_), true) => {
@@ -112,7 +114,7 @@ fn original_profile(
     // Assembly columns follow exactly when a value is assembly.
     match (&row.assembly, has_assembly(&row.values)) {
         (None, false) => Ok(()),
-        (Some(assembly), true) if generation == Generation::Bodies => {
+        (Some(assembly), true) if bodies => {
             super::instruction_columns::assembly_write(out, assembly)
         }
         (Some(_), true) => {
@@ -120,6 +122,20 @@ fn original_profile(
         }
         _ => Err("source assembly columns differ from the assembly values of its body"),
     }
+}
+fn context_write(row: &s::Original, generation: Generation) -> Result<u8, &'static str> {
+    let context = match row.context {
+        s::CallContext::Runtime => 0,
+        s::CallContext::ConstDefinition => 1,
+        s::CallContext::ClosedConst => 2,
+    };
+    if !row.precise_live_drops {
+        return Ok(context);
+    }
+    if generation != Generation::BodyPolicies || context == 0 {
+        return Err("precise live-drop policy requires a version-fourteen const original");
+    }
+    Ok(context | PRECISE_LIVE_DROPS)
 }
 fn has_text(values: &[s::Value]) -> bool {
     values
@@ -160,19 +176,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let declaration = DeclarationRef(read.id()?);
     let result = g::TypeRef(read.id()?);
     let sites = read.id()?;
-    let context = match read.reader.u8()? {
-        0 => s::CallContext::Runtime,
-        1 if read.profile.unconditional_callables() => s::CallContext::ConstDefinition,
-        2 if read.profile.declaration_policies() => s::CallContext::ClosedConst,
-        tag => {
-            read.require_provided("source defining context requires a wider source profile")?;
-            match tag {
-                1 => s::CallContext::ConstDefinition,
-                2 => s::CallContext::ClosedConst,
-                _ => return Err("unknown source defining call context"),
-            }
-        }
-    };
+    let (context, precise_live_drops) = context_read(read)?;
     let variables = read.regional_list(crates::MAX_COMPONENTS, 6, allocations::owned_read)?;
     let locals = read.list(crates::MAX_COMPONENTS, 16, storage::local_read)?;
     let parameter_bindings = read.list(crates::MAX_COMPONENTS, 12, storage::parameter_read)?;
@@ -235,6 +239,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         result,
         sites,
         context,
+        precise_live_drops,
         variables,
         locals,
         parameter_bindings,
@@ -253,6 +258,28 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         texts,
         assembly,
     })
+}
+fn context_read(read: &mut Input<'_, '_>) -> Result<(s::CallContext, bool), &'static str> {
+    let flags = read.reader.u8()?;
+    let precise = flags & PRECISE_LIVE_DROPS != 0;
+    let tag = flags & !PRECISE_LIVE_DROPS;
+    if precise && (!read.profile.declaration_policies() || tag == 0) {
+        return Err("precise live-drop policy requires a version-fourteen const original");
+    }
+    let context = match tag {
+        0 => s::CallContext::Runtime,
+        1 if read.profile.unconditional_callables() => s::CallContext::ConstDefinition,
+        2 if read.profile.declaration_policies() => s::CallContext::ClosedConst,
+        _ => {
+            read.require_provided("source defining context requires a wider source profile")?;
+            match tag {
+                1 => s::CallContext::ConstDefinition,
+                2 => s::CallContext::ClosedConst,
+                _ => return Err("unknown source defining call context"),
+            }
+        }
+    };
+    Ok((context, precise))
 }
 pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'static str> {
     let (tag, index) = match place {

@@ -14,7 +14,7 @@ pub(crate) fn select(
     body: &Body,
     contract: &mut Contract,
     subjects: impl Iterator<Item = Result<super::Subject, &'static str>>,
-    precise: bool,
+    local_precise: bool,
     physical_cleanup: bool,
 ) -> Result<(), String> {
     let mut work = Work::new(1_000_000);
@@ -29,6 +29,11 @@ pub(crate) fn select(
         return Ok(());
     }
     let mut prepared = prepare(facts, body, contract, &mut work)?;
+    let precise = if body.source.source().is_some() {
+        local_precise
+    } else {
+        prepared.definition.precise_imported_drops
+    };
     let role = prepared.role;
     let environment = Arc::clone(&prepared.environment);
     let effect = prepared.effect();
@@ -47,11 +52,6 @@ pub(crate) fn select(
             continue;
         }
         if precise && !subject.access {
-            if body.source.source().is_none() {
-                return Err(
-                    "imported const precise live-drop definition policy is not implemented".into(),
-                );
-            }
             continue;
         }
         selected.push((ty, subject.purpose), &mut work)?;
@@ -372,5 +372,6 @@ fn closure_definition(
         context: super::FunctionContext::ConstFunction,
         source: body.source,
         signature: closure.signature,
+        precise_imported_drops: false,
     })
 }

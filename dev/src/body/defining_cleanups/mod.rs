@@ -54,6 +54,7 @@ pub(crate) struct Definition {
     context: FunctionContext,
     source: BodyOrigin,
     signature: TypeId,
+    precise_imported_drops: bool,
 }
 
 impl Definition {
@@ -317,8 +318,8 @@ fn active_definition(
     if header.body.is_none() {
         return Ok(None);
     }
-    let context = if let Some(source_key) = source.source() {
-        facts.function_context(definition, source_key)?
+    let (context, precise_imported_drops) = if let Some(source_key) = source.source() {
+        (facts.function_context(definition, source_key)?, false)
     } else {
         let view = crate::sema::crates::source_original(facts, definition, steps)?
             .ok_or("imported defining cleanup requires its actual complete source original")?;
@@ -335,7 +336,7 @@ fn active_definition(
         if actual_source != source || !constant {
             return Err("imported defining cleanup changed its const original context");
         }
-        if default {
+        let context = if default {
             if !matches!(
                 view.inputs().environment,
                 crate::support::crates::generics::source::EnvironmentOrigin::ConstTraitDefault { .. }
@@ -348,7 +349,8 @@ fn active_definition(
             FunctionContext::ConstTraitDefault { trait_definition }
         } else {
             FunctionContext::ConstFunction
-        }
+        };
+        (context, view.raw().precise_live_drops)
     };
     if !context.checks_const() {
         return Err("defining cleanup requires its actual provided member owner");
@@ -361,6 +363,7 @@ fn active_definition(
         context,
         source,
         signature: header.signature,
+        precise_imported_drops,
     }))
 }
 

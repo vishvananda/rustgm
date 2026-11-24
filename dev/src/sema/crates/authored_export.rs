@@ -175,6 +175,8 @@ enum BodyTransport {
     Branches,
     /// Version thirteen: branches plus primitive Binary operations.
     Nodes,
+    /// Version fourteen: node bodies may retain their defining cleanup policy.
+    PreciseLiveDropNodes,
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
@@ -184,10 +186,16 @@ impl Stage {
         self.body_transport != BodyTransport::Ordinary
     }
     pub(crate) fn body_nodes(&self) -> bool {
-        self.body_transport == BodyTransport::Nodes
+        matches!(
+            self.body_transport,
+            BodyTransport::Nodes | BodyTransport::PreciseLiveDropNodes
+        )
     }
     pub(crate) fn declaration_policies(&self) -> bool {
         self.body_nodes() && self.compiler_operations
+    }
+    pub(crate) fn precise_live_drops(&self) -> bool {
+        self.body_transport == BodyTransport::PreciseLiveDropNodes
     }
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
@@ -547,7 +555,14 @@ impl Stage {
                 ExportMode::Nominals | ExportMode::CompilerOperations
             ),
             compiler_operations: mode == ExportMode::CompilerOperations,
-            body_transport,
+            body_transport: if body_transport == BodyTransport::Nodes
+                && mode == ExportMode::CompilerOperations
+                && report.package.requested_const_precise_live_drops()?
+            {
+                BodyTransport::PreciseLiveDropNodes
+            } else {
+                body_transport
+            },
             variants: Vec::new(),
             record_variants: false,
             role_installation_steps: facts
