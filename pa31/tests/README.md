@@ -60,8 +60,8 @@ against the pinned Rust compiler.
 `spec/source-weak-panic-transport/outcomes.json` checks the two private weak
 panic imports, the fresh handler link, and forged exact-symbol rows.
 `spec/source-regional-impl-transport/outcomes.json` checks trait selection
-and native execution with an impl's captured lifetime and a trait's own
-written lifetime.
+and native execution with an impl's captured lifetime, its associated type
+definition, and a trait's own written lifetime.
 `spec/source-associated-family-transport/outcomes.json` checks that a fresh
 client can implement an imported associated type family and must preserve its
 lifetime requirements. Run `scripts/check_associated_family_transport.py`

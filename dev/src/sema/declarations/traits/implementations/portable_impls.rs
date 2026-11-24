@@ -260,13 +260,31 @@ impl Checker<'_> {
                 }
             }
         }
-        if proof
-            .take_trait_proof()
-            .is_some_and(|evidence| !evidence.is_empty())
-        {
-            return Err(Error::unlocated(
-                "imported associated definition region evidence requires its wider profile",
-            ));
+        if let Some(evidence) = proof.take_trait_proof().filter(|proof| !proof.is_empty()) {
+            if self
+                .facts
+                .associated
+                .schema(owner)
+                .is_none_or(|schema| schema.captures == 0)
+            {
+                return Err(Error::unlocated(
+                    "imported associated definition region evidence requires its wider profile",
+                ));
+            }
+            let mut queries = Queries::new(
+                &self.facts.types,
+                &self.facts.lifetimes.nominal_requirements,
+                &self.facts.lifetimes.callables,
+            );
+            let mut constraints = self
+                .trait_region_environment(owner, &mut queries)
+                .map_err(Error::unlocated)?;
+            evidence
+                .require(&mut constraints, &mut queries)
+                .map_err(Error::unlocated)?;
+            constraints
+                .solve()
+                .map_err(|e| Error::unlocated(e.to_string()))?;
         }
         Ok(())
     }

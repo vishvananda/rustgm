@@ -15,7 +15,7 @@ pub extern "C" fn observed_bound() -> u8 {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn observed_method() -> u8 {
-    (&1u8).value()
+    *(&41u8).value()
 }
 
 #[cfg(reject_scalar)]

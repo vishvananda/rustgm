@@ -164,7 +164,12 @@ impl Stage {
         let trait_self = self.declaration_policies()
             && kind == DefKind::SelfType
             && facts.associated.trait_owner(owner).is_some();
-        if leading != Leading::Declaration && !trait_self {
+        // A plain associated result uses its parent's binder. Its captured
+        // regions already belong to that retained parent scope.
+        let associated_result = self.declaration_policies()
+            && kind == DefKind::TypeAlias
+            && facts.associated.owner(owner).is_some();
+        if leading != Leading::Declaration && !trait_self && !associated_result {
             self.region_slots(facts, owner, declaration, start)?;
         }
         let end = u32::try_from(self.rows.slots.len()).map_err(|_| "source slot table overflow")?;
