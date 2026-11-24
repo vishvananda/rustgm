@@ -18,6 +18,7 @@ enum Operand {
     Application(u32),
     Region(u32),
     Flag(u32),
+    Slot(s::SlotRef),
     Range(g::Range),
     Bits([u8; 16]),
     Place(s::Place),
@@ -124,8 +125,8 @@ const FORMS: [s::OperandForm; 5] = [
 ];
 
 /// Reconstructable codes in this consumer, by family.
-const VALUE_FORMS: [u8; 17] = [
-    0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 23, 24, 27, 28, 29, 30,
+const VALUE_FORMS: [u8; 18] = [
+    0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 22, 23, 24, 27, 28, 29, 30,
 ];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
@@ -201,6 +202,7 @@ fn operand_write(out: &mut Writer, operand: Operand) -> Result<(), &'static str>
         Operand::Place(s::Place::Projection(value)) => (12, value),
         Operand::Place(s::Place::Temporary(value)) => (13, value),
         Operand::Place(s::Place::Static(value)) => (14, value.0),
+        Operand::Slot(value) => (15, value.0),
     };
     out.u8(kind)?;
     id(out, value)
@@ -241,6 +243,7 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<Operand, &'static str> {
             Operand::Place(s::Place::Static(DeclarationRef(read.id()?)))
         }
         14 => return Err("encoded static places are not reconstructable by this consumer"),
+        15 if read.profile.declaration_policies() => Operand::Slot(s::SlotRef(read.id()?)),
         _ => return Err("unknown body IR operand kind"),
     })
 }
@@ -298,6 +301,7 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
                 Operand::Range(arguments),
             ],
         ),
+        s::ValueKind::ConstArgument(slot) => node_write(out, 22, &[Operand::Slot(slot)]),
         s::ValueKind::Reify(value) => node_write(out, 23, &[Operand::Value(value)]),
         // The instruction ordinal names the original's assembly column row.
         s::ValueKind::Assembly {
@@ -428,6 +432,9 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             return Err(
                 "source associated constant reads require the version-fourteen declaration profile",
             );
+        }
+        (22, &[Operand::Slot(slot)]) if read.profile.declaration_policies() => {
+            s::ValueKind::ConstArgument(slot)
         }
         (23, &[Operand::Value(value)]) => s::ValueKind::Reify(value),
         (0, &[Operand::Flag(instruction), Operand::Range(arguments)]) => s::ValueKind::Assembly {

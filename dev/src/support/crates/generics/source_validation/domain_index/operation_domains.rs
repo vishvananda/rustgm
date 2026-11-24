@@ -108,6 +108,9 @@ impl DomainIndex<'_, '_> {
                 value.text_type(&rows.types, &rows.regions)?;
             }
             s::ValueKind::Constant(constant) => self.constant(constant, value.ty, work)?,
+            s::ValueKind::ConstArgument(slot) => {
+                self.const_argument(context, slot, value.ty, work)?;
+            }
             s::ValueKind::AssociatedConstant {
                 declaration,
                 arguments,
@@ -348,6 +351,28 @@ impl DomainIndex<'_, '_> {
                     }
                 },
             }
+        }
+        Ok(())
+    }
+
+    fn const_argument(
+        &self,
+        context: Context,
+        slot: s::SlotRef,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(1)?;
+        if !self.declaration_policies {
+            return Err(
+                "source const argument reads require the version-fourteen declaration profile",
+            );
+        }
+        if !self.headers.rows().slots.get(slot.0 as usize).is_some_and(
+            |slot| matches!(slot.kind, s::ParameterKind::Const { ty: actual } if actual == ty),
+        ) || !self.headers.scopes().contains(context.owner, slot, work)?
+        {
+            return Err("source const argument changed its actual const slot or type");
         }
         Ok(())
     }

@@ -145,6 +145,14 @@ fn item(
         ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
             associated_constant(stage, facts, instance, context)
         }
+        ir::Rvalue::ConstArgument(term) if stage.declaration_policies() => {
+            match stage.const_term(facts, term, context)? {
+                s::ConstTerm::Parameter(slot) => Ok(s::ValueKind::ConstArgument(slot)),
+                s::ConstTerm::Value(_) => {
+                    Err("source const argument value requires its wider profile")
+                }
+            }
+        }
         _ => Err(WIDER),
     }
 }

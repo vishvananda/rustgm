@@ -3,6 +3,10 @@
   "prefix_marker": "// Authored module-constant transport controls",
   "provider": "provider.rs",
   "rustc_options": ["-Zcrate-attr=feature(const_trait_impl)"],
+  "packet_opponents": {
+    "client": "observed.rs",
+    "diagnostic": "source const argument changed its actual const slot or type"
+  },
   "cases": [
     {
       "source": "observed.rs",
@@ -10,7 +14,10 @@
       "lowir": {
         "return u8 27": 2,
         "return u8 42": 1,
-        "return u8 31": 1
+        "return u8 31": 1,
+        "return i64 9": 1,
+        "return i64 11": 1,
+        "return i64 13": 1
       }
     },
     {

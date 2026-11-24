@@ -136,6 +136,9 @@ pub enum ValueKind {
         declaration: DeclarationRef,
         arguments: Range,
     },
+    /// Version fourteen: the rigid const formal of this original or a
+    /// captured declaration scope. Instantiation substitutes its own term.
+    ConstArgument(super::SlotRef),
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
 /// consumer instance lowers its own overflow guard and abort exit. Division

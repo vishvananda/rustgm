@@ -211,10 +211,14 @@ impl Lazy {
                 .saturating_add(rows.arguments.len()),
         )?;
         for (index, slot) in rows.slots.iter().enumerate() {
+            // A declared const slot must exist even if its only use is in
+            // an original body and no header type recipe has demanded it.
             // A version-thirteen nominal's region slot maps to its template
             // lifetime; every other region slot stays unmapped here.
-            if matches!(slot.kind, s::ParameterKind::Type { .. })
-                || super::slot_bindings::nominal_lifetime(&rows.declarations, slot)
+            if matches!(
+                slot.kind,
+                s::ParameterKind::Type { .. } | s::ParameterKind::Const { .. }
+            ) || super::slot_bindings::nominal_lifetime(&rows.declarations, slot)
             {
                 port.slot(
                     &mut facts.types,

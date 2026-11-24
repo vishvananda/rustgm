@@ -250,7 +250,7 @@ impl Stage {
 
     /// A const argument's or array length's term: an evaluated value of a
     /// primitive const parameter type, or the rigid const parameter's own slot.
-    pub(super) fn const_term(
+    pub(crate) fn const_term(
         &mut self,
         facts: &Declarations,
         term: crate::types::arguments::ConstId,
