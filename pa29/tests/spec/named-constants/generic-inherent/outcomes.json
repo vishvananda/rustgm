@@ -1,0 +1,29 @@
+{
+  "foundation": "pa29/tests/spec/named-constants/provider.rs",
+  "prefix_marker": "// Authored module-constant transport controls",
+  "provider": "provider.rs",
+  "rustc_options": ["-Zcrate-attr=feature(const_trait_impl)"],
+  "cases": [
+    {
+      "source": "observed.rs",
+      "status": 0,
+      "lowir": {
+        "return u8 27": 2,
+        "return u8 42": 1,
+        "return u8 31": 1
+      }
+    },
+    {
+      "source": "missing-bound.rs",
+      "status": 1,
+      "diagnostic": "trait obligation requires an unambiguous matching assumption or implementation",
+      "rustc_diagnostic": "error[E0599]"
+    },
+    {
+      "source": "wrong-owner.rs",
+      "status": 1,
+      "diagnostic": "incompatible types",
+      "rustc_diagnostic": "error[E0599]"
+    }
+  ]
+}

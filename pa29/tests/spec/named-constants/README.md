@@ -61,3 +61,10 @@ client reads the correct scalar values and replays the nominal initializer
 originals. Separate clients exercise privacy, member lookup, and result type
 checking. Run `scripts/check_source_constants.py` with pinned rustc and a
 prebuilt RustGM to check these cases.
+
+`generic-inherent/outcomes.json` exercises initializer originals under a
+generic inherent owner with a trait requirement and a const parameter. A
+fresh client checks two enum constants and reads a scalar both directly
+and through an imported const function. The negative clients use a type
+that lacks the required trait and a type outside the inherent impl. Select
+these fixtures with `scripts/check_source_constants.py --case generic-inherent`.

@@ -185,12 +185,7 @@ fn associated_owner(
         {
             let implementation = &rows.implementations[index as usize];
             if implementation.trait_application.is_some()
-                || (implementation.closed_inherent_constant_owner(&rows.types)
-                    && matches!(
-                        rows.types.get(header.ty.0 as usize),
-                        Some(super::Type::Nominal { .. })
-                    )
-                    && headers.scopes().complete_slots(parent, work)? == 0)
+                || valid_inherent_original(rows, headers, parent, implementation, header, work)?
             {
                 Ok(())
             } else {
@@ -202,6 +197,35 @@ fn associated_owner(
         }
         _ => Err("source associated constant changed its actual trait or implementation owner"),
     }
+}
+
+fn valid_inherent_original(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    parent: DeclarationRef,
+    implementation: &super::ImplHeader,
+    header: ConstantHeader,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    if !implementation.inherent_constant_owner(&rows.types) {
+        return Ok(false);
+    }
+    if headers.scopes().complete_slots(parent, work)? == 0 {
+        return Ok(implementation.closed_inherent_constant_owner(&rows.types)
+            && matches!(
+                rows.types.get(header.ty.0 as usize),
+                Some(super::Type::Nominal { .. })
+            ));
+    }
+    for input in implementation.inputs.slice(&rows.clauses)? {
+        work.charge(1)?;
+        if input.binder.is_some()
+            || matches!(input.requirement, super::Requirement::UnstableFeature(_))
+        {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 /// An evaluated member belongs to its own closed inherent implementation.

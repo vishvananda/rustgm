@@ -8,29 +8,30 @@ from crate_qualification import Check
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURE = ROOT / "pa29/tests/spec/named-constants/specialized-inherent"
+FIXTURES = ROOT / "pa29/tests/spec/named-constants"
 IDENTITY = "base@source_constants"
 COMMON = ["--edition=2024", "--crate-type=lib"]
 
 
-def provider_source(folder, contract):
+def provider_source(folder, fixture, contract):
     foundation = (ROOT / contract["foundation"]).read_bytes()
     prefix, marker, _ = foundation.partition(contract["prefix_marker"].encode())
     if not marker:
         raise ValueError("constant provider foundation changed its prefix")
     source = folder / "provider.rs"
-    source.write_bytes(prefix + (FIXTURE / contract["provider"]).read_bytes())
+    source.write_bytes(prefix + (fixture / contract["provider"]).read_bytes())
     return source
 
 
-def independent(check, rustc, source, cases):
+def independent(check, rustc, source, fixture, contract):
     artifact = check.folder / "libbase.rmeta"
-    options = [rustc.resolve(strict=True), *COMMON, "--emit=metadata"]
+    options = [rustc.resolve(strict=True), *COMMON, "--emit=metadata", "--cfg", "rustc_oracle",
+               *contract.get("rustc_options", ())]
     environment = {"RUSTC_BOOTSTRAP": "1"}
     check.run("rustc-provider", [*options, "--crate-name", "base", "-o", artifact, source],
               timeout=20, environment=environment)
-    for case in cases:
-        test = FIXTURE / case["source"]
+    for case in contract["cases"]:
+        test = fixture / case["source"]
         stem = test.stem
         check.run(f"rustc-{stem}", [*options, "--extern", f"base={artifact}",
                   "-o", check.folder / f"{stem}.rmeta", test], case["status"],
@@ -38,7 +39,7 @@ def independent(check, rustc, source, cases):
                   timeout=20, environment=environment)
 
 
-def candidate(check, source, cases):
+def candidate(check, source, fixture, cases):
     artifact = check.folder / "base.rgcrate"
     options = [check.app, *COMMON, "--emit-lowir", "--cap-lints=allow"]
     command = [*options, "--crate-name", "base", "--crate-disambiguator", "source_constants",
@@ -48,7 +49,7 @@ def candidate(check, source, cases):
     if not artifact.is_file() or artifact.stat().st_size == 0:
         raise ValueError("source constant provider emitted no metadata")
     for case in cases:
-        test = FIXTURE / case["source"]
+        test = fixture / case["source"]
         command = [*options, "--crate-name", test.stem.replace("-", "_"),
                    "--crate-disambiguator", "source_constants",
                    "--source-client", IDENTITY, "--extern", f"base={artifact}", test]
@@ -61,16 +62,19 @@ def candidate(check, source, cases):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", default="specialized-inherent",
+                        choices=("specialized-inherent", "generic-inherent"))
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--app", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    contract = json.loads((FIXTURE / "outcomes.json").read_text())
+    fixture = FIXTURES / args.case
+    contract = json.loads((fixture / "outcomes.json").read_text())
     check = Check(args.app or args.rustc, args.out)
-    source = provider_source(check.folder, contract)
-    independent(check, args.rustc, source, contract["cases"])
+    source = provider_source(check.folder, fixture, contract)
+    independent(check, args.rustc, source, fixture, contract)
     if args.app is not None:
-        candidate(check, source, contract["cases"])
+        candidate(check, source, fixture, contract["cases"])
     print(f"Checked {len(contract['cases'])} independent source constant clients")
 
 

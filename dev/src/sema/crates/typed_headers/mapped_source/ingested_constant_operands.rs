@@ -1,11 +1,14 @@
 //! Resolve version-fourteen constant operands in their numbered defining body.
 use super::{Cursor, Declarations, Demand, Error, Recorded, ReservationWork, error, g, s};
 use crate::{
+    resolve::model::DefId,
     sema::{
+        associated::OwnerKind,
         crates::typed_headers::{
             predicate_remap::translation::feature_names::paid,
             recipe_cursor::{Port, const_argument},
         },
+        declaration_inputs::{self, Inputs},
         values::Instance,
     },
     support::{
@@ -14,7 +17,9 @@ use crate::{
         retained,
     },
     types::{
-        GenericArgs, Store, TypeId, arguments::Argument, parameters::predicates::Predicate,
+        GenericArgs, Store, TypeId,
+        arguments::Argument,
+        parameters::{clauses::Clause, predicates::Predicate},
         substitute::Bound,
     },
 };
@@ -141,13 +146,12 @@ impl Uses {
         work.reserve(self.0.len().saturating_mul(size_of::<Predicate>()))?;
         let mut goals = Vec::with_capacity(self.0.len());
         for operand in self.0 {
-            let (result, goal) = applied_contract(facts, operand.instance, work)?;
+            let result = applied_contract(facts, operand.instance, &mut goals, work)?;
             if result != cursor.child(operand.ty)? {
                 return Err(error(
                     "source associated constant read changed its canonical applied result",
                 ));
             }
-            goals.push(goal);
         }
         work.retained = work.retained.saturating_sub(bytes);
         Ok(goals)
@@ -199,17 +203,17 @@ fn open(
 fn applied_contract(
     facts: &mut Declarations,
     instance: Instance,
+    goals: &mut Vec<Predicate>,
     work: &mut ReservationWork,
-) -> Result<(TypeId, Predicate), Error> {
-    let owner = facts
-        .associated
-        .trait_owner(instance.definition)
-        .ok_or_else(|| error("source constant operand lost its actual trait declaration"))?;
-    let goal = *facts
-        .generics
-        .trait_self_bounds
-        .get(&owner)
-        .ok_or_else(|| error("source constant operand lost its trait's canonical self goal"))?;
+) -> Result<TypeId, Error> {
+    let (trait_goal, inherent_owner) = constant_owner(facts, instance)?;
+    let premises = match inherent_owner {
+        Some(owner) => {
+            declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), owner)
+                .map_err(error)?
+        }
+        None => Inputs::new(&[], &[]),
+    };
     let declared = facts
         .definitions
         .get(instance.definition.0 as usize)
@@ -225,7 +229,16 @@ fn applied_contract(
     let bytes = count
         .saturating_add(1)
         .saturating_mul(4 * size_of::<Argument>());
-    work.reserve(bytes)?;
+    let before = retained::vector(goals);
+    let growth = retained::Growth::vector::<Predicate>(
+        goals.len(),
+        goals.capacity(),
+        premises
+            .len()
+            .saturating_add(usize::from(trait_goal.is_some())),
+    );
+    work.charge(growth.work)?;
+    work.reserve(bytes.saturating_add(growth.bytes))?;
     let actual = instance.selected_arguments(facts).map_err(error)?;
     let result = paid(work, |pay| {
         let mut bound = Bound::parameters_captured_charged(
@@ -234,11 +247,44 @@ fn applied_contract(
             actual.regions,
             &pay,
         )?;
-        Ok((
-            bound.apply_charged(&mut facts.types, declared, &pay)?,
-            bound.predicate_charged(&mut facts.types, goal, &pay)?,
-        ))
+        let result = bound.apply_charged(&mut facts.types, declared, &pay)?;
+        if let Some(goal) = trait_goal {
+            goals.push(bound.predicate_charged(&mut facts.types, goal, &pay)?);
+        }
+        for premise in premises.iter() {
+            let Clause::Predicate(goal) = premise.value else {
+                return Err("source inherited constant needs its wider premise profile");
+            };
+            goals.push(bound.predicate_charged(&mut facts.types, goal, &pay)?);
+        }
+        Ok(result)
     });
-    work.retained = work.retained.saturating_sub(bytes);
+    work.retained = work
+        .retained
+        .saturating_sub(bytes.saturating_add(growth.bytes))
+        .saturating_add(retained::vector(goals).saturating_sub(before));
     result
+}
+
+fn constant_owner(
+    facts: &Declarations,
+    instance: Instance,
+) -> Result<(Option<Predicate>, Option<DefId>), Error> {
+    if let Some(owner) = facts.associated.trait_owner(instance.definition) {
+        let goal = *facts
+            .generics
+            .trait_self_bounds
+            .get(&owner)
+            .ok_or_else(|| error("source constant operand lost its trait's canonical self goal"))?;
+        return Ok((Some(goal), None));
+    }
+    let owner = facts
+        .associated
+        .owner(instance.definition)
+        .and_then(|id| facts.associated.get(id))
+        .copied()
+        .filter(|owner| matches!(owner.kind, OwnerKind::ImportedInherent(_)))
+        .ok_or_else(|| error("source constant operand lost its actual inherent declaration"))?;
+    facts.associated.require_imported(owner).map_err(error)?;
+    Ok((None, Some(owner.self_definition)))
 }

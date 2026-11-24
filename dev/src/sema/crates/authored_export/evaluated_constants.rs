@@ -9,7 +9,7 @@ use crate::{
         values::{Evaluator, Instance, Reader},
     },
     support::crates::{Scalar, ScalarValue},
-    types::{GenericArgs, Kind, Primitive, TypeId},
+    types::{GenericArgs, Kind, Primitive, TypeId, parameters::clauses::Clause},
 };
 
 fn closed_inherent_self(facts: &Declarations, owner: DefId) -> Option<TypeId> {
@@ -39,11 +39,11 @@ fn closed_type(facts: &Declarations, ty: TypeId) -> bool {
         && facts.types.contains_projections(ty) == Some(false)
 }
 
-fn closed_inherent_initializer(
+fn inherent_initializer(
     report: &Report,
     facts: &Declarations,
     definition: DefId,
-) -> Option<TypeId> {
+) -> Option<(DefId, TypeId)> {
     let declaration = report.resolution.definitions.get(definition.0 as usize)?;
     if declaration.kind != DefKind::Const {
         return None;
@@ -61,22 +61,6 @@ fn closed_inherent_initializer(
     ) {
         return None;
     }
-    let self_type = closed_inherent_self(facts, owner.self_definition)?;
-    match facts.types.kind(self_type) {
-        Some(Kind::Primitive(tag))
-            if tag != Primitive::Str && report.package.coherence_is_core() => {}
-        Some(Kind::Adt(item, _))
-            if report
-                .resolution
-                .definitions
-                .get(item.0 as usize)
-                .is_some_and(|definition| {
-                    definition.node.is_some()
-                        && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
-                })
-                && closed_type(facts, self_type) => {}
-        _ => return None,
-    }
     let initializer = facts
         .initializers
         .get(facts.initializer_index(definition)?)?;
@@ -92,7 +76,51 @@ fn closed_inherent_initializer(
     {
         return None;
     }
-    Some(ty)
+    Some((owner.self_definition, ty))
+}
+
+fn local_nominal(report: &Report, facts: &Declarations, ty: TypeId) -> bool {
+    matches!(facts.types.kind(ty), Some(Kind::Adt(item, _))
+    if report.resolution.definitions.get(item.0 as usize).is_some_and(|definition| {
+        definition.node.is_some() && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
+    }))
+}
+
+fn closed_inherent_initializer(
+    report: &Report,
+    facts: &Declarations,
+    definition: DefId,
+) -> Option<TypeId> {
+    let (owner, ty) = inherent_initializer(report, facts, definition)?;
+    let self_type = closed_inherent_self(facts, owner)?;
+    (local_nominal(report, facts, self_type) && closed_type(facts, self_type)
+        || report.package.coherence_is_core()
+            && matches!(facts.types.kind(self_type), Some(Kind::Primitive(tag)) if tag != Primitive::Str))
+    .then_some(ty)
+}
+
+fn generic_inherent_original(report: &Report, facts: &Declarations, definition: DefId) -> bool {
+    let Some((owner, ty)) = inherent_initializer(report, facts, definition) else {
+        return false;
+    };
+    let Some(schema) = facts.associated.schema(owner) else {
+        return false;
+    };
+    schema.captures == 0
+        && schema.bounds.is_empty()
+        && facts.generics.has_parameters(owner)
+        && local_nominal(report, facts, schema.self_type)
+        && facts.types.needs_region_context(ty) == Some(false)
+        && crate::sema::declaration_inputs::own_view(
+            &facts.generics,
+            facts.crates.as_deref(),
+            owner,
+        )
+        .is_ok_and(|inputs| {
+            inputs
+                .iter()
+                .all(|input| matches!(input.value, Clause::Predicate(_)))
+        })
 }
 
 fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -> Option<Instance> {
@@ -186,9 +214,11 @@ impl Stage {
         if !self.declaration_policies() {
             return false;
         }
-        if closed_inherent_initializer(report, facts, definition).is_some_and(|ty| {
-            matches!(facts.types.kind(ty), Some(Kind::Adt(_, _))) && closed_type(facts, ty)
-        }) {
+        if generic_inherent_original(report, facts, definition)
+            || closed_inherent_initializer(report, facts, definition).is_some_and(|ty| {
+                matches!(facts.types.kind(ty), Some(Kind::Adt(_, _))) && closed_type(facts, ty)
+            })
+        {
             return true;
         }
         facts

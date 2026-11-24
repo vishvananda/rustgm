@@ -61,7 +61,7 @@ impl Graph {
             (Some(s::HeaderRef::Implementation(index)), OwnerKind::ImportedInherent(_))
                 if actual.self_definition == owner
                     && rows.implementations[index as usize]
-                        .closed_inherent_constant_owner(&rows.types)
+                        .inherent_constant_owner(&rows.types)
                     && matches!(body, s::ConstantBody::Original(_)) => {}
             (_, OwnerKind::ImportedInherent(_))
                 if matches!(body, s::ConstantBody::Evaluated(_)) =>
