@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[rustc_diagnostic_item = \"Option\"]",
+  "features": ["auto_traits", "const_destruct", "builtin_syntax", "intrinsics", "pattern_types"],
+  "stdout": "10 15 45 99 66 8\n",
+  "older_profile": "method dispatch policy requires authenticated trait metadata transport",
+  "restricted_client": {
+    "path": "missing_impl.rs",
+    "rustc": "not satisfied",
+    "rustgm": "associated type requires an unambiguous validated implementation"
+  }
+}

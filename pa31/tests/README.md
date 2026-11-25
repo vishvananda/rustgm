@@ -1899,3 +1899,12 @@ across native and `const` fresh-client execution, while retaining missing
 higher-ranked bound rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-scoped-normalization-transport`
 with the prebuilt compilers.
+
+`spec/source-protocol-calls-transport/outcomes.json` checks version-14 transport
+of protocol-synthesized calls (`for` loops via `ForPlan`, `?` via `Try`/
+`FromResidual`, `Deref` auto-deref in field/method-receiver/coercion/index
+operations, and `offset_of!`) including shared-site late-bound openings across
+native and `const` fresh-client execution, while retaining missing trait-bound
+rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-protocol-calls-transport`
+with the prebuilt compilers.

@@ -13,6 +13,7 @@ struct Match<'a> {
     seen: HashSet<(TypeId, TypeId, u16)>,
     payment: Option<retained::Payment<'a>>,
     failure: Option<&'static str>,
+    allow_normalized_projections: bool,
 }
 
 /// A complete rigid match supplies a sufficient candidate instantiation, not
@@ -37,6 +38,7 @@ pub(crate) fn candidates(
         seen: HashSet::default(),
         payment: None,
         failure: None,
+        allow_normalized_projections: false,
     };
     if !query.run()? {
         query.candidates.regions.clear();
@@ -52,6 +54,27 @@ pub(crate) fn signature_opening<'a>(
     opened: TypeId,
     payment: retained::Payment<'a>,
 ) -> Result<bool, &'static str> {
+    match_signature(types, declared, opened, false, payment).map(|regions| regions.is_some())
+}
+
+/// Extract the opened late-bound lifetime arguments for a call whose declared
+/// and opened signatures may contain normalized projections.
+pub(crate) fn opening_regions<'a>(
+    types: &'a Store,
+    declared: TypeId,
+    opened: TypeId,
+    payment: retained::Payment<'a>,
+) -> Result<Option<Vec<Option<RegionId>>>, &'static str> {
+    match_signature(types, declared, opened, true, payment)
+}
+
+fn match_signature<'a>(
+    types: &'a Store,
+    declared: TypeId,
+    opened: TypeId,
+    allow_normalized_projections: bool,
+    payment: retained::Payment<'a>,
+) -> Result<Option<Vec<Option<RegionId>>>, &'static str> {
     use crate::types::Kind;
     let Some(Kind::Function {
         bound_regions: count,
@@ -71,18 +94,18 @@ pub(crate) fn signature_opening<'a>(
         convention: rc,
     }) = types.kind(opened)
     else {
-        return Ok(false);
+        return Ok(None);
     };
     if count > 65_536 {
         return Err("call opening lifetime inventory budget exhausted");
     }
     if lu != ru || lc != rc {
-        return Ok(false);
+        return Ok(None);
     }
     let left = types.list(left).ok_or("invalid declared call parameters")?;
     let right = types.list(right).ok_or("invalid opened call parameters")?;
     if left.len() != right.len() {
-        return Ok(false);
+        return Ok(None);
     }
     payment(
         count as usize,
@@ -98,6 +121,7 @@ pub(crate) fn signature_opening<'a>(
         seen: HashSet::default(),
         payment: Some(payment),
         failure: None,
+        allow_normalized_projections,
     };
     for (&a, &b) in left.iter().zip(right) {
         query
@@ -107,7 +131,7 @@ pub(crate) fn signature_opening<'a>(
     query
         .child(lr, rr, 0)
         .map_err(|_| query.failure.unwrap_or("call opening work exhausted"))?;
-    query.run()
+    Ok(query.run()?.then_some(query.candidates.regions))
 }
 
 impl Match<'_> {
@@ -144,6 +168,15 @@ impl Match<'_> {
                     .map_err(|_| "call opening allocation failed")?;
             }
             self.seen.insert((actual, expected, depth));
+            if self.allow_normalized_projections
+                && matches!(
+                    (self.types.kind(actual), self.types.kind(expected)),
+                    (Some(crate::types::Kind::Projection(_)), _)
+                        | (_, Some(crate::types::Kind::Projection(_)))
+                )
+            {
+                continue;
+            }
             if !self.compare(actual, expected, depth).map_err(|error| {
                 self.failure.unwrap_or(if matches!(error, Error::Budget) {
                     "call result candidate work exhausted"

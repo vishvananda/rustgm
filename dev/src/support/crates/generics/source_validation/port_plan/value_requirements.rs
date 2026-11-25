@@ -289,10 +289,15 @@ impl Builder<'_, '_, '_> {
             }) => true,
             // Version thirteen: an implicit reborrow of a dereferenced place
             // takes an inference region with no borrow-expression provenance.
-            // The consumer derives its bounds from its own place walk.
+            // Version fourteen also admits protocol-plan borrows (`for`, `Deref`)
+            // whose region came from the protocol call opening.
             Some(s::RegionAllocation::Inference {
                 needs_provenance: false,
-            }) if self.domains.bodies && reborrowed(original, place) => false,
+            }) if self.domains.declaration_policies
+                || self.domains.bodies && reborrowed(original, place) =>
+            {
+                false
+            }
             _ => return Err("source Borrow lost its actual provenance allocation"),
         };
         self.coverage.variable(body, slot, provenance, work)?;

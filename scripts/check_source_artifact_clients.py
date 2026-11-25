@@ -69,7 +69,8 @@ def main():
                                  "source-internal-alias-reexports",
                                  "source-caller-site-transport",
                                  "source-extended-body-ops",
-                                 "source-scoped-normalization-transport"))
+                                 "source-scoped-normalization-transport",
+                                 "source-protocol-calls-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

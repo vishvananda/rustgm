@@ -13,7 +13,9 @@ mod proven_methods;
 mod reflected_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 pub(in crate::sema) use proven_methods::selected_definition;
-pub(crate) use proven_methods::{callable_requirement, requested_callable, selected_callable};
+pub(crate) use proven_methods::{
+    callable_requirement, requested_callable, selected_callable, selected_callable_with_projections,
+};
 mod implementation;
 mod non_type_callers;
 mod objects;

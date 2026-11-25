@@ -128,6 +128,189 @@ impl Ports<'_> {
         self.source.stage.charge(1)?;
         Ok((key, source_use))
     }
+    /// Resolve a direct or protocol-plan call operation at an evaluation's source site.
+    fn completed_call(
+        &mut self,
+        statement: &ir::Statement,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<(NodeKey, crate::sema::model::SourceCallUse, bool), &'static str> {
+        if !self.source.stage.declaration_policies() {
+            let (key, source_use) = self.completed(statement, signature)?;
+            return Ok((key, source_use, true));
+        }
+        let key = self
+            .body
+            .source
+            .proof_site(statement.source)?
+            .source()
+            .ok_or("source Call has no actual source operation")?;
+        self.source.stage.charge(2)?;
+        if let Some(source_use) = self.conversion_or_index_step(key, callable, signature)? {
+            return Ok((key, source_use, false));
+        }
+        let operation = self.facts.node(key).and_then(|facts| facts.operation);
+        if let Some(Operation::Call {
+            signature: retained,
+            source_use: Some(source_use),
+        }) = operation
+        {
+            if signature != retained {
+                return Err("source Call changed its completed typed signature");
+            }
+            self.source.stage.charge(1)?;
+            return Ok((key, source_use, true));
+        }
+        self.protocol_plan_call(key, operation, callable, signature)
+    }
+    fn protocol_plan_call(
+        &mut self,
+        key: NodeKey,
+        operation: Option<Operation>,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<(NodeKey, crate::sema::model::SourceCallUse, bool), &'static str> {
+        use crate::sema::protocol_plans::Kind;
+        match operation {
+            Some(Operation::Field { plan: Some(id), .. }) => {
+                let plan = id.current(self.facts, self.owner, key)?;
+                let Kind::Field { steps, .. } = plan.kind else {
+                    return Err("source field plan changed its protocol kind");
+                };
+                if self.matches_access_steps(key, plan, steps, callable, signature)? {
+                    return Ok((key, plan.source_use, false));
+                }
+                Err("source field protocol call changed its completed signature or target")
+            }
+            Some(Operation::MethodReceiver { plan: id }) => {
+                let plan = id.current(self.facts, self.owner, key)?;
+                let Kind::Receiver { steps, call, .. } = plan.kind else {
+                    return Err("source method receiver plan changed its protocol kind");
+                };
+                if self.matches_plan_call(key, call, callable, signature)? {
+                    return Ok((key, plan.source_use, true));
+                }
+                if self.matches_access_steps(key, plan, steps, callable, signature)? {
+                    return Ok((key, plan.source_use, false));
+                }
+                Err(
+                    "source method receiver protocol call changed its completed signature or target",
+                )
+            }
+            Some(Operation::Try { plan: id }) => {
+                let plan = id.current(self.facts, self.owner, key)?;
+                let matched = match plan.kind {
+                    Kind::Block { from_output, .. } => {
+                        self.matches_plan_call(key, from_output, callable, signature)?
+                    }
+                    Kind::Branch {
+                        branch, residual, ..
+                    } => {
+                        self.matches_plan_call(key, branch, callable, signature)?
+                            || self.matches_plan_call(key, residual, callable, signature)?
+                    }
+                    _ => return Err("source Try plan changed its protocol kind"),
+                };
+                if matched {
+                    Ok((key, plan.source_use, false))
+                } else {
+                    Err("source Try protocol call changed its completed signature or target")
+                }
+            }
+            Some(Operation::Iteration { plan: id }) => {
+                let plan = id.current(self.facts, self.owner, key)?;
+                let Kind::Iteration { plan: for_plan, .. } = plan.kind else {
+                    return Err("source iteration plan changed its protocol kind");
+                };
+                if self.matches_plan_call(key, for_plan.into_iter, callable, signature)?
+                    || self.matches_plan_call(key, for_plan.next, callable, signature)?
+                {
+                    Ok((key, plan.source_use, false))
+                } else {
+                    Err("source iteration protocol call changed its completed signature or target")
+                }
+            }
+            Some(Operation::OffsetOf { plan: id }) => {
+                let plan = id.current(self.facts, self.owner, key)?;
+                if self.matches_plan_call(key, plan.call, callable, signature)? {
+                    Ok((key, plan.source_use, false))
+                } else {
+                    Err("source offset_of call changed its completed signature or target")
+                }
+            }
+            _ => Err(
+                "source Call has no exact completed owner/effect publication; ForPlan transport is not implemented",
+            ),
+        }
+    }
+    fn conversion_or_index_step(
+        &mut self,
+        key: NodeKey,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<Option<crate::sema::model::SourceCallUse>, &'static str> {
+        let conversion = self
+            .facts
+            .reference_adjustments
+            .get(&key)
+            .and_then(|row| row.plan);
+        let indexed = self.facts.methods.index_operand(key);
+        for id in [conversion, indexed].into_iter().flatten() {
+            let plan = id.current(self.facts, self.owner, key)?;
+            let (crate::sema::protocol_plans::Kind::Coercion { steps, .. }
+            | crate::sema::protocol_plans::Kind::Index { steps, .. }) = plan.kind
+            else {
+                return Err("source conversion or index plan changed its protocol kind");
+            };
+            if self.matches_access_steps(key, plan, steps, callable, signature)? {
+                return Ok(Some(plan.source_use));
+            }
+        }
+        Ok(None)
+    }
+    fn matches_access_steps(
+        &mut self,
+        key: NodeKey,
+        plan: crate::sema::protocol_plans::Plan,
+        steps: crate::sema::protocol_plans::access::Range,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<bool, &'static str> {
+        let calls = crate::sema::protocol_plans::access::rows(self.facts, plan, self.owner, steps)?
+            .iter()
+            .map(|step| step.call)
+            .collect::<Vec<_>>();
+        for step_call in calls {
+            if self.matches_plan_call(key, step_call, callable, signature)? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    fn matches_plan_call(
+        &mut self,
+        key: NodeKey,
+        planned: crate::sema::iteration::Call,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<bool, &'static str> {
+        self.source.stage.charge(1)?;
+        if planned.signature != signature {
+            return Ok(false);
+        }
+        if planned.callable == callable {
+            return Ok(true);
+        }
+        let selected = self.source.stage.paying(|pay| {
+            crate::sema::dispatch::selected_callable_with_projections(
+                self.facts,
+                key,
+                planned.callable,
+                pay,
+            )
+        })?;
+        Ok(selected == Some(callable))
+    }
     fn one(
         &mut self,
         statement: &ir::Statement,
@@ -135,13 +318,6 @@ impl Ports<'_> {
         signature: crate::types::TypeId,
         callee: ir::ValueId,
     ) -> Result<(), &'static str> {
-        let (key, source_use) = self.completed(statement, signature)?;
-        let effect = source_use.effect_for(self.facts, self.owner)?;
-        self.source.stage.charge(32)?;
-        let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;
-        if effect != self.raw.context.request() {
-            return Err("source Call effect differs from its actual original defining context");
-        }
         let callable = self
             .body
             .values
@@ -156,7 +332,17 @@ impl Ports<'_> {
             return Err("source Call requires its actual direct function-item application");
         };
         let callable_type = callable.ty;
-        self.method_target(key, item, callable_type)?;
+        let (key, source_use, check_method) =
+            self.completed_call(statement, callable_type, signature)?;
+        let effect = source_use.effect_for(self.facts, self.owner)?;
+        self.source.stage.charge(32)?;
+        let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;
+        if effect != self.raw.context.request() {
+            return Err("source Call effect differs from its actual original defining context");
+        }
+        if check_method {
+            self.method_target(key, item, callable_type)?;
+        }
         let target =
             self.source
                 .stage
@@ -177,7 +363,7 @@ impl Ports<'_> {
         else {
             return Err("source emitted Call value changed kind");
         };
-        let opening = self.opening(key, item, declared)?;
+        let opening = self.opening(key, item, declared, signature)?;
         self.source.stage.reserve(4 * size_of::<s::CallRequest>())?;
         self.raw.calls.push(s::CallRequest {
             value: value.0,
@@ -213,8 +399,18 @@ impl Ports<'_> {
                 "source method Call changed its actual selected declaration or application",
             );
         }
+        let allow_projections = self.source.stage.declaration_policies();
         let selected = self.source.stage.paying(|pay| {
-            crate::sema::dispatch::selected_callable(self.facts, key, method.callable, pay)
+            if allow_projections {
+                crate::sema::dispatch::selected_callable_with_projections(
+                    self.facts,
+                    key,
+                    method.callable,
+                    pay,
+                )
+            } else {
+                crate::sema::dispatch::selected_callable(self.facts, key, method.callable, pay)
+            }
         })?;
         if selected != Some(callable) {
             return Err(
@@ -228,6 +424,7 @@ impl Ports<'_> {
         key: NodeKey,
         item: ItemId,
         declared: crate::types::TypeId,
+        signature: crate::types::TypeId,
     ) -> Result<Option<s::Opening>, &'static str> {
         let Some(Type::Function { bound_regions, .. }) = self.facts.types.kind(declared) else {
             return Err("source callee signature is not a function");
@@ -253,20 +450,30 @@ impl Ports<'_> {
             return Err("source application changed its actual late binder");
         }
         self.source.stage.charge(1)?;
-        let regions = self
+        let recorded_len = self
             .source
             .openings
             .get(&(self.owner, key))
-            .map_or(&[][..], Vec::as_slice);
-        if regions.len() != bound_regions as usize {
-            return Err("source Call has incomplete or foreign late-opening allocations");
+            .map_or(0, Vec::len);
+        if bound_regions == 0 && (self.source.stage.declaration_policies() || recorded_len == 0) {
+            return Ok(None);
         }
+        let regions: Vec<crate::types::RegionId> = if recorded_len == bound_regions as usize {
+            self.source
+                .openings
+                .get(&(self.owner, key))
+                .map_or_else(Vec::new, Clone::clone)
+        } else if self.source.stage.declaration_policies() {
+            self.shared_site_opening(key, declared, signature, bound_regions)?
+        } else {
+            return Err("source Call has incomplete or foreign late-opening allocations");
+        };
         let start = u32::try_from(self.raw.openings.len())
             .map_err(|_| "source late-opening table overflow")?;
         self.source
             .stage
             .reserve(regions.len().saturating_mul(4 * size_of::<s::RegionRef>()))?;
-        for &region in regions {
+        for region in regions {
             self.source.stage.charge(1)?;
             self.raw
                 .openings
@@ -278,5 +485,48 @@ impl Ports<'_> {
             binder,
             regions: g::Range { start, end },
         }))
+    }
+    fn shared_site_opening(
+        &mut self,
+        key: NodeKey,
+        declared: crate::types::TypeId,
+        signature: crate::types::TypeId,
+        bound_regions: u32,
+    ) -> Result<Vec<crate::types::RegionId>, &'static str> {
+        let extracted = self
+            .source
+            .stage
+            .paying(|pay| {
+                crate::types::callable::late_result::opening_regions(
+                    &self.facts.types,
+                    declared,
+                    signature,
+                    pay,
+                )
+            })?
+            .ok_or("source Call has incomplete or foreign late-opening allocations")?;
+        if extracted.len() != bound_regions as usize {
+            return Err("source Call has incomplete or foreign late-opening allocations");
+        }
+        let recorded = self
+            .source
+            .openings
+            .get(&(self.owner, key))
+            .map_or(&[][..], Vec::as_slice);
+        let mut fallback = recorded
+            .iter()
+            .copied()
+            .filter(|region| !extracted.contains(&Some(*region)));
+        let mut resolved = Vec::with_capacity(extracted.len());
+        for &slot in &extracted {
+            let region = match slot {
+                Some(region) => region,
+                None => fallback
+                    .next()
+                    .ok_or("source Call has incomplete or foreign late-opening allocations")?,
+            };
+            resolved.push(region);
+        }
+        Ok(resolved)
     }
 }

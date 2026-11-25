@@ -161,6 +161,25 @@ pub(crate) fn selected_callable(
     callable: TypeId,
     pay: crate::support::retained::Payment<'_>,
 ) -> Result<Option<TypeId>, &'static str> {
+    selected_callable_checked(facts, source, callable, false, pay)
+}
+
+pub(crate) fn selected_callable_with_projections(
+    facts: &mut Declarations,
+    source: NodeKey,
+    callable: TypeId,
+    pay: crate::support::retained::Payment<'_>,
+) -> Result<Option<TypeId>, &'static str> {
+    selected_callable_checked(facts, source, callable, true, pay)
+}
+
+fn selected_callable_checked(
+    facts: &mut Declarations,
+    source: NodeKey,
+    callable: TypeId,
+    allow_projections: bool,
+    pay: crate::support::retained::Payment<'_>,
+) -> Result<Option<TypeId>, &'static str> {
     pay(1, 0)?;
     let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(callable) else {
         return Ok(None);
@@ -217,7 +236,7 @@ pub(crate) fn selected_callable(
                 .ok_or("selected callable lost its defining implementation")?;
             arguments.target_paid(facts, owner, actual, selected.definition(), pay)?
         };
-        if facts.types.contains_projections(target) != Some(false) {
+        if !allow_projections && facts.types.contains_projections(target) != Some(false) {
             return Err(
                 "selected source callable projections require their actual dispatch normalization contract",
             );
@@ -297,7 +316,12 @@ pub(crate) fn requested_callable(
         Some(Kind::FunctionItem { signature, .. }) => Some(signature),
         _ => None,
     };
-    if !same_goal(actual, goal) || signature(requested) != signature(selected) {
+    let (Some(req_sig), Some(sel_sig)) = (signature(requested), signature(selected)) else {
+        return Err("requested callable changed its complete goal or applied signature");
+    };
+    if !same_goal(actual, goal)
+        || (req_sig != sel_sig && facts.types.contains_projections(req_sig) == Some(false))
+    {
         return Err("requested callable changed its complete goal or applied signature");
     }
     Ok(requested)

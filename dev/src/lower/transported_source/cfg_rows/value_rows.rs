@@ -712,6 +712,17 @@ pub(super) fn requested_formation(
     facts: &Declarations,
     ty: crate::types::TypeId,
 ) -> bool {
+    if stage.declaration_policies() {
+        return facts.types.is_well_formed(ty) == Some(false)
+            || facts.types.contains_nominals(ty) == Some(true)
+            || facts.types.contains_projections(ty) == Some(true)
+            || facts.types.contains_parameters(ty) == Some(true)
+            || facts.types.contains_opaques(ty) == Some(true)
+            || (matches!(
+                facts.types.kind(ty),
+                Some(crate::types::Kind::Function { .. } | crate::types::Kind::FunctionItem { .. })
+            ) && facts.types.contains_regions(ty) == Some(true));
+    }
     stage.body_nodes() && facts.types.contains_nominals(ty) == Some(true)
 }
 /// Version thirteen: reborrowing a reference to a type parameter has no
