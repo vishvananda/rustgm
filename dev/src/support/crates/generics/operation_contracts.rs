@@ -403,15 +403,16 @@ pub(super) fn validate(
     for projection in &rows.projections {
         projection_contract(rows, headers, projection, false, work)?;
     }
-    validate_operations(rows, headers, work)
+    validate_operations(rows, headers, false, work)
 }
 pub(super) fn validate_operations(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
+    trait_results: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     for opaque in &rows.opaque_futures {
-        opaque_contract(rows, headers, opaque, work)?;
+        opaque_contract(rows, headers, opaque, trait_results, work)?;
     }
     for operation in &rows.compiler_operations {
         operation_contract(rows, headers, operation, work)?;
@@ -598,6 +599,7 @@ fn opaque_contract(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     opaque: &super::OpaqueFuture,
+    trait_results: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(3)?;
@@ -606,7 +608,7 @@ fn opaque_contract(
     };
     let function = &rows.functions[index as usize];
     if opaque.ordinal != 0
-        || opaque.trait_result
+        || (opaque.trait_result && !trait_results)
         || opaque.future_trait != role(rows, LangItem::Future)?
         || opaque.output_member != role(rows, LangItem::FutureOutput)?
     {
@@ -620,7 +622,18 @@ fn opaque_contract(
     if rows.associated_types[member as usize].parent != opaque.future_trait.declaration {
         return Err("opaque Output belongs to another actual trait");
     }
-    if !matches!(function.body, FunctionBody::CompilerOperation(_)) {
+    if opaque.trait_result {
+        let Some(parent) = function.parent else {
+            return Err("trait async opaque result lacks its actual trait owner");
+        };
+        if function.body != FunctionBody::Absent
+            || !matches!(headers.header(parent, work)?, Some(HeaderRef::Trait(_)))
+        {
+            return Err(
+                "trait async opaque export requires a required trait method without a body",
+            );
+        }
+    } else if !matches!(function.body, FunctionBody::CompilerOperation(_)) {
         return Err("authored async opaque export requires its real typed body/ownership profile");
     }
     let Some(Type::OpaqueFuture(canonical)) = rows.types.get(function.original.result.0 as usize)
@@ -636,11 +649,22 @@ fn opaque_contract(
         || canonical.output != opaque.output
         || canonical.future_trait != opaque.future_trait
         || canonical.output_member != opaque.output_member
+        || canonical.trait_result != opaque.trait_result
     {
         return Err(
             "opaque applications changed their one actual declaration/ordinal Output contract",
         );
     }
+    opaque_captures(rows, headers, function, opaque, work)
+}
+
+fn opaque_captures(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    function: &super::FunctionHeader,
+    opaque: &super::OpaqueFuture,
+    work: &mut Work,
+) -> Result<(), &'static str> {
     let captures = opaque.captures.slice(&rows.arguments)?;
     let slots = headers.scopes().complete_slots(function.scope, work)?;
     if captures.len() != slots as usize {
@@ -654,17 +678,26 @@ fn opaque_contract(
                 return Err("declared opaque capture is not its actual generic formal");
             }
             Argument::Region(region)
-                if !matches!(
-                    rows.regions.get(region.0 as usize),
-                    Some(Region::Bound { depth: 0, .. })
-                ) =>
+                if !match rows.regions.get(region.0 as usize) {
+                    Some(Region::Bound { depth: 0, .. }) => true,
+                    Some(Region::Parameter { .. }) => opaque.trait_result,
+                    _ => false,
+                } =>
             {
                 return Err("declared opaque capture lost its exact callable lifetime frame");
+            }
+            Argument::Const(reference)
+                if !opaque.trait_result
+                    || !matches!(
+                        rows.consts().get(reference.0 as usize),
+                        Some(super::ConstTerm::Parameter(_))
+                    ) =>
+            {
+                return Err("declared opaque const capture is not its actual const formal");
             }
             _ => {}
         }
     }
-
     Ok(())
 }
 

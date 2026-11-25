@@ -45,6 +45,11 @@ pub(super) enum Node {
         recipe: s::DynamicTypeRef,
         arguments: NodeId,
     },
+    OpaqueFuture {
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+        ordinal: u32,
+        arguments: NodeId,
+    },
     /// A declared result stays structural: its member names one trait, and the
     /// argument chain is its Self followed by that trait's complete arguments.
     /// Its own family parameters are a second chain. Selection still normalizes
@@ -345,14 +350,23 @@ impl Arena {
     fn node_facts(&self, node: Node, work: &mut Work) -> Result<NodeFacts, &'static str> {
         work.charge(1)?;
         Ok(match node {
-            Node::Dynamic { bounds, region } => {
-                let mut facts = self.facts_of(bounds, work)?;
+            Node::Dynamic {
+                bounds: child,
+                region,
+            }
+            | Node::NominalRegion {
+                region,
+                next: child,
+            } => {
+                let mut facts = self.facts_of(child, work)?;
                 if region != Region::Static {
                     facts.0 |= NodeFacts::REGIONAL;
                 }
                 facts
             }
-            Node::Nominal { arguments, .. } | Node::DynamicBounds { arguments, .. } => {
+            Node::Nominal { arguments, .. }
+            | Node::DynamicBounds { arguments, .. }
+            | Node::OpaqueFuture { arguments, .. } => {
                 let mut facts = self.facts_of(arguments, work)?;
                 facts.0 &= !NodeFacts::FORMED;
                 facts
@@ -378,14 +392,6 @@ impl Arena {
             Node::NominalArgument { ty, next } => {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }
-            Node::NominalRegion { region, next } => {
-                let mut facts = self.facts_of(next, work)?;
-                if region != Region::Static {
-                    facts.0 |= NodeFacts::REGIONAL;
-                }
-                facts
-            }
-            Node::Tuple { elements } => self.facts_of(elements, work)?,
             // Preserve the old parameter formation rule outside Functions.
             // A Function explicitly retains opaque parameter conditionality.
             Node::Parameter(_) => NodeFacts(NodeFacts::FORMED | NodeFacts::PARAMETER),
@@ -405,12 +411,11 @@ impl Arena {
                 }
                 facts
             }
-            // `*const T` and a pattern are formed whenever their child is;
-            // `[T]` also needs `T: Sized`, which an unbounded parameter
-            // element must prove by an input.
-            Node::RawPointer { pointee, .. } | Node::Pattern { base: pointee, .. } => {
-                self.facts_of(pointee, work)?
-            }
+            // `*const T`, tuples, patterns, and signature results inherit their child's facts.
+            Node::RawPointer { pointee: child, .. }
+            | Node::Pattern { base: child, .. }
+            | Node::Tuple { elements: child }
+            | Node::SignatureResult(child) => self.facts_of(child, work)?,
             Node::Slice(element) => {
                 let mut facts = self.facts_of(element, work)?;
                 if matches!(self.nodes.get(element.0 as usize), Some(Node::Parameter(_))) {
@@ -429,27 +434,29 @@ impl Arena {
                 }
                 facts
             }
-            Node::SignatureResult(result) => self.facts_of(result, work)?,
             Node::SignatureInput { ty, next } => {
                 self.signature_tail(next, work)?;
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }
-            Node::Function { signature, .. } => {
-                self.signature_tail(signature, work)?;
-                let mut facts = self.facts_of(signature, work)?;
-                if facts.0 & NodeFacts::ITEM != 0
-                    || (!self.declaration_policies && facts.0 & NodeFacts::REGIONAL != 0)
-                {
-                    return Err(
-                        "source Function substitution captured regional or function-item inputs",
-                    );
-                }
-                if facts.0 & (NodeFacts::PARAMETER | NodeFacts::REGIONAL) != 0 {
-                    facts.0 &= !NodeFacts::FORMED;
-                }
-                facts
-            }
+            Node::Function { signature, .. } => self.function_facts(signature, work)?,
         })
+    }
+    fn function_facts(
+        &self,
+        signature: NodeId,
+        work: &mut Work,
+    ) -> Result<NodeFacts, &'static str> {
+        self.signature_tail(signature, work)?;
+        let mut facts = self.facts_of(signature, work)?;
+        if facts.0 & NodeFacts::ITEM != 0
+            || (!self.declaration_policies && facts.0 & NodeFacts::REGIONAL != 0)
+        {
+            return Err("source Function substitution captured regional or function-item inputs");
+        }
+        if facts.0 & (NodeFacts::PARAMETER | NodeFacts::REGIONAL) != 0 {
+            facts.0 &= !NodeFacts::FORMED;
+        }
+        Ok(facts)
     }
     fn signature_tail(&self, node: NodeId, work: &mut Work) -> Result<(), &'static str> {
         work.charge(1)?;

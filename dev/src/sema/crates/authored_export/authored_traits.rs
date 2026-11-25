@@ -79,6 +79,7 @@ fn require_v14_role(role: LangItem) -> Result<(), &'static str> {
             Err("source Try declarations require version fourteen")
         }
         LangItem::DropGlue => Err("source Drop operation transport requires version fourteen"),
+        LangItem::AsyncDrop => Err("source AsyncDrop transport requires version fourteen"),
         LangItem::TrivialClone => Err("source TrivialClone declarations require version fourteen"),
         LangItem::ConstParamTy | LangItem::StructuralPartialEq => {
             Err("source const parameter marker transport requires version 14")

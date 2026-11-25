@@ -290,6 +290,15 @@ impl Checker<'_> {
                 }
                 (Some(Type::Adt(..)), _)
                     if crate::sema::compiler_items::dereferencing::available(&self.facts)
+                        || self
+                            .facts
+                            .source_bindings
+                            .as_deref()
+                            .is_some_and(|catalog| {
+                                catalog
+                                    .role(crate::support::bindings::LangItem::Deref)
+                                    .is_ok_and(|role| role.is_some())
+                            })
                         || self.facts.destructors.method(owner).is_some()
                             && self.drop_receiver(key, owner, terminal)? != terminal =>
                 {

@@ -42,12 +42,13 @@ enum Recipe {
 enum ArgumentOwner {
     Nominal(s::DeclarationAddress),
     Dynamic(s::DynamicTypeRef),
+    OpaqueFuture(s::OpaqueFutureRef),
 }
 impl ArgumentOwner {
     const fn regions(self) -> Regions {
         match self {
             Self::Nominal(declaration) => Regions::of(declaration),
-            Self::Dynamic(_) => Regions::Local,
+            Self::Dynamic(_) | Self::OpaqueFuture(_) => Regions::Local,
         }
     }
 }
@@ -333,6 +334,19 @@ impl Arena {
                 let region = self.rewritten_region(domains, recipe.region, key.rewrite, work)?;
                 Node::Dynamic { bounds, region }
             }
+            ArgumentOwner::OpaqueFuture(reference) => {
+                let opaque = domains
+                    .headers
+                    .rows()
+                    .opaque_futures
+                    .get(reference.0 as usize)
+                    .ok_or("source opaque future recipe is unknown")?;
+                Node::OpaqueFuture {
+                    declaration: opaque.declaration,
+                    ordinal: opaque.ordinal,
+                    arguments,
+                }
+            }
         };
         self.intern(node, work)
     }
@@ -399,6 +413,15 @@ impl Arena {
                     dynamic_recipe(domains, reference)?.arguments,
                 ),
                 s::Type::Projection(reference) => Recipe::Projection(reference),
+                s::Type::OpaqueFuture(reference) if domains.declaration_policies => {
+                    let opaque = domains
+                        .headers
+                        .rows()
+                        .opaque_futures
+                        .get(reference.0 as usize)
+                        .ok_or("source opaque future recipe is unknown")?;
+                    Recipe::Application(ArgumentOwner::OpaqueFuture(reference), opaque.captures)
+                }
                 s::Type::OpaqueFuture(_) => {
                     return Err(
                         "declared result in ordinary body operations requires its complete application transport",

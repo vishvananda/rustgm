@@ -214,13 +214,14 @@ impl Graph {
         }
         let expected = match kind {
             LangItem::Future => DefKind::Trait,
+            LangItem::AsyncDrop if descriptor.profile().declaration_policies() => DefKind::Trait,
             LangItem::FutureOutput => DefKind::TypeAlias,
             LangItem::FuturePoll | LangItem::AsyncDropInPlace => DefKind::Function,
             _ => return Err("invalid imported compiler-operation role"),
         };
         let (row, headers) = self.bound_role(facts, role, kind, expected, steps)?;
         let rows = descriptor.rows();
-        if kind == LangItem::Future {
+        if matches!(kind, LangItem::Future | LangItem::AsyncDrop) {
             let owner = facts
                 .associated
                 .owner(role.definition)
@@ -347,13 +348,6 @@ impl Graph {
             return Err("imported opaque lost its actual function header");
         };
         let function = &rows.functions[index as usize];
-        let s::FunctionBody::CompilerOperation(operation) = function.body else {
-            return Err("imported opaque lost its actual compiler-operation body");
-        };
-        let operation = rows
-            .compiler_operations
-            .get(operation.0 as usize)
-            .ok_or("imported opaque operation is outside its actual table")?;
         let Some(s::Type::OpaqueFuture(reference)) =
             rows.types.get(function.original.result.0 as usize)
         else {
@@ -363,14 +357,18 @@ impl Graph {
             .opaque_futures
             .get(reference.0 as usize)
             .ok_or("imported opaque canonical recipe is unknown")?;
+        require_opaque_body(
+            rows,
+            descriptor.profile().declaration_policies(),
+            row,
+            function,
+            future,
+        )?;
         let schema = facts
             .types
             .opaque_declaration(id)
             .ok_or("imported opaque lost its declared canonical schema")?;
         if future.declaration != row
-            || operation.declaration != row
-            || operation.future != function.original.result
-            || operation.output != future.output
             || declaration.application
                 != self
                     .ty(function.original.result)
@@ -415,9 +413,18 @@ impl Graph {
             .source_bindings
             .as_deref()
             .ok_or("imported opaque lost its current role catalog")?;
-        let actual_helper = catalog
-            .validated_role(LangItem::AsyncDropInPlace)?
-            .ok_or("imported opaque helper role is incomplete")?;
+        if !future.trait_result {
+            let actual_helper = catalog
+                .validated_role(LangItem::AsyncDropInPlace)?
+                .ok_or("imported opaque helper role is incomplete")?;
+            if actual_helper.definition != declaration.owner
+                || actual_helper.origin != declaration.origin
+            {
+                return Err(
+                    "imported opaque changed its actual completed Future/Output/operation roles",
+                );
+            }
+        }
         let actual_future = catalog
             .validated_role(LangItem::Future)?
             .ok_or("imported opaque Future role is incomplete")?;
@@ -430,9 +437,7 @@ impl Graph {
         let expected_output = self
             .origins
             .definition_at(owner, future.output_member.declaration)?;
-        if actual_helper.definition != declaration.owner
-            || actual_helper.origin != declaration.origin
-            || actual_future.definition != expected_future
+        if actual_future.definition != expected_future
             || actual_output.definition != expected_output
             || actual_output.parent != Some(expected_future)
             || actual_future.origin
@@ -452,4 +457,40 @@ impl Graph {
         self.readiness(&self.origins, facts, headers, expected_output, &mut 0)?;
         Ok((expected_future, expected_output))
     }
+}
+
+fn require_opaque_body(
+    rows: s::ValidatedView<'_>,
+    declaration_policies: bool,
+    row: crate::support::crates::owner_catalog::DeclarationRef,
+    function: &s::FunctionHeader,
+    future: &s::OpaqueFuture,
+) -> Result<(), &'static str> {
+    if future.trait_result {
+        if !declaration_policies
+            || function.body != s::FunctionBody::Absent
+            || !function.parent.is_some_and(|parent| {
+                matches!(rows.header(parent), Ok(Some(s::HeaderRef::Trait(_))))
+            })
+        {
+            return Err("imported trait opaque lost its actual required trait declaration");
+        }
+        return Ok(());
+    }
+    let s::FunctionBody::CompilerOperation(operation) = function.body else {
+        return Err("imported opaque lost its actual compiler-operation body");
+    };
+    let operation = rows
+        .compiler_operations
+        .get(operation.0 as usize)
+        .ok_or("imported opaque operation is outside its actual table")?;
+    if operation.declaration != row
+        || operation.future != function.original.result
+        || operation.output != future.output
+    {
+        return Err(
+            "imported opaque changed its actual owner, ordinal, captures, schema or storage authority",
+        );
+    }
+    Ok(())
 }

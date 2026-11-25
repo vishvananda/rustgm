@@ -1372,8 +1372,8 @@ impl Bindings {
             .find_map(|(bound, marker)| (*bound == Some(declaration)).then_some(marker))
     }
 }
-fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
-    if matches!(
+fn body_operation_role(role: LangItem) -> bool {
+    matches!(
         role,
         LangItem::TypeInfo
             | LangItem::TransmuteOpts
@@ -1399,6 +1399,7 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::MemSizeConst
             | LangItem::MemAlignConst
             | LangItem::DropGlue
+            | LangItem::AsyncDrop
             | LangItem::PinNewUnchecked
             | LangItem::DerefTarget
             | LangItem::ReceiverTarget
@@ -1406,10 +1407,10 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
             | LangItem::OffsetOf
             | LangItem::Unsize
             | LangItem::RangeInclusiveNew
+            | LangItem::BikeshedGuaranteedNoDrop
     ) || interval_roles::ROLES.contains(&role)
         || LangItem::RANGE_NOMINALS.contains(&role)
         || LangItem::NOMINAL_WRAPPERS.contains(&role)
-        || role == LangItem::BikeshedGuaranteedNoDrop
         || LangItem::GUARD_PANICS.contains(&role)
         || LangItem::FORMAT_PANICS.contains(&role)
         || LangItem::SOURCE_HELPERS.contains(&role)
@@ -1422,15 +1423,19 @@ fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
         || LangItem::COMPARISON_TRAITS.contains(&role)
         || role.is_enum_value_role()
         || role.is_runtime_import()
-    {
+}
+fn role_allowed(profile: BindingProfile, role: LangItem) -> bool {
+    if body_operation_role(role) {
         return profile == BindingProfile::BodyOperations;
-    }
-    if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe) {
-        return false;
     }
     if matches!(
         role,
-        LangItem::Start | LangItem::Termination | LangItem::BeginPanic | LangItem::EhPersonality
+        LangItem::UnwindSafe
+            | LangItem::RefUnwindSafe
+            | LangItem::Start
+            | LangItem::Termination
+            | LangItem::BeginPanic
+            | LangItem::EhPersonality
     ) {
         return false;
     }

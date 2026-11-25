@@ -448,7 +448,12 @@ impl ValidatedRows {
                 super::results_contract::validate(&rows, &indexed, profile, work)?;
                 super::free_constants::validate(&rows, &indexed, profile, work)?;
                 if profile.compiler_operations() {
-                    super::operation_contracts::validate_operations(&rows, &indexed, work)?;
+                    super::operation_contracts::validate_operations(
+                        &rows,
+                        &indexed,
+                        profile.declaration_policies(),
+                        work,
+                    )?;
                 }
             } else if profile.compiler_operations() {
                 functions::validate_compiler_operations(&rows, &indexed, work)?;

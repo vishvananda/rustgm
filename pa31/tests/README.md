@@ -106,6 +106,9 @@ impls), conditional provided defaults, `[const]` and `const` trait bounds, and
 `miri::intrinsic_fallback_is_spec`) and `#[rustc_comptime]` free and inherent
 functions across fresh clients, including runtime-call rejection and v13
 refusal.
+`spec/source-async-drop-transport/outcomes.json` checks v14 transport of
+`AsyncDrop`, `async_drop_in_place`, and required trait `async fn` opaque future
+signatures across fresh clients, plus v13 refusal.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

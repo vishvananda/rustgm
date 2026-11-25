@@ -19,7 +19,7 @@ impl Checker<'_> {
             .facts
             .source_bindings
             .as_deref()
-            .map(|catalog| catalog.validated_language(LangItem::AsyncDrop))
+            .map(|catalog| catalog.validated_role(LangItem::AsyncDrop))
             .transpose()
             .map_err(Error::unlocated)?
             .flatten();

@@ -1,6 +1,6 @@
 //! Async cleanup absence requires the exhaustive actual implementation pass.
 use super::Catalog;
-use crate::{resolve::body_origin::DeclarationOrigin, support::bindings::LangItem};
+use crate::support::bindings::LangItem;
 
 impl Catalog {
     /// Source registration completes separately from the ordinary trait header.
@@ -10,9 +10,6 @@ impl Catalog {
         let Some(declaration) = self.validated_role(LangItem::AsyncDrop)? else {
             return Ok(());
         };
-        if matches!(declaration.origin, DeclarationOrigin::Imported(_)) {
-            return Err("imported async destruction requires its complete source profile");
-        }
         if self.async_destruction_registration.is_some() {
             return Err("source async destructor registration was completed twice");
         }
@@ -29,9 +26,6 @@ impl Catalog {
                 Err("async destructor registration has no actual source declaration")
             };
         };
-        if matches!(declaration.origin, DeclarationOrigin::Imported(_)) {
-            return Err("imported async destruction requires its complete source profile");
-        }
         if self.async_destruction_registration != Some(declaration.definition) {
             return Err("source async destructor registration requires exhaustive preparation");
         }

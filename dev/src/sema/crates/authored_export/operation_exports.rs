@@ -69,9 +69,6 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("opaque export lost its source role catalog")?;
-        let helper = catalog
-            .validated_language(LangItem::AsyncDropInPlace)?
-            .ok_or("opaque export requires its authenticated compiler-operation owner")?;
         let function = facts
             .function_indices
             .get(&contract.owner)
@@ -82,17 +79,18 @@ impl Stage {
             .body_results
             .get(&contract.owner)
             .ok_or("opaque export requires its actual checked async Output")?;
-        if helper.definition != contract.owner
-            || contract.origin.source() != Some(function.node)
-            || !facts.typed_function_bodies.contains(&contract.owner)
-            || contract.hidden.is_some()
-            || contract.inferred.is_some()
-            || !contract.free_regions.is_empty()
-        {
-            return Err(
-                "authored async body/storage export requires its complete typed ownership profile",
-            );
-        }
+        let schema = facts
+            .types
+            .opaque_declaration(id)
+            .ok_or("opaque export lost its canonical declaration schema")?;
+        require_opaque_owner(
+            facts,
+            catalog,
+            contract,
+            function,
+            schema,
+            self.declaration_policies(),
+        )?;
         let ordinal = facts
             .opaques
             .owners
@@ -105,12 +103,7 @@ impl Stage {
         let member = catalog
             .validated_language(LangItem::FutureOutput)?
             .ok_or("opaque export lacks actual Output role")?;
-        let schema = facts
-            .types
-            .opaque_declaration(id)
-            .ok_or("opaque export lost its canonical declaration schema")?;
-        if schema.trait_result
-            || !schema.sized
+        if !schema.sized
             || schema.copies != crate::types::copy::Properties::default()
             || contract.bounds.len() != 2
         {
@@ -269,6 +262,43 @@ impl Stage {
             end: length(self.rows.clauses.len())?,
         })
     }
+}
+
+fn require_opaque_owner(
+    facts: &Declarations,
+    catalog: &crate::sema::compiler_items::Catalog,
+    contract: &crate::sema::opaque::Declaration,
+    function: &crate::sema::model::Function,
+    schema: crate::types::opaque::Declaration,
+    declaration_policies: bool,
+) -> Result<(), &'static str> {
+    let required_trait = declaration_policies
+        && schema.trait_result
+        && function.body.is_none()
+        && facts.associated.trait_owner(contract.owner).is_some();
+    if !required_trait {
+        let helper = catalog
+            .validated_language(LangItem::AsyncDropInPlace)?
+            .ok_or("opaque export requires its authenticated compiler-operation owner")?;
+        if helper.definition != contract.owner
+            || schema.trait_result
+            || !facts.typed_function_bodies.contains(&contract.owner)
+        {
+            return Err(
+                "authored async body/storage export requires its complete typed ownership profile",
+            );
+        }
+    }
+    if contract.origin.source() != Some(function.node)
+        || contract.hidden.is_some()
+        || contract.inferred.is_some()
+        || !contract.free_regions.is_empty()
+    {
+        return Err(
+            "authored async body/storage export requires its complete typed ownership profile",
+        );
+    }
+    Ok(())
 }
 
 fn require_function_opaque(facts: &Declarations, id: OpaqueId) -> Result<(), &'static str> {

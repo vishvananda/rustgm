@@ -1,0 +1,6 @@
+{
+  "features": ["auto_traits", "fundamental"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "42 17\n",
+  "older_profile": "compiler-owned async destruction requires generated future state and polling"
+}

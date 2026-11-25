@@ -193,7 +193,10 @@ impl Arena {
                 },
             ) => ((ae, be), Some((al, bl))),
             (
-                Node::Nominal { .. } | Node::NominalRegion { .. } | Node::NominalArgument { .. },
+                Node::Nominal { .. }
+                | Node::OpaqueFuture { .. }
+                | Node::NominalRegion { .. }
+                | Node::NominalArgument { .. },
                 _,
             ) => self.matched_nominal_children(domains, pair, nodes, work)?,
             (
@@ -249,6 +252,18 @@ impl Arena {
                     arguments: bc,
                 },
             ) if a == b => Ok(((ac, bc), None)),
+            (
+                Node::OpaqueFuture {
+                    declaration: ad,
+                    ordinal: ao,
+                    arguments: ac,
+                },
+                Node::OpaqueFuture {
+                    declaration: bd,
+                    ordinal: bo,
+                    arguments: bc,
+                },
+            ) if ad == bd && ao == bo => Ok(((ac, bc), None)),
             (
                 Node::NominalRegion {
                     region: ar,

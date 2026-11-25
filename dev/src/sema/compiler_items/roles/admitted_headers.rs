@@ -281,6 +281,7 @@ fn trait_headers(
             LangItem::Future
             | LangItem::FutureOutput
             | LangItem::FuturePoll
+            | LangItem::AsyncDrop
             | LangItem::AsyncDropInPlace => {
                 facts
                     .associated
