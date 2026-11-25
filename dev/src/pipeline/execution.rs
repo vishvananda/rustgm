@@ -1052,6 +1052,11 @@ impl Engine {
             std::borrow::Cow::Owned,
         );
         let mut regions = Self::source_regions(report, facts, body, &contract)?;
+        if input.purpose == ProofPurpose::Code && !facts.opaques.declarations.is_empty() {
+            facts
+                .prepare_opaque_storage()
+                .map_err(|e| report.body_error(body.source, e))?;
+        }
         let checked = self.prove_loans(
             report,
             facts,

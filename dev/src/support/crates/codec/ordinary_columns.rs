@@ -174,6 +174,12 @@ pub(super) fn encode_module_availability(
     if profile.compiler_operations() {
         if profile.body_nodes() {
             compiler_wire::encode_operations(out, rows)?;
+            let opaques = &rows.cold().opaques;
+            if !opaques.applications.is_empty() {
+                compiler_wire::encode_opaque_declarations(out, &opaques.declarations)?;
+            } else if !opaques.declarations.is_empty() {
+                return Err("source opaque declaration lacks its canonical application recipe");
+            }
         } else {
             compiler_wire::encode(out, rows)?;
         }
@@ -289,6 +295,9 @@ fn decode_availability_profile(
     if profile.compiler_operations() {
         if profile.body_nodes() {
             compiler_wire::decode_operations(&mut read, &mut rows)?;
+            if !rows.cold().opaques.applications.is_empty() {
+                compiler_wire::decode_opaque_declarations(&mut read, &mut rows)?;
+            }
         } else {
             compiler_wire::decode(&mut read, &mut rows)?;
         }
@@ -422,6 +431,7 @@ fn encode_profile(
             ranges: rows.pattern_ranges(),
             lengths: rows.array_lengths(),
             dynamics: &rows.cold().dynamics,
+            opaques: &rows.cold().opaques.applications,
         },
     )?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
@@ -648,6 +658,7 @@ fn decode_profile_with(
     if !tables.ranges.is_empty()
         || !tables.lengths.is_empty()
         || !tables.dynamics.is_empty()
+        || !tables.opaques.is_empty()
         || !diagnostics.is_empty()
         || !consts.is_empty()
         || !declared_intrinsics.is_empty()
@@ -657,6 +668,7 @@ fn decode_profile_with(
         cold.pattern_ranges = tables.ranges;
         cold.array_lengths = tables.lengths;
         cold.dynamics = tables.dynamics;
+        cold.opaques.applications = tables.opaques;
         cold.diagnostics = diagnostics;
         cold.consts = consts;
         cold.declared_intrinsics = declared_intrinsics;

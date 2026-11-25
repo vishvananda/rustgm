@@ -92,6 +92,12 @@ pub(super) fn prepare(
     for definition in rows.associated_definitions() {
         demand(Root::Type(definition.value))?;
     }
+    for opaque in &rows.cold().opaques.declarations {
+        demand(Root::Type(opaque.application))?;
+        if let Some(hidden) = opaque.hidden {
+            demand(Root::Type(hidden))?;
+        }
+    }
     Ok(())
 }
 fn application(

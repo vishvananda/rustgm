@@ -161,7 +161,7 @@ pub(crate) fn profile(
     let result = match facts.types.kind(result) {
         Some(Kind::Primitive(primitive)) => ResultProfile::Primitive(primitive),
         _ if result == TypeId::UNIT => ResultProfile::Unit,
-        Some(Kind::Adt(..))
+        Some(Kind::Adt(..) | Kind::Opaque(..))
             if facts.types.needs_region_context(result) == Some(false)
                 && facts.types.contains_parameters(result) == Some(false)
                 && facts.types.contains_projections(result) == Some(false) =>

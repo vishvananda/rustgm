@@ -43,12 +43,13 @@ enum ArgumentOwner {
     Nominal(s::DeclarationAddress),
     Dynamic(s::DynamicTypeRef),
     OpaqueFuture(s::OpaqueFutureRef),
+    OpaqueResult(s::OpaqueResultRef),
 }
 impl ArgumentOwner {
     const fn regions(self) -> Regions {
         match self {
             Self::Nominal(declaration) => Regions::of(declaration),
-            Self::Dynamic(_) | Self::OpaqueFuture(_) => Regions::Local,
+            Self::Dynamic(_) | Self::OpaqueFuture(_) | Self::OpaqueResult(_) => Regions::Local,
         }
     }
 }
@@ -347,6 +348,21 @@ impl Arena {
                     arguments,
                 }
             }
+            ArgumentOwner::OpaqueResult(reference) => {
+                let opaque = domains
+                    .headers
+                    .rows()
+                    .cold()
+                    .opaques
+                    .applications
+                    .get(reference.0 as usize)
+                    .ok_or("source opaque result recipe is unknown")?;
+                Node::OpaqueFuture {
+                    declaration: opaque.declaration,
+                    ordinal: opaque.ordinal,
+                    arguments,
+                }
+            }
         };
         self.intern(node, work)
     }
@@ -413,19 +429,8 @@ impl Arena {
                     dynamic_recipe(domains, reference)?.arguments,
                 ),
                 s::Type::Projection(reference) => Recipe::Projection(reference),
-                s::Type::OpaqueFuture(reference) if domains.declaration_policies => {
-                    let opaque = domains
-                        .headers
-                        .rows()
-                        .opaque_futures
-                        .get(reference.0 as usize)
-                        .ok_or("source opaque future recipe is unknown")?;
-                    Recipe::Application(ArgumentOwner::OpaqueFuture(reference), opaque.captures)
-                }
-                s::Type::OpaqueFuture(_) => {
-                    return Err(
-                        "declared result in ordinary body operations requires its complete application transport",
-                    );
+                row @ (s::Type::OpaqueFuture(_) | s::Type::OpaqueResult(_)) => {
+                    opaque_recipe(domains, row)?
                 }
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
                 s::Type::F16 => Recipe::Leaf(Node::F16),
@@ -631,6 +636,40 @@ impl Arena {
         }
         tasks.push(task);
         Ok(())
+    }
+}
+
+fn opaque_recipe(domains: &DomainIndex<'_, '_>, row: s::Type) -> Result<Recipe, &'static str> {
+    if !domains.declaration_policies {
+        return Err(
+            "declared result in ordinary body operations requires its complete application transport",
+        );
+    }
+    let rows = domains.headers.rows();
+    match row {
+        s::Type::OpaqueFuture(reference) => {
+            let opaque = rows
+                .opaque_futures
+                .get(reference.0 as usize)
+                .ok_or("source opaque future recipe is unknown")?;
+            Ok(Recipe::Application(
+                ArgumentOwner::OpaqueFuture(reference),
+                opaque.captures,
+            ))
+        }
+        s::Type::OpaqueResult(reference) => {
+            let opaque = rows
+                .cold()
+                .opaques
+                .applications
+                .get(reference.0 as usize)
+                .ok_or("source opaque result recipe is unknown")?;
+            Ok(Recipe::Application(
+                ArgumentOwner::OpaqueResult(reference),
+                opaque.captures,
+            ))
+        }
+        _ => Err("source opaque recipe changed its form"),
     }
 }
 

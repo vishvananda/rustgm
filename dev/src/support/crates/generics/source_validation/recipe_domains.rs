@@ -97,13 +97,28 @@ impl Types {
             pending: Vec::new(),
         };
         let mut objects = existential_bounds::Inventory::default();
+        let mut opaque_results = 0_usize;
         for root in 0..count {
-            if let Some(s::Type::Dynamic(object)) = rows.types.get(root) {
-                objects.record(&rows.cold().dynamics, *object, work)?;
+            match rows.types.get(root) {
+                Some(s::Type::Dynamic(object)) => {
+                    objects.record(&rows.cold().dynamics, *object, work)?;
+                }
+                Some(s::Type::OpaqueResult(reference)) => {
+                    if reference.0 as usize != opaque_results
+                        || opaque_results >= rows.cold().opaques.applications.len()
+                    {
+                        return Err("source opaque result occurs outside its actual type order");
+                    }
+                    opaque_results += 1;
+                }
+                _ => {}
             }
             builder.root(root, work)?;
         }
         objects.finish(&rows.cold().dynamics)?;
+        if opaque_results != rows.cold().opaques.applications.len() {
+            return Err("source opaque result application has no actual type owner");
+        }
         Ok(builder.result)
     }
     fn summary(&self, ty: g::TypeRef, work: &mut Work) -> Result<Summary, &'static str> {

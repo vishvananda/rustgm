@@ -16,8 +16,9 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // the hot rows. Written nominal lifetime bounds add one cold Vec.
 // Closed const defaults add one more cold Vec. Trait object bounds add
 // three: objects, associated equalities and auto-trait markers. Declared
-// intrinsics and comptime functions add two cold Vecs.
-const _: [(); 544] = [(); size_of::<s::ColdColumns>()];
+// Declared intrinsics and comptime functions add two cold Vecs.
+// Opaque result applications and declarations add two more cold Vecs.
+const _: [(); 592] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -75,6 +76,7 @@ fn types_written(rows: &[s::Type], lengths: &[s::ConstTerm]) -> Result<Vec<u8>> 
                 ranges: &[],
                 lengths,
                 dynamics: &s::DynamicColumns::default(),
+                opaques: &[],
             },
         )
     })

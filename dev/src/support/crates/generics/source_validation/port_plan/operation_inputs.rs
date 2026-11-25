@@ -133,7 +133,7 @@ impl Builder<'_, '_, '_> {
         }
         // The full raw normalizations/equalities remain available for reproof.
         // Shape admission never turns one of them into an authenticated alias.
-        self.normalized_relation(
+        self.defining_result_relation(
             original,
             OperationPort::Declaration {
                 body: original.body,
@@ -145,6 +145,53 @@ impl Builder<'_, '_, '_> {
             },
             result,
             original.result,
+            work,
+        )
+    }
+    fn defining_result_relation(
+        &mut self,
+        original: &s::Original,
+        port: OperationPort,
+        site: s::InputSite,
+        actual: g::TypeRef,
+        expected: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let opaques = &self.domains.headers.rows().cold().opaques.declarations;
+        let has_defining = self.domains.declaration_policies
+            && opaques
+                .binary_search_by_key(&original.declaration.0, |row| row.declaration.0)
+                .is_ok();
+        if !has_defining {
+            return self.normalized_relation(original, port, site, actual, expected, work);
+        }
+        let mut hidden = Vec::new();
+        let start = opaques.partition_point(|row| row.declaration.0 < original.declaration.0);
+        for row in &opaques[start..] {
+            if row.declaration != original.declaration {
+                break;
+            }
+            let Some(ty) = row.hidden else {
+                return Err("source defining result opaque omitted its hidden type");
+            };
+            hidden.push((
+                self.node(original, row.application, work)?,
+                self.node(original, ty, work)?,
+            ));
+        }
+        let actual_node = self.node(original, actual, work)?;
+        let expected_node = self.node(original, expected, work)?;
+        self.arena.same_defining_result(
+            self.domains,
+            (actual_node, expected_node),
+            original.body,
+            &hidden,
+            work,
+        )?;
+        self.emit(
+            port,
+            site,
+            RequiredKind::Relation { actual, expected },
             work,
         )
     }

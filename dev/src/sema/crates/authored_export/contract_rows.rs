@@ -161,6 +161,26 @@ impl Stage {
                     effect: Constness::Ordinary,
                 })
             }
+            Bound::Auto(marker) if self.declaration_policies() => {
+                let declaration = facts
+                    .source_bindings
+                    .as_deref()
+                    .ok_or("source auto-trait clause has no role catalog")?
+                    .auto_marker(marker.lang_item(), true)?
+                    .ok_or("source auto-trait clause has no actual role declaration")?;
+                let subject = self.ty(facts, predicate.ty, context)?;
+                let declaration = self.address(declaration.definition)?;
+                let arguments = self.arguments(facts, GenericArgs::EMPTY, context)?;
+                let application = self.push_trait(s::TraitApplication {
+                    declaration,
+                    subject,
+                    arguments,
+                })?;
+                Ok(s::Requirement::Trait {
+                    application,
+                    effect: Constness::Ordinary,
+                })
+            }
             Bound::ProjectionEqual(value)
                 if self.body_nodes()
                     && matches!(

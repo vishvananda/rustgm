@@ -29,6 +29,15 @@ pub(super) fn require_profile(
             "associated result definitions require their explicit version-thirteen profile",
         );
     }
+    if !profile.declaration_policies()
+        && (!rows.cold().opaques.is_empty()
+            || rows
+                .types
+                .iter()
+                .any(|ty| matches!(ty, Type::OpaqueResult(_))))
+    {
+        return Err("source return-position opaque transport requires version fourteen");
+    }
     if !results
         && (!rows.associated_types.is_empty()
             || !rows.projections.is_empty()
@@ -417,7 +426,7 @@ pub(super) fn validate_operations(
     for operation in &rows.compiler_operations {
         operation_contract(rows, headers, operation, work)?;
     }
-    Ok(())
+    opaque_declarations(rows, headers, trait_results, work)
 }
 pub(super) fn function_signatures(
     rows: &SourceRows,
@@ -800,6 +809,139 @@ pub(super) fn sizing(
     }
     if header.sized != direct || header.copy || header.clone_ {
         return Err("associated builtin promises require their complete transitive bound profile");
+    }
+    Ok(())
+}
+
+fn opaque_declarations(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    declaration_policies: bool,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let declarations = &rows.cold().opaques.declarations;
+    if declarations.is_empty() {
+        return Ok(());
+    }
+    if !declaration_policies {
+        return Err("source return-position opaque transport requires version fourteen");
+    }
+    let mut previous: Option<(u32, u32)> = None;
+    for decl in declarations {
+        work.charge(4)?;
+        let expected_ordinal = match previous {
+            Some((owner, ordinal)) if owner == decl.declaration.0 => ordinal
+                .checked_add(1)
+                .ok_or("source opaque declaration ordinal overflow")?,
+            Some((owner, _)) if owner > decl.declaration.0 => {
+                return Err("source opaque declarations are out of order");
+            }
+            _ => u32::from(
+                rows.opaque_futures
+                    .iter()
+                    .any(|future| future.declaration == decl.declaration),
+            ),
+        };
+        if decl.ordinal != expected_ordinal || (decl.flags.copy() && !decl.flags.clone_()) {
+            return Err("source opaque declaration changed its ordinal or copy/clone contract");
+        }
+        previous = Some((decl.declaration.0, decl.ordinal));
+        opaque_declaration_contract(rows, headers, decl, work)?;
+    }
+    Ok(())
+}
+
+fn opaque_declaration_contract(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    decl: &super::OpaqueDeclaration,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let Some(HeaderRef::Function(index)) = headers.header(decl.declaration, work)? else {
+        return Err("source opaque declaration has no actual function owner");
+    };
+    let function = &rows.functions[index as usize];
+    let is_trait_member = function.parent.is_some_and(|parent| {
+        matches!(headers.header(parent, work), Ok(Some(HeaderRef::Trait(_))))
+    });
+    if decl.flags.trait_result() != is_trait_member || decl.bounds.start >= decl.bounds.end {
+        return Err("source opaque declaration changed its trait ownership or omitted bounds");
+    }
+    let Some(&Type::OpaqueResult(app_ref)) = rows.types.get(decl.application.0 as usize) else {
+        return Err("source opaque declaration lacks its canonical application recipe");
+    };
+    let app = rows
+        .cold()
+        .opaques
+        .applications
+        .get(app_ref.0 as usize)
+        .ok_or("source opaque declaration application row is unknown")?;
+    if app.declaration != decl.declaration || app.ordinal != decl.ordinal {
+        return Err("source opaque declaration application belongs to another owner or ordinal");
+    }
+    opaque_declaration_captures(rows, headers, function, app.captures, work)
+}
+
+fn opaque_declaration_captures(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    function: &super::FunctionHeader,
+    captures: super::super::Range,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let captures = captures.slice(&rows.arguments)?;
+    let slots = headers.scopes().complete_slots(function.scope, work)?;
+    if captures.len() > slots as usize {
+        return Err("source opaque declaration captures exceed its complete scope");
+    }
+    let mut non_lifetime = false;
+    let mut prev_region: Option<u32> = None;
+    let mut seen_slots = Vec::with_capacity(captures.len());
+    for argument in captures {
+        work.charge(1)?;
+        match *argument {
+            Argument::Region(region) => {
+                let Some(Region::Bound {
+                    binder,
+                    depth: 0,
+                    slot,
+                }) = rows.regions.get(region.0 as usize).copied()
+                else {
+                    return Err(
+                        "source opaque declaration capture lost its original lifetime frame",
+                    );
+                };
+                if non_lifetime
+                    || binder != function.original.binder
+                    || prev_region.is_some_and(|prior| prior >= slot)
+                {
+                    return Err("source opaque declaration lifetime captures are misordered");
+                }
+                prev_region = Some(slot);
+            }
+            Argument::Type(ty) => {
+                non_lifetime = true;
+                let Some(Type::Parameter(slot)) = rows.types.get(ty.0 as usize) else {
+                    return Err("source opaque declaration capture is not a type formal");
+                };
+                if seen_slots.contains(&slot.0) {
+                    return Err("source opaque declaration repeats a formal capture");
+                }
+                seen_slots.push(slot.0);
+            }
+            Argument::Const(reference) => {
+                non_lifetime = true;
+                let Some(super::ConstTerm::Parameter(slot)) =
+                    rows.consts().get(reference.0 as usize)
+                else {
+                    return Err("source opaque declaration capture is not a const formal");
+                };
+                if seen_slots.contains(&slot.0) {
+                    return Err("source opaque declaration repeats a formal capture");
+                }
+                seen_slots.push(slot.0);
+            }
+        }
     }
     Ok(())
 }

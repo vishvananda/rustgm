@@ -16,6 +16,10 @@ pub(super) enum Opening {
     Relation {
         body: BodyRef,
     },
+    /// Defining body result shape admission; owned opaques match their hidden type.
+    DefiningResult {
+        body: BodyRef,
+    },
     Call {
         body: BodyRef,
         request: u32,
@@ -49,6 +53,32 @@ impl Arena {
         opening: Opening,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        self.same_with_opaques(domains, (expected, actual), opening, &[], work)
+    }
+    pub(super) fn same_defining_result(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        pair: (NodeId, NodeId),
+        body: BodyRef,
+        opaques: &[(NodeId, NodeId)],
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        self.same_with_opaques(
+            domains,
+            pair,
+            Opening::DefiningResult { body },
+            opaques,
+            work,
+        )
+    }
+    fn same_with_opaques(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        (expected, actual): (NodeId, NodeId),
+        opening: Opening,
+        opaques: &[(NodeId, NodeId)],
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
         work.charge(1)?;
         let pair = Pair {
             expected,
@@ -60,7 +90,7 @@ impl Arena {
             return Ok(());
         }
         let mut pending = Vec::new();
-        let result = self.compare(domains, pair, &mut pending, work);
+        let result = self.compare(domains, pair, opaques, &mut pending, work);
         self.set_scratch(0, work)?;
         result
     }
@@ -68,6 +98,7 @@ impl Arena {
         &mut self,
         domains: &DomainIndex<'_, '_>,
         root: Pair,
+        opaques: &[(NodeId, NodeId)],
         pending: &mut Vec<Task>,
         work: &mut Work,
     ) -> Result<(), &'static str> {
@@ -82,6 +113,22 @@ impl Arena {
                 Task::Enter(pair) => {
                     if pair.expected == pair.actual || self.matched.contains(&pair) {
                         self.hits = self.hits.saturating_add(1);
+                        continue;
+                    }
+                    if let Opening::DefiningResult { body } = pair.opening
+                        && let Some(&(_, hidden)) =
+                            opaques.iter().find(|&&(app, _)| app == pair.expected)
+                    {
+                        self.push_pair(pending, Task::Finish(pair), work)?;
+                        self.push_pair(
+                            pending,
+                            Task::Enter(Pair {
+                                expected: hidden,
+                                actual: pair.actual,
+                                opening: Opening::Relation { body },
+                            }),
+                            work,
+                        )?;
                         continue;
                     }
                     let expected = *self
@@ -517,9 +564,11 @@ impl Arena {
         opening: Opening,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        Ok(matches!(opening, Opening::Relation { .. })
-            || opened_region(domains, self, expected, opening, work)?
-                == opened_region(domains, self, actual, opening, work)?)
+        Ok(matches!(
+            opening,
+            Opening::Relation { .. } | Opening::DefiningResult { .. }
+        ) || opened_region(domains, self, expected, opening, work)?
+            == opened_region(domains, self, actual, opening, work)?)
     }
     fn push_pair(
         &mut self,
@@ -625,7 +674,10 @@ fn callable_children(
         ) if au == bu
             && (ab == bb
                 || (domains.declaration_policies
-                    && matches!(opening, Opening::Relation { .. }))) =>
+                    && matches!(
+                        opening,
+                        Opening::Relation { .. } | Opening::DefiningResult { .. }
+                    ))) =>
         {
             Ok(((ac, bc), None))
         }

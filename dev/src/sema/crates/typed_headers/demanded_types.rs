@@ -466,6 +466,30 @@ impl<M: Storage> Worklist<M> {
 
         store.intern(kind).map(Demand::Ready).map_err(error)
     }
+    fn opaque_result_type<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        reference: s::OpaqueResultRef,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        let row = *port
+            .rows()
+            .cold()
+            .opaques
+            .applications
+            .get(reference.0 as usize)
+            .ok_or_else(|| error("unknown imported opaque result recipe"))?;
+        let id = port.opaque(row.declaration, row.ordinal, budget)?;
+        let captures = match self.arguments(port, store, row.captures, budget)? {
+            Demand::Ready(args) => args,
+            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+        };
+        store
+            .intern(Kind::Opaque(id, captures))
+            .map(Demand::Ready)
+            .map_err(error)
+    }
     fn projection_type<'rows, B: Budget, P: Port<'rows, B>>(
         &self,
         port: &mut P,
@@ -555,6 +579,9 @@ impl<M: Storage> Worklist<M> {
             }
             s::Type::OpaqueFuture(reference) => {
                 return self.opaque_type(port, store, reference, budget);
+            }
+            s::Type::OpaqueResult(reference) => {
+                return self.opaque_result_type(port, store, reference, budget);
             }
             s::Type::Projection(reference) => {
                 return self.projection_type(port, store, reference, budget);
@@ -806,6 +833,21 @@ fn next(
                 .chain(std::iter::once(row.output))
                 .nth(cursor)
         }
+        s::Type::OpaqueResult(reference) => {
+            let row = rows
+                .cold()
+                .opaques
+                .applications
+                .get(reference.0 as usize)
+                .ok_or_else(|| error("unknown opaque result dependencies"))?;
+            row.captures
+                .slice(&rows.arguments)
+                .map_err(error)?
+                .iter()
+                .copied()
+                .filter_map(type_child)
+                .nth(cursor)
+        }
         s::Type::Projection(reference) => {
             let row = rows
                 .projections
@@ -854,30 +896,36 @@ fn next(
             }
         }
         s::Type::FunctionItem(reference) | s::Type::ApplicationSignature(reference) => {
-            let application = rows
-                .function_applications
-                .get(reference.0 as usize)
-                .ok_or_else(|| error("source callable application has no actual argument row"))?;
-            // A const argument has no type child: its value's type is a
-            // primitive row, and a parameter term names a slot.
-            match application
-                .arguments
-                .slice(&rows.arguments)
-                .map_err(error)?
-                .iter()
-                .filter(|argument| !matches!(argument, s::Argument::Const(_)))
-                .nth(cursor)
-            {
-                Some(s::Argument::Type(root)) => Some(*root),
-                Some(s::Argument::Region(_)) => {
-                    return Err(error(
-                        "source application did not advance its regional argument",
-                    ));
-                }
-                Some(s::Argument::Const(_)) | None => None,
-            }
+            next_application(rows, reference, cursor)?
         }
     })
+}
+
+fn next_application(
+    rows: s::ValidatedView<'_>,
+    reference: s::FunctionApplicationRef,
+    cursor: usize,
+) -> Result<Option<g::TypeRef>, Error> {
+    let application = rows
+        .function_applications
+        .get(reference.0 as usize)
+        .ok_or_else(|| error("source callable application has no actual argument row"))?;
+    // A const argument has no type child: its value's type is a
+    // primitive row, and a parameter term names a slot.
+    match application
+        .arguments
+        .slice(&rows.arguments)
+        .map_err(error)?
+        .iter()
+        .filter(|argument| !matches!(argument, s::Argument::Const(_)))
+        .nth(cursor)
+    {
+        Some(s::Argument::Type(root)) => Ok(Some(*root)),
+        Some(s::Argument::Region(_)) => Err(error(
+            "source application did not advance its regional argument",
+        )),
+        Some(s::Argument::Const(_)) | None => Ok(None),
+    }
 }
 
 #[path = "non_type_applications.rs"]

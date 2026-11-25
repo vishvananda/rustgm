@@ -1,5 +1,5 @@
 //! Version eleven appends semantic operations; it never encodes executable CFGs.
-use super::{Input, Writer, address_read, address_write, g, id, range, s};
+use super::{Input, Writer, address_read, address_write, g, id, option, range, s};
 use crate::support::crates::{
     MAX_COMPONENTS,
     owner_catalog::{BodyRef, DeclarationRef},
@@ -17,6 +17,15 @@ pub(super) fn encode_operations(
     super::write(out, &rows.opaque_futures, opaque_write)?;
     super::write(out, &rows.compiler_operations, operation_write)
 }
+pub(super) fn encode_opaque_declarations(
+    out: &mut Writer,
+    rows: &[s::OpaqueDeclaration],
+) -> Result<(), &'static str> {
+    if rows.is_empty() {
+        return Err("source opaque result applications lack declarations");
+    }
+    super::write(out, rows, opaque_declaration_write)
+}
 pub(super) fn decode(
     read: &mut Input<'_, '_>,
     rows: &mut s::SourceRows,
@@ -31,6 +40,17 @@ pub(super) fn decode_operations(
 ) -> Result<(), &'static str> {
     rows.opaque_futures = read.list(MAX_COMPONENTS, 37, opaque_read)?;
     rows.compiler_operations = read.list(MAX_COMPONENTS, 21, operation_read)?;
+    Ok(())
+}
+pub(super) fn decode_opaque_declarations(
+    read: &mut Input<'_, '_>,
+    rows: &mut s::SourceRows,
+) -> Result<(), &'static str> {
+    let declarations = read.list(MAX_COMPONENTS, 22, opaque_declaration_read)?;
+    if declarations.is_empty() {
+        return Err("source opaque result applications lack declarations");
+    }
+    read.cold(rows)?.opaques.declarations = declarations;
     Ok(())
 }
 pub(super) fn associated_write(
@@ -137,5 +157,26 @@ fn operation_read(read: &mut Input<'_, '_>) -> Result<s::CompilerOperation, &'st
         future,
         output,
         kind,
+    })
+}
+fn opaque_declaration_write(
+    out: &mut Writer,
+    row: &s::OpaqueDeclaration,
+) -> Result<(), &'static str> {
+    id(out, row.declaration.0)?;
+    id(out, row.ordinal)?;
+    id(out, row.application.0)?;
+    range(out, row.bounds)?;
+    option(out, row.hidden.map(|ty| ty.0))?;
+    out.u8(row.flags.bits())
+}
+fn opaque_declaration_read(read: &mut Input<'_, '_>) -> Result<s::OpaqueDeclaration, &'static str> {
+    Ok(s::OpaqueDeclaration {
+        declaration: DeclarationRef(read.id()?),
+        ordinal: read.id()?,
+        application: g::TypeRef(read.id()?),
+        bounds: read.range()?,
+        hidden: read.option()?.map(g::TypeRef),
+        flags: s::OpaqueFlags::from_bits(read.reader.u8()?)?,
     })
 }

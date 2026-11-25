@@ -27,16 +27,7 @@ impl DomainIndex<'_, '_> {
                 Ok(())
             }
             s::InputKind::Membership { region, captures } => {
-                self.types
-                    .region(self.headers, &self.binders, context, region, work)?;
-                for capture in captures.slice(&self.headers.rows().arguments)? {
-                    let s::Argument::Region(region) = capture else {
-                        return Err("source membership captures must retain lifetime-only kinds");
-                    };
-                    self.types
-                        .region(self.headers, &self.binders, context, *region, work)?;
-                }
-                Ok(())
+                self.membership(context, region, captures, work)
             }
             s::InputKind::LocalBorrow(region) => {
                 self.types
@@ -82,5 +73,50 @@ impl DomainIndex<'_, '_> {
                     .region(self.headers, &self.binders, context, shorter, work)
             }
         }
+    }
+
+    fn membership(
+        &self,
+        context: Context,
+        region: s::RegionRef,
+        captures: crate::support::crates::generics::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        self.types
+            .region(self.headers, &self.binders, context, region, work)?;
+        let rows = self.headers.rows();
+        for &capture in captures.slice(&rows.arguments)? {
+            match capture {
+                s::Argument::Region(region) => {
+                    self.types
+                        .region(self.headers, &self.binders, context, region, work)?;
+                }
+                s::Argument::Type(ty) if self.declaration_policies => {
+                    self.types.root(self.headers, context, ty, work)?;
+                }
+                s::Argument::Const(term) if self.declaration_policies => {
+                    match rows.consts().get(term.0 as usize) {
+                        Some(&s::ConstTerm::Value(value)) => {
+                            self.types.root(self.headers, context, value.ty, work)?;
+                            s::const_value(&rows.types, value)?;
+                        }
+                        Some(&s::ConstTerm::Parameter(slot))
+                            if matches!(
+                                rows.slots.get(slot.0 as usize).map(|row| row.kind),
+                                Some(s::ParameterKind::Const { .. })
+                            ) && self.headers.scopes().contains(
+                                context.owner,
+                                slot,
+                                work,
+                            )? => {}
+                        _ => {
+                            return Err("source membership capture has a foreign const argument");
+                        }
+                    }
+                }
+                _ => return Err("source membership captures must retain lifetime-only kinds"),
+            }
+        }
+        Ok(())
     }
 }

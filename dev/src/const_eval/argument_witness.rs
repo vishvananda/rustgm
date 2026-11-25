@@ -160,14 +160,15 @@ fn check_operand(
         return Err("paid call argument differs from its complete signature");
     }
     let value = Machine::value(frame, value).map_err(|_| "paid call argument was not evaluated")?;
-    match facts.types.kind(parameter) {
+    let physical = Reader::new(facts).storage_type(parameter)?;
+    match facts.types.kind(physical) {
         Some(Kind::FunctionItem { .. })
-            if value.as_function() == Some(Instance::new(&facts.types, parameter)?) => {}
+            if value.as_function() == Some(Instance::new(&facts.types, physical)?) => {}
         Some(Kind::Primitive(_)) => {
             // Reuse the actual primitive codec's kind and width validity;
             // callback inputs need not equal each other or the result type.
             Reader::new(facts)
-                .encode_primitive(parameter, value)
+                .encode_primitive(physical, value)
                 .map_err(|_| "paid call scalar differs from its declared primitive type")?;
         }
         Some(Kind::Adt(..)) => {

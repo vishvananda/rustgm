@@ -953,7 +953,10 @@ fn body_inputs(
                 && matches!(obligation.kind, InputKind::ScopedWellFormed { frame, .. }
                     if rows.binders.get(frame.0 as usize).is_some_and(|b|
                         b.count == 0 || declaration_policies));
+            let supported_membership =
+                declaration_policies && matches!(obligation.kind, InputKind::Membership { .. });
             if !supported_scope
+                && !supported_membership
                 && matches!(
                     obligation.kind,
                     InputKind::Membership { .. } | InputKind::ScopedWellFormed { .. }

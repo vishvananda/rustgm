@@ -69,6 +69,15 @@ impl Builder<'_, '_> {
                         }
                     }
                 }
+                s::Type::OpaqueResult(reference) => {
+                    let row = rows
+                        .cold()
+                        .opaques
+                        .applications
+                        .get(reference.0 as usize)
+                        .ok_or("unknown source opaque result recipe")?;
+                    self.push_arguments(row.captures, work)?;
+                }
                 s::Type::Reference {
                     referent: child, ..
                 }
@@ -112,22 +121,30 @@ impl Builder<'_, '_> {
                 Scalar(_) | Foreign(_) | F16 | F128 | Never | Parameter(_) | Str => {}
             }
         } else {
-            let offset = node - self.result.type_count;
-            let arguments = if offset < self.result.function_count {
-                rows.function_applications[offset].arguments
-            } else {
-                let application = rows
-                    .trait_applications
-                    .get(offset - self.result.function_count)
-                    .ok_or("source trait application is unknown")?;
-                self.push_type(application.subject, work)?;
-                application.arguments
-            };
-            // A region argument has no separate type recipe child.
-            for argument in arguments.slice(&rows.arguments)?.iter().rev() {
-                work.charge(1)?;
-                self.push_argument(*argument, work)?;
-            }
+            self.application_dependencies(node - self.result.type_count, work)?;
+        }
+        Ok(())
+    }
+    fn application_dependencies(
+        &mut self,
+        offset: usize,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let arguments = if offset < self.result.function_count {
+            rows.function_applications[offset].arguments
+        } else {
+            let application = rows
+                .trait_applications
+                .get(offset - self.result.function_count)
+                .ok_or("source trait application is unknown")?;
+            self.push_type(application.subject, work)?;
+            application.arguments
+        };
+        // A region argument has no separate type recipe child.
+        for argument in arguments.slice(&rows.arguments)?.iter().rev() {
+            work.charge(1)?;
+            self.push_argument(*argument, work)?;
         }
         Ok(())
     }
@@ -172,6 +189,7 @@ impl Builder<'_, '_> {
         Ok(match rows.types[node] {
             s::Type::Projection(reference) => self.projection_summary(reference, work)?,
             s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
+            s::Type::OpaqueResult(reference) => self.opaque_result_summary(reference, work)?,
             s::Type::Dynamic(reference) => self.dynamic_summary(reference, work)?,
             s::Type::Scalar(_) | s::Type::Str | s::Type::Never => Summary::default(),
             s::Type::F16 | s::Type::F128 => {
@@ -502,6 +520,67 @@ impl Builder<'_, '_> {
             }
             result
         })
+    }
+    fn opaque_result_summary(
+        &self,
+        reference: s::OpaqueResultRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        if !self.profile.declaration_policies() {
+            return Err("source return-position opaque transport requires version fourteen");
+        }
+        let rows = self.headers.rows();
+        let opaques = &rows.cold().opaques;
+        let app = opaques
+            .applications
+            .get(reference.0 as usize)
+            .ok_or("unknown source opaque result recipe")?;
+        work.charge(opaques.declarations.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+        let decl_index = opaques
+            .declarations
+            .binary_search_by_key(&(app.declaration.0, app.ordinal), |row| {
+                (row.declaration.0, row.ordinal)
+            })
+            .map_err(|_| "source opaque result application lacks its declaration")?;
+        let decl = &opaques.declarations[decl_index];
+        let Some(&s::Type::OpaqueResult(canon_ref)) = rows.types.get(decl.application.0 as usize)
+        else {
+            return Err("source opaque declaration lacks its canonical application recipe");
+        };
+        let canon = opaques
+            .applications
+            .get(canon_ref.0 as usize)
+            .ok_or("unknown source canonical opaque application")?;
+        let captures = app.captures.slice(&rows.arguments)?;
+        let formals = canon.captures.slice(&rows.arguments)?;
+        if captures.len() != formals.len() {
+            return Err("source opaque application changed its capture arity");
+        }
+        let mut result = Summary::default();
+        for (argument, formal) in captures.iter().zip(formals) {
+            let child = match (*argument, *formal) {
+                (s::Argument::Type(ty), s::Argument::Type(_)) => self.child(ty, work)?,
+                (s::Argument::Region(region), s::Argument::Region(_)) => {
+                    self.region(region, work)?
+                }
+                (s::Argument::Const(term), s::Argument::Const(formal_term)) => {
+                    let Some(s::ConstTerm::Parameter(slot)) =
+                        rows.consts().get(formal_term.0 as usize)
+                    else {
+                        return Err("source opaque formal const capture is not a const slot");
+                    };
+                    let Some(s::ParameterKind::Const { ty }) =
+                        rows.slots.get(slot.0 as usize).map(|row| row.kind)
+                    else {
+                        return Err("source opaque formal const slot has an invalid kind");
+                    };
+                    self.const_summary(term, ty, work)?
+                }
+                _ => return Err("source opaque application changed its capture kind"),
+            };
+            result = self.merge(result, child, work)?;
+        }
+        Ok(result)
     }
     fn application(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();

@@ -406,6 +406,65 @@ impl Original<'_> {
             _ => Err("source const argument lost its actual canonical const slot"),
         }
     }
+    pub(crate) fn membership_captures(
+        &self,
+        facts: &Declarations,
+        captures: crate::support::crates::generics::Range,
+        steps: &mut usize,
+    ) -> Result<crate::types::GenericArgs, &'static str> {
+        charge(steps)?;
+        self.require_facts(facts)?;
+        let raw = captures.slice(&self.rows.arguments)?;
+        let ids = facts
+            .opaques
+            .owners
+            .get(&self.definition)
+            .ok_or("source membership obligation lacks an owned opaque declaration")?;
+        for &id in ids {
+            charge(steps)?;
+            let Some(declaration) = facts.opaques.declarations.get(&id) else {
+                continue;
+            };
+            let Some(crate::types::Kind::Opaque(_, candidate)) =
+                facts.types.kind(declaration.application)
+            else {
+                continue;
+            };
+            let Some(actual) = facts.types.arguments(candidate) else {
+                continue;
+            };
+            if actual.len() != raw.len() {
+                continue;
+            }
+            let mut matched = true;
+            for (expected, &wire) in actual.zip(raw) {
+                charge(steps)?;
+                let ok = match (expected, wire) {
+                    (Argument::Lifetime(a), s::Argument::Region(b)) => {
+                        a == self.region(b, steps)?
+                    }
+                    (Argument::Type(a), s::Argument::Type(b)) => a == self.ty(b, steps)?,
+                    (Argument::Const(a), s::Argument::Const(b)) => {
+                        match self.rows.consts().get(b.0 as usize) {
+                            Some(&s::ConstTerm::Parameter(slot)) => {
+                                a == self.const_argument(slot, steps)?
+                            }
+                            _ => false,
+                        }
+                    }
+                    _ => false,
+                };
+                if !ok {
+                    matched = false;
+                    break;
+                }
+            }
+            if matched {
+                return Ok(candidate);
+            }
+        }
+        Err("source membership captures do not match any owned opaque declaration")
+    }
     pub(crate) fn parameter(
         &self,
         reference: s::SlotRef,

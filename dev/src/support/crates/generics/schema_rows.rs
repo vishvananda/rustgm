@@ -245,6 +245,9 @@ pub enum Type {
     ApplicationSignature(FunctionApplicationRef),
     Projection(ProjectionRef),
     OpaqueFuture(OpaqueFutureRef),
+    /// Version fourteen: one application of a function's return-position
+    /// `impl Trait` opaque type, whose captures live in `ColdColumns::opaques`.
+    OpaqueResult(OpaqueResultRef),
     Dynamic(DynamicTypeRef),
     /// Version thirteen: a non-unit tuple whose element types are `roots`
     /// entries, in order. Unit keeps its scalar row.
@@ -801,6 +804,7 @@ pub struct ColdColumns {
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub declared_intrinsics: Vec<DeclaredIntrinsic>,
     pub comptime_functions: Vec<DeclarationRef>,
+    pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
@@ -831,6 +835,10 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     trait_aliases: Vec::new(),
     declared_intrinsics: Vec::new(),
     comptime_functions: Vec::new(),
+    opaques: OpaqueColumns {
+        applications: Vec::new(),
+        declarations: Vec::new(),
+    },
     statics: None,
     bodies: None,
 };
@@ -865,6 +873,7 @@ impl ColdColumns {
             && self.trait_aliases.is_empty()
             && self.declared_intrinsics.is_empty()
             && self.comptime_functions.is_empty()
+            && self.opaques.is_empty()
             && self.statics.is_none()
             && self.bodies.is_none()
     }

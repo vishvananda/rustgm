@@ -232,6 +232,31 @@ impl DomainIndex<'_, '_> {
                 }
             }
         }
+        self.opaque_declaration_roots(work)?;
+        Ok(())
+    }
+
+    fn opaque_declaration_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        for opaque in &rows.cold().opaques.declarations {
+            work.charge(1)?;
+            let Some(HeaderRef::Function(index)) = self.headers.header(opaque.declaration, work)?
+            else {
+                return Err("source opaque declaration lacks its actual function header");
+            };
+            let header = &rows.functions[index as usize];
+            let context = Context {
+                owner: header.scope,
+                frame: Some(header.original.binder),
+                body: None,
+            };
+            self.types
+                .root(self.headers, context, opaque.application, work)?;
+            self.requirements(context, opaque.bounds, work)?;
+            if let Some(hidden) = opaque.hidden {
+                self.types.root(self.headers, context, hidden, work)?;
+            }
+        }
         Ok(())
     }
 

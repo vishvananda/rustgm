@@ -79,6 +79,7 @@ impl Columns {
             || !cold.trait_aliases.is_empty()
             || !cold.declared_intrinsics.is_empty()
             || !cold.comptime_functions.is_empty()
+            || !cold.opaques.is_empty()
             || cold.statics.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
@@ -99,6 +100,7 @@ impl Columns {
                 trait_aliases: cold.trait_aliases.clone(),
                 declared_intrinsics: cold.declared_intrinsics.clone(),
                 comptime_functions: cold.comptime_functions.clone(),
+                opaques: cold.opaques.clone(),
                 statics: cold.statics.clone(),
                 bodies: None,
             })

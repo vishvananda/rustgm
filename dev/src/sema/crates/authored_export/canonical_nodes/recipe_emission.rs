@@ -278,7 +278,7 @@ impl Stage {
                 self.projection_recipe(facts, application, context)?
             }
             Kind::Opaque(id, captures) if self.compiler_operations => {
-                self.opaque_future(facts, id, captures, context)?
+                self.opaque_type(facts, id, captures, context)?
             }
             Kind::Adt(item, arguments) if self.nominal_transport() => s::Type::Nominal {
                 declaration: self.address(crate::resolve::model::DefId(item.0))?,

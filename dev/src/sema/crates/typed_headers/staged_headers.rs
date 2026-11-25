@@ -118,13 +118,14 @@ impl Stage {
                 )
                 .saturating_add(rows.clauses.len().saturating_mul(size_of::<Clause>())),
         )?;
-        let remap = predicate_remap::Context::new(
+        let mut remap = predicate_remap::Context::new(
             context.imported,
             context.catalog,
             context.descriptor,
             &graph,
             budget,
         )?;
+        graph.finish_opaque_results(context, &mut remap, facts, budget)?;
         let mut scopes = Vec::with_capacity(rows.scopes.len());
         let mut aliases = Requirements::default();
         let mut walk = Walk {

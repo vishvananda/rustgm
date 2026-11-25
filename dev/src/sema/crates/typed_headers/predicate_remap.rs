@@ -269,6 +269,44 @@ impl<'a> Context<'a> {
             .add(inputs.len() * size_of::<Input>() + 2 * size_of::<usize>());
         Ok(inputs)
     }
+    pub(super) fn opaque_bounds(
+        &mut self,
+        row: crate::support::crates::owner_catalog::DeclarationRef,
+        definition: DefId,
+        bounds: crate::support::crates::generics::Range,
+        store: &mut Store,
+        budget: &mut Headers,
+    ) -> Result<Vec<crate::types::parameters::clauses::Clause>, Error> {
+        let declaration = self.catalog.declaration(definition).map_err(error)?;
+        self.catalog
+            .validate_declaration(declaration, definition, DefKind::Function)
+            .map_err(error)?;
+        let (owner, actual, _) = self
+            .catalog
+            .declaration_coordinate(declaration)
+            .map_err(error)?;
+        if owner != self.descriptor.identity()
+            || actual != row
+            || self
+                .imported
+                .generic_definition(owner, row)
+                .map_err(error)?
+                != definition
+        {
+            return Err(error("opaque bounds changed their actual imported owner"));
+        }
+        let mut port = self.port(Some((row, declaration)));
+        let (inputs, _) = translation::inputs(
+            &mut port,
+            &mut self.applications,
+            row,
+            bounds,
+            None,
+            store,
+            budget,
+        )?;
+        Ok(inputs.iter().map(|input| input.value).collect())
+    }
     fn port(
         &self,
         site_owner: Option<(

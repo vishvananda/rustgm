@@ -1,0 +1,10 @@
+{
+  "features": ["auto_traits"],
+  "stdout": "42 7 27 19 88\n",
+  "older_profile": "source function early/captured callable frame transport is not implemented",
+  "restricted_client": {
+    "path": "leak_hidden.rs",
+    "rustc": "mismatched types",
+    "rustgm": "incompatible types"
+  }
+}

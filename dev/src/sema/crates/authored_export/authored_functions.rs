@@ -199,6 +199,9 @@ impl Stage {
         if self.rows.binders[original.binder.0 as usize].count != scheme.total {
             return Err("source original signature differs from its actual lifetime scheme");
         }
+        if self.declaration_policies() && facts.opaques.owners.contains_key(&function.definition) {
+            self.record_opaque_context(function.definition, context)?;
+        }
         let Some(Kind::FunctionItem {
             item, signature, ..
         }) = facts
@@ -238,19 +241,7 @@ impl Stage {
             .map_err(|_| "source declared clause count overflow")?,
             formals,
             receiver,
-            constness: if self.callable_effects() {
-                self.charge(if self.conversion_roles() { 20 } else { 4 })?;
-                let roles = RequiredRoles {
-                    conversions: self.conversion_roles(),
-                    callables: self.body_nodes(),
-                    declaration_policies: self.declaration_policies(),
-                };
-                written_constness(report, facts, function, roles)?
-            } else if facts.is_const_function(function.definition) {
-                Constness::Const
-            } else {
-                Constness::Ordinary
-            },
+            constness: self.function_constness(report, facts, function)?,
             body,
         };
         self.reserve(4 * size_of::<s::FunctionHeader>())?;
@@ -268,6 +259,27 @@ impl Stage {
         self.record_function_policies(facts, function.definition, declaration, body)?;
         self.rows.functions.push(header);
         Ok(())
+    }
+
+    fn function_constness(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        function: &crate::sema::model::Function,
+    ) -> Result<Constness, &'static str> {
+        if self.callable_effects() {
+            self.charge(if self.conversion_roles() { 20 } else { 4 })?;
+            let roles = RequiredRoles {
+                conversions: self.conversion_roles(),
+                callables: self.body_nodes(),
+                declaration_policies: self.declaration_policies(),
+            };
+            written_constness(report, facts, function, roles)
+        } else if facts.is_const_function(function.definition) {
+            Ok(Constness::Const)
+        } else {
+            Ok(Constness::Ordinary)
+        }
     }
 
     fn record_function_policies(

@@ -382,12 +382,15 @@ impl Source {
             if proof.key != input.key
                 || proof.source != input.source
                 || proof.instance.is_some()
-                || facts
-                    .generics
-                    .body_environment(function.definition)
-                    .is_none_or(|environment| {
+                || match facts.generics.body_environment(function.definition) {
+                    Some(environment) => {
                         !std::sync::Arc::ptr_eq(environment, &template.environment)
-                    })
+                    }
+                    None => {
+                        !(source.stage.declaration_policies()
+                            && facts.opaques.owners.contains_key(&function.definition))
+                    }
+                }
             {
                 return Err(
                     "source template lost its actual checked owner or defining environment",

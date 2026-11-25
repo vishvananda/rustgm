@@ -6,6 +6,8 @@ use crate::support::crates::owner_catalog::{BodyRef, DeclarationRef};
 pub struct ProjectionRef(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OpaqueFutureRef(pub u32);
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct OpaqueResultRef(pub u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CompilerOperationRef(pub u32);
 
@@ -71,4 +73,99 @@ pub struct CompilerOperation {
     pub future: TypeRef,
     pub output: TypeRef,
     pub kind: CompilerOperationKind,
+}
+
+/// One application of a function's return-position `impl Trait` opaque type.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OpaqueApplication {
+    pub declaration: DeclarationRef,
+    pub ordinal: u32,
+    pub captures: Range,
+}
+
+/// Schema flags of one v14 return-position `impl Trait` opaque declaration.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct OpaqueFlags(u8);
+impl OpaqueFlags {
+    pub const SIZED: u8 = 1;
+    pub const COPY: u8 = 2;
+    pub const CLONE: u8 = 4;
+    pub const TRAIT_RESULT: u8 = 8;
+
+    #[must_use]
+    pub const fn new(sized: bool, trait_result: bool) -> Self {
+        let mut bits = 0;
+        if sized {
+            bits |= Self::SIZED;
+        }
+        if trait_result {
+            bits |= Self::TRAIT_RESULT;
+        }
+        Self(bits)
+    }
+    #[must_use]
+    pub const fn with_copies(self, copy: bool, clone_: bool) -> Self {
+        let mut bits = self.0;
+        if copy {
+            bits |= Self::COPY;
+        }
+        if clone_ {
+            bits |= Self::CLONE;
+        }
+        Self(bits)
+    }
+    /// # Errors
+    /// Rejects unknown flag bits outside the four schema booleans.
+    pub const fn from_bits(bits: u8) -> Result<Self, &'static str> {
+        if bits & !15 != 0 {
+            return Err("unknown source opaque declaration flag");
+        }
+        Ok(Self(bits))
+    }
+    #[must_use]
+    pub const fn bits(self) -> u8 {
+        self.0
+    }
+    #[must_use]
+    pub const fn sized(self) -> bool {
+        self.0 & Self::SIZED != 0
+    }
+    #[must_use]
+    pub const fn copy(self) -> bool {
+        self.0 & Self::COPY != 0
+    }
+    #[must_use]
+    pub const fn clone_(self) -> bool {
+        self.0 & Self::CLONE != 0
+    }
+    #[must_use]
+    pub const fn trait_result(self) -> bool {
+        self.0 & Self::TRAIT_RESULT != 0
+    }
+}
+
+/// One v14 return-position `impl Trait` opaque declaration, owned by its
+/// defining function in that function's original signature frame.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OpaqueDeclaration {
+    pub declaration: DeclarationRef,
+    pub ordinal: u32,
+    pub application: TypeRef,
+    pub bounds: Range,
+    pub hidden: Option<TypeRef>,
+    pub flags: OpaqueFlags,
+}
+
+/// Out-of-line v14 opaque result applications (in type-row order) and
+/// canonical declarations (in `(declaration, ordinal)` order).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct OpaqueColumns {
+    pub applications: Vec<OpaqueApplication>,
+    pub declarations: Vec<OpaqueDeclaration>,
+}
+impl OpaqueColumns {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.applications.is_empty() && self.declarations.is_empty()
+    }
 }

@@ -57,7 +57,8 @@ def main():
                                  "source-private-c-import-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
-                                 "source-async-drop-transport"))
+                                 "source-async-drop-transport",
+                                 "source-rpit-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

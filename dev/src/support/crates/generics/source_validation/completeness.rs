@@ -57,6 +57,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     nominal_inputs(rows, &mut headers, &mut clauses, work)?;
     associated_headers(rows, &mut headers, &mut clauses, work)?;
     function_headers(rows, &mut headers, &mut clauses, work)?;
+    opaque_declarations(rows, &headers, &mut clauses, work)?;
     super::super::free_constants::headers(rows, &mut headers, work)?;
     alias_headers(rows, &mut headers, work)?;
     trait_alias_headers(rows, &mut headers, &mut clauses, work)?;
@@ -502,6 +503,38 @@ fn function_headers(
             header.declaration,
             header.inputs,
             header.declared_inputs,
+            None,
+            clauses,
+            work,
+        )?;
+    }
+    Ok(())
+}
+
+fn opaque_declarations(
+    rows: &SourceRows,
+    headers: &[Option<HeaderRef>],
+    clauses: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let mut previous = None;
+    for decl in &rows.cold().opaques.declarations {
+        work.charge(1)?;
+        let key = (decl.declaration.0, decl.ordinal);
+        if previous.is_some_and(|prior| prior >= key)
+            || !matches!(
+                headers.get(decl.declaration.0 as usize),
+                Some(Some(HeaderRef::Function(_)))
+            )
+        {
+            return Err("source opaque declaration lacks canonical order or a function owner");
+        }
+        previous = Some(key);
+        inputs(
+            rows,
+            decl.declaration,
+            decl.bounds,
+            decl.bounds.end.saturating_sub(decl.bounds.start),
             None,
             clauses,
             work,

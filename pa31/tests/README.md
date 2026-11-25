@@ -109,6 +109,12 @@ refusal.
 `spec/source-async-drop-transport/outcomes.json` checks v14 transport of
 `AsyncDrop`, `async_drop_in_place`, and required trait `async fn` opaque future
 signatures across fresh clients, plus v13 refusal.
+`spec/source-rpit-transport/outcomes.json` checks general v14 return-position
+`impl Trait` transport across fresh clients: lifetime-capturing inherent RPIT
+with a private concrete hidden type, `+ use<...>` precise captures,
+`impl [const] Trait` bounds evaluated at compile time, higher-ranked and
+conditional closure-returning helpers, hidden-type opacity enforcement, and v13
+refusal.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

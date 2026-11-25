@@ -225,7 +225,7 @@ fn obligation_kind(
             needs_provenance,
         },
         Kind::Membership { region, captures } => {
-            if facts.types.region_args(captures).is_none() {
+            if !stage.declaration_policies() && facts.types.region_args(captures).is_none() {
                 return Err("source membership captures must retain their lifetime-only kind");
             }
             s::InputKind::Membership {

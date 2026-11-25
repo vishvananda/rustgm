@@ -22,7 +22,8 @@ pub(super) fn reserve(
     budget.charge(
         rows.associated_types
             .len()
-            .saturating_add(rows.opaque_futures.len()),
+            .saturating_add(rows.opaque_futures.len())
+            .saturating_add(rows.cold().opaques.declarations.len()),
     )?;
     for header in &rows.associated_types {
         let definition = context.definition(header.declaration, budget)?;
@@ -73,6 +74,32 @@ pub(super) fn reserve(
                 trait_result: row.trait_result,
                 sized: true,
                 copies: copy::Properties::default(),
+            })
+            .map_err(error)?;
+        facts.opaques.owners.entry(owner).or_default().push(id);
+    }
+    for row in &rows.cold().opaques.declarations {
+        let owner = context.definition(row.declaration, budget)?;
+        let ordinal = row.ordinal as usize;
+        if facts.opaques.owners.get(&owner).map_or(0, Vec::len) != ordinal {
+            return Err(error(
+                "imported opaque declaration has a missing or reordered actual ordinal",
+            ));
+        }
+        budget.reserve(
+            crate::support::retained::new_map::<DefId, Vec<opaque::OpaqueId>>(1)
+                + 4 * size_of::<opaque::OpaqueId>()
+                + crate::types::Store::opaque_declaration_size(),
+        )?;
+        let id = facts
+            .types
+            .declare_opaque(opaque::Declaration {
+                trait_result: row.flags.trait_result(),
+                sized: row.flags.sized(),
+                copies: copy::Properties {
+                    copy: row.flags.copy(),
+                    clone_: row.flags.clone_(),
+                },
             })
             .map_err(error)?;
         facts.opaques.owners.entry(owner).or_default().push(id);
@@ -153,6 +180,63 @@ impl Graph {
                     application,
                     bounds,
                     hidden: None,
+                    inferred: None,
+                    free_regions: Vec::new(),
+                },
+            );
+        }
+        Ok(())
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn finish_opaque_results(
+        &self,
+        context: &Context<'_>,
+        remap: &mut super::super::predicate_remap::Context<'_>,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        let rows = context.descriptor.rows();
+        for row in &rows.cold().opaques.declarations {
+            let owner = context.definition(row.declaration, budget)?;
+            let id = *facts
+                .opaques
+                .owners
+                .get(&owner)
+                .and_then(|ids| ids.get(row.ordinal as usize))
+                .ok_or_else(|| error("imported opaque result lost its reserved identity"))?;
+            if facts.opaques.declarations.contains_key(&id) {
+                return Err(error(
+                    "imported opaque result collided with an existing declaration",
+                ));
+            }
+            let application = self.ty(row.application)?;
+            if !matches!(facts.types.kind(application), Some(Kind::Opaque(actual, _)) if actual == id)
+            {
+                return Err(error(
+                    "imported opaque result application belongs to another actual owner",
+                ));
+            }
+            let bounds = remap.opaque_bounds(
+                row.declaration,
+                owner,
+                row.bounds,
+                &mut facts.types,
+                budget,
+            )?;
+            let hidden = row.hidden.map(|ty| self.ty(ty)).transpose()?;
+            let origin = context.catalog.declaration(owner).map_err(error)?;
+            budget.reserve(
+                crate::support::retained::new_map::<opaque::OpaqueId, Declaration>(1)
+                    + bounds.capacity() * size_of::<Clause>(),
+            )?;
+            facts.opaques.declarations.insert(
+                id,
+                Declaration {
+                    owner,
+                    origin: DeclarationOrigin::Imported(origin),
+                    application,
+                    bounds,
+                    hidden,
                     inferred: None,
                     free_regions: Vec::new(),
                 },
@@ -347,6 +431,28 @@ impl Graph {
         let Some(s::HeaderRef::Function(index)) = rows.header(row)? else {
             return Err("imported opaque lost its actual function header");
         };
+        if descriptor.profile().declaration_policies()
+            && let Some(ordinal) = facts
+                .opaques
+                .owners
+                .get(&declaration.owner)
+                .and_then(|ids| ids.iter().position(|&actual| actual == id))
+                .and_then(|ordinal| u32::try_from(ordinal).ok())
+            && let Ok(decl_index) = rows
+                .cold()
+                .opaques
+                .declarations
+                .binary_search_by_key(&(row.0, ordinal), |entry| {
+                    (entry.declaration.0, entry.ordinal)
+                })
+        {
+            return self.require_opaque_result(
+                facts,
+                id,
+                declaration,
+                rows.cold().opaques.declarations[decl_index],
+            );
+        }
         let function = &rows.functions[index as usize];
         let Some(s::Type::OpaqueFuture(reference)) =
             rows.types.get(function.original.result.0 as usize)
@@ -400,6 +506,45 @@ impl Graph {
             expected_future,
             expected_output,
         )
+    }
+
+    fn require_opaque_result(
+        &self,
+        facts: &Declarations,
+        id: opaque::OpaqueId,
+        declaration: &Declaration,
+        expected: s::OpaqueDeclaration,
+    ) -> Result<(), &'static str> {
+        let schema = facts
+            .types
+            .opaque_declaration(id)
+            .ok_or("imported opaque result lost its declared canonical schema")?;
+        let application = self
+            .ty(expected.application)
+            .map_err(|_| "imported opaque result canonical application is unavailable")?;
+        let hidden = expected
+            .hidden
+            .map(|ty| {
+                self.ty(ty)
+                    .map_err(|_| "imported opaque result hidden type is unavailable")
+            })
+            .transpose()?;
+        let bound_count = expected.bounds.end.saturating_sub(expected.bounds.start) as usize;
+        if declaration.application != application
+            || declaration.hidden != hidden
+            || declaration.inferred.is_some()
+            || !declaration.free_regions.is_empty()
+            || declaration.bounds.len() != bound_count
+            || schema.trait_result != expected.flags.trait_result()
+            || schema.sized != expected.flags.sized()
+            || schema.copies.copy != expected.flags.copy()
+            || schema.copies.clone_ != expected.flags.clone_()
+        {
+            return Err(
+                "imported opaque result changed its actual application, schema, hidden type or bounds",
+            );
+        }
+        Ok(())
     }
     fn opaque_future_roles(
         &self,

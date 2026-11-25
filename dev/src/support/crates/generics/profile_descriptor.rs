@@ -680,6 +680,9 @@ fn require_source_profile(
     if !profile.declaration_policies() && !rows.cold().comptime_functions.is_empty() {
         return Err("always-comptime source contracts require a wider transport profile");
     }
+    if !profile.declaration_policies() && !rows.cold().opaques.is_empty() {
+        return Err("source return-position opaque transport requires version fourteen");
+    }
     super::inherent_contracts::require_profile(rows, profile, work)?;
     super::operation_contracts::require_profile(rows, profile, work)?;
     safety_profile::require_profile(rows, profile, work)?;

@@ -228,10 +228,50 @@ fn same_self(
             (s::Type::Dynamic(left), s::Type::Dynamic(right)) => {
                 same_dynamic(rows, frames, (left, right), &mut pending, work)?;
             }
+            (s::Type::OpaqueResult(left), s::Type::OpaqueResult(right)) => {
+                same_opaque(rows, frames, (left, right), &mut pending, work)?;
+            }
             _ => return Err(error),
         }
     }
     Ok(())
+}
+
+fn same_opaque(
+    rows: &SourceRows,
+    frames: Frames,
+    (left, right): (s::OpaqueResultRef, s::OpaqueResultRef),
+    pending: &mut Vec<(TypeRef, TypeRef)>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "source method receiver differs from its actual implementation Self";
+    let apps = &rows.cold().opaques.applications;
+    let (Some(left), Some(right)) = (apps.get(left.0 as usize), apps.get(right.0 as usize)) else {
+        return Err(error);
+    };
+    if left.declaration != right.declaration || left.ordinal != right.ordinal {
+        return Err(error);
+    }
+    same_nominal(
+        rows,
+        frames,
+        (
+            s::DeclarationAddress {
+                artifact: s::ArtifactRef(0),
+                declaration: left.declaration,
+            },
+            left.captures,
+        ),
+        (
+            s::DeclarationAddress {
+                artifact: s::ArtifactRef(0),
+                declaration: right.declaration,
+            },
+            right.captures,
+        ),
+        pending,
+        work,
+    )
 }
 
 fn same_nominal(

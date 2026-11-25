@@ -126,7 +126,8 @@ impl<'a, 'b> Expected<'a, 'b> {
             .map(move |mut index| {
                 *steps = steps.saturating_add(1);
                 if index < record.obligations.len() {
-                    return obligation(self.view, record.obligations[index], steps).map(Some);
+                    return obligation(self.facts, self.view, record.obligations[index], steps)
+                        .map(Some);
                 }
                 index -= record.obligations.len();
                 let ty = if index < record.parameters.len() {
@@ -386,6 +387,16 @@ fn declared_result(
     steps: &mut usize,
 ) -> Result<Option<Obligation>, &'static str> {
     let rows = view.rows();
+    if rows.descriptor().profile().declaration_policies()
+        && rows
+            .cold()
+            .opaques
+            .declarations
+            .binary_search_by_key(&view.raw().declaration.0, |row| row.declaration.0)
+            .is_ok()
+    {
+        return Ok(None);
+    }
     let result = match rows.header(view.raw().declaration)? {
         Some(s::HeaderRef::Function(index)) => rows.functions[index as usize].original.result,
         Some(s::HeaderRef::Constant(index)) => rows.constants()[index as usize].ty,
@@ -482,6 +493,7 @@ fn copy_queries(
     Ok(Arc::new(SourceCopyRequirements { declaration, goals }))
 }
 fn obligation(
+    facts: &Declarations,
     view: &SourceOriginal<'_>,
     record: s::Obligation,
     steps: &mut usize,
@@ -495,6 +507,15 @@ fn obligation(
             Kind::Variable {
                 id: view.variable(slot, steps)?,
                 needs_provenance,
+            }
+        }
+        s::InputKind::Membership { region, captures }
+            if view.rows().descriptor().profile().declaration_policies() =>
+        {
+            super::regional_records::require(view)?;
+            Kind::Membership {
+                region: view.region(region, steps)?,
+                captures: view.membership_captures(facts, captures, steps)?,
             }
         }
         s::InputKind::LocalBorrow(region) => {
@@ -773,6 +794,16 @@ fn same_kind(actual: Kind, expected: Kind) -> bool {
                 needs_provenance: bp,
             },
         ) => a == b && ap == bp,
+        (
+            Kind::Membership {
+                region: a,
+                captures: ac,
+            },
+            Kind::Membership {
+                region: b,
+                captures: bc,
+            },
+        ) => a == b && ac == bc,
         (Kind::LocalBorrow(a), Kind::LocalBorrow(b)) => a == b,
         (Kind::Equality(actual), Kind::Equality(expected))
         | (Kind::Outlives(actual), Kind::Outlives(expected)) => actual == expected,

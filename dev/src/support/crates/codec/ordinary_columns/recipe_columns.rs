@@ -10,11 +10,14 @@ const SCALAR_RANGE: u8 = 1;
 /// Version thirteen's array type recipe tag, followed by its element and its
 /// length's const term.
 const ARRAY: u8 = 14;
+/// Version fourteen's return-position opaque application tag, written in place.
+const OPAQUE_RESULT: u8 = 21;
 /// The out-of-line columns some type rows write in place.
 pub(super) struct TypeColumns<'a> {
     pub ranges: &'a [s::PatternRange],
     pub lengths: &'a [s::ConstTerm],
     pub dynamics: &'a s::DynamicColumns,
+    pub opaques: &'a [s::OpaqueApplication],
 }
 /// Every type row, with each range pattern's endpoints and each array's
 /// length term written in place. Both columns are dense in type-row order,
@@ -27,6 +30,7 @@ pub(super) fn types_write(
     out.u32(rows.len())?;
     let mut next = 0_usize;
     let mut lengths = 0_usize;
+    let mut opaques = 0_usize;
     let mut dynamics = existential_wire::Encoder::default();
     for row in rows {
         if let s::Type::Array { element, length } = *row {
@@ -58,6 +62,17 @@ pub(super) fn types_write(
             }
         } else if let s::Type::Dynamic(reference) = *row {
             dynamics.row(out, reference, columns.dynamics)?;
+        } else if let s::Type::OpaqueResult(reference) = *row {
+            let app = columns
+                .opaques
+                .get(opaques)
+                .filter(|_| reference.0 as usize == opaques)
+                .ok_or("source opaque result recipes are not in type-row order")?;
+            out.u8(OPAQUE_RESULT)?;
+            id(out, app.declaration.0)?;
+            id(out, app.ordinal)?;
+            range(out, app.captures)?;
+            opaques += 1;
         } else {
             type_write(out, row)?;
         }
@@ -67,6 +82,9 @@ pub(super) fn types_write(
     }
     if lengths != columns.lengths.len() {
         return Err("source array length has no type row");
+    }
+    if opaques != columns.opaques.len() {
+        return Err("source opaque result application has no type row");
     }
     dynamics.finish(columns.dynamics)
 }
@@ -137,6 +155,7 @@ fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
         }
         s::Type::Pattern { .. } => Err("source pattern type requires its range table"),
         s::Type::Dynamic(_) => Err("source dynamic type requires its bound columns"),
+        s::Type::OpaqueResult(_) => Err("source opaque result requires its application table"),
         s::Type::Array { .. } => Err("source array type requires its length table"),
     }
 }
@@ -146,6 +165,7 @@ pub(super) struct TypeTables {
     pub ranges: Vec<s::PatternRange>,
     pub lengths: Vec<s::ConstTerm>,
     pub dynamics: s::DynamicColumns,
+    pub opaques: Vec<s::OpaqueApplication>,
 }
 /// One type row. A range pattern's endpoints and an array's length term are
 /// appended to their tables, and the row names them by position.
@@ -156,6 +176,18 @@ pub(super) fn type_read(
     Ok(match read.reader.u8()? {
         existential_wire::TAG if read.profile.declaration_policies() => {
             existential_wire::read(read, &mut tables.dynamics)?
+        }
+        OPAQUE_RESULT if read.profile.declaration_policies() => {
+            let app = s::OpaqueApplication {
+                declaration: DeclarationRef(read.id()?),
+                ordinal: read.id()?,
+                captures: read.range()?,
+            };
+            read.reserve(size_of::<s::OpaqueApplication>())?;
+            let reference = u32::try_from(tables.opaques.len())
+                .map_err(|_| "source opaque result table overflow")?;
+            tables.opaques.push(app);
+            s::Type::OpaqueResult(s::OpaqueResultRef(reference))
         }
         ARRAY if read.profile.body_nodes() => {
             let element = g::TypeRef(read.id()?);
