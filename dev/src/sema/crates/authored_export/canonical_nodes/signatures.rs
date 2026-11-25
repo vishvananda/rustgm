@@ -116,6 +116,9 @@ impl Stage {
         let closed = !initializer
             && facts.types.needs_region_context(ty) == Some(false)
             && facts.types.contains_parameters(ty) == Some(false)
+            // Named item handles belong to the actual caller body, even when
+            // their callable signature has no anonymous binder or region.
+            && facts.types.contains_function_items(ty) == Some(false)
             && !nested;
         let key = if closed { shared } else { local };
         let (parent, purpose) = if closed {

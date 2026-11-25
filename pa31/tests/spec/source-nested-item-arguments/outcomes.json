@@ -1,0 +1,21 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": [
+    "auto_traits",
+    "const_destruct"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "escape.rs",
+    "observe.c"
+  ],
+  "stdout": "11 22 11 22 77 22\n",
+  "older_profile": "nested callable source arguments require a wider transport profile",
+  "restricted_client": {
+    "path": "escape.rs",
+    "rustc": "lifetime may not live long enough",
+    "rustgm": "required lifetime does not outlive its target"
+  },
+  "older_profile_cfg": "old_nested_items"
+}

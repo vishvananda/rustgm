@@ -234,9 +234,16 @@ impl<'a, 'index, 'rows> Builder<'a, 'index, 'rows> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let node = self.node(original, ty, work)?;
-        if !self.arena.intrinsically_formed(node, work)?
-            && !self.coverage.formed(original.body, node, work)?
-        {
+        let formed = self.arena.intrinsically_formed(node, work)?
+            || self.coverage.formed(original.body, node, work)?
+            || (self.domains.declaration_policies
+                && self.coverage.item_container_formed(
+                    &mut self.arena,
+                    original.body,
+                    node,
+                    work,
+                )?);
+        if !formed {
             return Err("source operation omitted a required nontrivial formation input");
         }
         self.emit(

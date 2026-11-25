@@ -1957,3 +1957,12 @@ native observations and rejects a runtime call to the comptime function.
 Version 13 must refuse these defining bodies. Run
 `scripts/check_source_artifact_clients.py --case source-comptime-call-transport`
 with the prebuilt compilers.
+
+`spec/source-nested-item-arguments/outcomes.json` declares composition of named
+function-item types in version-14 function application arguments. Its fresh
+native clients pass tuples, nominal wrappers, arrays, and references through a
+generic identity function, distinguish two function identities, and preserve a
+late-bound reference result. Pinned rustc checks all six observations and the
+escaping-lifetime rejection; version 13 keeps its callable-argument refusal.
+Run `scripts/check_source_artifact_clients.py --case source-nested-item-arguments`
+with the prebuilt compilers.

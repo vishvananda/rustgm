@@ -312,6 +312,30 @@ impl Arena {
             .map(NodeFacts::formed)
             .ok_or("source formation node is unknown")
     }
+    // Only item-dependent structural containers compose retained formation.
+    // Nominals, projections, closures and callable signatures keep their own
+    // declaration/binder obligations rather than inheriting child permission.
+    pub(super) fn item_container_children(
+        &self,
+        node: NodeId,
+        work: &mut Work,
+    ) -> Result<Option<(NodeId, Option<NodeId>)>, &'static str> {
+        if self.facts_of(node, work)?.0 & NodeFacts::ITEM == 0 {
+            return Ok(None);
+        }
+        Ok(match self.nodes[node.0 as usize] {
+            Node::Reference {
+                referent: child, ..
+            }
+            | Node::RawPointer { pointee: child, .. }
+            | Node::Slice(child)
+            | Node::Pattern { base: child, .. }
+            | Node::Tuple { elements: child } => Some((child, None)),
+            Node::Array { element, length } => Some((element, Some(length))),
+            Node::NominalArgument { ty, next } => Some((ty, Some(next))),
+            _ => None,
+        })
+    }
     pub(super) fn intern(&mut self, node: Node, work: &mut Work) -> Result<NodeId, &'static str> {
         work.charge(1)?;
         if let Some(&id) = self.interned.get(&node) {

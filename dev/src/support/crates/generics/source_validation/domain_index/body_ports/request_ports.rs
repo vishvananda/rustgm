@@ -221,7 +221,9 @@ impl DomainIndex<'_, '_> {
             .values
             .get(callee as usize)
             .ok_or("source Call callee is unknown")?;
-        if callee.kind != s::ValueKind::Function(request.target)
+        // A field/local read still carries the exact function-item application;
+        // keep the operand read so ownership and evaluation remain ordinary.
+        if (!self.declaration_policies && callee.kind != s::ValueKind::Function(request.target))
             || rows.types.get(callee.ty.0 as usize) != Some(&s::Type::FunctionItem(request.target))
         {
             return Err("source direct Call lost its actual function/application operand");

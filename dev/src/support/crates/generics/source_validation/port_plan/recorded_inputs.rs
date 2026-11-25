@@ -265,6 +265,71 @@ impl Coverage {
         work.charge(1)?;
         Ok(self.formed.contains(&(body, ty)))
     }
+    /// Derive a container's request from its actual retained item formations.
+    /// Successful DAG nodes are memoized per original, never as paid proof.
+    pub(super) fn item_container_formed(
+        &mut self,
+        arena: &mut Arena,
+        body: BodyRef,
+        ty: NodeId,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let mut pending = Vec::new();
+        let result = self.compose_items(arena, body, ty, &mut pending, work);
+        arena.set_scratch(0, work)?;
+        result
+    }
+    fn compose_items(
+        &mut self,
+        arena: &mut Arena,
+        body: BodyRef,
+        ty: NodeId,
+        pending: &mut Vec<(NodeId, bool)>,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        Self::push_formation(arena, pending, (ty, false), work)?;
+        while let Some((node, finish)) = pending.pop() {
+            if arena.intrinsically_formed(node, work)? || self.formed(body, node, work)? {
+                continue;
+            }
+            if finish {
+                arena.reserve(retained::new_map::<(BodyRef, NodeId), ()>(1), 0, work)?;
+                self.formed.insert((body, node));
+            } else if let Some((first, second)) = arena.item_container_children(node, work)? {
+                Self::push_formation(arena, pending, (node, true), work)?;
+                for child in second.into_iter().chain([first]) {
+                    Self::push_formation(arena, pending, (child, false), work)?;
+                }
+            } else {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+    fn push_formation(
+        arena: &mut Arena,
+        pending: &mut Vec<(NodeId, bool)>,
+        task: (NodeId, bool),
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(1)?;
+        if pending.len() == pending.capacity() {
+            arena.set_scratch(
+                pending
+                    .len()
+                    .saturating_add(1)
+                    .max(4)
+                    .saturating_mul(4)
+                    .saturating_mul(size_of::<(NodeId, bool)>()),
+                work,
+            )?;
+            pending
+                .try_reserve(1)
+                .map_err(|_| "source formation stack allocation failed")?;
+        }
+        pending.push(task);
+        Ok(())
+    }
     pub(super) fn local_borrow(
         &self,
         body: BodyRef,

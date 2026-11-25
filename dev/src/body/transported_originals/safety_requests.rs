@@ -42,7 +42,10 @@ pub(super) fn check(
             .get(callee.0 as usize)
             .ok_or("source call safety has no actual function operand")?;
         let target = view.function(request.target, &mut work.steps)?;
-        if !matches!(callee.kind, Rvalue::Function(definition) if definition == target) {
+        let literal = matches!(callee.kind, Rvalue::Function(definition) if definition == target);
+        let typed = view.rows().descriptor().profile().declaration_policies()
+            && matches!(facts.types.kind(callee.ty), Some(Kind::FunctionItem { item, .. }) if item.0 == target.0);
+        if !(literal || typed) {
             return Err("source call safety changed its actual selected declaration");
         }
         if !safe_target_call(facts, caller_policy, target, unsafe_, request.safety)? {

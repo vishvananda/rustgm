@@ -145,3 +145,90 @@ fn actual_projection_declarations_keep_their_wider_transport_requirement() -> Re
     );
     Ok(())
 }
+
+fn restage_items(
+    interface: &crates::Interface,
+    rows: s::SourceRows,
+    work: &mut g::Work,
+) -> Result<std::result::Result<g::Payload, &'static str>> {
+    let (_, attributes, modules) = crate::module_packets::raw(interface)?;
+    Ok(g::Payload::from_source_module_body_operations(
+        interface.identity(),
+        rows,
+        attributes,
+        modules,
+        interface
+            .source_descriptor()
+            .ok_or("actual nested item descriptor")?
+            .availability()?
+            .clone(),
+        0,
+        work,
+    ))
+}
+
+#[test]
+fn nested_item_ownership_rejects_orphans_and_scales_with_shared_requests() -> Result {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let mut extra =
+            String::from("fn leaf(x:u8)->u8{x}fn pass<T>(x:T)->T{x}pub fn calls()->u8{");
+        for _ in 0..width {
+            extra.push_str("let(f,)=pass((leaf,));let _=f(7);");
+        }
+        extra.push_str("1}");
+        let interface = crate::module_packets::exported_profile(
+            &source(&extra)?,
+            crate::lower::instances::SourcePublication::ModuleBodyOperations,
+            "nested_item_ownership",
+        )?;
+        let (rows, _, _) = crate::module_packets::raw(&interface)?;
+        let mut work = g::Work::default();
+        restage_items(&interface, rows.clone(), &mut work)??;
+        if let Some(before) = previous {
+            assert!(work.steps <= 5 * before);
+        }
+        previous = Some(work.steps);
+
+        let mut missing = rows.clone();
+        for input in &mut missing.body_inputs {
+            input.obligations.retain(|input| {
+                !matches!(input.kind, s::InputKind::WellFormed(ty)
+                    if matches!(rows.types[ty.0 as usize], s::Type::FunctionItem(_)))
+            });
+        }
+        assert_eq!(
+            restage_items(&interface, missing, &mut g::Work::default())?.err(),
+            Some("source operation omitted a required nontrivial formation input")
+        );
+
+        // This well-formed pass::<u8> application is not requested by a body
+        // or retained formation. An existing nested leaf cannot own a peer.
+        let mut changed = rows;
+        let declaration = raw_header(&changed, "pass")?.declaration;
+        let scalar = changed
+            .types
+            .iter()
+            .position(|ty| *ty == s::Type::Scalar(crates::Scalar::U8))
+            .ok_or("actual u8 recipe")?;
+        let start = u32::try_from(changed.arguments.len())?;
+        changed
+            .arguments
+            .push(s::Argument::Type(g::TypeRef(u32::try_from(scalar)?)));
+        changed.function_applications.push(s::FunctionApplication {
+            declaration: s::DeclarationAddress {
+                artifact: s::ArtifactRef(0),
+                declaration,
+            },
+            arguments: g::Range {
+                start,
+                end: start + 1,
+            },
+        });
+        assert_eq!(
+            restage_items(&interface, changed, &mut g::Work::default())?.err(),
+            Some("source application has no actual owning header/body request")
+        );
+    }
+    Ok(())
+}

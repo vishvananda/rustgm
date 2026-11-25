@@ -214,12 +214,11 @@ impl Stage {
             self.charge(1)?;
             match argument {
                 crate::types::arguments::Argument::Type(ty) => {
-                    let has_callable = facts.types.contains_function_items(ty) != Some(false)
-                        || facts.types.contains_anonymous_callables(ty) != Some(false);
-                    if has_callable
-                        && !(self.declaration_policies()
-                            && (facts.types.contains_function_items(ty) == Some(false)
-                                || matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. }))))
+                    // Version fourteen composes existing function-item recipes
+                    // through containers; each leaf retains its actual declaration.
+                    if !self.declaration_policies()
+                        && (facts.types.contains_function_items(ty) != Some(false)
+                            || facts.types.contains_anonymous_callables(ty) != Some(false))
                     {
                         return Err(
                             "nested callable source arguments require a wider transport profile",
