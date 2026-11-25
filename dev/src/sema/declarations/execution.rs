@@ -316,27 +316,7 @@ impl Checker<'_> {
                 (DefId(item.0), None)
             }
             Requirement::InitializerBody(definition) => {
-                let source = self.report.resolution.definitions[definition.0 as usize]
-                    .node
-                    .ok_or_else(|| {
-                        Error::at(FileId(0), 0, "missing constant declaration source")
-                    })?;
-                if phase == Phase::Begin {
-                    if !self.execution_bodies.active.insert(definition) {
-                        self.census_abandoned_body(definition);
-                        return Err(self.error(source, "cycle in required initializer bodies"));
-                    }
-                    self.work.push(Work::Execution(
-                        Request::Constant(requirement),
-                        Phase::Prepared,
-                    ));
-                    self.require_initializer_readiness(source, definition)?;
-                    return Ok(None);
-                }
-                let index = self.facts.initializer_index(definition).ok_or_else(|| {
-                    self.error(source, "missing required initializer declaration")
-                })?;
-                (definition, Some(index))
+                return self.initializer_owner(definition, requirement, phase);
             }
             Requirement::SourceAssociatedBody(source) => {
                 let (_, original) = source
@@ -363,5 +343,47 @@ impl Checker<'_> {
             }
         };
         Ok(Some(owner))
+    }
+
+    fn initializer_owner(
+        &mut self,
+        definition: DefId,
+        requirement: Requirement,
+        phase: Phase,
+    ) -> Result<Option<(DefId, Option<usize>)>, Error> {
+        let Some(source) = self.report.resolution.definitions[definition.0 as usize].node else {
+            if crate::sema::crates::imported_constant_initializer(
+                self.report,
+                &self.facts,
+                definition,
+            )
+            .map_err(Error::unlocated)?
+            .is_some()
+            {
+                return Ok(None);
+            }
+            return Err(Error::at(
+                FileId(0),
+                0,
+                "missing constant declaration source",
+            ));
+        };
+        if phase == Phase::Begin {
+            if !self.execution_bodies.active.insert(definition) {
+                self.census_abandoned_body(definition);
+                return Err(self.error(source, "cycle in required initializer bodies"));
+            }
+            self.work.push(Work::Execution(
+                Request::Constant(requirement),
+                Phase::Prepared,
+            ));
+            self.require_initializer_readiness(source, definition)?;
+            return Ok(None);
+        }
+        let index = self
+            .facts
+            .initializer_index(definition)
+            .ok_or_else(|| self.error(source, "missing required initializer declaration"))?;
+        Ok(Some((definition, Some(index))))
     }
 }

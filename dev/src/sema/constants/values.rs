@@ -455,6 +455,25 @@ impl<'a> Evaluator<'a> {
                     )
                 });
         }
+        if self.queries.typing.facts.initializer_index(id).is_none()
+            && crate::sema::crates::imported_constant_initializer(
+                self.queries.report,
+                self.queries.typing.facts,
+                id,
+            )
+            .map_err(Error::unlocated)?
+            .is_some()
+        {
+            if let Some(value) = Reader::new(self.queries.typing.facts).definition(id) {
+                return Ok(value);
+            }
+            let value = self.associated(crate::sema::values::Instance {
+                definition: id,
+                arguments: crate::types::GenericArgs::EMPTY,
+            })?;
+            self.complete_definition(id, value);
+            return Ok(value);
+        }
         self.named(id, false)
     }
     /// Evaluate one selected associated initializer in its complete argument context.

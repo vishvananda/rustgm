@@ -50,9 +50,19 @@ fn place_value(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'st
         }
         ir::Rvalue::Read(target) => s::ValueKind::Read(place(stage, target)?),
         ir::Rvalue::Borrow {
+            place: ir::Place::Temporary(value),
+            kind: ir::BorrowKind::Immediate,
+        } if stage.declaration_policies() => s::ValueKind::Borrow(s::Place::Temporary(value.0)),
+        ir::Rvalue::Borrow {
             place: target,
             kind: ir::BorrowKind::Immediate,
         } => s::ValueKind::Borrow(place(stage, target)?),
+        ir::Rvalue::Borrow {
+            place: ir::Place::Temporary(value),
+            kind: ir::BorrowKind::TwoPhase,
+        } if stage.declaration_policies() => {
+            s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(value.0))
+        }
         ir::Rvalue::Borrow {
             place: target,
             kind: ir::BorrowKind::TwoPhase,
@@ -150,7 +160,11 @@ fn item(
         } if stage.declaration_policies()
             && matches!(
                 facts.types.kind(value.ty),
-                Some(crate::types::Kind::Tuple(_))
+                Some(
+                    crate::types::Kind::Tuple(_)
+                        | crate::types::Kind::Array { .. }
+                        | crate::types::Kind::ArrayTerm { .. }
+                )
             ) =>
         {
             Ok(s::ValueKind::Aggregate {

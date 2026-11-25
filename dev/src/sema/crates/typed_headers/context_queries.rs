@@ -135,15 +135,21 @@ impl super::super::Linkage {
         facts: &Declarations,
         definition: DefId,
     ) -> Result<Option<crate::resolve::body_origin::BodyOrigin>, &'static str> {
-        use crate::support::crates::generics::source::ConstantBody;
-        let Some((_, ConstantBody::Original(raw))) =
-            self.source_associated_constant(facts, definition)?
-        else {
+        let Some(headers) = self.originals.as_deref() else {
+            return Ok(None);
+        };
+        let Some(ImportedOwners::Ordinary(graph)) = headers.source.as_ref() else {
             return Ok(None);
         };
         let catalog = self
             .origin_catalog()
             .ok_or("imported initializer lost its declaration catalog")?;
+        headers
+            .charge(6)
+            .map_err(|_| "source constant lookup exceeds header work budget")?;
+        let Some(raw) = graph.constant_original(catalog, facts, definition)? else {
+            return Ok(None);
+        };
         let (owner, _, _) = catalog.declaration_coordinate(catalog.declaration(definition)?)?;
         catalog.origin(catalog.body_at(owner, raw)?).map(Some)
     }

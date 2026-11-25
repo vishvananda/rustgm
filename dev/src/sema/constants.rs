@@ -1076,6 +1076,20 @@ impl Queries<'_> {
                     {
                         return Ok(Expression::ForeignStatic(id));
                     }
+                    if self.typing.facts.initializer_index(id).is_none()
+                        && crate::sema::crates::imported_constant_initializer(
+                            self.report,
+                            self.typing.facts,
+                            id,
+                        )
+                        .map_err(|e| self.error(query, e))?
+                        .is_some()
+                    {
+                        return Ok(Expression::Instance(values::Instance {
+                            definition: id,
+                            arguments: crate::types::GenericArgs::EMPTY,
+                        }));
+                    }
                     let index = self.typing.facts.initializer_index(id).ok_or_else(|| {
                         self.error(query, "constant expression cannot read this declaration")
                     })?;

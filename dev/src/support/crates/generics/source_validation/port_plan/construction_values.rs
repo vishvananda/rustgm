@@ -230,12 +230,16 @@ impl Builder<'_, '_, '_> {
         fields: g::Range,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        if variant.is_none()
-            && self.domains.declaration_policies
-            && let Some(&s::Type::Tuple(elements)) =
-                self.domains.headers.rows().types.get(ty.0 as usize)
-        {
-            return self.tuple_value(original, elements, fields, work);
+        if variant.is_none() && self.domains.declaration_policies {
+            match self.domains.headers.rows().types.get(ty.0 as usize) {
+                Some(&s::Type::Tuple(elements)) => {
+                    return self.tuple_value(original, elements, fields, work);
+                }
+                Some(&s::Type::Array { element, length }) => {
+                    return self.array_value(original, element, length, fields, work);
+                }
+                _ => {}
+            }
         }
         let base = self.node(original, ty, work)?;
         let Some(Node::Nominal { declaration, .. }) =
@@ -304,6 +308,34 @@ impl Builder<'_, '_, '_> {
             let actual = self.node(original, original.values[value as usize].ty, work)?;
             if actual != expected {
                 return Err("source tuple field type differs from its ordered result element");
+            }
+        }
+        Ok(())
+    }
+    fn array_value(
+        &mut self,
+        original: &s::Original,
+        element: g::TypeRef,
+        length: s::ArrayLengthRef,
+        fields: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.domains.headers.rows();
+        let fields = fields.slice(&original.arguments)?;
+        let Some(&s::ConstTerm::Value(count)) = rows.array_lengths().get(length.0 as usize) else {
+            return Err("source array value requires a closed array length");
+        };
+        if rows.types.get(count.ty.0 as usize)
+            != Some(&s::Type::Scalar(crate::support::crates::Scalar::Usize))
+            || u128::try_from(fields.len()).ok() != Some(count.bits)
+        {
+            return Err("source array value changed its complete actual element count");
+        }
+        let expected = self.node(original, element, work)?;
+        for &value in fields {
+            let actual = self.node(original, original.values[value as usize].ty, work)?;
+            if actual != expected {
+                return Err("source array element type differs from its result element type");
             }
         }
         Ok(())

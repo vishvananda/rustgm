@@ -14,6 +14,58 @@ pub(in crate::sema) enum Readiness {
     RegionBinding,
 }
 impl Graph {
+    pub(in crate::sema::crates::typed_headers) fn constant_original(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<Option<crate::support::crates::owner_catalog::BodyRef>, &'static str> {
+        if facts.associated.owner(definition).is_some() {
+            return Ok(
+                match self.associated_constant(catalog, facts, definition)? {
+                    Some((_, s::ConstantBody::Original(raw))) => Some(raw),
+                    _ => None,
+                },
+            );
+        }
+        self.require_store(&facts.types)?;
+        let descriptor = self.descriptor(catalog)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(None);
+        }
+        let id = catalog.declaration(definition)?;
+        let (provider, row, _) = catalog.declaration_coordinate(id)?;
+        if provider != descriptor.identity() {
+            return Ok(None);
+        }
+        catalog.validate_declaration(id, definition, DefKind::Const)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Constant(index)) = rows.header(row)? else {
+            return Ok(None);
+        };
+        let s::ConstantBody::Original(raw) = rows.constants()[index as usize].body else {
+            return Ok(None);
+        };
+        let parent = rows.declarations[row.0 as usize]
+            .definition
+            .parent
+            .and_then(|parent| rows.declarations.get(parent.0 as usize))
+            .map(|parent| parent.definition.kind);
+        if !matches!(
+            parent,
+            Some(s::DefinitionKind::Module | s::DefinitionKind::Function)
+        ) {
+            return Err("source free constant changed its installed lexical owner");
+        }
+        let cell = facts
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten();
+        self.constant_ready(rows, row, cell)?;
+        Ok(Some(raw))
+    }
+
     pub(in crate::sema::crates::typed_headers) fn associated_constant(
         &self,
         catalog: &Catalog,
@@ -60,8 +112,7 @@ impl Graph {
                     && matches!(body, s::ConstantBody::Original(_)) => {}
             (Some(s::HeaderRef::Implementation(index)), OwnerKind::ImportedInherent(_))
                 if actual.self_definition == owner
-                    && rows.implementations[index as usize]
-                        .inherent_constant_owner(&rows.types)
+                    && rows.implementations[index as usize].inherent_constant_owner()
                     && matches!(body, s::ConstantBody::Original(_)) => {}
             (_, OwnerKind::ImportedInherent(_)) if body.evaluated() => {
                 return Ok(None);

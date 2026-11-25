@@ -115,23 +115,32 @@ fn associated_constant_count(rows: s::ValidatedView<'_>, work: &mut Work) -> Res
     if !rows.descriptor().profile().declaration_policies() {
         return Ok(0);
     }
-    work.charge(rows.constants().len())?;
+    work.charge(rows.declarations.len())?;
     let count = rows
-        .constants()
-        .iter()
-        .filter(|row| associated_constant(row.body))
+        .constant_rows()
+        .filter(|&(declaration, row)| associated_constant(rows, declaration, row.body))
         .count();
-    if count != 0 {
-        work.charge(rows.declarations.len())?;
-    }
     Ok(count)
 }
 
-fn associated_constant(body: s::ConstantBody) -> bool {
+fn associated_constant(
+    rows: s::ValidatedView<'_>,
+    declaration: DeclarationRef,
+    body: s::ConstantBody,
+) -> bool {
     matches!(
         body,
         s::ConstantBody::Required | s::ConstantBody::Original(_)
-    )
+    ) && rows.declarations[declaration.0 as usize]
+        .definition
+        .parent
+        .and_then(|parent| rows.declarations.get(parent.0 as usize))
+        .is_some_and(|parent| {
+            matches!(
+                parent.definition.kind,
+                s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+            )
+        })
 }
 
 fn associated_members<'rows>(
@@ -142,7 +151,7 @@ fn associated_members<'rows>(
         .then(move || rows.constant_rows())
         .into_iter()
         .flatten()
-        .filter(|(_, row)| associated_constant(row.body))
+        .filter(move |&(declaration, row)| associated_constant(*rows, declaration, row.body))
         .map(move |(declaration, _)| {
             (
                 declaration,

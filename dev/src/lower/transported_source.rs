@@ -412,7 +412,10 @@ impl Source {
         }
         for index in 0..facts.initializers.len() {
             let initializer = facts.initializers[index];
-            if !self.stage.has_constant_original(initializer.definition)? {
+            if !self.stage.has_constant_original(initializer.definition)?
+                || (facts.associated.owner(initializer.definition).is_none()
+                    && !facts.generics.has_parameters(initializer.definition))
+            {
                 continue;
             }
             let (template, input, proof) = checked

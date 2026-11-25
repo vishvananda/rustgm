@@ -78,6 +78,20 @@ impl Queries<'_> {
                 Ok(Query::Node(key))
             }
             PatternValue::Definition(definition) => {
+                if self.typing.facts.initializer_index(definition).is_none()
+                    && crate::sema::crates::imported_constant_initializer(
+                        self.report,
+                        self.typing.facts,
+                        definition,
+                    )
+                    .map_err(|e| crate::sema::model::Declarations::error(self.report, key, e))?
+                    .is_some()
+                {
+                    return Ok(Query::Instance(crate::sema::values::Instance {
+                        definition,
+                        arguments: crate::types::GenericArgs::EMPTY,
+                    }));
+                }
                 let index = self
                     .typing
                     .facts

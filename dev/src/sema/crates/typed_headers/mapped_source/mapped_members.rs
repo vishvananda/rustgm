@@ -29,11 +29,20 @@ impl Original<'_> {
             }
         };
         let canonical = store.kind(self.ty(root, steps)?);
-        if matches!(recipe, s::Type::Tuple(_)) && profile.declaration_policies() {
-            return if matches!(canonical, Some(Kind::Tuple(_))) {
+        if matches!(recipe, s::Type::Tuple(_) | s::Type::Array { .. })
+            && profile.declaration_policies()
+        {
+            let matched = match recipe {
+                s::Type::Tuple(_) => matches!(canonical, Some(Kind::Tuple(_))),
+                s::Type::Array { .. } => {
+                    matches!(canonical, Some(Kind::Array { .. } | Kind::ArrayTerm { .. }))
+                }
+                _ => false,
+            };
+            return if matched {
                 Ok(None)
             } else {
-                Err("source tuple value changed its canonical result type")
+                Err("source tuple or array value changed its canonical result type")
             };
         }
         let s::Type::Nominal { declaration, .. } = *recipe else {

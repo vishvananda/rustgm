@@ -148,6 +148,60 @@ impl Calls {
     }
 }
 
+fn check_instance_owner(facts: &Declarations, body: &Body) -> Result<(), &'static str> {
+    match body.owner {
+        Owner::Function {
+            definition,
+            signature,
+            execution,
+        } => {
+            let header = facts
+                .declaration_header(definition)?
+                .ok_or("imported provided instance lost its canonical declaration")?;
+            let matched = match body.instance {
+                Some(instance) => {
+                    execution.is_some()
+                        && matches!(
+                            facts.types.kind(instance.ty()),
+                            Some(Kind::FunctionItem { item, signature: actual, .. })
+                                if item.0 == definition.0 && actual == signature
+                        )
+                }
+                None => execution.is_none() && header.signature == signature,
+            };
+            if !body.const_context
+                || header.body != Some(body.source)
+                || !(facts.is_const_function(definition)
+                    || facts.imported_const_default(definition)?)
+                || !matched
+            {
+                return Err("imported provided instance changed its authenticated const default");
+            }
+        }
+        Owner::Initializer {
+            definition,
+            kind: crate::sema::model::InitializerKind::Const,
+        }
+        | Owner::InitializerInstance {
+            instance: crate::sema::values::Instance { definition, .. },
+            kind: crate::sema::model::InitializerKind::Const,
+        } => {
+            let origin = facts
+                .crates
+                .as_deref()
+                .ok_or("imported provided constant lost its crate linkage")?
+                .constant_initializer(facts, definition)?;
+            if !body.const_context || origin != Some(body.source) {
+                return Err(
+                    "imported provided constant changed its authenticated original initializer",
+                );
+            }
+        }
+        _ => return Err("imported provided instance lost its callable owner"),
+    }
+    Ok(())
+}
+
 /// An imported const function or const default may call a conditional const
 /// trait member; runtime execution and CTFE still re-prove the selected impl.
 pub(in crate::body::constants) fn check_instance(
@@ -157,35 +211,7 @@ pub(in crate::body::constants) fn check_instance(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(8)?;
-    let Owner::Function {
-        definition,
-        signature,
-        execution,
-    } = body.owner
-    else {
-        return Err("imported provided instance lost its callable owner");
-    };
-    let header = facts
-        .declaration_header(definition)?
-        .ok_or("imported provided instance lost its canonical declaration")?;
-    let matched = match body.instance {
-        Some(instance) => {
-            execution.is_some()
-                && matches!(
-                    facts.types.kind(instance.ty()),
-                    Some(Kind::FunctionItem { item, signature: actual, .. })
-                        if item.0 == definition.0 && actual == signature
-                )
-        }
-        None => execution.is_none() && header.signature == signature,
-    };
-    if !body.const_context
-        || header.body != Some(body.source)
-        || !(facts.is_const_function(definition) || facts.imported_const_default(definition)?)
-        || !matched
-    {
-        return Err("imported provided instance changed its authenticated const default");
-    }
+    check_instance_owner(facts, body)?;
     let Action::Evaluate(id) = statement.action else {
         return Err("imported provided call has no evaluated operation");
     };

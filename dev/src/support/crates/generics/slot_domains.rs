@@ -446,7 +446,7 @@ fn valid_parent(
             }),
         DefinitionKind::AssociatedType => parent == definition.parent,
         DefinitionKind::Constant => {
-            parent == definition.parent
+            (parent == definition.parent
                 && parent
                     .and_then(|parent| definitions.get(parent.0 as usize))
                     .is_some_and(|parent| {
@@ -454,7 +454,17 @@ fn valid_parent(
                             parent.kind,
                             DefinitionKind::Trait | DefinitionKind::SelfType
                         )
-                    })
+                    }))
+                || (parent.is_none()
+                    && definition
+                        .parent
+                        .and_then(|parent| definitions.get(parent.0 as usize))
+                        .is_some_and(|parent| {
+                            matches!(
+                                parent.kind,
+                                DefinitionKind::Module | DefinitionKind::Function
+                            )
+                        }))
         }
         DefinitionKind::Function => {
             match definition.parent {

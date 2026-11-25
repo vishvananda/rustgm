@@ -69,7 +69,12 @@ impl DomainIndex<'_, '_> {
                 }
             }
             for (index, value) in original.values.iter().enumerate() {
-                snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
+                snapshots |= matches!(
+                    value.kind,
+                    s::ValueKind::Read(s::Place::Temporary(_))
+                        | s::ValueKind::Borrow(s::Place::Temporary(_))
+                        | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(_))
+                );
                 tested_temporary |= matches!(
                     value.kind,
                     s::ValueKind::IsVariant {
@@ -152,6 +157,12 @@ impl DomainIndex<'_, '_> {
                 self.associated_constant(context, declaration, arguments, work)?;
             }
             s::ValueKind::Read(s::Place::Temporary(value)) => {
+                prefix_value(original, value, index, work)?;
+            }
+            s::ValueKind::Borrow(s::Place::Temporary(value))
+            | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(value))
+                if self.declaration_policies =>
+            {
                 prefix_value(original, value, index, work)?;
             }
             s::ValueKind::Read(place)
@@ -307,11 +318,23 @@ impl DomainIndex<'_, '_> {
                 .definition
                 .parent
                 .ok_or("source constant read lacks its actual inherent owner")?;
-            if matches!(self.headers.header(parent, work)?, Some(HeaderRef::Implementation(index))
-                if rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types))
-                && self.headers.scopes().complete_slots(parent, work)? == 0
-                && ty == header.ty
-            {
+            let closed_owner = match self.headers.header(parent, work)? {
+                Some(HeaderRef::Implementation(index)) => {
+                    rows.implementations[index as usize].inherent_constant_owner()
+                        && self.headers.scopes().complete_slots(parent, work)? == 0
+                }
+                Some(HeaderRef::Function(_)) => {
+                    self.headers.scopes().complete_slots(constant, work)? == 0
+                }
+                None => {
+                    rows.declarations
+                        .get(parent.0 as usize)
+                        .is_some_and(|row| row.definition.kind == s::DefinitionKind::Module)
+                        && self.headers.scopes().complete_slots(constant, work)? == 0
+                }
+                _ => false,
+            };
+            if closed_owner && ty == header.ty {
                 return Ok(());
             }
             return Err("source constant read changed its declaration's owner or type");
@@ -368,8 +391,7 @@ impl DomainIndex<'_, '_> {
             Some(HeaderRef::Trait(_)) => true,
             Some(HeaderRef::Implementation(implementation)) => {
                 arity != 0
-                    && rows.implementations[implementation as usize]
-                        .inherent_constant_owner(&rows.types)
+                    && rows.implementations[implementation as usize].inherent_constant_owner()
                     && matches!(
                         rows.constants()[index as usize].body,
                         s::ConstantBody::Original(_)

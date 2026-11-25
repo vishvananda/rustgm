@@ -36,7 +36,17 @@ impl Graph {
             }
             Some(s::HeaderRef::Constant(index))
                 if !rows.constants()[index as usize].body.evaluated()
-                    && (actual.is_some() || !legacy_range_bound(rows, row)) =>
+                    && (actual.is_some() || !legacy_range_bound(rows, row))
+                    && raw
+                        .definition
+                        .parent
+                        .and_then(|parent| rows.declarations.get(parent.0 as usize))
+                        .is_some_and(|parent| {
+                            matches!(
+                                parent.definition.kind,
+                                s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+                            )
+                        }) =>
             {
                 raw.definition.parent
             }

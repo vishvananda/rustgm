@@ -161,8 +161,11 @@ pub(super) fn validate(
             ConstantBody::Required | ConstantBody::Original(_)
                 if profile.declaration_policies() =>
             {
-                associated_owner(rows, headers, row, *header, work)?;
-                if headers.scopes().parent(declaration, work)? != row.definition.parent {
+                let free = associated_or_free_owner(rows, headers, row, *header, work)?;
+                let expected = (!free).then_some(row.definition.parent).flatten();
+                if headers.scopes().parent(declaration, work)? != expected
+                    || (free && headers.scopes().complete_slots(declaration, work)? != 0)
+                {
                     return Err(
                         "source associated constant changed its inherited declaration scope",
                     );
@@ -268,65 +271,47 @@ fn validate_inline_tuple(
     Ok(())
 }
 
-fn associated_owner(
+fn associated_or_free_owner(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     row: &Declaration,
     header: ConstantHeader,
     work: &mut Work,
-) -> Result<(), &'static str> {
+) -> Result<bool, &'static str> {
     let parent = row
         .definition
         .parent
         .ok_or("associated constant has no owner")?;
     match headers.header(parent, work)? {
-        Some(HeaderRef::Trait(_)) => Ok(()),
+        Some(HeaderRef::Trait(_)) => Ok(false),
         Some(HeaderRef::Implementation(index))
             if matches!(header.body, ConstantBody::Original(_)) =>
         {
             let implementation = &rows.implementations[index as usize];
             if implementation.trait_application.is_some()
-                || valid_inherent_original(rows, headers, parent, implementation, header, work)?
+                || implementation.inherent_constant_owner()
             {
-                Ok(())
+                Ok(false)
             } else {
                 Err("source associated constant changed its actual implementation owner or result")
             }
+        }
+        Some(HeaderRef::Function(_)) if matches!(header.body, ConstantBody::Original(_)) => {
+            Ok(true)
+        }
+        None if matches!(header.body, ConstantBody::Original(_))
+            && rows
+                .declarations
+                .get(parent.0 as usize)
+                .is_some_and(|owner| owner.definition.kind == DefinitionKind::Module) =>
+        {
+            Ok(true)
         }
         Some(HeaderRef::Function(_)) | None if header.body == ConstantBody::Required => {
             Err("source free constant requires its value")
         }
         _ => Err("source associated constant changed its actual trait or implementation owner"),
     }
-}
-
-fn valid_inherent_original(
-    rows: &SourceRows,
-    headers: &HeaderIndex<'_>,
-    parent: DeclarationRef,
-    implementation: &super::ImplHeader,
-    header: ConstantHeader,
-    work: &mut Work,
-) -> Result<bool, &'static str> {
-    if !implementation.inherent_constant_owner(&rows.types) {
-        return Ok(false);
-    }
-    if headers.scopes().complete_slots(parent, work)? == 0 {
-        return Ok(implementation.closed_inherent_constant_owner(&rows.types)
-            && matches!(
-                rows.types.get(header.ty.0 as usize),
-                Some(super::Type::Nominal { .. })
-            ));
-    }
-    for input in implementation.inputs.slice(&rows.clauses)? {
-        work.charge(1)?;
-        if input.binder.is_some()
-            || matches!(input.requirement, super::Requirement::UnstableFeature(_))
-        {
-            return Ok(false);
-        }
-    }
-    Ok(true)
 }
 
 /// An evaluated member belongs to its own closed inherent implementation.

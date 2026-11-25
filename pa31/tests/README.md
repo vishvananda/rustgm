@@ -125,6 +125,12 @@ transport of inherent `const impl` methods (compile-time and runtime, plus
 non-const bound rejection), Core builtin inherent impls (`str`, `[u8]`,
 `[T; N]`, `*const T`, `*mut T`), and trait/trait-impl `#[track_caller]`
 propagation (including client impl inheritance and caller line forwarding).
+`spec/source-free-and-inherent-const-originals/outcomes.json` checks v14
+original-body transport of free non-scalar constants (arrays, `&str`, `&[u8]`,
+`&[u8; N]`, nominal records with interior mutability, and function-local
+arrays), closed inherent non-ADT constants, and inherent `const impl`
+constants, across both CTFE and runtime client reads plus non-const bound and
+v13 rejections.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

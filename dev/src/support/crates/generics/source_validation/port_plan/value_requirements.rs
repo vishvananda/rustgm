@@ -247,7 +247,10 @@ impl Builder<'_, '_, '_> {
         {
             return Err("source Borrow changed its actual referent or writable place");
         }
-        if matches!(place, s::Place::Static(_))
+        if (matches!(place, s::Place::Static(_))
+            || self.domains.declaration_policies
+                && !mutable
+                && matches!(place, s::Place::Temporary(_)))
             && rows.regions[region.0 as usize] == s::Region::Static
         {
             super::uses::region(self.domains, &self.arena, region, Rewrite::Original, work)?;

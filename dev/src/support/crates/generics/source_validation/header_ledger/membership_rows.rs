@@ -249,7 +249,7 @@ impl<'a> Members<'a> {
         let correct = match constant.body {
             s::ConstantBody::Original(_) => {
                 implementation.trait_application.is_some()
-                    || implementation.inherent_constant_owner(&self.rows.types)
+                    || implementation.inherent_constant_owner()
             }
             s::ConstantBody::Evaluated(_) | s::ConstantBody::PromotedReference { .. } => {
                 implementation.closed_inherent_constant_owner(&self.rows.types)

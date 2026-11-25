@@ -24,9 +24,7 @@ impl Graph {
         {
             return Ok(None);
         }
-        let Some((_, s::ConstantBody::Original(raw))) =
-            self.associated_constant(catalog, facts, definition)?
-        else {
+        let Some(raw) = self.constant_original(catalog, facts, definition)? else {
             return Ok(None);
         };
         let index = rows.original_index(raw)?;

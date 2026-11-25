@@ -560,10 +560,11 @@ pub(super) fn validate(
             .iter()
             .zip(&record.arguments)
             .any(|(actual, raw)| actual.0 != *raw)
-        || body
-            .promotions
-            .as_ref()
-            .is_some_and(|facts| !facts.is_empty())
+        || (!view.rows().descriptor().profile().declaration_policies()
+            && body
+                .promotions
+                .as_ref()
+                .is_some_and(|facts| !facts.is_empty()))
     {
         return Err("source original changed its complete supported body/header domain");
     }
@@ -903,12 +904,19 @@ fn constant_read(
     let definition = view.constant(declaration, steps)?;
     let rows = view.rows();
     if rows.descriptor().profile().declaration_policies()
-        && let Some(parent) = rows
-            .declarations
-            .get(declaration.0 as usize)
-            .and_then(|row| row.definition.parent)
-        && let Some(s::HeaderRef::Implementation(index)) = rows.header(parent)?
-        && rows.implementations[index as usize].closed_inherent_constant_owner(&rows.types)
+        && (matches!(rows.header(declaration)?, Some(s::HeaderRef::Constant(index))
+            if matches!(rows.constants()[index as usize].body, s::ConstantBody::Original(_)))
+            || rows
+                .declarations
+                .get(declaration.0 as usize)
+                .and_then(|row| row.definition.parent)
+                .and_then(|parent| rows.header(parent).ok().flatten())
+                .is_some_and(|parent| match parent {
+                    s::HeaderRef::Implementation(index) => {
+                        rows.implementations[index as usize].inherent_constant_owner()
+                    }
+                    _ => false,
+                }))
     {
         return Ok(Rvalue::AssociatedConstant(crate::sema::values::Instance {
             definition,

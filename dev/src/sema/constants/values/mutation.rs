@@ -240,7 +240,9 @@ impl Inspection<'_> {
     fn reference(&mut self, value: Constant) -> Result<Answer, &'static str> {
         let mut location = match self.reader.view(value)? {
             View::Reference(id) => id,
-            View::Text(_) | View::Bytes(_) => return Ok(Answer::Ordinary),
+            View::Text(_) | View::Bytes(_) | View::ByteRange { .. } | View::BytePointer { .. } => {
+                return Ok(Answer::Ordinary);
+            }
             _ => return Err("constant reference lacks symbolic backing"),
         };
         let pointed = self.reader.location(location)?;

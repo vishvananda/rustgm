@@ -1850,8 +1850,9 @@ impl Checker<'_> {
                 if definition.kind == DefKind::Const && self.facts.associated.owner(id).is_some() {
                     return self.associated_constant(node, id, ty);
                 }
-                if self.facts.generics.has_parameters(id)
-                    || self.facts.methods.qualified.contains_key(&self.key(node))
+                if definition.kind != DefKind::Const
+                    && (self.facts.generics.has_parameters(id)
+                        || self.facts.methods.qualified.contains_key(&self.key(node)))
                 {
                     return self.generic_function_value(node, id, ty);
                 }

@@ -9,7 +9,7 @@ use crate::{
         values::{Evaluator, Instance, Reader},
     },
     support::crates::{Scalar, ScalarValue},
-    types::{GenericArgs, Kind, Primitive, TypeId, parameters::clauses::Clause},
+    types::{GenericArgs, Kind, Primitive, TypeId},
 };
 
 fn closed_inherent_self(facts: &Declarations, owner: DefId) -> Option<TypeId> {
@@ -47,7 +47,6 @@ fn inherent_initializer(
         OwnerKind::Impl {
             trait_type: None,
             unsafe_: false,
-            constant: false,
             polarity: ImplPolarity::Positive,
             ..
         }
@@ -72,19 +71,22 @@ fn inherent_initializer(
     Some((owner.self_definition, ty))
 }
 
-fn local_nominal(report: &Report, facts: &Declarations, ty: TypeId) -> bool {
-    matches!(facts.types.kind(ty), Some(Kind::Adt(item, _))
-    if report.resolution.definitions.get(item.0 as usize).is_some_and(|definition| {
-        definition.node.is_some() && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
-    }))
-}
-
 fn closed_inherent_initializer(
     report: &Report,
     facts: &Declarations,
     definition: DefId,
 ) -> Option<TypeId> {
     let (owner, ty) = inherent_initializer(report, facts, definition)?;
+    let source = facts.associated.get(facts.associated.owner(definition)?)?;
+    if !matches!(
+        source.kind,
+        OwnerKind::Impl {
+            constant: false,
+            ..
+        }
+    ) {
+        return None;
+    }
     let self_type = closed_inherent_self(facts, owner)?;
     (local_nominal(report, facts, self_type) && closed_type(facts, self_type)
         || report.package.coherence_is_core()
@@ -92,28 +94,34 @@ fn closed_inherent_initializer(
     .then_some(ty)
 }
 
-fn generic_inherent_original(report: &Report, facts: &Declarations, definition: DefId) -> bool {
-    let Some((owner, ty)) = inherent_initializer(report, facts, definition) else {
-        return false;
-    };
-    let Some(schema) = facts.associated.schema(owner) else {
-        return false;
-    };
-    schema.captures == 0
-        && schema.bounds.is_empty()
-        && facts.generics.has_parameters(owner)
-        && local_nominal(report, facts, schema.self_type)
-        && facts.types.needs_region_context(ty) == Some(false)
-        && crate::sema::declaration_inputs::own_view(
-            &facts.generics,
-            facts.crates.as_deref(),
-            owner,
-        )
-        .is_ok_and(|inputs| {
-            inputs
-                .iter()
-                .all(|input| matches!(input.value, Clause::Predicate(_)))
-        })
+fn free_initializer(report: &Report, facts: &Declarations, definition: DefId) -> Option<TypeId> {
+    let declaration = report.resolution.definitions.get(definition.0 as usize)?;
+    if declaration.kind != DefKind::Const
+        || report.package.names.get(declaration.name) == "_"
+        || facts.associated.owner(definition).is_some()
+    {
+        return None;
+    }
+    let initializer = facts
+        .initializers
+        .get(facts.initializer_index(definition)?)?;
+    let ty = facts
+        .definitions
+        .get(definition.0 as usize)
+        .copied()
+        .flatten()?;
+    (declaration.node == Some(initializer.node)
+        && matches!(initializer.kind, InitializerKind::Const)
+        && initializer.type_checked()
+        && initializer.ty == ty)
+        .then_some(ty)
+}
+
+fn local_nominal(report: &Report, facts: &Declarations, ty: TypeId) -> bool {
+    matches!(facts.types.kind(ty), Some(Kind::Adt(item, _))
+    if report.resolution.definitions.get(item.0 as usize).is_some_and(|definition| {
+        definition.node.is_some() && matches!(definition.kind, DefKind::Struct | DefKind::Enum)
+    }))
 }
 
 fn inherent_constant(report: &Report, facts: &Declarations, definition: DefId) -> Option<Instance> {
@@ -207,12 +215,11 @@ impl Stage {
         if !self.declaration_policies() {
             return false;
         }
-        if generic_inherent_original(report, facts, definition)
-            || closed_inherent_initializer(report, facts, definition).is_some_and(|ty| {
-                matches!(facts.types.kind(ty), Some(Kind::Adt(_, _))) && closed_type(facts, ty)
-            })
-        {
-            return true;
+        if inherent_initializer(report, facts, definition).is_some() {
+            return self.inherent_constant(report, facts, definition).is_none();
+        }
+        if let Some(ty) = free_initializer(report, facts, definition) {
+            return value_type(facts, ty, true).is_err();
         }
         facts
             .associated
@@ -297,15 +304,18 @@ impl Stage {
         definition: DefId,
         declaration: DeclarationRef,
     ) -> Result<Context, &'static str> {
-        let schema = facts
-            .associated
-            .schema(definition)
-            .ok_or("source associated constant lost its completed owner environment")?;
+        let captures = if let Some(schema) = facts.associated.schema(definition) {
+            schema.captures
+        } else if facts.associated.owner(definition).is_none() {
+            0
+        } else {
+            return Err("source associated constant lost its completed owner environment");
+        };
         self.frame(
             declaration,
             None,
             s::BinderKind::DeclarationHeader,
-            schema.captures,
+            captures,
         )
     }
 

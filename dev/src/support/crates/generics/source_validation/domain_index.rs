@@ -69,7 +69,7 @@ enum OriginalHeader<'rows> {
     Function(&'rows s::FunctionHeader),
     Constant {
         result: g::TypeRef,
-        parent: DeclarationRef,
+        parent: Option<DeclarationRef>,
     },
 }
 
@@ -77,7 +77,7 @@ impl OriginalHeader<'_> {
     const fn parent(self) -> Option<DeclarationRef> {
         match self {
             Self::Function(header) => header.parent,
-            Self::Constant { parent, .. } => Some(parent),
+            Self::Constant { parent, .. } => parent,
         }
     }
     const fn unsafe_function(self) -> bool {
@@ -235,10 +235,20 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
                 if !matches!(header.body, s::ConstantBody::Original(_)) {
                     return Err("source constant has no actual initializer body");
                 }
-                let parent = rows.declarations[declaration.0 as usize]
+                let lexical = rows.declarations[declaration.0 as usize]
                     .definition
                     .parent
                     .ok_or("source constant initializer has no declaring owner")?;
+                let parent = rows
+                    .declarations
+                    .get(lexical.0 as usize)
+                    .is_some_and(|row| {
+                        matches!(
+                            row.definition.kind,
+                            s::DefinitionKind::Trait | s::DefinitionKind::SelfType
+                        )
+                    })
+                    .then_some(lexical);
                 Ok(OriginalHeader::Constant {
                     result: header.ty,
                     parent,

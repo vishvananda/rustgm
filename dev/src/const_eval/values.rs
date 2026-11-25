@@ -101,16 +101,11 @@ impl Machine<'_, '_> {
             Rvalue::Function(_) => Constant::function(
                 body.callable_target(Instance::new(&self.evaluator.facts().types, ty)?),
             ),
-            Rvalue::Constant(definition) => {
-                if let Some(value) = Reader::new(self.evaluator.facts()).definition(definition) {
-                    value
-                } else if let Some(&index) = self.bodies.definitions.get(&definition) {
-                    return Ok(Some((index, Vec::new(), id)));
-                } else {
-                    self.waiting = Some(super::Requirement::InitializerBody(definition));
-                    return Ok(None);
-                }
-            }
+            Rvalue::Constant(definition) => match self.constant_definition(definition, ty)? {
+                ConstantStep::Value(value) => value,
+                ConstantStep::Enter(index) => return Ok(Some((index, Vec::new(), id))),
+                ConstantStep::Pending => return Ok(None),
+            },
             Rvalue::InlineConstant(source) => {
                 if let Some(value) = Reader::new(self.evaluator.facts()).inline(source) {
                     value
@@ -382,6 +377,52 @@ impl Machine<'_, '_> {
         Ok(None)
     }
 
+    fn constant_definition(
+        &mut self,
+        definition: crate::resolve::model::DefId,
+        ty: crate::types::TypeId,
+    ) -> Result<ConstantStep, Failure> {
+        let facts = self.evaluator.facts();
+        if let Some(value) = Reader::new(facts).definition(definition) {
+            return Ok(ConstantStep::Value(value));
+        }
+        if let Some(&index) = self.bodies.definitions.get(&definition) {
+            return Ok(ConstantStep::Enter(index));
+        }
+        if facts.initializer_index(definition).is_none()
+            && facts
+                .crates
+                .as_deref()
+                .map(|linkage| linkage.constant_initializer(facts, definition))
+                .transpose()?
+                .flatten()
+                .is_some()
+        {
+            let instance = crate::sema::values::Instance {
+                definition,
+                arguments: crate::types::GenericArgs::EMPTY,
+            };
+            if let Some(value) = Reader::new(facts).associated(instance) {
+                return Ok(ConstantStep::Value(value));
+            }
+            if let Some(&index) = self
+                .bodies
+                .associated
+                .as_deref()
+                .and_then(|map| map.get(&(instance, ty)))
+            {
+                return Ok(ConstantStep::Enter(index));
+            }
+            self.waiting = Some(super::Requirement::AssociatedBody {
+                instance,
+                result: ty,
+            });
+            return Ok(ConstantStep::Pending);
+        }
+        self.waiting = Some(super::Requirement::InitializerBody(definition));
+        Ok(ConstantStep::Pending)
+    }
+
     fn value_reborrow(
         &mut self,
         frame: &mut Frame,
@@ -443,4 +484,10 @@ impl Machine<'_, '_> {
         }
         Ok((offset, actual.size, actual.align))
     }
+}
+
+enum ConstantStep {
+    Value(Constant),
+    Enter(usize),
+    Pending,
 }

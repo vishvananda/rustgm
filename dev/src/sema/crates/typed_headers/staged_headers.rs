@@ -345,7 +345,23 @@ impl Walk<'_, '_> {
             }
             Some(s::HeaderRef::Constant(index))
                 if !rows.constants()[index as usize].body.evaluated()
-                    && raw.parent == rows.declarations[raw.owner.0 as usize].definition.parent =>
+                    && (raw.parent
+                        == rows.declarations[raw.owner.0 as usize].definition.parent
+                        || raw.parent.is_none()
+                            && matches!(
+                                rows.constants()[index as usize].body,
+                                s::ConstantBody::Original(_)
+                            )
+                            && rows.declarations[raw.owner.0 as usize]
+                                .definition
+                                .parent
+                                .and_then(|parent| rows.declarations.get(parent.0 as usize))
+                                .is_some_and(|parent| {
+                                    matches!(
+                                        parent.definition.kind,
+                                        s::DefinitionKind::Module | s::DefinitionKind::Function
+                                    )
+                                })) =>
             {
                 Ok(Inputs::Definition)
             }

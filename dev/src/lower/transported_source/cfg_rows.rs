@@ -360,12 +360,13 @@ fn validate(
     {
         return Err("source resolved callable identities require a wider transport profile");
     }
-    // An empty completed cache has no roots to omit. Imported originals still
-    // require fresh ordinary promotion analysis; no provider proof is retained.
-    if body
-        .promotions
-        .as_ref()
-        .is_some_and(|facts| !facts.is_empty())
+    // Imported originals always re-run ordinary promotion analysis on the
+    // consumer side; no provider promotion cache or proof is retained.
+    if !stage.declaration_policies()
+        && body
+            .promotions
+            .as_ref()
+            .is_some_and(|facts| !facts.is_empty())
     {
         return Err("source promoted or deferred roots require a wider transport profile");
     }

@@ -1,0 +1,10 @@
+{
+  "features": ["const_destruct", "auto_traits", "intrinsics"],
+  "stdout": "40 30 6 7 20 10 70 30 114 112 114\n",
+  "older_profile": "source associated constants require their wider profile",
+  "restricted_client": {
+    "path": "non_const_unit.rs",
+    "rustc": "unsatisfied trait bounds",
+    "rustgm": "trait obligation requires an unambiguous matching assumption or implementation"
+  }
+}
