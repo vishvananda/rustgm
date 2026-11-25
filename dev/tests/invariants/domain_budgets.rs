@@ -291,3 +291,64 @@ fn callable_depths() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn per_module_canonicalize_scales_without_prefix_amplification() -> Result {
+    let prefix = "_mm512_maskz_fmaddsub_round_ps_very_long_shared_prefix_";
+    let mut rows = ModuleContractRows {
+        namespace: ModuleNamespace {
+            root: DeclarationRef(0),
+            modules: Vec::new(),
+            bindings: Vec::new(),
+        },
+        domains: Vec::new(),
+    };
+    for module in 1_u32..=8 {
+        for i in (0_u32..32).rev() {
+            rows.namespace.bindings.push(ModuleBindingRow {
+                module: DeclarationRef(module),
+                name: format!("{prefix}{i:04}"),
+                namespace: Namespace::Value,
+                target: s::DeclarationAddress {
+                    artifact: s::ArtifactRef(0),
+                    declaration: DeclarationRef(module * 100 + i),
+                },
+                visibility: ModuleVisibility::Public,
+                source: BindingSource::Import,
+                source_site: 0,
+            });
+        }
+    }
+    let mut work = Work::default();
+    rows.canonicalize(&mut work)?;
+    for pair in rows.namespace.bindings.windows(2) {
+        assert_eq!(
+            compare(&pair[0], &pair[1], &mut Work::default())?,
+            Ordering::Less
+        );
+    }
+    // 256 bindings across 8 modules: ~32 per module, independent of 55-byte prefix length.
+    assert!(
+        work.steps < 8_000,
+        "unexpected canonicalize work: {}",
+        work.steps
+    );
+
+    let mut duplicate = rows.clone();
+    duplicate
+        .namespace
+        .bindings
+        .push(duplicate.namespace.bindings[0].clone());
+    assert!(duplicate.canonicalize(&mut Work::default()).is_err());
+
+    let mut scrambled = rows;
+    scrambled.namespace.bindings.reverse();
+    scrambled.canonicalize(&mut Work::default())?;
+    for pair in scrambled.namespace.bindings.windows(2) {
+        assert_eq!(
+            compare(&pair[0], &pair[1], &mut Work::default())?,
+            Ordering::Less
+        );
+    }
+    Ok(())
+}

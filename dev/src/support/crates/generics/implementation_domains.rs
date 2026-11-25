@@ -148,6 +148,21 @@ impl ModuleContractRows {
         {
             return Err("module name ordering exceeds combined storage");
         }
+        if self
+            .namespace
+            .bindings
+            .windows(2)
+            .all(|pair| pair[0].module.0 <= pair[1].module.0)
+        {
+            for group in self
+                .namespace
+                .bindings
+                .chunk_by_mut(|left, right| left.module == right.module)
+            {
+                super::binding_order::sort(group, work, &mut 0, compare)?;
+            }
+            return Ok(());
+        }
         super::binding_order::sort(&mut self.namespace.bindings, work, &mut 0, compare)
     }
 }
@@ -549,21 +564,11 @@ fn compare(
     work: &mut Work,
 ) -> Result<Ordering, &'static str> {
     work.charge(1)?;
-    let order = left.module.0.cmp(&right.module.0);
-    if order != Ordering::Equal {
-        return Ok(order);
-    }
-    for (left, right) in left.name.bytes().zip(right.name.bytes()) {
-        work.charge(2)?;
-        if left != right {
-            return Ok(left.cmp(&right));
-        }
-    }
-    work.charge(1)?;
     Ok(left
-        .name
-        .len()
-        .cmp(&right.name.len())
+        .module
+        .0
+        .cmp(&right.module.0)
+        .then_with(|| left.name.as_bytes().cmp(right.name.as_bytes()))
         .then_with(|| left.namespace.cmp(&right.namespace)))
 }
 
