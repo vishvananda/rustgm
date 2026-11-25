@@ -17,13 +17,15 @@ pub(super) fn reserve(
     context: &Context<'_>,
     facts: &mut Declarations,
     budget: &mut Headers,
-) -> Result<(), Error> {
+) -> Result<Vec<crate::types::closure::ClosureId>, Error> {
     let rows = context.descriptor.rows();
+    let closure_count = rows.closures().map_or(0, |closures| closures.headers.len());
     budget.charge(
         rows.associated_types
             .len()
             .saturating_add(rows.opaque_futures.len())
-            .saturating_add(rows.cold().opaques.declarations.len()),
+            .saturating_add(rows.cold().opaques.declarations.len())
+            .saturating_add(closure_count),
     )?;
     for header in &rows.associated_types {
         let definition = context.definition(header.declaration, budget)?;
@@ -104,9 +106,101 @@ pub(super) fn reserve(
             .map_err(error)?;
         facts.opaques.owners.entry(owner).or_default().push(id);
     }
-    Ok(())
+    reserve_closures(rows, facts, budget)
+}
+
+fn reserve_closures(
+    rows: s::ValidatedView<'_>,
+    facts: &mut Declarations,
+    budget: &mut Headers,
+) -> Result<Vec<crate::types::closure::ClosureId>, Error> {
+    let Some(table) = rows.closures() else {
+        return Ok(Vec::new());
+    };
+    let count = table.headers.len();
+    let mut closures = Vec::with_capacity(count);
+    budget.reserve(count.saturating_mul(
+        size_of::<crate::types::closure::ClosureId>()
+            + size_of::<crate::types::closure::Declaration>(),
+    ))?;
+    for header in &table.headers {
+        let id = facts.types.reserve_closure().map_err(error)?;
+        let kind = crate::types::closure::CallKind::from_trait(header.call_kind);
+        if header.constant {
+            facts
+                .types
+                .complete_const_closure(id, kind)
+                .map_err(error)?;
+        } else {
+            facts.types.complete_closure(id, kind).map_err(error)?;
+        }
+        closures.push(id);
+    }
+    Ok(closures)
 }
 impl Graph {
+    pub(in crate::sema::crates::typed_headers) fn finish_closures(
+        &self,
+        context: &Context<'_>,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        let rows = context.descriptor.rows();
+        let Some(table) = rows.closures() else {
+            return Ok(());
+        };
+        budget.charge(table.headers.len())?;
+        let dummy = crate::resolve::unit::NodeKey {
+            file: crate::resolve::unit::FileId(0),
+            node: crate::syntax::ast::NodeId::new(0),
+        };
+        for (index, header) in table.headers.iter().enumerate() {
+            let reference = s::ClosureRef(
+                u32::try_from(index).map_err(|_| error("imported closure header overflow"))?,
+            );
+            let identity = self.closure_id(reference).map_err(error)?;
+            let owner = context.definition(header.owner, budget)?;
+            let body_id = context
+                .catalog
+                .body_at(context.descriptor.identity(), header.body)
+                .map_err(error)?;
+            let origin = context.catalog.origin(body_id).map_err(error)?;
+            let signature = self.ty(header.signature)?;
+            let execution = header
+                .execution
+                .map(|exec| {
+                    Ok::<_, Error>(crate::sema::closures::Execution {
+                        self_ty: self.ty(exec.self_ty)?,
+                        signature: self.ty(exec.signature)?,
+                        universals: exec.universals,
+                        receiver: crate::types::closure::CallKind::from_trait(exec.receiver),
+                    })
+                })
+                .transpose()?;
+            facts
+                .closures
+                .insert_imported(
+                    crate::sema::closures::Body {
+                        identity,
+                        source: dummy,
+                        constant: None,
+                        body: dummy,
+                        parameters: crate::syntax::ast::List { start: 0, end: 0 },
+                        signature,
+                        internal_result: None,
+                        owner: Some(owner),
+                        universals: header.universals,
+                        inherited: header.inherited,
+                        execution,
+                    },
+                    origin,
+                    header.public_binders,
+                    header.constant,
+                )
+                .map_err(error)?;
+        }
+        Ok(())
+    }
     pub(in crate::sema::crates::typed_headers) fn finish_opaques(
         &self,
         context: &Context<'_>,

@@ -221,6 +221,17 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
             }
             count.vector(&sites.rows, work)?;
         }
+        if let Some(closures) = &cold.closures {
+            work.charge(1)?;
+            count.bytes = count
+                .bytes
+                .saturating_add(size_of::<super::super::ClosureColumns>());
+            count.vector(&closures.types, work)?;
+            count.vector(&closures.headers, work)?;
+            count.vector(&closures.bridges, work)?;
+            count.vector(&closures.formation_inputs, work)?;
+            count.vector(&closures.callable_slots, work)?;
+        }
     }
     Ok(())
 }

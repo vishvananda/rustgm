@@ -43,6 +43,21 @@ impl BinderIndex<'_> {
                 }
             }
         }
+        if let Some(closures) = self.rows.closures() {
+            for header in &closures.headers {
+                work.charge(1)?;
+                let frame = self
+                    .rows
+                    .binders
+                    .get(header.binder.0 as usize)
+                    .ok_or("source closure omitted its actual body binder")?;
+                if frame.owner != header.owner
+                    || frame.kind != (s::BinderKind::ClosureOriginal { body: header.body })
+                {
+                    return Err("source closure binder is foreign or has another header role");
+                }
+            }
+        }
         Ok(())
     }
     pub(super) fn frame(
@@ -128,6 +143,24 @@ impl BinderIndex<'_> {
             }
             s::BinderKind::CallSignature { body, value } => {
                 self.call_frame(headers, reference, frame, body, value)?;
+            }
+            s::BinderKind::ClosureOriginal { body } => {
+                if !profile.declaration_policies() || parent.is_some() {
+                    return Err("source closure binder requires a version-fourteen root frame");
+                }
+                let Some((_, header)) = self
+                    .rows
+                    .closures()
+                    .and_then(|closures| closures.header_for_body(body))
+                else {
+                    return Err("source closure binder has no actual closure header");
+                };
+                if header.owner != frame.owner
+                    || header.binder != reference
+                    || frame.count != header.contract_universals()
+                {
+                    return Err("source closure binder differs from its complete closure contract");
+                }
             }
         }
         Ok(())

@@ -218,7 +218,8 @@ impl Stage {
                         || facts.types.contains_anonymous_callables(ty) != Some(false);
                     if has_callable
                         && !(self.declaration_policies()
-                            && matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. })))
+                            && (facts.types.contains_function_items(ty) == Some(false)
+                                || matches!(facts.types.kind(ty), Some(Kind::FunctionItem { .. }))))
                     {
                         return Err(
                             "nested callable source arguments require a wider transport profile",

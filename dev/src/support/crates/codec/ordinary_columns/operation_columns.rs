@@ -386,7 +386,8 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         | s::ValueKind::Union { .. }
         | s::ValueKind::Repeat { .. }
         | s::ValueKind::DirectEnumCast(_)
-        | s::ValueKind::AddressCast { .. } => {
+        | s::ValueKind::AddressCast { .. }
+        | s::ValueKind::UniqueBorrow(_) => {
             Err("source extended value operations require the version-fourteen body IR profile")
         }
         s::ValueKind::Call {

@@ -5,6 +5,7 @@ pub(super) enum Mapping<'a> {
         graph: &'a Graph,
         store: &'a crate::types::Store,
         domain: Option<super::super::super::unpaid_provided::OrdinaryDomain>,
+        parent_domain: Option<super::super::super::unpaid_provided::OrdinaryDomain>,
     },
     Selected {
         owner: &'a super::super::super::unpaid_provided::ProvidedOwners,
@@ -101,6 +102,7 @@ impl Original<'_> {
             graph,
             store,
             domain: Some(domain),
+            ..
         } = &self.mapping
         {
             let mut work = crate::resolve::crates::ReservationWork::default();
@@ -150,6 +152,7 @@ impl Original<'_> {
             graph,
             store,
             domain: Some(domain),
+            ..
         } = &self.mapping
         {
             let mut work = crate::resolve::crates::ReservationWork::default();

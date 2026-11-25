@@ -16,6 +16,7 @@ mod collected_provider;
 mod contract_rows;
 mod deprecation_rows;
 mod evaluated_constants;
+mod transported_closures;
 pub(crate) use evaluated_constants::prepare_inherent_constants;
 mod defaulted_arguments;
 mod exposed_bindings;
@@ -157,6 +158,7 @@ pub(crate) struct Stage {
     graph: canonical_nodes::Graph,
     inputs: contract_rows::Index,
     functions: authored_functions::Index,
+    closures: transported_closures::Index,
     opaques: operation_exports::OpaqueQueue,
     role_installation_steps: usize,
     nominal_transport: bool,
@@ -334,6 +336,7 @@ impl Stage {
             .sort_unstable_by_key(|row| row.declaration.0);
         self.sort_const_defaults()?;
         self.sort_caller_sites()?;
+        self.closures.require_finalized()?;
         self.opaques.require_empty()?;
         let work = self.work();
         for slot in self.functions.originals.into_iter().flatten() {
@@ -513,6 +516,7 @@ impl Stage {
         stage.trait_alias_headers(report, facts, leaves.trait_aliases)?;
         let statics = stage.static_headers(facts, identity, leaves.statics)?;
         stage.functions(report, facts, identity, &provided_constants)?;
+        stage.reserve_closures(report, facts)?;
         stage.complete_opaque_declarations(facts)?;
         if !provided_constants.is_empty() {
             stage.constant_headers(report, facts, identity)?;
@@ -557,6 +561,7 @@ impl Stage {
             graph: canonical_nodes::Graph::default(),
             inputs: contract_rows::Index::default(),
             functions: authored_functions::Index::default(),
+            closures: transported_closures::Index::default(),
             opaques: operation_exports::OpaqueQueue::default(),
             nominal_transport: matches!(
                 mode,

@@ -7,7 +7,9 @@ use crate::{
     },
     sema::crates::typed_headers::{
         recipe_cursor::{Availability, Cursor, Demand, Maps, MemoReader, Port, Recorded, Reserved},
-        unpaid_provided::{InitializerHeader, OrdinaryDomain, OrdinaryRecords, ordinary_requests},
+        unpaid_provided::{
+            ClosureHeader, InitializerHeader, OrdinaryDomain, OrdinaryRecords, ordinary_requests,
+        },
     },
     support::crates::generics::{self as g, source as s},
     types::{RegionId, TypeId, arguments::Argument},
@@ -127,6 +129,177 @@ impl Lazy {
         constants.finish(raw, operands, cursor, facts, work)?;
         Ok(domain)
     }
+    pub(super) fn prepare_closure_body(
+        &self,
+        graph: &super::Graph,
+        facts: &mut Declarations,
+        closure: ClosureHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        graph.require_store(&facts.types).map_err(error)?;
+        let view = graph.recipe_view();
+        let mut writer = self
+            .writer
+            .try_borrow_mut()
+            .map_err(|_| error("reentrant ordinary closure preparation"))?;
+        writer
+            .cursor
+            .require_reader(&self.reader, &view, &facts.types, work)?;
+        let domain = writer
+            .records
+            .prepare_closure(&view, facts, closure, work)?;
+        if domain.environment().is_some() {
+            return Ok(domain);
+        }
+        let raw = domain.raw()?;
+        let rows = view.rows()?;
+        let original = rows
+            .originals
+            .get(rows.original_index(raw).map_err(error)?)
+            .ok_or_else(|| error("ordinary closure lost its current raw body"))?;
+        let mut port = Recorded::ordinary(
+            Reserved::new(view, &self.maps, &facts.types, work)?.with_opaques(&facts.opaques),
+            &domain,
+            &facts.lifetimes.callables,
+        );
+        work.charge(
+            original
+                .locals
+                .len()
+                .saturating_add(original.values.len().saturating_mul(2))
+                .saturating_add(original.projections.len())
+                .saturating_add(original.calls.len())
+                .saturating_add(1),
+        )?;
+        let Writer {
+            cursor,
+            constants,
+            records,
+        } = &mut *writer;
+        let operands = operation_types(
+            original,
+            constants,
+            &mut port,
+            cursor,
+            &mut facts.types,
+            work,
+        )?;
+        for normalization in &rows.body_input(raw).map_err(error)?.normalizations {
+            work.charge(1)?;
+            if let Some(scoped) = &normalization.scoped {
+                for block in &scoped.blocks {
+                    work.charge(1)?;
+                    for relation in &block.types {
+                        require_type(cursor, &mut port, &mut facts.types, relation.ty, work)?;
+                    }
+                }
+            }
+        }
+        self.prepare_closure_formation(
+            graph,
+            (&mut facts.types, &facts.opaques, &facts.lifetimes.callables),
+            closure,
+            &mut port,
+            (cursor, records),
+            work,
+        )?;
+        let super::Applications::Lazy { memo, reader } = &graph.applications else {
+            return Err(error(
+                "ordinary closure lost its actual lazy application owner",
+            ));
+        };
+        let view = graph.recipe_view();
+        let mut applications = memo.writer(reader, &view, &facts.types, work)?;
+        ordinary_requests(raw, port, cursor, &mut applications, &mut facts.types, work)?;
+        constants.finish(raw, operands, cursor, facts, work)?;
+        Ok(domain)
+    }
+
+    fn prepare_closure_formation(
+        &self,
+        graph: &super::Graph,
+        (types, opaques, callables): (
+            &mut crate::types::Store,
+            &crate::sema::opaque::Opaques,
+            &crate::types::callable::Templates,
+        ),
+        closure: ClosureHeader,
+        port: &mut Recorded<'_, '_, '_>,
+        (cursor, records): (&mut Cursor, &OrdinaryRecords),
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        let view = graph.recipe_view();
+        let rows = view.rows()?;
+        let Some(table) = rows.closures() else {
+            return Ok(());
+        };
+        let Some(formation) = table
+            .header(closure.closure_ref)
+            .and_then(|header| header.output)
+            .and_then(|output| output.formation)
+        else {
+            return Ok(());
+        };
+        let inputs = formation
+            .inputs
+            .slice(&table.formation_inputs)
+            .map_err(error)?;
+        for input in inputs {
+            work.charge(1)?;
+            require_type(cursor, port, types, input.child, work)?;
+        }
+        let parent_domain = records
+            .domain_for_raw(&view, closure.parent_raw)?
+            .ok_or_else(|| {
+                error("ordinary closure formation requires its prepared parent domain")
+            })?;
+        let mut parent_port = Recorded::ordinary(
+            Reserved::new(view, &self.maps, types, work)?.with_opaques(opaques),
+            &parent_domain,
+            callables,
+        );
+        for input in inputs {
+            work.charge(1)?;
+            require_type(cursor, &mut parent_port, types, input.parent, work)?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn closure_body(
+        &self,
+        graph: &super::Graph,
+        facts: &Declarations,
+        closure: ClosureHeader,
+        work: &mut ReservationWork,
+    ) -> Result<(OrdinaryDomain, Option<OrdinaryDomain>), Error> {
+        graph.require_store(&facts.types).map_err(error)?;
+        let view = graph.recipe_view();
+        let writer = self
+            .writer
+            .try_borrow()
+            .map_err(|_| error("reentrant ordinary closure lookup"))?;
+        writer
+            .cursor
+            .require_reader(&self.reader, &view, &facts.types, work)?;
+        let domain = writer.records.closure(&view, facts, closure, work)?;
+        let parent = writer.records.domain_for_raw(&view, closure.parent_raw)?;
+        Ok((domain, parent))
+    }
+
+    pub(super) fn closure_id(
+        &self,
+        reference: s::ClosureRef,
+    ) -> Result<crate::types::closure::ClosureId, &'static str> {
+        self.maps.closure(reference.0 as usize)
+    }
+
+    pub(super) fn closure_ref(
+        &self,
+        identity: crate::types::closure::ClosureId,
+    ) -> Option<s::ClosureRef> {
+        self.maps.closure_ref(identity)
+    }
+
     pub(super) fn body(
         &self,
         graph: &super::Graph,
@@ -168,10 +341,11 @@ impl Lazy {
         context: &Context<'_>,
         facts: &mut Declarations,
         root: ImportedDeclarationId,
+        closures: Vec<crate::types::closure::ClosureId>,
         budget: &mut Headers,
     ) -> Result<Self, Error> {
         let mut work = begin(budget);
-        let result = Self::new(context, facts, root, &mut work);
+        let result = Self::new(context, facts, root, closures, &mut work);
         finish(budget, &work);
         result
     }
@@ -179,6 +353,7 @@ impl Lazy {
         context: &Context<'_>,
         facts: &mut Declarations,
         root: ImportedDeclarationId,
+        closures: Vec<crate::types::closure::ClosureId>,
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
         let rows = context.descriptor.rows();
@@ -194,7 +369,11 @@ impl Lazy {
                 .saturating_add(
                     Cursor::scratch_bytes(rows.types.len()).saturating_sub(size_of::<Cursor>()),
                 )
-                .saturating_add(Maps::allocation_bound(rows.slots.len(), rows.regions.len()))
+                .saturating_add(Maps::allocation_bound(
+                    rows.slots.len(),
+                    rows.regions.len(),
+                    closures.len(),
+                ))
                 .saturating_add(
                     facts
                         .types
@@ -208,7 +387,7 @@ impl Lazy {
             facts.types.arena_identity(),
             root,
         );
-        let maps = Maps::prepaid(&view, &facts.types)?;
+        let maps = Maps::prepaid(&view, &facts.types, closures)?;
         let records = Box::new(OrdinaryRecords::new(&view, work)?);
         let mut port = Reserved::new(view, &maps, &facts.types, work)?.with_opaques(&facts.opaques);
         work.charge(

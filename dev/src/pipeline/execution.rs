@@ -821,24 +821,32 @@ impl Engine {
         };
         // All imported originals, including unused rows, prove before this private
         // provider retains the set or any selected imported Code can be published.
-        for row in originals.iter() {
-            crate::borrow::storage::validate(&row.template().body)
-                .map_err(|e| report.body_error(e.node, e.message))?;
-            if !facts.uses_source_copy() {
-                super::original_contexts::Original::validate_parts_charged(
+        let nested = originals.iter().any(|row| {
+            row.contract().output.is_some()
+                || matches!(row.template().body.owner, Owner::Closure { .. })
+        });
+        if nested {
+            self.prove_nested_imported_originals(report, facts, &originals)?;
+        } else {
+            for row in originals.iter() {
+                crate::borrow::storage::validate(&row.template().body)
+                    .map_err(|e| report.body_error(e.node, e.message))?;
+                if !facts.uses_source_copy() {
+                    super::original_contexts::Original::validate_parts_charged(
+                        facts,
+                        &row.template().body,
+                        row.contract(),
+                    )
+                    .map_err(|e| report.body_error(row.template().body.source, e))?;
+                }
+                self.prove(
+                    report,
                     facts,
-                    &row.template().body,
+                    row.template(),
                     row.contract(),
-                )
-                .map_err(|e| report.body_error(row.template().body.source, e))?;
+                    ProofPurpose::Original,
+                )?;
             }
-            self.prove(
-                report,
-                facts,
-                row.template(),
-                row.contract(),
-                ProofPurpose::Original,
-            )?;
         }
         let retained = facts
             .constant_work
@@ -850,6 +858,104 @@ impl Engine {
         }
         facts.constant_work.template_bytes = retained;
         self.imported = Some(originals);
+        Ok(())
+    }
+    fn prove_nested_imported_originals(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        originals: &body::transported_originals::ImportedOriginals,
+    ) -> Result<(), Error> {
+        let mut prepared = Vec::with_capacity(originals.len());
+        for row in originals.iter() {
+            let body = &row.template().body;
+            let source = body.source;
+            crate::borrow::storage::validate(body)
+                .map_err(|e| report.body_error(e.node, e.message))?;
+            let contract = if facts.uses_source_copy() {
+                super::original_contexts::Original::prepare_imported(facts, body, row.contract())
+                    .map_err(|e| report.body_error(source, e))?
+            } else {
+                super::original_contexts::Original::validate_parts_charged(
+                    facts,
+                    body,
+                    row.contract(),
+                )
+                .map_err(|e| report.body_error(source, e))?;
+                let mut contract = row.contract().clone();
+                if facts.source_bindings.is_some()
+                    || contract.requires_defining_cleanup_preparation()
+                    || body::defining_cleanups::needs_preparation(facts, body)
+                {
+                    body::copy_requirements::prepare(facts, body, &mut contract)
+                        .map_err(|e| report.body_error(source, e))?;
+                }
+                contract
+            };
+            contract
+                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+                .map_err(|e| report.body_error(source, e))?;
+            prepared.push(contract);
+        }
+        let mut analysis = {
+            let contracts = body::regions::Contracts {
+                callables: &facts.lifetimes.callables,
+                nominal_requirements: &facts.lifetimes.nominal_requirements,
+                bodies: Vec::new(),
+            };
+            borrow::regions::check_nested_bodies(
+                &facts.types,
+                &facts.lifetimes.variances,
+                &contracts,
+                originals
+                    .iter()
+                    .zip(&prepared)
+                    .map(|(row, contract)| Ok((contract, &row.template().body))),
+            )
+            .map_err(|e| report.body_optional_error(e.source, &e.message))?
+        };
+        for ((row, contract), regions) in originals
+            .iter()
+            .zip(prepared)
+            .zip(analysis.bodies.iter_mut())
+        {
+            let body = &row.template().body;
+            let mut contract = std::borrow::Cow::Owned(contract);
+            self.prove_loans(
+                report,
+                facts,
+                body,
+                &row.template().destruction,
+                &mut LoanInput {
+                    parameters: &row.template().environment,
+                    contract: &mut contract,
+                    regions,
+                    purpose: ProofPurpose::Original,
+                },
+            )?;
+            if let Owner::Closure {
+                identity,
+                execution: Some(_),
+                ..
+            } = body.owner
+            {
+                let (steps, conditions) = borrow::templates::collect_closure_conditions(
+                    &facts.types,
+                    &facts.lifetimes.nominal_requirements,
+                    &facts.lifetimes.callables,
+                    identity,
+                    contract.as_ref(),
+                    regions.output.as_ref(),
+                )
+                .map_err(|e| report.body_error(body.source, e))?;
+                facts.body_work.canonical_steps =
+                    facts.body_work.canonical_steps.saturating_add(steps);
+                facts
+                    .closures
+                    .retain_conditions(identity, body.source, conditions.as_ref())
+                    .map_err(|e| report.body_error(body.source, e))?;
+            }
+        }
         Ok(())
     }
     fn imported_function(

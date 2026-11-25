@@ -56,8 +56,23 @@ pub(super) fn validate(
     if covered.contains(&false) {
         return Err("source value parameter/formal rows have incomplete actual header coverage");
     }
+    if let Some(closures) = rows.closures() {
+        for header in &closures.headers {
+            work.charge(1)?;
+            let original = &rows.originals[s::bodymap::original(index, header.body)?];
+            closure_bindings(rows, original, header, &mut seen, work)?;
+        }
+    }
     for (index, row) in rows.declarations.iter().enumerate() {
         if row.definition.kind != DefinitionKind::ValueParameter || seen[index] {
+            continue;
+        }
+        if let Some(local) = row.local
+            && let Some((_, closure)) = rows
+                .closures()
+                .and_then(|closures| closures.header_for_body(local.body))
+            && row.definition.parent == Some(closure.owner)
+        {
             continue;
         }
         let Some(HeaderRef::Function(fn_index)) = row
@@ -152,6 +167,81 @@ fn bindings(
             .any(|(ordinal, formal)| formal.declaration.is_some() != bound[ordinal])
     {
         return Err("source original omitted its actual parameter input or named binding");
+    }
+    Ok(())
+}
+
+fn closure_bindings(
+    rows: &SourceRows,
+    original: &s::Original,
+    header: &s::ClosureHeader,
+    seen: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let Some(s::Type::Function(signature)) = rows.types.get(header.body_signature().0 as usize)
+    else {
+        return Err("source closure header lacks its actual function signature");
+    };
+    let arity = signature.parameters.slice(&rows.roots)?.len();
+    work.charge(
+        arity
+            .saturating_mul(2)
+            .saturating_add(original.locals.len()),
+    )?;
+    let mut inputs = vec![false; arity];
+    let mut bound = vec![false; arity];
+    let mut locals = vec![false; original.locals.len()];
+    for local in &original.locals {
+        work.charge(1)?;
+        if let g::LocalKind::Parameter(ordinal) = local.kind {
+            let input = inputs
+                .get_mut(ordinal as usize)
+                .ok_or("source closure parameter input has an unknown formal ordinal")?;
+            if std::mem::replace(input, true) {
+                return Err("source closure repeats an actual parameter input");
+            }
+        }
+    }
+    for binding in &original.parameter_bindings {
+        work.charge(1)?;
+        let input = original
+            .locals
+            .get(binding.input as usize)
+            .ok_or("source closure parameter binding input is unknown")?;
+        let local = original
+            .locals
+            .get(binding.local as usize)
+            .ok_or("source closure parameter binding local is unknown")?;
+        let g::LocalKind::Parameter(ordinal) = input.kind else {
+            return Err("source closure parameter binding input has another actual local kind");
+        };
+        if (ordinal as usize) >= arity {
+            return Err("source closure parameter binding has an unknown formal");
+        }
+        let declaration = rows
+            .declarations
+            .get(binding.declaration.0 as usize)
+            .ok_or("source closure parameter binding declaration is unknown")?;
+        if declaration.definition.kind != DefinitionKind::ValueParameter
+            || declaration.definition.parent != Some(header.owner)
+            || local.definition != Some(binding.declaration)
+            || declaration.local.is_none_or(|slot| {
+                slot.body != original.body
+                    || slot.ordinal != binding.local
+                    || slot.scope != local.scope
+            })
+            || std::mem::replace(&mut seen[binding.declaration.0 as usize], true)
+            || std::mem::replace(&mut bound[ordinal as usize], true)
+            || std::mem::replace(&mut locals[binding.local as usize], true)
+        {
+            return Err(
+                "source closure parameter binding changed its exact declaration/input/local mapping",
+            );
+        }
+    }
+    work.charge(arity)?;
+    if inputs.contains(&false) {
+        return Err("source closure omitted its actual parameter input");
     }
     Ok(())
 }

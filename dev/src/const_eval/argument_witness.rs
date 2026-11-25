@@ -171,7 +171,7 @@ fn check_operand(
                 .encode_primitive(physical, value)
                 .map_err(|_| "paid call scalar differs from its declared primitive type")?;
         }
-        Some(Kind::Adt(..)) => {
+        Some(Kind::Adt(..) | Kind::Closure { .. }) => {
             Reader::new(facts)
                 .view(value)
                 .map_err(|_| "paid call aggregate value is malformed")?;

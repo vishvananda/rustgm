@@ -127,6 +127,13 @@ pub(super) enum Node {
         bound_regions: u32,
         unsafe_: bool,
     },
+    /// Version fourteen: an applied closure type; formation is re-proved on import.
+    Closure {
+        closure: s::ClosureRef,
+        arguments: NodeId,
+        signature: NodeId,
+        environment: NodeId,
+    },
 }
 
 // A const value keeps the node at its version-twelve width.
@@ -439,6 +446,19 @@ impl Arena {
                 self.facts_of(ty, work)?.combine(self.facts_of(next, work)?)
             }
             Node::Function { signature, .. } => self.function_facts(signature, work)?,
+            Node::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } => {
+                let mut facts = self
+                    .facts_of(arguments, work)?
+                    .combine(self.facts_of(signature, work)?)
+                    .combine(self.facts_of(environment, work)?);
+                facts.0 &= !NodeFacts::FORMED;
+                facts
+            }
         })
     }
     fn function_facts(

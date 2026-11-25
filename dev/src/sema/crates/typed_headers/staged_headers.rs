@@ -106,6 +106,7 @@ impl Stage {
     ) -> Result<Self, Error> {
         let mut graph = mapped_source::Graph::prepare(context, facts, budget)?;
         graph.finish_opaques(context, facts, budget)?;
+        graph.finish_closures(context, facts, budget)?;
         let rows = context.descriptor.rows();
         budget.reserve(
             rows.scopes

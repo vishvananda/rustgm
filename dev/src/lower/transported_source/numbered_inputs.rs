@@ -20,13 +20,15 @@ pub(super) fn emit(
     let owner = context
         .body()
         .ok_or("source numbering lacks an original body")?;
-    if facts.body_regions.unit_of(source) != source {
+    let allow_gaps = stage.declaration_policies();
+    if facts.body_regions.unit_of(source) != source
+        && !(allow_gaps && matches!(body.owner, Owner::Closure { .. }))
+    {
         return Err("nested source numbering requires complete parent/unit transport");
     }
     let count = frontier(stage, facts, source, input)?
         .checked_sub(1)
         .ok_or("source numbering frontier precedes its domain")? as usize;
-    let allow_gaps = stage.declaration_policies();
     if count < variables || (!allow_gaps && count != variables) {
         return Err("source numbering omits actual allocations from the original contract");
     }
@@ -38,6 +40,7 @@ pub(super) fn emit(
                 .environment
         }
         Owner::Initializer { .. } => facts.generics.body_environment(definition),
+        Owner::Closure { .. } if allow_gaps => None,
         _ => return Err("source numbering lost its actual declaration body"),
     };
     let aliases = environment.and_then(|row| row.body_aliases());
@@ -111,6 +114,9 @@ fn allocation_order(
     for (id, region) in facts.body_regions.regions_after(source, 0) {
         stage.charge(1)?;
         if region.body != source {
+            if allow_gaps {
+                continue;
+            }
             return Err("source numbering cannot flatten nested allocations");
         }
         let ordinal =
@@ -132,7 +138,11 @@ fn allocation_order(
                     u32::try_from(ordinal + 1)
                         .map_err(|_| "source numbering allocation identity overflow")?,
                 );
-                if !is_proof_gap(input, id) {
+                let foreign_body = facts
+                    .body_regions
+                    .get(source, id)
+                    .is_some_and(|region| region.body != source);
+                if !foreign_body && !is_proof_gap(input, id) {
                     return Err(
                         "source numbering omits an allocation in its complete actual domain",
                     );

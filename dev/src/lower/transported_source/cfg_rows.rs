@@ -139,33 +139,7 @@ fn projection_kind(
         ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
             if stage.nominal_transport() =>
         {
-            let identity = facts
-                .members
-                .identity(field)
-                .ok_or("source projection lost its actual nominal field identity")?;
-            let enumerated = facts
-                .aggregates
-                .get(crate::types::ItemId(identity.owner.0))
-                .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
-            if enumerated && stage.body_nodes() {
-                // A downcast field names its variant; the consumer re-proves
-                // that every use is dominated by that constructor's test.
-                let variant = facts
-                    .members
-                    .variant(field)
-                    .ok_or("source downcast field lost its actual variant")?;
-                s::ProjectionKind::Field {
-                    owner: stage.variant(variant)?,
-                    ordinal: identity.field,
-                }
-            } else if identity.variant != 0 || enumerated {
-                return Err("source nominal field requires its wider variant profile");
-            } else {
-                s::ProjectionKind::Field {
-                    owner: stage.declaration(identity.owner)?,
-                    ordinal: identity.field,
-                }
-            }
+            nominal_projection(stage, facts, field)?
         }
         ir::ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
             if stage.declaration_policies() =>
@@ -226,9 +200,44 @@ fn projection_kind(
         ir::ProjectionKind::Subarray { start, end } if stage.declaration_policies() => {
             s::ProjectionKind::Subarray { start, end }
         }
+        ir::ProjectionKind::CaptureBoundary { mutable } if stage.declaration_policies() => {
+            s::ProjectionKind::CaptureBoundary { mutable }
+        }
         _ => return Err("source projection transport requires its wider explicit contract"),
     })
 }
+fn nominal_projection(
+    stage: &mut Stage,
+    facts: &Declarations,
+    field: crate::sema::members::FieldId,
+) -> Result<s::ProjectionKind, &'static str> {
+    let identity = facts
+        .members
+        .identity(field)
+        .ok_or("source projection lost its actual nominal field identity")?;
+    let enumerated = facts
+        .aggregates
+        .get(crate::types::ItemId(identity.owner.0))
+        .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
+    if enumerated && stage.body_nodes() {
+        let variant = facts
+            .members
+            .variant(field)
+            .ok_or("source downcast field lost its actual variant")?;
+        Ok(s::ProjectionKind::Field {
+            owner: stage.variant(variant)?,
+            ordinal: identity.field,
+        })
+    } else if identity.variant != 0 || enumerated {
+        Err("source nominal field requires its wider variant profile")
+    } else {
+        Ok(s::ProjectionKind::Field {
+            owner: stage.declaration(identity.owner)?,
+            ordinal: identity.field,
+        })
+    }
+}
+
 fn terminator(
     terminator: ir::Terminator,
     branches: bool,
@@ -370,6 +379,13 @@ fn call_context(
     ) {
         return Ok(s::CallContext::ClosedConst);
     }
+    if declaration_policies && matches!(body.owner, Owner::Closure { .. }) {
+        return Ok(if body.const_context {
+            s::CallContext::ConstDefinition
+        } else {
+            s::CallContext::Runtime
+        });
+    }
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source call context has no function owner");
     };
@@ -405,6 +421,12 @@ fn validate(
             kind: super::InitializerKind::Const,
             ..
         } if stage.declaration_policies() => true,
+        Owner::Closure { identity, .. } if stage.declaration_policies() => facts
+            .closures
+            .identity(identity)
+            .ok_or("source closure CFG lost its actual semantic body")?
+            .constant
+            .is_some(),
         _ => return Err("source CFG has no actual function or constant owner"),
     };
     if body.const_context != const_context {
@@ -416,7 +438,9 @@ fn validate(
     if !scalar_values && !body.scalars.is_empty() {
         return Err("source scalar pool requires a wider transport profile");
     }
-    if body.closure_calls.is_some() {
+    if let Some(entries) = body.closure_calls.as_deref()
+        && (!stage.declaration_policies() || entries.has_conversions())
+    {
         return Err("source selected closure entries require a wider transport profile");
     }
     if body.resolved_callables.is_some() {

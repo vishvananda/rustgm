@@ -44,6 +44,7 @@ enum Step {
     Subslice(u64, u64),
     Subarray(u64, u64),
     DynamicIndex(u32),
+    CaptureBoundary,
 }
 /// The identity a fact is keyed and invalidated by.
 #[derive(Clone, Copy)]
@@ -274,6 +275,12 @@ impl<'a> Prover<'a> {
                     u32::try_from(index).map_err(|_| "source projection ordinal overflow")?,
                 ),
                 base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::CaptureBoundary { mutable } => (
+                Step::CaptureBoundary,
+                base.key.mutable && mutable,
                 base.through,
                 base.downcast,
             ),

@@ -1,6 +1,7 @@
 //! Header recipes retain separate type/region/binder and actual trait identities.
 use super::{
-    Input, Writer, address_read, address_write, existential_wire, g, id, option, range, s,
+    Input, Writer, address_read, address_write, child_closure_wire, existential_wire, g, id,
+    option, range, s,
 };
 use crate::support::{constness::Constness, crates::owner_catalog::DeclarationRef};
 
@@ -18,6 +19,7 @@ pub(super) struct TypeColumns<'a> {
     pub lengths: &'a [s::ConstTerm],
     pub dynamics: &'a s::DynamicColumns,
     pub opaques: &'a [s::OpaqueApplication],
+    pub closures: &'a [s::ClosureType],
 }
 /// Every type row, with each range pattern's endpoints and each array's
 /// length term written in place. Both columns are dense in type-row order,
@@ -31,6 +33,7 @@ pub(super) fn types_write(
     let mut next = 0_usize;
     let mut lengths = 0_usize;
     let mut opaques = 0_usize;
+    let mut closures = 0_usize;
     let mut dynamics = existential_wire::Encoder::default();
     for row in rows {
         if let s::Type::Array { element, length } = *row {
@@ -73,6 +76,18 @@ pub(super) fn types_write(
             id(out, app.ordinal)?;
             range(out, app.captures)?;
             opaques += 1;
+        } else if let s::Type::Closure(reference) = *row {
+            let closure = columns
+                .closures
+                .get(closures)
+                .filter(|_| reference.0 as usize == closures)
+                .ok_or("source closure recipes are not in type-row order")?;
+            out.u8(child_closure_wire::TAG)?;
+            id(out, closure.closure.0)?;
+            range(out, closure.arguments)?;
+            id(out, closure.signature.0)?;
+            id(out, closure.environment.0)?;
+            closures += 1;
         } else {
             type_write(out, row)?;
         }
@@ -85,6 +100,9 @@ pub(super) fn types_write(
     }
     if opaques != columns.opaques.len() {
         return Err("source opaque result application has no type row");
+    }
+    if closures != columns.closures.len() {
+        return Err("source closure type recipe has no type row");
     }
     dynamics.finish(columns.dynamics)
 }
@@ -156,6 +174,7 @@ fn type_write(out: &mut Writer, row: &s::Type) -> Result<(), &'static str> {
         s::Type::Pattern { .. } => Err("source pattern type requires its range table"),
         s::Type::Dynamic(_) => Err("source dynamic type requires its bound columns"),
         s::Type::OpaqueResult(_) => Err("source opaque result requires its application table"),
+        s::Type::Closure(_) => Err("source closure type requires its closure columns"),
         s::Type::Array { .. } => Err("source array type requires its length table"),
     }
 }
@@ -166,6 +185,7 @@ pub(super) struct TypeTables {
     pub lengths: Vec<s::ConstTerm>,
     pub dynamics: s::DynamicColumns,
     pub opaques: Vec<s::OpaqueApplication>,
+    pub closures: Vec<s::ClosureType>,
 }
 /// One type row. A range pattern's endpoints and an array's length term are
 /// appended to their tables, and the row names them by position.
@@ -176,6 +196,9 @@ pub(super) fn type_read(
     Ok(match read.reader.u8()? {
         existential_wire::TAG if read.profile.declaration_policies() => {
             existential_wire::read(read, &mut tables.dynamics)?
+        }
+        child_closure_wire::TAG if read.profile.declaration_policies() => {
+            closure_type_read(read, &mut tables.closures)?
         }
         OPAQUE_RESULT if read.profile.declaration_policies() => {
             let app = s::OpaqueApplication {
@@ -263,6 +286,23 @@ pub(super) fn type_read(
         _ => return Err("unknown source function type recipe"),
     })
 }
+fn closure_type_read(
+    read: &mut Input<'_, '_>,
+    closures: &mut Vec<s::ClosureType>,
+) -> Result<s::Type, &'static str> {
+    let closure = s::ClosureType {
+        closure: s::ClosureRef(read.id()?),
+        arguments: read.range()?,
+        signature: g::TypeRef(read.id()?),
+        environment: g::TypeRef(read.id()?),
+    };
+    read.reserve(size_of::<s::ClosureType>())?;
+    let reference =
+        u32::try_from(closures.len()).map_err(|_| "source closure type table overflow")?;
+    closures.push(closure);
+    Ok(s::Type::Closure(s::ClosureTypeRef(reference)))
+}
+
 pub(super) fn signature_write(out: &mut Writer, row: g::Signature) -> Result<(), &'static str> {
     id(out, row.binder.0)?;
     range(out, row.parameters)?;

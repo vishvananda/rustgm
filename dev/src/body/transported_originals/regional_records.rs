@@ -63,6 +63,11 @@ pub(super) fn borrow(
     if kind == BorrowKind::TwoPhase && !view.rows().descriptor().profile().body_nodes() {
         return Err("source two-phase borrows require the version-thirteen body IR profile");
     }
+    if kind == BorrowKind::UniqueImmutable
+        && !view.rows().descriptor().profile().declaration_policies()
+    {
+        return Err("source unique immutable borrows require the version-fourteen profile");
+    }
     Ok(Rvalue::Borrow {
         place: place(view, raw, steps)?,
         kind,
@@ -126,6 +131,9 @@ fn projection(
         s::ProjectionKind::Subarray { start, end } if v14 => {
             ProjectionKind::Subarray { start, end }
         }
+        s::ProjectionKind::CaptureBoundary { mutable } if v14 => {
+            ProjectionKind::CaptureBoundary { mutable }
+        }
         _ => return Err("source extended projection requires the version-fourteen profile"),
     };
     Ok(Projection {
@@ -184,6 +192,10 @@ pub(super) fn validate(
             (
                 ProjectionKind::RawDereference { mutable: a },
                 ProjectionKind::RawDereference { mutable: b },
+            )
+            | (
+                ProjectionKind::CaptureBoundary { mutable: a },
+                ProjectionKind::CaptureBoundary { mutable: b },
             ) => a == b,
             (ProjectionKind::Field(a), ProjectionKind::Field(b))
             | (ProjectionKind::UnionField(a), ProjectionKind::UnionField(b)) => a == b,

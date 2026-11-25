@@ -49,7 +49,6 @@ fn nested_requirements(regions: &regions::Analysis) -> Option<Box<NestedRequirem
         if let BodyKey::Closure(_) = body.key
             && let Some(output) = &body.output
             && let Some((parent, requirements)) = output.parent_requirements()
-            && parent.source().is_some()
         {
             by_parent
                 .get_or_insert_with(Default::default)
@@ -72,6 +71,39 @@ impl State {
         }
         Ok(())
     }
+}
+
+pub(crate) type ClosureConditions = (
+    usize,
+    Option<std::sync::Arc<[crate::types::outlives::Pair]>>,
+);
+
+pub(crate) fn collect_closure_conditions(
+    types: &crate::types::Store,
+    bounds: &crate::types::outlives::Bounds,
+    callables: &crate::types::callable::Templates,
+    identity: ClosureId,
+    contract: &Contract,
+    output: Option<&regions::OutputSummary>,
+) -> Result<ClosureConditions, &'static str> {
+    let mut collector = preconditions::Collector::new(types, bounds, callables);
+    let conditions = match output {
+        Some(summary) => summary.execution_conditions(contract)?,
+        None if contract.output.is_some() => {
+            return Err("closure conditions require their checked output summary");
+        }
+        None => None,
+    };
+    let kind = types
+        .closure_kind(identity)
+        .ok_or("closure conditions require complete call permission")?;
+    let borrowed_receiver = kind != crate::types::closure::CallKind::Once;
+    let universals = contract
+        .universals
+        .checked_sub(u32::from(borrowed_receiver))
+        .ok_or("captured source has no execution receiver lifetime")?;
+    let collected = collector.source(contract, universals, conditions)?;
+    Ok((collector.steps(), collected))
 }
 
 fn future_arena(
@@ -151,11 +183,11 @@ impl Checked<'_> {
         callables: &crate::types::callable::Templates,
         mut publish: impl FnMut(
             ClosureId,
-            crate::body::ir::NodeKey,
+            BodyOrigin,
             Option<&std::sync::Arc<[crate::types::outlives::Pair]>>,
         ) -> Result<(), &'static str>,
     ) -> Result<usize, &'static str> {
-        let mut collector = preconditions::Collector::new(types, bounds, callables);
+        let mut steps = 0_usize;
         for (&identity, &index) in &self.state.closures {
             let contract = &self.state.contracts[index];
             let template = self
@@ -171,32 +203,19 @@ impl Checked<'_> {
             ) {
                 continue;
             }
-            let conditions = match &self.state.regions.bodies[index].output {
-                Some(summary) => summary.execution_conditions(contract)?,
-                None if contract.output.is_some() => {
-                    return Err("closure conditions require their checked output summary");
-                }
-                None => None,
-            };
-            let source = template.body.source;
-            let kind = types
-                .closure_kind(identity)
-                .ok_or("closure conditions require complete call permission")?;
-            let borrowed_receiver = kind != crate::types::closure::CallKind::Once;
-            let universals = contract
-                .universals
-                .checked_sub(u32::from(borrowed_receiver))
-                .ok_or("captured source has no execution receiver lifetime")?;
-            let conditions = collector.source(contract, universals, conditions)?;
-            publish(
+            let conditions = collect_closure_conditions(
+                types,
+                bounds,
+                callables,
                 identity,
-                source
-                    .source()
-                    .ok_or("imported closure conditions require their imported header catalog")?,
-                conditions.as_ref(),
+                contract,
+                self.state.regions.bodies[index].output.as_ref(),
             )?;
+            let source = template.body.source;
+            publish(identity, source, conditions.1.as_ref())?;
+            steps = steps.saturating_add(conditions.0);
         }
-        Ok(collector.steps())
+        Ok(steps)
     }
     /// Transport data is derived from an exact checked original, never a runtime permit.
     pub(crate) fn conditional_sources(
@@ -328,6 +347,17 @@ impl Checked<'_> {
     pub fn closure(&self, identity: ClosureId) -> Option<(&Template, &Contract)> {
         let &index = self.state.closures.get(&identity)?;
         Some((self.templates.get(index)?, &self.state.contracts[index]))
+    }
+    pub(crate) fn closure_proof(
+        &self,
+        identity: ClosureId,
+    ) -> Option<(&Template, &Contract, &regions::Body)> {
+        let &index = self.state.closures.get(&identity)?;
+        Some((
+            self.templates.get(index)?,
+            &self.state.contracts[index],
+            &self.state.regions.bodies[index],
+        ))
     }
     /// The original lexical body already checked these child requirements.
     /// Native specialization transports them into its own ordinary proof scope.

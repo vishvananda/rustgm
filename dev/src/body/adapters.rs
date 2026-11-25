@@ -17,7 +17,7 @@ use crate::{
 /// A derived callable interface still requires its sealed original source proof.
 pub(crate) struct Template {
     adapter: crate::types::closure::Adapter,
-    source: crate::resolve::unit::NodeKey,
+    source: crate::body::ir::BodyOrigin,
     public: TypeId,
     original: TypeId,
     instance: Option<crate::types::instance::Instance>,
@@ -40,7 +40,7 @@ impl Template {
             return Err("receiver adapter has no declared execution signature");
         };
         if input.key != BodyKey::ClosureAdapter(self.adapter)
-            || input.source != self.source.into()
+            || input.source != self.source
             || input.signature != Some(self.signature)
             || input.universals != bound_regions
         {
@@ -59,7 +59,7 @@ impl Template {
         };
         self.adapter.validate(types)?;
         if original.instance != self.instance
-            || original.source != self.source.into()
+            || original.source != self.source
             || !matches!(original.owner, Owner::Closure { identity: actual, signature, execution: Some(execution) }
                 if identity == actual && signature == self.public && execution == self.original)
         {
@@ -76,7 +76,7 @@ impl Template {
             self.receiver,
             self.adapter,
         )?;
-        if body.source != self.source.into()
+        if body.source != self.source
             || body.instance != Some(self.adapter.instance())
             || !matches!(body.owner, Owner::ClosureAdapter { adapter, signature }
                 if adapter == self.adapter && signature == self.signature)
@@ -97,13 +97,18 @@ pub(crate) fn build(
         .adapter()
         .ok_or("missing selected receiver adapter")?;
     let (source, prepared) = selected.validate_adapter(facts)?;
+    let origin = facts
+        .closures
+        .origin(source.identity)
+        .ok_or("missing closure source origin")?;
     let execution = prepared.execution;
     let canonical = prepared.canonical;
-    // An opaque-defining owner is checked as a template family as well, so
-    // its closure reaches this wrapper as an instance of that original.
-    let generic = source
-        .owner
-        .is_some_and(|owner| crate::body::templates::owns(facts, owner));
+    // An opaque-defining or imported owner is checked as a template family as well,
+    // so its closure reaches this wrapper as an instance of that original.
+    let generic = origin.source().is_none()
+        || source
+            .owner
+            .is_some_and(|owner| crate::body::templates::owns(facts, owner));
     let instance = generic.then_some(adapter.instance());
     let public = if generic {
         let Some(Kind::Closure { signature, .. }) = facts.types.kind(adapter.instance().ty())
@@ -123,7 +128,7 @@ pub(crate) fn build(
         return Err("receiver adapter requires a proved closure source");
     };
     if original.instance != instance
-        || original.source != source.semantic_source().into()
+        || original.source != origin
         || identity != source.identity
         || signature != public
         || (!generic && original_execution != canonical.signature)
@@ -149,23 +154,12 @@ pub(crate) fn build(
         .list(parameters)
         .ok_or("missing adapter parameters")?
         .to_vec();
-    let mut writer = Writer::new(source, adapter, execution, &parameters, result)?;
-    let mut contract = contract(source.semantic_source(), adapter, execution);
+    let mut writer = Writer::new(origin, adapter, execution, &parameters, result)?;
+    let mut contract = contract(origin, adapter, execution);
     let requirements = preconditions::selected(facts, source, canonical, adapter)?;
     contract.assumptions.extend_from_slice(requirements.pairs());
     for proof in prepared.proofs {
-        crate::body::instantiate::retain_closure_proof(
-            facts,
-            &mut contract,
-            proof,
-            (0..execution.universals)
-                .map(|slot| {
-                    let slot = u16::try_from(slot).map_err(|_| "too many adapter lifetimes")?;
-                    Ok((slot, RegionId::bound(0, slot)?))
-                })
-                .collect::<Result<Vec<_>, &'static str>>()?
-                .into_iter(),
-        )?;
+        retain_adapter_proof(facts, &mut contract, proof, execution.universals)?;
     }
     let result = writer.invoke(
         &mut facts.types,
@@ -181,7 +175,7 @@ pub(crate) fn build(
         .map_err(|_| "receiver adapter source Copy preparation failed")?;
     let template = Template {
         adapter,
-        source: source.semantic_source(),
+        source: origin,
         public,
         original: original_execution,
         instance,
@@ -195,6 +189,21 @@ pub(crate) fn build(
         input: contract,
         template,
     })
+}
+
+fn retain_adapter_proof(
+    facts: &mut Declarations,
+    contract: &mut Contract,
+    proof: crate::types::lifetime_proof::Obligations,
+    universals: u32,
+) -> Result<(), &'static str> {
+    let slots = (0..universals)
+        .map(|slot| {
+            let slot = u16::try_from(slot).map_err(|_| "too many adapter lifetimes")?;
+            Ok((slot, RegionId::bound(0, slot)?))
+        })
+        .collect::<Result<Vec<_>, &'static str>>()?;
+    crate::body::instantiate::retain_closure_proof(facts, contract, proof, slots.into_iter())
 }
 
 /// Close the adapter's one block. Its types name its execution's own
@@ -218,7 +227,7 @@ fn finish(
 }
 
 fn contract(
-    source: crate::resolve::unit::NodeKey,
+    source: crate::body::ir::BodyOrigin,
     adapter: crate::types::closure::Adapter,
     execution: crate::sema::closures::Execution,
 ) -> Contract {
@@ -226,7 +235,7 @@ fn contract(
     let region = RegionId(1);
     Contract {
         key: BodyKey::ClosureAdapter(adapter),
-        source: source.into(),
+        source,
         signature: Some(execution.signature),
         universals: execution.universals,
         assumptions: Vec::new(),
@@ -257,24 +266,31 @@ struct Writer {
 }
 impl Writer {
     fn new(
-        source: crate::sema::closures::Body,
+        origin: crate::body::ir::BodyOrigin,
         adapter: crate::types::closure::Adapter,
         execution: crate::sema::closures::Execution,
         parameters: &[TypeId],
         result: TypeId,
     ) -> Result<Self, &'static str> {
-        let mut body = Body::new(
+        let mut body = Body::original(
             Owner::ClosureAdapter {
                 adapter,
                 signature: execution.signature,
             },
-            source.semantic_source(),
+            origin,
             result,
         );
+        let root_site = body.root_site();
         body.instance = Some(adapter.instance());
-        body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
-            source.semantic_source().node,
-        )));
+        body.storage = Some(super::storage::Facts {
+            scope_work: 1,
+            scopes: vec![super::storage::Scope {
+                parent: None,
+                source: root_site,
+                kind: super::scopes::Kind::Body,
+            }],
+            exits: Vec::new(),
+        });
         let mut writer = Self { body };
         for (index, &ty) in parameters.iter().enumerate() {
             let index = u32::try_from(index).map_err(|_| "too many adapter parameters")?;
@@ -285,7 +301,7 @@ impl Writer {
                 kind: LocalKind::Parameter(index),
                 definition: None,
                 mutable: index == 0 && execution.receiver == CallKind::Once,
-                source: source.semantic_source().node.into(),
+                source: root_site,
             });
             writer.statement(Action::StorageLive(LocalId(index)));
         }

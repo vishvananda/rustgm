@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[rustc_diagnostic_item = \"Option\"]",
+  "features": ["auto_traits", "const_closures", "const_destruct", "pattern_types"],
+  "stdout": "6 42 27 15 42 77 22\n",
+  "older_profile": "source Drop operation transport requires version fourteen",
+  "restricted_client": {
+    "path": "missing_bound.rs",
+    "rustc": "not satisfied",
+    "rustgm": "associated type requires an unambiguous validated implementation"
+  }
+}

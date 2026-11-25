@@ -91,6 +91,18 @@ impl Ports {
             work,
         )?;
         let (raw_region, raw_mutable) = match projection.kind {
+            s::ProjectionKind::CaptureBoundary { mutable } => {
+                let actual = builder.node(original, projection.ty, work)?;
+                if actual != base {
+                    return Err("source capture boundary changed its projected type");
+                }
+                let sub = self.subplace_access(builder, original, projection.base, work)?;
+                self.access[index] = Access {
+                    writable: mutable && sub.writable,
+                    unique: sub.unique,
+                };
+                return Ok(());
+            }
             s::ProjectionKind::Field { owner, ordinal } => {
                 builder.nominal_projection(
                     original,
@@ -118,14 +130,7 @@ impl Ports {
                 return Ok(());
             }
             s::ProjectionKind::Tuple(ordinal) => {
-                let Node::Tuple { elements } = builder.arena.nodes[base.0 as usize] else {
-                    return Err("source tuple projection base is not an actual tuple");
-                };
-                let expected = builder.arena.nominal_argument(elements, ordinal, work)?;
-                let actual = builder.node(original, projection.ty, work)?;
-                if actual != expected {
-                    return Err("source tuple projection differs from its ordered element");
-                }
+                Self::tuple_projection(builder, original, base, projection.ty, ordinal, work)?;
                 self.access[index] =
                     self.subplace_access(builder, original, projection.base, work)?;
                 return Ok(());
@@ -165,6 +170,31 @@ impl Ports {
             (raw_region, raw_mutable),
             work,
         )?;
+        Ok(())
+    }
+    fn tuple_projection(
+        builder: &mut Builder<'_, '_, '_>,
+        original: &s::Original,
+        base: super::nodes::NodeId,
+        ty: g::TypeRef,
+        ordinal: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let elements = match builder.arena.nodes[base.0 as usize] {
+            Node::Tuple { elements } => elements,
+            Node::Closure { environment, .. } if builder.domains.declaration_policies => {
+                let Node::Tuple { elements } = builder.arena.nodes[environment.0 as usize] else {
+                    return Err("source closure capture projection base has no capture tuple");
+                };
+                elements
+            }
+            _ => return Err("source tuple projection base is not an actual tuple"),
+        };
+        let expected = builder.arena.nominal_argument(elements, ordinal, work)?;
+        let actual = builder.node(original, ty, work)?;
+        if actual != expected {
+            return Err("source tuple projection differs from its ordered element");
+        }
         Ok(())
     }
     fn deref_access(
@@ -255,7 +285,7 @@ impl Ports {
     }
     /// Locals and temporaries own their values uniquely; a projection's path
     /// is recorded before any projection that names it.
-    fn unique(&self, place: s::Place) -> bool {
+    pub(super) fn unique(&self, place: s::Place) -> bool {
         match place {
             s::Place::Local(_) | s::Place::Temporary(_) => true,
             s::Place::Static(_) => false,

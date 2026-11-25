@@ -417,6 +417,8 @@ pub struct UnionWork {
 /// the existing cold comparison operand box.
 ///
 /// The ABI layout cache replaces its inline state vector with one cold pointer.
+///
+/// Imported closure declarations live out of line in one cold `Option<Box<...>>`.
 #[cfg(test)]
 pub(crate) const DECLARATIONS_SIZE: usize = 7048 - size_of::<Vec<()>>()
     + size_of::<Option<Box<()>>>()
@@ -424,7 +426,7 @@ pub(crate) const DECLARATIONS_SIZE: usize = 7048 - size_of::<Vec<()>>()
     + 6 * size_of::<usize>()
     + 2 * size_of::<usize>()
     + size_of::<usize>()
-    + 7 * size_of::<Option<Box<()>>>()
+    + 8 * size_of::<Option<Box<()>>>()
     + size_of::<Option<crate::types::ItemId>>();
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,

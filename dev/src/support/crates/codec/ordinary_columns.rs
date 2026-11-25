@@ -2,6 +2,7 @@
 mod allocation_columns;
 mod availability_wire;
 mod cfg_columns;
+mod child_closure_wire;
 mod compiler_wire;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/term_codec.rs"]
@@ -181,9 +182,13 @@ pub(super) fn encode_module_availability(
                 return Err("source opaque declaration lacks its canonical application recipe");
             }
             let caller_sites = rows.cold().caller_sites.as_deref();
-            out.u8(u8::from(caller_sites.is_some()))?;
+            let closures = rows.closures().filter(|c| !c.headers.is_empty());
+            out.u8(u8::from(caller_sites.is_some()) | (u8::from(closures.is_some()) << 1))?;
             if let Some(sites) = caller_sites {
                 encode_caller_sites(out, sites)?;
+            }
+            if let Some(closures) = closures {
+                child_closure_wire::encode(out, closures)?;
             }
         } else {
             compiler_wire::encode(out, rows)?;
@@ -336,12 +341,22 @@ fn decode_availability_profile(
                 compiler_wire::decode_opaque_declarations(&mut read, &mut rows)?;
             }
             let body_flags = read.reader.u8()?;
-            if body_flags > 1 {
+            if body_flags > 3 {
                 return Err("unknown v14 body extension trailer flag");
             }
             if body_flags & 1 != 0 {
                 let sites = decode_caller_sites(&mut read)?;
                 read.cold(&mut rows)?.caller_sites = Some(sites);
+            }
+            if body_flags & 2 != 0 {
+                let types = rows
+                    .cold
+                    .as_mut()
+                    .and_then(|cold| cold.closures.as_mut())
+                    .map(|closures| std::mem::take(&mut closures.types))
+                    .unwrap_or_default();
+                let closures = child_closure_wire::decode(&mut read, types)?;
+                read.cold(&mut rows)?.closures = Some(closures);
             }
         } else {
             compiler_wire::decode(&mut read, &mut rows)?;
@@ -477,6 +492,7 @@ fn encode_profile(
             lengths: rows.array_lengths(),
             dynamics: &rows.cold().dynamics,
             opaques: &rows.cold().opaques.applications,
+            closures: rows.closures().map_or(&[][..], |c| c.types.as_slice()),
         },
     )?;
     write_copy(out, &rows.roots, recipe_columns::root_write)?;
@@ -700,26 +716,58 @@ fn decode_profile_with(
             Vec::new()
         },
     };
-    if !tables.ranges.is_empty()
-        || !tables.lengths.is_empty()
-        || !tables.dynamics.is_empty()
-        || !tables.opaques.is_empty()
-        || !diagnostics.is_empty()
-        || !consts.is_empty()
-        || !declared_intrinsics.is_empty()
-        || !comptime_functions.is_empty()
-    {
-        let cold = read.cold(&mut rows)?;
-        cold.pattern_ranges = tables.ranges;
-        cold.array_lengths = tables.lengths;
-        cold.dynamics = tables.dynamics;
-        cold.opaques.applications = tables.opaques;
-        cold.diagnostics = diagnostics;
-        cold.consts = consts;
-        cold.declared_intrinsics = declared_intrinsics;
-        cold.comptime_functions = comptime_functions;
-    }
+    attach_cold_tables(
+        &mut read,
+        &mut rows,
+        tables,
+        diagnostics,
+        consts,
+        declared_intrinsics,
+        comptime_functions,
+    )?;
     Ok((rows, read.bytes))
+}
+
+fn attach_cold_tables(
+    read: &mut Input<'_, '_>,
+    rows: &mut s::SourceRows,
+    tables: recipe_columns::TypeTables,
+    diagnostics: Vec<s::DiagnosticBinding>,
+    consts: Vec<s::ConstTerm>,
+    declared_intrinsics: Vec<s::DeclaredIntrinsic>,
+    comptime_functions: Vec<DeclarationRef>,
+) -> Result<(), &'static str> {
+    if tables.ranges.is_empty()
+        && tables.lengths.is_empty()
+        && tables.dynamics.is_empty()
+        && tables.opaques.is_empty()
+        && tables.closures.is_empty()
+        && diagnostics.is_empty()
+        && consts.is_empty()
+        && declared_intrinsics.is_empty()
+        && comptime_functions.is_empty()
+    {
+        return Ok(());
+    }
+    if !tables.closures.is_empty() {
+        read.reserve(size_of::<s::ClosureColumns>())?;
+    }
+    let cold = read.cold(rows)?;
+    cold.pattern_ranges = tables.ranges;
+    cold.array_lengths = tables.lengths;
+    cold.dynamics = tables.dynamics;
+    cold.opaques.applications = tables.opaques;
+    if !tables.closures.is_empty() {
+        cold.closures = Some(Box::new(s::ClosureColumns {
+            types: tables.closures,
+            ..s::ClosureColumns::default()
+        }));
+    }
+    cold.diagnostics = diagnostics;
+    cold.consts = consts;
+    cold.declared_intrinsics = declared_intrinsics;
+    cold.comptime_functions = comptime_functions;
+    Ok(())
 }
 
 struct Input<'a, 'b> {

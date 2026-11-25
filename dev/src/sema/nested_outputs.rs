@@ -132,8 +132,8 @@ pub struct Link {
 pub struct Formation {
     pub identity: crate::types::closure::ClosureId,
     pub inputs: Box<[super::closures::FormationInput]>,
-    pub(super) inherited: u32,
-    pub(super) callable_slots: Box<[u16]>,
+    pub(crate) inherited: u32,
+    pub(crate) callable_slots: Box<[u16]>,
 }
 impl Formation {
     fn valid_slots(&self, universals: u32) -> bool {

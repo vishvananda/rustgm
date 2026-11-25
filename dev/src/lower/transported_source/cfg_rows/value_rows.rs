@@ -77,6 +77,12 @@ fn place_value(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'st
             place: target,
             kind: ir::BorrowKind::TwoPhase,
         } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(stage, target)?),
+        ir::Rvalue::Borrow {
+            place: target,
+            kind: ir::BorrowKind::UniqueImmutable,
+        } if stage.declaration_policies() => {
+            s::ValueKind::UniqueBorrow(place_or_temp(stage, target)?)
+        }
         ir::Rvalue::Address(target) if stage.declaration_policies() => {
             s::ValueKind::Address(place_or_temp(stage, target)?)
         }
@@ -160,9 +166,14 @@ fn callable(
             pointer_call(stage, facts, context, index, value.kind)
         }
         ir::Rvalue::Call { .. } => call(stage, facts, context, index, value.kind),
-        ir::Rvalue::Reify(operand) if stage.body_nodes() => {
-            reify(facts, body, index, value.ty, operand)
-        }
+        ir::Rvalue::Reify(operand) if stage.body_nodes() => reify(
+            facts,
+            body,
+            index,
+            value.ty,
+            operand,
+            stage.declaration_policies(),
+        ),
         _ => Err(WIDER),
     }
 }
@@ -191,6 +202,7 @@ fn item(
                     crate::types::Kind::Tuple(_)
                         | crate::types::Kind::Array { .. }
                         | crate::types::Kind::ArrayTerm { .. }
+                        | crate::types::Kind::Closure { .. }
                 )
             ) =>
         {
@@ -396,10 +408,11 @@ fn invoke(
         return Err("source call operators require the version-thirteen body IR profile");
     }
     let value = ir::ValueId(u32::try_from(index).map_err(|_| "source call value overflow")?);
-    if body
-        .closure_calls
-        .as_deref()
-        .is_some_and(|entries| entries.get(value).is_some())
+    if !stage.declaration_policies()
+        && body
+            .closure_calls
+            .as_deref()
+            .is_some_and(|entries| entries.get(value).is_some())
     {
         return Err("source closure call entries require their closure transport");
     }
@@ -416,14 +429,15 @@ fn invoke(
 /// Version thirteen: a function item reified to a fn pointer keeps its
 /// preceding Function value; every consumer re-proves the item's applied
 /// signature against the pointer. A constructor needs no shim: each consumer
-/// defines its own constructor instance. Closures and tracked items need a
-/// shim of their own, so each keeps its fence.
+/// defines its own constructor instance. Version fourteen also transports
+/// non-capturing closure reification; tracked items keep their fence.
 fn reify(
     facts: &Declarations,
     body: &Body,
     before: usize,
     result: crate::types::TypeId,
     operand: ir::ValueId,
+    declaration_policies: bool,
 ) -> Result<s::ValueKind, &'static str> {
     use crate::types::Kind;
     if operand.0 as usize >= before {
@@ -433,8 +447,17 @@ fn reify(
         .values
         .get(operand.0 as usize)
         .ok_or("source reification lost its actual operand")?;
-    if matches!(facts.types.kind(input.ty), Some(Kind::Closure { .. })) {
-        return Err("source closure reification requires its closure transport");
+    if let Some(Kind::Closure { environment, .. }) = facts.types.kind(input.ty) {
+        if !declaration_policies {
+            return Err("source closure reification requires its closure transport");
+        }
+        if environment != crate::types::TypeId::UNIT {
+            return Err("source closure reification requires a non-capturing closure");
+        }
+        if !matches!(facts.types.kind(result), Some(Kind::Function { .. })) {
+            return Err("source reification result is not a function pointer");
+        }
+        return Ok(s::ValueKind::Reify(operand.0));
     }
     let (ir::Rvalue::Function(definition), Some(Kind::FunctionItem { item, .. })) =
         (input.kind, facts.types.kind(input.ty))
@@ -496,7 +519,7 @@ fn cast(
                 });
             }
             Cast::FunctionPointer => {
-                reify(facts, body, before, result, operand)?;
+                reify(facts, body, before, result, operand, declaration_policies)?;
                 return Ok(s::ValueKind::AddressCast {
                     kind: s::AddressCast::FunctionPointer,
                     operand: operand.0,
@@ -718,6 +741,7 @@ pub(super) fn requested_formation(
             || facts.types.contains_projections(ty) == Some(true)
             || facts.types.contains_parameters(ty) == Some(true)
             || facts.types.contains_opaques(ty) == Some(true)
+            || facts.types.contains_anonymous_callables(ty) == Some(true)
             || (matches!(
                 facts.types.kind(ty),
                 Some(crate::types::Kind::Function { .. } | crate::types::Kind::FunctionItem { .. })
@@ -737,7 +761,9 @@ fn parameter_reborrow(
     stage.body_nodes()
         && matches!(
             kind,
-            s::ValueKind::Borrow(_) | s::ValueKind::TwoPhaseBorrow(_)
+            s::ValueKind::Borrow(_)
+                | s::ValueKind::TwoPhaseBorrow(_)
+                | s::ValueKind::UniqueBorrow(_)
         )
         && matches!(
             facts.types.kind(ty),

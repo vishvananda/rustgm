@@ -81,7 +81,8 @@ impl Columns {
             || !cold.comptime_functions.is_empty()
             || !cold.opaques.is_empty()
             || cold.statics.is_some()
-            || cold.caller_sites.is_some())
+            || cold.caller_sites.is_some()
+            || cold.closures.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -104,6 +105,7 @@ impl Columns {
                 opaques: cold.opaques.clone(),
                 statics: cold.statics.clone(),
                 caller_sites: cold.caller_sites.clone(),
+                closures: cold.closures.clone(),
                 bodies: None,
             })
         })
@@ -174,6 +176,10 @@ impl Columns {
 
     pub(crate) fn statics(&self) -> Option<&super::super::StaticColumns> {
         self.cold().statics.as_deref()
+    }
+
+    pub(crate) fn closures(&self) -> Option<&super::super::ClosureColumns> {
+        self.cold().closures.as_deref()
     }
 
     #[must_use]

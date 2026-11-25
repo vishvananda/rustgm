@@ -361,7 +361,7 @@ impl Code {
         instance: Instance,
     ) -> Result<(), &'static str> {
         self.require_closure_context(&facts.types)?;
-        let source = crate::body::constants::const_closure_source(facts, instance)?;
+        let _ = crate::body::constants::const_closure_source(facts, instance)?;
         let Some(Kind::Closure {
             identity,
             signature: public,
@@ -391,7 +391,7 @@ impl Code {
         if self.instance != Some(instance)
             || actual != identity
             || signature != public
-            || self.source.source() != Some(source.semantic_source())
+            || facts.closures.origin(identity) != Some(self.source)
             || self.source_only
             || result != self.result
             || convention != crate::types::callable::Convention::RUST

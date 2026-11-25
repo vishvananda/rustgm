@@ -35,6 +35,7 @@ enum Recipe {
     },
     Function(g::Signature),
     Application(ArgumentOwner, g::Range),
+    Closure(s::ClosureTypeRef),
     Projection(s::ProjectionRef),
     Tuple(g::Range),
 }
@@ -114,6 +115,9 @@ impl Arena {
                                 work,
                             )?;
                         }
+                        Recipe::Closure(reference) => {
+                            self.closure_children(domains, key, reference, pending, work)?;
+                        }
                         Recipe::Projection(reference) => {
                             self.projection_children(domains, key, reference, pending, work)?;
                         }
@@ -146,6 +150,9 @@ impl Arena {
                         }
                         Recipe::Application(owner, arguments) => {
                             self.finish_application(domains, key, owner, arguments, work)?
+                        }
+                        Recipe::Closure(reference) => {
+                            self.finish_closure(domains, key, reference, work)?
                         }
                         Recipe::Projection(reference) => {
                             self.finish_projection(domains, key, reference, work)?
@@ -373,6 +380,54 @@ impl Arena {
         self.intern(node, work)
     }
 
+    fn closure_children(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        reference: s::ClosureTypeRef,
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let closure = closure_recipe(domains, reference)?;
+        self.nominal_children(
+            domains,
+            key,
+            closure.arguments,
+            Regions::Local,
+            pending,
+            work,
+        )?;
+        let environment = uses::key(domains, closure.environment, key.rewrite, key.caller, work)?;
+        self.push(pending, Task::Enter(environment), work)?;
+        let signature = uses::key(domains, closure.signature, key.rewrite, key.caller, work)?;
+        self.push(pending, Task::Enter(signature), work)
+    }
+
+    fn finish_closure(
+        &mut self,
+        domains: &DomainIndex<'_, '_>,
+        key: Key,
+        reference: s::ClosureTypeRef,
+        work: &mut Work,
+    ) -> Result<NodeId, &'static str> {
+        let closure = closure_recipe(domains, reference)?;
+        let arguments =
+            self.argument_chain(domains, key, closure.arguments, Regions::Local, work)?;
+        let signature = uses::key(domains, closure.signature, key.rewrite, key.caller, work)?;
+        let signature = self.child(signature, work)?;
+        let environment = uses::key(domains, closure.environment, key.rewrite, key.caller, work)?;
+        let environment = self.child(environment, work)?;
+        self.intern(
+            Node::Closure {
+                closure: closure.closure,
+                arguments,
+                signature,
+                environment,
+            },
+            work,
+        )
+    }
+
     fn finish_tuple(
         &mut self,
         domains: &DomainIndex<'_, '_>,
@@ -441,6 +496,12 @@ impl Arena {
                 s::Type::Projection(reference) => Recipe::Projection(reference),
                 row @ (s::Type::OpaqueFuture(_) | s::Type::OpaqueResult(_)) => {
                     opaque_recipe(domains, row)?
+                }
+                s::Type::Closure(reference) => {
+                    if !domains.declaration_policies {
+                        return Err("source closure transport requires version fourteen");
+                    }
+                    Recipe::Closure(reference)
                 }
                 s::Type::Scalar(scalar) => Recipe::Leaf(Node::Scalar(scalar)),
                 s::Type::F16 => Recipe::Leaf(Node::F16),
@@ -649,6 +710,19 @@ impl Arena {
     }
 }
 
+fn closure_recipe(
+    domains: &DomainIndex<'_, '_>,
+    reference: s::ClosureTypeRef,
+) -> Result<s::ClosureType, &'static str> {
+    domains
+        .headers
+        .rows()
+        .closures()
+        .and_then(|closures| closures.types.get(reference.0 as usize))
+        .copied()
+        .ok_or("source closure recipe is unknown")
+}
+
 fn opaque_recipe(domains: &DomainIndex<'_, '_>, row: s::Type) -> Result<Recipe, &'static str> {
     if !domains.declaration_policies {
         return Err(
@@ -713,6 +787,7 @@ fn function_domain(
             let owner = match domains.original_header(caller.owner, work)? {
                 OriginalHeader::Function(header) => header.declaration,
                 OriginalHeader::Constant { .. } => caller.owner,
+                OriginalHeader::Closure { header, .. } => header.owner,
             };
             (owner, caller)
         }

@@ -240,6 +240,9 @@ impl Builder<'_, '_, '_> {
                 Some(&s::Type::Array { element, length }) => {
                     return self.array_value(original, element, length, fields, work);
                 }
+                Some(&s::Type::Closure(reference)) => {
+                    return self.closure_value(original, reference, fields, work);
+                }
                 _ => {}
             }
         }
@@ -314,6 +317,29 @@ impl Builder<'_, '_, '_> {
             }
         }
         Ok(())
+    }
+    fn closure_value(
+        &mut self,
+        original: &s::Original,
+        reference: s::ClosureTypeRef,
+        fields: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.domains.headers.rows();
+        let closure = rows
+            .closures()
+            .and_then(|closures| closures.types.get(reference.0 as usize))
+            .ok_or("source closure value has no closure type row")?;
+        match rows.types.get(closure.environment.0 as usize) {
+            Some(&s::Type::Scalar(crate::support::crates::Scalar::Unit)) => {
+                if fields.start != fields.end {
+                    return Err("non-capturing source closure value carried capture fields");
+                }
+                Ok(())
+            }
+            Some(&s::Type::Tuple(elements)) => self.tuple_value(original, elements, fields, work),
+            _ => Err("source closure value has an invalid capture environment type"),
+        }
     }
     fn array_value(
         &mut self,

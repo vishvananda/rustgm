@@ -88,6 +88,18 @@ pub struct Environment {
     pub binding_mutability: HashMap<DefId, bool>,
 }
 #[derive(Default)]
+struct ImportedClosures {
+    entries: HashMap<ClosureId, ImportedClosure>,
+}
+
+struct ImportedClosure {
+    body: Body,
+    origin: crate::resolve::body_origin::BodyOrigin,
+    public_binders: u32,
+    constant: bool,
+}
+
+#[derive(Default)]
 pub struct Bodies {
     pub(crate) inputs: HashMap<NodeKey, Vec<RegionId>>,
     pub(crate) values: Vec<Body>,
@@ -96,6 +108,7 @@ pub struct Bodies {
     imports: Option<imports::Imports>,
     conditions: Option<execution_requirements::Catalog>,
     pub(crate) environments: HashMap<ClosureId, Environment>,
+    imported: Option<Box<ImportedClosures>>,
 }
 impl Bodies {
     pub(crate) fn publication_growth(&self) -> crate::support::retained::Growth {
@@ -131,8 +144,101 @@ impl Bodies {
     }
     #[must_use]
     pub fn identity(&self, identity: ClosureId) -> Option<&Body> {
-        let index = self.identities.get(identity.0 as usize)?.checked_sub(1)?;
-        self.values.get(index as usize)
+        if let Some(index) = self
+            .identities
+            .get(identity.0 as usize)
+            .and_then(|&slot| slot.checked_sub(1))
+        {
+            return self.values.get(index as usize);
+        }
+        self.imported
+            .as_deref()?
+            .entries
+            .get(&identity)
+            .map(|entry| &entry.body)
+    }
+    pub(crate) fn origin(
+        &self,
+        identity: ClosureId,
+    ) -> Option<crate::resolve::body_origin::BodyOrigin> {
+        if let Some(index) = self
+            .identities
+            .get(identity.0 as usize)
+            .and_then(|&slot| slot.checked_sub(1))
+        {
+            return self
+                .values
+                .get(index as usize)
+                .map(|body| body.semantic_source().into());
+        }
+        self.imported
+            .as_deref()?
+            .entries
+            .get(&identity)
+            .map(|entry| entry.origin)
+    }
+    pub(crate) fn is_const(&self, identity: ClosureId) -> bool {
+        if let Some(index) = self
+            .identities
+            .get(identity.0 as usize)
+            .and_then(|&slot| slot.checked_sub(1))
+        {
+            return self
+                .values
+                .get(index as usize)
+                .is_some_and(|body| body.constant.is_some());
+        }
+        self.imported
+            .as_deref()
+            .and_then(|imported| imported.entries.get(&identity))
+            .is_some_and(|entry| entry.constant)
+    }
+    pub(crate) fn check_const_source(
+        &self,
+        report: &crate::resolve::expansion::Report,
+        identity: ClosureId,
+    ) -> Result<bool, &'static str> {
+        if let Some(index) = self
+            .identities
+            .get(identity.0 as usize)
+            .and_then(|&slot| slot.checked_sub(1))
+        {
+            return self
+                .values
+                .get(index as usize)
+                .ok_or("closure identity index is stale")?
+                .check_const_source(report);
+        }
+        Ok(self.is_const(identity))
+    }
+    pub(crate) fn public_binders(&self, identity: ClosureId) -> Option<u32> {
+        self.imported
+            .as_deref()?
+            .entries
+            .get(&identity)
+            .map(|entry| entry.public_binders)
+    }
+    pub(crate) fn insert_imported(
+        &mut self,
+        body: Body,
+        origin: crate::resolve::body_origin::BodyOrigin,
+        public_binders: u32,
+        constant: bool,
+    ) -> Result<(), &'static str> {
+        if self.identity(body.identity).is_some() {
+            return Err("imported closure body published twice");
+        }
+        let table = self.imported.get_or_insert_with(Default::default);
+        table.entries.insert(
+            body.identity,
+            ImportedClosure {
+                body,
+                origin,
+                public_binders,
+                constant,
+            },
+        );
+        Ok(())
     }
     pub(crate) fn insert(&mut self, body: Body) -> Result<(), &'static str> {
         let identity = body.identity.0 as usize;
@@ -141,6 +247,10 @@ impl Bodies {
                 .identities
                 .get(identity)
                 .is_some_and(|&index| index != 0)
+            || self
+                .imported
+                .as_deref()
+                .is_some_and(|table| table.entries.contains_key(&body.identity))
         {
             return Err("closure body published twice");
         }

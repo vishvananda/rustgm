@@ -72,12 +72,28 @@ impl Builder<'_, '_, '_> {
                 place,
                 work,
             ),
-            s::ValueKind::Borrow(place) | s::ValueKind::TwoPhaseBorrow(place) => self.borrow_input(
+            s::ValueKind::Borrow(place) => self.borrow_input(
                 original,
                 ports,
                 OperationSite { port, site },
                 value.ty,
-                (place, matches!(value.kind, s::ValueKind::TwoPhaseBorrow(_))),
+                (place, BorrowMode::Immediate),
+                work,
+            ),
+            s::ValueKind::TwoPhaseBorrow(place) => self.borrow_input(
+                original,
+                ports,
+                OperationSite { port, site },
+                value.ty,
+                (place, BorrowMode::TwoPhase),
+                work,
+            ),
+            s::ValueKind::UniqueBorrow(place) => self.borrow_input(
+                original,
+                ports,
+                OperationSite { port, site },
+                value.ty,
+                (place, BorrowMode::Unique),
                 work,
             ),
             s::ValueKind::Constrain(operand) => self.constrained(
@@ -181,31 +197,92 @@ impl Builder<'_, '_, '_> {
         operand: u32,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let s::ValueKind::Function(application) = original.values[operand as usize].kind else {
-            return Err("source reification lost its function item or pointer type");
-        };
         let Some(&s::Type::Function(signature)) =
             self.domains.headers.rows().types.get(ty.0 as usize)
         else {
             return Err("source reification lost its function item or pointer type");
         };
         let pointer = self.node(original, ty, work)?;
-        let caller = Context {
-            owner: original.declaration,
-            frame: Some(
-                self.domains.headers.rows().body_inputs
-                    [self.domains.headers.original_index(original.body)?]
-                .frame,
-            ),
-            body: Some(original.body),
+        if let s::ValueKind::Function(application) = original.values[operand as usize].kind {
+            let caller = Context {
+                owner: original.declaration,
+                frame: Some(
+                    self.domains.headers.rows().body_inputs
+                        [self.domains.headers.original_index(original.body)?]
+                    .frame,
+                ),
+                body: Some(original.body),
+            };
+            return self.arena.reified(
+                self.domains,
+                application,
+                caller,
+                (signature, pointer),
+                work,
+            );
+        }
+        if !self.domains.declaration_policies {
+            return Err("source reification lost its function item or pointer type");
+        }
+        let operand_ty = original.values[operand as usize].ty;
+        let rows = self.domains.headers.rows();
+        let Some(&s::Type::Closure(closure_ref)) = rows.types.get(operand_ty.0 as usize) else {
+            return Err("source reification lost its function item or pointer type");
         };
-        self.arena.reified(
-            self.domains,
-            application,
-            caller,
-            (signature, pointer),
-            work,
+        let closure_type = rows
+            .closures()
+            .and_then(|closures| closures.types.get(closure_ref.0 as usize))
+            .ok_or("source reified closure lost its type row")?;
+        let Some(&s::Type::Function(from_sig)) = rows.types.get(closure_type.signature.0 as usize)
+        else {
+            return Err("source reified closure lost its signature");
+        };
+        if from_sig.convention != signature.convention
+            || from_sig.variadic != signature.variadic
+            || (from_sig.unsafe_ && !signature.unsafe_)
+        {
+            return Err("reified closure pointer differs from its closure signature");
+        }
+        let operand_node = self.node(original, operand_ty, work)?;
+        let Node::Closure {
+            signature: from_node,
+            environment,
+            ..
+        } = self.arena.nodes[operand_node.0 as usize]
+        else {
+            return Err("source reified closure lost its closure node");
+        };
+        if self.arena.nodes[environment.0 as usize]
+            != Node::Scalar(crate::support::crates::Scalar::Unit)
+        {
+            return Err("capturing closure cannot be reified to a function pointer");
+        }
+        let (
+            Node::Function {
+                signature: from_tail,
+                ..
+            },
+            Node::Function {
+                signature: to_tail, ..
+            },
+        ) = (
+            self.arena.nodes[from_node.0 as usize],
+            self.arena.nodes[pointer.0 as usize],
         )
+        else {
+            return Err("source reified closure lost its function signature node");
+        };
+        self.arena
+            .same(
+                self.domains,
+                from_tail,
+                to_tail,
+                Opening::Relation {
+                    body: original.body,
+                },
+                work,
+            )
+            .map_err(|_| "reified closure pointer differs from its closure signature")
     }
     /// A read relates its exact place type and requests the active Copy query.
     fn read_input(
@@ -243,11 +320,12 @@ impl Builder<'_, '_, '_> {
         ports: &Ports,
         location: OperationSite,
         ty: g::TypeRef,
-        borrow: (s::Place, bool),
+        borrow: (s::Place, BorrowMode),
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let OperationSite { port, site } = location;
-        let (place, two_phase) = borrow;
+        let (place, mode) = borrow;
+        let two_phase = mode == BorrowMode::TwoPhase;
         let rows = self.domains.headers.rows();
         let s::Type::Reference {
             mutable,
@@ -259,10 +337,14 @@ impl Builder<'_, '_, '_> {
         };
         let actual = Ports::place_type(self.domains.headers, original, place, work)?;
         let referent = self.node(original, referent, work)?;
+        let access_ok = match mode {
+            BorrowMode::Immediate => !mutable || ports.writable(original, place, work)?,
+            BorrowMode::TwoPhase => mutable && ports.writable(original, place, work)?,
+            BorrowMode::Unique => mutable && ports.unique(place),
+        };
         if self.node(original, actual, work)? != referent
             && !self.coerced_reborrow(original, place, referent, two_phase, work)?
-            || two_phase && !mutable
-            || mutable && !ports.writable(original, place, work)?
+            || !access_ok
         {
             return Err("source Borrow changed its actual referent or writable place");
         }
@@ -622,6 +704,13 @@ impl Builder<'_, '_, '_> {
             .reborrow(original.body, reference, referent, two_phase, work)
     }
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BorrowMode {
+    Immediate,
+    TwoPhase,
+    Unique,
+}
+
 /// A borrow whose outermost projection dereferences a reference.
 fn reborrowed(original: &s::Original, place: s::Place) -> bool {
     let s::Place::Projection(id) = place else {

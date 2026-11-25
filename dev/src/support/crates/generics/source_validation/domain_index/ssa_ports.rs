@@ -318,6 +318,7 @@ fn dependency(
         s::ValueKind::Read(target)
         | s::ValueKind::Borrow(target)
         | s::ValueKind::TwoPhaseBorrow(target)
+        | s::ValueKind::UniqueBorrow(target)
         | s::ValueKind::Address(target)
         | s::ValueKind::Length(target)
         | s::ValueKind::Validate(target)

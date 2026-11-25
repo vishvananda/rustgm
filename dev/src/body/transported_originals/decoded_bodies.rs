@@ -34,17 +34,42 @@ pub(super) fn append(
         originals
             .charge(1)
             .map_err(|e| context.report.body_optional_error(None, e))?;
-        let definition = context
-            .imported
-            .generic_definition(context.owner, raw.declaration)
-            .map_err(|e| context.report.body_optional_error(None, e))?;
-        crate::sema::crates::prepare_source_original(
-            context.report,
-            facts,
-            definition,
-            originals.steps,
-            body_bound,
-        )?;
+        let target = if rows
+            .closures()
+            .and_then(|closures| closures.header_for_body(raw.body))
+            .is_some()
+        {
+            let identity =
+                crate::sema::crates::source_closure_identity(facts, raw.body, &mut originals.steps)
+                    .map_err(|e| context.report.body_optional_error(None, e))?
+                    .ok_or_else(|| {
+                        context.report.body_optional_error(
+                            None,
+                            "source closure original lost its canonical identity",
+                        )
+                    })?;
+            crate::sema::crates::prepare_source_closure_original(
+                context.report,
+                facts,
+                identity,
+                originals.steps,
+                body_bound,
+            )?;
+            Target::Closure(identity)
+        } else {
+            let definition = context
+                .imported
+                .generic_definition(context.owner, raw.declaration)
+                .map_err(|e| context.report.body_optional_error(None, e))?;
+            crate::sema::crates::prepare_source_original(
+                context.report,
+                facts,
+                definition,
+                originals.steps,
+                body_bound,
+            )?;
+            Target::Declaration(definition)
+        };
         let profile = rows.descriptor().profile();
         if profile == s::Profile::Source2024ModuleConversions || profile.declaration_policies() {
             let current = facts
@@ -75,7 +100,7 @@ pub(super) fn append(
         };
         let before_proof = originals.payload;
         let original = build(
-            context, facts, scratch, originals, definition, &selected, &remaining,
+            context, facts, scratch, originals, target, &selected, &remaining,
         )?;
         // Raw body retention is already in the aggregate bound. Only newly
         // charged proof/canonical scratch extends the next preparation's bound.
@@ -109,25 +134,38 @@ pub(super) struct PendingBody {
     pub(super) quantified_assumptions: Vec<rebuilt_inputs::QuantifiedAssumption>,
 }
 
+#[derive(Clone, Copy)]
+enum Target {
+    Declaration(crate::resolve::model::DefId),
+    Closure(crate::types::closure::ClosureId),
+}
+
 fn build(
     context: &Import<'_>,
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
     work: &mut ImportedOriginals,
-    definition: crate::resolve::model::DefId,
+    target: Target,
     selected: &super::versioned_calls::Index<'_>,
     allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
     let (rebuilt, mut contract, environment, pending) = {
-        let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
-            .map_err(|e| report.body_optional_error(None, e))?
-            .ok_or_else(|| {
-                report.body_optional_error(
-                    None,
-                    "source provided original has no authenticated current data view",
-                )
-            })?;
+        let view = match target {
+            Target::Declaration(definition) => {
+                crate::sema::crates::source_original(facts, definition, &mut work.steps)
+            }
+            Target::Closure(identity) => {
+                crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)
+            }
+        }
+        .map_err(|e| report.body_optional_error(None, e))?
+        .ok_or_else(|| {
+            report.body_optional_error(
+                None,
+                "source provided original has no authenticated current data view",
+            )
+        })?;
         let source = view
             .source()
             .map_err(|e| report.body_optional_error(None, e))?;
@@ -291,7 +329,11 @@ pub(super) fn allocation<'a>(
 ) -> Result<(usize, usize), &'static str> {
     let mut bytes = 4_usize
         .saturating_mul(work.rows.len().saturating_add(additional))
-        .saturating_mul(size_of::<Original>() + size_of::<(crate::resolve::model::DefId, usize)>());
+        .saturating_mul(
+            size_of::<Original>()
+                + size_of::<(crate::resolve::model::DefId, usize)>()
+                + size_of::<(crate::types::closure::ClosureId, usize)>(),
+        );
     let mut visits = 0_usize;
     for raw in originals {
         work.charge(1)?;
@@ -300,21 +342,8 @@ pub(super) fn allocation<'a>(
             .get(rows.original_index(raw.body)?)
             .filter(|input| input.body == raw.body)
             .ok_or("source original preflight omitted its actual raw input owner")?;
-        let clauses = match rows.header(raw.declaration)? {
-            Some(s::HeaderRef::Function(index)) => {
-                let inputs = rows.functions[index as usize].inputs;
-                (inputs.end - inputs.start) as usize
-            }
-            Some(s::HeaderRef::Constant(index))
-                if rows.descriptor().profile().declaration_policies()
-                    && rows.constants()[index as usize].body
-                        == s::ConstantBody::Original(raw.body)
-                    && raw.context == s::CallContext::ClosedConst =>
-            {
-                0
-            }
-            _ => return Err("source original preflight omitted its actual defining header"),
-        };
+        let (clauses, closure_items, closure_bytes) = header_allocation(rows, raw)?;
+        bytes = bytes.saturating_add(closure_bytes);
         if raw.context == s::CallContext::ConstDefinition && !input.parameters.is_empty() {
             bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
         }
@@ -342,6 +371,7 @@ pub(super) fn allocation<'a>(
             .saturating_add(input.type_assumptions.len())
             .saturating_add(input.obligations.len())
             .saturating_add(clauses)
+            .saturating_add(closure_items)
             .saturating_add(owned);
         count = count.saturating_add(normalization_count(&input.normalizations, work)?);
         if let Some(builtins) = &input.builtins {
@@ -374,6 +404,55 @@ pub(super) fn allocation<'a>(
             );
     }
     Ok((bytes, visits))
+}
+
+fn header_allocation(
+    rows: s::ValidatedView<'_>,
+    raw: &s::Original,
+) -> Result<(usize, usize, usize), &'static str> {
+    if let Some((_, closure)) = rows
+        .closures()
+        .and_then(|closures| closures.header_for_body(raw.body))
+    {
+        let (bytes, items) = closure_output_allocation(closure);
+        return Ok((0, items, bytes));
+    }
+    let clauses = match rows.header(raw.declaration)? {
+        Some(s::HeaderRef::Function(index)) => {
+            let inputs = rows.functions[index as usize].inputs;
+            (inputs.end - inputs.start) as usize
+        }
+        Some(s::HeaderRef::Constant(index))
+            if rows.descriptor().profile().declaration_policies()
+                && rows.constants()[index as usize].body == s::ConstantBody::Original(raw.body)
+                && raw.context == s::CallContext::ClosedConst =>
+        {
+            0
+        }
+        _ => return Err("source original preflight omitted its actual defining header"),
+    };
+    Ok((clauses, 0, 0))
+}
+
+fn closure_output_allocation(closure: &s::ClosureHeader) -> (usize, usize) {
+    let Some(output) = closure.output else {
+        return (0, 0);
+    };
+    let mut items = (output.bridges.end - output.bridges.start) as usize;
+    if let Some(formation) = output.formation {
+        items = items
+            .saturating_add((formation.inputs.end - formation.inputs.start) as usize)
+            .saturating_add(
+                (formation.callable_slots.end - formation.callable_slots.start) as usize,
+            );
+    }
+    let bytes = size_of::<crate::sema::nested_outputs::Link>()
+        .saturating_add(size_of::<crate::sema::nested_outputs::Formation>())
+        .saturating_add(items.saturating_mul(
+            size_of::<crate::sema::nested_outputs::Bridge>()
+                + size_of::<crate::sema::closures::FormationInput>(),
+        ));
+    (bytes, items)
 }
 
 fn normalization_count(

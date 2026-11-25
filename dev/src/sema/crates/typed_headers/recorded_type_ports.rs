@@ -64,6 +64,13 @@ impl<'rows> Port<'rows, ReservationWork> for Recorded<'rows, '_, '_> {
     ) -> Result<crate::types::opaque::OpaqueId, Error> {
         self.port.opaque(owner, ordinal, work)
     }
+    fn closure(
+        &self,
+        reference: s::ClosureRef,
+        work: &mut ReservationWork,
+    ) -> Result<crate::types::closure::ClosureId, Error> {
+        self.port.closure(reference, work)
+    }
     fn root(&self) -> ImportedDeclarationId {
         self.port.root()
     }

@@ -47,6 +47,28 @@ impl ImportedOwners {
             Self::Provided(owner) => owner.owns_original(catalog, definition, steps),
         }
     }
+    pub(super) fn owns_closure_original(
+        &self,
+        catalog: &Catalog,
+        identity: crate::types::closure::ClosureId,
+        steps: &mut usize,
+    ) -> Result<bool, &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.owns_closure_original(catalog, identity, steps),
+            Self::Provided(_) => Ok(false),
+        }
+    }
+    pub(super) fn closure_identity_for_body(
+        &self,
+        catalog: &Catalog,
+        body: crate::support::crates::owner_catalog::BodyRef,
+        steps: &mut usize,
+    ) -> Result<Option<crate::types::closure::ClosureId>, &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.closure_identity_for_body(catalog, body, steps),
+            Self::Provided(_) => Ok(None),
+        }
+    }
     pub(super) fn source_original<'a>(
         &'a self,
         catalog: &'a Catalog,
@@ -63,6 +85,23 @@ impl ImportedOwners {
                 owner.require_store(&facts.types)?;
                 owner.owns_original(catalog, definition, steps)?;
                 Err("selected original requires its actual pending body/domain proof port")
+            }
+        }
+    }
+    pub(super) fn source_closure_original<'a>(
+        &'a self,
+        catalog: &'a Catalog,
+        facts: &'a Declarations,
+        headers: &'a Headers,
+        identity: crate::types::closure::ClosureId,
+        steps: &mut usize,
+    ) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
+        match self {
+            Self::Ordinary(graph) => {
+                graph.source_closure_original(catalog, facts, headers, identity, steps)
+            }
+            Self::Provided(_) => {
+                Err("selected original does not own ordinary source closure bodies")
             }
         }
     }

@@ -96,7 +96,7 @@ fn wrapper_contract_cannot_inject_or_replace_declared_premises() -> Result {
     };
     let pair = (RegionId::bound(0, 1)?, RegionId::STATIC);
     let required = Requirements(vec![pair]);
-    let mut contract = super::super::contract(source, adapter, execution);
+    let mut contract = super::super::contract(source.into(), adapter, execution);
     assert!(required.validate(&contract).is_err());
     contract.assumptions.push(pair);
     required.validate(&contract)?;

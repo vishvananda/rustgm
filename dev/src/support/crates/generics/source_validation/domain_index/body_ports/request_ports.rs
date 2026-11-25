@@ -98,6 +98,16 @@ impl DomainIndex<'_, '_> {
                 if frame.parent.is_none()
                     && matches!(
                         self.headers.header(frame.owner, work)?,
+                        Some(HeaderRef::Function(_) | HeaderRef::Constant(_))
+                            if self.declaration_policies
+                    ) =>
+            {
+                Ok(())
+            }
+            s::BinderKind::CallableType
+                if frame.parent.is_none()
+                    && matches!(
+                        self.headers.header(frame.owner, work)?,
                         Some(HeaderRef::Function(_))
                     ) =>
             {
@@ -171,7 +181,8 @@ impl DomainIndex<'_, '_> {
         match (unsafe_, safety) {
             (false, s::CallSafety::Safe) => Ok(()),
             (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
-                let defining = self.original_header(original.declaration, work)?;
+                let defining =
+                    self.original_header_for_body(original.body, original.declaration, work)?;
                 if !self.bodies && (associated || defining.parent().is_some()) {
                     return Err(
                         "source unsafe associated Calls require their wider actual profile",

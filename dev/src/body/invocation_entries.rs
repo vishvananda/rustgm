@@ -163,6 +163,9 @@ impl Entries {
     pub(crate) const fn has_adapters(&self) -> bool {
         self.adapters
     }
+    pub(crate) fn has_conversions(&self) -> bool {
+        !self.conversions.is_empty()
+    }
     #[must_use]
     pub fn get(&self, value: ValueId) -> Option<Entry> {
         self.values.get(&value).copied()

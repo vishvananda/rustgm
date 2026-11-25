@@ -415,7 +415,7 @@ pub(super) fn owner(
                 .closures
                 .identity(identity)
                 .ok_or("missing closure template identity")?;
-            if crate::body::ir::BodyOrigin::from(closure.semantic_source()) != source.source {
+            if facts.closures.origin(identity) != Some(source.source) {
                 return Err("closure instance selects a different source body");
             }
             let owner = closure

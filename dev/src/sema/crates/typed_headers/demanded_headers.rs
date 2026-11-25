@@ -94,7 +94,11 @@ impl State {
         let growth = size_of::<Self>()
             .saturating_add(Cursor::scratch_bytes(rows.types.len()))
             .saturating_sub(size_of::<Cursor>())
-            .saturating_add(Maps::allocation_bound(rows.slots.len(), rows.regions.len()))
+            .saturating_add(Maps::allocation_bound(
+                rows.slots.len(),
+                rows.regions.len(),
+                0,
+            ))
             .saturating_add(rows.functions.len().saturating_mul(size_of::<Pair>()))
             .saturating_add(
                 store.node_allocation_bound(rows.types.len().saturating_add(rows.slots.len())),
@@ -108,7 +112,7 @@ impl State {
                 store.arena_identity(),
                 view.root(),
             ),
-            maps: Maps::prepaid(view, store)?,
+            maps: Maps::prepaid(view, store, Vec::new())?,
             pairs: vec![Pair::Empty; rows.functions.len()],
             reader: None,
             callables: None,

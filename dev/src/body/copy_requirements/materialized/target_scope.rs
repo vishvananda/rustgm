@@ -35,6 +35,30 @@ impl Selected {
                 }
                 definition
             }
+            (
+                Self::Callable(_),
+                Owner::Closure {
+                    identity,
+                    signature,
+                    execution,
+                },
+            ) => {
+                let closure = facts
+                    .closures
+                    .identity(identity)
+                    .ok_or("instance trait scope lost its original closure")?;
+                let expected_universals = closure
+                    .execution
+                    .map_or(closure.universals, |exec| exec.universals);
+                if closure.signature != signature
+                    || closure.execution.map(|exec| exec.signature) != execution
+                    || facts.closures.origin(identity) != Some(body.source)
+                    || contract.universals < expected_universals
+                {
+                    return Err("instance trait scope changed its original closure contract");
+                }
+                return Ok(());
+            }
             (Self::AsyncBody(future), Owner::AsyncBody { .. }) => {
                 let definition = crate::body::coroutines::original_contract(facts, body, contract)?;
                 if facts.checked_future_definition(future)? != definition {
@@ -139,11 +163,11 @@ fn callable_body(
                 execution,
             },
         ) if identity == selected => {
-            let source = facts
+            let _ = facts
                 .closures
                 .identity(identity)
                 .ok_or("instance scope lost its original closure")?;
-            if BodyOrigin::from(source.semantic_source()) != original.source {
+            if facts.closures.origin(identity) != Some(original.source) {
                 return Err("instance scope changed its original closure source");
             }
             (

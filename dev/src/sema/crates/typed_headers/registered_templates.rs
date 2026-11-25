@@ -28,7 +28,9 @@ pub(in crate::sema::crates::typed_headers) use assumption_environments::{
 mod formal_path;
 #[path = "recorded_regions.rs"]
 mod numbering_records;
-pub(in crate::sema::crates::typed_headers) use numbering_records::InitializerHeader;
+pub(in crate::sema::crates::typed_headers) use numbering_records::{
+    ClosureHeader, InitializerHeader,
+};
 #[path = "ordinary_recordings.rs"]
 mod ordinary_recordings;
 pub(in crate::sema::crates::typed_headers) use ordinary_recordings::{

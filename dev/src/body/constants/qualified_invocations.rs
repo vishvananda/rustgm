@@ -68,12 +68,14 @@ pub(super) fn check(
     };
     work.charge(12 + operands.len())?;
     crate::sema::compiler_items::callable_role(facts, kind)?;
-    let source = source(
+    let _ = source(
         facts,
         crate::types::instance::Instance::closure(&facts.types, subject)?,
     )?;
-    if let Some(report) = report {
-        source.check_const_source(report)?;
+    if let Some(report) = report
+        && !facts.closures.check_const_source(report, identity)?
+    {
+        return Err("non-const closures cannot be called in a const context");
     }
     if !facts
         .types
@@ -147,15 +149,16 @@ pub(crate) fn source(
         .closure_declaration(identity)
         .and_then(crate::types::closure::Declaration::constant)
         != Some(true)
-        || body.constant.is_none()
+        || !facts.closures.is_const(identity)
     {
         return Err("non-const closures cannot be called in a const context");
     }
     if let Some(owner) = body.owner {
-        if facts.generics.has_parameters(owner) {
+        if facts.generics.parameters_in_scope(owner).next().is_some() {
             return Err("const closure defining obligations require a scoped continuation");
         }
-        if facts.function_indices.contains_key(&owner)
+        if (facts.function_indices.contains_key(&owner)
+            || facts.constant_functions.contains(&owner))
             && facts
                 .source_bindings
                 .as_deref()
@@ -181,6 +184,9 @@ fn source_site(
 ) -> Result<(), &'static str> {
     let (kind, signature, identity) = selected;
     work.charge(8)?;
+    if body.source.source().is_none() {
+        return imported_site(facts, body, statement, work);
+    }
     body.owner
         .source_caller(facts, body.source, body.instance)?;
     let owner = body
@@ -230,6 +236,41 @@ fn source_site(
     if !matches!(facts.types.kind(original), Some(Kind::Closure { identity: actual, .. }) if actual == identity)
     {
         return Err("const closure call belongs to another source closure identity");
+    }
+    Ok(())
+}
+
+fn imported_site(
+    facts: &Declarations,
+    body: &Body,
+    statement: &Statement,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    use crate::{body::ir::Owner, support::crates::generics::source::CallContext};
+    if !body.const_context {
+        return Err("imported const closure call requires its actual const body context");
+    }
+    body.source.proof_site(statement.source)?;
+    let view = match body.owner {
+        Owner::Function { definition, .. } => {
+            crate::sema::crates::source_original(facts, definition, &mut work.steps)?
+                .ok_or("imported const closure caller lost its actual function original")?
+        }
+        Owner::Closure { identity, .. } => {
+            if !facts.closures.is_const(identity) {
+                return Err("non-const imported closure cannot invoke const closures");
+            }
+            crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)?
+                .ok_or("imported const closure caller lost its actual closure original")?
+        }
+        _ => return Err("imported const closure caller requires a function or closure owner"),
+    };
+    work.charge(2)?;
+    if !view.rows().descriptor().profile().declaration_policies()
+        || view.source()? != body.source
+        || view.raw().context != CallContext::ConstDefinition
+    {
+        return Err("imported const closure caller changed its defining body or effect");
     }
     Ok(())
 }

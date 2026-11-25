@@ -82,7 +82,54 @@ pub(super) fn validate(
             }
         }
     }
+    claim_closures(rows, &mut seen, work)?;
+    validate_originals(rows, &seen, lookup, work)?;
+    if seen.contains(&false) {
+        return Err("source bodies have incomplete exclusive representation coverage");
+    }
+    local_declarations(rows, lookup, work)?;
+    caller_sites(rows, lookup, work)?;
+    Ok(())
+}
+
+fn claim_closures(
+    rows: &SourceRows,
+    seen: &mut [bool],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let Some(closures) = rows.closures() else {
+        return Ok(());
+    };
+    work.charge(closures.headers.len())?;
     let mut previous = None;
+    for header in &closures.headers {
+        if previous.is_some_and(|before| before >= header.body.0) {
+            return Err("source closure headers lack canonical body order");
+        }
+        let owner = rows
+            .body_owners
+            .get(header.body.0 as usize)
+            .ok_or("source closure body reference is unknown")?;
+        if owner.declaration != header.owner
+            || owner.parent.is_none()
+            || owner.kind != BodyKind::Closure
+            || std::mem::replace(&mut seen[header.body.0 as usize], true)
+        {
+            return Err("source closure body has duplicate, foreign or incompatible ownership");
+        }
+        previous = Some(header.body.0);
+    }
+    Ok(())
+}
+
+fn validate_originals(
+    rows: &SourceRows,
+    seen: &[bool],
+    lookup: Option<&s::bodymap::Lookup>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let mut previous_root = None;
+    let mut previous_body = None;
     for (index, original) in rows.originals.iter().enumerate() {
         work.charge(1)?;
         let owner = rows
@@ -95,17 +142,17 @@ pub(super) fn validate(
             || input.body != original.body
             || original.declaration != owner.declaration
             || original.sites == 0
-            || previous.is_some_and(|before| before >= owner.declaration.0)
+            || previous_body.is_some_and(|before| before >= original.body.0)
+            || (owner.parent.is_none()
+                && previous_root.is_some_and(|before| before >= owner.declaration.0))
         {
             return Err("source originals have missing, foreign, duplicate or reordered coverage");
         }
-        previous = Some(owner.declaration.0);
+        previous_body = Some(original.body.0);
+        if owner.parent.is_none() {
+            previous_root = Some(owner.declaration.0);
+        }
     }
-    if seen.contains(&false) {
-        return Err("source bodies have incomplete exclusive representation coverage");
-    }
-    local_declarations(rows, lookup, work)?;
-    caller_sites(rows, lookup, work)?;
     Ok(())
 }
 

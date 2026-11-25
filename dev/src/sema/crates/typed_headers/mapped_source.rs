@@ -5,7 +5,9 @@ mod ingest_roots;
 mod ingested_domains;
 mod lending_originals;
 mod recipe_identity;
-pub(crate) use lending_originals::prepare as prepare_original;
+pub(crate) use lending_originals::{
+    prepare as prepare_original, prepare_closure as prepare_closure_original,
+};
 mod decoded_original;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/ingested_originals.rs"]
@@ -217,11 +219,11 @@ impl Graph {
             .map_err(error)?;
         // Retained maps coexist with the visiting/output vectors and a cursor
         // frontier bounded by node count, even for repeated shared children.
-        recipe_identity::reserve(context, facts, budget)?;
+        let closures = recipe_identity::reserve(context, facts, budget)?;
         let canonical = if context.descriptor.profile().original_domains() {
             budget.reserve(size_of::<Self>())?;
             Canonical::Lazy(Box::new(ingested_domains::Lazy::prepare(
-                context, facts, root, budget,
+                context, facts, root, closures, budget,
             )?))
         } else {
             let bytes = facts
@@ -431,6 +433,26 @@ impl Graph {
                 .copied()
                 .ok_or_else(|| error("source graph has no canonical region at its actual root")),
             Canonical::Lazy(lazy) => lazy.region(reference),
+        }
+    }
+    pub(super) fn closure_id(
+        &self,
+        reference: s::ClosureRef,
+    ) -> Result<crate::types::closure::ClosureId, &'static str> {
+        match &self.canonical {
+            Canonical::Lazy(lazy) => lazy.closure_id(reference),
+            Canonical::Eager { .. } => {
+                Err("source closures require the lazy version-fourteen graph")
+            }
+        }
+    }
+    pub(super) fn closure_ref(
+        &self,
+        identity: crate::types::closure::ClosureId,
+    ) -> Option<s::ClosureRef> {
+        match &self.canonical {
+            Canonical::Lazy(lazy) => lazy.closure_ref(identity),
+            Canonical::Eager { .. } => None,
         }
     }
 }

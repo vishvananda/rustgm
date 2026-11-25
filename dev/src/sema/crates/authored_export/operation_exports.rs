@@ -276,22 +276,7 @@ impl Stage {
             Kind::Adt(item, arguments) => {
                 Ok(has_def(item) && self.transportable_hidden_args(facts, arguments, pending))
             }
-            Kind::Projection(app) => {
-                let Some(trait_app) = facts.types.trait_application(app.trait_application) else {
-                    return Ok(false);
-                };
-                if facts.types.projection_schema(app.item).is_none()
-                    || !has_def(app.item)
-                    || !has_def(trait_app.item)
-                {
-                    return Ok(false);
-                }
-                pending.push(app.subject);
-                Ok(
-                    self.transportable_hidden_args(facts, trait_app.arguments, pending)
-                        && self.transportable_hidden_args(facts, app.arguments, pending),
-                )
-            }
+            Kind::Projection(app) => Ok(self.transportable_hidden_projection(facts, app, pending)),
             Kind::Opaque(id, arguments) => Ok(!facts.is_named_opaque(id)
                 && facts.types.authored_future_template(id)?.is_none()
                 && self.transportable_hidden_args(facts, arguments, pending)),
@@ -301,8 +286,60 @@ impl Stage {
                 region,
                 ..
             } => self.transportable_hidden_dynamic(facts, shape, arguments, region, pending),
+            Kind::Closure {
+                identity,
+                arguments,
+                signature,
+                environment,
+            } => {
+                if !self.has_closure(identity)
+                    || !self.transportable_hidden_args(facts, arguments, pending)
+                {
+                    return Ok(false);
+                }
+                pending.push(signature);
+                pending.push(environment);
+                Ok(true)
+            }
+            Kind::Function {
+                parameters, result, ..
+            } => {
+                let Some(list) = facts.types.list(parameters) else {
+                    return Ok(false);
+                };
+                pending.extend_from_slice(list);
+                pending.push(result);
+                Ok(true)
+            }
             _ => Ok(false),
         }
+    }
+
+    fn transportable_hidden_projection(
+        &self,
+        facts: &Declarations,
+        app: crate::types::projection::Application,
+        pending: &mut Vec<TypeId>,
+    ) -> bool {
+        let Some(trait_app) = facts.types.trait_application(app.trait_application) else {
+            return false;
+        };
+        let has_def = |item: ItemId| {
+            self.definitions
+                .get(item.0 as usize)
+                .copied()
+                .flatten()
+                .is_some()
+        };
+        if facts.types.projection_schema(app.item).is_none()
+            || !has_def(app.item)
+            || !has_def(trait_app.item)
+        {
+            return false;
+        }
+        pending.push(app.subject);
+        self.transportable_hidden_args(facts, trait_app.arguments, pending)
+            && self.transportable_hidden_args(facts, app.arguments, pending)
     }
 
     fn transportable_hidden_dynamic(

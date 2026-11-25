@@ -30,6 +30,19 @@ pub(super) fn closed_arguments(
                         ..
                     })
                 ) => {}
+            Some(Kind::Closure { signature, .. })
+                if store.needs_region_context(parameter) == Some(false)
+                    && store.contains_parameters(parameter) == Some(false)
+                    && store.contains_projections(parameter) == Some(false)
+                    && matches!(
+                        store.kind(signature),
+                        Some(Kind::Function {
+                            bound_regions: 0,
+                            unsafe_: false,
+                            convention: crate::types::callable::Convention::RUST,
+                            ..
+                        })
+                    ) => {}
             Some(Kind::Adt(..) | Kind::Opaque(..))
                 if store.needs_region_context(parameter) == Some(false)
                     && store.contains_parameters(parameter) == Some(false)

@@ -315,11 +315,7 @@ pub(in crate::body) fn finish_factory_block(
     value: ValueId,
 ) -> Result<(), &'static str> {
     use super::{Block, LocalId, Statement, Terminator};
-    let source = body
-        .source
-        .source()
-        .ok_or("source factory requires a real declaration")?
-        .node;
+    let source = body.root_site();
     let block =
         super::BlockId(u32::try_from(body.blocks.len()).map_err(|_| "too many factory blocks")?);
     let count = u32::try_from(body.locals.len()).map_err(|_| "too many factory parameters")?;
@@ -338,7 +334,7 @@ pub(in crate::body) fn finish_factory_block(
         });
     if let Some(last) = count.checked_sub(1).map(LocalId) {
         body.statements.push(Statement {
-            source: source.into(),
+            source,
             action: Action::end_storage(LocalId(0), last),
         });
     }
@@ -347,7 +343,7 @@ pub(in crate::body) fn finish_factory_block(
     body.blocks.push(Block {
         start,
         end,
-        source: source.into(),
+        source,
         terminator: Terminator::Return(value),
     });
     Ok(())

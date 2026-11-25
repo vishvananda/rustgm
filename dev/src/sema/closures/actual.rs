@@ -15,6 +15,9 @@ pub(crate) struct Arguments {
 
 /// Instantiation changes arguments, never the source closure's public binder.
 pub(crate) fn call_binders(facts: &Declarations, source: Body) -> Result<u32, &'static str> {
+    if let Some(binders) = facts.closures.public_binders(source.identity) {
+        return Ok(binders);
+    }
     let Some(Kind::Closure {
         identity,
         signature,

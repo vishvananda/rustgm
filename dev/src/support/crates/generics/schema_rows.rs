@@ -7,8 +7,11 @@ mod availability;
 mod bodies;
 #[path = "bodymap.rs"]
 pub(crate) mod bodymap;
+#[path = "bridged_closures.rs"]
+mod bridged_closures;
 #[path = "compiler_rows.rs"]
 mod compiler_rows;
+pub use bridged_closures::*;
 #[path = "valued_defaults.rs"]
 pub(crate) mod const_defaults;
 #[path = "profile_descriptor.rs"]
@@ -166,6 +169,9 @@ pub enum BinderKind {
         body: BodyRef,
         value: u32,
     },
+    ClosureOriginal {
+        body: BodyRef,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Binder {
@@ -249,6 +255,8 @@ pub enum Type {
     /// `impl Trait` opaque type, whose captures live in `ColdColumns::opaques`.
     OpaqueResult(OpaqueResultRef),
     Dynamic(DynamicTypeRef),
+    /// Version fourteen: an applied closure type whose header lives in `ColdColumns::closures`.
+    Closure(ClosureTypeRef),
     /// Version thirteen: a non-unit tuple whose element types are `roots`
     /// entries, in order. Unit keeps its scalar row.
     Tuple(Range),
@@ -822,6 +830,7 @@ pub struct ColdColumns {
     pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
     pub caller_sites: Option<Box<CallerSiteColumns>>,
+    pub closures: Option<Box<ClosureColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -857,6 +866,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     },
     statics: None,
     caller_sites: None,
+    closures: None,
     bodies: None,
 };
 impl ColdColumns {
@@ -893,6 +903,7 @@ impl ColdColumns {
             && self.opaques.is_empty()
             && self.statics.is_none()
             && self.caller_sites.is_none()
+            && self.closures.is_none()
             && self.bodies.is_none()
     }
 }
@@ -986,6 +997,10 @@ impl Rows {
     #[must_use]
     pub fn array_lengths(&self) -> &[ConstTerm] {
         &self.cold().array_lengths
+    }
+    #[must_use]
+    pub fn closures(&self) -> Option<&ClosureColumns> {
+        self.cold().closures.as_deref()
     }
     #[must_use]
     pub fn constants(&self) -> &[ConstantHeader] {

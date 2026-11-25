@@ -257,7 +257,11 @@ fn output_goal(
                 )
         })
     });
-    if !has_quantified_output {
+    let is_closure = matches!(
+        facts.types.kind(callable.callee),
+        Some(Kind::Closure { .. })
+    );
+    if !has_quantified_output && !is_closure {
         return Err("source call operator result is not its callee's declared Output");
     }
     let tuple = facts.types.intern(Kind::Tuple(parameters))?;

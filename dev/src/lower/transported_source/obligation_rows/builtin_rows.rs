@@ -6,8 +6,19 @@ use std::sync::Arc;
 fn validate_environment(
     facts: &Declarations,
     definition: DefId,
+    closure_source: Option<crate::resolve::unit::NodeKey>,
     environment: &Arc<Environment>,
 ) -> Result<(), &'static str> {
+    if let Some(source) = closure_source
+        && facts
+            .generics
+            .builtin_requirements
+            .get(&source)
+            .and_then(|requirements| requirements.environment.as_ref())
+            .is_some_and(|actual| Arc::ptr_eq(actual, environment))
+    {
+        return Ok(());
+    }
     if facts
         .generics
         .body_environment(definition)
@@ -22,6 +33,7 @@ fn translated_environment(
     stage: &mut Stage,
     facts: &Declarations,
     definition: DefId,
+    closure_source: Option<crate::resolve::unit::NodeKey>,
     environment: Option<&Arc<Environment>>,
 ) -> Result<s::EnvironmentOrigin, &'static str> {
     let Some(environment) = environment else {
@@ -30,7 +42,7 @@ fn translated_environment(
     if facts.generics.body_environment(definition).is_none() {
         return Ok(s::EnvironmentOrigin::Contract);
     }
-    validate_environment(facts, definition, environment)?;
+    validate_environment(facts, definition, closure_source, environment)?;
     // A completed body cache does not turn a contract-derived scope into a
     // declaration environment. Feature premises still require explicit rows.
     if !facts.generics.environments.contains_key(&definition)
@@ -69,7 +81,9 @@ pub(super) fn body_environment(
     definition: DefId,
 ) -> Result<s::EnvironmentOrigin, &'static str> {
     match facts.generics.body_environment(definition) {
-        Some(environment) => translated_environment(stage, facts, definition, Some(environment)),
+        Some(environment) => {
+            translated_environment(stage, facts, definition, None, Some(environment))
+        }
         None => Ok(s::EnvironmentOrigin::Contract),
     }
 }
@@ -77,13 +91,22 @@ pub(super) fn body_environment(
 pub(super) fn emit(
     stage: &mut Stage,
     facts: &Declarations,
+    cfg: &super::Body,
     definition: DefId,
     builtins: &crate::body::regions::BuiltinRequirements,
     context: Context,
     sites: &mut Sites,
 ) -> Result<s::BuiltinInputs, &'static str> {
-    let environment =
-        translated_environment(stage, facts, definition, builtins.environment.as_ref())?;
+    let closure_source = matches!(cfg.owner, super::ir::Owner::Closure { .. })
+        .then(|| cfg.source.source())
+        .flatten();
+    let environment = translated_environment(
+        stage,
+        facts,
+        definition,
+        closure_source,
+        builtins.environment.as_ref(),
+    )?;
     let mut rows = s::BuiltinInputs {
         environment,
         predicates: Vec::new(),

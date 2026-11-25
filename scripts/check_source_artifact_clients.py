@@ -70,7 +70,8 @@ def main():
                                  "source-caller-site-transport",
                                  "source-extended-body-ops",
                                  "source-scoped-normalization-transport",
-                                 "source-protocol-calls-transport"))
+                                 "source-protocol-calls-transport",
+                                 "source-closure-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

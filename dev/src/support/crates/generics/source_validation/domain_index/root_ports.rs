@@ -233,6 +233,158 @@ impl DomainIndex<'_, '_> {
             }
         }
         self.opaque_declaration_roots(work)?;
+        self.closure_header_roots(work)?;
+        Ok(())
+    }
+
+    fn closure_header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let Some(closures) = rows.closures() else {
+            return Ok(());
+        };
+        if !self.declaration_policies {
+            return Err("source closure headers require the version-fourteen profile");
+        }
+        for (index, header) in closures.headers.iter().enumerate() {
+            work.charge(1)?;
+            let signature_ctx = Context {
+                owner: header.owner,
+                frame: None,
+                body: None,
+            };
+            let Some(&s::Type::Function(public_sig)) = rows.types.get(header.signature.0 as usize)
+            else {
+                return Err("source closure header signature is not a function type");
+            };
+            if header.inherited > header.universals
+                || rows
+                    .binders
+                    .get(public_sig.binder.0 as usize)
+                    .is_none_or(|frame| frame.count != header.universals)
+            {
+                return Err("source closure signature binder differs from its universals");
+            }
+            self.types
+                .root(self.headers, signature_ctx, header.signature, work)?;
+            let body_frame_ctx = Context {
+                owner: header.owner,
+                frame: Some(header.binder),
+                body: None,
+            };
+            if let Some(execution) = header.execution {
+                let Some(&s::Type::Function(exec_sig)) =
+                    rows.types.get(execution.signature.0 as usize)
+                else {
+                    return Err("source closure execution signature is not a function type");
+                };
+                if exec_sig.parameters.slice(&rows.roots)?.is_empty()
+                    || rows
+                        .binders
+                        .get(exec_sig.binder.0 as usize)
+                        .is_none_or(|frame| frame.count != execution.universals)
+                {
+                    return Err("source closure execution signature lost its receiver or binder");
+                }
+                self.types
+                    .root(self.headers, signature_ctx, execution.signature, work)?;
+                let Some(&s::Type::Closure(self_ref)) =
+                    rows.types.get(execution.self_ty.0 as usize)
+                else {
+                    return Err("source closure execution self type is not a closure type");
+                };
+                let self_closure = closures
+                    .types
+                    .get(self_ref.0 as usize)
+                    .ok_or("source closure execution self type is unknown")?;
+                if self_closure.closure.0 as usize != index {
+                    return Err("source closure execution self type belongs to another closure");
+                }
+                self.types
+                    .root(self.headers, body_frame_ctx, execution.self_ty, work)?;
+            }
+            if let Some(output) = header.output {
+                self.closure_output_roots(closures, header, output, work)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn closure_output_roots(
+        &self,
+        closures: &s::ClosureColumns,
+        header: &s::ClosureHeader,
+        output: s::ClosureOutput,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let parent_body = rows
+            .body_owners
+            .get(header.body.0 as usize)
+            .and_then(|owner| owner.parent)
+            .ok_or("source closure output link lacks its enclosing parent body")?;
+        let parent_index = self.headers.original_index(parent_body)?;
+        let parent_ctx = Context {
+            owner: header.owner,
+            frame: Some(rows.body_inputs[parent_index].frame),
+            body: Some(parent_body),
+        };
+        let child_ctx = Context {
+            owner: header.owner,
+            frame: Some(header.binder),
+            body: Some(header.body),
+        };
+        let bridges = output.bridges.slice(&closures.bridges)?;
+        let mut output_count = 0_u32;
+        let mut previous_slot = None;
+        for bridge in bridges {
+            work.charge(1)?;
+            if u32::from(bridge.slot) >= output.universals
+                || previous_slot.is_some_and(|before| before >= bridge.slot)
+            {
+                return Err("source closure output bridges have invalid or unordered slots");
+            }
+            self.types
+                .region(self.headers, &self.binders, parent_ctx, bridge.parent, work)?;
+            if bridge.output {
+                output_count = output_count
+                    .checked_add(1)
+                    .ok_or("source closure output revision overflow")?;
+            }
+            previous_slot = Some(bridge.slot);
+        }
+        if output_count != output.revision {
+            return Err("source closure output revision differs from its output bridges");
+        }
+        if let Some(first) = output.creator_only_from
+            && (output.revision != 0
+                || output.formation.is_some()
+                || bridges
+                    .last()
+                    .is_none_or(|bridge| u32::from(bridge.slot) < first))
+        {
+            return Err("source closure creator-only boundary disagrees with its bridges");
+        }
+        if let Some(formation) = output.formation {
+            if formation.inherited > output.universals {
+                return Err("source closure formation inherited slots exceed output universals");
+            }
+            let slots = formation.callable_slots.slice(&closures.callable_slots)?;
+            work.charge(slots.len())?;
+            if slots
+                .iter()
+                .any(|&slot| !(formation.inherited..output.universals).contains(&u32::from(slot)))
+                || slots.windows(2).any(|pair| pair[0] >= pair[1])
+            {
+                return Err("source closure formation callable slots are out of bounds or order");
+            }
+            for input in formation.inputs.slice(&closures.formation_inputs)? {
+                work.charge(1)?;
+                self.types
+                    .root(self.headers, child_ctx, input.child, work)?;
+                self.types
+                    .root(self.headers, parent_ctx, input.parent, work)?;
+            }
+        }
         Ok(())
     }
 

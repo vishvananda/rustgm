@@ -31,7 +31,8 @@ impl DomainIndex<'_, '_> {
         }
         for original in &rows.originals {
             let input = &rows.body_inputs[self.headers.original_index(original.body)?];
-            let header = self.original_header(original.declaration, work)?;
+            let header =
+                self.original_header_for_body(original.body, original.declaration, work)?;
             let context = Context {
                 owner: original.declaration,
                 frame: Some(input.frame),
@@ -45,6 +46,14 @@ impl DomainIndex<'_, '_> {
                 OriginalHeader::Constant { .. } => (
                     self.binders.declaration(original.declaration, work)?,
                     s::CallContext::ClosedConst,
+                ),
+                OriginalHeader::Closure { header, .. } => (
+                    header.binder,
+                    if header.constant {
+                        s::CallContext::ConstDefinition
+                    } else {
+                        s::CallContext::Runtime
+                    },
                 ),
             };
             if input.frame != frame || original.context != call_context {
@@ -71,6 +80,7 @@ impl DomainIndex<'_, '_> {
                     s::ValueKind::Read(s::Place::Temporary(_))
                         | s::ValueKind::Borrow(s::Place::Temporary(_))
                         | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(_))
+                        | s::ValueKind::UniqueBorrow(s::Place::Temporary(_))
                         | s::ValueKind::Address(s::Place::Temporary(_))
                         | s::ValueKind::Length(s::Place::Temporary(_))
                         | s::ValueKind::Validate(s::Place::Temporary(_))
@@ -162,6 +172,12 @@ impl DomainIndex<'_, '_> {
             }
             s::ValueKind::Read(place) => self.read_place(original, index, place, work)?,
             s::ValueKind::Borrow(place) | s::ValueKind::TwoPhaseBorrow(place) => {
+                self.value_place(original, index, place, work)?;
+            }
+            s::ValueKind::UniqueBorrow(place) => {
+                if !self.declaration_policies {
+                    return Err("source unique borrow requires the declaration policy profile");
+                }
                 self.value_place(original, index, place, work)?;
             }
             s::ValueKind::Constrain(operand) | s::ValueKind::EnumCast(operand) => {
@@ -280,13 +296,19 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Reify(operand) => {
                 prefix_value(original, operand, index, work)?;
                 let rows = self.headers.rows();
-                if !matches!(
-                    original.values[operand as usize].kind,
-                    s::ValueKind::Function(_)
-                ) || !matches!(
-                    rows.types.get(value.ty.0 as usize),
-                    Some(s::Type::Function(_))
-                ) {
+                let operand_val = &original.values[operand as usize];
+                let valid_operand = matches!(operand_val.kind, s::ValueKind::Function(_))
+                    || (self.declaration_policies
+                        && matches!(
+                            rows.types.get(operand_val.ty.0 as usize),
+                            Some(s::Type::Closure(_))
+                        ));
+                if !valid_operand
+                    || !matches!(
+                        rows.types.get(value.ty.0 as usize),
+                        Some(s::Type::Function(_))
+                    )
+                {
                     return Err("source reification lost its function item or pointer type");
                 }
             }
@@ -508,7 +530,8 @@ impl DomainIndex<'_, '_> {
                     .region(self.headers, &self.binders, context, region, work)?;
             }
             s::ProjectionKind::Field { .. } | s::ProjectionKind::Tuple(_) => {}
-            s::ProjectionKind::RawDereference { .. }
+            s::ProjectionKind::CaptureBoundary { .. }
+            | s::ProjectionKind::RawDereference { .. }
             | s::ProjectionKind::UnionField { .. }
             | s::ProjectionKind::ConstantIndex(_)
             | s::ProjectionKind::FromEnd { .. }
@@ -677,10 +700,11 @@ impl DomainIndex<'_, '_> {
                 is_int(from) && matches!(to, Some(s::Type::RawPointer { .. }))
             }
             s::AddressCast::FunctionPointer => {
-                matches!(
+                (matches!(
                     original.values[operand as usize].kind,
                     s::ValueKind::Function(_)
-                ) && matches!(to, Some(s::Type::Function(_)))
+                ) || matches!(from, Some(s::Type::Closure(_))))
+                    && matches!(to, Some(s::Type::Function(_)))
             }
         };
         if !valid {

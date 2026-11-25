@@ -1,5 +1,6 @@
 //! Checked source preconditions remain debts for every selected caller.
-use super::{Bodies, ClosureId, NodeKey, RegionId};
+use super::{Bodies, ClosureId, RegionId};
+use crate::resolve::body_origin::BodyOrigin;
 use crate::support::hash::HashMap;
 use crate::types::outlives::Pair;
 use std::sync::Arc;
@@ -41,13 +42,13 @@ impl Bodies {
     pub(crate) fn retain_conditions(
         &mut self,
         identity: ClosureId,
-        source: NodeKey,
+        source: BodyOrigin,
         conditions: Option<&Arc<[Pair]>>,
     ) -> Result<(), &'static str> {
         let body = self
             .identity(identity)
             .ok_or("missing conditional closure source")?;
-        if body.source != source || body.execution.is_none() {
+        if self.origin(identity) != Some(source) || body.execution.is_none() {
             return Err("execution conditions have a different source contract");
         }
         for &(a, b) in conditions.map_or(&[][..], |pairs| pairs.as_ref()) {

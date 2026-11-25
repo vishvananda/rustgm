@@ -154,6 +154,15 @@ pub(super) trait Port<'rows, B: Budget>: sealed::Sealed {
             "opaque result requires its actual imported declaration reservation",
         ))
     }
+    fn closure(
+        &self,
+        _: s::ClosureRef,
+        _: &mut B,
+    ) -> Result<crate::types::closure::ClosureId, Error> {
+        Err(error(
+            "closure recipe requires its actual imported closure reservation",
+        ))
+    }
     fn mapped_applications(&self) -> bool {
         false
     }
@@ -566,6 +575,35 @@ impl<M: Storage> Worklist<M> {
         );
         store.intern(kind).map(Demand::Ready).map_err(error)
     }
+    fn closure_type<'rows, B: Budget, P: Port<'rows, B>>(
+        &self,
+        port: &mut P,
+        store: &mut Store,
+        reference: s::ClosureTypeRef,
+        budget: &mut B,
+    ) -> Result<Demand<TypeId>, Error> {
+        let row = *port
+            .rows()
+            .closures()
+            .and_then(|closures| closures.types.get(reference.0 as usize))
+            .ok_or_else(|| error("unknown imported closure type recipe"))?;
+        let identity = port.closure(row.closure, budget)?;
+        let arguments = match self.arguments(port, store, row.arguments, budget)? {
+            Demand::Ready(args) => args,
+            Demand::Blocked(dependency) => return Ok(Demand::Blocked(dependency)),
+        };
+        let signature = self.child(row.signature)?;
+        let environment = self.child(row.environment)?;
+        store
+            .intern(Kind::Closure {
+                identity,
+                arguments,
+                signature,
+                environment,
+            })
+            .map(Demand::Ready)
+            .map_err(error)
+    }
     fn intern<'rows, B: Budget, P: Port<'rows, B>>(
         &self,
         port: &mut P,
@@ -576,6 +614,9 @@ impl<M: Storage> Worklist<M> {
         let kind = match row {
             s::Type::Dynamic(reference) => {
                 return self.dynamic_type(port, store, reference, budget);
+            }
+            s::Type::Closure(reference) => {
+                return self.closure_type(port, store, reference, budget);
             }
             s::Type::OpaqueFuture(reference) => {
                 return self.opaque_type(port, store, reference, budget);
@@ -821,6 +862,20 @@ fn next(
     Ok(match row {
         s::Type::Dynamic(_) => {
             return Err(error("dynamic input traversal requires its actual cursor"));
+        }
+        s::Type::Closure(reference) => {
+            let row = rows
+                .closures()
+                .and_then(|closures| closures.types.get(reference.0 as usize))
+                .ok_or_else(|| error("unknown closure type dependencies"))?;
+            row.arguments
+                .slice(&rows.arguments)
+                .map_err(error)?
+                .iter()
+                .copied()
+                .filter_map(type_child)
+                .chain([row.signature, row.environment])
+                .nth(cursor)
         }
         s::Type::OpaqueFuture(reference) => {
             let row = rows

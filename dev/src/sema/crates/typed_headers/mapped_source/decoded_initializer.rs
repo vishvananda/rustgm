@@ -96,6 +96,7 @@ impl Graph {
                 graph: self,
                 store: &facts.types,
                 domain: Some(domain),
+                parent_domain: None,
             },
             members: &facts.members,
             catalog,

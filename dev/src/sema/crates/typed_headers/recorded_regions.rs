@@ -50,9 +50,27 @@ pub(in crate::sema::crates::typed_headers) struct InitializerHeader {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema::crates::typed_headers) struct ClosureHeader {
+    pub identity: crate::types::closure::ClosureId,
+    pub closure_ref: s::ClosureRef,
+    pub owner: crate::resolve::model::DefId,
+    pub owner_row: DeclarationRef,
+    pub raw: BodyRef,
+    pub parent_raw: BodyRef,
+    pub body: ImportedBodyId,
+    pub signature: TypeId,
+    pub execution: Option<TypeId>,
+    pub binder: g::BinderRef,
+    pub universals: u32,
+    pub constant: bool,
+    pub require_result_formation: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum NumberedDeclaration {
     Function(RecordedFunction),
     Initializer(InitializerHeader),
+    Closure(ClosureHeader),
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct RecordedFunction {
@@ -186,6 +204,40 @@ impl DomainStage {
         )
     }
 
+    pub(super) fn closure(
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: ClosureHeader,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(12)?;
+        let rows = view.rows()?;
+        let header = rows
+            .closures()
+            .and_then(|closures| closures.headers.get(expected.closure_ref.0 as usize))
+            .ok_or_else(|| error("recorded closure lost its actual closure header"))?;
+        if header.body != expected.raw
+            || header.owner != expected.owner_row
+            || header.binder != expected.binder
+            || view.body(expected.raw, work)? != expected.body
+            || store.kind(expected.signature).is_none()
+            || expected
+                .execution
+                .is_some_and(|exec| store.kind(exec).is_none())
+        {
+            return Err(error(
+                "recorded closure changed its actual declaration, header or body",
+            ));
+        }
+        Self::numbered(
+            view,
+            store,
+            expected.body,
+            expected.raw,
+            NumberedDeclaration::Closure(expected),
+        )
+    }
+
     fn numbered(
         view: &RecipeView<'_>,
         store: &Store,
@@ -205,6 +257,12 @@ impl DomainStage {
                 expected.row,
                 expected.binder,
                 s::BinderKind::DeclarationHeader,
+                expected.universals,
+            ),
+            NumberedDeclaration::Closure(expected) => (
+                expected.owner_row,
+                expected.binder,
+                s::BinderKind::ClosureOriginal { body: expected.raw },
                 expected.universals,
             ),
         };
@@ -402,7 +460,7 @@ impl RecordedDomain {
     pub(super) fn expected_function(&self) -> Option<&RecordedFunction> {
         match &self.seal.expected {
             NumberedDeclaration::Function(ready) => Some(ready),
-            NumberedDeclaration::Initializer(_) => None,
+            NumberedDeclaration::Initializer(_) | NumberedDeclaration::Closure(_) => None,
         }
     }
     pub(super) const fn raw(&self) -> BodyRef {
@@ -431,6 +489,7 @@ impl RecordedDomain {
             NumberedDeclaration::Initializer(ready) => {
                 DomainStage::initializer(view, store, *ready, work)?
             }
+            NumberedDeclaration::Closure(ready) => DomainStage::closure(view, store, *ready, work)?,
         };
         self.require(&stage, store, work)
     }
@@ -651,6 +710,9 @@ impl Owner {
     }
     pub(super) fn retained_bytes(&self) -> usize {
         self.bytes
+    }
+    pub(super) fn entry(&self, index: u32) -> Option<&Arc<RecordedDomain>> {
+        self.entries.get(index as usize).and_then(Option::as_ref)
     }
     pub(super) fn selected_record<'a>(
         &'a self,

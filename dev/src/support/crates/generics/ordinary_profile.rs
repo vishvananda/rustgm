@@ -1458,7 +1458,6 @@ fn body_operation_role(role: LangItem) -> bool {
             | LangItem::ReceiverTarget
             | LangItem::SliceLen
             | LangItem::OffsetOf
-            | LangItem::Unsize
             | LangItem::RangeInclusiveNew
             | LangItem::BikeshedGuaranteedNoDrop
     ) || interval_roles::ROLES.contains(&role)
@@ -1550,10 +1549,6 @@ fn binding_declarations(
     let mut declarations = [None; LangItem::ALL.len()];
     for role in &rows.roles {
         work.charge(declarations.len())?;
-        let allowed = role_allowed(profile, role.role);
-        if !allowed {
-            return Err("source role requires a wider explicit source profile");
-        }
         let address = role.declaration;
         if address.artifact != super::super::ArtifactRef(0)
             || declarations.contains(&Some(address.declaration))
@@ -1561,6 +1556,7 @@ fn binding_declarations(
         {
             return Err("source role binding is duplicated or belongs to a foreign provider");
         }
+        let header = headers.header(address.declaration, work)?;
         let declaration = rows
             .declarations
             .get(address.declaration.0 as usize)
@@ -1570,8 +1566,11 @@ fn binding_declarations(
             rows,
             declaration.definition.kind,
             role.role,
-            headers.header(address.declaration, work)?,
+            header,
         )?;
+        if !role_allowed(profile, role.role) {
+            return Err("source role requires a wider explicit source profile");
+        }
         declarations[role.role.index()] = Some(address.declaration);
     }
     Ok(declarations)
@@ -1677,7 +1676,7 @@ pub(super) fn bindings(
         sizing,
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
-        unsize: bound(LangItem::Unsize),
+        unsize: body_role(LangItem::Unsize),
         discriminant: bound(LangItem::DiscriminantKind),
         fn_pointer: bound(LangItem::FnPtrTrait),
         field: bound(LangItem::Field),
@@ -1878,6 +1877,7 @@ fn role_header(
     header: Option<super::super::HeaderRef>,
 ) -> Result<(), &'static str> {
     use super::super::HeaderRef;
+    let modern = profile == BindingProfile::BodyOperations;
     match (role, header) {
         (role, header)
             if LangItem::TRY_PROTOCOL.contains(&role) || LangItem::FOR_PROTOCOL.contains(&role) =>
@@ -1909,13 +1909,12 @@ fn role_header(
         {
             range_value_header(profile, rows, kind, role, header)?;
         }
-        (role, Some(HeaderRef::Function(_)))
-            if role.is_runtime_import() && profile == BindingProfile::BodyOperations => {}
+        (role, Some(HeaderRef::Function(_))) if role.is_runtime_import() && modern => {}
         (role, Some(HeaderRef::Nominal(index)))
             if (role == LangItem::AllocLayout || LangItem::NOMINAL_WRAPPERS.contains(&role))
-                && profile == BindingProfile::BodyOperations
+                && modern
                 && wrapper_header(rows, kind, role, index) => {}
-        (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) => {
+        (role, _) if LangItem::NOMINAL_WRAPPERS.contains(&role) && modern => {
             return Err("source wrapper role requires its actual nominal header");
         }
         (LangItem::PointeeTrait | LangItem::DiscriminantKind, Some(HeaderRef::Trait(_)))

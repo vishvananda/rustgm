@@ -17,30 +17,7 @@ pub(super) fn check(
         return Ok(());
     }
     work.charge(1)?;
-    let caller_policy = if view.rows().descriptor().profile().declaration_policies()
-        && view.signature().is_some()
-    {
-        crate::sema::target_features::imported_policy(facts, view.definition())?
-    } else {
-        None
-    };
-    let caller_unsafe = if let Some(signature) = view.signature() {
-        let defining_header = facts
-            .function_header(view.definition())?
-            .ok_or("source call safety lost its actual installed caller header")?;
-        if defining_header.signature != signature || defining_header.body != Some(body.source) {
-            return Err("source call safety changed its actual defining body/header");
-        }
-        let Some(Kind::Function { unsafe_, .. }) = facts.types.kind(signature) else {
-            return Err("source call safety caller signature is not a function");
-        };
-        unsafe_ && !matches!(caller_policy, Some((_, false)))
-    } else {
-        if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
-            return Err("source call safety changed its actual initializer body");
-        }
-        false
-    };
+    let (caller_policy, caller_unsafe) = caller_context(facts, view, body)?;
     for request in &view.raw().calls {
         work.charge(1)?;
         view.site(request.site, &mut work.steps)?;
@@ -111,6 +88,46 @@ pub(super) fn check(
     }
     work.charge(0)
 }
+type CallerPolicy = Option<(crate::sema::target_features::FeatureSet, bool)>;
+
+fn caller_context(
+    facts: &Declarations,
+    view: &SourceOriginal<'_>,
+    body: &Body,
+) -> Result<(CallerPolicy, bool), &'static str> {
+    let caller_policy = if view.rows().descriptor().profile().declaration_policies()
+        && view.signature().is_some()
+        && view.closure_owner().is_none()
+    {
+        crate::sema::target_features::imported_policy(facts, view.definition())?
+    } else {
+        None
+    };
+    let caller_unsafe = if view.closure_owner().is_some() {
+        if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
+            return Err("source call safety changed its actual closure body");
+        }
+        false
+    } else if let Some(signature) = view.signature() {
+        let defining_header = facts
+            .function_header(view.definition())?
+            .ok_or("source call safety lost its actual installed caller header")?;
+        if defining_header.signature != signature || defining_header.body != Some(body.source) {
+            return Err("source call safety changed its actual defining body/header");
+        }
+        let Some(Kind::Function { unsafe_, .. }) = facts.types.kind(signature) else {
+            return Err("source call safety caller signature is not a function");
+        };
+        unsafe_ && !matches!(caller_policy, Some((_, false)))
+    } else {
+        if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
+            return Err("source call safety changed its actual initializer body");
+        }
+        false
+    };
+    Ok((caller_policy, caller_unsafe))
+}
+
 /// A recorded context discharges exactly its callee's unsafety.
 fn matching(unsafe_: bool, safety: s::CallSafety, caller_unsafe: bool) -> Result<(), &'static str> {
     match (unsafe_, safety) {

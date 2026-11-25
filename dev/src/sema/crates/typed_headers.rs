@@ -454,6 +454,52 @@ pub(crate) fn is_source_original(
     graph.owns_original(catalog, definition, steps)
 }
 
+pub(crate) fn is_source_closure_original(
+    facts: &Declarations,
+    identity: crate::types::closure::ClosureId,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    *steps = steps.saturating_add(1);
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(false);
+    };
+    let Some(graph) = linkage
+        .originals
+        .as_deref()
+        .and_then(|headers| headers.source.as_ref())
+    else {
+        return Ok(false);
+    };
+    graph.require_store(&facts.types)?;
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source closure classification lacks its actual catalog")?;
+    graph.owns_closure_original(catalog, identity, steps)
+}
+
+pub(crate) fn source_closure_identity(
+    facts: &Declarations,
+    body: crate::support::crates::owner_catalog::BodyRef,
+    steps: &mut usize,
+) -> Result<Option<crate::types::closure::ClosureId>, &'static str> {
+    *steps = steps.saturating_add(1);
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(None);
+    };
+    let Some(graph) = linkage
+        .originals
+        .as_deref()
+        .and_then(|headers| headers.source.as_ref())
+    else {
+        return Ok(None);
+    };
+    graph.require_store(&facts.types)?;
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source closure lookup lacks its actual catalog")?;
+    graph.closure_identity_for_body(catalog, body, steps)
+}
+
 pub(crate) fn source_original<'a>(
     facts: &'a Declarations,
     definition: DefId,
@@ -474,7 +520,31 @@ pub(crate) fn source_original<'a>(
         .ok_or("source original lacks its actual current catalog")?;
     graph.source_original(catalog, facts, headers, definition, steps)
 }
-pub(crate) use mapped_source::prepare_original as prepare_source_original;
+
+pub(crate) fn source_closure_original<'a>(
+    facts: &'a Declarations,
+    identity: crate::types::closure::ClosureId,
+    steps: &mut usize,
+) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(None);
+    };
+    let Some(headers) = linkage.originals.as_deref() else {
+        return Ok(None);
+    };
+    let Some(graph) = headers.source.as_ref() else {
+        return Ok(None);
+    };
+    *steps = steps.saturating_add(1);
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source closure original lacks its actual current catalog")?;
+    graph.source_closure_original(catalog, facts, headers, identity, steps)
+}
+pub(crate) use mapped_source::{
+    prepare_closure_original as prepare_source_closure_original,
+    prepare_original as prepare_source_original,
+};
 
 pub(in crate::sema) fn source_trait_header<'a>(
     facts: &'a Declarations,

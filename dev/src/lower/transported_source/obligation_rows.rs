@@ -167,7 +167,7 @@ pub(super) fn emit(
     rows.builtins = input
         .builtins
         .as_deref()
-        .map(|builtins| builtin_rows::emit(stage, facts, definition, builtins, context, sites))
+        .map(|builtins| builtin_rows::emit(stage, facts, cfg, definition, builtins, context, sites))
         .transpose()?;
     Ok(rows)
 }

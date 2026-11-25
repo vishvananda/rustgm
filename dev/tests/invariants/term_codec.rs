@@ -19,7 +19,8 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // Declared intrinsics and comptime functions add two cold Vecs.
 // Opaque result applications and declarations add two more cold Vecs.
 // Non-tracked body caller sites live out of line in one Option<Box<...>>.
-const _: [(); 600] = [(); size_of::<s::ColdColumns>()];
+// Version-fourteen source closure columns live out of line in one Option<Box<...>>.
+const _: [(); 608] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -78,6 +79,7 @@ fn types_written(rows: &[s::Type], lengths: &[s::ConstTerm]) -> Result<Vec<u8>> 
                 lengths,
                 dynamics: &s::DynamicColumns::default(),
                 opaques: &[],
+                closures: &[],
             },
         )
     })

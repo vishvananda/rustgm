@@ -44,7 +44,7 @@ pub(super) fn for_goal(
             let Some(body) = facts.closures.identity(identity) else {
                 return Ok(Eligibility::Pending);
             };
-            if declaration.constant() != Some(body.constant.is_some()) {
+            if declaration.constant() != Some(facts.closures.is_const(identity)) {
                 return Err("const closure qualification changed its actual source owner".into());
             }
             let default_body = match body.owner {
@@ -52,12 +52,13 @@ pub(super) fn for_goal(
                 None => false,
             };
             let mut needs_contract = default_body
-                || body
-                    .owner
-                    .is_some_and(|owner| facts.generics.has_parameters(owner));
+                || body.owner.is_some_and(|owner| {
+                    facts.generics.parameters_in_scope(owner).next().is_some()
+                });
             if let Some(owner) = body.owner
                 && !default_body
-                && facts.function_indices.contains_key(&owner)
+                && (facts.function_indices.contains_key(&owner)
+                    || facts.constant_functions.contains(&owner))
             {
                 match facts
                     .source_bindings

@@ -90,10 +90,10 @@ impl Builder<'_, '_, '_> {
     }
     fn entry_types(&mut self, original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
         let rows = self.domains.headers.rows();
-        let (parameters, result) = self
-            .domains
-            .original_header(original.declaration, work)?
-            .entry();
+        let header =
+            self.domains
+                .original_header_for_body(original.body, original.declaration, work)?;
+        let (parameters, result, sig_frame) = header.entry(rows)?;
         let parameters = parameters.slice(&rows.roots)?;
         for (index, local) in original.locals.iter().enumerate() {
             work.charge(1)?;
@@ -108,11 +108,11 @@ impl Builder<'_, '_, '_> {
                 formal,
                 local: u32::try_from(index).map_err(|_| "source parameter local index overflow")?,
             };
-            self.normalized_relation(
+            self.framed_normalized_relation(
                 original,
                 port,
                 s::InputSite::Body(local.site),
-                actual,
+                (actual, sig_frame),
                 local.ty,
                 work,
             )?;
@@ -131,20 +131,75 @@ impl Builder<'_, '_, '_> {
             };
             self.exact_relation(original, port, bound.site, input.ty, bound.ty, work)?;
         }
+        let decl_port = OperationPort::Declaration {
+            body: original.body,
+            owner: original.declaration,
+        };
+        let decl_site = s::InputSite::Declaration {
+            owner: original.declaration,
+            site: 0,
+        };
+        if matches!(header, super::super::OriginalHeader::Closure { .. }) {
+            return self.framed_normalized_relation(
+                original,
+                decl_port,
+                decl_site,
+                (result, sig_frame),
+                original.result,
+                work,
+            );
+        }
         // The full raw normalizations/equalities remain available for reproof.
         // Shape admission never turns one of them into an authenticated alias.
         self.defining_result_relation(
             original,
-            OperationPort::Declaration {
-                body: original.body,
-                owner: original.declaration,
-            },
-            s::InputSite::Declaration {
-                owner: original.declaration,
-                site: 0,
-            },
+            decl_port,
+            decl_site,
             result,
             original.result,
+            work,
+        )
+    }
+    fn framed_normalized_relation(
+        &mut self,
+        original: &s::Original,
+        port: OperationPort,
+        site: s::InputSite,
+        (actual, actual_frame): (g::TypeRef, Option<g::BinderRef>),
+        expected: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let actual_node = if let Some(frame) = actual_frame {
+            let context = super::Context {
+                owner: original.declaration,
+                frame: Some(frame),
+                body: None,
+            };
+            let key = super::uses::key(
+                self.domains,
+                actual,
+                super::nodes::Rewrite::Original,
+                Some(context),
+                work,
+            )?;
+            self.arena.root(self.domains, key, work)?
+        } else {
+            self.node(original, actual, work)?
+        };
+        let expected_node = self.node(original, expected, work)?;
+        self.arena.same(
+            self.domains,
+            actual_node,
+            expected_node,
+            super::matching::Opening::Relation {
+                body: original.body,
+            },
+            work,
+        )?;
+        self.emit(
+            port,
+            site,
+            RequiredKind::Relation { actual, expected },
             work,
         )
     }

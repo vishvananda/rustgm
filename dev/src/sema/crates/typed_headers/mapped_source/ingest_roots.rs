@@ -98,6 +98,15 @@ pub(super) fn prepare(
             demand(Root::Type(hidden))?;
         }
     }
+    if let Some(closures) = rows.closures() {
+        for header in &closures.headers {
+            demand(Root::Type(header.signature))?;
+            if let Some(execution) = header.execution {
+                demand(Root::Type(execution.self_ty))?;
+                demand(Root::Type(execution.signature))?;
+            }
+        }
+    }
     Ok(())
 }
 fn application(

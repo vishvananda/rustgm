@@ -93,7 +93,7 @@ fn capture_selected(
     selected.original(facts, body, contract, aliases)?;
     if !aliases {
         let current = original_environment(facts, body.key(), body.source, false)?;
-        if !Arc::ptr_eq(current, &environment) {
+        if !Arc::ptr_eq(&current, &environment) {
             return Err("instance trait scope changed its original environment");
         }
     }
@@ -209,7 +209,7 @@ impl InstanceScope {
             || contract.signature != Some(self.signatures.1)
             || contract.universals != self.universals
             || !contract.parameters.is_empty()
-            || !Arc::ptr_eq(actual, &self.original.environment)
+            || !Arc::ptr_eq(&actual, &self.original.environment)
             || environment.is_none_or(|actual| !Arc::ptr_eq(actual, &self.environment))
             || self.environment.body_aliases().is_some()
             || Arc::ptr_eq(&self.environment, &self.original.environment)
@@ -260,11 +260,11 @@ impl InstanceScope {
 }
 
 fn original_environment(
-    facts: &Declarations,
+    facts: &mut Declarations,
     key: BodyKey,
     source: BodyOrigin,
     aliases: bool,
-) -> Result<&Arc<Environment>, &'static str> {
+) -> Result<Arc<Environment>, &'static str> {
     if let Some(input) = source
         .source()
         .and_then(|source| facts.generics.builtin_requirements.get(&source))
@@ -272,10 +272,24 @@ fn original_environment(
         return input
             .environment
             .as_ref()
+            .map(Arc::clone)
             .ok_or("instance source scope lost its actual builtin environment");
     }
     if aliases {
         return Err("instance source scope lost its actual alias ledger");
+    }
+    if let BodyKey::Closure(identity) = key {
+        let mut steps = 0;
+        let environment = {
+            let view = crate::sema::crates::source_closure_original(facts, identity, &mut steps)?
+                .ok_or("instance source scope lost its original closure header")?;
+            if view.source()? != source {
+                return Err("instance source scope changed its actual original closure");
+            }
+            Arc::clone(view.environment()?)
+        };
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        return Ok(environment);
     }
     let definition = target_scope::owner(facts, key, source)?;
     let header = facts
@@ -286,5 +300,6 @@ fn original_environment(
     }
     header
         .environment
+        .map(Arc::clone)
         .ok_or("instance source scope lost its original header environment")
 }

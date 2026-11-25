@@ -238,7 +238,9 @@ impl Arena {
         work.charge(1)?;
         let key = Key {
             application,
-            caller: if domains.types.closed_application(application, work)? {
+            caller: if domains.types.closed_application(application, work)?
+                && !domains.types.application_has_function(application, work)?
+            {
                 None
             } else {
                 Some(caller)

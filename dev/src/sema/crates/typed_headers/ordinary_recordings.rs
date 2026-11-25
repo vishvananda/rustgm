@@ -15,12 +15,13 @@ use crate::{
     },
     types::ItemId,
 };
-use numbering_records::{InitializerHeader, RecordedDomain};
+use numbering_records::{ClosureHeader, InitializerHeader, RecordedDomain};
 use std::sync::Arc;
 
 pub(in crate::sema::crates::typed_headers) struct OrdinaryRecords {
     prepared: Prepared,
     initializers: HashMap<BodyRef, Arc<RecordedDomain>>,
+    closures: HashMap<BodyRef, Arc<RecordedDomain>>,
 }
 pub(in crate::sema::crates::typed_headers) struct OrdinaryDomain {
     record: Arc<numbering_records::RecordedDomain>,
@@ -42,7 +43,99 @@ impl OrdinaryRecords {
         Ok(Self {
             prepared: Prepared::new(view, work)?,
             initializers: HashMap::default(),
+            closures: HashMap::default(),
         })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn prepare_closure(
+        &mut self,
+        view: &RecipeView<'_>,
+        facts: &Declarations,
+        expected: ClosureHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        work.charge(1)?;
+        let stage = numbering_records::DomainStage::closure(view, &facts.types, expected, work)?;
+        if let Some(record) = self.closures.get(&expected.raw) {
+            record.require(&stage, &facts.types, work)?;
+            return Ok(OrdinaryDomain {
+                record: Arc::clone(record),
+            });
+        }
+        let (_, formals) = facts
+            .generics
+            .callable_parameters(&facts.types, expected.owner)
+            .map_err(error)?;
+        original_formals(view, facts, expected.raw, &formals, work)?;
+        let before = retained::map(&self.closures);
+        let growth = retained::Growth::map::<BodyRef, Arc<RecordedDomain>>(
+            self.closures.len(),
+            self.closures.capacity(),
+            1,
+        );
+        work.charge(growth.work)?;
+        work.reserve(growth.bytes)?;
+        let record = Arc::new(stage.record(view, work)?);
+        self.closures.insert(expected.raw, Arc::clone(&record));
+        work.retained = work
+            .retained
+            .saturating_sub(growth.bytes)
+            .saturating_add(retained::map(&self.closures).saturating_sub(before));
+        Ok(OrdinaryDomain { record })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn closure(
+        &self,
+        view: &RecipeView<'_>,
+        facts: &Declarations,
+        expected: ClosureHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        work.charge(1)?;
+        let record = self
+            .closures
+            .get(&expected.raw)
+            .ok_or_else(|| error("ordinary closure requires its actual numbering domain"))?;
+        let stage = numbering_records::DomainStage::closure(view, &facts.types, expected, work)?;
+        record.require(&stage, &facts.types, work)?;
+        Ok(OrdinaryDomain {
+            record: Arc::clone(record),
+        })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn domain_for_raw(
+        &self,
+        view: &RecipeView<'_>,
+        body: BodyRef,
+    ) -> Result<Option<OrdinaryDomain>, Error> {
+        let rows = view.rows()?;
+        let Some(owner) = rows.body_owners().get(body.0 as usize) else {
+            return Ok(None);
+        };
+        let record = match owner.kind {
+            crate::support::crates::owner_catalog::BodyKind::Function => {
+                if let Some(s::HeaderRef::Function(index)) =
+                    rows.header(owner.declaration).map_err(error)?
+                {
+                    self.prepared
+                        .recordings
+                        .as_deref()
+                        .and_then(|recordings| recordings.entry(index))
+                        .cloned()
+                } else {
+                    None
+                }
+            }
+            crate::support::crates::owner_catalog::BodyKind::Constant => {
+                self.initializers.get(&body).cloned()
+            }
+            crate::support::crates::owner_catalog::BodyKind::Closure => {
+                self.closures.get(&body).cloned()
+            }
+            crate::support::crates::owner_catalog::BodyKind::Anonymous
+            | crate::support::crates::owner_catalog::BodyKind::Static => None,
+        };
+        Ok(record.map(|record| OrdinaryDomain { record }))
     }
 
     pub(in crate::sema::crates::typed_headers) fn prepare_initializer(

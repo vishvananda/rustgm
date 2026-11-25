@@ -213,18 +213,41 @@ pub(super) fn closure_source(
     body: &Body,
     work: &mut Work,
 ) -> Result<crate::sema::closures::Body, &'static str> {
-    let crate::body::ir::Owner::Closure { identity, .. } = body.owner else {
+    let crate::body::ir::Owner::Closure {
+        identity,
+        signature,
+        ..
+    } = body.owner
+    else {
         return Err("const captured invocation requires its closure owner");
     };
     work.charge(8)?;
-    body.owner
-        .source_caller(facts, body.source, body.instance)?;
     let source = *facts
         .closures
         .identity(identity)
         .ok_or("const captured invocation lost its source closure")?;
-    if !source
-        .check_const_source(report.ok_or("const captured invocation requires source syntax")?)?
+    let const_ok = if body.source.source().is_some() {
+        body.owner
+            .source_caller(facts, body.source, body.instance)?;
+        source
+            .check_const_source(report.ok_or("const captured invocation requires source syntax")?)?
+    } else {
+        let selected = body.instance.is_none_or(|instance| {
+            matches!(
+                facts.types.kind(instance.ty()),
+                Some(crate::types::Kind::Closure {
+                    identity: selected,
+                    signature: selected_signature,
+                    ..
+                }) if selected == identity && selected_signature == signature
+            )
+        });
+        if !selected || facts.closures.origin(identity) != Some(body.source) {
+            return Err("imported const closure caller does not match its closure owner");
+        }
+        facts.closures.is_const(identity)
+    };
+    if !const_ok
         || facts
             .types
             .closure_declaration(identity)

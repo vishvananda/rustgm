@@ -18,34 +18,48 @@ pub(in crate::sema::crates::typed_headers) struct Maps {
     arena: Identity,
     slots: Vec<Cell<Option<Argument>>>,
     regions: Vec<Cell<Option<RegionId>>>,
+    closures: Vec<crate::types::closure::ClosureId>,
 }
 impl Maps {
     pub(in crate::sema::crates::typed_headers) fn allocation_bound(
         slots: usize,
         regions: usize,
+        closures: usize,
     ) -> usize {
         size_of::<Self>()
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(slots.saturating_mul(size_of::<Cell<Option<Argument>>>()))
             .saturating_add(regions.saturating_mul(size_of::<Cell<Option<RegionId>>>()))
+            .saturating_add(closures.saturating_mul(size_of::<crate::types::closure::ClosureId>()))
     }
     pub(in crate::sema::crates::typed_headers) fn prepaid(
         view: &RecipeView<'_>,
         store: &Store,
+        closures: Vec<crate::types::closure::ClosureId>,
     ) -> Result<Rc<Self>, Error> {
         let rows = view.rows()?;
         let arena = store
             .existing_arena_identity()
             .ok_or_else(|| error("reserved maps require their actual current type arena"))?;
+        if closures.len() != rows.closures().map_or(0, |c| c.headers.len()) {
+            return Err(error(
+                "reserved maps closure count differs from its actual closure headers",
+            ));
+        }
         Ok(Rc::new(Self {
             root: view.root(),
             arena: arena.clone(),
             slots: (0..rows.slots.len()).map(|_| Cell::new(None)).collect(),
             regions: (0..rows.regions.len()).map(|_| Cell::new(None)).collect(),
+            closures,
         }))
     }
     pub(in crate::sema::crates::typed_headers) fn retained_bytes(&self) -> usize {
-        Self::allocation_bound(self.slots.capacity(), self.regions.capacity())
+        Self::allocation_bound(
+            self.slots.capacity(),
+            self.regions.capacity(),
+            self.closures.capacity(),
+        )
     }
     pub(in crate::sema::crates::typed_headers) fn require(
         &self,
@@ -59,12 +73,32 @@ impl Maps {
             || !store.has_identity(&self.arena)
             || self.slots.len() != rows.slots.len()
             || self.regions.len() != rows.regions.len()
+            || self.closures.len() != rows.closures().map_or(0, |c| c.headers.len())
         {
             return Err(error(
                 "reserved maps changed their actual root, arena or dense extent",
             ));
         }
         Ok(())
+    }
+    pub(in crate::sema::crates::typed_headers) fn closure(
+        &self,
+        index: usize,
+    ) -> Result<crate::types::closure::ClosureId, &'static str> {
+        self.closures
+            .get(index)
+            .copied()
+            .ok_or("reserved closure index is outside its actual map")
+    }
+    pub(in crate::sema::crates::typed_headers) fn closure_ref(
+        &self,
+        identity: crate::types::closure::ClosureId,
+    ) -> Option<s::ClosureRef> {
+        self.closures
+            .binary_search_by_key(&identity.0, |id| id.0)
+            .ok()
+            .and_then(|index| u32::try_from(index).ok())
+            .map(s::ClosureRef)
     }
     pub(in crate::sema::crates::typed_headers) fn slot(
         &self,
@@ -161,6 +195,14 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             .and_then(|ids| ids.get(ordinal as usize))
             .copied()
             .ok_or_else(|| error("imported opaque requires its actual reserved owner/ordinal"))
+    }
+    fn closure(
+        &self,
+        reference: s::ClosureRef,
+        budget: &mut ReservationWork,
+    ) -> Result<crate::types::closure::ClosureId, Error> {
+        budget.charge(1)?;
+        self.maps.closure(reference.0 as usize).map_err(error)
     }
     fn root(&self) -> ImportedDeclarationId {
         self.view.root()

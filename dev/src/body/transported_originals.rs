@@ -41,6 +41,7 @@ impl Original {
 pub(crate) struct ImportedOriginals {
     rows: Vec<Original>,
     index: HashMap<DefId, usize>,
+    closures: HashMap<crate::types::closure::ClosureId, usize>,
     steps: usize,
     payload: usize,
 }
@@ -51,6 +52,11 @@ impl ImportedOriginals {
     pub(crate) fn get(&self, definition: DefId) -> Option<&Original> {
         self.index
             .get(&definition)
+            .and_then(|&index| self.rows.get(index))
+    }
+    pub(crate) fn closure(&self, identity: crate::types::closure::ClosureId) -> Option<&Original> {
+        self.closures
+            .get(&identity)
             .and_then(|&index| self.rows.get(index))
     }
     pub(crate) fn at(&self, index: usize) -> Option<&Original> {
@@ -67,6 +73,7 @@ impl ImportedOriginals {
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(crate::support::retained::vector(&self.rows))
             .saturating_add(crate::support::retained::map(&self.index))
+            .saturating_add(crate::support::retained::map(&self.closures))
             .saturating_add(self.payload)
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
@@ -84,6 +91,11 @@ impl ImportedOriginals {
             self.index.capacity(),
             1,
         ));
+        growth.include(Growth::map::<crate::types::closure::ClosureId, usize>(
+            self.closures.len(),
+            self.closures.capacity(),
+            1,
+        ));
         growth
     }
     pub(crate) fn append_selected(&mut self, row: Original) -> Result<(), &'static str> {
@@ -91,18 +103,29 @@ impl ImportedOriginals {
     }
     fn retain(&mut self, row: Original) -> Result<(), &'static str> {
         use crate::body::ir::Owner;
-        let (Owner::Function { definition, .. }
-        | Owner::Initializer {
-            definition,
-            kind: crate::sema::model::InitializerKind::Const,
-        }) = row.template.body.owner
-        else {
-            return Err("imported original lost its defining declaration owner");
-        };
-        let std::collections::hash_map::Entry::Vacant(slot) = self.index.entry(definition) else {
-            return Err("duplicate imported executable original");
-        };
-        slot.insert(self.rows.len());
+        match row.template.body.owner {
+            Owner::Function { definition, .. }
+            | Owner::Initializer {
+                definition,
+                kind: crate::sema::model::InitializerKind::Const,
+            } => {
+                let std::collections::hash_map::Entry::Vacant(slot) = self.index.entry(definition)
+                else {
+                    return Err("duplicate imported executable original");
+                };
+                slot.insert(self.rows.len());
+            }
+            Owner::Closure { identity, .. } => {
+                let std::collections::hash_map::Entry::Vacant(slot) = self.closures.entry(identity)
+                else {
+                    return Err("duplicate imported closure original");
+                };
+                slot.insert(self.rows.len());
+            }
+            _ => {
+                return Err("imported original lost its defining declaration owner");
+            }
+        }
         self.payload = self
             .payload
             .saturating_add(row.template.body.allocation_bytes())
@@ -210,15 +233,23 @@ pub(crate) fn validate_source_parts(
     steps: &mut usize,
 ) -> Result<bool, &'static str> {
     use crate::body::ir::Owner;
-    let (Owner::Function { definition, .. } | Owner::Initializer { definition, .. }) = body.owner
-    else {
-        return Err("source original requires its actual imported declaration owner");
+    let view = match body.owner {
+        Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
+            if !crate::sema::crates::is_source_original(facts, definition, steps)? {
+                return Ok(false);
+            }
+            crate::sema::crates::source_original(facts, definition, steps)?
+                .ok_or("source original cannot execute an absent required method")?
+        }
+        Owner::Closure { identity, .. } => {
+            if !crate::sema::crates::is_source_closure_original(facts, identity, steps)? {
+                return Ok(false);
+            }
+            crate::sema::crates::source_closure_original(facts, identity, steps)?
+                .ok_or("source closure original cannot execute an absent closure body")?
+        }
+        _ => return Err("source original requires its actual imported declaration owner"),
     };
-    if !crate::sema::crates::is_source_original(facts, definition, steps)? {
-        return Ok(false);
-    }
-    let view = crate::sema::crates::source_original(facts, definition, steps)?
-        .ok_or("source original cannot execute an absent required method")?;
     rebuilt_operations::validate(facts, &view, body, steps)?;
     rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
     Ok(true)
@@ -261,6 +292,7 @@ pub(crate) fn build(
     let mut originals = ImportedOriginals {
         rows: Vec::new(),
         index: HashMap::default(),
+        closures: HashMap::default(),
         steps: 0,
         payload: 0,
     };

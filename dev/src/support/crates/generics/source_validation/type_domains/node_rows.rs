@@ -63,11 +63,7 @@ impl Builder<'_, '_> {
                         .get(reference.0 as usize)
                         .ok_or("unknown source opaque future recipe")?;
                     self.push_type(row.output, work)?;
-                    for argument in row.captures.slice(&rows.arguments)?.iter().rev() {
-                        if let s::Argument::Type(ty) = argument {
-                            self.push_type(*ty, work)?;
-                        }
-                    }
+                    self.push_arguments(row.captures, work)?;
                 }
                 s::Type::OpaqueResult(reference) => {
                     let row = rows
@@ -77,6 +73,15 @@ impl Builder<'_, '_> {
                         .get(reference.0 as usize)
                         .ok_or("unknown source opaque result recipe")?;
                     self.push_arguments(row.captures, work)?;
+                }
+                s::Type::Closure(reference) => {
+                    let row = rows
+                        .closures()
+                        .and_then(|closures| closures.types.get(reference.0 as usize))
+                        .ok_or("unknown source closure type recipe")?;
+                    self.push_type(row.environment, work)?;
+                    self.push_type(row.signature, work)?;
+                    self.push_arguments(row.arguments, work)?;
                 }
                 s::Type::Reference {
                     referent: child, ..
@@ -191,6 +196,7 @@ impl Builder<'_, '_> {
             s::Type::OpaqueFuture(reference) => self.opaque_summary(reference, work)?,
             s::Type::OpaqueResult(reference) => self.opaque_result_summary(reference, work)?,
             s::Type::Dynamic(reference) => self.dynamic_summary(reference, work)?,
+            s::Type::Closure(reference) => self.closure_summary(reference, work)?,
             s::Type::Scalar(_) | s::Type::Str | s::Type::Never => Summary::default(),
             s::Type::F16 | s::Type::F128 => {
                 if !self.profile.declaration_policies() {
@@ -585,6 +591,80 @@ impl Builder<'_, '_> {
         }
         Ok(result)
     }
+    fn closure_summary(
+        &self,
+        reference: s::ClosureTypeRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        if !self.profile.declaration_policies() {
+            return Err("source closure transport requires version fourteen");
+        }
+        let rows = self.headers.rows();
+        let closures = rows
+            .closures()
+            .ok_or("source closure type lacks its closure columns")?;
+        let row = closures
+            .types
+            .get(reference.0 as usize)
+            .ok_or("unknown source closure type recipe")?;
+        let header = closures
+            .header(row.closure)
+            .ok_or("source closure type names an unknown closure header")?;
+        if !matches!(
+            rows.types.get(row.signature.0 as usize),
+            Some(s::Type::Function(_))
+        ) || !matches!(
+            rows.types.get(row.environment.0 as usize),
+            Some(s::Type::Scalar(Scalar::Unit) | s::Type::Tuple(_))
+        ) {
+            return Err("source closure type lost its function signature or capture tuple");
+        }
+        let formals = match self.headers.header(header.owner, work)? {
+            Some(HeaderRef::Function(index)) => {
+                self.type_space_formals(rows.functions[index as usize].scope, work)?
+            }
+            Some(HeaderRef::Constant(_)) => {
+                if self
+                    .headers
+                    .scopes()
+                    .scope_row(header.owner, work)?
+                    .is_some()
+                {
+                    self.type_space_formals(header.owner, work)?
+                } else {
+                    Vec::new()
+                }
+            }
+            _ => return Err("source closure owner has no actual function or constant header"),
+        };
+        let arguments = row.arguments.slice(&rows.arguments)?;
+        let inherited = header.inherited as usize;
+        if arguments.len() != inherited.saturating_add(formals.len()) {
+            return Err("source closure type changed its inherited or generic argument arity");
+        }
+        let mut result = Summary::default();
+        for (index, &argument) in arguments.iter().enumerate() {
+            work.charge(1)?;
+            let formal = index
+                .checked_sub(inherited)
+                .and_then(|position| formals.get(position));
+            let child = match (argument, formal) {
+                (s::Argument::Region(region), None) if index < inherited => {
+                    self.region(region, work)?
+                }
+                (s::Argument::Type(ty), Some(s::ParameterKind::Type { .. })) => {
+                    self.child(ty, work)?
+                }
+                (s::Argument::Const(term), Some(&s::ParameterKind::Const { ty })) => {
+                    self.const_summary(term, ty, work)?
+                }
+                _ => return Err("source closure type changed an argument kind"),
+            };
+            result = self.merge(result, child, work)?;
+        }
+        result = self.merge(result, self.child(row.signature, work)?, work)?;
+        self.merge(result, self.child(row.environment, work)?, work)
+    }
     fn application(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();
         let application = &rows.function_applications[node];
@@ -783,6 +863,7 @@ impl Builder<'_, '_> {
                 "source function type captured a nominal region at an invalid binder depth",
             )?);
         }
+        summary.has_function = true;
         Ok(summary)
     }
 }

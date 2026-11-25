@@ -138,16 +138,18 @@ pub(super) fn key(
 ) -> Result<Key, &'static str> {
     // Only the already memoized exact dependence summary can remove context.
     // Application substitution can make an otherwise rigid template closed.
-    let closed = match rewrite {
-        Rewrite::Application(application) => domains.types.closed_application(application, work)?,
-        _ => domains.types.closed_root(root, work)?,
+    // Function recipes (including those nested inside closures or applied
+    // arguments) retain formation ownership even with an empty lifetime domain.
+    let (closed, function) = match rewrite {
+        Rewrite::Application(application) => (
+            domains.types.closed_application(application, work)?,
+            domains.types.application_has_function(application, work)?,
+        ),
+        _ => (
+            domains.types.closed_root(root, work)?,
+            domains.types.has_function(root, work)?,
+        ),
     };
-    // Actual function recipes retain formation ownership even when their
-    // lifetime domain is empty. Applications retain their exact target instead.
-    let function = matches!(
-        domains.headers.rows().types.get(root.0 as usize),
-        Some(s::Type::Function(_))
-    ) && !matches!(rewrite, Rewrite::Application(_));
     if (!closed || function) && caller.is_none() {
         return Err("source contextual rewrite omitted its actual caller/frame owner");
     }

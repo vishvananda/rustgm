@@ -101,6 +101,13 @@ impl Types {
     ) -> Result<bool, &'static str> {
         Ok(closed(self.summary(ty, work)?))
     }
+    pub(in super::super) fn has_function(
+        &self,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        Ok(self.summary(ty, work)?.has_function)
+    }
     pub(in super::super) fn region_independent(
         &self,
         ty: g::TypeRef,
@@ -121,6 +128,17 @@ impl Types {
         Ok(closed(
             self.summaries[self.type_count + application.0 as usize],
         ))
+    }
+    pub(in super::super) fn application_has_function(
+        &self,
+        application: s::FunctionApplicationRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        work.charge(1)?;
+        if application.0 as usize >= self.function_count {
+            return Err("source application classification crosses its typed namespace");
+        }
+        Ok(self.summaries[self.type_count + application.0 as usize].has_function)
     }
 
     pub(in super::super) fn region(

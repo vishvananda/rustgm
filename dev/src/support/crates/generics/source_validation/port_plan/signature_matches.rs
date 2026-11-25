@@ -39,6 +39,8 @@ pub(super) struct Pair {
 type ChildPair = (NodeId, NodeId);
 type MatchedChildren = (ChildPair, Option<ChildPair>);
 
+type ChildPairs = ((NodeId, NodeId), Option<(NodeId, NodeId)>);
+
 #[derive(Clone, Copy)]
 enum Task {
     Enter(Pair),
@@ -258,6 +260,9 @@ impl Arena {
                     family: bf,
                 },
             ) if a == b => ((ac, bc), Some((af, bf))),
+            (Node::Closure { .. }, Node::Closure { .. }) => {
+                self.matched_closure_children(opening, nodes, pending, work)?
+            }
             (a, b) if a == b => return Ok(()),
             (Node::Projection { .. }, _) | (_, Node::Projection { .. })
                 if self.projection_match(domains, pair, nodes, pending, work)? =>
@@ -280,6 +285,45 @@ impl Arena {
             )?;
         }
         Ok(())
+    }
+
+    fn matched_closure_children(
+        &mut self,
+        opening: Opening,
+        nodes: (Node, Node),
+        pending: &mut Vec<Task>,
+        work: &mut Work,
+    ) -> Result<ChildPairs, &'static str> {
+        let (
+            Node::Closure {
+                closure: ac,
+                arguments: aa,
+                signature: asig,
+                environment: aenv,
+            },
+            Node::Closure {
+                closure: bc,
+                arguments: ba,
+                signature: bsig,
+                environment: benv,
+            },
+        ) = nodes
+        else {
+            return Err("source signature differs after complete application and late opening");
+        };
+        if ac != bc {
+            return Err("source signature differs after complete application and late opening");
+        }
+        self.push_pair(
+            pending,
+            Task::Enter(Pair {
+                expected: asig,
+                actual: bsig,
+                opening,
+            }),
+            work,
+        )?;
+        Ok(((aa, ba), Some((aenv, benv))))
     }
     fn matched_nominal_children(
         &self,

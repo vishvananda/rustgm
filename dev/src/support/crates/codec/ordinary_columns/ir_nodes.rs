@@ -149,7 +149,7 @@ const SAFETIES: [s::CallSafety; 3] = [
 const ACTION_FORMS: [u8; 12] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const TERMINATOR_FORMS: [u8; 6] = [0, 1, 2, 3, 4, 5];
 const PROJECTION_FORMS: [u8; 2] = [1, 3];
-const V14_PROJECTION_FORMS: [u8; 11] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const V14_PROJECTION_FORMS: [u8; 12] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 struct Node {
     code: u8,
@@ -290,6 +290,9 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         }
         s::ValueKind::TwoPhaseBorrow(place) => {
             node_write(out, 12, &[Operand::Place(place), Operand::Flag(1)])
+        }
+        s::ValueKind::UniqueBorrow(place) => {
+            node_write(out, 12, &[Operand::Place(place), Operand::Flag(2)])
         }
         s::ValueKind::Function(application) => {
             node_write(out, 16, &[Operand::Application(application.0)])
@@ -476,6 +479,9 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
         (10, &[Operand::Place(place)]) => s::ValueKind::Read(place),
         (12, &[Operand::Place(place), Operand::Flag(0)]) => s::ValueKind::Borrow(place),
         (12, &[Operand::Place(place), Operand::Flag(1)]) => s::ValueKind::TwoPhaseBorrow(place),
+        (12, &[Operand::Place(place), Operand::Flag(2)]) if read.profile.declaration_policies() => {
+            s::ValueKind::UniqueBorrow(place)
+        }
         (12, &[Operand::Place(_), Operand::Flag(2)]) => {
             return Err("encoded unique Rvalue::Borrow is not reconstructable");
         }
@@ -805,6 +811,9 @@ pub(super) fn projection_write(out: &mut Writer, row: &s::Projection) -> Result<
     id(out, row.ty.0)?;
     let u64_bits = |value: u64| Operand::Bits(u128::from(value).to_le_bytes());
     match row.kind {
+        s::ProjectionKind::CaptureBoundary { mutable } => {
+            node_write(out, 0, &[Operand::Flag(u32::from(mutable))])
+        }
         s::ProjectionKind::Dereference { region, mutable } => node_write(
             out,
             1,
@@ -855,6 +864,9 @@ pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection,
     };
     let v14 = read.profile.declaration_policies();
     let kind = match (node.code, node.operands()) {
+        (0, &[Operand::Flag(mutable @ (0 | 1))]) if v14 => s::ProjectionKind::CaptureBoundary {
+            mutable: mutable == 1,
+        },
         (1, &[Operand::Region(region), Operand::Flag(mutable @ (0 | 1))]) => {
             s::ProjectionKind::Dereference {
                 region: s::RegionRef(region),

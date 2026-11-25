@@ -27,6 +27,7 @@ struct Summary {
     nominal_depth: Option<u16>,
     body: Option<BodyRef>,
     bound: Option<BoundUse>,
+    has_function: bool,
 }
 pub(super) struct Types {
     summaries: Vec<Summary>,
@@ -98,6 +99,8 @@ impl Types {
         };
         let mut objects = existential_bounds::Inventory::default();
         let mut opaque_results = 0_usize;
+        let mut closure_types = 0_usize;
+        let expected_closures = rows.closures().map_or(0, |closures| closures.types.len());
         for root in 0..count {
             match rows.types.get(root) {
                 Some(s::Type::Dynamic(object)) => {
@@ -111,6 +114,12 @@ impl Types {
                     }
                     opaque_results += 1;
                 }
+                Some(s::Type::Closure(reference)) => {
+                    if reference.0 as usize != closure_types || closure_types >= expected_closures {
+                        return Err("source closure type occurs outside its actual type order");
+                    }
+                    closure_types += 1;
+                }
                 _ => {}
             }
             builder.root(root, work)?;
@@ -118,6 +127,9 @@ impl Types {
         objects.finish(&rows.cold().dynamics)?;
         if opaque_results != rows.cold().opaques.applications.len() {
             return Err("source opaque result application has no actual type owner");
+        }
+        if closure_types != expected_closures {
+            return Err("source closure type has no actual type row owner");
         }
         Ok(builder.result)
     }
@@ -254,6 +266,7 @@ impl Builder<'_, '_> {
             (None, right) => left.bound = right,
             _ => {}
         }
+        left.has_function |= right.has_function;
         Ok(left)
     }
 }

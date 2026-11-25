@@ -103,6 +103,13 @@ pub(super) fn build(
     Ok(body)
 }
 pub(super) fn owner(view: &SourceOriginal<'_>) -> Owner {
+    if let Some((identity, signature, execution)) = view.closure_owner() {
+        return Owner::Closure {
+            identity,
+            signature,
+            execution,
+        };
+    }
     let definition = view.definition();
     match view.signature() {
         Some(signature) => Owner::Function {
@@ -234,6 +241,9 @@ fn extended_value_kind(
         return Err("source value operation requires its wider actual reconstruction profile");
     }
     Ok(match kind {
+        s::ValueKind::UniqueBorrow(place) => {
+            regional_records::borrow(view, place, BorrowKind::UniqueImmutable, steps)?
+        }
         s::ValueKind::DirectEnumCast(operand) => Rvalue::Cast {
             kind: crate::sema::model::Cast::EnumToInteger,
             operand: ValueId(operand),
@@ -989,6 +999,16 @@ fn same_value(
             },
             s::ValueKind::TwoPhaseBorrow(raw),
         ) => {
+            regional_records::require(view)?;
+            place == regional_records::place(view, raw, steps)?
+        }
+        (
+            Rvalue::Borrow {
+                place,
+                kind: BorrowKind::UniqueImmutable,
+            },
+            s::ValueKind::UniqueBorrow(raw),
+        ) if view.rows().descriptor().profile().declaration_policies() => {
             regional_records::require(view)?;
             place == regional_records::place(view, raw, steps)?
         }

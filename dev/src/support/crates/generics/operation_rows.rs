@@ -26,6 +26,7 @@ pub struct Projection {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProjectionKind {
+    CaptureBoundary { mutable: bool },
     Dereference { region: RegionRef, mutable: bool },
     RawDereference { mutable: bool },
     Field { owner: DeclarationRef, ordinal: u32 },
@@ -68,6 +69,8 @@ pub enum ValueKind {
     /// Version thirteen: a call operator's two-phase receiver borrow. Its
     /// reference type decides mutability; it is never an immediate borrow.
     TwoPhaseBorrow(Place),
+    /// Version fourteen: a closure capture unique-immutable borrow.
+    UniqueBorrow(Place),
     Constrain(u32),
     /// A closed primitive `as` conversion. The operand and result types determine
     /// its operation; no provider cast decision or semantic proof is serialized.

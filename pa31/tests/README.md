@@ -1908,3 +1908,13 @@ native and `const` fresh-client execution, while retaining missing trait-bound
 rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-protocol-calls-transport`
 with the prebuilt compilers.
+
+`spec/source-closure-transport/outcomes.json` checks version-14 transport of
+closure declarations, closure types, nested output links, capture boundaries,
+and unique immutable borrows across non-capturing `const` closures (in both
+`const` and native evaluation), closure-to-`fn`-pointer reification, capturing
+`Fn`/`FnMut`/`FnOnce` closures with receiver adapters, nested reference-capturing
+closures, and RPIT-returned capturing closures, while retaining non-callable
+rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-closure-transport`
+with the prebuilt compilers.

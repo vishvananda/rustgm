@@ -62,7 +62,7 @@ impl Target<'_> {
     }
 }
 
-/// An original carries either a callable signature or an initializer's
+/// An original carries a callable signature, a closure header, or an initializer's
 /// declared result and inherited environment.
 #[derive(Clone, Copy)]
 enum OriginalHeader<'rows> {
@@ -71,22 +71,43 @@ enum OriginalHeader<'rows> {
         result: g::TypeRef,
         parent: Option<DeclarationRef>,
     },
+    Closure {
+        header: &'rows s::ClosureHeader,
+        parent: Option<DeclarationRef>,
+    },
 }
 
 impl OriginalHeader<'_> {
     const fn parent(self) -> Option<DeclarationRef> {
         match self {
             Self::Function(header) => header.parent,
-            Self::Constant { parent, .. } => parent,
+            Self::Constant { parent, .. } | Self::Closure { parent, .. } => parent,
         }
     }
     const fn unsafe_function(self) -> bool {
         matches!(self, Self::Function(header) if header.callable.unsafe_)
     }
-    const fn entry(self) -> (g::Range, g::TypeRef) {
+    fn entry(
+        self,
+        rows: &s::SourceRows,
+    ) -> Result<(g::Range, g::TypeRef, Option<g::BinderRef>), &'static str> {
         match self {
-            Self::Function(header) => (header.original.parameters, header.original.result),
-            Self::Constant { result, .. } => (g::Range { start: 0, end: 0 }, result),
+            Self::Function(header) => {
+                Ok((header.original.parameters, header.original.result, None))
+            }
+            Self::Constant { result, .. } => Ok((g::Range { start: 0, end: 0 }, result, None)),
+            Self::Closure { header, .. } => {
+                let Some(&s::Type::Function(signature)) =
+                    rows.types.get(header.body_signature().0 as usize)
+                else {
+                    return Err("source closure header lacks its actual function signature");
+                };
+                Ok((
+                    signature.parameters,
+                    signature.result,
+                    Some(signature.binder),
+                ))
+            }
         }
     }
 }
@@ -256,6 +277,27 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             }
             _ => Err("source body/context has no actual function header"),
         }
+    }
+    fn original_header_for_body(
+        &self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+        declaration: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<OriginalHeader<'rows>, &'static str> {
+        if self.declaration_policies
+            && let Some((_, header)) = self
+                .headers
+                .rows()
+                .closures()
+                .and_then(|closures| closures.header_for_body(body))
+        {
+            if header.owner != declaration {
+                return Err("source closure body belongs to another declaration owner");
+            }
+            let parent = self.original_header(declaration, work)?.parent();
+            return Ok(OriginalHeader::Closure { header, parent });
+        }
+        self.original_header(declaration, work)
     }
     /// A function application's target: its function header, or under
     /// version thirteen a called tuple-variant or tuple-struct constructor.

@@ -86,10 +86,7 @@ fn definition_read(
 ) -> Result<s::AssociatedDefinition, &'static str> {
     let declaration = DeclarationRef(read.id()?);
     let raw = read.id()?;
-    if raw & HAS_INPUTS != 0 {
-        if !read.profile.declaration_policies() {
-            return Err("associated definition inputs require version fourteen");
-        }
+    let value = if read.profile.declaration_policies() && raw & HAS_INPUTS != 0 {
         let range = read.range()?;
         let growth =
             Growth::vector::<s::AssociatedDefinitionInputs>(inputs.len(), inputs.capacity(), 1);
@@ -99,9 +96,9 @@ fn definition_read(
             index,
             inputs: range,
         });
-    }
-    Ok(s::AssociatedDefinition {
-        declaration,
-        value: g::TypeRef(raw & !HAS_INPUTS),
-    })
+        g::TypeRef(raw & !HAS_INPUTS)
+    } else {
+        g::TypeRef(raw)
+    };
+    Ok(s::AssociatedDefinition { declaration, value })
 }

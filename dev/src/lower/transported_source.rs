@@ -399,7 +399,33 @@ impl Source {
             source.collect_body(facts, &template.body, input)?;
         }
         source.collect_constant_originals(facts, checked)?;
+        source.collect_closure_originals(facts, checked)?;
         Ok(source)
+    }
+
+    fn collect_closure_originals(
+        &mut self,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+    ) -> Result<(), &'static str> {
+        if !self.stage.declaration_policies() {
+            return Ok(());
+        }
+        let identities: Vec<_> = facts.closures.all().iter().map(|c| c.identity).collect();
+        for identity in identities {
+            self.stage.charge(1)?;
+            if !self.stage.has_closure(identity) {
+                continue;
+            }
+            let Some((template, input, proof)) = checked.closure_proof(identity) else {
+                continue;
+            };
+            if proof.key != input.key || proof.source != input.source || proof.instance.is_some() {
+                return Err("source closure template lost its actual checked proof");
+            }
+            self.collect_body(facts, &template.body, input)?;
+        }
+        Ok(())
     }
 
     fn collect_constant_originals(
@@ -536,6 +562,55 @@ impl Source {
         Ok(true)
     }
 
+    fn checked_evaluated_closure(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+        input: &Contract,
+    ) -> Result<bool, &'static str> {
+        let Owner::Closure {
+            identity,
+            signature,
+            ..
+        } = body.owner
+        else {
+            return Ok(false);
+        };
+        let Some(closure) = facts.closures.identity(identity) else {
+            return Ok(false);
+        };
+        if self.stage.has_closure(identity) {
+            return Ok(false);
+        }
+        let skipped = match closure.owner {
+            None => true,
+            Some(owner) => {
+                self.stage.evaluated_static(owner)?
+                    || (!self.stage.has_constant_original(owner)?
+                        && self.stage.evaluated_initializer(facts, owner)?)
+                    || (self.stage.declaration_policies()
+                        && facts
+                            .initializer_index(owner)
+                            .and_then(|idx| facts.initializers.get(idx))
+                            .is_some_and(|init| matches!(init.kind, InitializerKind::Const)))
+            }
+        };
+        if !skipped {
+            return Ok(false);
+        }
+        let expected_signature = closure
+            .execution
+            .map_or(closure.signature, |execution| execution.signature);
+        if Some(closure.semantic_source()) != body.source.source()
+            || expected_signature != signature
+            || body.key() != input.key
+            || body.source != input.source
+        {
+            return Err("source evaluated closure changed its actual checked body");
+        }
+        Ok(true)
+    }
+
     fn evaluated_anonymous(
         &mut self,
         facts: &Declarations,
@@ -581,6 +656,7 @@ impl Source {
         }
         if Self::checked_linked_handler(facts, body, input)?
             || self.checked_static_closure(facts, body, input)?
+            || self.checked_evaluated_closure(facts, body, input)?
             || self.evaluated_anonymous(facts, body)?
         {
             return Ok(());
@@ -613,17 +689,27 @@ impl Source {
         {
             return Ok(());
         }
-        let (definition, signature) = Self::body_owner(facts, body)?;
-        let context = self.stage.original_context(definition)?;
+        let (definition, signature, closure_id) =
+            Self::body_owner(facts, body, self.stage.declaration_policies())?;
+        let context = match closure_id {
+            Some(identity) => self.stage.closure_context(identity)?,
+            None => self.stage.original_context(definition)?,
+        };
         if body.instance.is_some()
             || body.key() != input.key
             || body.source != input.source
             || input.signature != signature
             || input.universals != self.stage.universals(context)?
-            || input.output.is_some()
-            || input.require_result_formation
+            || (closure_id.is_none() && (input.output.is_some() || input.require_result_formation))
         {
             return Err("source original changed its exact body, signature or paired input");
+        }
+        if let Some(identity) = closure_id {
+            self.stage.record_closure_contract(
+                identity,
+                input.require_result_formation,
+                input.output.as_ref(),
+            )?;
         }
         self.stage.prepare_type_arena(facts, body.result)?;
         let mut sites = locations::Sites::new(&mut self.stage, body)?;
@@ -671,7 +757,15 @@ impl Source {
     fn body_owner(
         facts: &Declarations,
         body: &Body,
-    ) -> Result<(DefId, Option<crate::types::TypeId>), &'static str> {
+        declaration_policies: bool,
+    ) -> Result<
+        (
+            DefId,
+            Option<crate::types::TypeId>,
+            Option<crate::types::closure::ClosureId>,
+        ),
+        &'static str,
+    > {
         match body.owner {
             Owner::Function {
                 definition,
@@ -686,7 +780,7 @@ impl Source {
                         "source original changed its exact body, signature or paired input",
                     );
                 }
-                Ok((definition, Some(signature)))
+                Ok((definition, Some(signature), None))
             }
             Owner::Initializer {
                 definition,
@@ -705,7 +799,27 @@ impl Source {
                         "source constant original changed its actual body or declared result",
                     );
                 }
-                Ok((definition, None))
+                Ok((definition, None, None))
+            }
+            Owner::Closure {
+                identity,
+                signature,
+                execution,
+            } if declaration_policies => {
+                let closure = facts
+                    .closures
+                    .identity(identity)
+                    .ok_or("source closure original lost its actual semantic body")?;
+                let owner = closure
+                    .owner
+                    .ok_or("source closure original has no enclosing declaration")?;
+                if body.source.source() != Some(closure.semantic_source())
+                    || closure.signature != signature
+                    || closure.execution.map(|exec| exec.signature) != execution
+                {
+                    return Err("source closure original changed its actual body or signature");
+                }
+                Ok((owner, Some(execution.unwrap_or(signature)), Some(identity)))
             }
             _ => Err("source transport requires an actual function or constant original"),
         }
@@ -928,6 +1042,9 @@ impl Source {
                 "Provided numbering has no module-contract publisher",
             ));
         }
+        self.stage
+            .finalize_closure_outputs(facts)
+            .map_err(crate::resolve::package::Error::unlocated)?;
         let (rows, observed) = self
             .finish_rows()
             .map_err(crate::resolve::package::Error::unlocated)?;

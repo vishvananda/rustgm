@@ -374,10 +374,10 @@ pub(super) fn build(
             predicates,
             source_copy,
         ))),
-        output: None,
-        require_result_formation: false,
+        output: view.closure_output(&mut work.steps)?,
+        require_result_formation: view.require_result_formation(),
     };
-    if view.const_context() && view.signature().is_some() {
+    if view.const_context() && view.signature().is_some() && view.closure_owner().is_none() {
         let required = crate::body::defining_cleanups::mark_imported_required(
             facts,
             view.definition(),
@@ -397,6 +397,9 @@ fn declared_result(
     root: ProofSite,
     steps: &mut usize,
 ) -> Result<Option<Obligation>, &'static str> {
+    if view.closure_owner().is_some() {
+        return Ok(None);
+    }
     let rows = view.rows();
     if rows.descriptor().profile().declaration_policies()
         && rows
@@ -760,12 +763,13 @@ pub(super) fn validate(
     let expected = Expected::new(view, facts, steps)?;
     let record = view.inputs();
     let parameters = view.type_parameters(&facts.types, steps)?;
+    let expected_output = view.closure_output(steps)?;
     if contract.key != body.key()
         || contract.source != view.source()?
         || contract.signature != view.signature()
         || contract.universals != view.universals()
-        || contract.output.is_some()
-        || contract.require_result_formation
+        || !same_output(contract.output.as_deref(), expected_output.as_deref())
+        || contract.require_result_formation != view.require_result_formation()
         || contract.parameters.len() != parameters.len()
         || contract.assumptions.len() != record.assumptions.len()
         || contract.type_assumptions.len() != record.type_assumptions.len()
@@ -841,7 +845,7 @@ fn validate_builtins(
     if !builtin.is_unprepared_imported() {
         return Err("source original cannot import prepared permission");
     }
-    if view.const_context() && view.signature().is_some() {
+    if view.const_context() && view.signature().is_some() && view.closure_owner().is_none() {
         crate::body::defining_cleanups::validate_imported_required(
             facts,
             view.definition(),
@@ -896,6 +900,41 @@ fn validate_builtins(
     }
     Ok(())
 }
+fn same_output(
+    actual: Option<&crate::sema::nested_outputs::Link>,
+    expected: Option<&crate::sema::nested_outputs::Link>,
+) -> bool {
+    match (actual, expected) {
+        (None, None) => true,
+        (Some(a), Some(b)) => {
+            a.source == b.source
+                && a.parent == b.parent
+                && a.revision == b.revision
+                && a.universals == b.universals
+                && a.creator_only_from == b.creator_only_from
+                && a.bridges.len() == b.bridges.len()
+                && a.bridges
+                    .iter()
+                    .zip(&b.bridges)
+                    .all(|(x, y)| x.slot == y.slot && x.parent == y.parent && x.output == y.output)
+                && match (&a.formation, &b.formation) {
+                    (None, None) => true,
+                    (Some(x), Some(y)) => {
+                        x.identity == y.identity
+                            && x.inherited == y.inherited
+                            && x.callable_slots == y.callable_slots
+                            && x.inputs.len() == y.inputs.len()
+                            && x.inputs.iter().zip(&y.inputs).all(|(p, q)| {
+                                p.root == q.root && p.child == q.child && p.parent == q.parent
+                            })
+                    }
+                    _ => false,
+                }
+        }
+        _ => false,
+    }
+}
+
 fn same_kind(actual: Kind, expected: Kind) -> bool {
     match (actual, expected) {
         (

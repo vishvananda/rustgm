@@ -106,6 +106,12 @@ fn original_scheme(
     work: &mut Work,
 ) -> Result<(BinderRef, u32), &'static str> {
     let rows = headers.rows();
+    if let Some((_, closure)) = rows
+        .closures()
+        .and_then(|closures| closures.header_for_body(original.body))
+    {
+        return Ok((closure.binder, closure.contract_universals()));
+    }
     match headers.header(original.declaration, work)? {
         Some(HeaderRef::Function(index)) => {
             let function = &rows.functions[index as usize];

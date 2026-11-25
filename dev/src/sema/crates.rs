@@ -45,7 +45,9 @@ pub(super) use typed_headers::{
     source_trait_header,
 };
 pub(crate) use typed_headers::{
-    is_source_original, mapped_source::SourceOriginal, prepare_source_original, source_original,
+    is_source_closure_original, is_source_original, mapped_source::SourceOriginal,
+    prepare_source_closure_original, prepare_source_original, source_closure_identity,
+    source_closure_original, source_original,
 };
 
 pub(crate) fn imported_constant_initializer(

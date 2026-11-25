@@ -17,6 +17,8 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[path = "decoded_closure.rs"]
+mod closure;
 #[path = "callee_stability.rs"]
 mod constant_policies;
 #[path = "decoded_initializer.rs"]
@@ -42,6 +44,7 @@ pub(crate) struct Original<'a> {
 enum OriginalHeader<'a> {
     Function(&'a super::super::Header),
     Initializer(super::super::unpaid_provided::InitializerHeader),
+    Closure(super::super::unpaid_provided::ClosureHeader),
 }
 impl Graph {
     pub(in crate::sema::crates::typed_headers) fn owns_original(
@@ -159,6 +162,7 @@ impl Graph {
                 graph: self,
                 store: &facts.types,
                 domain,
+                parent_domain: None,
             },
             catalog,
             header: OriginalHeader::Function(header),
@@ -231,6 +235,7 @@ impl Original<'_> {
         match self.header {
             OriginalHeader::Function(header) => header.universals,
             OriginalHeader::Initializer(header) => header.universals,
+            OriginalHeader::Closure(header) => header.universals,
         }
     }
     pub(crate) fn rows(&self) -> s::ValidatedView<'_> {
@@ -249,6 +254,26 @@ impl Original<'_> {
         match self.header {
             OriginalHeader::Function(header) => Some(header.signature),
             OriginalHeader::Initializer(_) => None,
+            OriginalHeader::Closure(header) => match header.execution {
+                Some(execution) => Some(execution),
+                None => Some(header.signature),
+            },
+        }
+    }
+    pub(crate) const fn closure_owner(
+        &self,
+    ) -> Option<(crate::types::closure::ClosureId, TypeId, Option<TypeId>)> {
+        match self.header {
+            OriginalHeader::Closure(header) => {
+                Some((header.identity, header.signature, header.execution))
+            }
+            OriginalHeader::Function(_) | OriginalHeader::Initializer(_) => None,
+        }
+    }
+    pub(crate) const fn require_result_formation(&self) -> bool {
+        match self.header {
+            OriginalHeader::Closure(header) => header.require_result_formation,
+            OriginalHeader::Function(_) | OriginalHeader::Initializer(_) => false,
         }
     }
     pub(crate) fn source(&self) -> Result<BodyOrigin, &'static str> {
@@ -259,12 +284,108 @@ impl Original<'_> {
     ) -> Result<&Arc<crate::types::parameters::environment::Environment>, &'static str> {
         let actual = match (&self.mapping, &self.header) {
             (Mapping::Selected { body, .. }, _) => Some(body.environment()),
-            (Mapping::Ordinary { domain, .. }, OriginalHeader::Initializer(_)) => {
-                domain.as_ref().and_then(|domain| domain.environment())
-            }
+            (
+                Mapping::Ordinary { domain, .. },
+                OriginalHeader::Initializer(_) | OriginalHeader::Closure(_),
+            ) => domain.as_ref().and_then(|domain| domain.environment()),
             (_, OriginalHeader::Function(header)) => header.environment.as_ref(),
         };
         actual.ok_or("source original requires its actual pending defining environment")
+    }
+    pub(crate) fn closure_output(
+        &self,
+        steps: &mut usize,
+    ) -> Result<Option<Arc<crate::sema::nested_outputs::Link>>, &'static str> {
+        let OriginalHeader::Closure(closure) = self.header else {
+            return Ok(None);
+        };
+        let table = self
+            .rows
+            .closures()
+            .ok_or("source closure output lost its columns")?;
+        let raw = table
+            .header(closure.closure_ref)
+            .ok_or("source closure output lost its header")?;
+        let Some(output) = raw.output else {
+            return Ok(None);
+        };
+        let parent_body = self
+            .catalog
+            .body_at(self.descriptor()?.identity(), closure.parent_raw)?;
+        let parent = self.catalog.origin(parent_body)?;
+        let raw_bridges = output.bridges.slice(&table.bridges)?;
+        let mut bridges = Vec::with_capacity(raw_bridges.len());
+        for &bridge in raw_bridges {
+            charge(steps)?;
+            bridges.push(crate::sema::nested_outputs::Bridge {
+                slot: bridge.slot,
+                parent: self.parent_region(bridge.parent, steps)?,
+                output: bridge.output,
+            });
+        }
+        let formation = if let Some(raw_formation) = output.formation {
+            let raw_inputs = raw_formation.inputs.slice(&table.formation_inputs)?;
+            let mut inputs = Vec::with_capacity(raw_inputs.len());
+            for &input in raw_inputs {
+                charge(steps)?;
+                inputs.push(crate::sema::closures::FormationInput {
+                    root: crate::sema::closures::captures::PathId::from_raw(input.root),
+                    child: self.ty(input.child, steps)?,
+                    parent: self.ty(input.parent, steps)?,
+                });
+            }
+            let raw_slots = raw_formation.callable_slots.slice(&table.callable_slots)?;
+            charge(steps)?;
+            Some(crate::sema::nested_outputs::Formation {
+                identity: closure.identity,
+                inputs: inputs.into_boxed_slice(),
+                inherited: raw_formation.inherited,
+                callable_slots: raw_slots.to_vec().into_boxed_slice(),
+            })
+        } else {
+            None
+        };
+        Ok(Some(Arc::new(crate::sema::nested_outputs::Link {
+            source: self.source()?,
+            parent,
+            revision: output.revision,
+            universals: output.universals,
+            bridges: bridges.into_boxed_slice(),
+            formation,
+            creator_only_from: output.creator_only_from,
+        })))
+    }
+    fn parent_region(
+        &self,
+        reference: s::RegionRef,
+        steps: &mut usize,
+    ) -> Result<RegionId, &'static str> {
+        charge(steps)?;
+        let Mapping::Ordinary {
+            graph,
+            store,
+            parent_domain,
+            ..
+        } = &self.mapping
+        else {
+            return Err("source closure parent region requires an ordinary graph");
+        };
+        if let Some(parent) = parent_domain {
+            let mut work = crate::resolve::crates::ReservationWork::default();
+            let result = parent.region(&graph.recipe_view(), store, reference, &mut work);
+            *steps = steps.saturating_add(work.steps);
+            if *steps > crate::support::crates::MAX_COMPONENTS {
+                return Err("ordinary closure parent region query work budget exceeded");
+            }
+            if let Some(region) =
+                result.map_err(|_| "ordinary closure changed its actual recorded parent region")?
+            {
+                return Ok(region);
+            }
+        }
+        graph
+            .region(reference)
+            .map_err(|_| "source closure has an unknown actual parent region root")
     }
     pub(crate) fn normalization_scope(
         &self,
@@ -299,6 +420,7 @@ impl Original<'_> {
                 graph,
                 store,
                 domain,
+                ..
             } => {
                 if let Some(domain) = domain {
                     let mut work = crate::resolve::crates::ReservationWork::default();
@@ -341,6 +463,7 @@ impl Original<'_> {
                 graph,
                 store,
                 domain: Some(domain),
+                ..
             } => domain.variable(&graph.recipe_view(), store, slot, &mut work),
             Mapping::Selected {
                 body, view, store, ..

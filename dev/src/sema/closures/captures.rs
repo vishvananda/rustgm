@@ -34,6 +34,12 @@ impl PathId {
     pub const fn index(self) -> usize {
         self.0 as usize
     }
+    pub(crate) const fn raw(self) -> u32 {
+        self.0
+    }
+    pub(crate) const fn from_raw(index: u32) -> Self {
+        Self(index)
+    }
 }
 #[derive(Clone, Copy)]
 struct Path {

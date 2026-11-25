@@ -9,6 +9,7 @@ enum Task {
     Function(Key, Context, signatures::Parts),
     Tuple(Key, Context, crate::types::ListId),
     Dynamic(Key, Context, Context),
+    Closure(Key, Context),
 }
 
 impl Stage {
@@ -34,7 +35,8 @@ impl Stage {
                 | Task::Nominal(key, context)
                 | Task::Function(key, context, _)
                 | Task::Tuple(key, context, _)
-                | Task::Dynamic(key, context, _) => (key, context),
+                | Task::Dynamic(key, context, _)
+                | Task::Closure(key, context) => (key, context),
             };
             if self.graph.types.contains_key(&key) {
                 self.graph.hits = self.graph.hits.saturating_add(1);
@@ -60,6 +62,7 @@ impl Stage {
                 )?),
                 Task::Tuple(_, _, elements) => self.tuple_row(facts, elements, context)?,
                 Task::Dynamic(_, _, inner) => self.dynamic_recipe(facts, kind, context, inner)?,
+                Task::Closure(_, _) => self.closure_type_row(facts, kind, context)?,
             };
             self.reserve(4 * size_of::<s::Type>() + retained::new_map::<Key, g::TypeRef>(1))?;
             let id = g::TypeRef(
@@ -126,6 +129,23 @@ impl Stage {
                 ..
             } if self.declaration_policies() => {
                 self.enter_dynamic(facts, key, context, arguments, bound_regions, pending)?;
+                Ok(None)
+            }
+            Kind::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            } if self.declaration_policies() => {
+                self.enter_closure(
+                    facts,
+                    key,
+                    context,
+                    arguments,
+                    signature,
+                    environment,
+                    pending,
+                )?;
                 Ok(None)
             }
             Kind::Function { .. } => {
@@ -223,6 +243,74 @@ impl Stage {
             }
         }
         Ok(())
+    }
+
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "closure recipe entry receives its canonical closure fields alongside the traversal stack"
+    )]
+    fn enter_closure(
+        &mut self,
+        facts: &Declarations,
+        key: Key,
+        context: Context,
+        arguments: crate::types::GenericArgs,
+        signature: TypeId,
+        environment: TypeId,
+        pending: &mut Vec<Task>,
+    ) -> Result<(), &'static str> {
+        self.type_work(pending, Task::Closure(key, context))?;
+        let env = self.type_key(facts, environment, context)?;
+        self.type_work(pending, Task::Enter(env, context))?;
+        let sig = self.type_key(facts, signature, context)?;
+        self.type_work(pending, Task::Enter(sig, context))?;
+        let arguments = facts
+            .types
+            .arguments(arguments)
+            .ok_or("source closure lost its actual arguments")?;
+        for argument in arguments {
+            if let crate::types::arguments::Argument::Type(ty) = argument {
+                let child = self.type_key(facts, ty, context)?;
+                self.type_work(pending, Task::Enter(child, context))?;
+            }
+        }
+        Ok(())
+    }
+
+    fn closure_type_row(
+        &mut self,
+        facts: &Declarations,
+        kind: Kind,
+        context: Context,
+    ) -> Result<s::Type, &'static str> {
+        let Kind::Closure {
+            identity,
+            arguments,
+            signature,
+            environment,
+        } = kind
+        else {
+            return Err("source closure recipe changed its canonical kind");
+        };
+        let closure = self.closure_ref(identity)?;
+        let arguments = self.arguments(facts, arguments, context)?;
+        let signature = self.completed_child(facts, signature, context)?;
+        let environment = self.completed_child(facts, environment, context)?;
+        self.reserve(4 * size_of::<s::ClosureType>())?;
+        let table = self
+            .cold()?
+            .closures
+            .get_or_insert_with(|| Box::new(s::ClosureColumns::default()));
+        let reference = s::ClosureTypeRef(
+            u32::try_from(table.types.len()).map_err(|_| "source closure type table overflow")?,
+        );
+        table.types.push(s::ClosureType {
+            closure,
+            arguments,
+            signature,
+            environment,
+        });
+        Ok(s::Type::Closure(reference))
     }
 
     fn enter_function(

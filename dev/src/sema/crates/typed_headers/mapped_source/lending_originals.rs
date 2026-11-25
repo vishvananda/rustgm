@@ -21,18 +21,116 @@ pub(crate) fn prepare(
     extra_work: usize,
     extra_bytes: usize,
 ) -> Result<(), Error> {
+    let Some((initializer, environment)) = prepare_lazy(
+        report,
+        facts,
+        extra_work,
+        extra_bytes,
+        |graph, facts, work, allocation| {
+            let headers = facts
+                .crates
+                .as_deref()
+                .and_then(|linkage| linkage.originals.as_deref())
+                .ok_or_else(|| error("ordinary original lost its current headers"))?;
+            let mut steps = work.steps;
+            let ready = if headers.get(definition).is_some() {
+                graph
+                    .function_ready(&graph.origins, facts, headers, definition, &mut steps)
+                    .map(|()| None)
+            } else {
+                graph
+                    .initializer_header(&graph.origins, facts, definition, &mut steps)
+                    .and_then(|initializer| {
+                        initializer
+                            .map(Some)
+                            .ok_or("ordinary original lost its actual declaration header")
+                    })
+            };
+            work.charge(steps.saturating_sub(work.steps))?;
+            let initializer = ready.map_err(error)?;
+            let Canonical::Lazy(lazy) = &graph.canonical else {
+                return Err(error("ordinary original lost its lazy owner"));
+            };
+            let domain = lazy.prepare_body(graph, facts, definition, initializer, work)?;
+            let environment = environment(graph, facts, definition, &domain, work, allocation)?;
+            domain.publish_environment(&environment, work)?;
+            Ok((initializer, environment))
+        },
+    )?
+    else {
+        return Ok(());
+    };
+    if initializer.is_none() {
+        let headers = facts
+            .crates
+            .as_deref_mut()
+            .and_then(|linkage| linkage.originals.as_deref_mut())
+            .ok_or_else(|| error("ordinary original lost its actual accounting owner"))?;
+        headers
+            .entries
+            .get_mut(&definition)
+            .ok_or_else(|| error("ordinary original lost its exact publication header"))?
+            .environment = Some(environment);
+    }
+    Ok(())
+}
+
+pub(crate) fn prepare_closure(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: crate::types::closure::ClosureId,
+    extra_work: usize,
+    extra_bytes: usize,
+) -> Result<(), Error> {
+    let _ = prepare_lazy(
+        report,
+        facts,
+        extra_work,
+        extra_bytes,
+        |graph, facts, work, allocation| {
+            let mut steps = work.steps;
+            let closure = graph.closure_header(&graph.origins, facts, identity, &mut steps);
+            work.charge(steps.saturating_sub(work.steps))?;
+            let closure = closure
+                .map_err(error)?
+                .ok_or_else(|| error("ordinary closure lost its actual closure header"))?;
+            let Canonical::Lazy(lazy) = &graph.canonical else {
+                return Err(error("ordinary closure lost its lazy owner"));
+            };
+            let domain = lazy.prepare_closure_body(graph, facts, closure, work)?;
+            let environment =
+                closure_environment(graph, facts, closure, &domain, work, allocation)?;
+            domain.publish_environment(&environment, work)?;
+            Ok(())
+        },
+    )?;
+    Ok(())
+}
+
+fn prepare_lazy<T>(
+    report: &Report,
+    facts: &mut Declarations,
+    extra_work: usize,
+    extra_bytes: usize,
+    action: impl FnOnce(
+        &Graph,
+        &mut Declarations,
+        &mut ReservationWork,
+        &mut Allocation,
+    ) -> Result<T, Error>,
+) -> Result<Option<T>, Error> {
     let Some(headers) = facts
         .crates
         .as_deref()
         .and_then(|linkage| linkage.originals.as_deref())
     else {
-        return Ok(());
+        return Ok(None);
     };
     let Some(ImportedOwners::Ordinary(graph)) = headers.source.as_ref() else {
-        return Ok(());
+        return Ok(None);
     };
     if !matches!(graph.canonical, Canonical::Lazy(_)) {
-        return Ok(());
+        return Ok(None);
     }
     headers.charge(1)?;
     let graph = Rc::clone(graph);
@@ -50,41 +148,7 @@ pub(crate) fn prepare(
         work.charge(0)?;
         work.reserve(0)?;
         authenticate(&graph, report, facts, &mut work)?;
-        let headers = facts
-            .crates
-            .as_deref()
-            .and_then(|linkage| linkage.originals.as_deref())
-            .ok_or_else(|| error("ordinary original lost its current headers"))?;
-        let mut steps = work.steps;
-        let ready = if headers.get(definition).is_some() {
-            graph
-                .function_ready(&graph.origins, facts, headers, definition, &mut steps)
-                .map(|()| None)
-        } else {
-            graph
-                .initializer_header(&graph.origins, facts, definition, &mut steps)
-                .and_then(|initializer| {
-                    initializer
-                        .map(Some)
-                        .ok_or("ordinary original lost its actual declaration header")
-                })
-        };
-        work.charge(steps.saturating_sub(work.steps))?;
-        let initializer = ready.map_err(error)?;
-        let Canonical::Lazy(lazy) = &graph.canonical else {
-            return Err(error("ordinary original lost its lazy owner"));
-        };
-        let domain = lazy.prepare_body(&graph, facts, definition, initializer, &mut work)?;
-        let environment = environment(
-            &graph,
-            facts,
-            definition,
-            &domain,
-            &mut work,
-            &mut allocation,
-        )?;
-        domain.publish_environment(&environment, &mut work)?;
-        Ok((initializer, environment))
+        action(&graph, facts, &mut work, &mut allocation)
     })();
     let headers = facts
         .crates
@@ -102,15 +166,80 @@ pub(crate) fn prepare(
             .saturating_sub(base),
     );
     headers.observed.include(allocation);
-    let (initializer, environment) = result?;
-    if initializer.is_none() {
-        headers
-            .entries
-            .get_mut(&definition)
-            .ok_or_else(|| error("ordinary original lost its exact publication header"))?
-            .environment = Some(environment);
+    result.map(Some)
+}
+
+fn closure_environment(
+    graph: &Graph,
+    facts: &Declarations,
+    closure: super::super::unpaid_provided::ClosureHeader,
+    domain: &OrdinaryDomain,
+    work: &mut ReservationWork,
+    allocation: &mut Allocation,
+) -> Result<Arc<Environment>, Error> {
+    work.charge(2)?;
+    if let Some(actual) = domain.environment() {
+        return Ok(Arc::clone(actual));
     }
-    Ok(())
+    let view = graph.recipe_view();
+    let raw = domain.raw()?;
+    let rows = view.rows()?;
+    let inputs = rows
+        .body_inputs
+        .get(rows.original_index(raw).map_err(error)?)
+        .filter(|inputs| inputs.body == raw)
+        .ok_or_else(|| error("ordinary closure environment lost its actual body inputs"))?;
+    let owner_header = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.originals.as_deref())
+        .and_then(|headers| headers.get(closure.owner));
+    match inputs.environment {
+        s::EnvironmentOrigin::Declaration(owner)
+            if view.definition(owner, work)? == closure.owner =>
+        {
+            facts
+                .generics
+                .environments
+                .get(&closure.owner)
+                .map(Arc::clone)
+                .ok_or_else(|| {
+                    error("ordinary closure environment lost its declaration construction")
+                })
+        }
+        s::EnvironmentOrigin::ConstTraitDefault { member, trait_ } => {
+            if view.definition(member, work)? != closure.owner
+                || trait_.artifact != rows.policy.provider
+            {
+                return Err(error(
+                    "const default closure environment changed its actual member or provider",
+                ));
+            }
+            let owner = view.definition(trait_.declaration, work)?;
+            if facts.associated.trait_owner(closure.owner) != Some(owner) {
+                return Err(error(
+                    "const default closure environment changed its actual trait owner",
+                ));
+            }
+            if let Some(actual) = owner_header.and_then(|header| header.environment.as_ref()) {
+                return Ok(Arc::clone(actual));
+            }
+            default_environment(facts, closure.owner, owner, work, allocation)
+        }
+        s::EnvironmentOrigin::Contract => {
+            let mut observed = Observed {
+                work,
+                allocation: Allocation::default(),
+            };
+            let result = ContractParts::original(graph, facts, domain, inputs, &mut observed)?
+                .build(facts, &mut observed);
+            allocation.include(observed.allocation);
+            result
+        }
+        _ => Err(error(
+            "ordinary closure environment requires its actual defining construction profile",
+        )),
+    }
 }
 fn authenticate(
     graph: &Graph,
