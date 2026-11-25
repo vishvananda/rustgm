@@ -485,6 +485,25 @@ impl OrdinaryDomain {
         }
         Ok(region)
     }
+    pub(in crate::sema::crates::typed_headers) fn normalization_intervals(
+        &self,
+        view: &RecipeView<'_>,
+        store: &crate::types::Store,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<
+        Vec<(
+            crate::support::crates::generics::Range,
+            std::ops::Range<u32>,
+        )>,
+        Error,
+    > {
+        self.record.require_current(view, store, work)?;
+        self.record
+            .normalization_intervals(view, index, input, work)
+    }
+    #[cfg(test)]
     pub(in crate::sema::crates::typed_headers) fn normalization_interval(
         &self,
         view: &RecipeView<'_>,

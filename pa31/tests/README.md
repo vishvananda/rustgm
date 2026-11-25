@@ -1891,3 +1891,11 @@ casts) across native and `const` fresh-client execution, while retaining private
 union field rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-extended-body-ops`
 with the prebuilt compilers.
+
+`spec/source-scoped-normalization-transport/outcomes.json` checks version-14
+transport of multi-scope and owned-region normalization proofs, proof-gap
+compaction, and quantified original type assumptions (`for<'a>` `Clause::ForAll`)
+across native and `const` fresh-client execution, while retaining missing
+higher-ranked bound rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-scoped-normalization-transport`
+with the prebuilt compilers.

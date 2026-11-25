@@ -294,9 +294,14 @@ fn inputs(
             count.bytes = count
                 .bytes
                 .saturating_add(size_of::<super::super::ScopedNormalization>());
-            count.vector(&scoped.equalities, work)?;
-            count.vector(&scoped.outlives, work)?;
-            count.vector(&scoped.types, work)?;
+            count.vector(&scoped.scopes, work)?;
+            count.vector(&scoped.blocks, work)?;
+            for block in &scoped.blocks {
+                work.charge(1)?;
+                count.vector(&block.equalities, work)?;
+                count.vector(&block.outlives, work)?;
+                count.vector(&block.types, work)?;
+            }
         }
     }
     if let Some(builtins) = &input.builtins {

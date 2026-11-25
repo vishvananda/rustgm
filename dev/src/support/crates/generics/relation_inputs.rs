@@ -73,7 +73,7 @@ pub struct TypeOutlives {
     pub shorter: RegionRef,
 }
 
-/// A root input may carry one lexical child with its own normalized relations.
+/// A root input may carry nested lexical scopes and scoped relation blocks.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NormalizationInput {
     pub site: InputSite,
@@ -86,14 +86,31 @@ pub struct NormalizationInput {
     pub scoped: Option<Box<ScopedNormalization>>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ScopedNormalization {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct NormalizationScope {
+    /// 0 is the root proof scope; 1..=index names a prior scope.
+    pub parent: u32,
     pub frame: BinderRef,
     pub callable: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NormalizationBlock {
+    /// 0 is the root proof scope; `1..=scopes.len()` names `scopes[scope - 1]`.
+    pub scope: u32,
+    pub universal_aliases: bool,
     pub origin: u32,
+    /// Contiguous slot range in `original.variables`, or empty `0..0`.
+    pub regions: Range,
     pub equalities: Vec<RegionBound>,
     pub outlives: Vec<RegionBound>,
     pub types: Vec<TypeOutlives>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ScopedNormalization {
+    pub scopes: Vec<NormalizationScope>,
+    pub blocks: Vec<NormalizationBlock>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -105,6 +122,7 @@ pub struct CopyQueries {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LocatedRequirement {
     pub site: InputSite,
+    pub binder: Option<BinderRef>,
     pub value: Requirement,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]

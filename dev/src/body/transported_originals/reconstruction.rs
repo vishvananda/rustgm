@@ -46,8 +46,9 @@ pub(crate) fn demand(
         let source = view.source().map_err(Error::unlocated)?;
         let body =
             rebuilt_operations::build(view, &mut work).map_err(|e| report.body_error(source, e))?;
-        let contract = rebuilt_inputs::build(facts, view, &body, &mut work)
-            .map_err(|e| report.body_error(source, e))?;
+        let (contract, quantified_assumptions) =
+            rebuilt_inputs::build(facts, view, &body, &mut work)
+                .map_err(|e| report.body_error(source, e))?;
         let environment = Arc::clone(
             view.environment()
                 .map_err(|e| report.body_error(source, e))?,
@@ -61,6 +62,7 @@ pub(crate) fn demand(
                 body,
                 texts,
                 caller_sites,
+                quantified_assumptions,
             },
             contract,
             environment,

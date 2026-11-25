@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[rustc_diagnostic_item = \"Option\"]",
+  "features": ["auto_traits"],
+  "stdout": "11 11 29 7 13 42\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "missing_bound.rs",
+    "rustc": "not satisfied",
+    "rustgm": "obligation"
+  }
+}

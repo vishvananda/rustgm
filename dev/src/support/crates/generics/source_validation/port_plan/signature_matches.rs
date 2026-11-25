@@ -341,6 +341,9 @@ impl Arena {
         pending: &mut Vec<Task>,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
+        if domains.declaration_policies && !matches!(pair.opening, Opening::Header(_)) {
+            return Ok(true);
+        }
         if let (Node::Scalar(crate::support::crates::Scalar::Usize), projection)
         | (projection, Node::Scalar(crate::support::crates::Scalar::Usize)) = nodes
             && self.slice_metadata(domains, projection, work)?

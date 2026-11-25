@@ -492,13 +492,19 @@ impl RecordedDomain {
             None => Err(error("recorded region is outside its actual domain")),
         }
     }
-    pub(in crate::sema::crates::typed_headers) fn normalization_interval(
+    pub(in crate::sema::crates::typed_headers) fn normalization_intervals(
         &self,
         view: &RecipeView<'_>,
         index: usize,
         input: &s::NormalizationInput,
         work: &mut ReservationWork,
-    ) -> Result<std::ops::Range<u32>, Error> {
+    ) -> Result<
+        Vec<(
+            crate::support::crates::generics::Range,
+            std::ops::Range<u32>,
+        )>,
+        Error,
+    > {
         work.charge(4)?;
         let rows = view.rows()?;
         let row = rows.original_index(self.seal.raw).map_err(error)?;
@@ -519,7 +525,7 @@ impl RecordedDomain {
             ));
         }
         let range = match input.owned.as_slice() {
-            [] => return Ok(0..0),
+            [] => return Ok(Vec::new()),
             [range] => range,
             _ => {
                 return Err(error(
@@ -531,8 +537,10 @@ impl RecordedDomain {
         work.charge(variables.len().saturating_add(1))?;
         let ordinal =
             u32::try_from(index).map_err(|_| error("selected normalization ordinal overflow"))?;
-        let mut start = None;
-        let mut end = 0;
+        let mut runs: Vec<(
+            crate::support::crates::generics::Range,
+            std::ops::Range<u32>,
+        )> = Vec::new();
         for (offset, variable) in variables.iter().enumerate() {
             if variable.allocation != s::RegionAllocation::Normalization(ordinal) {
                 return Err(error(
@@ -540,6 +548,8 @@ impl RecordedDomain {
                 ));
             }
             let slot = range.start as usize + offset;
+            let slot_u32 =
+                u32::try_from(slot).map_err(|_| error("selected normalization slot overflow"))?;
             let id = self
                 .log
                 .by_slot
@@ -549,17 +559,53 @@ impl RecordedDomain {
                 .ok_or_else(|| {
                     error("selected normalization lost its actual recorded allocation")
                 })?;
-            if start.is_some() && id.0 != end {
-                return Err(error(
-                    "selected normalization recorded allocations are discontinuous",
-                ));
-            }
-            start.get_or_insert(id.0);
-            end =
+            let next_id =
                 id.0.checked_add(1)
                     .ok_or_else(|| error("selected normalization interval overflow"))?;
+            let next_slot = slot_u32
+                .checked_add(1)
+                .ok_or_else(|| error("selected normalization slot overflow"))?;
+            if let Some((slots, ids)) = runs.last_mut() {
+                if id.0 < ids.end {
+                    return Err(error(
+                        "selected normalization recorded allocations moved backwards",
+                    ));
+                }
+                if id.0 == ids.end && slot_u32 == slots.end {
+                    slots.end = next_slot;
+                    ids.end = next_id;
+                    continue;
+                }
+            }
+            runs.push((
+                crate::support::crates::generics::Range {
+                    start: slot_u32,
+                    end: next_slot,
+                },
+                id.0..next_id,
+            ));
         }
-        Ok(start.ok_or_else(|| error("selected normalization has an empty owned interval"))?..end)
+        if runs.is_empty() {
+            return Err(error("selected normalization has an empty owned interval"));
+        }
+        Ok(runs)
+    }
+    #[cfg(test)]
+    pub(in crate::sema::crates::typed_headers) fn normalization_interval(
+        &self,
+        view: &RecipeView<'_>,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<std::ops::Range<u32>, Error> {
+        let runs = self.normalization_intervals(view, index, input, work)?;
+        match runs.as_slice() {
+            [] => Ok(0..0),
+            [(_, range)] => Ok(range.clone()),
+            _ => Err(error(
+                "selected normalization recorded allocations are discontinuous",
+            )),
+        }
     }
     pub(in crate::sema::crates::typed_headers) fn region(
         &self,

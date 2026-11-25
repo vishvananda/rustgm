@@ -536,7 +536,7 @@ impl State {
             .map(|source| source.is_some())
     }
 
-    pub(super) fn prove_equality(
+    pub(in crate::sema) fn prove_equality(
         &mut self,
         facts: &mut Declarations,
         mut predicate: Predicate,

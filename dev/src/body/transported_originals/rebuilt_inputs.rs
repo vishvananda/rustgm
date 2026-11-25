@@ -300,12 +300,18 @@ impl<'a, 'b> Expected<'a, 'b> {
     }
 }
 
+pub(super) struct QuantifiedAssumption {
+    pub(super) index: usize,
+    pub(super) bound_regions: u32,
+    pub(super) predicate: Predicate,
+}
+
 pub(super) fn build(
     facts: &Declarations,
     view: &SourceOriginal<'_>,
     body: &Body,
     work: &mut ImportedOriginals,
-) -> Result<Contract, &'static str> {
+) -> Result<(Contract, Vec<QuantifiedAssumption>), &'static str> {
     super::non_type_calls::check(facts, view, body, &mut work.steps)?;
     super::safety_requests::check(facts, view, body, work)?;
     super::encoded_assembly::check(facts, view, body, work)?;
@@ -319,16 +325,21 @@ pub(super) fn build(
         .iter()
         .map(|&p| pair(view, p, &mut work.steps))
         .collect::<Result<_, _>>()?;
-    let type_assumptions = record
-        .type_assumptions
-        .iter()
-        .map(|input| {
-            view.input_site(input.site, &mut work.steps)?;
-            Ok(Clause::Predicate(
-                view.predicate(&input.value, &mut work.steps)?,
-            ))
-        })
-        .collect::<Result<_, &'static str>>()?;
+    let mut quantified_assumptions = Vec::new();
+    let mut type_assumptions = Vec::with_capacity(record.type_assumptions.len());
+    for (index, input) in record.type_assumptions.iter().enumerate() {
+        view.input_site(input.site, &mut work.steps)?;
+        let predicate = view.predicate(&input.value, &mut work.steps)?;
+        if let Some(binder) = input.binder {
+            let bound_regions = view.normalization_scope(binder, &mut work.steps)?;
+            quantified_assumptions.push(QuantifiedAssumption {
+                index,
+                bound_regions,
+                predicate,
+            });
+        }
+        type_assumptions.push(Clause::Predicate(predicate));
+    }
     let obligations = expected
         .obligations(&mut work.steps)
         .collect::<Result<_, _>>()?;
@@ -376,7 +387,7 @@ pub(super) fn build(
         work.charge(0)?;
         required?;
     }
-    Ok(contract)
+    Ok((contract, quantified_assumptions))
 }
 /// The wire admits the header's original result against the body's result by
 /// shape only; their regional relation is a fresh request. The body's value
@@ -578,34 +589,31 @@ fn pair(
         view.region(record.shorter, steps)?,
     ))
 }
+type AllocationRun = (
+    crate::support::crates::generics::Range,
+    std::ops::Range<u32>,
+);
+
 fn normalization(
     view: &SourceOriginal<'_>,
     index: usize,
     record: &s::NormalizationInput,
     steps: &mut usize,
 ) -> Result<Proof, &'static str> {
-    let regions = view.normalization_interval(index, record, steps)?;
+    let runs = view.normalization_intervals(index, record, steps)?;
+    let start = runs.first().map_or(0, |(_, ids)| ids.start);
     let mut proof = normalization_relations(
         view,
         (&record.equalities, &record.outlives, &record.types),
-        regions,
+        start..start,
         steps,
     )?;
+    let mut run_index = 0;
     if let Some(scoped) = &record.scoped {
-        let count = view.normalization_scope(scoped.frame, steps)?;
-        let scope = if scoped.callable {
-            proof.callable_scope(ScopeId::ROOT, count)?
-        } else {
-            proof.scope(ScopeId::ROOT, count)?
-        };
-        let end = proof.regions.end;
-        let nested = normalization_relations(
-            view,
-            (&scoped.equalities, &scoped.outlives, &scoped.types),
-            end..end,
-            steps,
-        )?;
-        proof.append_at_origin(nested, scope, scoped.origin)?;
+        append_scoped(view, &runs, scoped, &mut proof, &mut run_index, steps)?;
+    }
+    if let Some((_, last)) = runs.last() {
+        advance_root_to(&mut proof, &runs, &mut run_index, last.end)?;
     }
     Ok(Proof {
         source: view.input_site(record.site, steps)?,
@@ -616,6 +624,101 @@ fn normalization(
             .collect::<Result<_, _>>()?,
         proof,
     })
+}
+
+fn append_scoped(
+    view: &SourceOriginal<'_>,
+    runs: &[AllocationRun],
+    scoped: &s::ScopedNormalization,
+    proof: &mut Obligations,
+    run_index: &mut usize,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let mut ids = Vec::with_capacity(scoped.scopes.len().saturating_add(1));
+    ids.push(ScopeId::ROOT);
+    for row in &scoped.scopes {
+        let parent = *ids
+            .get(row.parent as usize)
+            .ok_or("source normalization scope parent is out of order")?;
+        let count = view.normalization_scope(row.frame, steps)?;
+        let scope = if row.callable {
+            proof.callable_scope(parent, count)?
+        } else {
+            proof.scope(parent, count)?
+        };
+        ids.push(scope);
+    }
+    for block in &scoped.blocks {
+        let scope = *ids
+            .get(block.scope as usize)
+            .ok_or("source normalization block names an unknown scope")?;
+        let block_range = if block.regions.start == block.regions.end {
+            let pos = proof.regions.end;
+            pos..pos
+        } else {
+            let range = map_block_range(runs, block.regions)?;
+            advance_root_to(proof, runs, run_index, range.start)?;
+            range
+        };
+        if block.universal_aliases {
+            proof.append_universals(block_range, scope)?;
+        } else {
+            let nested = normalization_relations(
+                view,
+                (&block.equalities, &block.outlives, &block.types),
+                block_range,
+                steps,
+            )?;
+            proof.append_at_origin(nested, scope, block.origin)?;
+        }
+        while *run_index < runs.len() && proof.regions.end >= runs[*run_index].1.end {
+            *run_index += 1;
+        }
+    }
+    Ok(())
+}
+
+fn advance_root_to(
+    proof: &mut Obligations,
+    runs: &[AllocationRun],
+    run_index: &mut usize,
+    target: u32,
+) -> Result<(), &'static str> {
+    while proof.regions.end < target {
+        let (_, ids) = runs
+            .get(*run_index)
+            .ok_or("source normalization allocation ran past its recorded runs")?;
+        if proof.regions.end < ids.start {
+            proof.resume_at(ids.start.min(target))?;
+        } else {
+            proof.regions.end = ids.end.min(target);
+            if proof.regions.end == ids.end {
+                *run_index += 1;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn map_block_range(
+    runs: &[AllocationRun],
+    slots: crate::support::crates::generics::Range,
+) -> Result<std::ops::Range<u32>, &'static str> {
+    for (run_slots, ids) in runs {
+        if slots.start >= run_slots.start && slots.end <= run_slots.end {
+            let offset = slots.start - run_slots.start;
+            let len = slots.end - slots.start;
+            let start = ids
+                .start
+                .checked_add(offset)
+                .ok_or("source normalization block interval overflow")?;
+            let end = start
+                .checked_add(len)
+                .ok_or("source normalization block interval overflow")?;
+            return Ok(start..end);
+        }
+    }
+    Err("source normalization block spans a discontinuous allocation gap")
 }
 
 type RelationRows<'a> = (
@@ -684,7 +787,18 @@ pub(super) fn validate(
         .zip(&record.type_assumptions)
     {
         view.input_site(record.site, steps)?;
-        if actual != Clause::Predicate(view.predicate(&record.value, steps)?) {
+        let predicate = view.predicate(&record.value, steps)?;
+        let matches = match (actual, record.binder) {
+            (Clause::Predicate(actual), None) => actual == predicate,
+            (Clause::ForAll(id), Some(binder)) => {
+                let bound_regions = view.normalization_scope(binder, steps)?;
+                facts.types.quantified(id).is_some_and(|quantified| {
+                    quantified.bound_regions == bound_regions && quantified.predicate == predicate
+                })
+            }
+            _ => false,
+        };
+        if !matches {
             return Err("source original changed a record regional assumption");
         }
     }
@@ -859,10 +973,18 @@ fn validate_normalization(
     actual: &Proof,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
-    let regions = view.normalization_interval(index, record, steps)?;
-    if actual.proof.regions != regions
+    let runs = view.normalization_intervals(index, record, steps)?;
+    let expected_envelope = match (runs.first(), runs.last()) {
+        (Some((_, first)), Some((_, last))) => first.start..last.end,
+        _ => 0..0,
+    };
+    if actual.proof.regions != expected_envelope
         || actual.source != view.input_site(record.site, steps)?
         || actual.sources.len() != record.sources.len()
+        || !actual
+            .proof
+            .owned_regions()
+            .eq(runs.iter().map(|(_, ids)| ids.clone()))
     {
         return Err("source original changed its complete record normalization domain");
     }
@@ -878,24 +1000,63 @@ fn validate_normalization(
         steps,
     )?;
     if let Some(scoped) = &record.scoped {
-        let evidence = actual
-            .proof
-            .single_normalization_scope()
-            .ok_or("source normalization lost its actual single scope")?;
-        if evidence.regions != view.normalization_scope(scoped.frame, steps)?
-            || evidence.callable != scoped.callable
-            || evidence.origin != scoped.origin
+        validate_scoped_normalization(view, &runs, scoped, &actual.proof, steps)?;
+    } else if actual.proof.scopes().next().is_some()
+        || actual.proof.quantified_blocks().next().is_some()
+    {
+        return Err("source normalization acquired an unrecorded scope");
+    }
+    Ok(())
+}
+
+fn validate_scoped_normalization(
+    view: &SourceOriginal<'_>,
+    runs: &[AllocationRun],
+    scoped: &s::ScopedNormalization,
+    proof: &Obligations,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let mut actual_scopes = proof.scopes();
+    for row in &scoped.scopes {
+        let actual = actual_scopes
+            .next()
+            .ok_or("source normalization omitted a scoped binder")?;
+        if actual.parent.0 != row.parent
+            || actual.count != view.normalization_scope(row.frame, steps)?
+            || actual.callable != row.callable
+        {
+            return Err("source normalization changed its scoped binder or origin");
+        }
+    }
+    if actual_scopes.next().is_some() {
+        return Err("source normalization acquired an extra scoped binder");
+    }
+    let mut actual_blocks = proof.quantified_blocks();
+    for row in &scoped.blocks {
+        let (scope, universal_aliases, origin, block) = actual_blocks
+            .next()
+            .ok_or("source normalization omitted a scoped block")?;
+        let regions_match = if row.regions.start == row.regions.end {
+            block.regions.is_empty()
+        } else {
+            block.regions == map_block_range(runs, row.regions)?
+        };
+        if scope.0 != row.scope
+            || universal_aliases != row.universal_aliases
+            || origin != row.origin
+            || !regions_match
         {
             return Err("source normalization changed its scoped binder or origin");
         }
         validate_normalization_relations(
             view,
-            (&scoped.equalities, &scoped.outlives, &scoped.types),
-            evidence.block,
+            (&row.equalities, &row.outlives, &row.types),
+            block,
             steps,
         )?;
-    } else if actual.proof.has_quantified() {
-        return Err("source normalization acquired an unrecorded scope");
+    }
+    if actual_blocks.next().is_some() {
+        return Err("source normalization acquired an extra scoped block");
     }
     Ok(())
 }

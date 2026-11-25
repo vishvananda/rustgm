@@ -83,9 +83,7 @@ fn normalization_supported(
     stage: &Stage,
     proof: &crate::types::lifetime_proof::Obligations,
 ) -> bool {
-    proof.quantifies_nothing()
-        || stage.declaration_policies()
-            && (proof.has_only_root_intervals() || proof.single_normalization_scope().is_some())
+    proof.quantifies_nothing() || stage.declaration_policies()
 }
 
 pub(super) fn emit(
@@ -119,12 +117,34 @@ pub(super) fn emit(
     let root = sites.input(stage, input.source.root_site())?;
     for &clause in &input.type_assumptions {
         stage.reserve(4 * size_of::<s::LocatedRequirement>())?;
-        let predicate = clause.ordinary().map_err(
-            |_| "quantified original assumptions require a complete scoped transport profile",
-        )?;
+        let (binder, value) = match clause {
+            crate::types::parameters::clauses::Clause::Predicate(predicate) => {
+                (None, stage.requirement(facts, predicate, context)?)
+            }
+            crate::types::parameters::clauses::Clause::ForAll(id)
+                if stage.declaration_policies() =>
+            {
+                let actual = facts
+                    .types
+                    .quantified(id)
+                    .ok_or("source quantified original assumption is unknown")?;
+                let inner = stage.scoped_context(context, actual.bound_regions)?;
+                (
+                    Some(stage.binder(inner)?),
+                    stage.requirement(facts, actual.predicate, inner)?,
+                )
+            }
+            crate::types::parameters::clauses::Clause::ForAll(_)
+            | crate::types::parameters::clauses::Clause::UnstableFeature(_) => {
+                return Err(
+                    "quantified original assumptions require a complete scoped transport profile",
+                );
+            }
+        };
         rows.type_assumptions.push(s::LocatedRequirement {
             site: root,
-            value: stage.requirement(facts, predicate, context)?,
+            binder,
+            value,
         });
     }
     for obligation in &input.obligations {

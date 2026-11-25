@@ -106,6 +106,7 @@ pub(super) struct PendingBody {
     pub(super) body: crate::body::ir::Body,
     pub(super) texts: super::encoded_texts::Pending,
     pub(super) caller_sites: super::callsite_coordinates::Pending,
+    pub(super) quantified_assumptions: Vec<rebuilt_inputs::QuantifiedAssumption>,
 }
 
 fn build(
@@ -132,7 +133,7 @@ fn build(
             .map_err(|e| report.body_optional_error(None, e))?;
         let body =
             rebuilt_operations::build(&view, work).map_err(|e| report.body_error(source, e))?;
-        let contract = rebuilt_inputs::build(facts, &view, &body, work)
+        let (contract, quantified_assumptions) = rebuilt_inputs::build(facts, &view, &body, work)
             .map_err(|e| report.body_error(source, e))?;
         let pending = selected
             .prepare(&view, facts, &body, work)
@@ -146,6 +147,7 @@ fn build(
                 body,
                 texts,
                 caller_sites,
+                quantified_assumptions,
             },
             contract,
             Arc::clone(
@@ -172,15 +174,32 @@ pub(super) fn finish(
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
     rebuilt: PendingBody,
-    contract: crate::body::regions::Contract,
+    mut contract: crate::body::regions::Contract,
     environment: Arc<crate::types::parameters::environment::Environment>,
 ) -> Result<Original, Error> {
     let PendingBody {
         mut body,
         texts,
         caller_sites,
+        quantified_assumptions,
     } = rebuilt;
     let source = body.source;
+    for assumption in quantified_assumptions {
+        let id = facts
+            .types
+            .intern_quantified(crate::types::parameters::clauses::Quantified {
+                bound_regions: assumption.bound_regions,
+                predicate: assumption.predicate,
+            })
+            .map_err(|error| report.body_error(source, error))?;
+        let slot = contract
+            .type_assumptions
+            .get_mut(assumption.index)
+            .ok_or_else(|| {
+                report.body_error(source, "quantified original assumption index out of bounds")
+            })?;
+        *slot = crate::types::parameters::clauses::Clause::ForAll(id);
+    }
     super::encoded_texts::intern(facts, &mut body, texts)
         .map_err(|error| report.body_error(source, error))?;
     super::callsite_coordinates::intern(report, facts, &mut body, caller_sites)
@@ -324,22 +343,7 @@ pub(super) fn allocation<'a>(
             .saturating_add(input.obligations.len())
             .saturating_add(clauses)
             .saturating_add(owned);
-        for proof in &input.normalizations {
-            work.charge(1)?;
-            count = count
-                .saturating_add(proof.sources.len())
-                .saturating_add(proof.equalities.len())
-                .saturating_add(proof.outlives.len())
-                .saturating_add(proof.types.len())
-                .saturating_add(1);
-            if let Some(scoped) = &proof.scoped {
-                count = count
-                    .saturating_add(scoped.equalities.len())
-                    .saturating_add(scoped.outlives.len())
-                    .saturating_add(scoped.types.len())
-                    .saturating_add(1);
-            }
-        }
+        count = count.saturating_add(normalization_count(&input.normalizations, work)?);
         if let Some(builtins) = &input.builtins {
             count = count
                 .saturating_add(builtins.predicates.len())
@@ -370,4 +374,34 @@ pub(super) fn allocation<'a>(
             );
     }
     Ok((bytes, visits))
+}
+
+fn normalization_count(
+    normalizations: &[s::NormalizationInput],
+    work: &mut ImportedOriginals,
+) -> Result<usize, &'static str> {
+    let mut count = 0_usize;
+    for proof in normalizations {
+        work.charge(1)?;
+        count = count
+            .saturating_add(proof.sources.len())
+            .saturating_add(proof.equalities.len())
+            .saturating_add(proof.outlives.len())
+            .saturating_add(proof.types.len())
+            .saturating_add(1);
+        if let Some(scoped) = &proof.scoped {
+            count = count
+                .saturating_add(scoped.scopes.len())
+                .saturating_add(scoped.blocks.len())
+                .saturating_add(1);
+            for block in &scoped.blocks {
+                work.charge(1)?;
+                count = count
+                    .saturating_add(block.equalities.len())
+                    .saturating_add(block.outlives.len())
+                    .saturating_add(block.types.len());
+            }
+        }
+    }
+    Ok(count)
 }

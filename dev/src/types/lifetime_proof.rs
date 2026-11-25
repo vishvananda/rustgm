@@ -22,11 +22,10 @@ pub(crate) use scopes::ScopePlan;
 pub(crate) use scopes::map_scopes;
 use std::ops::Range;
 
-pub(crate) struct SingleNormalizationScope<'a> {
-    pub(crate) regions: u32,
+pub(crate) struct QuantifiedScope {
+    pub(crate) parent: ScopeId,
+    pub(crate) count: u32,
     pub(crate) callable: bool,
-    pub(crate) origin: u32,
-    pub(crate) block: &'a Obligations,
 }
 
 #[derive(Clone)]
@@ -101,29 +100,6 @@ impl Obligations {
         self.quantified
             .as_ref()
             .is_none_or(|proof| proof.scopes.is_empty() && proof.blocks.is_empty())
-    }
-
-    /// A single binder and one block whose lifetime allocations stay in its caller.
-    pub(crate) fn single_normalization_scope(&self) -> Option<SingleNormalizationScope<'_>> {
-        let proof = self.quantified.as_ref()?;
-        let ([binder], [block]) = (proof.scopes.as_slice(), proof.blocks.as_slice()) else {
-            return None;
-        };
-        if binder.parent != ScopeId::ROOT
-            || block.scope != ScopeId(1)
-            || block.universal_aliases
-            || self.owned_regions().next().is_some()
-            || !block.proof.regions.is_empty()
-            || block.proof.has_quantified()
-        {
-            return None;
-        }
-        Some(SingleNormalizationScope {
-            regions: binder.count,
-            callable: binder.callable_depth != 0,
-            origin: proof.origin(0),
-            block: &block.proof,
-        })
     }
 
     /// Retained lexical scopes, excluding the caller's root scope.

@@ -97,13 +97,26 @@ fn site_from_tag(read: &mut Input<'_, '_>, tag: u8) -> Result<s::InputSite, &'st
         _ => return Err("unknown source input-site ownership domain"),
     })
 }
+// Marker 2 extends a located requirement with a v14 clause quantifier binder.
+const QUANTIFIED_REQUIREMENT: u8 = 2;
 fn located_write(out: &mut Writer, row: &s::LocatedRequirement) -> Result<(), &'static str> {
+    if let Some(binder) = row.binder {
+        out.u8(QUANTIFIED_REQUIREMENT)?;
+        id(out, binder.0)?;
+    }
     site_write(out, &row.site)?;
     types::requirement_write(out, &row.value)
 }
 fn located_read(read: &mut Input<'_, '_>) -> Result<s::LocatedRequirement, &'static str> {
+    let tag = read.reader.u8()?;
+    let (binder, site) = if tag == QUANTIFIED_REQUIREMENT && read.profile.declaration_policies() {
+        (Some(g::BinderRef(read.id()?)), site_read(read)?)
+    } else {
+        (None, site_from_tag(read, tag)?)
+    };
     Ok(s::LocatedRequirement {
-        site: site_read(read)?,
+        site,
+        binder,
         value: types::requirement_read(read)?,
     })
 }
@@ -256,14 +269,42 @@ fn normalization_write(out: &mut Writer, row: &s::NormalizationInput) -> Result<
     write_copy(out, &row.outlives, types::bound_write)?;
     write_copy(out, &row.types, outlives_write)?;
     if let Some(scoped) = &row.scoped {
-        id(out, scoped.frame.0)?;
-        out.u8(u8::from(scoped.callable))?;
-        id(out, scoped.origin)?;
-        write_copy(out, &scoped.equalities, types::bound_write)?;
-        write_copy(out, &scoped.outlives, types::bound_write)?;
-        write_copy(out, &scoped.types, outlives_write)?;
+        write_copy(out, &scoped.scopes, scope_write)?;
+        write(out, &scoped.blocks, block_write)?;
     }
     Ok(())
+}
+fn scope_write(out: &mut Writer, row: s::NormalizationScope) -> Result<(), &'static str> {
+    id(out, row.parent)?;
+    id(out, row.frame.0)?;
+    out.u8(u8::from(row.callable))
+}
+fn scope_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationScope, &'static str> {
+    Ok(s::NormalizationScope {
+        parent: read.id()?,
+        frame: g::BinderRef(read.id()?),
+        callable: read.boolean()?,
+    })
+}
+fn block_write(out: &mut Writer, row: &s::NormalizationBlock) -> Result<(), &'static str> {
+    id(out, row.scope)?;
+    out.u8(u8::from(row.universal_aliases))?;
+    id(out, row.origin)?;
+    super::range(out, row.regions)?;
+    write_copy(out, &row.equalities, types::bound_write)?;
+    write_copy(out, &row.outlives, types::bound_write)?;
+    write_copy(out, &row.types, outlives_write)
+}
+fn block_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationBlock, &'static str> {
+    Ok(s::NormalizationBlock {
+        scope: read.id()?,
+        universal_aliases: read.boolean()?,
+        origin: read.id()?,
+        regions: read.range()?,
+        equalities: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
+        outlives: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
+        types: read.list(crates::MAX_COMPONENTS, 8, outlives_read)?,
+    })
 }
 fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput, &'static str> {
     let tag = read.reader.u8()?;
@@ -285,12 +326,8 @@ fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput,
         scoped: if scoped {
             read.reserve(size_of::<s::ScopedNormalization>())?;
             Some(Box::new(s::ScopedNormalization {
-                frame: g::BinderRef(read.id()?),
-                callable: read.boolean()?,
-                origin: read.id()?,
-                equalities: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
-                outlives: read.list(crates::MAX_COMPONENTS, 8, types::bound_read)?,
-                types: read.list(crates::MAX_COMPONENTS, 8, outlives_read)?,
+                scopes: read.list(crates::MAX_COMPONENTS, 9, scope_read)?,
+                blocks: read.list(crates::MAX_COMPONENTS, 29, block_read)?,
             }))
         } else {
             None

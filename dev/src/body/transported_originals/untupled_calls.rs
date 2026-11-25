@@ -89,7 +89,8 @@ fn proved(
     environment: &Arc<Environment>,
     work: &mut usize,
 ) -> Result<(), &'static str> {
-    let mut goals = Vec::new();
+    let mut trait_goals = Vec::new();
+    let mut equality_goals = Vec::new();
     for value in &body.values {
         let Rvalue::Invoke {
             kind,
@@ -100,13 +101,37 @@ fn proved(
             continue;
         };
         *work = work.saturating_add(1);
-        goals.push(goal(
+        collect_goals(
             facts,
             (body, environment),
             (kind, signature, arguments),
+            (&mut trait_goals, &mut equality_goals),
             work,
-        )?);
+        )?;
     }
+    prove_batch(
+        facts,
+        contract,
+        environment,
+        trait_goals,
+        "source call operator receiver does not implement its actual call trait",
+    )?;
+    prove_batch(
+        facts,
+        contract,
+        environment,
+        equality_goals,
+        "source call operator result is not its callee's declared Output",
+    )
+}
+
+fn prove_batch(
+    facts: &mut Declarations,
+    contract: &Contract,
+    environment: &Arc<Environment>,
+    goals: Vec<Predicate>,
+    error: &'static str,
+) -> Result<(), &'static str> {
     if goals.is_empty() {
         return Ok(());
     }
@@ -118,8 +143,10 @@ fn proved(
         first,
         goals.into_iter(),
     )
-    .map_err(|_| "source call operator receiver does not implement its actual call trait")?;
-    if !proof.is_empty() {
+    .map_err(|_| error)?;
+    let pure_aliases =
+        proof.outlives.is_empty() && proof.types.is_empty() && !proof.has_quantified();
+    if !pure_aliases {
         return Err("source call operator role proof requires its wider regional profile");
     }
     Ok(())
@@ -127,12 +154,13 @@ fn proved(
 
 /// The receiver is the callee itself for `FnOnce`, and a unique or shared
 /// borrow of it for `FnMut` or `Fn`.
-fn goal(
+fn collect_goals(
     facts: &mut Declarations,
     (body, environment): (&Body, &Environment),
     (kind, signature, arguments): (CallTrait, TypeId, ValueList),
+    (trait_goals, equality_goals): (&mut Vec<Predicate>, &mut Vec<Predicate>),
     work: &mut usize,
-) -> Result<Predicate, &'static str> {
+) -> Result<(), &'static str> {
     let receiver = body
         .arguments
         .get(arguments.start as usize)
@@ -173,30 +201,86 @@ fn goal(
         once: crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?,
         output: crate::sema::compiler_items::callable_output_role(facts)?,
     };
-    // Either the unnormalized projection, or the value an environment
-    // premise in the `Output` bucket binds to exactly that projection.
-    let output = crate::types::ItemId(callable.output.0);
-    let arguments = callable
-        .output_arguments(facts, result)
-        .or_else(|| {
-            environment
-                .projection_candidates(output)
-                .find_map(|clause| {
-                    *work = work.saturating_add(1);
-                    let predicate = vacuous(facts, clause)?;
-                    matches!(predicate.bound, Bound::ProjectionEqual(value) if value == result)
-                        .then(|| callable.output_arguments(facts, predicate.ty))
-                        .flatten()
-                })
-        })
-        .ok_or("source call operator result is not its callee's declared Output")?;
+    let (arguments, equality) =
+        output_goal(facts, environment, &callable, parameters, result, work)?;
     let role = crate::sema::compiler_items::callable_role(facts, kind)?;
     let application = facts.types.intern_trait_application(Application {
         item: crate::types::ItemId(role.0),
         arguments,
     })?;
-    Ok(Predicate {
+    trait_goals.push(Predicate {
         ty: callee,
         bound: Bound::Trait(application),
-    })
+    });
+    if let Some(equality) = equality {
+        equality_goals.push(equality);
+    }
+    Ok(())
+}
+
+/// Either the unnormalized projection, a vacuous `Output` premise, or a
+/// normalization proof of `<callee as FnOnce<(inputs..)>>::Output == result`.
+fn output_goal(
+    facts: &mut Declarations,
+    environment: &Environment,
+    callable: &Callable,
+    parameters: crate::types::ListId,
+    result: TypeId,
+    work: &mut usize,
+) -> Result<(GenericArgs, Option<Predicate>), &'static str> {
+    let output = crate::types::ItemId(callable.output.0);
+    if let Some(arguments) = callable.output_arguments(facts, result).or_else(|| {
+        environment
+            .projection_candidates(output)
+            .find_map(|clause| {
+                *work = work.saturating_add(1);
+                let predicate = vacuous(facts, clause)?;
+                matches!(predicate.bound, Bound::ProjectionEqual(value) if value == result)
+                    .then(|| callable.output_arguments(facts, predicate.ty))
+                    .flatten()
+            })
+    }) {
+        return Ok((arguments, None));
+    }
+    let has_quantified_output = environment.projection_candidates(output).any(|clause| {
+        *work = work.saturating_add(1);
+        let Clause::ForAll(id) = clause else {
+            return false;
+        };
+        facts.types.quantified(id).is_some_and(|scoped| {
+            scoped.bound_regions > 0
+                && matches!(scoped.predicate.bound, Bound::ProjectionEqual(_))
+                && matches!(
+                    facts.types.kind(scoped.predicate.ty),
+                    Some(Kind::Projection(projection))
+                        if projection.item == output && projection.subject == callable.callee
+                )
+        })
+    });
+    if !has_quantified_output {
+        return Err("source call operator result is not its callee's declared Output");
+    }
+    let tuple = facts.types.intern(Kind::Tuple(parameters))?;
+    let arguments = facts.types.intern_arguments(&[Argument::Type(tuple)])?;
+    let once_application = facts.types.intern_trait_application(Application {
+        item: crate::types::ItemId(callable.once.0),
+        arguments,
+    })?;
+    let empty = facts.types.intern_arguments(&[])?;
+    let projection =
+        facts
+            .types
+            .intern(Kind::Projection(crate::types::projection::Application {
+                item: output,
+                subject: callable.callee,
+                trait_application: once_application,
+                arguments: empty,
+            }))?;
+    Ok((
+        arguments,
+        Some(Predicate {
+            ty: projection,
+            bound: Bound::ProjectionEqual(result),
+        }),
+    ))
 }

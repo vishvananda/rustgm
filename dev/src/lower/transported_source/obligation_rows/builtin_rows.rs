@@ -93,6 +93,7 @@ pub(super) fn emit(
         stage.reserve(4 * size_of::<s::LocatedRequirement>())?;
         rows.predicates.push(s::LocatedRequirement {
             site: sites.input(stage, site)?,
+            binder: None,
             value: stage.requirement(facts, predicate, context)?,
         });
     }

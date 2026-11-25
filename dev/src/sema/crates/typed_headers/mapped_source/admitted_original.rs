@@ -85,6 +85,61 @@ impl Original<'_> {
         result.check_locals(steps)?;
         Ok(result)
     }
+    pub(crate) fn normalization_intervals(
+        &self,
+        index: usize,
+        input: &s::NormalizationInput,
+        steps: &mut usize,
+    ) -> Result<
+        Vec<(
+            crate::support::crates::generics::Range,
+            std::ops::Range<u32>,
+        )>,
+        &'static str,
+    > {
+        if let Mapping::Ordinary {
+            graph,
+            store,
+            domain: Some(domain),
+        } = &self.mapping
+        {
+            let mut work = crate::resolve::crates::ReservationWork::default();
+            let result = domain.normalization_intervals(
+                &graph.recipe_view(),
+                store,
+                index,
+                input,
+                &mut work,
+            );
+            *steps = steps.saturating_add(work.steps);
+            if *steps > crate::support::crates::MAX_COMPONENTS {
+                return Err("ordinary normalization mapping exceeded its actual work budget");
+            }
+            return result.map_err(
+                |_| "ordinary normalization changed its actual recorded allocation domain",
+            );
+        }
+        let Mapping::Selected {
+            body, view, store, ..
+        } = &self.mapping
+        else {
+            return if input.owned.is_empty() {
+                Ok(Vec::new())
+            } else {
+                Err("source normalization allocations require fresh wider owner mapping")
+            };
+        };
+        let mut work = crate::resolve::crates::ReservationWork::default();
+        let result = body.normalization_intervals(view, store, index, input, &mut work);
+        *steps = steps.saturating_add(work.steps);
+        if *steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("selected normalization mapping exceeded its actual work budget");
+        }
+        result.map_err(
+            |_| "selected normalization changed its actual flat recorded allocation domain",
+        )
+    }
+    #[cfg(test)]
     pub(crate) fn normalization_interval(
         &self,
         index: usize,

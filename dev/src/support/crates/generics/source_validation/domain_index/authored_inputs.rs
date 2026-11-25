@@ -41,7 +41,32 @@ impl DomainIndex<'_, '_> {
             if matches!(input.value, s::Requirement::Trait { .. }) {
                 return Err("source regional assumptions cannot carry trait permission");
             }
-            self.requirement(context, &input.value, work)?;
+            let scope = if let Some(binder) = input.binder {
+                if !self.declaration_policies {
+                    return Err(
+                        "quantified original assumptions require the declaration policy profile",
+                    );
+                }
+                let frame = self
+                    .headers
+                    .rows()
+                    .binders
+                    .get(binder.0 as usize)
+                    .ok_or("source quantified assumption binder is unknown")?;
+                if frame.owner != context.owner
+                    || frame.parent != context.frame
+                    || frame.kind != s::BinderKind::Clause
+                {
+                    return Err("source quantified assumption changed its actual binder");
+                }
+                Context {
+                    frame: Some(binder),
+                    ..context
+                }
+            } else {
+                context
+            };
+            self.requirement(scope, &input.value, work)?;
         }
         self.allocations(context, original, input, work)?;
         for input in &input.obligations {
@@ -63,6 +88,9 @@ impl DomainIndex<'_, '_> {
             }
             self.environment(context, builtins.environment, work)?;
             for requirement in &builtins.predicates {
+                if requirement.binder.is_some() {
+                    return Err("source builtin requirement cannot carry a clause quantifier");
+                }
                 self.input_site(original, requirement.site, work)?;
                 self.requirement(context, &requirement.value, work)?;
             }
@@ -245,32 +273,103 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         work.charge(1)?;
-        let binder = self
-            .headers
-            .rows()
-            .binders
-            .get(scoped.frame.0 as usize)
-            .ok_or("source scoped normalization binder is unknown")?;
-        if binder.owner != context.owner
-            || binder.parent != context.frame
-            || binder.kind != s::BinderKind::Clause
-            || scoped.origin as usize > input.sources.len()
-            || !input.owned.is_empty()
-        {
-            return Err(
-                "source scoped normalization changed its actual binder, origin or allocation",
-            );
+        if scoped.scopes.is_empty() && scoped.blocks.is_empty() {
+            return Err("source scoped normalization carries no scopes or blocks");
         }
-        self.normalization_relations(
-            Context {
-                frame: Some(scoped.frame),
-                ..context
-            },
-            &scoped.equalities,
-            &scoped.outlives,
-            &scoped.types,
-            work,
-        )
+        let binders = &self.headers.rows().binders;
+        let mut frames = Vec::with_capacity(scoped.scopes.len().saturating_add(1));
+        frames.push(context.frame);
+        for scope in &scoped.scopes {
+            work.charge(1)?;
+            let parent = *frames
+                .get(scope.parent as usize)
+                .ok_or("source scoped normalization parent is out of order")?;
+            let binder = binders
+                .get(scope.frame.0 as usize)
+                .ok_or("source scoped normalization binder is unknown")?;
+            if binder.owner != context.owner
+                || binder.parent != parent
+                || binder.kind != s::BinderKind::Clause
+            {
+                return Err(
+                    "source scoped normalization changed its actual binder, origin or allocation",
+                );
+            }
+            frames.push(Some(scope.frame));
+        }
+        self.scoped_blocks(context, input, scoped, &frames, work)
+    }
+    fn scoped_blocks(
+        &self,
+        context: Context,
+        input: &s::NormalizationInput,
+        scoped: &s::ScopedNormalization,
+        frames: &[Option<crate::support::crates::generics::BinderRef>],
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let binders = &self.headers.rows().binders;
+        let owned = match input.owned.as_slice() {
+            [] => None,
+            [range] => Some((range.start, range.end)),
+            _ => {
+                return Err(
+                    "source scoped normalization changed its actual binder, origin or allocation",
+                );
+            }
+        };
+        let mut cursor = owned.map_or(0, |(start, _)| start);
+        for block in &scoped.blocks {
+            work.charge(1)?;
+            let frame = *frames
+                .get(block.scope as usize)
+                .ok_or("source scoped normalization block names an unknown scope")?;
+            if block.origin as usize > input.sources.len()
+                || (block.scope == 0 && block.origin == 0 && !block.universal_aliases)
+            {
+                return Err(
+                    "source scoped normalization changed its actual binder, origin or allocation",
+                );
+            }
+            if block.regions.start != block.regions.end {
+                let Some((_, end)) = owned else {
+                    return Err(
+                        "source scoped normalization changed its actual binder, origin or allocation",
+                    );
+                };
+                if block.regions.start < cursor
+                    || block.regions.start >= block.regions.end
+                    || block.regions.end > end
+                {
+                    return Err("source scoped normalization block interval is out of order");
+                }
+                cursor = block.regions.end;
+            } else if block.regions.start != 0 {
+                return Err("source scoped normalization empty block has a non-zero offset");
+            }
+            if block.universal_aliases {
+                let scope_index = block
+                    .scope
+                    .checked_sub(1)
+                    .ok_or("source universal aliases require their own scope")?;
+                let count = binders[scoped.scopes[scope_index as usize].frame.0 as usize].count;
+                if block.origin != 0
+                    || !block.equalities.is_empty()
+                    || !block.outlives.is_empty()
+                    || !block.types.is_empty()
+                    || block.regions.end.saturating_sub(block.regions.start) != count
+                {
+                    return Err("source universal aliases disagree with their binder");
+                }
+            }
+            self.normalization_relations(
+                Context { frame, ..context },
+                &block.equalities,
+                &block.outlives,
+                &block.types,
+                work,
+            )?;
+        }
+        Ok(())
     }
 
     fn normalization_relations(

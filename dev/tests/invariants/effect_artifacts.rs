@@ -345,7 +345,7 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
     let mut body = super::build(&view, &mut work)?;
     assert!(body.const_context);
     super::validate(&analysis.facts, &view, &body, &mut work.steps)?;
-    let mut contract =
+    let (mut contract, _) =
         super::super::rebuilt_inputs::build(&analysis.facts, &view, &body, &mut work)?;
     let retained = contract.builtins.clone();
     let builtins = contract

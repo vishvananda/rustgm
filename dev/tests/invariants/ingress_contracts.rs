@@ -161,6 +161,7 @@ fn relocate_query(rows: &mut s::SourceRows) -> Result {
     for value in goals {
         builtins.predicates.push(s::LocatedRequirement {
             site: s::InputSite::Body(site),
+            binder: None,
             value,
         });
     }

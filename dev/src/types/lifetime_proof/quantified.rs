@@ -165,18 +165,32 @@ impl Obligations {
     /// Borrow retained evidence blocks in proof order. Scope identities belong
     /// to this object; the first block is its ordinary root evidence.
     pub(crate) fn blocks(&self) -> impl Iterator<Item = (ScopeId, bool, u32, &Self)> {
-        std::iter::once((ScopeId::ROOT, false, 0, self)).chain(self.quantified.iter().flat_map(
-            |q| {
-                q.blocks.iter().enumerate().map(|(index, block)| {
-                    (
-                        block.scope,
-                        block.universal_aliases,
-                        q.origin(index),
-                        &block.proof,
-                    )
-                })
-            },
-        ))
+        std::iter::once((ScopeId::ROOT, false, 0, self)).chain(self.quantified_blocks())
+    }
+
+    /// Borrow retained quantified scopes in creation order (excluding ROOT).
+    pub(crate) fn scopes(&self) -> impl Iterator<Item = super::QuantifiedScope> + '_ {
+        self.quantified.iter().flat_map(|q| {
+            q.scopes.iter().map(|binder| super::QuantifiedScope {
+                parent: binder.parent,
+                count: binder.count,
+                callable: binder.callable_depth != 0,
+            })
+        })
+    }
+
+    /// Borrow retained non-root evidence blocks in proof order.
+    pub(crate) fn quantified_blocks(&self) -> impl Iterator<Item = (ScopeId, bool, u32, &Self)> {
+        self.quantified.iter().flat_map(|q| {
+            q.blocks.iter().enumerate().map(|(index, block)| {
+                (
+                    block.scope,
+                    block.universal_aliases,
+                    q.origin(index),
+                    &block.proof,
+                )
+            })
+        })
     }
 
     pub(crate) fn scope_depth(&self, scope: ScopeId) -> Result<u16, &'static str> {

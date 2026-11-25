@@ -26,7 +26,8 @@ pub(super) fn emit(
     let count = frontier(stage, facts, source, input)?
         .checked_sub(1)
         .ok_or("source numbering frontier precedes its domain")? as usize;
-    if count != variables {
+    let allow_gaps = stage.declaration_policies();
+    if count < variables || (!allow_gaps && count != variables) {
         return Err("source numbering omits actual allocations from the original contract");
     }
     let environment = match body.owner {
@@ -51,32 +52,14 @@ pub(super) fn emit(
     )?;
     // Missing raw-slot sentinels are construction scratch, never region IDs.
     // Owned normalization suffixes need not appear in semantic BodyRegions.
-    let mut order = vec![u32::MAX; count];
-    for (id, region) in facts.body_regions.regions_after(source, 0) {
-        stage.charge(1)?;
-        if region.body != source {
-            return Err("source numbering cannot flatten nested allocations");
-        }
-        // Ordinary normalization-owned reservations also use QuantifiedProof
-        // allocation labels. Their actual complete owned intervals were joined
-        // by obligation_rows, which independently rejects quantified proofs.
-        join(stage, owner, id, &mut order)?;
-    }
-    for obligation in &input.obligations {
-        if let crate::body::regions::Kind::Variable { id, .. } = obligation.kind {
-            join(stage, owner, id, &mut order)?;
-        }
-    }
-    for proof in &input.proofs {
-        for range in proof.proof.owned_regions() {
-            for id in range {
-                join(stage, owner, RegionId(id), &mut order)?;
-            }
-        }
-    }
-    if order.contains(&u32::MAX) {
-        return Err("source numbering omits an allocation in its complete actual domain");
-    }
+    let order = allocation_order(
+        stage,
+        facts,
+        (source, owner),
+        input,
+        (count, variables),
+        allow_gaps,
+    )?;
     let aliases = aliases
         .map(|aliases| {
             if aliases.len() != input.universals as usize {
@@ -102,6 +85,75 @@ pub(super) fn emit(
         allocation_order: order,
         aliases,
     })
+}
+
+fn allocation_order(
+    stage: &mut Stage,
+    facts: &Declarations,
+    (source, owner): (crate::resolve::unit::NodeKey, BodyRef),
+    input: &Contract,
+    (count, variables): (usize, usize),
+    allow_gaps: bool,
+) -> Result<Vec<u32>, &'static str> {
+    let mut order = vec![u32::MAX; count];
+    for obligation in &input.obligations {
+        if let crate::body::regions::Kind::Variable { id, .. } = obligation.kind {
+            join(stage, owner, id, &mut order)?;
+        }
+    }
+    for proof in &input.proofs {
+        for range in proof.proof.owned_regions() {
+            for id in range {
+                join(stage, owner, RegionId(id), &mut order)?;
+            }
+        }
+    }
+    for (id, region) in facts.body_regions.regions_after(source, 0) {
+        stage.charge(1)?;
+        if region.body != source {
+            return Err("source numbering cannot flatten nested allocations");
+        }
+        let ordinal =
+            id.0.checked_sub(1)
+                .ok_or("source numbering has a static allocation identity")? as usize;
+        if allow_gaps
+            && order.get(ordinal) == Some(&u32::MAX)
+            && matches!(region.origin, BodyRegionOrigin::QuantifiedProof)
+            && is_proof_gap(input, id)
+        {
+            continue;
+        }
+        join(stage, owner, id, &mut order)?;
+    }
+    if allow_gaps && count > variables {
+        for (ordinal, &slot) in order.iter().enumerate() {
+            if slot == u32::MAX {
+                let id = RegionId(
+                    u32::try_from(ordinal + 1)
+                        .map_err(|_| "source numbering allocation identity overflow")?,
+                );
+                if !is_proof_gap(input, id) {
+                    return Err(
+                        "source numbering omits an allocation in its complete actual domain",
+                    );
+                }
+            }
+        }
+        order.retain(|&slot| slot != u32::MAX);
+        if order.len() != variables {
+            return Err("source numbering omits actual allocations from the original contract");
+        }
+    } else if order.contains(&u32::MAX) {
+        return Err("source numbering omits an allocation in its complete actual domain");
+    }
+    Ok(order)
+}
+
+fn is_proof_gap(input: &Contract, id: RegionId) -> bool {
+    input
+        .proofs
+        .iter()
+        .any(|proof| proof.proof.regions.contains(&id.0) && !proof.proof.owns_region(id))
 }
 
 fn frontier(

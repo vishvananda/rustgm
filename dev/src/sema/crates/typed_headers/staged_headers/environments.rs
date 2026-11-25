@@ -195,9 +195,8 @@ fn assumption(
             ));
         }
     };
-    if matches!(predicate.bound, Bound::Outlives(_)) && leaves.regional_arguments() {
-        leaf(facts, predicate.ty)?;
-        return Ok(1);
+    if leaves.regional_arguments() {
+        return v14_assumption(facts, leaves, predicate, budget);
     }
     let (id, projected_subject) = if let Bound::ProjectionEqual(value) = predicate.bound
         && leaves.callable_scopes()
@@ -328,6 +327,184 @@ fn leaf_or_projection(
         }
     }
     Ok(additional_roots)
+}
+
+fn v14_assumption(
+    facts: &Declarations,
+    leaves: &impl LeafClauses,
+    predicate: crate::types::parameters::predicates::Predicate,
+    budget: &mut impl Accounting,
+) -> Result<usize, Error> {
+    if matches!(predicate.bound, Bound::Outlives(_)) {
+        return v14_roots(facts, predicate.ty, budget);
+    }
+    if let Bound::ProjectionEqual(value) = predicate.bound {
+        if !matches!(facts.types.kind(predicate.ty), Some(Kind::Projection(_))) {
+            return Err(error(
+                "source result assumption lost its actual declared-result projection",
+            ));
+        }
+        return Ok(v14_roots(facts, predicate.ty, budget)?
+            .saturating_add(v14_roots(facts, value, budget)?));
+    }
+    let mut roots = v14_roots(facts, predicate.ty, budget)?;
+    let id = leaves.application(predicate.bound)?;
+    let application = facts
+        .types
+        .trait_application(id)
+        .ok_or_else(|| error("source environment lost its actual trait application"))?;
+    let mut worklist = Vec::new();
+    let mut seen = crate::support::hash::HashSet::default();
+    roots = roots.saturating_add(v14_push_args(
+        facts,
+        application.arguments,
+        &mut worklist,
+        budget,
+    )?);
+    v14_drain(facts, &mut worklist, &mut seen, &mut roots, budget)?;
+    Ok(roots)
+}
+
+fn v14_roots(
+    facts: &Declarations,
+    root: TypeId,
+    budget: &mut impl Accounting,
+) -> Result<usize, Error> {
+    let mut roots = 0_usize;
+    let mut worklist = vec![root];
+    let mut seen = crate::support::hash::HashSet::default();
+    v14_drain(facts, &mut worklist, &mut seen, &mut roots, budget)?;
+    Ok(roots)
+}
+
+fn v14_drain(
+    facts: &Declarations,
+    worklist: &mut Vec<TypeId>,
+    seen: &mut crate::support::hash::HashSet<TypeId>,
+    roots: &mut usize,
+    budget: &mut impl Accounting,
+) -> Result<(), Error> {
+    while let Some(ty) = worklist.pop() {
+        if !seen.insert(ty) {
+            continue;
+        }
+        budget.charge(1)?;
+        *roots = roots.saturating_add(1);
+        match facts.types.kind(ty) {
+            Some(Kind::Never | Kind::Primitive(_) | Kind::Parameter(_) | Kind::Foreign(_)) => {}
+            Some(
+                Kind::Slice(inner)
+                | Kind::Array { element: inner, .. }
+                | Kind::Reference {
+                    referent: inner, ..
+                }
+                | Kind::Pointer { pointee: inner, .. }
+                | Kind::Pattern { base: inner, .. },
+            ) => worklist.push(inner),
+            Some(Kind::ArrayTerm { element, length }) => {
+                facts
+                    .types
+                    .const_type(length)
+                    .ok_or_else(|| error("source assumption lost its checked const length"))?;
+                worklist.push(element);
+            }
+            Some(Kind::Tuple(elements)) => {
+                let elements = facts
+                    .types
+                    .list(elements)
+                    .ok_or_else(|| error("source environment lost its tuple elements"))?;
+                worklist.extend(elements.iter().copied());
+            }
+            Some(Kind::Function {
+                parameters, result, ..
+            }) => {
+                let parameters = facts
+                    .types
+                    .list(parameters)
+                    .ok_or_else(|| error("source environment lost its function parameters"))?;
+                worklist.extend(parameters.iter().copied());
+                worklist.push(result);
+            }
+            Some(
+                Kind::Adt(_, arguments)
+                | Kind::Opaque(_, arguments)
+                | Kind::Future { arguments, .. }
+                | Kind::Dynamic { arguments, .. },
+            ) => {
+                *roots = roots.saturating_add(v14_push_args(facts, arguments, worklist, budget)?);
+            }
+            Some(Kind::FunctionItem {
+                arguments,
+                signature,
+                ..
+            }) => {
+                *roots = roots.saturating_add(v14_push_args(facts, arguments, worklist, budget)?);
+                worklist.push(signature);
+            }
+            Some(Kind::Closure {
+                arguments,
+                signature,
+                environment,
+                ..
+            }) => {
+                *roots = roots.saturating_add(v14_push_args(facts, arguments, worklist, budget)?);
+                worklist.push(signature);
+                worklist.push(environment);
+            }
+            Some(Kind::Projection(projection)) => {
+                worklist.push(projection.subject);
+                let application = facts
+                    .types
+                    .trait_application(projection.trait_application)
+                    .ok_or_else(|| {
+                        error("source projected trait argument lost its actual declaring trait")
+                    })?;
+                *roots = roots.saturating_add(v14_push_args(
+                    facts,
+                    application.arguments,
+                    worklist,
+                    budget,
+                )?);
+                *roots = roots.saturating_add(v14_push_args(
+                    facts,
+                    projection.arguments,
+                    worklist,
+                    budget,
+                )?);
+            }
+            None => {
+                return Err(error("source trait assumption has an unknown actual type"));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn v14_push_args(
+    facts: &Declarations,
+    arguments: crate::types::GenericArgs,
+    worklist: &mut Vec<TypeId>,
+    budget: &mut impl Accounting,
+) -> Result<usize, Error> {
+    let arguments = facts
+        .types
+        .arguments(arguments)
+        .ok_or_else(|| error("source environment lost its full trait arguments"))?;
+    let count = arguments.len();
+    budget.charge(count.saturating_add(1))?;
+    for argument in arguments {
+        match argument {
+            Argument::Type(ty) => worklist.push(ty),
+            Argument::Lifetime(_) => {}
+            Argument::Const(constant) => {
+                facts
+                    .types
+                    .const_type(constant)
+                    .ok_or_else(|| error("source assumption lost its checked const argument"))?;
+            }
+        }
+    }
+    Ok(count)
 }
 
 fn leaf(facts: &Declarations, ty: TypeId) -> Result<(), Error> {

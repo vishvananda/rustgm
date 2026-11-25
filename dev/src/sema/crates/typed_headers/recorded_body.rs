@@ -238,6 +238,24 @@ impl OriginalBody<'_> {
         self.owner
             .original_parameter(view.rows()?, self.prepared, leaf, reference, work)
     }
+    pub(in crate::sema::crates::typed_headers) fn normalization_intervals(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<
+        Vec<(
+            crate::support::crates::generics::Range,
+            std::ops::Range<u32>,
+        )>,
+        Error,
+    > {
+        self.record(view, store, work)?
+            .normalization_intervals(view, index, input, work)
+    }
+    #[cfg(test)]
     pub(in crate::sema::crates::typed_headers) fn normalization_interval(
         &self,
         view: &RecipeView<'_>,

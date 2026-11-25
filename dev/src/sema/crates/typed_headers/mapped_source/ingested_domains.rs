@@ -108,8 +108,11 @@ impl Lazy {
         for normalization in &rows.body_input(raw).map_err(error)?.normalizations {
             work.charge(1)?;
             if let Some(scoped) = &normalization.scoped {
-                for relation in &scoped.types {
-                    require_type(cursor, &mut port, &mut facts.types, relation.ty, work)?;
+                for block in &scoped.blocks {
+                    work.charge(1)?;
+                    for relation in &block.types {
+                        require_type(cursor, &mut port, &mut facts.types, relation.ty, work)?;
+                    }
                 }
             }
         }

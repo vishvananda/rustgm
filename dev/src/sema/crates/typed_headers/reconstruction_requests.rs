@@ -163,12 +163,15 @@ fn prepare_regions<'rows, P: ports::OwnedPort<'rows>>(
             work,
         )?;
         if let Some(scoped) = &record.scoped {
-            prepare_relation_rows(
-                (&scoped.equalities, &scoped.outlives, &scoped.types),
-                port,
-                store,
-                work,
-            )?;
+            for block in &scoped.blocks {
+                work.charge(1)?;
+                prepare_relation_rows(
+                    (&block.equalities, &block.outlives, &block.types),
+                    port,
+                    store,
+                    work,
+                )?;
+            }
         }
     }
     let original = rows

@@ -981,11 +981,19 @@ fn body_inputs(
             defining_default(rows, headers, builtins.environment, defaults, work)?;
             for request in &builtins.predicates {
                 work.charge(1)?;
+                if request.binder.is_some() {
+                    return Err("source builtin requirement cannot carry a clause quantifier");
+                }
                 ordinary(&request.value, declaration_policies, declaration_policies)?;
             }
         }
         for request in &input.type_assumptions {
             work.charge(1)?;
+            if request.binder.is_some() && !declaration_policies {
+                return Err(
+                    "quantified original assumptions require the declaration policy profile",
+                );
+            }
             ordinary(&request.value, false, false)?;
         }
         normalization_ownership(input, work, regional, declaration_policies)?;

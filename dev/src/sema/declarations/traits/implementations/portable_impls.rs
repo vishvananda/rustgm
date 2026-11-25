@@ -239,6 +239,8 @@ impl Checker<'_> {
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
         let mut substitution = None;
+        let mut regional_types = Vec::new();
+        let mut outlives_clauses = Vec::new();
         for &(expected, actual) in types {
             let ty = self.facts.definitions[actual.0 as usize]
                 .filter(|_| self.facts.associated.type_definition(owner, expected) == Some(actual))
@@ -252,9 +254,12 @@ impl Checker<'_> {
                 continue;
             }
             if self.facts.types.contains_regions(ty) != Some(false) {
-                return Err(Error::unlocated(
-                    "imported regional or family associated definitions require their wider profile",
-                ));
+                if !declaration_policies {
+                    return Err(Error::unlocated(
+                        "imported regional or family associated definitions require their wider profile",
+                    ));
+                }
+                regional_types.push(ty);
             }
             let required = if declaration_policies {
                 super::super::associated_types::mapped_result_bounds(
@@ -282,9 +287,13 @@ impl Checker<'_> {
                     .is_outlives(&self.facts.types)
                     .map_err(Error::unlocated)?
                 {
-                    return Err(Error::unlocated(
-                        "imported associated result lifetime bounds require their wider profile",
-                    ));
+                    if !declaration_policies {
+                        return Err(Error::unlocated(
+                            "imported associated result lifetime bounds require their wider profile",
+                        ));
+                    }
+                    outlives_clauses.push(requirement);
+                    continue;
                 }
                 if !proof
                     .prove_clause(&mut self.facts, requirement)
@@ -296,32 +305,67 @@ impl Checker<'_> {
                 }
             }
         }
-        if let Some(evidence) = proof.take_trait_proof().filter(|proof| !proof.is_empty()) {
-            if self
+        let evidence = proof.take_trait_proof().filter(|proof| !proof.is_empty());
+        self.prove_imported_result_regions(
+            owner,
+            declaration_policies,
+            evidence.as_ref(),
+            &regional_types,
+            &outlives_clauses,
+        )
+    }
+
+    fn prove_imported_result_regions(
+        &self,
+        owner: DefId,
+        declaration_policies: bool,
+        evidence: Option<&crate::types::lifetime_proof::Obligations>,
+        regional_types: &[crate::types::TypeId],
+        outlives_clauses: &[Clause],
+    ) -> Result<(), Error> {
+        if evidence.is_none() && regional_types.is_empty() && outlives_clauses.is_empty() {
+            return Ok(());
+        }
+        if !declaration_policies
+            && self
                 .facts
                 .associated
                 .schema(owner)
                 .is_none_or(|schema| schema.captures == 0)
-            {
-                return Err(Error::unlocated(
-                    "imported associated definition region evidence requires its wider profile",
-                ));
-            }
-            let mut queries = Queries::new(
-                &self.facts.types,
-                &self.facts.lifetimes.nominal_requirements,
-                &self.facts.lifetimes.callables,
-            );
-            let mut constraints = self
-                .trait_region_environment(owner, &mut queries)
+        {
+            return Err(Error::unlocated(
+                "imported associated definition region evidence requires its wider profile",
+            ));
+        }
+        let mut queries = Queries::new(
+            &self.facts.types,
+            &self.facts.lifetimes.nominal_requirements,
+            &self.facts.lifetimes.callables,
+        );
+        let mut constraints = self
+            .trait_region_environment(owner, &mut queries)
+            .map_err(Error::unlocated)?;
+        for &ty in regional_types {
+            let required = queries
+                .symbolic_requirements(ty)
                 .map_err(Error::unlocated)?;
+            constraints
+                .require_requirements(required, crate::types::relations::ProofScope::ROOT, 0)
+                .map_err(Error::unlocated)?;
+        }
+        for &clause in outlives_clauses {
+            constraints
+                .require_outlives_clause(&mut queries, clause, 0)
+                .map_err(Error::unlocated)?;
+        }
+        if let Some(evidence) = evidence {
             evidence
                 .require(&mut constraints, &mut queries)
                 .map_err(Error::unlocated)?;
-            constraints
-                .solve()
-                .map_err(|e| Error::unlocated(e.to_string()))?;
         }
+        constraints
+            .solve()
+            .map_err(|e| Error::unlocated(e.to_string()))?;
         Ok(())
     }
     fn direct_imported_result_bounds(

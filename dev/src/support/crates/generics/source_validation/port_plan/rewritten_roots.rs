@@ -46,10 +46,12 @@ enum ArgumentOwner {
     OpaqueResult(s::OpaqueResultRef),
 }
 impl ArgumentOwner {
-    const fn regions(self) -> Regions {
+    const fn regions(self, declaration_policies: bool) -> Regions {
         match self {
-            Self::Nominal(declaration) => Regions::of(declaration),
-            Self::Dynamic(_) | Self::OpaqueFuture(_) | Self::OpaqueResult(_) => Regions::Local,
+            Self::Nominal(declaration) if !declaration_policies => Regions::of(declaration),
+            Self::Nominal(_) | Self::Dynamic(_) | Self::OpaqueFuture(_) | Self::OpaqueResult(_) => {
+                Regions::Local
+            }
         }
     }
 }
@@ -107,7 +109,7 @@ impl Arena {
                                 domains,
                                 key,
                                 arguments,
-                                owner.regions(),
+                                owner.regions(domains.declaration_policies),
                                 pending,
                                 work,
                             )?;
@@ -170,14 +172,12 @@ impl Arena {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let projection = projection(domains, reference)?;
-        self.nominal_children(
-            domains,
-            key,
-            projection.arguments,
-            Regions::Rejected,
-            pending,
-            work,
-        )?;
+        let regions = if domains.declaration_policies {
+            Regions::Local
+        } else {
+            Regions::Rejected
+        };
+        self.nominal_children(domains, key, projection.arguments, regions, pending, work)?;
         self.nominal_children(
             domains,
             key,
@@ -316,7 +316,13 @@ impl Arena {
         arguments: g::Range,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
-        let arguments = self.argument_chain(domains, key, arguments, owner.regions(), work)?;
+        let arguments = self.argument_chain(
+            domains,
+            key,
+            arguments,
+            owner.regions(domains.declaration_policies),
+            work,
+        )?;
         let node = match owner {
             ArgumentOwner::Nominal(declaration) => Node::Nominal {
                 declaration,
@@ -390,8 +396,12 @@ impl Arena {
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
         let projection = projection(domains, reference)?;
-        let tail =
-            self.argument_chain(domains, key, projection.arguments, Regions::Rejected, work)?;
+        let regions = if domains.declaration_policies {
+            Regions::Local
+        } else {
+            Regions::Rejected
+        };
+        let tail = self.argument_chain(domains, key, projection.arguments, regions, work)?;
         let family = self.argument_chain(domains, key, projection.family, Regions::Local, work)?;
         let subject = uses::key(domains, projection.subject, key.rewrite, key.caller, work)?;
         let ty = self.child(subject, work)?;

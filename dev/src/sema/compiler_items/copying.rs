@@ -174,14 +174,16 @@ pub(crate) fn prove_body_requirements(
         if index >= crate::support::crates::MAX_COMPONENTS {
             return Err("body trait requirement work budget exceeded");
         }
-        if !matches!(
-            goal.bound,
-            crate::types::parameters::predicates::Bound::Trait(_)
-        ) {
-            return Err("body trait requirement has an unsupported effect or kind");
-        }
         let before = state.selection_steps();
-        let selected = state.prove(facts, goal, false);
+        let selected = match goal.bound {
+            crate::types::parameters::predicates::Bound::Trait(_) => {
+                state.prove(facts, goal, false)
+            }
+            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
+                state.prove_equality(facts, goal, false)
+            }
+            _ => return Err("body trait requirement has an unsupported effect or kind"),
+        };
         facts.body_work.canonical_steps = facts
             .body_work
             .canonical_steps
