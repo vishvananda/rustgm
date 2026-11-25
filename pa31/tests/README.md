@@ -1948,3 +1948,12 @@ wrong-result-type rejection. Version 13 must refuse the anonymous body instead
 of publishing incomplete metadata.
 Run `scripts/check_source_artifact_clients.py --case source-inline-const-transport`
 with the prebuilt compilers.
+
+`spec/source-comptime-call-transport/outcomes.json` declares mandatory compile-time
+call effects for transported `#[rustc_comptime]` bodies. Its fresh clients cover
+free and forwarded calls, const-generic substitution, an inherent receiver, and
+an ordinary runtime-call control. Pinned rustc independently checks the six
+native observations and rejects a runtime call to the comptime function.
+Version 13 must refuse these defining bodies. Run
+`scripts/check_source_artifact_clients.py --case source-comptime-call-transport`
+with the prebuilt compilers.

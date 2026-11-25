@@ -142,6 +142,9 @@ impl DomainIndex<'_, '_> {
         {
             return Ok(s::CallContext::Runtime);
         }
+        if self.declaration_policies && self.headers.rows().is_comptime(header.declaration) {
+            return Ok(s::CallContext::ClosedConst);
+        }
         if (!self.declaration_policies
             || header.constness == crate::support::constness::Constness::Conditional)
             && let Some(parent) = header.parent

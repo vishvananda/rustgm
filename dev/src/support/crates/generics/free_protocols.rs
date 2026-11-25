@@ -267,7 +267,9 @@ pub(super) fn original_context(
                 }
                 let unchecked_const =
                     constant_initializers && rows.is_unchecked_const_body(body.declaration);
-                if (function.constness == Constness::Const
+                if constant_initializers && rows.is_comptime(body.declaration) {
+                    s::CallContext::ClosedConst
+                } else if (function.constness == Constness::Const
                     && !unchecked_const
                     && !runtime_format_bodies.contains(&Some(body.declaration)))
                     || defining_default.is_some()

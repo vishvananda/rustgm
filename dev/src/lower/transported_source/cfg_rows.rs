@@ -400,7 +400,7 @@ fn call_context(
     Ok(match facts.function_context(definition, source)? {
         crate::sema::function_context::FunctionContext::Runtime => s::CallContext::Runtime,
         crate::sema::function_context::FunctionContext::Comptime if declaration_policies => {
-            s::CallContext::ConstDefinition
+            s::CallContext::ClosedConst
         }
         crate::sema::function_context::FunctionContext::Comptime => {
             return Err("always-comptime source bodies require a wider transport profile");

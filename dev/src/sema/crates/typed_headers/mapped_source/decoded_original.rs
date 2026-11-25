@@ -128,6 +128,8 @@ impl Graph {
                     || crate::sema::compiler_items::runtime_format_entry(facts, definition)?)
         {
             s::CallContext::Runtime
+        } else if descriptor.profile().declaration_policies() && rows.is_comptime(row) {
+            s::CallContext::ClosedConst
         } else {
             s::CallContext::ConstDefinition
         };

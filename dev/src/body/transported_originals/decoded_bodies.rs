@@ -408,7 +408,7 @@ pub(super) fn allocation<'a>(
             .ok_or("source original preflight omitted its actual raw input owner")?;
         let (clauses, closure_items, closure_bytes) = header_allocation(rows, raw)?;
         bytes = bytes.saturating_add(closure_bytes);
-        if raw.context == s::CallContext::ConstDefinition && !input.parameters.is_empty() {
+        if raw.context != s::CallContext::Runtime && !input.parameters.is_empty() {
             bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
         }
         bytes = bytes.saturating_add(super::versioned_calls::allocation(

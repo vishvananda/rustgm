@@ -74,7 +74,8 @@ def main():
                                  "source-closure-transport",
                                  "source-unsizing-and-literals-transport",
                                  "source-unchecked-const-body-transport",
-                                 "source-inline-const-transport"))
+                                 "source-inline-const-transport",
+                                 "source-comptime-call-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

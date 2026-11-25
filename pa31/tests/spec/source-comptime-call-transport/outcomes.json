@@ -1,0 +1,12 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": ["auto_traits", "const_destruct"],
+  "inputs": ["provider.rs", "client.rs", "runtime_comptime.rs", "observe.c"],
+  "stdout": "19 19 37 41 23 19\n",
+  "older_profile": "source effective const eligibility requires its actual marker transport",
+  "restricted_client": {
+    "path": "runtime_comptime.rs",
+    "rustc": "compile time",
+    "rustgm": "comptime functions can only be called at compile time"
+  }
+}

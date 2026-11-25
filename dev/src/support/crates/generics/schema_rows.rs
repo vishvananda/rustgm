@@ -978,6 +978,11 @@ impl Rows {
             .map(|index| rows[index]))
     }
 
+    pub(crate) fn is_comptime(&self, declaration: DeclarationRef) -> bool {
+        let rows = &self.cold().function_policies;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| rows[index].kind == FunctionPolicyKind::Comptime)
+    }
     pub(crate) fn is_unchecked_const_body(&self, declaration: DeclarationRef) -> bool {
         let rows = &self.cold().function_policies;
         rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
