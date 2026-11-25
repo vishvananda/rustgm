@@ -256,7 +256,10 @@ impl Stage {
             }
             Kind::Pattern { base, constraint } => {
                 if constraint == Constraint::NonNull
-                    && !matches!(facts.types.kind(base), Some(Kind::Pointer { .. }))
+                    && !matches!(
+                        facts.types.kind(base),
+                        Some(Kind::Pointer { .. } | Kind::Parameter(_))
+                    )
                 {
                     return Ok(false);
                 }

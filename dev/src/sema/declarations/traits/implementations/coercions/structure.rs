@@ -14,8 +14,9 @@ pub(super) fn schema(
     source: TypeId,
     target: TypeId,
     proof: &mut Proof,
+    source_provider: bool,
 ) -> Result<CoercionSchema, &'static str> {
-    let mut fields = fields(facts, source, target)?;
+    let mut fields = fields(facts, source, target, source_provider)?;
     let mut changed = None;
     for (index, field) in fields.iter_mut().enumerate() {
         facts.charge_caller_inputs(2, 0)?;
@@ -56,6 +57,7 @@ fn fields(
     facts: &mut Declarations,
     source: TypeId,
     target: TypeId,
+    source_provider: bool,
 ) -> Result<Vec<CoercionField>, &'static str> {
     let (Some(Kind::Adt(owner, _)), Some(Kind::Adt(other, _))) =
         (facts.types.kind(source), facts.types.kind(target))
@@ -77,9 +79,11 @@ fn fields(
         .list(variant.fields)
         .ok_or("nominal CoerceUnsized field list is missing")?
         .len();
-    let pay =
-        crate::sema::header_attributes::caller_payments(facts.must_use_contracts.as_deref(), true)
-            .map_err(|_| "nominal CoerceUnsized lacks its completed source payer")?;
+    let pay = crate::sema::header_attributes::caller_payments(
+        facts.must_use_contracts.as_deref(),
+        source_provider,
+    )
+    .map_err(|_| "nominal CoerceUnsized lacks its completed source payer")?;
     let growth = Growth::vector::<CoercionField>(0, 0, count);
     pay.charge(
         growth.work.saturating_add(1),

@@ -45,7 +45,7 @@ fn validate(
         .source_bindings
         .as_deref()
         .ok_or("DispatchFromDyn impl lost its source catalog")?
-        .header_role(LangItem::CoerceUnsized)?
+        .validated_role(LangItem::CoerceUnsized)?
         .ok_or("DispatchFromDyn impl requires actual CoerceUnsized")?;
     let mut arguments = facts
         .types

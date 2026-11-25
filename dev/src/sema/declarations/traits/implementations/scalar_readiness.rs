@@ -525,8 +525,9 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let payments = crate::sema::header_attributes::source_payments(
+        let payments = crate::sema::header_attributes::caller_payments(
             self.facts.must_use_contracts.as_deref(),
+            self.report.package.source_core().is_some(),
         )?;
         let predicates = &self.facts.generics.predicates;
         let result = self.facts.lifetimes.demand_reached_outlives(

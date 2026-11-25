@@ -280,21 +280,29 @@ fn assumption(
 fn leaf_or_projection(
     facts: &Declarations,
     leaves: &impl LeafClauses,
-    ty: TypeId,
+    mut ty: TypeId,
     budget: &mut impl Accounting,
 ) -> Result<usize, Error> {
+    let mut additional_roots = 0;
+    if leaves.regional_arguments()
+        && let Some(Kind::Pattern { base, .. }) = facts.types.kind(ty)
+    {
+        budget.charge(1)?;
+        additional_roots += 1;
+        ty = base;
+    }
     let Some(Kind::Projection(projection)) =
         facts.types.kind(ty).filter(|_| leaves.regional_arguments())
     else {
         leaf(facts, ty)?;
-        return Ok(0);
+        return Ok(additional_roots);
     };
     leaf(facts, projection.subject)?;
     let application = facts
         .types
         .trait_application(projection.trait_application)
         .ok_or_else(|| error("source projected trait argument lost its actual declaring trait"))?;
-    let mut additional_roots = 1;
+    additional_roots += 1;
     for arguments in [application.arguments, projection.arguments] {
         let arguments = facts
             .types

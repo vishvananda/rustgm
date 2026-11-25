@@ -1833,3 +1833,10 @@ The complete standalone sources cover inferred, direct, explicit, block, macro,
 inline-const and thin-nominal inputs, retaining the independently rejected sized
 opponent. Focused candidate inference passes; private controls, successor CI
 and the original String replay remain required.
+
+`spec/source-nonnull-parameter-pattern/outcomes.json` checks version-14
+transport of non-null pattern types over type parameters (`pattern_type!(T is !null)`),
+matching `core`'s `DispatchFromDyn` impl header and fresh-client `NonNull<dyn Trait>`
+dispatch, while retaining the version-13 refusal and unsatisfied-dispatch rejection.
+Run `scripts/check_source_artifact_clients.py --case source-nonnull-parameter-pattern`
+with the prebuilt compilers.

@@ -291,7 +291,10 @@ impl Builder<'_, '_> {
         let base_row = rows.types.get(base.0 as usize);
         match constraint {
             s::PatternConstraint::NonNull => {
-                if !matches!(base_row, Some(s::Type::RawPointer { .. })) {
+                let allowed = matches!(base_row, Some(s::Type::RawPointer { .. }))
+                    || (self.profile.declaration_policies()
+                        && matches!(base_row, Some(s::Type::Parameter(_))));
+                if !allowed {
                     return Err("imported non-null pattern requires a raw pointer base");
                 }
             }

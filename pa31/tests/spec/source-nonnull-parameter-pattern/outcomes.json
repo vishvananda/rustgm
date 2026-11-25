@@ -1,0 +1,14 @@
+{
+  "features": [
+    "auto_traits",
+    "pattern_types"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "41 17\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "bad_dispatch.rs",
+    "rustc": "is not satisfied",
+    "rustgm": "trait obligation requires an unambiguous matching assumption or implementation"
+  }
+}

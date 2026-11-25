@@ -54,8 +54,15 @@ impl Checker<'_> {
             self.facts.types.kind(target),
         ) {
             (Some(Kind::Adt(..)), Some(Kind::Adt(..))) => {
-                let schema = structure::schema(&mut self.facts, predicate.ty, target, proof)
-                    .map_err(|e| self.error(source, e))?;
+                let source_provider = self.report.package.source_core().is_some();
+                let schema = structure::schema(
+                    &mut self.facts,
+                    predicate.ty,
+                    target,
+                    proof,
+                    source_provider,
+                )
+                .map_err(|e| self.error(source, e))?;
                 let field = schema.fields[schema.changed as usize];
                 (
                     field.source,
@@ -110,7 +117,7 @@ impl Checker<'_> {
             .source_bindings
             .as_deref()
             .ok_or_else(|| self.error(source, "source coercion lost its catalog"))?
-            .validated_language(role)
+            .validated_role(role)
             .map_err(|e| self.error(source, e))?
             .ok_or_else(|| {
                 self.error(
@@ -165,7 +172,7 @@ impl Checker<'_> {
         }
         let pay = crate::sema::header_attributes::caller_payments(
             self.facts.must_use_contracts.as_deref(),
-            true,
+            self.report.package.source_core().is_some(),
         )
         .map_err(|_| {
             self.error(

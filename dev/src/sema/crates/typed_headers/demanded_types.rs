@@ -717,7 +717,10 @@ impl<M: Storage> Worklist<M> {
         let base = self.child(base)?;
         let constraint = match constraint {
             s::PatternConstraint::NonNull => {
-                if !matches!(store.kind(base), Some(Kind::Pointer { .. })) {
+                if !matches!(
+                    store.kind(base),
+                    Some(Kind::Pointer { .. } | Kind::Parameter(_))
+                ) {
                     return Err(error(
                         "imported non-null pattern requires a raw pointer base",
                     ));

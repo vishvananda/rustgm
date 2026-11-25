@@ -349,9 +349,9 @@ impl Stage {
     }
 
     /// Version thirteen: a pattern row over its completed base. A range's
-    /// canonical endpoints are appended in type-row order. A non-null pattern
-    /// over a type parameter is fenced: only core's `DispatchFromDyn` impl
-    /// header names one, and no export reaches it yet.
+    /// canonical endpoints are appended in type-row order. Version fourteen
+    /// also carries a non-null pattern over a type parameter, as in core's
+    /// `DispatchFromDyn` impl header.
     fn pattern_row(
         &mut self,
         facts: &Declarations,
@@ -363,6 +363,7 @@ impl Stage {
             crate::types::Constraint::NonNull => {
                 match facts.types.kind(base) {
                     Some(Kind::Pointer { .. }) => {}
+                    Some(Kind::Parameter(_)) if self.declaration_policies() => {}
                     Some(Kind::Parameter(_)) => {
                         return Err(
                             "source non-null pattern over a type parameter is not transported",
