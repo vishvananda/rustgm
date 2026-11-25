@@ -120,6 +120,11 @@ destructured tuple/struct function parameters and generic tuple projections,
 private `unsafe extern "unadjusted"` imports (including tuple-returning and
 nominal/pointer forms), and safe/`const` free and inherent `#[target_feature]`
 functions with contextual safe call/coercion enforcement and v13 refusal.
+`spec/source-inherent-const-and-tracked-traits/outcomes.json` checks v14
+transport of inherent `const impl` methods (compile-time and runtime, plus
+non-const bound rejection), Core builtin inherent impls (`str`, `[u8]`,
+`[T; N]`, `*const T`, `*mut T`), and trait/trait-impl `#[track_caller]`
+propagation (including client impl inheritance and caller line forwarding).
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

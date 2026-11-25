@@ -152,7 +152,7 @@ impl Graph {
         };
         let raw = &rows.implementations[index as usize];
         if raw.trait_application.is_some()
-            || raw.constant
+            || (raw.constant && !descriptor.profile().declaration_policies())
             || raw.unsafe_
             || !raw.polarity.is_positive()
             || self
@@ -163,17 +163,18 @@ impl Graph {
             return Err("imported inherent impl changed its actual Self or modifiers");
         }
         if raw.core_primitive_inherent {
-            use crate::types::{Kind, Primitive, parameters::ParameterKind};
-            let actual = match store.kind(self_type) {
-                Some(Kind::Primitive(tag)) => tag != Primitive::Str,
-                Some(Kind::Slice(element)) => {
-                    matches!(store.kind(element), Some(Kind::Parameter(id))
-                    if store.parameter(id).is_some_and(|formal|
-                        formal.owner.0 == owner.self_definition.0 && formal.index == 0
-                            && formal.kind == ParameterKind::Type { sized: true }))
-                }
-                _ => false,
-            };
+            use crate::types::Kind;
+            let actual = matches!(
+                store.kind(self_type),
+                Some(
+                    Kind::Primitive(_)
+                        | Kind::Never
+                        | Kind::Slice(_)
+                        | Kind::Array { .. }
+                        | Kind::ArrayTerm { .. }
+                        | Kind::Pointer { .. }
+                )
+            );
             return if descriptor.profile().declaration_policies() && actual {
                 Ok(())
             } else {

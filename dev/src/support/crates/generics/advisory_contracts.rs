@@ -193,7 +193,8 @@ impl HeaderAttributeColumns {
             if contract.caller_tracking
                 && !matches!(header.body, super::FunctionBody::Original(_))
                 && !(header.body == super::FunctionBody::Absent
-                    && range_sub == Some(header.declaration))
+                    && (range_sub == Some(header.declaration)
+                        || (profile.declaration_policies() && header.parent.is_some())))
             {
                 return Err("source caller tracking requires an exported original body");
             }

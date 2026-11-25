@@ -597,6 +597,7 @@ fn effective_impl_constness(
         return Ok(false);
     };
     let OwnerKind::Impl {
+        trait_type,
         constant: true,
         polarity,
         ..
@@ -604,6 +605,9 @@ fn effective_impl_constness(
     else {
         return Ok(false);
     };
+    if trait_type.is_none() {
+        return Ok(polarity == ImplPolarity::Positive);
+    }
     if polarity == ImplPolarity::Reservation {
         return Ok(true);
     }

@@ -26,13 +26,6 @@ fn closed_inherent_self(facts: &Declarations, owner: DefId) -> Option<TypeId> {
     .then_some(schema.self_type)
 }
 
-pub(super) fn core_primitive_owner(report: &Report, facts: &Declarations, owner: DefId) -> bool {
-    report.package.coherence_is_core()
-        && closed_inherent_self(facts, owner).is_some_and(|ty| {
-            matches!(facts.types.kind(ty), Some(Kind::Primitive(tag)) if tag != Primitive::Str)
-        })
-}
-
 fn closed_type(facts: &Declarations, ty: TypeId) -> bool {
     facts.types.contains_parameters(ty) == Some(false)
         && facts.types.needs_region_context(ty) == Some(false)

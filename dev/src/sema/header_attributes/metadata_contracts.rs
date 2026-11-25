@@ -37,9 +37,21 @@ pub(super) struct Headers {
     /// Version thirteen: the sparse function rows with declared target
     /// features, each checked once its header is installed.
     targeted: Vec<DefId>,
+    /// Client-local impl methods that inherit `#[track_caller]` from an imported trait method.
+    inherited_tracking: HashMap<DefId, DefId>,
     pub(super) work: Cell<usize>,
 }
 impl Headers {
+    fn new(catalog: Rc<Catalog>, inventory: Arc<Dependencies>, steps: usize) -> Self {
+        Self {
+            catalog,
+            inventory,
+            entries: HashMap::default(),
+            targeted: Vec::new(),
+            inherited_tracking: HashMap::default(),
+            work: Cell::new(steps),
+        }
+    }
     pub(super) fn contains(&self, definition: DefId) -> bool {
         self.entries.contains_key(&definition)
     }
@@ -175,13 +187,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             bytes = bytes.saturating_add(payload.retained_bytes());
         }
     }
-    let mut headers = Headers {
-        catalog,
-        inventory: imported.shared_dependencies(),
-        entries: HashMap::default(),
-        targeted: Vec::new(),
-        work: Cell::new(steps),
-    };
+    let mut headers = Headers::new(catalog, imported.shared_dependencies(), steps);
     let mut rows_with_features = Vec::new();
     for (artifact, interface) in imported.dependencies().artifacts().iter().enumerate() {
         let Some(descriptor) = interface.source_descriptor() else {
@@ -680,9 +686,39 @@ pub(super) fn caller_tracking(
         .ok_or("imported caller policy lacks its complete function row")?
         .caller_tracking;
     if tracked {
-        tracked_header(facts, definition, &semantic)?;
+        tracked_header(
+            facts,
+            definition,
+            &semantic,
+            descriptor.profile().declaration_policies(),
+        )?;
     }
     Ok(tracked)
+}
+
+pub(super) fn record_inherited_tracking(
+    facts: &mut Declarations,
+    actual: DefId,
+    expected: DefId,
+) -> Result<(), Error> {
+    let imported = facts
+        .must_use_contracts
+        .as_deref_mut()
+        .and_then(|owner| owner.headers.as_deref_mut())
+        .and_then(|ledger| ledger.imported.as_deref_mut())
+        .ok_or_else(|| Error::unlocated("inherited caller policy lacks its imported ledger"))?;
+    imported.charge(1)?;
+    imported.inherited_tracking.insert(actual, expected);
+    Ok(())
+}
+
+pub(super) fn inherited_tracking(facts: &Declarations, definition: DefId) -> Option<DefId> {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+        .and_then(|headers| headers.inherited_tracking.get(&definition).copied())
 }
 
 /// A transported caller policy is re-proved on the consumer's installed header:
@@ -707,11 +743,13 @@ fn tracked_range_sub(
         }))
 }
 
-/// Free and inherent Rust-ABI functions, and the required range method.
+/// Free and inherent Rust-ABI functions, and in version fourteen trait and
+/// trait-impl Rust-ABI members.
 fn tracked_header(
     facts: &Declarations,
     definition: DefId,
     header: &crate::sema::function_headers::DeclarationHeader,
+    declaration_policies: bool,
 ) -> Result<(), &'static str> {
     use crate::types::{Kind, callable::Abi};
     if !matches!(
@@ -720,16 +758,17 @@ fn tracked_header(
     ) {
         return Err("imported caller tracking requires its Rust-ABI function signature");
     }
-    if facts
-        .associated
-        .owner(definition)
-        .and_then(|owner| facts.associated.get(owner))
-        .is_some_and(|owner| {
-            !matches!(
-                owner.kind,
-                crate::sema::associated::OwnerKind::ImportedInherent(_)
-            )
-        })
+    if !declaration_policies
+        && facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| facts.associated.get(owner))
+            .is_some_and(|owner| {
+                !matches!(
+                    owner.kind,
+                    crate::sema::associated::OwnerKind::ImportedInherent(_)
+                )
+            })
         && !tracked_range_sub(facts, definition, header)?
     {
         return Err("imported caller tracking belongs to a trait member");

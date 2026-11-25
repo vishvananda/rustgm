@@ -8,6 +8,13 @@ use crate::{
 #[path = "../../../tests/invariants/relationship_ports.rs"]
 mod tests;
 
+fn is_source_provider(facts: &Declarations) -> bool {
+    facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| !catalog.uses_imported_roles())
+}
+
 fn callable_goal(
     facts: &mut Declarations,
     callable: TypeId,
@@ -27,8 +34,10 @@ fn callable_goal(
         .arguments(arguments)
         .ok_or("caller selection lost callable arguments")?
         .len();
-    let payments = header_attributes::source_payments(facts.must_use_contracts.as_deref())
-        .map_err(|_| "caller selection lacks its source budget")?;
+    let provider = is_source_provider(facts);
+    let payments =
+        header_attributes::caller_payments(facts.must_use_contracts.as_deref(), provider)
+            .map_err(|_| "caller selection lacks its source budget")?;
     payments.charge(
         count.saturating_add(1),
         count.saturating_mul(
@@ -88,8 +97,10 @@ pub(in crate::sema) fn selected_definition(
             continue;
         }
         let predicate = header.predicate;
-        let payments = header_attributes::source_payments(facts.must_use_contracts.as_deref())
-            .map_err(|_| "caller selection lacks its source budget")?;
+        let provider = is_source_provider(facts);
+        let payments =
+            header_attributes::caller_payments(facts.must_use_contracts.as_deref(), provider)
+                .map_err(|_| "caller selection lacks its source budget")?;
         let (fold, _) = facts.selected_implementation_substitution(
             implementation,
             arguments,

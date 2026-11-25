@@ -59,7 +59,8 @@ def main():
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
                                  "source-rpit-transport",
-                                 "source-function-header-extensions"))
+                                 "source-function-header-extensions",
+                                 "source-inherent-const-and-tracked-traits"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

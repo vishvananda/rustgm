@@ -190,8 +190,12 @@ fn validate_with(
         if reservation && binding != BindingProfile::BodyOperations {
             return Err("reservation implementation transport requires a wider metadata profile");
         }
+        let inherent_const_impl = binding == BindingProfile::BodyOperations
+            && header.trait_application.is_none()
+            && header.polarity.is_positive();
         if header.constant
             && !reservation
+            && !inherent_const_impl
             && roles
                 .const_trait_impl(rows, headers, header, work)?
                 .is_none()
@@ -557,10 +561,18 @@ fn trait_const_method(
     if implementation.polarity == ImplPolarity::Reservation {
         return Ok(true);
     }
-    let Some(owner) = roles.const_trait_impl(rows, headers, implementation, work)? else {
-        return Ok(false);
-    };
     let modern = roles.definition_policies != 0;
+    let inherent_const_impl = modern
+        && implementation.trait_application.is_none()
+        && implementation.polarity.is_positive();
+    let owner = if inherent_const_impl {
+        None
+    } else {
+        let Some(owner) = roles.const_trait_impl(rows, headers, implementation, work)? else {
+            return Ok(false);
+        };
+        Some(owner)
+    };
     Ok(conversions::method(
         rows,
         headers,
@@ -569,7 +581,7 @@ fn trait_const_method(
         Constness::Const,
         None,
         work,
-    )? || (modern || roles.dereferences.contains(&Some(owner)))
+    )? || (modern || owner.is_some_and(|owner| roles.dereferences.contains(&Some(owner))))
         && captured::method(rows, headers, header, (true, Constness::Const), work)?)
 }
 
@@ -609,7 +621,9 @@ fn inherent_const(
     Ok(rows
         .implementations
         .get(index as usize)
-        .is_some_and(|implementation| implementation.trait_application.is_none()))
+        .is_some_and(|implementation| {
+            implementation.trait_application.is_none() && !implementation.constant
+        }))
 }
 /// `bodies` is version thirteen, whose free originals may also bind late
 /// region formals; every consumer re-proves them in its rebuilt environment.

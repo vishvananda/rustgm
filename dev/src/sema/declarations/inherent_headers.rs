@@ -271,7 +271,10 @@ impl Checker<'_> {
             .map(Head::canonical)
             .ok_or_else(|| Error::unlocated("imported inherent owner lost its Self type"))?;
         // Header installation authenticated the owner and each member link.
-        let core_shape = matches!(head, Head::Primitive(_) | Head::Slice);
+        let core_shape = matches!(
+            head,
+            Head::Primitive(_) | Head::Never | Head::Slice | Head::Array | Head::Pointer(_)
+        );
         let kind = self.report.resolution.definitions[member.0 as usize].kind;
         if !matches!(kind, DefKind::Function | DefKind::Const) {
             return Err(Error::unlocated(

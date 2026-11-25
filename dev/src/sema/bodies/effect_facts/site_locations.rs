@@ -155,10 +155,24 @@ impl Checker<'_> {
         if tracked || intrinsic == Some(SourceIntrinsic::CallerLocation) {
             return Ok(true);
         }
-        // Current foreign profiles explicitly exclude tracked headers. They have
-        // no local source ledger to borrow for a selected implementation query.
         if self.report.package.source_core().is_none() {
-            return Ok(false);
+            if self.report.package.source_client().is_none() {
+                return Ok(false);
+            }
+            let source = if let Syntax::Call { callee, .. } = self.kind(node) {
+                self.key(callee)
+            } else {
+                self.key(node)
+            };
+            let Some(selected) =
+                crate::sema::dispatch::selected_definition(self.facts, source, callable)
+                    .map_err(|error| self.error(node, error))?
+            else {
+                return Ok(false);
+            };
+            return self
+                .facts
+                .checked_caller_tracking_with_owner_reads(&mut self.owner_reads, selected);
         }
         let source = if let Syntax::Call { callee, .. } = self.kind(node) {
             self.key(callee)

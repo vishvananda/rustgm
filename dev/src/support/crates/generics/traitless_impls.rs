@@ -37,20 +37,29 @@ pub(super) fn require_profile(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.implementations.len().saturating_add(1))?;
-    let slice_owner = slice_owner(rows, profile, work)?;
+    let _ = slice_owner(rows, profile, work)?;
     for implementation in &rows.implementations {
         work.charge(1)?;
         if implementation.core_primitive_inherent {
-            let primitive = match rows.types.get(implementation.self_type.0 as usize) {
-                Some(Type::F16 | Type::F128) => true,
+            let builtin = match rows.types.get(implementation.self_type.0 as usize) {
                 Some(Type::Scalar(tag)) => *tag != crate::support::crates::Scalar::Unit,
+                Some(
+                    Type::F16
+                    | Type::F128
+                    | Type::Str
+                    | Type::Never
+                    | Type::Slice(_)
+                    | Type::Array { .. }
+                    | Type::RawPointer { .. },
+                ) => true,
                 _ => false,
             };
-            let slice = slice_owner == Some(implementation.self_definition)
-                && slice_generic_element(rows, implementation);
             if !(profile.declaration_policies()
-                && (primitive && implementation.closed_inherent_constant_owner(&rows.types)
-                    || slice && implementation.inherent_constant_owner(&rows.types)))
+                && builtin
+                && implementation.trait_application.is_none()
+                && !implementation.unsafe_
+                && implementation.polarity.is_positive()
+                && implementation.scope == implementation.self_definition)
             {
                 return Err(
                     "source Core primitive authority requires an actual supported inherent owner",
@@ -91,21 +100,6 @@ fn slice_owner(
         .ok_or("source slice length role lost its actual inherent owner")
 }
 
-fn slice_generic_element(rows: &SourceRows, implementation: &ImplHeader) -> bool {
-    let Some(Type::Slice(element)) = rows.types.get(implementation.self_type.0 as usize) else {
-        return false;
-    };
-    let Some(Type::Parameter(slot)) = rows.types.get(element.0 as usize) else {
-        return false;
-    };
-    rows.slots.get(slot.0 as usize).is_some_and(|slot| {
-        slot.owner == implementation.self_definition
-            && slot.ordinal == 0
-            && slot.index == 0
-            && matches!(slot.kind, super::ParameterKind::Type { sized: Some(_) })
-    })
-}
-
 /// An inherent impl may extend a nominal or (in v14) a trait object whose
 /// principal trait is declared by this provider.
 fn own_nominal(
@@ -114,7 +108,10 @@ fn own_nominal(
     implementation: &ImplHeader,
 ) -> Result<(), &'static str> {
     let error = "imported inherent impl Self is not a nominal of its own provider";
-    if implementation.unsafe_ || implementation.constant || !implementation.polarity.is_positive() {
+    if implementation.unsafe_
+        || (implementation.constant && !profile.declaration_policies())
+        || !implementation.polarity.is_positive()
+    {
         return Err(error);
     }
     let valid = match rows.types.get(implementation.self_type.0 as usize) {

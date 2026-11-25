@@ -365,24 +365,22 @@ impl Stage {
                     "source caller tracking policy transport is not implemented",
                 ));
             }
-            // A tracked trait method makes every implementation tracked; that
-            // inherited policy needs trait implementation transport.
-            if facts
-                .associated
-                .owner(definition)
-                .and_then(|owner| facts.associated.get(owner))
-                .is_some_and(|owner| {
-                    !matches!(
-                        owner.kind,
-                        crate::sema::associated::OwnerKind::Impl {
-                            trait_type: None,
-                            ..
-                        }
-                    )
-                })
-                && !(self.declaration_policies()
-                    && crate::sema::compiler_items::source_range_headers(facts)
-                        .is_some_and(|(_, [_, _, subtract])| subtract.definition == definition))
+            // A tracked trait method makes every implementation tracked; version
+            // thirteen fences trait members, while version fourteen transports them.
+            if !self.declaration_policies()
+                && facts
+                    .associated
+                    .owner(definition)
+                    .and_then(|owner| facts.associated.get(owner))
+                    .is_some_and(|owner| {
+                        !matches!(
+                            owner.kind,
+                            crate::sema::associated::OwnerKind::Impl {
+                                trait_type: None,
+                                ..
+                            }
+                        )
+                    })
             {
                 return Err(Error::at(
                     declaration.file,

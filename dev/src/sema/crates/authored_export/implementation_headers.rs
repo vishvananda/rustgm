@@ -1,37 +1,23 @@
 //! Canonical conformance keeps actual trait/member links and typed impl Self.
 use super::{Declarations, DefId, OwnerKind, Report, Stage, g, s};
 use crate::{
-    support::{bindings::LangItem, constness::Constness},
-    types::{Kind, TypeId, arguments::Argument, parameters::ParameterKind},
+    support::constness::Constness,
+    types::{Kind, TypeId},
 };
 
-fn slice_implementation(
-    report: &Report,
-    facts: &Declarations,
-    owner: DefId,
-    self_type: TypeId,
-) -> Result<bool, &'static str> {
-    let Some(Kind::Slice(element)) = facts.types.kind(self_type) else {
-        return Ok(false);
-    };
-    if !report.package.coherence_is_core() {
-        return Ok(false);
-    }
-    let Some(catalog) = facts.source_bindings.as_deref() else {
-        return Ok(false);
-    };
-    let Some(role) = catalog.validated_language(LangItem::SliceLen)? else {
-        return Ok(false);
-    };
-    let Some([parameter]) = facts.generics.parameters.get(&owner).map(Vec::as_slice) else {
-        return Ok(false);
-    };
-    Ok(role.parent == Some(owner)
-        && parameter.argument == Argument::Type(element)
-        && parameter.default.is_none()
-        && matches!(facts.types.kind(element), Some(Kind::Parameter(id))
-            if facts.types.parameter(id).is_some_and(|formal| formal.owner.0 == owner.0
-                && formal.index == 0 && formal.kind == ParameterKind::Type { sized: true })))
+fn core_builtin_inherent(report: &Report, facts: &Declarations, self_type: TypeId) -> bool {
+    report.package.coherence_is_core()
+        && matches!(
+            facts.types.kind(self_type),
+            Some(
+                Kind::Primitive(_)
+                    | Kind::Never
+                    | Kind::Slice(_)
+                    | Kind::Array { .. }
+                    | Kind::ArrayTerm { .. }
+                    | Kind::Pointer { .. }
+            )
+        )
 }
 
 impl Stage {
@@ -110,7 +96,10 @@ impl Stage {
                 continue;
             };
             let owner = owner.source_owner()?;
-            if unsafe_ || constant || polarity != crate::sema::associated::ImplPolarity::Positive {
+            if unsafe_
+                || (constant && !self.declaration_policies())
+                || polarity != crate::sema::associated::ImplPolarity::Positive
+            {
                 return Err("source inherent impl modifiers require a wider profile");
             }
             let id = crate::sema::associated::OwnerId(
@@ -120,7 +109,7 @@ impl Stage {
                 .associated
                 .owner_members(id)
                 .ok_or("source inherent impl has no actual member inventory")?;
-            self.inherent_implementation(report, facts, &owner, methods)?;
+            self.inherent_implementation(report, facts, &owner, constant, methods)?;
             count = count
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
@@ -133,6 +122,7 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         owner: &crate::sema::associated::SourceOwner,
+        constant: bool,
         methods: &[DefId],
     ) -> Result<(), &'static str> {
         let declaration = self.declaration(owner.self_definition)?;
@@ -140,12 +130,8 @@ impl Stage {
             .associated
             .schema(owner.self_definition)
             .ok_or("source implementation has no completed typed Self schema")?;
-        let core_primitive_inherent = self.declaration_policies()
-            && (super::evaluated_constants::core_primitive_owner(
-                report,
-                facts,
-                owner.self_definition,
-            ) || slice_implementation(report, facts, owner.self_definition, schema.self_type)?);
+        let core_primitive_inherent =
+            self.declaration_policies() && core_builtin_inherent(report, facts, schema.self_type);
         if !core_primitive_inherent {
             let target = match facts.types.kind(schema.self_type) {
                 Some(Kind::Adt(nominal, _)) => Some(DefId(nominal.0)),
@@ -217,7 +203,7 @@ impl Stage {
             trait_application: None,
             unsafe_: false,
             core_primitive_inherent,
-            constant: false,
+            constant,
             polarity: crate::sema::associated::ImplPolarity::Positive,
             region_captures: schema.captures,
             region_bounds,

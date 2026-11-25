@@ -1,0 +1,11 @@
+{
+  "features": ["const_destruct", "auto_traits", "intrinsics", "pattern_types"],
+  "attributes": ["rustc_coherence_is_core"],
+  "stdout": "42 60 47 48 99\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "non_const_advance.rs",
+    "rustc": "const Step",
+    "rustgm": "trait obligation requires an unambiguous matching assumption or implementation"
+  }
+}

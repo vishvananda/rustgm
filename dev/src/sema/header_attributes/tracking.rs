@@ -225,7 +225,7 @@ impl Declarations {
             .as_deref()
             .is_some_and(crate::sema::compiler_items::Catalog::uses_imported_roles)
         {
-            return Ok(false);
+            return Ok(super::super::imported::inherited_tracking(self, definition).is_some());
         }
         let Some(headers) = self
             .must_use_contracts
@@ -315,7 +315,8 @@ impl Declarations {
             return Ok(Tracking::Explicit);
         };
         if report.package.source_core().is_none() {
-            return Ok(Tracking::Untracked);
+            return Ok(super::super::imported::inherited_tracking(self, definition)
+                .map_or(Tracking::Untracked, Tracking::Inherited));
         }
         let headers = self
             .must_use_contracts
@@ -393,6 +394,9 @@ pub(in crate::sema) fn inherit_tracking(
             header.tracking = Tracking::Overridden;
         }
         return Ok(());
+    }
+    if report.package.source_core().is_none() {
+        return super::super::imported::record_inherited_tracking(facts, actual, expected);
     }
     let declaration = source(actual).ok_or_else(|| {
         Error::unlocated("inherited caller policy needs its actual source method")
