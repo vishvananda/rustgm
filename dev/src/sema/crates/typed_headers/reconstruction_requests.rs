@@ -183,7 +183,8 @@ fn prepare_regions<'rows, P: ports::OwnedPort<'rows>>(
         original
             .projections
             .len()
-            .saturating_add(original.openings.len()),
+            .saturating_add(original.openings.len())
+            .saturating_add(original.values.len()),
     )?;
     for projection in &original.projections {
         if let s::ProjectionKind::Dereference { region, .. } = projection.kind {
@@ -192,6 +193,36 @@ fn prepare_regions<'rows, P: ports::OwnedPort<'rows>>(
     }
     for &region in &original.openings {
         port.region(region, work)?;
+    }
+    for value in &original.values {
+        if let s::ValueKind::Unsize { conversion, .. } = value.kind {
+            match conversion {
+                s::UnsizeConversion::Slice(array) => {
+                    Port::require_context(&port.port, store, work)?;
+                    port.ty(store, array, work)?;
+                }
+                s::UnsizeConversion::Object {
+                    concrete: a,
+                    target: b,
+                }
+                | s::UnsizeConversion::Upcast {
+                    source: a,
+                    target: b,
+                }
+                | s::UnsizeConversion::Nominal {
+                    source: a,
+                    target: b,
+                }
+                | s::UnsizeConversion::Bound {
+                    source: a,
+                    target: b,
+                } => {
+                    Port::require_context(&port.port, store, work)?;
+                    port.ty(store, a, work)?;
+                    port.ty(store, b, work)?;
+                }
+            }
+        }
     }
     Ok(())
 }

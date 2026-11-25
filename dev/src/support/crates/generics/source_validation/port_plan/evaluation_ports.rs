@@ -264,6 +264,7 @@ impl Ports {
         &self,
         original: &s::Original,
         place: s::Place,
+        allow_temporary: bool,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
@@ -277,6 +278,9 @@ impl Ports {
                 .access
                 .get(index as usize)
                 .map(|access| access.writable),
+            s::Place::Temporary(index) if allow_temporary => {
+                ((index as usize) < original.values.len()).then_some(true)
+            }
             s::Place::Temporary(_) => {
                 return Err("source direct temporary writes require wider proof");
             }
@@ -326,8 +330,9 @@ impl Ports {
         work: &mut Work,
     ) -> Result<Access, &'static str> {
         let writable = match base {
+            s::Place::Temporary(_) if builder.domains.declaration_policies => true,
             s::Place::Temporary(_) if builder.domains.bodies => false,
-            place => self.writable(original, place, work)?,
+            place => self.writable(original, place, builder.domains.declaration_policies, work)?,
         };
         Ok(Access {
             writable,

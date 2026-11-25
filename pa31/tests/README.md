@@ -1918,3 +1918,13 @@ closures, and RPIT-returned capturing closures, while retaining non-callable
 rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-closure-transport`
 with the prebuilt compilers.
+
+`spec/source-unsizing-and-literals-transport/outcomes.json` checks version-14
+transport of direct temporary places in actions, guards, and mutable borrows,
+non-`&str` text literals (`&'static [u8; N]`, non-UTF-8 byte pattern `TextEquals`,
+and `&'static CStr`), and all five `Rvalue::Unsize` conversions (`Slice`,
+`Object`, `Upcast`, `Bound`, and `Nominal` through imported `CoerceUnsized`
+implementations) across native and `const` fresh-client execution, while
+retaining unsatisfied-bound rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-unsizing-and-literals-transport`
+with the prebuilt compilers.

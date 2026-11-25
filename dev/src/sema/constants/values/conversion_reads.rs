@@ -30,7 +30,23 @@ impl<'a> Reader<'a> {
         from: TypeId,
         to: TypeId,
     ) -> Result<&'a CoercionPlan, &'static str> {
-        let mut plan = self.nominal_conversion(source, from, to)?;
+        let plan = self.nominal_conversion(source, from, to)?;
+        self.follow_nominal_terminal(plan)
+    }
+
+    pub(crate) fn nominal_terminal_plan(
+        self,
+        from: TypeId,
+        to: TypeId,
+    ) -> Result<&'a CoercionPlan, &'static str> {
+        let plan = self.nominal_plan(from, to)?;
+        self.follow_nominal_terminal(plan)
+    }
+
+    fn follow_nominal_terminal(
+        self,
+        mut plan: &'a CoercionPlan,
+    ) -> Result<&'a CoercionPlan, &'static str> {
         for _ in 0..1_000_000 {
             self.facts.charge_caller_inputs(1, 0)?;
             let CoercionStep::Nested { source, target } = plan.step else {
@@ -49,6 +65,22 @@ impl<'a> Reader<'a> {
         to: TypeId,
     ) -> Result<Option<(TypeId, TypeId, RegionId)>, &'static str> {
         let terminal = self.nominal_terminal(source, from, to)?;
+        self.nominal_object_from(terminal)
+    }
+
+    pub(crate) fn nominal_object_plan(
+        self,
+        from: TypeId,
+        to: TypeId,
+    ) -> Result<Option<(TypeId, TypeId, RegionId)>, &'static str> {
+        let terminal = self.nominal_terminal_plan(from, to)?;
+        self.nominal_object_from(terminal)
+    }
+
+    fn nominal_object_from(
+        self,
+        terminal: &'a CoercionPlan,
+    ) -> Result<Option<(TypeId, TypeId, RegionId)>, &'static str> {
         let CoercionStep::Object { concrete, object } = terminal.step else {
             return Ok(None);
         };

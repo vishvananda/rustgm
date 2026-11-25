@@ -915,6 +915,7 @@ fn originals(
                             | ValueKind::TextEquals { .. }
                             | ValueKind::Union { .. }
                             | ValueKind::Repeat { .. }
+                            | ValueKind::Unsize { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

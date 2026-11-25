@@ -17,7 +17,7 @@ const PENDING: Id = Id(u32::MAX);
 
 /// An original's literals in value order, owned past the end of its view.
 #[derive(Default)]
-pub(super) struct Pending(Vec<Box<str>>);
+pub(super) struct Pending(Vec<Box<[u8]>>);
 
 /// Copy every literal, paying one step and one byte per literal byte.
 pub(super) fn copy(
@@ -72,7 +72,7 @@ pub(super) fn intern(
                 let text = texts
                     .next()
                     .ok_or("source text value has no copied literal")?;
-                *id = facts.texts.intern(text.as_bytes())?;
+                *id = facts.texts.intern(&text)?;
             }
             _ => {}
         }
@@ -104,7 +104,7 @@ pub(super) fn validate(
             .filter(|_| ordinal as usize == next)
             .ok_or("source original changed an actual text ordinal")?;
         *steps = steps.saturating_add(1).saturating_add(expected.len());
-        if texts.get(id)? != expected.as_bytes() {
+        if texts.get(id)? != expected.as_ref() {
             return Err("source original changed an actual text literal");
         }
         next = next.saturating_add(1);

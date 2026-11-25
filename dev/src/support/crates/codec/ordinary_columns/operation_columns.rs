@@ -104,7 +104,10 @@ fn original_profile(
     match (&row.texts, has_text(&row.values)) {
         (None, false) => {}
         (Some(texts), true) if bodies => {
-            write(out, &texts.rows, |out, text| out.string(text))?;
+            write(out, &texts.rows, |out, bytes| {
+                out.u32(bytes.len())?;
+                out.bytes(bytes)
+            })?;
         }
         (Some(_), true) => {
             return Err("source text literals require the version-thirteen body IR profile");
@@ -158,6 +161,16 @@ pub(super) fn text_read(read: &mut Input<'_, '_>) -> Result<Box<str>, &'static s
     std::str::from_utf8(read.reader.bytes(length)?)
         .map(Box::from)
         .map_err(|_| "source text literal is not UTF-8")
+}
+fn literal_bytes_read(read: &mut Input<'_, '_>) -> Result<Box<[u8]>, &'static str> {
+    let length = read.reader.count(crates::MAX_COMPONENTS, 1)?;
+    read.reader.atoms(length)?;
+    read.reserve(length)?;
+    let bytes = read.reader.bytes(length)?;
+    if !read.profile.declaration_policies() && std::str::from_utf8(bytes).is_err() {
+        return Err("source text literal is not UTF-8");
+    }
+    Ok(Box::from(bytes))
 }
 fn starts_guard(statements: &[s::Statement]) -> bool {
     statements
@@ -226,7 +239,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     };
     let texts = if read.profile.body_nodes() && has_text(&values) {
         Some(Box::new(s::Texts {
-            rows: read.list(crates::MAX_COMPONENTS, 4, text_read)?,
+            rows: read.list(crates::MAX_COMPONENTS, 4, literal_bytes_read)?,
         }))
     } else {
         None
@@ -387,7 +400,8 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         | s::ValueKind::Repeat { .. }
         | s::ValueKind::DirectEnumCast(_)
         | s::ValueKind::AddressCast { .. }
-        | s::ValueKind::UniqueBorrow(_) => {
+        | s::ValueKind::UniqueBorrow(_)
+        | s::ValueKind::Unsize { .. } => {
             Err("source extended value operations require the version-fourteen body IR profile")
         }
         s::ValueKind::Call {

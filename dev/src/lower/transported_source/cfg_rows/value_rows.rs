@@ -35,6 +35,12 @@ pub(super) fn emit(
             | ir::Rvalue::Invoke { .. }
             | ir::Rvalue::Call { .. }
             | ir::Rvalue::Reify(_) => callable(stage, facts, (body, index, context), value)?,
+            ir::Rvalue::Unsize {
+                value: operand,
+                conversion,
+            } if stage.declaration_policies() => {
+                unsize(stage, facts, context, index, operand, conversion)?
+            }
             _ => item(stage, facts, body, context, raw, value)?,
         };
         let ty = stage.ty(facts, value.ty, context)?;
@@ -221,11 +227,12 @@ fn item(
             place: target,
             text,
         } if stage.declaration_policies() => {
-            let ordinal = push_text(stage, facts, raw, text)?;
-            let target = match target {
-                ir::Place::Temporary(value) => s::Place::Temporary(value.0),
-                other => place(stage, other)?,
-            };
+            let require_utf8 = body.place_type(target)
+                == Some(crate::types::TypeId::primitive(
+                    crate::types::Primitive::Str,
+                ));
+            let ordinal = push_text(stage, facts, raw, text, require_utf8)?;
+            let target = place(stage, target)?;
             Ok(s::ValueKind::TextEquals {
                 place: target,
                 text: ordinal,
@@ -742,10 +749,7 @@ pub(super) fn requested_formation(
             || facts.types.contains_parameters(ty) == Some(true)
             || facts.types.contains_opaques(ty) == Some(true)
             || facts.types.contains_anonymous_callables(ty) == Some(true)
-            || (matches!(
-                facts.types.kind(ty),
-                Some(crate::types::Kind::Function { .. } | crate::types::Kind::FunctionItem { .. })
-            ) && facts.types.contains_regions(ty) == Some(true));
+            || facts.types.contains_regions(ty) == Some(true);
     }
     stage.body_nodes() && facts.types.contains_nominals(ty) == Some(true)
 }
@@ -784,8 +788,8 @@ fn parameter_pointer(facts: &Declarations, ty: crate::types::TypeId, kind: s::Va
             }
     ) && facts.types.contains_parameters(ty) == Some(true)
 }
-/// Version thirteen: a literal joins its original's text column in value
-/// order. Only a shared `'static` reference to `str` is a text value.
+/// Version thirteen admits `&'static str` literals; version fourteen also
+/// transports `&'static [u8; N]`, `&'static [u8]` and `&'static CStr` literals.
 fn text_literal(
     stage: &mut Stage,
     facts: &Declarations,
@@ -793,32 +797,122 @@ fn text_literal(
     ty: crate::types::TypeId,
     text: crate::sema::text::Id,
 ) -> Result<s::ValueKind, &'static str> {
-    if !matches!(
-        facts.types.kind(ty),
-        Some(crate::types::Kind::Reference {
-            mutable: false,
-            region: crate::types::RegionId::STATIC,
-            referent,
-        }) if referent == crate::types::TypeId::primitive(crate::types::Primitive::Str)
-    ) {
+    let Some(crate::types::Kind::Reference {
+        mutable: false,
+        region: crate::types::RegionId::STATIC,
+        referent,
+    }) = facts.types.kind(ty)
+    else {
         return Err("source text literal is not a shared static str reference");
-    }
-    Ok(s::ValueKind::Text(push_text(stage, facts, raw, text)?))
+    };
+    let require_utf8 = if referent == crate::types::TypeId::primitive(crate::types::Primitive::Str)
+    {
+        true
+    } else if stage.declaration_policies() {
+        let bytes = facts.texts.get(text)?;
+        match facts.types.kind(referent) {
+            Some(crate::types::Kind::Slice(element))
+                if element == crate::types::TypeId::primitive(crate::types::Primitive::U8) => {}
+            Some(crate::types::Kind::Array { element, length })
+                if element == crate::types::TypeId::primitive(crate::types::Primitive::U8) =>
+            {
+                if u64::try_from(bytes.len()).ok() != Some(length) {
+                    return Err("source byte string literal length differs from its array type");
+                }
+            }
+            _ => {
+                if crate::sema::compiler_items::c_strings::literal_profile(facts, ty)?.is_none() {
+                    return Err("source text literal is not a shared static str reference");
+                }
+                if bytes.last() != Some(&0) || bytes[..bytes.len() - 1].contains(&0) {
+                    return Err("source CStr literal requires a single trailing NUL byte");
+                }
+            }
+        }
+        false
+    } else {
+        return Err("source text literal is not a shared static str reference");
+    };
+    Ok(s::ValueKind::Text(push_text(
+        stage,
+        facts,
+        raw,
+        text,
+        require_utf8,
+    )?))
 }
 fn push_text(
     stage: &mut Stage,
     facts: &Declarations,
     raw: &mut s::Original,
     text: crate::sema::text::Id,
+    require_utf8: bool,
 ) -> Result<u32, &'static str> {
     let bytes = facts.texts.get(text)?;
     stage.charge(bytes.len().saturating_add(1))?;
-    stage.reserve(bytes.len().saturating_add(4 * size_of::<Box<str>>()))?;
-    let contents = std::str::from_utf8(bytes).map_err(|_| "source text literal is not UTF-8")?;
+    stage.reserve(bytes.len().saturating_add(4 * size_of::<Box<[u8]>>()))?;
+    if require_utf8 && std::str::from_utf8(bytes).is_err() {
+        return Err("source text literal is not UTF-8");
+    }
     let texts = raw.texts.get_or_insert_with(Box::default);
     let ordinal = u32::try_from(texts.rows.len()).map_err(|_| "source text column overflow")?;
-    texts.rows.push(contents.into());
+    texts.rows.push(Box::from(bytes));
     Ok(ordinal)
+}
+fn unsize(
+    stage: &mut Stage,
+    facts: &mut Declarations,
+    context: Context,
+    before: usize,
+    operand: ir::ValueId,
+    conversion: crate::types::unsizing::Conversion<crate::types::TypeId>,
+) -> Result<s::ValueKind, &'static str> {
+    use crate::types::unsizing::Conversion;
+    if operand.0 as usize >= before {
+        return Err("source unsizing changed its actual preceding operand");
+    }
+    let conversion = match conversion {
+        Conversion::Slice(array) => {
+            stage.prepare_type_arena(facts, array)?;
+            s::UnsizeConversion::Slice(stage.ty(facts, array, context)?)
+        }
+        Conversion::Object { concrete, target } => {
+            stage.prepare_type_arena(facts, concrete)?;
+            stage.prepare_type_arena(facts, target)?;
+            s::UnsizeConversion::Object {
+                concrete: stage.ty(facts, concrete, context)?,
+                target: stage.ty(facts, target, context)?,
+            }
+        }
+        Conversion::Upcast { source, target } => {
+            stage.prepare_type_arena(facts, source)?;
+            stage.prepare_type_arena(facts, target)?;
+            s::UnsizeConversion::Upcast {
+                source: stage.ty(facts, source, context)?,
+                target: stage.ty(facts, target, context)?,
+            }
+        }
+        Conversion::Nominal { source, target } => {
+            stage.prepare_type_arena(facts, source)?;
+            stage.prepare_type_arena(facts, target)?;
+            s::UnsizeConversion::Nominal {
+                source: stage.ty(facts, source, context)?,
+                target: stage.ty(facts, target, context)?,
+            }
+        }
+        Conversion::Bound { source, target } => {
+            stage.prepare_type_arena(facts, source)?;
+            stage.prepare_type_arena(facts, target)?;
+            s::UnsizeConversion::Bound {
+                source: stage.ty(facts, source, context)?,
+                target: stage.ty(facts, target, context)?,
+            }
+        }
+    };
+    Ok(s::ValueKind::Unsize {
+        value: operand.0,
+        conversion,
+    })
 }
 /// A constructor test or a fieldless enum's integer conversion.
 fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {

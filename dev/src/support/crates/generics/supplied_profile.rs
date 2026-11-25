@@ -176,7 +176,8 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         | s::ValueKind::Validate(_)
         | s::ValueKind::TextEquals { .. }
         | s::ValueKind::Union { .. }
-        | s::ValueKind::Repeat { .. } => {
+        | s::ValueKind::Repeat { .. }
+        | s::ValueKind::Unsize { .. } => {
             "source extended value operations require the version-fourteen body IR profile"
         }
         s::ValueKind::ConstArgument(_) => {

@@ -189,14 +189,14 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
             let expected = g::TypeRef(read.id()?);
             // These are explicit raw adjustment fields, never implied permissions.
             let unsize = read.boolean()?;
-            if unsize {
+            if unsize && !read.profile.declaration_policies() {
                 read.require_provided("source adjusted coercion requires a wider source profile")?;
             }
             let reference = if read.boolean()? {
                 // Version thirteen admits plain reborrows. Version fourteen
-                // also admits the single-dereference exclusive call adjustment.
+                // admits two-phase and unsizing reference adjustments as well.
                 let plain = !unsize && read.profile.body_nodes();
-                if !plain {
+                if !plain && !read.profile.declaration_policies() {
                     read.require_provided(
                         "source adjusted coercion requires a wider source profile",
                     )?;
@@ -206,11 +206,9 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
                     unsize: read.boolean()?,
                     two_phase: read.boolean()?,
                 };
-                if plain
-                    && (reference.unsize
-                        || reference.two_phase
-                            && !(read.profile.declaration_policies()
-                                && reference.dereferences == 1))
+                if !read.profile.declaration_policies()
+                    && plain
+                    && (reference.unsize || reference.two_phase)
                 {
                     read.require_provided(
                         "source adjusted coercion requires a wider source profile",

@@ -41,7 +41,8 @@ impl Builder<'_, '_, '_> {
             | s::ValueKind::Length(_)
             | s::ValueKind::TextEquals { .. }
             | s::ValueKind::Union { .. }
-            | s::ValueKind::Repeat { .. } => {
+            | s::ValueKind::Repeat { .. }
+            | s::ValueKind::Unsize { .. } => {
                 self.extended_value_input(original, value.ty, value.kind, work)
             }
             // Domain validation checked the exact primitive type and canonical bits,
@@ -72,30 +73,23 @@ impl Builder<'_, '_, '_> {
                 place,
                 work,
             ),
-            s::ValueKind::Borrow(place) => self.borrow_input(
-                original,
-                ports,
-                OperationSite { port, site },
-                value.ty,
-                (place, BorrowMode::Immediate),
-                work,
-            ),
-            s::ValueKind::TwoPhaseBorrow(place) => self.borrow_input(
-                original,
-                ports,
-                OperationSite { port, site },
-                value.ty,
-                (place, BorrowMode::TwoPhase),
-                work,
-            ),
-            s::ValueKind::UniqueBorrow(place) => self.borrow_input(
-                original,
-                ports,
-                OperationSite { port, site },
-                value.ty,
-                (place, BorrowMode::Unique),
-                work,
-            ),
+            s::ValueKind::Borrow(place)
+            | s::ValueKind::TwoPhaseBorrow(place)
+            | s::ValueKind::UniqueBorrow(place) => {
+                let mode = match value.kind {
+                    s::ValueKind::TwoPhaseBorrow(_) => BorrowMode::TwoPhase,
+                    s::ValueKind::UniqueBorrow(_) => BorrowMode::Unique,
+                    _ => BorrowMode::Immediate,
+                };
+                self.borrow_input(
+                    original,
+                    ports,
+                    OperationSite { port, site },
+                    value.ty,
+                    (place, mode),
+                    work,
+                )
+            }
             s::ValueKind::Constrain(operand) => self.constrained(
                 original,
                 OperationSite { port, site },
@@ -337,9 +331,14 @@ impl Builder<'_, '_, '_> {
         };
         let actual = Ports::place_type(self.domains.headers, original, place, work)?;
         let referent = self.node(original, referent, work)?;
+        let allow_temporary = self.domains.declaration_policies;
         let access_ok = match mode {
-            BorrowMode::Immediate => !mutable || ports.writable(original, place, work)?,
-            BorrowMode::TwoPhase => mutable && ports.writable(original, place, work)?,
+            BorrowMode::Immediate => {
+                !mutable || ports.writable(original, place, allow_temporary, work)?
+            }
+            BorrowMode::TwoPhase => {
+                mutable && ports.writable(original, place, allow_temporary, work)?
+            }
             BorrowMode::Unique => mutable && ports.unique(place),
         };
         if self.node(original, actual, work)? != referent
@@ -574,8 +573,8 @@ impl Builder<'_, '_, '_> {
         match kind {
             s::ValueKind::Address(place) => self.address_input(original, ty, place, work),
             s::ValueKind::Length(place) => self.length_input(original, ty, place, work),
-            s::ValueKind::TextEquals { place, .. } => {
-                self.text_equals_input(original, ty, place, work)
+            s::ValueKind::TextEquals { place, text } => {
+                self.text_equals_input(original, ty, place, text, work)
             }
             s::ValueKind::Union {
                 owner,
@@ -585,6 +584,10 @@ impl Builder<'_, '_, '_> {
             s::ValueKind::Repeat { value: operand, .. } => {
                 self.repeat_input(original, ty, operand, work)
             }
+            s::ValueKind::Unsize {
+                value: operand,
+                conversion,
+            } => self.unsize_input(original, ty, operand, conversion, work),
             _ => Err("unexpected extended value input"),
         }
     }
@@ -633,6 +636,7 @@ impl Builder<'_, '_, '_> {
         original: &s::Original,
         ty: g::TypeRef,
         place: s::Place,
+        text: u32,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let result = self.node(original, ty, work)?;
@@ -642,11 +646,20 @@ impl Builder<'_, '_, '_> {
         }
         let actual = Ports::place_type(self.domains.headers, original, place, work)?;
         let base = self.node(original, actual, work)?;
-        if !matches!(
-            self.arena.nodes[base.0 as usize],
-            Node::Str | Node::Slice(_) | Node::Array { .. }
-        ) {
-            return Err("source TextEquals requires a str or byte sequence place");
+        match self.arena.nodes[base.0 as usize] {
+            Node::Str => {
+                let bytes = original
+                    .texts
+                    .as_deref()
+                    .and_then(|texts| texts.rows.get(text as usize))
+                    .ok_or("source text column differs from its text values")?;
+                work.charge(bytes.len().saturating_add(1))?;
+                if std::str::from_utf8(bytes).is_err() {
+                    return Err("source text literal is not UTF-8");
+                }
+            }
+            Node::Slice(_) | Node::Array { .. } => {}
+            _ => return Err("source TextEquals requires a str or byte sequence place"),
         }
         Ok(())
     }
@@ -664,6 +677,55 @@ impl Builder<'_, '_, '_> {
         let actual = self.node(original, original.values[operand as usize].ty, work)?;
         if actual != element {
             return Err("source Repeat operand differs from its array element type");
+        }
+        Ok(())
+    }
+    fn unsize_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        operand: u32,
+        conversion: s::UnsizeConversion,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let from_node = self.node(original, original.values[operand as usize].ty, work)?;
+        let to_node = self.node(original, ty, work)?;
+        match conversion {
+            s::UnsizeConversion::Slice(array) => {
+                self.node(original, array, work)?;
+            }
+            s::UnsizeConversion::Object { concrete, target } => {
+                self.node(original, concrete, work)?;
+                self.node(original, target, work)?;
+            }
+            s::UnsizeConversion::Upcast { source, target }
+            | s::UnsizeConversion::Bound { source, target } => {
+                self.node(original, source, work)?;
+                self.node(original, target, work)?;
+            }
+            s::UnsizeConversion::Nominal { source, target } => {
+                let expected_from = self.node(original, source, work)?;
+                let expected_to = self.node(original, target, work)?;
+                if from_node != expected_from || to_node != expected_to {
+                    return Err("source nominal unsizing changed its operand or result type");
+                }
+                return Ok(());
+            }
+        }
+        let strip = |mut node: NodeId| {
+            if let Node::Pattern { base, .. } = self.arena.nodes[node.0 as usize] {
+                node = base;
+            }
+            self.arena.nodes[node.0 as usize]
+        };
+        let valid = match (strip(from_node), strip(to_node)) {
+            (Node::Reference { mutable: a, .. }, Node::Reference { mutable: b, .. })
+            | (Node::Reference { mutable: a, .. }, Node::RawPointer { mutable: b, .. })
+            | (Node::RawPointer { mutable: a, .. }, Node::RawPointer { mutable: b, .. }) => a || !b,
+            _ => false,
+        };
+        if !valid {
+            return Err("source pointer unsizing requires compatible pointer or reference types");
         }
         Ok(())
     }

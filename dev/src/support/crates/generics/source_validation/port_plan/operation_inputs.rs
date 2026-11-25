@@ -42,8 +42,10 @@ impl Builder<'_, '_, '_> {
         for (index, statement) in original.statements.iter().enumerate() {
             work.charge(1)?;
             if let s::Action::Store { place, value } = statement.action {
-                if matches!(place, s::Place::Projection(_) | s::Place::Static(_))
-                    && !ports.writable(original, place, work)?
+                if matches!(
+                    place,
+                    s::Place::Projection(_) | s::Place::Static(_) | s::Place::Temporary(_)
+                ) && !ports.writable(original, place, self.domains.declaration_policies, work)?
                 {
                     return Err("source Store writes through an immutable dereference");
                 }

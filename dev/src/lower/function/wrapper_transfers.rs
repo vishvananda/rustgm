@@ -17,11 +17,14 @@ impl Lower<'_, '_, '_> {
         source: TypeId,
         target: TypeId,
     ) -> Result<Selected, &'static str> {
-        let row = self.body.nominal_use(self.context.types, operation)?;
-        let plan = self
-            .context
-            .constants
-            .nominal_conversion(row.source, row.from, row.to)?;
+        let plan = if self.body.source.source().is_some() {
+            let row = self.body.nominal_use(self.context.types, operation)?;
+            self.context
+                .constants
+                .nominal_conversion(row.source, row.from, row.to)?
+        } else {
+            self.context.constants.nominal_plan(source, target)?
+        };
         if (plan.source, plan.target) != (source, target) {
             return Err("nominal runtime conversion changed its actual application");
         }

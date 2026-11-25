@@ -131,8 +131,8 @@ const FORMS: [s::OperandForm; 5] = [
 const VALUE_FORMS: [u8; 18] = [
     0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 22, 23, 24, 27, 28, 29, 30,
 ];
-const V14_VALUE_FORMS: [u8; 25] = [
-    0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 22, 23, 24, 26, 27, 28, 29, 30,
+const V14_VALUE_FORMS: [u8; 26] = [
+    0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 22, 23, 24, 25, 26, 27, 28, 29, 30,
 ];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
@@ -406,8 +406,42 @@ fn extended_value_write(out: &mut Writer, kind: s::ValueKind) -> Result<(), &'st
             5,
             &[Operand::Value(value), Operand::Flag(u32::from(constant))],
         ),
+        s::ValueKind::Unsize { value, conversion } => unsize_write(out, value, conversion),
         _ => Err("body IR extended value changed its form"),
     }
+}
+fn unsize_write(
+    out: &mut Writer,
+    value: u32,
+    conversion: s::UnsizeConversion,
+) -> Result<(), &'static str> {
+    let (flag, first, second) = match conversion {
+        s::UnsizeConversion::Slice(array) => {
+            return node_write(
+                out,
+                25,
+                &[
+                    Operand::Value(value),
+                    Operand::Flag(0),
+                    Operand::Type(array.0),
+                ],
+            );
+        }
+        s::UnsizeConversion::Object { concrete, target } => (1, concrete, target),
+        s::UnsizeConversion::Upcast { source, target } => (2, source, target),
+        s::UnsizeConversion::Nominal { source, target } => (3, source, target),
+        s::UnsizeConversion::Bound { source, target } => (4, source, target),
+    };
+    node_write(
+        out,
+        25,
+        &[
+            Operand::Value(value),
+            Operand::Flag(flag),
+            Operand::Type(first.0),
+            Operand::Type(second.0),
+        ],
+    )
 }
 /// Call operators, direct calls and calls through a fn pointer.
 fn call_write(out: &mut Writer, call: s::ValueKind) -> Result<(), &'static str> {
@@ -594,6 +628,26 @@ fn extended_value_read(
                 constant: constant == 1,
             }
         }
+        (
+            25,
+            &[
+                Operand::Value(value),
+                Operand::Flag(0),
+                Operand::Type(array),
+            ],
+        ) if v14 => s::ValueKind::Unsize {
+            value,
+            conversion: s::UnsizeConversion::Slice(g::TypeRef(array)),
+        },
+        (
+            25,
+            &[
+                Operand::Value(value),
+                Operand::Flag(flag @ 1..=4),
+                Operand::Type(first),
+                Operand::Type(second),
+            ],
+        ) if v14 => unsize_read(value, flag, g::TypeRef(first), g::TypeRef(second)),
         _ => {
             let forms: &[u8] = if v14 { &V14_VALUE_FORMS } else { &VALUE_FORMS };
             return Err(rejected(
@@ -606,6 +660,27 @@ fn extended_value_read(
         }
     };
     Ok(kind)
+}
+fn unsize_read(value: u32, flag: u32, first: g::TypeRef, second: g::TypeRef) -> s::ValueKind {
+    let conversion = match flag {
+        1 => s::UnsizeConversion::Object {
+            concrete: first,
+            target: second,
+        },
+        2 => s::UnsizeConversion::Upcast {
+            source: first,
+            target: second,
+        },
+        3 => s::UnsizeConversion::Nominal {
+            source: first,
+            target: second,
+        },
+        _ => s::UnsizeConversion::Bound {
+            source: first,
+            target: second,
+        },
+    };
+    s::ValueKind::Unsize { value, conversion }
 }
 
 fn callable_value(code: u8, operands: &[Operand]) -> Result<s::ValueKind, &'static str> {

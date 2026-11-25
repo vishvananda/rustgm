@@ -21,6 +21,26 @@ impl Checker<'_> {
         predicate: Predicate,
         proof: &mut crate::sema::nominals::Proof,
     ) -> Result<Option<(RegionId, RegionId)>, Error> {
+        self.validate_coercion_impl(owner, Some(source), predicate, proof)
+    }
+    pub(super) fn validate_imported_coercion_impl(
+        &mut self,
+        owner: super::DefId,
+        predicate: Predicate,
+        proof: &mut crate::sema::nominals::Proof,
+    ) -> Result<Option<(RegionId, RegionId)>, Error> {
+        self.validate_coercion_impl(owner, None, predicate, proof)
+    }
+    fn validate_coercion_impl(
+        &mut self,
+        owner: super::DefId,
+        source: Option<NodeKey>,
+        predicate: Predicate,
+        proof: &mut crate::sema::nominals::Proof,
+    ) -> Result<Option<(RegionId, RegionId)>, Error> {
+        let locate = |checker: &Self, message: &'static str| {
+            source.map_or_else(|| Error::unlocated(message), |s| checker.error(s, message))
+        };
         let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
             return Ok(None);
         };
@@ -28,12 +48,12 @@ impl Checker<'_> {
             .facts
             .types
             .trait_application(application)
-            .ok_or_else(|| self.error(source, "invalid coercion implementation predicate"))?;
+            .ok_or_else(|| locate(self, "invalid coercion implementation predicate"))?;
         if crate::sema::compiler_items::unsizing_role(
             &self.facts,
             crate::resolve::model::DefId(application.item.0),
         )
-        .map_err(|e| self.error(source, e))?
+        .map_err(|e| locate(self, e))?
             != Some(LangItem::CoerceUnsized)
         {
             return Ok(None);
@@ -42,19 +62,23 @@ impl Checker<'_> {
             .facts
             .types
             .arguments(application.arguments)
-            .ok_or_else(|| self.error(source, "missing coercion implementation target"))?;
+            .ok_or_else(|| locate(self, "missing coercion implementation target"))?;
         let Some(Argument::Type(target)) = arguments.next() else {
-            return Err(self.error(source, "coercion implementation target must be a type"));
+            return Err(locate(
+                self,
+                "coercion implementation target must be a type",
+            ));
         };
         if arguments.next().is_some() {
-            return Err(self.error(source, "coercion implementation has extra arguments"));
+            return Err(locate(self, "coercion implementation has extra arguments"));
         }
         let (from, to, regions, role, schema) = match (
             self.facts.types.kind(predicate.ty),
             self.facts.types.kind(target),
         ) {
             (Some(Kind::Adt(..)), Some(Kind::Adt(..))) => {
-                let source_provider = self.report.package.source_core().is_some();
+                let source_provider =
+                    source.is_some() && self.report.package.source_core().is_some();
                 let schema = structure::schema(
                     &mut self.facts,
                     predicate.ty,
@@ -62,7 +86,7 @@ impl Checker<'_> {
                     proof,
                     source_provider,
                 )
-                .map_err(|e| self.error(source, e))?;
+                .map_err(|e| locate(self, e))?;
                 let field = schema.fields[schema.changed as usize];
                 (
                     field.source,
@@ -85,8 +109,8 @@ impl Checker<'_> {
                 }),
             ) => {
                 if a != b {
-                    return Err(self.error(
-                        source,
+                    return Err(locate(
+                        self,
                         "source CoerceUnsized pattern types require one identical pattern",
                     ));
                 }
@@ -94,7 +118,7 @@ impl Checker<'_> {
             }
             _ => {
                 let (from, to, regions) = pointer_pair(&self.facts.types, predicate.ty, target)
-                    .map_err(|e| self.error(source, e))?;
+                    .map_err(|e| locate(self, e))?;
                 (from, to, regions, LangItem::Unsize, None)
             }
         };
@@ -106,22 +130,25 @@ impl Checker<'_> {
     }
     fn prove_coercion_field(
         &mut self,
-        source: NodeKey,
+        source: Option<NodeKey>,
         from: TypeId,
         to: TypeId,
         role: LangItem,
         proof: &mut crate::sema::nominals::Proof,
     ) -> Result<(), Error> {
+        let locate = |checker: &Self, message: &'static str| {
+            source.map_or_else(|| Error::unlocated(message), |s| checker.error(s, message))
+        };
         let relation = self
             .facts
             .source_bindings
             .as_deref()
-            .ok_or_else(|| self.error(source, "source coercion lost its catalog"))?
+            .ok_or_else(|| locate(self, "source coercion lost its catalog"))?
             .validated_role(role)
-            .map_err(|e| self.error(source, e))?
+            .map_err(|e| locate(self, e))?
             .ok_or_else(|| {
-                self.error(
-                    source,
+                locate(
+                    self,
                     "source CoerceUnsized requires its actual field relation",
                 )
             })?;
@@ -129,7 +156,7 @@ impl Checker<'_> {
             .facts
             .types
             .intern_arguments(&[Argument::Type(to)])
-            .map_err(|e| self.error(source, e))?;
+            .map_err(|e| locate(self, e))?;
         let application = self
             .facts
             .types
@@ -137,7 +164,7 @@ impl Checker<'_> {
                 item: crate::types::ItemId(relation.definition.0),
                 arguments,
             })
-            .map_err(|e| self.error(source, e))?;
+            .map_err(|e| locate(self, e))?;
         let before = proof.trait_selection_steps();
         let proved = proof.prove(
             &mut self.facts,
@@ -151,9 +178,9 @@ impl Checker<'_> {
             .body_work
             .canonical_steps
             .saturating_add(proof.trait_selection_steps().saturating_sub(before));
-        if !proved.map_err(|e| self.error(source, e))? {
-            return Err(self.error(
-                source,
+        if !proved.map_err(|e| locate(self, e))? {
+            return Err(locate(
+                self,
                 "source CoerceUnsized implementation does not prove its exact field relation",
             ));
         }
@@ -162,24 +189,23 @@ impl Checker<'_> {
     fn retain_coercion_schema(
         &mut self,
         owner: super::DefId,
-        source: NodeKey,
+        source: Option<NodeKey>,
         schema: crate::types::unsizing::CoercionSchema,
     ) -> Result<(), Error> {
+        let locate = |checker: &Self, message: &'static str| {
+            source.map_or_else(|| Error::unlocated(message), |s| checker.error(s, message))
+        };
         if self.facts.unsizing_rules.is_none() {
             self.facts
                 .charge_caller_inputs(1, size_of::<crate::types::unsizing::Rules>())
-                .map_err(|e| self.error(source, e))?;
+                .map_err(|e| locate(self, e))?;
         }
+        let source_provider = source.is_some() && self.report.package.source_core().is_some();
         let pay = crate::sema::header_attributes::caller_payments(
             self.facts.must_use_contracts.as_deref(),
-            self.report.package.source_core().is_some(),
+            source_provider,
         )
-        .map_err(|_| {
-            self.error(
-                source,
-                "nominal coercion declaration lacks its source payer",
-            )
-        })?;
+        .map_err(|_| locate(self, "nominal coercion declaration lacks its source payer"))?;
         self.facts
             .unsizing_rules
             .get_or_insert_default()
@@ -189,7 +215,7 @@ impl Checker<'_> {
                 schema,
                 &|w, b| pay.charge(w, b),
             )
-            .map_err(|e| Error::at(source.file, 0, e))
+            .map_err(|e| source.map_or_else(|| Error::unlocated(e), |s| Error::at(s.file, 0, e)))
     }
 }
 

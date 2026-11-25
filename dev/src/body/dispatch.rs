@@ -66,6 +66,38 @@ fn resolve_with_original(
         .map_err(crate::sema::dispatch::Failure::message)
 }
 
+fn dispatch_nominal_coercions(
+    facts: &mut Declarations,
+    body: &Body,
+    dispatcher: &mut crate::sema::dispatch::Dispatcher,
+    preparation: &mut Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    if body.source.source().is_some() {
+        for row in body.nominal_uses() {
+            if let Some(service) = preparation.as_mut() {
+                dispatcher.nominal_coercion(facts, row.from, row.to, Some(&mut **service))?;
+            } else {
+                dispatcher.nominal_coercion(facts, row.from, row.to, None)?;
+            }
+        }
+        return Ok(());
+    }
+    for value in &body.values {
+        if let Rvalue::Unsize {
+            conversion: crate::types::unsizing::Conversion::Nominal { source, target },
+            ..
+        } = value.kind
+        {
+            if let Some(service) = preparation.as_mut() {
+                dispatcher.nominal_coercion(facts, source, target, Some(&mut **service))?;
+            } else {
+                dispatcher.nominal_coercion(facts, source, target, None)?;
+            }
+        }
+    }
+    Ok(())
+}
+
 fn needs_dispatch(facts: &Declarations, body: &Body) -> Result<bool, &'static str> {
     Ok(!body.nominal_uses().is_empty()
         || body.values.iter().any(|value| {
@@ -95,28 +127,25 @@ fn resolve_using(
         return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
-    for row in body.nominal_uses() {
-        if let Some(service) = &mut preparation {
-            dispatcher.nominal_coercion(facts, row.from, row.to, Some(&mut **service))?;
-        } else {
-            dispatcher.nominal_coercion(facts, row.from, row.to, None)?;
-        }
-    }
+    dispatch_nominal_coercions(facts, body, &mut dispatcher, &mut preparation)?;
     let mut replacements = HashMap::default();
+    let check_nominal_uses = body.source.source().is_some();
     let nominal = body.resolved_callables.as_deref().map_or(
         &[][..],
         super::callable_inputs::CallableInputs::nominal_uses,
     );
     for (index, value) in body.values.iter_mut().enumerate() {
-        if matches!(
-            value.kind,
-            Rvalue::Unsize {
-                conversion: crate::types::unsizing::Conversion::Nominal { .. },
-                ..
-            }
-        ) && nominal
-            .binary_search_by_key(&index, |row| row.operation.0 as usize)
-            .is_err()
+        if check_nominal_uses
+            && matches!(
+                value.kind,
+                Rvalue::Unsize {
+                    conversion: crate::types::unsizing::Conversion::Nominal { .. },
+                    ..
+                }
+            )
+            && nominal
+                .binary_search_by_key(&index, |row| row.operation.0 as usize)
+                .is_err()
         {
             return Err("nominal operation lacks its actual checked adjustment provenance".into());
         }

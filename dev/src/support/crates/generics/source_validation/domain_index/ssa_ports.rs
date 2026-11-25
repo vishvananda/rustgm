@@ -12,11 +12,18 @@ pub(super) enum Scope {
     Linear,
     Block,
     Variant,
+    Dominated,
 }
 
 impl Scope {
-    pub(super) const fn for_body(branching: bool, tested_temporary: bool) -> Self {
-        if tested_temporary {
+    pub(super) const fn for_body(
+        branching: bool,
+        tested_temporary: bool,
+        declaration_policies: bool,
+    ) -> Self {
+        if declaration_policies {
+            Self::Dominated
+        } else if tested_temporary {
             Self::Variant
         } else if branching {
             Self::Block
@@ -28,6 +35,9 @@ impl Scope {
 
 pub(super) fn allocation(original: &s::Original, scope: Scope) -> usize {
     let block_bytes = match scope {
+        Scope::Dominated => {
+            size_of::<(usize, usize)>() + 9 * size_of::<usize>() + size_of::<bool>()
+        }
         Scope::Variant => size_of::<(usize, usize)>() + size_of::<u32>() + size_of::<bool>(),
         _ => size_of::<bool>(),
     };
@@ -91,6 +101,12 @@ pub(super) fn validate(
     state.fill(0);
     for statement in &original.statements {
         work.charge(1)?;
+        if matches!(scope, Scope::Dominated)
+            && let s::Action::Select { projection, anchor } = statement.action
+        {
+            mark_selection_chain(original, &mut state, projection, anchor, work)?;
+            continue;
+        }
         let Some(node) = definition(original, statement.action)? else {
             continue;
         };
@@ -99,12 +115,18 @@ pub(super) fn validate(
         }
     }
     work.charge(count)?;
-    if state.contains(&0) {
+    let required = if matches!(scope, Scope::Dominated) {
+        &state[..original.values.len()]
+    } else {
+        &state[..]
+    };
+    if required.contains(&0) {
         return Err("source SSA snapshot has no actual evaluation/projection ownership");
     }
     work.charge(count)?;
     state.fill(0);
     match scope {
+        Scope::Dominated => dominated_blocks(original, &mut state, work),
         Scope::Variant => variant_blocks(original, &mut state, work),
         Scope::Block
             if original
@@ -124,7 +146,7 @@ pub(super) fn validate(
 fn blocks(original: &s::Original, state: &mut [u8], work: &mut Work) -> Result<(), &'static str> {
     let mut defined = Vec::new();
     for &current in &original.blocks {
-        block(original, current, state, &mut defined, work)?;
+        block(original, current, state, &mut defined, false, work)?;
         rewind(state, &mut defined, 0, work)?;
     }
     Ok(())
@@ -135,12 +157,24 @@ fn block(
     current: g::Block,
     state: &mut [u8],
     defined: &mut Vec<usize>,
+    dominated: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     for statement in current.statements.slice(&original.statements)? {
         work.charge(1)?;
+        if dominated && let s::Action::Select { projection, anchor } = statement.action {
+            select_uses(original, state, projection, anchor, work)?;
+            let node = original.values.len() + projection as usize;
+            if state[node] == 0 {
+                state[node] = 1;
+                defined.push(node);
+            }
+            continue;
+        }
         uses(original, state, statement.action, work)?;
-        if let Some(node) = definition(original, statement.action)? {
+        if let Some(node) = definition(original, statement.action)?
+            && state[node] == 0
+        {
             state[node] = 1;
             defined.push(node);
         }
@@ -155,6 +189,63 @@ fn block(
         | g::Terminator::Unreachable
         | g::Terminator::Panic => Ok(()),
     }
+}
+
+fn mark_selection_chain(
+    original: &s::Original,
+    state: &mut [u8],
+    mut current: u32,
+    anchor: s::Place,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let values = original.values.len();
+    for _ in 0..=original.projections.len() {
+        work.charge(1)?;
+        let projection = original
+            .projections
+            .get(current as usize)
+            .ok_or("source SSA selection projection belongs to another body")?;
+        state[values + current as usize] = 1;
+        if projection.base == anchor {
+            return Ok(());
+        }
+        let s::Place::Projection(parent) = projection.base else {
+            return Err("source pattern selection does not reach its anchor");
+        };
+        current = parent;
+    }
+    Err("source pattern selection chain is cyclic")
+}
+
+fn select_uses(
+    original: &s::Original,
+    state: &[u8],
+    mut current: u32,
+    anchor: s::Place,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    require(state, place(original, anchor)?)?;
+    for _ in 0..=original.projections.len() {
+        work.charge(1)?;
+        let projection = original
+            .projections
+            .get(current as usize)
+            .ok_or("source SSA selection projection belongs to another body")?;
+        if let s::ProjectionKind::Index { index, .. }
+        | s::ProjectionKind::IndexParameter { index, .. }
+        | s::ProjectionKind::SliceIndex { index } = projection.kind
+        {
+            require(state, Some(index as usize))?;
+        }
+        if projection.base == anchor {
+            return Ok(());
+        }
+        let s::Place::Projection(parent) = projection.base else {
+            return Err("source pattern selection does not reach its anchor");
+        };
+        current = parent;
+    }
+    Err("source pattern selection chain is cyclic")
 }
 
 fn rewind(
@@ -202,7 +293,7 @@ fn variant_blocks(
             rewind(state, &mut defined, keep, work)?;
             visited[index] = true;
             let current = original.blocks[index];
-            block(original, current, state, &mut defined, work)?;
+            block(original, current, state, &mut defined, false, work)?;
             for successor in current.terminator.successors().into_iter().flatten() {
                 work.charge(1)?;
                 let child = successor as usize;
@@ -216,11 +307,185 @@ fn variant_blocks(
     // A disconnected cycle gets the ordinary block-local check.
     for (&current, visited) in original.blocks.iter().zip(visited) {
         if !visited {
-            block(original, current, state, &mut defined, work)?;
+            block(original, current, state, &mut defined, false, work)?;
             rewind(state, &mut defined, 0, work)?;
         }
     }
     Ok(())
+}
+
+/// Version fourteen: exact dominator-tree DFS over reachable blocks so
+/// temporaries and pattern selections survive arbitrary guard/match merges.
+fn dominated_blocks(
+    original: &s::Original,
+    state: &mut [u8],
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let count = original.blocks.len();
+    if count == 0 {
+        return Ok(());
+    }
+    let (rpo, rpo_index) = reverse_postorder(original, work)?;
+    let idom = immediate_dominators(original, &rpo, &rpo_index, work)?;
+    let mut dom_head = vec![usize::MAX; count];
+    let mut dom_next = vec![usize::MAX; count];
+    for child in 1..count {
+        let parent = idom[child];
+        if parent != usize::MAX {
+            dom_next[child] = dom_head[parent];
+            dom_head[parent] = child;
+        }
+    }
+    let mut pending = Vec::with_capacity(count);
+    let mut defined = Vec::new();
+    pending.push((0_usize, 0_usize));
+    while let Some((index, keep)) = pending.pop() {
+        work.charge(1)?;
+        rewind(state, &mut defined, keep, work)?;
+        block(
+            original,
+            original.blocks[index],
+            state,
+            &mut defined,
+            true,
+            work,
+        )?;
+        let mut child = dom_head[index];
+        while child != usize::MAX {
+            work.charge(1)?;
+            pending.push((child, defined.len()));
+            child = dom_next[child];
+        }
+    }
+    rewind(state, &mut defined, 0, work)?;
+    for (&current, &pos) in original.blocks.iter().zip(&rpo_index) {
+        if pos == usize::MAX {
+            block(original, current, state, &mut defined, true, work)?;
+            rewind(state, &mut defined, 0, work)?;
+        }
+    }
+    Ok(())
+}
+
+fn reverse_postorder(
+    original: &s::Original,
+    work: &mut Work,
+) -> Result<(Vec<usize>, Vec<usize>), &'static str> {
+    let count = original.blocks.len();
+    work.charge(count.saturating_mul(2))?;
+    let mut seen = vec![false; count];
+    let mut postorder = Vec::with_capacity(count);
+    let mut stack = Vec::with_capacity(count);
+    seen[0] = true;
+    stack.push((0_usize, 0_usize));
+    while let Some(&mut (node, ref mut next)) = stack.last_mut() {
+        work.charge(1)?;
+        let successors = original.blocks[node].terminator.successors();
+        let mut child_to_push = None;
+        while *next < successors.len() {
+            let candidate = successors[*next];
+            *next += 1;
+            if let Some(target) = candidate {
+                let child = target as usize;
+                if child >= count {
+                    return Err("source SSA edge leaves its body");
+                }
+                if !std::mem::replace(&mut seen[child], true) {
+                    child_to_push = Some(child);
+                    break;
+                }
+            }
+        }
+        if let Some(child) = child_to_push {
+            stack.push((child, 0));
+        } else {
+            postorder.push(node);
+            stack.pop();
+        }
+    }
+    postorder.reverse();
+    let mut rpo_index = vec![usize::MAX; count];
+    for (pos, &node) in postorder.iter().enumerate() {
+        rpo_index[node] = pos;
+    }
+    Ok((postorder, rpo_index))
+}
+
+fn immediate_dominators(
+    original: &s::Original,
+    rpo: &[usize],
+    rpo_index: &[usize],
+    work: &mut Work,
+) -> Result<Vec<usize>, &'static str> {
+    let count = original.blocks.len();
+    work.charge(count.saturating_mul(3))?;
+    let mut pred_head = vec![usize::MAX; count];
+    let mut pred_next = Vec::with_capacity(count.saturating_mul(2));
+    let mut pred_src = Vec::with_capacity(count.saturating_mul(2));
+    for &src in rpo {
+        for target in original.blocks[src]
+            .terminator
+            .successors()
+            .into_iter()
+            .flatten()
+        {
+            work.charge(1)?;
+            let dst = target as usize;
+            let edge = pred_src.len();
+            pred_src.push(src);
+            pred_next.push(pred_head[dst]);
+            pred_head[dst] = edge;
+        }
+    }
+    let mut idom = vec![usize::MAX; count];
+    idom[0] = 0;
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for &node in rpo.iter().skip(1) {
+            work.charge(1)?;
+            let mut candidate = usize::MAX;
+            let mut edge = pred_head[node];
+            while edge != usize::MAX {
+                work.charge(1)?;
+                let pred = pred_src[edge];
+                if idom[pred] != usize::MAX {
+                    candidate = if candidate == usize::MAX {
+                        pred
+                    } else {
+                        intersect(&idom, rpo_index, pred, candidate, work)?
+                    };
+                }
+                edge = pred_next[edge];
+            }
+            if candidate != usize::MAX && idom[node] != candidate {
+                idom[node] = candidate;
+                changed = true;
+            }
+        }
+    }
+    Ok(idom)
+}
+
+fn intersect(
+    idom: &[usize],
+    rpo_index: &[usize],
+    mut a: usize,
+    mut b: usize,
+    work: &mut Work,
+) -> Result<usize, &'static str> {
+    while a != b {
+        work.charge(1)?;
+        while rpo_index[a] > rpo_index[b] {
+            work.charge(1)?;
+            a = idom[a];
+        }
+        while rpo_index[b] > rpo_index[a] {
+            work.charge(1)?;
+            b = idom[b];
+        }
+    }
+    Ok(a)
 }
 
 /// One statement's dependencies must already be available.
@@ -339,6 +604,7 @@ fn dependency(
         | s::ValueKind::Unary { operand: value, .. }
         | s::ValueKind::Union { value, .. }
         | s::ValueKind::Repeat { value, .. }
+        | s::ValueKind::Unsize { value, .. }
         | s::ValueKind::Reify(value) => (ordinal == 0).then_some(value),
         s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
         s::ValueKind::Aggregate { fields }

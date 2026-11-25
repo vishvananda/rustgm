@@ -75,6 +75,11 @@ impl Body {
             inputs.targets.is_none() && inputs.nominal.is_none() && inputs.value_reborrows.is_none()
         })
     }
+    pub(crate) fn has_only_transportable_inputs(&self) -> bool {
+        self.resolved_callables
+            .as_deref()
+            .is_none_or(|inputs| inputs.targets.is_none() && inputs.value_reborrows.is_none())
+    }
     pub(crate) fn caller_site(&self, value: ValueId) -> Result<Option<CallerSite>, &'static str> {
         let sites = self.caller_sites();
         let site = sites

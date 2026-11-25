@@ -277,6 +277,20 @@ pub(super) fn finish(
                 .map_err(|error| report.body_error(source, error))?;
         }
     }
+    for value in &body.values {
+        if let crate::body::ir::Rvalue::Unsize { conversion, .. } = value.kind {
+            let mut prepare = |ty| -> Result<crate::types::TypeId, Error> {
+                if matches!(facts.types.kind(ty), Some(crate::types::Kind::Adt(..))) {
+                    facts
+                        .aggregates
+                        .prepare(&mut facts.types, ty)
+                        .map_err(|error| report.body_error(source, error))?;
+                }
+                Ok(ty)
+            };
+            let _ = conversion.try_map(&mut prepare)?;
+        }
+    }
     let needed = crate::types::destruction::NeedsDrop::new(
         facts.destructors.implementations().iter().map(|i| i.item),
     );

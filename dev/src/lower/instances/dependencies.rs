@@ -460,17 +460,19 @@ impl Discovered {
             Conversion::Bound { .. } => {
                 return Err("bound unsizing reached instance dependencies unresolved");
             }
-            Conversion::Nominal { .. } => {
-                let row = body.nominal_use(
-                    &facts.types,
-                    crate::body::ir::ValueId(
-                        u32::try_from(index).map_err(|_| "too many nominal conversions")?,
-                    ),
-                )?;
-                match Reader::new(facts)
-                    .nominal_terminal(row.source, row.from, row.to)?
-                    .step
-                {
+            Conversion::Nominal { source, target } => {
+                let terminal = if body.source.source().is_some() {
+                    let row = body.nominal_use(
+                        &facts.types,
+                        crate::body::ir::ValueId(
+                            u32::try_from(index).map_err(|_| "too many nominal conversions")?,
+                        ),
+                    )?;
+                    Reader::new(facts).nominal_terminal(row.source, row.from, row.to)?
+                } else {
+                    Reader::new(facts).nominal_terminal_plan(source, target)?
+                };
+                match terminal.step {
                     CoercionStep::Object { concrete, object } => (concrete, object),
                     CoercionStep::Upcast { source, target } => {
                         self.upcasts.push((source, target));

@@ -416,6 +416,7 @@ impl Checker<'_> {
         let mut proof = self.declaration_proof(definition, Some(environment));
         let requirements = super::impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(Error::unlocated)?;
+        let coerced = self.validate_imported_coercion_impl(definition, predicate, &mut proof)?;
         let evidence = proof.take_trait_proof();
         let mut queries = Queries::new(
             &self.facts.types,
@@ -429,6 +430,11 @@ impl Checker<'_> {
             evidence
                 .require(&mut constraints, &mut queries)
                 .map_err(Error::unlocated)?;
+        }
+        if let Some((longer, shorter)) = coerced {
+            constraints
+                .outlives(longer, shorter, 0)
+                .map_err(|e| Error::unlocated(e.to_string()))?;
         }
         for &(longer, shorter) in &requirements.regions {
             constraints

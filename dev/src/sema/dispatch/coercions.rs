@@ -57,9 +57,13 @@ impl Dispatcher {
             } else {
                 let plan = transfer_layout::build(facts, owner, source, target)?;
                 let step = plan.step;
+                let source_provider = facts
+                    .source_bindings
+                    .as_deref()
+                    .is_some_and(|catalog| !catalog.uses_imported_roles());
                 let pay = crate::sema::header_attributes::caller_payments(
                     facts.must_use_contracts.as_deref(),
-                    true,
+                    source_provider,
                 )
                 .map_err(Failure::Preparation)?;
                 facts
@@ -88,7 +92,10 @@ impl Dispatcher {
             .ok_or("nominal dispatch requires its actual source catalog")?
             .validated_role(LangItem::CoerceUnsized)?
             .ok_or("nominal dispatch requires its actual CoerceUnsized role")?;
-        if !matches!(role.origin, DeclarationOrigin::Source(_)) {
+        if !matches!(
+            role.origin,
+            DeclarationOrigin::Source(_) | DeclarationOrigin::Imported(_)
+        ) {
             return Err("imported nominal coercion requires its declaration/plan transport".into());
         }
         let values = [Argument::Type(target)];
@@ -146,9 +153,15 @@ fn validate_schema(
     {
         return Err("nominal dispatch requires its validated selected implementation".into());
     }
-    let pay =
-        crate::sema::header_attributes::caller_payments(facts.must_use_contracts.as_deref(), true)
-            .map_err(Failure::Preparation)?;
+    let source_provider = facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| !catalog.uses_imported_roles());
+    let pay = crate::sema::header_attributes::caller_payments(
+        facts.must_use_contracts.as_deref(),
+        source_provider,
+    )
+    .map_err(Failure::Preparation)?;
     let (mut fold, _) =
         facts.selected_implementation_substitution(owner, arguments, &|w, b| pay.charge(w, b))?;
     let schema = facts

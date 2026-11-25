@@ -128,9 +128,9 @@ impl Coverage {
             s::InputKind::Coercion {
                 actual,
                 expected,
-                unsize: false,
+                unsize,
                 reference: None,
-            } => {
+            } if !unsize || domains.declaration_policies => {
                 let actual = arena.root(
                     domains,
                     uses::key(domains, actual, Rewrite::Original, Some(context), work)?,
@@ -141,26 +141,28 @@ impl Coverage {
                     uses::key(domains, expected, Rewrite::Original, Some(context), work)?,
                     work,
                 )?;
-                arena.reserve(retained::new_map::<Relation, ()>(1), 0, work)?;
-                self.relations.insert(Relation {
-                    body,
-                    site: input.site.into(),
-                    actual,
-                    expected,
-                });
+                if !unsize {
+                    arena.reserve(retained::new_map::<Relation, ()>(1), 0, work)?;
+                    self.relations.insert(Relation {
+                        body,
+                        site: input.site.into(),
+                        actual,
+                        expected,
+                    });
+                }
             }
             s::InputKind::Coercion {
                 actual,
                 expected,
-                unsize: false,
+                unsize,
                 reference:
                     Some(s::ReferenceConversion {
-                        dereferences: dereferences @ 1..,
-                        unsize: false,
+                        dereferences,
+                        unsize: ref_unsize,
                         two_phase,
                     }),
-            } if domains.bodies
-                && (!two_phase || domains.declaration_policies && dereferences == 1) =>
+            } if domains.declaration_policies && (dereferences >= 1 || unsize || ref_unsize)
+                || domains.bodies && !unsize && !ref_unsize && !two_phase && dereferences >= 1 =>
             {
                 self.reference_reborrow(
                     domains,

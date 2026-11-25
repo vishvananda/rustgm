@@ -102,10 +102,12 @@ impl DomainIndex<'_, '_> {
             self.storage_ports(original, work)?;
             self.assembly(context, original, header.unsafe_function(), work)?;
             self.input_ports(context, original, input, work)?;
+            snapshots |= has_statement_temporary(original);
             if snapshots || tested_temporary {
                 let scope = super::snapshots::Scope::for_body(
                     branching,
-                    tested_temporary || self.declaration_policies,
+                    tested_temporary,
+                    self.declaration_policies,
                 );
                 self.scratch(super::snapshots::allocation(original, scope), work)?;
                 super::snapshots::validate(original, work, scope)?;
@@ -156,9 +158,8 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Scalar(_) => {
                 value.scalar_value(&self.headers.rows().types)?;
             }
-            s::ValueKind::Text(_) => {
-                let rows = self.headers.rows();
-                value.text_type(&rows.types, &rows.regions)?;
+            s::ValueKind::Text(ordinal) => {
+                self.text_value(original, value, ordinal, work)?;
             }
             s::ValueKind::Constant(constant) => self.constant(constant, value.ty, work)?,
             s::ValueKind::ConstArgument(slot) => {
@@ -212,8 +213,9 @@ impl DomainIndex<'_, '_> {
             | s::ValueKind::Validate(_)
             | s::ValueKind::TextEquals { .. }
             | s::ValueKind::Union { .. }
-            | s::ValueKind::Repeat { .. } => {
-                self.extended_value(original, index, value, work)?;
+            | s::ValueKind::Repeat { .. }
+            | s::ValueKind::Unsize { .. } => {
+                self.extended_value(context, original, index, value, work)?;
             }
             s::ValueKind::Function(_)
             | s::ValueKind::Reify(_)
@@ -573,8 +575,81 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+    fn text_value(
+        &self,
+        original: &s::Original,
+        value: &s::Value,
+        ordinal: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        if !self.declaration_policies {
+            return value.text_type(&rows.types, &rows.regions);
+        }
+        let Some(&s::Type::Reference {
+            mutable: false,
+            region,
+            referent,
+        }) = rows.types.get(value.ty.0 as usize)
+        else {
+            return Err("source text value is not a shared reference");
+        };
+        if rows.regions.get(region.0 as usize) != Some(&s::Region::Static) {
+            return Err("source text value is not a static str reference");
+        }
+        let bytes = original
+            .texts
+            .as_deref()
+            .and_then(|texts| texts.rows.get(ordinal as usize))
+            .ok_or("source text column differs from its text values")?;
+        work.charge(bytes.len().saturating_add(1))?;
+        match rows.types.get(referent.0 as usize) {
+            Some(s::Type::Str) => {
+                if std::str::from_utf8(bytes).is_err() {
+                    return Err("source text literal is not UTF-8");
+                }
+                Ok(())
+            }
+            Some(&s::Type::Slice(element))
+                if rows.types.get(element.0 as usize)
+                    == Some(&s::Type::Scalar(crate::support::crates::Scalar::U8)) =>
+            {
+                Ok(())
+            }
+            Some(&s::Type::Array { element, length })
+                if rows.types.get(element.0 as usize)
+                    == Some(&s::Type::Scalar(crate::support::crates::Scalar::U8)) =>
+            {
+                let Some(s::ConstTerm::Value(constant)) =
+                    rows.array_lengths().get(length.0 as usize)
+                else {
+                    return Err("source byte string literal length requires a concrete constant");
+                };
+                if constant.bits != bytes.len() as u128 {
+                    return Err("source byte string literal length differs from its array type");
+                }
+                Ok(())
+            }
+            Some(&s::Type::Nominal {
+                declaration,
+                arguments,
+            }) if arguments.start == arguments.end
+                && rows
+                    .roles
+                    .iter()
+                    .any(|role| role.role == LangItem::CStr && role.declaration == declaration) =>
+            {
+                if bytes.last() != Some(&0) || bytes[..bytes.len() - 1].contains(&0) {
+                    return Err("source CStr literal requires a single trailing NUL byte");
+                }
+                Ok(())
+            }
+            _ => Err("source text value is not a static str reference"),
+        }
+    }
     fn extended_value(
         &self,
+        context: Context,
         original: &s::Original,
         index: usize,
         value: &s::Value,
@@ -607,8 +682,78 @@ impl DomainIndex<'_, '_> {
             | s::ValueKind::Repeat { value: operand, .. } => {
                 prefix_value(original, operand, index, work)
             }
+            s::ValueKind::Unsize {
+                value: operand,
+                conversion,
+            } => self.unsize_value(context, original, index, operand, conversion, work),
             _ => Err("source extended value changed its operation kind"),
         }
+    }
+    fn unsize_value(
+        &self,
+        context: Context,
+        original: &s::Original,
+        index: usize,
+        operand: u32,
+        conversion: s::UnsizeConversion,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        prefix_value(original, operand, index, work)?;
+        let rows = self.headers.rows();
+        match conversion {
+            s::UnsizeConversion::Slice(array) => {
+                self.types.root(self.headers, context, array, work)?;
+                if !matches!(
+                    rows.types.get(array.0 as usize),
+                    Some(s::Type::Array { .. })
+                ) {
+                    return Err("source slice unsizing conversion requires an array type");
+                }
+            }
+            s::UnsizeConversion::Object { concrete, target } => {
+                self.types.root(self.headers, context, concrete, work)?;
+                self.types.root(self.headers, context, target, work)?;
+                if !matches!(rows.types.get(target.0 as usize), Some(s::Type::Dynamic(_))) {
+                    return Err("source object unsizing conversion requires a trait object target");
+                }
+            }
+            s::UnsizeConversion::Upcast { source, target } => {
+                self.types.root(self.headers, context, source, work)?;
+                self.types.root(self.headers, context, target, work)?;
+                if !matches!(
+                    (
+                        rows.types.get(source.0 as usize),
+                        rows.types.get(target.0 as usize)
+                    ),
+                    (Some(s::Type::Dynamic(_)), Some(s::Type::Dynamic(_)))
+                ) {
+                    return Err(
+                        "source upcast unsizing conversion requires trait object endpoints",
+                    );
+                }
+            }
+            s::UnsizeConversion::Nominal { source, target } => {
+                self.types.root(self.headers, context, source, work)?;
+                self.types.root(self.headers, context, target, work)?;
+                if !matches!(
+                    (
+                        rows.types.get(source.0 as usize),
+                        rows.types.get(target.0 as usize)
+                    ),
+                    (
+                        Some(s::Type::Nominal { declaration: a, .. }),
+                        Some(s::Type::Nominal { declaration: b, .. })
+                    ) if a == b
+                ) {
+                    return Err("source nominal unsizing conversion requires one nominal owner");
+                }
+            }
+            s::UnsizeConversion::Bound { source, target } => {
+                self.types.root(self.headers, context, source, work)?;
+                self.types.root(self.headers, context, target, work)?;
+            }
+        }
+        Ok(())
     }
     fn pointer_cast(&self, from: s::TypeRef, to: s::TypeRef) -> Result<(), &'static str> {
         if !self.declaration_policies {
@@ -752,7 +897,8 @@ impl DomainIndex<'_, '_> {
                 self.headers.static_header(declaration, work).map(|_| ())
             }
             s::Place::Temporary(index)
-                if prefix.is_some() && (index as usize) < original.values.len() =>
+                if (prefix.is_some() || self.declaration_policies)
+                    && (index as usize) < original.values.len() =>
             {
                 Ok(())
             }
@@ -768,6 +914,31 @@ impl DomainIndex<'_, '_> {
             _ => Err("source place has a foreign, forward or unknown actual slot"),
         }
     }
+}
+fn has_statement_temporary(original: &s::Original) -> bool {
+    original.statements.iter().any(|statement| {
+        matches!(
+            statement.action,
+            s::Action::Store {
+                place: s::Place::Temporary(_),
+                ..
+            } | s::Action::CheckInitialized(s::Place::Temporary(_))
+                | s::Action::Mention(s::Place::Temporary(_))
+                | s::Action::BindView {
+                    place: s::Place::Temporary(_),
+                    ..
+                }
+                | s::Action::Select {
+                    anchor: s::Place::Temporary(_),
+                    ..
+                }
+        )
+    }) || original.guards.as_deref().is_some_and(|guards| {
+        guards
+            .places
+            .iter()
+            .any(|place| matches!(place, s::Place::Temporary(_)))
+    })
 }
 fn prefix_value(
     original: &s::Original,

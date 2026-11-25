@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[rustc_diagnostic_item = \"Option\"]",
+  "features": ["auto_traits", "const_destruct", "pattern_types"],
+  "stdout": "16 290 107 12 17 20 19 22\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "missing_val.rs",
+    "rustc": "not satisfied",
+    "rustgm": "trait obligation requires an unambiguous matching assumption or implementation"
+  }
+}

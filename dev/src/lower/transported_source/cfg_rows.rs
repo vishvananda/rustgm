@@ -438,16 +438,15 @@ fn validate(
     if !scalar_values && !body.scalars.is_empty() {
         return Err("source scalar pool requires a wider transport profile");
     }
-    if let Some(entries) = body.closure_calls.as_deref()
-        && (!stage.declaration_policies() || entries.has_conversions())
-    {
+    if body.closure_calls.is_some() && !stage.declaration_policies() {
         return Err("source selected closure entries require a wider transport profile");
     }
     if body.resolved_callables.is_some() {
-        if !stage.declaration_policies() || !body.has_only_caller_sites() {
+        if !stage.declaration_policies() || !body.has_only_transportable_inputs() {
             return Err("source resolved callable identities require a wider transport profile");
         }
         body.validate_caller_sites()?;
+        body.validate_nominal_inputs(facts)?;
     }
     // Imported originals always re-run ordinary promotion analysis on the
     // consumer side; no provider promotion cache or proof is retained.
@@ -525,6 +524,9 @@ pub(super) fn place(stage: &mut Stage, place: ir::Place) -> Result<s::Place, &'s
     match place {
         ir::Place::Local(local) => Ok(s::Place::Local(local.0)),
         ir::Place::Projection(projection) => Ok(s::Place::Projection(projection.0)),
+        ir::Place::Temporary(value) if stage.declaration_policies() => {
+            Ok(s::Place::Temporary(value.0))
+        }
         ir::Place::Static(definition) if stage.declaration_policies() => {
             Ok(s::Place::Static(stage.static_declaration(definition)?))
         }

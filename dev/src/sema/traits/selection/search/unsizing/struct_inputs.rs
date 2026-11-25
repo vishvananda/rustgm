@@ -130,9 +130,15 @@ fn tail(
 ) -> Result<TermId, Failure> {
     let mut fields =
         crate::sema::annotations::Fields::for_arguments(facts, context, owner, arguments)?;
-    let pay =
-        crate::sema::header_attributes::caller_payments(facts.must_use_contracts.as_deref(), true)
-            .map_err(|_| "nominal source Unsize lacks its completed payer")?;
+    let source_provider = facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| !catalog.uses_imported_roles());
+    let pay = crate::sema::header_attributes::caller_payments(
+        facts.must_use_contracts.as_deref(),
+        source_provider,
+    )
+    .map_err(|_| "nominal source Unsize lacks its completed payer")?;
     let result = fields.regions.argument_inside_charged(
         &mut facts.types,
         Canonical::Type(field),

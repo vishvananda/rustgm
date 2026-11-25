@@ -29,11 +29,15 @@ pub(super) fn select(
 ) -> Result<Option<[Option<Entry>; 2]>, &'static str> {
     let (concrete, object, nominal_region) = match conversion {
         unsizing::Conversion::Object { concrete, target } => (concrete, target, None),
-        unsizing::Conversion::Nominal { .. } => {
-            let row = body.nominal_use(&facts.types, site)?;
-            let Some((concrete, object, region)) = crate::sema::values::Reader::new(facts)
-                .nominal_object(row.source, row.from, row.to)?
-            else {
+        unsizing::Conversion::Nominal { source, target } => {
+            let object = if body.source.source().is_some() {
+                let row = body.nominal_use(&facts.types, site)?;
+                crate::sema::values::Reader::new(facts)
+                    .nominal_object(row.source, row.from, row.to)?
+            } else {
+                crate::sema::values::Reader::new(facts).nominal_object_plan(source, target)?
+            };
+            let Some((concrete, object, region)) = object else {
                 return Ok(None);
             };
             (concrete, object, Some(region))

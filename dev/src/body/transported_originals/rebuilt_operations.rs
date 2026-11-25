@@ -292,7 +292,37 @@ fn extended_value_kind(
                 crate::body::ir::RepeatMode::Once
             },
         },
+        s::ValueKind::Unsize { value, conversion } => Rvalue::Unsize {
+            value: ValueId(value),
+            conversion: unsize_conversion(view, conversion, steps)?,
+        },
         _ => return Err("source value operation requires its wider actual reconstruction profile"),
+    })
+}
+fn unsize_conversion(
+    view: &SourceOriginal<'_>,
+    conversion: s::UnsizeConversion,
+    steps: &mut usize,
+) -> Result<crate::types::unsizing::Conversion<crate::types::TypeId>, &'static str> {
+    use crate::types::unsizing::Conversion;
+    Ok(match conversion {
+        s::UnsizeConversion::Slice(array) => Conversion::Slice(view.ty(array, steps)?),
+        s::UnsizeConversion::Object { concrete, target } => Conversion::Object {
+            concrete: view.ty(concrete, steps)?,
+            target: view.ty(target, steps)?,
+        },
+        s::UnsizeConversion::Upcast { source, target } => Conversion::Upcast {
+            source: view.ty(source, steps)?,
+            target: view.ty(target, steps)?,
+        },
+        s::UnsizeConversion::Nominal { source, target } => Conversion::Nominal {
+            source: view.ty(source, steps)?,
+            target: view.ty(target, steps)?,
+        },
+        s::UnsizeConversion::Bound { source, target } => Conversion::Bound {
+            source: view.ty(source, steps)?,
+            target: view.ty(target, steps)?,
+        },
     })
 }
 fn action(
@@ -878,6 +908,7 @@ fn same_extended_value(
             | s::ValueKind::TextEquals { .. }
             | s::ValueKind::Union { .. }
             | s::ValueKind::Repeat { .. }
+            | s::ValueKind::Unsize { .. }
     ) {
         return Ok(None);
     }
@@ -943,6 +974,13 @@ fn same_extended_value(
                 constant,
             },
         ) => value.0 == raw_value && (mode == crate::body::ir::RepeatMode::Constant) == constant,
+        (
+            Rvalue::Unsize { value, conversion },
+            s::ValueKind::Unsize {
+                value: raw_value,
+                conversion: raw_conversion,
+            },
+        ) => value.0 == raw_value && conversion == unsize_conversion(view, raw_conversion, steps)?,
         _ => false,
     }))
 }

@@ -189,6 +189,19 @@ pub enum ValueKind {
         kind: AddressCast,
         operand: u32,
     },
+    /// Version fourteen: selected unsizing conversion; consumers re-prove coercion obligations.
+    Unsize {
+        value: u32,
+        conversion: UnsizeConversion,
+    },
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UnsizeConversion {
+    Slice(TypeRef),
+    Object { concrete: TypeRef, target: TypeRef },
+    Upcast { source: TypeRef, target: TypeRef },
+    Nominal { source: TypeRef, target: TypeRef },
+    Bound { source: TypeRef, target: TypeRef },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UnaryOperator {
@@ -544,10 +557,10 @@ pub struct Guards {
     pub places: Vec<Place>,
 }
 /// Version thirteen's cold literal column, present exactly when an original
-/// has a text value: each literal's UTF-8 contents, in value order.
+/// has a text or byte-literal value, in value order.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Texts {
-    pub rows: Vec<Box<str>>,
+    pub rows: Vec<Box<[u8]>>,
 }
 /// Version thirteen's cold assembly columns, present exactly when an original
 /// has an assembly value. No provider class, feature or lowering decision

@@ -208,10 +208,7 @@ impl Body {
         }
         Ok(())
     }
-    pub(in crate::body) fn validate_nominal_inputs(
-        &self,
-        facts: &Declarations,
-    ) -> Result<(), &'static str> {
+    pub(crate) fn validate_nominal_inputs(&self, facts: &Declarations) -> Result<(), &'static str> {
         self.validate_value_reborrow_inputs(facts)?;
         let Some(inputs) = self
             .resolved_callables
