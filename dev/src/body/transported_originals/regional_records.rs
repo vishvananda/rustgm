@@ -85,21 +85,53 @@ fn projection(
     raw: s::Projection,
     steps: &mut usize,
 ) -> Result<Projection, &'static str> {
+    let v14 = view.rows().descriptor().profile().declaration_policies();
+    let kind = match raw.kind {
+        s::ProjectionKind::Dereference { region, mutable } => ProjectionKind::Dereference {
+            region: view.region(region, steps)?,
+            mutable,
+        },
+        s::ProjectionKind::Field { owner, ordinal } => {
+            ProjectionKind::Field(view.nominal_field(owner, ordinal, steps)?)
+        }
+        s::ProjectionKind::Tuple(ordinal) if v14 => {
+            ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
+        }
+        s::ProjectionKind::RawDereference { mutable } if v14 => {
+            ProjectionKind::RawDereference { mutable }
+        }
+        s::ProjectionKind::UnionField { owner, ordinal } if v14 => {
+            ProjectionKind::UnionField(view.nominal_field(owner, ordinal, steps)?)
+        }
+        s::ProjectionKind::Index { index, length } if v14 => ProjectionKind::Index {
+            index: crate::body::ir::ValueId(index),
+            length,
+        },
+        s::ProjectionKind::IndexParameter { index, length } if v14 => {
+            ProjectionKind::IndexParameter {
+                index: crate::body::ir::ValueId(index),
+                length: view.const_argument(length, steps)?,
+            }
+        }
+        s::ProjectionKind::SliceIndex { index } if v14 => ProjectionKind::SliceIndex {
+            index: crate::body::ir::ValueId(index),
+        },
+        s::ProjectionKind::ConstantIndex(offset) if v14 => ProjectionKind::ConstantIndex(offset),
+        s::ProjectionKind::FromEnd { offset, minimum } if v14 => {
+            ProjectionKind::FromEnd { offset, minimum }
+        }
+        s::ProjectionKind::Subslice { prefix, suffix } if v14 => {
+            ProjectionKind::Subslice { prefix, suffix }
+        }
+        s::ProjectionKind::Subarray { start, end } if v14 => {
+            ProjectionKind::Subarray { start, end }
+        }
+        _ => return Err("source extended projection requires the version-fourteen profile"),
+    };
     Ok(Projection {
         base: place(view, raw.base, steps)?,
         ty: view.ty(raw.ty, steps)?,
-        kind: match raw.kind {
-            s::ProjectionKind::Dereference { region, mutable } => ProjectionKind::Dereference {
-                region: view.region(region, steps)?,
-                mutable,
-            },
-            s::ProjectionKind::Field { owner, ordinal } => {
-                ProjectionKind::Field(view.nominal_field(owner, ordinal, steps)?)
-            }
-            s::ProjectionKind::Tuple(ordinal) => {
-                ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
-            }
-        },
+        kind,
     })
 }
 
@@ -149,7 +181,63 @@ pub(super) fn validate(
                     mutable: bm,
                 },
             ) => a == b && am == bm,
-            (ProjectionKind::Field(a), ProjectionKind::Field(b)) => a == b,
+            (
+                ProjectionKind::RawDereference { mutable: a },
+                ProjectionKind::RawDereference { mutable: b },
+            ) => a == b,
+            (ProjectionKind::Field(a), ProjectionKind::Field(b))
+            | (ProjectionKind::UnionField(a), ProjectionKind::UnionField(b)) => a == b,
+            (
+                ProjectionKind::Index {
+                    index: a,
+                    length: al,
+                },
+                ProjectionKind::Index {
+                    index: b,
+                    length: bl,
+                },
+            ) => a == b && al == bl,
+            (
+                ProjectionKind::IndexParameter {
+                    index: a,
+                    length: al,
+                },
+                ProjectionKind::IndexParameter {
+                    index: b,
+                    length: bl,
+                },
+            ) => a == b && al == bl,
+            (ProjectionKind::SliceIndex { index: a }, ProjectionKind::SliceIndex { index: b }) => {
+                a == b
+            }
+            (ProjectionKind::ConstantIndex(a), ProjectionKind::ConstantIndex(b)) => a == b,
+            (
+                ProjectionKind::FromEnd {
+                    offset: ao,
+                    minimum: am,
+                },
+                ProjectionKind::FromEnd {
+                    offset: bo,
+                    minimum: bm,
+                },
+            ) => ao == bo && am == bm,
+            (
+                ProjectionKind::Subslice {
+                    prefix: ap,
+                    suffix: as_,
+                },
+                ProjectionKind::Subslice {
+                    prefix: bp,
+                    suffix: bs,
+                },
+            ) => ap == bp && as_ == bs,
+            (
+                ProjectionKind::Subarray {
+                    start: as_,
+                    end: ae,
+                },
+                ProjectionKind::Subarray { start: bs, end: be },
+            ) => as_ == bs && ae == be,
             _ => false,
         };
         if !same || actual.base != expected.base || actual.ty != expected.ty {

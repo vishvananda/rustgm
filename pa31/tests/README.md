@@ -1881,3 +1881,13 @@ versus untracked implementations) across both native and `const` fresh-client
 execution, while retaining private helper rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-caller-site-transport`
 with the prebuilt compilers.
+
+`spec/source-extended-body-ops/outcomes.json` checks version-14 transport of
+extended body value and projection IR nodes (`Unary`, `Rem`/`Shl`/`Shr`,
+`Address`/`RawDereference`, `Union`/`UnionField`, `Repeat`, `Index`/`IndexParameter`/
+`SliceIndex`/`ConstantIndex`/`FromEnd`/`Subslice`/`Subarray`, `Length`,
+`TextEquals`, `Validate`, direct enum casts, and pointer-thin/int/fn-pointer
+casts) across native and `const` fresh-client execution, while retaining private
+union field rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-extended-body-ops`
+with the prebuilt compilers.

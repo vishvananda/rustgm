@@ -222,6 +222,66 @@ fn value_kind(
             operand: ValueId(operand),
             direct_variant: false,
         },
+        kind => extended_value_kind(view, kind, &mut work.steps)?,
+    })
+}
+fn extended_value_kind(
+    view: &SourceOriginal<'_>,
+    kind: s::ValueKind,
+    steps: &mut usize,
+) -> Result<Rvalue, &'static str> {
+    if !view.rows().descriptor().profile().declaration_policies() {
+        return Err("source value operation requires its wider actual reconstruction profile");
+    }
+    Ok(match kind {
+        s::ValueKind::DirectEnumCast(operand) => Rvalue::Cast {
+            kind: crate::sema::model::Cast::EnumToInteger,
+            operand: ValueId(operand),
+            direct_variant: true,
+        },
+        s::ValueKind::AddressCast { kind, operand } => Rvalue::Cast {
+            kind: address_cast_kind(kind),
+            operand: ValueId(operand),
+            direct_variant: false,
+        },
+        s::ValueKind::Unary {
+            operator,
+            operand,
+            literal,
+        } => Rvalue::Unary {
+            operator: match operator {
+                s::UnaryOperator::Negate => crate::syntax::ast::Unary::Negate,
+                s::UnaryOperator::Not => crate::syntax::ast::Unary::Not,
+            },
+            operand: ValueId(operand),
+            literal,
+        },
+        s::ValueKind::Address(place) => {
+            Rvalue::Address(regional_records::place(view, place, steps)?)
+        }
+        s::ValueKind::Length(place) => Rvalue::Length(regional_records::place(view, place, steps)?),
+        s::ValueKind::Validate(place) => {
+            Rvalue::Validate(regional_records::place(view, place, steps)?)
+        }
+        s::ValueKind::TextEquals { place, .. } => {
+            encoded_texts::append_equals(view, regional_records::place(view, place, steps)?)?
+        }
+        s::ValueKind::Union {
+            owner,
+            ordinal,
+            value,
+        } => Rvalue::Union {
+            field: view.nominal_field(owner, ordinal, steps)?,
+            value: ValueId(value),
+        },
+        s::ValueKind::Repeat { value, constant } => Rvalue::Repeat {
+            value: ValueId(value),
+            mode: if constant {
+                crate::body::ir::RepeatMode::Constant
+            } else {
+                crate::body::ir::RepeatMode::Once
+            },
+        },
         _ => return Err("source value operation requires its wider actual reconstruction profile"),
     })
 }
@@ -349,6 +409,15 @@ fn cast(
         .ok_or("source scalar cast has no ordinary primitive conversion")?;
     Ok((kind, ValueId(operand)))
 }
+fn address_cast_kind(kind: s::AddressCast) -> crate::sema::model::Cast {
+    use crate::sema::model::Cast;
+    match kind {
+        s::AddressCast::PointerThin => Cast::PointerThin,
+        s::AddressCast::PointerToInteger => Cast::PointerToInteger,
+        s::AddressCast::IntegerToPointer => Cast::IntegerToPointer,
+        s::AddressCast::FunctionPointer => Cast::FunctionPointer,
+    }
+}
 /// Rebuild the primitive operator the validated row names; its types were
 /// re-proved by the consumer's row validation, not taken from the provider.
 fn binary(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'static str> {
@@ -379,6 +448,9 @@ fn binary(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'sta
         s::BinaryOperator::Sub => P::Minus,
         s::BinaryOperator::Mul => P::Star,
         s::BinaryOperator::Div => P::Slash,
+        s::BinaryOperator::Rem => P::Percent,
+        s::BinaryOperator::Shl => P::ShiftLeft,
+        s::BinaryOperator::Shr => P::ShiftRight,
     };
     let operands = match operands {
         s::OperandForm::NotRequired => Form::NotRequired,
@@ -780,6 +852,90 @@ fn same_invocation(
         _ => return Ok(None),
     }))
 }
+fn same_extended_value(
+    view: &SourceOriginal<'_>,
+    (actual, record): (Rvalue, s::ValueKind),
+    steps: &mut usize,
+) -> Result<Option<bool>, &'static str> {
+    if !matches!(
+        record,
+        s::ValueKind::DirectEnumCast(_)
+            | s::ValueKind::AddressCast { .. }
+            | s::ValueKind::Unary { .. }
+            | s::ValueKind::Address(_)
+            | s::ValueKind::Length(_)
+            | s::ValueKind::Validate(_)
+            | s::ValueKind::TextEquals { .. }
+            | s::ValueKind::Union { .. }
+            | s::ValueKind::Repeat { .. }
+    ) {
+        return Ok(None);
+    }
+    if !view.rows().descriptor().profile().declaration_policies() {
+        return Ok(Some(false));
+    }
+    Ok(Some(match (actual, record) {
+        (
+            Rvalue::Cast {
+                kind: crate::sema::model::Cast::EnumToInteger,
+                operand,
+                direct_variant: true,
+            },
+            s::ValueKind::DirectEnumCast(raw),
+        ) => operand.0 == raw,
+        (
+            Rvalue::Cast {
+                kind,
+                operand,
+                direct_variant: false,
+            },
+            s::ValueKind::AddressCast {
+                kind: raw_kind,
+                operand: raw_operand,
+            },
+        ) => kind == address_cast_kind(raw_kind) && operand.0 == raw_operand,
+        (
+            Rvalue::Unary {
+                operator,
+                operand,
+                literal,
+            },
+            s::ValueKind::Unary {
+                operator: raw_op,
+                operand: raw_operand,
+                literal: raw_lit,
+            },
+        ) => {
+            let expected = match raw_op {
+                s::UnaryOperator::Negate => crate::syntax::ast::Unary::Negate,
+                s::UnaryOperator::Not => crate::syntax::ast::Unary::Not,
+            };
+            operator == expected && operand.0 == raw_operand && literal == raw_lit
+        }
+        (Rvalue::Address(place), s::ValueKind::Address(raw))
+        | (Rvalue::Length(place), s::ValueKind::Length(raw))
+        | (Rvalue::Validate(place), s::ValueKind::Validate(raw))
+        | (Rvalue::TextEquals { place, .. }, s::ValueKind::TextEquals { place: raw, .. }) => {
+            place == regional_records::place(view, raw, steps)?
+        }
+        (
+            Rvalue::Union { field, value },
+            s::ValueKind::Union {
+                owner,
+                ordinal,
+                value: raw_value,
+            },
+        ) => field == view.nominal_field(owner, ordinal, steps)? && value.0 == raw_value,
+        (
+            Rvalue::Repeat { value, mode },
+            s::ValueKind::Repeat {
+                value: raw_value,
+                constant,
+            },
+        ) => value.0 == raw_value && (mode == crate::body::ir::RepeatMode::Constant) == constant,
+        _ => false,
+    }))
+}
 fn same_value(
     view: &SourceOriginal<'_>,
     (actual, record): (&Value, s::Value),
@@ -794,6 +950,9 @@ fn same_value(
         return Ok(same);
     }
     if let Some(same) = same_invocation(view, (actual.kind, record.kind), steps)? {
+        return Ok(same);
+    }
+    if let Some(same) = same_extended_value(view, (actual.kind, record.kind), steps)? {
         return Ok(same);
     }
     Ok(match (actual.kind, record.kind) {

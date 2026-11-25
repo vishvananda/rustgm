@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": ["pattern_types", "auto_traits"],
+  "stdout": "26 17 90 24 36\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "private_union.rs",
+    "rustc": "private",
+    "rustgm": "private"
+  }
+}

@@ -98,8 +98,8 @@ const PROJECTIONS: [&str; 13] = [
     "encoded ProjectionKind::FutureField is not reconstructable by this consumer",
 ];
 
-/// Stable `Rvalue::Binary` operator flags. Division requires v14.
-const OPERATORS: [s::BinaryOperator; 13] = [
+/// Stable `Rvalue::Binary` operator flags. Division, remainder and shifts require v14.
+const OPERATORS: [s::BinaryOperator; 16] = [
     s::BinaryOperator::Equal,
     s::BinaryOperator::NotEqual,
     s::BinaryOperator::Less,
@@ -113,8 +113,11 @@ const OPERATORS: [s::BinaryOperator; 13] = [
     s::BinaryOperator::Sub,
     s::BinaryOperator::Mul,
     s::BinaryOperator::Div,
+    s::BinaryOperator::Rem,
+    s::BinaryOperator::Shl,
+    s::BinaryOperator::Shr,
 ];
-/// Last allocated flags reserve Rem, Shl and Shr.
+/// Last allocated flags reserve Div, Rem, Shl and Shr.
 const CHECKED_OPERATORS: u32 = 16;
 const FORMS: [s::OperandForm; 5] = [
     s::OperandForm::NotRequired,
@@ -124,9 +127,12 @@ const FORMS: [s::OperandForm; 5] = [
     s::OperandForm::Both,
 ];
 
-/// Reconstructable codes in this consumer, by family.
+/// Reconstructable codes in this consumer, by family and profile.
 const VALUE_FORMS: [u8; 18] = [
     0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 22, 23, 24, 27, 28, 29, 30,
+];
+const V14_VALUE_FORMS: [u8; 25] = [
+    0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 22, 23, 24, 26, 27, 28, 29, 30,
 ];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
@@ -143,6 +149,7 @@ const SAFETIES: [s::CallSafety; 3] = [
 const ACTION_FORMS: [u8; 12] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const TERMINATOR_FORMS: [u8; 6] = [0, 1, 2, 3, 4, 5];
 const PROJECTION_FORMS: [u8; 2] = [1, 3];
+const V14_PROJECTION_FORMS: [u8; 11] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 struct Node {
     code: u8,
@@ -342,6 +349,61 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
         s::ValueKind::Invoke { .. }
         | s::ValueKind::Call { .. }
         | s::ValueKind::PointerCall { .. } => call_write(out, row.kind),
+        kind => extended_value_write(out, kind),
+    }
+}
+fn extended_value_write(out: &mut Writer, kind: s::ValueKind) -> Result<(), &'static str> {
+    match kind {
+        s::ValueKind::DirectEnumCast(value) => {
+            node_write(out, 28, &[Operand::Value(value), Operand::Flag(3)])
+        }
+        s::ValueKind::AddressCast { kind, operand } => {
+            let flag = match kind {
+                s::AddressCast::PointerThin => 4,
+                s::AddressCast::PointerToInteger => 5,
+                s::AddressCast::IntegerToPointer => 6,
+                s::AddressCast::FunctionPointer => 7,
+            };
+            node_write(out, 28, &[Operand::Value(operand), Operand::Flag(flag)])
+        }
+        s::ValueKind::Unary {
+            operator,
+            operand,
+            literal,
+        } => node_write(
+            out,
+            26,
+            &[
+                Operand::Value(operand),
+                Operand::Flag(u32::from(operator == s::UnaryOperator::Not)),
+                Operand::Flag(u32::from(literal)),
+            ],
+        ),
+        s::ValueKind::Address(place) => node_write(out, 11, &[Operand::Place(place)]),
+        s::ValueKind::Length(place) => node_write(out, 8, &[Operand::Place(place)]),
+        s::ValueKind::Validate(place) => node_write(out, 15, &[Operand::Place(place)]),
+        s::ValueKind::TextEquals { place, text } => {
+            node_write(out, 9, &[Operand::Place(place), Operand::Flag(text)])
+        }
+        s::ValueKind::Union {
+            owner,
+            ordinal,
+            value,
+        } => node_write(
+            out,
+            4,
+            &[
+                Operand::Declaration(owner.0),
+                Operand::Flag(ordinal),
+                Operand::Value(value),
+            ],
+        ),
+        s::ValueKind::Repeat { value, constant } => node_write(
+            out,
+            5,
+            &[Operand::Value(value), Operand::Flag(u32::from(constant))],
+        ),
+        _ => Err("body IR extended value changed its form"),
     }
 }
 /// Call operators, direct calls and calls through a fn pointer.
@@ -460,17 +522,84 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             s::ValueKind::PointerCast(value)
         }
         (29 | 30, operands) => callable_value(node.code, operands)?,
-        (code, _) => {
+        (code, operands) => extended_value_read(code, operands, read.profile)?,
+    };
+    Ok(s::Value { ty, kind })
+}
+fn extended_value_read(
+    code: u8,
+    operands: &[Operand],
+    profile: s::Profile,
+) -> Result<s::ValueKind, &'static str> {
+    let v14 = profile.declaration_policies();
+    let kind = match (code, operands) {
+        (28, &[Operand::Value(value), Operand::Flag(3)]) if v14 => {
+            s::ValueKind::DirectEnumCast(value)
+        }
+        (28, &[Operand::Value(value), Operand::Flag(flag @ 4..=7)]) if v14 => {
+            let kind = match flag {
+                4 => s::AddressCast::PointerThin,
+                5 => s::AddressCast::PointerToInteger,
+                6 => s::AddressCast::IntegerToPointer,
+                _ => s::AddressCast::FunctionPointer,
+            };
+            s::ValueKind::AddressCast {
+                kind,
+                operand: value,
+            }
+        }
+        (
+            26,
+            &[
+                Operand::Value(operand),
+                Operand::Flag(op @ (0 | 1)),
+                Operand::Flag(lit @ (0 | 1)),
+            ],
+        ) if v14 => s::ValueKind::Unary {
+            operator: if op == 0 {
+                s::UnaryOperator::Negate
+            } else {
+                s::UnaryOperator::Not
+            },
+            operand,
+            literal: lit == 1,
+        },
+        (11, &[Operand::Place(place)]) if v14 => s::ValueKind::Address(place),
+        (8, &[Operand::Place(place)]) if v14 => s::ValueKind::Length(place),
+        (15, &[Operand::Place(place)]) if v14 => s::ValueKind::Validate(place),
+        (9, &[Operand::Place(place), Operand::Flag(text)]) if v14 => {
+            s::ValueKind::TextEquals { place, text }
+        }
+        (
+            4,
+            &[
+                Operand::Declaration(owner),
+                Operand::Flag(ordinal),
+                Operand::Value(value),
+            ],
+        ) if v14 => s::ValueKind::Union {
+            owner: DeclarationRef(owner),
+            ordinal,
+            value,
+        },
+        (5, &[Operand::Value(value), Operand::Flag(constant @ (0 | 1))]) if v14 => {
+            s::ValueKind::Repeat {
+                value,
+                constant: constant == 1,
+            }
+        }
+        _ => {
+            let forms: &[u8] = if v14 { &V14_VALUE_FORMS } else { &VALUE_FORMS };
             return Err(rejected(
                 &VALUES,
-                &VALUE_FORMS,
+                forms,
                 code,
                 "body IR value node has malformed operands",
                 "unknown body IR value form",
             ));
         }
     };
-    Ok(s::Value { ty, kind })
+    Ok(kind)
 }
 
 fn callable_value(code: u8, operands: &[Operand]) -> Result<s::ValueKind, &'static str> {
@@ -538,7 +667,7 @@ fn binary(
         return Err("body IR binary node has an unknown operand form");
     };
     match OPERATORS.get(operator as usize) {
-        Some(&operator) if operator != s::BinaryOperator::Div || profile.declaration_policies() => {
+        Some(&operator) if !operator.requires_v14() || profile.declaration_policies() => {
             Ok(s::ValueKind::Binary {
                 operator,
                 operands,
@@ -674,18 +803,44 @@ pub(super) fn block_read(read: &mut Input<'_, '_>) -> Result<g::Block, &'static 
 pub(super) fn projection_write(out: &mut Writer, row: &s::Projection) -> Result<(), &'static str> {
     operand_write(out, Operand::Place(row.base))?;
     id(out, row.ty.0)?;
+    let u64_bits = |value: u64| Operand::Bits(u128::from(value).to_le_bytes());
     match row.kind {
         s::ProjectionKind::Dereference { region, mutable } => node_write(
             out,
             1,
             &[Operand::Region(region.0), Operand::Flag(u32::from(mutable))],
         ),
+        s::ProjectionKind::RawDereference { mutable } => {
+            node_write(out, 2, &[Operand::Flag(u32::from(mutable))])
+        }
         s::ProjectionKind::Field { owner, ordinal } => node_write(
             out,
             3,
             &[Operand::Declaration(owner.0), Operand::Flag(ordinal)],
         ),
         s::ProjectionKind::Tuple(ordinal) => node_write(out, 3, &[Operand::Flag(ordinal)]),
+        s::ProjectionKind::UnionField { owner, ordinal } => node_write(
+            out,
+            4,
+            &[Operand::Declaration(owner.0), Operand::Flag(ordinal)],
+        ),
+        s::ProjectionKind::Index { index, length } => {
+            node_write(out, 5, &[Operand::Value(index), u64_bits(length)])
+        }
+        s::ProjectionKind::IndexParameter { index, length } => {
+            node_write(out, 6, &[Operand::Value(index), Operand::Slot(length)])
+        }
+        s::ProjectionKind::SliceIndex { index } => node_write(out, 7, &[Operand::Value(index)]),
+        s::ProjectionKind::ConstantIndex(offset) => node_write(out, 8, &[u64_bits(offset)]),
+        s::ProjectionKind::FromEnd { offset, minimum } => {
+            node_write(out, 9, &[u64_bits(offset), u64_bits(minimum)])
+        }
+        s::ProjectionKind::Subslice { prefix, suffix } => {
+            node_write(out, 10, &[u64_bits(prefix), u64_bits(suffix)])
+        }
+        s::ProjectionKind::Subarray { start, end } => {
+            node_write(out, 11, &[u64_bits(start), u64_bits(end)])
+        }
     }
 }
 pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection, &'static str> {
@@ -694,6 +849,11 @@ pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection,
     };
     let ty = g::TypeRef(read.id()?);
     let node = node_read(read)?;
+    let bits_u64 = |bits: [u8; 16]| {
+        u64::try_from(u128::from_le_bytes(bits))
+            .map_err(|_| "body IR projection u64 operand overflow")
+    };
+    let v14 = read.profile.declaration_policies();
     let kind = match (node.code, node.operands()) {
         (1, &[Operand::Region(region), Operand::Flag(mutable @ (0 | 1))]) => {
             s::ProjectionKind::Dereference {
@@ -701,17 +861,54 @@ pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection,
                 mutable: mutable == 1,
             }
         }
+        (2, &[Operand::Flag(mutable @ (0 | 1))]) if v14 => s::ProjectionKind::RawDereference {
+            mutable: mutable == 1,
+        },
         (3, &[Operand::Declaration(owner), Operand::Flag(ordinal)]) => s::ProjectionKind::Field {
             owner: DeclarationRef(owner),
             ordinal,
         },
-        (3, &[Operand::Flag(ordinal)]) if read.profile.declaration_policies() => {
-            s::ProjectionKind::Tuple(ordinal)
+        (3, &[Operand::Flag(ordinal)]) if v14 => s::ProjectionKind::Tuple(ordinal),
+        (4, &[Operand::Declaration(owner), Operand::Flag(ordinal)]) if v14 => {
+            s::ProjectionKind::UnionField {
+                owner: DeclarationRef(owner),
+                ordinal,
+            }
         }
+        (5, &[Operand::Value(index), Operand::Bits(length)]) if v14 => s::ProjectionKind::Index {
+            index,
+            length: bits_u64(length)?,
+        },
+        (6, &[Operand::Value(index), Operand::Slot(length)]) if v14 => {
+            s::ProjectionKind::IndexParameter { index, length }
+        }
+        (7, &[Operand::Value(index)]) if v14 => s::ProjectionKind::SliceIndex { index },
+        (8, &[Operand::Bits(offset)]) if v14 => s::ProjectionKind::ConstantIndex(bits_u64(offset)?),
+        (9, &[Operand::Bits(offset), Operand::Bits(minimum)]) if v14 => {
+            s::ProjectionKind::FromEnd {
+                offset: bits_u64(offset)?,
+                minimum: bits_u64(minimum)?,
+            }
+        }
+        (10, &[Operand::Bits(prefix), Operand::Bits(suffix)]) if v14 => {
+            s::ProjectionKind::Subslice {
+                prefix: bits_u64(prefix)?,
+                suffix: bits_u64(suffix)?,
+            }
+        }
+        (11, &[Operand::Bits(start), Operand::Bits(end)]) if v14 => s::ProjectionKind::Subarray {
+            start: bits_u64(start)?,
+            end: bits_u64(end)?,
+        },
         (code, _) => {
+            let forms: &[u8] = if v14 {
+                &V14_PROJECTION_FORMS
+            } else {
+                &PROJECTION_FORMS
+            };
             return Err(rejected(
                 &PROJECTIONS,
-                &PROJECTION_FORMS,
+                forms,
                 code,
                 "body IR projection node has malformed operands",
                 "unknown body IR projection form",

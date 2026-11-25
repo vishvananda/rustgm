@@ -292,13 +292,25 @@ fn dependency(
     ordinal: usize,
 ) -> Result<Option<usize>, &'static str> {
     if node >= original.values.len() {
-        return if ordinal == 0 {
-            place(
-                original,
-                original.projections[node - original.values.len()].base,
-            )
-        } else {
-            Ok(None)
+        let projection = &original.projections[node - original.values.len()];
+        return match ordinal {
+            0 => place(original, projection.base),
+            1 => match projection.kind {
+                s::ProjectionKind::Index { index, .. }
+                | s::ProjectionKind::IndexParameter { index, .. }
+                | s::ProjectionKind::SliceIndex { index }
+                    if (index as usize) < original.values.len() =>
+                {
+                    Ok(Some(index as usize))
+                }
+                s::ProjectionKind::Index { .. }
+                | s::ProjectionKind::IndexParameter { .. }
+                | s::ProjectionKind::SliceIndex { .. } => {
+                    Err("source SSA projection index belongs to another body")
+                }
+                _ => Ok(None),
+            },
+            _ => Ok(None),
         };
     }
     // Every kind states its dependencies; a new kind cannot fall through.
@@ -306,6 +318,10 @@ fn dependency(
         s::ValueKind::Read(target)
         | s::ValueKind::Borrow(target)
         | s::ValueKind::TwoPhaseBorrow(target)
+        | s::ValueKind::Address(target)
+        | s::ValueKind::Length(target)
+        | s::ValueKind::Validate(target)
+        | s::ValueKind::TextEquals { place: target, .. }
         | s::ValueKind::IsVariant { place: target, .. } => {
             return if ordinal == 0 {
                 place(original, target)
@@ -317,6 +333,11 @@ fn dependency(
         | s::ValueKind::ScalarCast(value)
         | s::ValueKind::PointerCast(value)
         | s::ValueKind::EnumCast(value)
+        | s::ValueKind::DirectEnumCast(value)
+        | s::ValueKind::AddressCast { operand: value, .. }
+        | s::ValueKind::Unary { operand: value, .. }
+        | s::ValueKind::Union { value, .. }
+        | s::ValueKind::Repeat { value, .. }
         | s::ValueKind::Reify(value) => (ordinal == 0).then_some(value),
         s::ValueKind::Binary { left, right, .. } => [left, right].get(ordinal).copied(),
         s::ValueKind::Aggregate { fields }

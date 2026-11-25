@@ -63,10 +63,7 @@ impl DomainIndex<'_, '_> {
                 self.place(original, projection.base, Some(index), work)?;
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
-                if let s::ProjectionKind::Dereference { region, .. } = projection.kind {
-                    self.types
-                        .region(self.headers, &self.binders, context, region, work)?;
-                }
+                self.projection_operands(context, original, projection.kind, work)?;
             }
             for (index, value) in original.values.iter().enumerate() {
                 snapshots |= matches!(
@@ -74,6 +71,13 @@ impl DomainIndex<'_, '_> {
                     s::ValueKind::Read(s::Place::Temporary(_))
                         | s::ValueKind::Borrow(s::Place::Temporary(_))
                         | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(_))
+                        | s::ValueKind::Address(s::Place::Temporary(_))
+                        | s::ValueKind::Length(s::Place::Temporary(_))
+                        | s::ValueKind::Validate(s::Place::Temporary(_))
+                        | s::ValueKind::TextEquals {
+                            place: s::Place::Temporary(_),
+                            ..
+                        }
                 );
                 tested_temporary |= matches!(
                     value.kind,
@@ -156,19 +160,9 @@ impl DomainIndex<'_, '_> {
             } => {
                 self.associated_constant(context, declaration, arguments, work)?;
             }
-            s::ValueKind::Read(s::Place::Temporary(value)) => {
-                prefix_value(original, value, index, work)?;
-            }
-            s::ValueKind::Borrow(s::Place::Temporary(value))
-            | s::ValueKind::TwoPhaseBorrow(s::Place::Temporary(value))
-                if self.declaration_policies =>
-            {
-                prefix_value(original, value, index, work)?;
-            }
-            s::ValueKind::Read(place)
-            | s::ValueKind::Borrow(place)
-            | s::ValueKind::TwoPhaseBorrow(place) => {
-                self.place(original, place, None, work)?;
+            s::ValueKind::Read(place) => self.read_place(original, index, place, work)?,
+            s::ValueKind::Borrow(place) | s::ValueKind::TwoPhaseBorrow(place) => {
+                self.value_place(original, index, place, work)?;
             }
             s::ValueKind::Constrain(operand) | s::ValueKind::EnumCast(operand) => {
                 prefix_value(original, operand, index, work)?;
@@ -187,12 +181,23 @@ impl DomainIndex<'_, '_> {
                 right,
                 ..
             } => {
-                if operator == s::BinaryOperator::Div && !self.declaration_policies {
+                if operator.requires_v14() && !self.declaration_policies {
                     return Err("source checked division or shift requires a wider transport row");
                 }
                 prefix_value(original, left, index, work)?;
                 prefix_value(original, right, index, work)?;
                 value.binary_types(original, &self.headers.rows().types)?;
+            }
+            s::ValueKind::DirectEnumCast(_)
+            | s::ValueKind::AddressCast { .. }
+            | s::ValueKind::Unary { .. }
+            | s::ValueKind::Address(_)
+            | s::ValueKind::Length(_)
+            | s::ValueKind::Validate(_)
+            | s::ValueKind::TextEquals { .. }
+            | s::ValueKind::Union { .. }
+            | s::ValueKind::Repeat { .. } => {
+                self.extended_value(original, index, value, work)?;
             }
             s::ValueKind::Function(_)
             | s::ValueKind::Reify(_)
@@ -217,17 +222,39 @@ impl DomainIndex<'_, '_> {
             }
             s::ValueKind::IsVariant { place, variant } => {
                 self.variant(variant, work)?;
-                if let s::Place::Temporary(temporary) = place
-                    && self.declaration_policies
-                {
-                    prefix_value(original, temporary, index, work)?;
-                } else {
-                    self.place(original, place, None, work)?;
-                }
+                self.value_place(original, index, place, work)?;
             }
             s::ValueKind::Unit => {}
         }
         Ok(())
+    }
+    fn read_place(
+        &mut self,
+        original: &s::Original,
+        index: usize,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if let s::Place::Temporary(temporary) = place {
+            prefix_value(original, temporary, index, work)
+        } else {
+            self.place(original, place, None, work)
+        }
+    }
+    fn value_place(
+        &mut self,
+        original: &s::Original,
+        index: usize,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if let s::Place::Temporary(temporary) = place
+            && self.declaration_policies
+        {
+            prefix_value(original, temporary, index, work)
+        } else {
+            self.place(original, place, None, work)
+        }
     }
     /// Function items, reifications, direct and pointer calls and call
     /// operators: each operand precedes its value and each signature is rooted.
@@ -454,18 +481,210 @@ impl DomainIndex<'_, '_> {
         }
         Ok(())
     }
+    fn projection_operands(
+        &mut self,
+        context: Context,
+        original: &s::Original,
+        kind: s::ProjectionKind,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let require_usize_value = |index: u32| {
+            let ty = original
+                .values
+                .get(index as usize)
+                .ok_or("source projection index value is unknown")?
+                .ty;
+            if rows.types.get(ty.0 as usize)
+                != Some(&s::Type::Scalar(crate::support::crates::Scalar::Usize))
+            {
+                return Err("source projection index value is not usize");
+            }
+            Ok(())
+        };
+        match kind {
+            s::ProjectionKind::Dereference { region, .. } => {
+                self.types
+                    .region(self.headers, &self.binders, context, region, work)?;
+            }
+            s::ProjectionKind::Field { .. } | s::ProjectionKind::Tuple(_) => {}
+            s::ProjectionKind::RawDereference { .. }
+            | s::ProjectionKind::UnionField { .. }
+            | s::ProjectionKind::ConstantIndex(_)
+            | s::ProjectionKind::FromEnd { .. }
+            | s::ProjectionKind::Subslice { .. }
+            | s::ProjectionKind::Subarray { .. } => {
+                if !self.declaration_policies {
+                    return Err(
+                        "source extended projection requires the declaration policy profile",
+                    );
+                }
+            }
+            s::ProjectionKind::Index { index, .. } | s::ProjectionKind::SliceIndex { index } => {
+                if !self.declaration_policies {
+                    return Err("source index projection requires the declaration policy profile");
+                }
+                require_usize_value(index)?;
+            }
+            s::ProjectionKind::IndexParameter { index, length } => {
+                if !self.declaration_policies {
+                    return Err(
+                        "source parameterized index projection requires the declaration policy profile",
+                    );
+                }
+                require_usize_value(index)?;
+                let usize_slot = rows.slots.get(length.0 as usize).is_some_and(|slot| {
+                    matches!(slot.kind, s::ParameterKind::Const { ty }
+                        if rows.types.get(ty.0 as usize)
+                            == Some(&s::Type::Scalar(crate::support::crates::Scalar::Usize)))
+                });
+                if !usize_slot
+                    || !self
+                        .headers
+                        .scopes()
+                        .contains(context.owner, length, work)?
+                {
+                    return Err("source index length slot is foreign or not usize");
+                }
+            }
+        }
+        Ok(())
+    }
+    fn extended_value(
+        &self,
+        original: &s::Original,
+        index: usize,
+        value: &s::Value,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !self.declaration_policies {
+            return Err("source extended value operation requires the declaration policy profile");
+        }
+        match value.kind {
+            s::ValueKind::DirectEnumCast(operand) => prefix_value(original, operand, index, work),
+            s::ValueKind::AddressCast { kind, operand } => {
+                prefix_value(original, operand, index, work)?;
+                self.address_cast(kind, original, operand, value.ty)
+            }
+            s::ValueKind::Unary { operand, .. } => {
+                prefix_value(original, operand, index, work)?;
+                value.unary_type(original, &self.headers.rows().types)
+            }
+            s::ValueKind::Address(place)
+            | s::ValueKind::Length(place)
+            | s::ValueKind::Validate(place)
+            | s::ValueKind::TextEquals { place, .. } => {
+                if let s::Place::Temporary(temporary) = place {
+                    prefix_value(original, temporary, index, work)
+                } else {
+                    self.place(original, place, None, work)
+                }
+            }
+            s::ValueKind::Union { value: operand, .. }
+            | s::ValueKind::Repeat { value: operand, .. } => {
+                prefix_value(original, operand, index, work)
+            }
+            _ => Err("source extended value changed its operation kind"),
+        }
+    }
     fn pointer_cast(&self, from: s::TypeRef, to: s::TypeRef) -> Result<(), &'static str> {
-        let types = &self.headers.rows().types;
-        let from_type = types.get(from.0 as usize);
-        let identity = from == to && matches!(from_type, Some(s::Type::RawPointer { .. }));
-        if !self.declaration_policies
-            || !identity
-                && !matches!((from_type, types.get(to.0 as usize)),
-                (Some(s::Type::Reference { mutable: from_mutable, referent, .. }),
-                 Some(s::Type::RawPointer { mutable: to_mutable, pointee }))
-                    if referent == pointee && (!*to_mutable || *from_mutable))
-        {
+        if !self.declaration_policies {
             return Err("source pointer cast changed its pointee or access");
+        }
+        let types = &self.headers.rows().types;
+        let strip_pattern = |mut ty: s::TypeRef| {
+            if let Some(&s::Type::Pattern { base, .. }) = types.get(ty.0 as usize) {
+                ty = base;
+            }
+            types.get(ty.0 as usize)
+        };
+        let valid = match (strip_pattern(from), types.get(to.0 as usize)) {
+            (Some(s::Type::RawPointer { .. }), Some(s::Type::RawPointer { .. }))
+            | (Some(s::Type::Function(_)), Some(s::Type::RawPointer { .. })) => true,
+            (
+                Some(s::Type::Reference {
+                    mutable: from_mutable,
+                    referent,
+                    ..
+                }),
+                Some(s::Type::RawPointer {
+                    mutable: to_mutable,
+                    pointee,
+                }),
+            ) => referent == pointee && (!*to_mutable || *from_mutable),
+            (
+                Some(s::Type::Reference {
+                    mutable: from_mutable,
+                    ..
+                }),
+                Some(s::Type::Reference {
+                    mutable: to_mutable,
+                    ..
+                }),
+            ) => from == to && from_mutable == to_mutable,
+            _ => false,
+        };
+        if !valid {
+            return Err("source pointer cast changed its pointee or access");
+        }
+        Ok(())
+    }
+    fn address_cast(
+        &self,
+        kind: s::AddressCast,
+        original: &s::Original,
+        operand: u32,
+        to: s::TypeRef,
+    ) -> Result<(), &'static str> {
+        use crate::support::crates::Scalar;
+        if !self.declaration_policies {
+            return Err("source address cast requires the declaration policy profile");
+        }
+        let types = &self.headers.rows().types;
+        let from_ref = original.values[operand as usize].ty;
+        let from = match types.get(from_ref.0 as usize) {
+            Some(&s::Type::Pattern { base, .. }) => types.get(base.0 as usize),
+            ty => ty,
+        };
+        let to = types.get(to.0 as usize);
+        let is_int = |ty: Option<&s::Type>| {
+            matches!(
+                ty,
+                Some(s::Type::Scalar(scalar))
+                    if !matches!(
+                        scalar,
+                        Scalar::Unit | Scalar::Bool | Scalar::Char | Scalar::F32 | Scalar::F64
+                    )
+            )
+        };
+        let valid = match kind {
+            s::AddressCast::PointerThin => {
+                matches!(
+                    (from, to),
+                    (
+                        Some(s::Type::RawPointer { .. }),
+                        Some(s::Type::RawPointer { .. })
+                    )
+                )
+            }
+            s::AddressCast::PointerToInteger => {
+                matches!(
+                    from,
+                    Some(s::Type::RawPointer { .. } | s::Type::Function(_))
+                ) && is_int(to)
+            }
+            s::AddressCast::IntegerToPointer => {
+                is_int(from) && matches!(to, Some(s::Type::RawPointer { .. }))
+            }
+            s::AddressCast::FunctionPointer => {
+                matches!(
+                    original.values[operand as usize].kind,
+                    s::ValueKind::Function(_)
+                ) && matches!(to, Some(s::Type::Function(_)))
+            }
+        };
+        if !valid {
+            return Err("source address cast changed its operand or result type");
         }
         Ok(())
     }

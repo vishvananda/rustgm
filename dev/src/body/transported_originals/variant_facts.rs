@@ -38,6 +38,12 @@ enum Step {
     Dereference,
     Field(u32),
     Tuple(u32),
+    UnionField(u32),
+    ConstantIndex(u64),
+    FromEnd(u64, u64),
+    Subslice(u64, u64),
+    Subarray(u64, u64),
+    DynamicIndex(u32),
 }
 /// The identity a fact is keyed and invalidated by.
 #[derive(Clone, Copy)]
@@ -54,6 +60,12 @@ struct Shape {
     /// Reached through any dereference.
     through: bool,
     /// The nearest downcast in this place's chain: its enum base and variant.
+    downcast: Option<(Key, VariantId)>,
+}
+struct ProjectionStep {
+    step: Step,
+    mutable: bool,
+    through: bool,
     downcast: Option<(Key, VariantId)>,
 }
 #[derive(Clone, Copy)]
@@ -153,43 +165,22 @@ impl<'a> Prover<'a> {
                 Place::Projection(_) => return Err("source projection base is not prior"),
                 place => prover.shape(place)?,
             };
-            let (step, mutable, through, downcast) = match projection.kind {
-                ProjectionKind::Dereference { mutable, .. } => (
-                    Step::Dereference,
-                    base.key.mutable || mutable,
-                    true,
-                    base.downcast,
-                ),
-                ProjectionKind::Field(Selection::Nominal(field)) => {
-                    let variant = prover.downcast(field);
-                    (
-                        Step::Field(field.0),
-                        base.key.mutable,
-                        base.through,
-                        variant.map(|variant| (base.key, variant)).or(base.downcast),
-                    )
-                }
-                ProjectionKind::Field(Selection::Tuple(ordinal)) => (
-                    Step::Tuple(ordinal),
-                    base.key.mutable,
-                    base.through,
-                    base.downcast,
-                ),
-                _ => return Err("source variant facts require reference and field places"),
-            };
-            tested |= downcast.is_some();
-            let canon = *interned.entry((base.key.canon, step)).or_insert_with(|| {
-                next = next.saturating_add(1);
-                next
-            });
+            let step = prover.projection_step(index, base, projection.kind)?;
+            tested |= step.downcast.is_some();
+            let canon = *interned
+                .entry((base.key.canon, step.step))
+                .or_insert_with(|| {
+                    next = next.saturating_add(1);
+                    next
+                });
             prover.places.push(Shape {
                 key: Key {
                     canon,
                     root: base.key.root,
-                    mutable,
+                    mutable: step.mutable,
                 },
-                through,
-                downcast,
+                through: step.through,
+                downcast: step.downcast,
             });
         }
         if !tested {
@@ -198,11 +189,19 @@ impl<'a> Prover<'a> {
         // Locals whose own storage is ever mutably borrowed: any later call or
         // store through a reference may change them.
         for value in &body.values {
-            if let Rvalue::Borrow { place, .. } = value.kind
-                && matches!(
-                    facts.types.kind(value.ty),
-                    Some(Kind::Reference { mutable: true, .. })
-                )
+            let escaped = match value.kind {
+                Rvalue::Borrow { place, .. }
+                    if matches!(
+                        facts.types.kind(value.ty),
+                        Some(Kind::Reference { mutable: true, .. })
+                    ) =>
+                {
+                    Some(place)
+                }
+                Rvalue::Address(place) => Some(place),
+                _ => None,
+            };
+            if let Some(place) = escaped
                 && let shape = prover.shape(place)?
                 && !shape.through
                 && let Some(root) = shape.key.root
@@ -211,6 +210,107 @@ impl<'a> Prover<'a> {
             }
         }
         Ok(Some(prover))
+    }
+    fn projection_step(
+        &self,
+        index: usize,
+        base: Shape,
+        kind: ProjectionKind,
+    ) -> Result<ProjectionStep, &'static str> {
+        let (step, mutable, through, downcast) = match kind {
+            ProjectionKind::Dereference { mutable, .. } => (
+                Step::Dereference,
+                base.key.mutable || mutable,
+                true,
+                base.downcast,
+            ),
+            ProjectionKind::RawDereference { .. } => (Step::Dereference, true, true, base.downcast),
+            ProjectionKind::Field(Selection::Nominal(field)) => {
+                let variant = self.downcast(field);
+                (
+                    Step::Field(field.0),
+                    base.key.mutable,
+                    base.through,
+                    variant.map(|variant| (base.key, variant)).or(base.downcast),
+                )
+            }
+            ProjectionKind::Field(Selection::Tuple(ordinal)) => (
+                Step::Tuple(ordinal),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::UnionField(Selection::Nominal(field)) => {
+                (Step::UnionField(field.0), true, base.through, base.downcast)
+            }
+            ProjectionKind::ConstantIndex(offset) => (
+                Step::ConstantIndex(offset),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::FromEnd { offset, minimum } => (
+                Step::FromEnd(offset, minimum),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::Subslice { prefix, suffix } => (
+                Step::Subslice(prefix, suffix),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::Subarray { start, end } => (
+                Step::Subarray(start, end),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            ProjectionKind::Index { .. }
+            | ProjectionKind::IndexParameter { .. }
+            | ProjectionKind::SliceIndex { .. } => (
+                Step::DynamicIndex(
+                    u32::try_from(index).map_err(|_| "source projection ordinal overflow")?,
+                ),
+                base.key.mutable,
+                base.through,
+                base.downcast,
+            ),
+            _ => return Err("source variant facts require reference and field places"),
+        };
+        Ok(ProjectionStep {
+            step,
+            mutable,
+            through,
+            downcast,
+        })
+    }
+    fn uninhabited(&self, place: Place) -> bool {
+        let ty = match place {
+            Place::Local(id) => self.body.locals.get(id.0 as usize).map(|local| local.ty),
+            Place::Projection(id) => self
+                .body
+                .projections
+                .get(id.0 as usize)
+                .map(|projection| projection.ty),
+            Place::Temporary(id) => self.body.values.get(id.0 as usize).map(|value| value.ty),
+            Place::Static(id) => self
+                .body
+                .static_types
+                .as_deref()
+                .and_then(|table| table.get(&id).copied()),
+        };
+        let Some(ty) = ty else {
+            return false;
+        };
+        match self.facts.types.kind(ty) {
+            Some(Kind::Never) => true,
+            Some(Kind::Adt(owner, _)) => self.facts.aggregates.get(owner).is_some_and(|shape| {
+                shape.kind == aggregate::Kind::Enum && self.facts.members.variants(owner).is_empty()
+            }),
+            _ => false,
+        }
     }
     fn shape(&self, place: Place) -> Result<Shape, &'static str> {
         let local = |canon, root| Shape {
@@ -440,15 +540,25 @@ impl<'a> Prover<'a> {
                         .ok_or("source evaluated value is outside its body")?;
                     diverges |= matches!(self.facts.types.kind(row.ty), Some(Kind::Never));
                     match row.kind {
-                        Rvalue::Read(place) | Rvalue::Borrow { place, .. } => {
+                        Rvalue::Read(place)
+                        | Rvalue::Borrow { place, .. }
+                        | Rvalue::Address(place)
+                        | Rvalue::Length(place)
+                        | Rvalue::TextEquals { place, .. } => {
                             self.require(place)?;
+                        }
+                        Rvalue::Validate(place) => {
+                            self.require(place)?;
+                            diverges |= self.uninhabited(place);
                         }
                         Rvalue::IsVariant { place, variant } => {
                             self.require(place)?;
                             let shape = self.shape(place)?.key;
                             tests.insert(value.0, (shape, variant, self.tick()));
                         }
-                        Rvalue::Call { .. } | Rvalue::Invoke { .. } => self.clobber(),
+                        Rvalue::Call { .. } | Rvalue::Invoke { .. } | Rvalue::Assembly { .. } => {
+                            self.clobber();
+                        }
                         _ => {}
                     }
                 }

@@ -67,7 +67,8 @@ def main():
                                  "source-core-structural-inherents",
                                  "source-primitive-reexports",
                                  "source-internal-alias-reexports",
-                                 "source-caller-site-transport"))
+                                 "source-caller-site-transport",
+                                 "source-extended-body-ops"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

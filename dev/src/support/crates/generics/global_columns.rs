@@ -321,6 +321,10 @@ impl super::Original {
             super::ValueKind::Read(place)
             | super::ValueKind::Borrow(place)
             | super::ValueKind::TwoPhaseBorrow(place)
+            | super::ValueKind::Address(place)
+            | super::ValueKind::Length(place)
+            | super::ValueKind::Validate(place)
+            | super::ValueKind::TextEquals { place, .. }
             | super::ValueKind::IsVariant { place, .. } => Some(place),
             _ => None,
         });

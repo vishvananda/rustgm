@@ -21,12 +21,16 @@ pub(super) fn emit(
         stage.charge(1)?;
         stage.prepare_type_arena(facts, value.ty)?;
         let kind = match value.kind {
-            ir::Rvalue::Read(_) | ir::Rvalue::Borrow { .. } | ir::Rvalue::Constrain(_) => {
-                place_value(stage, value.kind)?
-            }
-            ir::Rvalue::IsVariant { .. } | ir::Rvalue::Binary { .. } | ir::Rvalue::Cast { .. } => {
-                operator(stage, facts, body, index, value)?
-            }
+            ir::Rvalue::Read(_)
+            | ir::Rvalue::Borrow { .. }
+            | ir::Rvalue::Address(_)
+            | ir::Rvalue::Length(_)
+            | ir::Rvalue::Validate(_)
+            | ir::Rvalue::Constrain(_) => place_value(stage, value.kind)?,
+            ir::Rvalue::IsVariant { .. }
+            | ir::Rvalue::Unary { .. }
+            | ir::Rvalue::Binary { .. }
+            | ir::Rvalue::Cast { .. } => operator(stage, facts, body, index, value)?,
             ir::Rvalue::Function(_)
             | ir::Rvalue::Invoke { .. }
             | ir::Rvalue::Call { .. }
@@ -44,6 +48,12 @@ pub(super) fn emit(
 }
 /// Reads, borrows and constraints of a place or an earlier value.
 fn place_value(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
+    let place_or_temp = |stage: &mut Stage, target: ir::Place| match target {
+        ir::Place::Temporary(value) if stage.declaration_policies() => {
+            Ok(s::Place::Temporary(value.0))
+        }
+        other => place(stage, other),
+    };
     Ok(match kind {
         ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
             s::ValueKind::Read(s::Place::Temporary(value.0))
@@ -67,6 +77,15 @@ fn place_value(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'st
             place: target,
             kind: ir::BorrowKind::TwoPhase,
         } if stage.body_nodes() => s::ValueKind::TwoPhaseBorrow(place(stage, target)?),
+        ir::Rvalue::Address(target) if stage.declaration_policies() => {
+            s::ValueKind::Address(place_or_temp(stage, target)?)
+        }
+        ir::Rvalue::Length(target) if stage.declaration_policies() => {
+            s::ValueKind::Length(place_or_temp(stage, target)?)
+        }
+        ir::Rvalue::Validate(target) if stage.declaration_policies() => {
+            s::ValueKind::Validate(place_or_temp(stage, target)?)
+        }
         ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
         _ => return Err(WIDER),
     })
@@ -88,6 +107,14 @@ fn operator(
             direct_variant: false,
             ..
         } if stage.body_nodes() => variant_operation(stage, value.kind),
+        ir::Rvalue::Cast {
+            kind: crate::sema::model::Cast::EnumToInteger,
+            operand,
+            direct_variant: true,
+        } if stage.declaration_policies() => Ok(s::ValueKind::DirectEnumCast(operand.0)),
+        ir::Rvalue::Unary { .. } if stage.declaration_policies() => {
+            unary(facts, body, index, value)
+        }
         ir::Rvalue::Binary { .. } if stage.body_nodes() => binary(stage, facts, body, index, value),
         ir::Rvalue::Binary { .. } => {
             Err("source Binary operations require the version-thirteen body IR profile")
@@ -178,6 +205,41 @@ fn item(
         ir::Rvalue::Text(text) if stage.body_nodes() => {
             text_literal(stage, facts, raw, value.ty, text)
         }
+        ir::Rvalue::TextEquals {
+            place: target,
+            text,
+        } if stage.declaration_policies() => {
+            let ordinal = push_text(stage, facts, raw, text)?;
+            let target = match target {
+                ir::Place::Temporary(value) => s::Place::Temporary(value.0),
+                other => place(stage, other)?,
+            };
+            Ok(s::ValueKind::TextEquals {
+                place: target,
+                text: ordinal,
+            })
+        }
+        ir::Rvalue::Union {
+            field: crate::sema::members::Selection::Nominal(field),
+            value: operand,
+        } if stage.declaration_policies() => {
+            let identity = facts
+                .members
+                .identity(field)
+                .ok_or("source union value lost its actual field identity")?;
+            Ok(s::ValueKind::Union {
+                owner: stage.declaration(identity.owner)?,
+                ordinal: identity.field,
+                value: operand.0,
+            })
+        }
+        ir::Rvalue::Repeat {
+            value: operand,
+            mode,
+        } if stage.declaration_policies() => Ok(s::ValueKind::Repeat {
+            value: operand.0,
+            constant: mode == ir::RepeatMode::Constant,
+        }),
         ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind),
         ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item),
         ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
@@ -190,8 +252,14 @@ fn item(
                     variant: value.declaration,
                     fields: g::Range { start: 0, end: 0 },
                 }),
-                s::ConstTerm::Value(_) => {
-                    Err("source const argument value requires its wider profile")
+                s::ConstTerm::Value(constant) => {
+                    if stage.rows.types.get(constant.ty.0 as usize)
+                        == Some(&s::Type::Scalar(crate::support::crates::Scalar::Unit))
+                    {
+                        Ok(s::ValueKind::Unit)
+                    } else {
+                        Ok(s::ValueKind::Scalar(constant.bits.to_le_bytes()))
+                    }
                 }
             }
         }
@@ -394,6 +462,7 @@ fn cast(
     kind: crate::sema::model::Cast,
     declaration_policies: bool,
 ) -> Result<s::ValueKind, &'static str> {
+    use crate::sema::model::Cast;
     if operand.0 as usize >= before {
         return Err("source cast changed its actual preceding operand");
     }
@@ -401,11 +470,40 @@ fn cast(
         .values
         .get(operand.0 as usize)
         .ok_or("source cast lost its actual operand")?;
-    if declaration_policies
-        && kind == crate::sema::model::Cast::Pointer
-        && crate::sema::crates::transportable_pointer_cast(&facts.types, input.ty, result)
-    {
-        return Ok(s::ValueKind::PointerCast(operand.0));
+    if declaration_policies {
+        match kind {
+            Cast::Pointer => {
+                if widened_pointer_cast(&facts.types, input.ty, result) {
+                    return Ok(s::ValueKind::PointerCast(operand.0));
+                }
+            }
+            Cast::PointerThin => {
+                return Ok(s::ValueKind::AddressCast {
+                    kind: s::AddressCast::PointerThin,
+                    operand: operand.0,
+                });
+            }
+            Cast::PointerToInteger => {
+                return Ok(s::ValueKind::AddressCast {
+                    kind: s::AddressCast::PointerToInteger,
+                    operand: operand.0,
+                });
+            }
+            Cast::IntegerToPointer => {
+                return Ok(s::ValueKind::AddressCast {
+                    kind: s::AddressCast::IntegerToPointer,
+                    operand: operand.0,
+                });
+            }
+            Cast::FunctionPointer => {
+                reify(facts, body, before, result, operand)?;
+                return Ok(s::ValueKind::AddressCast {
+                    kind: s::AddressCast::FunctionPointer,
+                    operand: operand.0,
+                });
+            }
+            _ => {}
+        }
     }
     let from = crate::sema::crates::export_scalar(facts, input.ty)
         .map_err(|_| "source cast operand requires a closed primitive type")?;
@@ -415,6 +513,74 @@ fn cast(
         return Err("source scalar cast changed its actual primitive conversion");
     }
     Ok(s::ValueKind::ScalarCast(operand.0))
+}
+
+fn widened_pointer_cast(
+    types: &crate::types::Store,
+    from: crate::types::TypeId,
+    to: crate::types::TypeId,
+) -> bool {
+    use crate::types::Kind;
+    if crate::sema::crates::transportable_pointer_cast(types, from, to) {
+        return true;
+    }
+    let from_kind = match types.kind(from) {
+        Some(Kind::Pattern { base, .. }) => types.kind(base),
+        kind => kind,
+    };
+    match (from_kind, types.kind(to)) {
+        (Some(Kind::Pointer { .. } | Kind::Function { .. }), Some(Kind::Pointer { .. })) => true,
+        (Some(Kind::Reference { mutable: a, .. }), Some(Kind::Reference { mutable: b, .. })) => {
+            from == to && a == b
+        }
+        _ => false,
+    }
+}
+
+fn unary(
+    facts: &Declarations,
+    body: &Body,
+    before: usize,
+    value: ir::Value,
+) -> Result<s::ValueKind, &'static str> {
+    let ir::Rvalue::Unary {
+        operator,
+        operand,
+        literal,
+    } = value.kind
+    else {
+        return Err("source unary request changed its actual operation");
+    };
+    if operand.0 as usize >= before {
+        return Err("source unary operation changed its actual preceding operand");
+    }
+    let input = body
+        .values
+        .get(operand.0 as usize)
+        .ok_or("source unary operation lost its actual operand")?;
+    if input.ty != value.ty {
+        return Err("source unary operation changed its primitive result type");
+    }
+    let operator = match operator {
+        crate::syntax::ast::Unary::Negate => s::UnaryOperator::Negate,
+        crate::syntax::ast::Unary::Not => s::UnaryOperator::Not,
+        _ => return Err("source unary operation requires negate or not"),
+    };
+    let wide_float = matches!(
+        facts.types.kind(value.ty),
+        Some(crate::types::Kind::Primitive(
+            crate::types::Primitive::F16 | crate::types::Primitive::F128
+        ))
+    );
+    if !wide_float {
+        crate::sema::crates::export_scalar(facts, value.ty)
+            .map_err(|_| "source unary operand requires a closed primitive type")?;
+    }
+    Ok(s::ValueKind::Unary {
+        operator,
+        operand: operand.0,
+        literal,
+    })
 }
 
 fn function(
@@ -491,25 +657,39 @@ fn binary(
         P::Minus => s::BinaryOperator::Sub,
         P::Star => s::BinaryOperator::Mul,
         P::Slash if stage.declaration_policies() => s::BinaryOperator::Div,
+        P::Percent if stage.declaration_policies() => s::BinaryOperator::Rem,
+        P::ShiftLeft if stage.declaration_policies() => s::BinaryOperator::Shl,
+        P::ShiftRight if stage.declaration_policies() => s::BinaryOperator::Shr,
         _ => return Err("source checked division or shift requires a wider transport row"),
     };
-    let mut operand = None;
-    for value in [left, right] {
-        if value.0 as usize >= before {
+    let wide_float = |ty| {
+        matches!(
+            facts.types.kind(ty),
+            Some(crate::types::Kind::Primitive(
+                crate::types::Primitive::F16 | crate::types::Primitive::F128
+            ))
+        )
+    };
+    for operand_id in [left, right] {
+        if operand_id.0 as usize >= before {
             return Err("source binary operation changed its actual preceding operand");
         }
         let input = body
             .values
-            .get(value.0 as usize)
+            .get(operand_id.0 as usize)
             .ok_or("source binary operation lost its actual operand")?;
-        let scalar = crate::sema::crates::export_scalar(facts, input.ty)
-            .map_err(|_| "source binary operand requires a closed primitive type")?;
-        if operand.replace(scalar).is_some_and(|first| first != scalar) {
-            return Err("source binary operation changed its shared operand type");
+        if !wide_float(input.ty) {
+            crate::sema::crates::export_scalar(facts, input.ty)
+                .map_err(|_| "source binary operand requires a closed primitive type")?;
         }
     }
-    crate::sema::crates::export_scalar(facts, value.ty)
-        .map_err(|_| "source binary result requires a closed primitive type")?;
+    if !operator.shift() && body.values[left.0 as usize].ty != body.values[right.0 as usize].ty {
+        return Err("source binary operation changed its shared operand type");
+    }
+    if !wide_float(value.ty) {
+        crate::sema::crates::export_scalar(facts, value.ty)
+            .map_err(|_| "source binary result requires a closed primitive type")?;
+    }
     let operands = match operands {
         ir::BinaryOperands::NotRequired => s::OperandForm::NotRequired,
         ir::BinaryOperands::Neither => s::OperandForm::Neither,
@@ -558,7 +738,14 @@ fn parameter_reborrow(
 /// conditionally, so a reification to one requests its formation. The
 /// consumer proves it again.
 fn parameter_pointer(facts: &Declarations, ty: crate::types::TypeId, kind: s::ValueKind) -> bool {
-    matches!(kind, s::ValueKind::Reify(_)) && facts.types.contains_parameters(ty) == Some(true)
+    matches!(
+        kind,
+        s::ValueKind::Reify(_)
+            | s::ValueKind::AddressCast {
+                kind: s::AddressCast::FunctionPointer,
+                ..
+            }
+    ) && facts.types.contains_parameters(ty) == Some(true)
 }
 /// Version thirteen: a literal joins its original's text column in value
 /// order. Only a shared `'static` reference to `str` is a text value.
@@ -579,6 +766,14 @@ fn text_literal(
     ) {
         return Err("source text literal is not a shared static str reference");
     }
+    Ok(s::ValueKind::Text(push_text(stage, facts, raw, text)?))
+}
+fn push_text(
+    stage: &mut Stage,
+    facts: &Declarations,
+    raw: &mut s::Original,
+    text: crate::sema::text::Id,
+) -> Result<u32, &'static str> {
     let bytes = facts.texts.get(text)?;
     stage.charge(bytes.len().saturating_add(1))?;
     stage.reserve(bytes.len().saturating_add(4 * size_of::<Box<str>>()))?;
@@ -586,7 +781,7 @@ fn text_literal(
     let texts = raw.texts.get_or_insert_with(Box::default);
     let ordinal = u32::try_from(texts.rows.len()).map_err(|_| "source text column overflow")?;
     texts.rows.push(contents.into());
-    Ok(s::ValueKind::Text(ordinal))
+    Ok(ordinal)
 }
 /// A constructor test or a fieldless enum's integer conversion.
 fn variant_operation(stage: &mut Stage, kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {

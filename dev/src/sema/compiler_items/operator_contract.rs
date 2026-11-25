@@ -384,15 +384,14 @@ fn imported_operator(
     operator: Operator,
     work: &mut Work,
 ) -> Result<SourceOperator, Failure> {
-    if operator.indexing() {
-        return Err("imported indexing operator roles require their wider result profile".into());
-    }
     facts.associated.require_imported_role(declaration)?;
     let mut steps = work.0;
     let header = headers::Trait::current(report, facts, declaration, &mut steps);
     work.0 = steps;
     let header = header?;
-    if operator.assignment() {
+    if operator.indexing() {
+        indexing::imported(report, facts, &header, operator, work)
+    } else if operator.assignment() {
         imported_assignment(report, facts, &header, operator, work)
     } else {
         imported_value(report, facts, &header, operator, work)

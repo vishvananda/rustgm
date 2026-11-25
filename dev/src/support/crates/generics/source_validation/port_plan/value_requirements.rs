@@ -24,7 +24,7 @@ impl Builder<'_, '_, '_> {
         };
         self.formation(original, port, site, value.ty, work)?;
         match value.kind {
-            s::ValueKind::Unit => self.unit(original, value.ty, work),
+            s::ValueKind::Unit | s::ValueKind::Validate(_) => self.unit(original, value.ty, work),
             s::ValueKind::Aggregate { fields } => {
                 self.aggregate_value(original, (value.ty, None), fields, work)
             }
@@ -34,7 +34,16 @@ impl Builder<'_, '_, '_> {
             s::ValueKind::IsVariant { place, variant } => {
                 self.variant_test(original, (value.ty, place), variant, work)
             }
-            s::ValueKind::EnumCast(operand) => self.enum_cast(original, value.ty, operand, work),
+            s::ValueKind::EnumCast(operand) | s::ValueKind::DirectEnumCast(operand) => {
+                self.enum_cast(original, value.ty, operand, work)
+            }
+            s::ValueKind::Address(_)
+            | s::ValueKind::Length(_)
+            | s::ValueKind::TextEquals { .. }
+            | s::ValueKind::Union { .. }
+            | s::ValueKind::Repeat { .. } => {
+                self.extended_value_input(original, value.ty, value.kind, work)
+            }
             // Domain validation checked the exact primitive type and canonical bits,
             // an assembly effect's unit type and operand types, and a constant
             // read's declared scalar type.
@@ -42,6 +51,14 @@ impl Builder<'_, '_, '_> {
             s::ValueKind::Scalar(_)
             | s::ValueKind::ScalarCast(_)
             | s::ValueKind::PointerCast(_)
+            | s::ValueKind::AddressCast {
+                kind:
+                    s::AddressCast::PointerThin
+                    | s::AddressCast::PointerToInteger
+                    | s::AddressCast::IntegerToPointer,
+                ..
+            }
+            | s::ValueKind::Unary { .. }
             | s::ValueKind::Binary { .. }
             | s::ValueKind::Text(_)
             | s::ValueKind::Assembly { .. }
@@ -77,42 +94,44 @@ impl Builder<'_, '_, '_> {
                 }
                 Ok(())
             }
-            s::ValueKind::Reify(operand) => self.reified(original, value.ty, operand, work),
+            s::ValueKind::Reify(operand)
+            | s::ValueKind::AddressCast {
+                kind: s::AddressCast::FunctionPointer,
+                operand,
+            } => self.reified(original, value.ty, operand, work),
+            s::ValueKind::Invoke { .. }
+            | s::ValueKind::Call { .. }
+            | s::ValueKind::PointerCall { .. } => {
+                self.callable_value(original, ports, OperationSite { port, site }, value, work)
+            }
+        }
+    }
+    fn callable_value(
+        &mut self,
+        original: &s::Original,
+        ports: &Ports,
+        location: OperationSite,
+        value: s::Value,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match value.kind {
             s::ValueKind::Invoke {
                 signature,
                 arguments,
                 ..
-            } => self.invoke_inputs(
-                original,
-                OperationSite { port, site },
-                (value.ty, signature),
-                arguments,
-                work,
-            ),
+            } => self.invoke_inputs(original, location, (value.ty, signature), arguments, work),
             s::ValueKind::Call {
                 signature,
                 arguments,
                 ..
-            } => self.call_inputs(
-                original,
-                ports,
-                OperationSite { port, site },
-                signature,
-                arguments,
-                work,
-            ),
+            } => self.call_inputs(original, ports, location, signature, arguments, work),
             s::ValueKind::PointerCall {
                 signature,
                 callee,
                 arguments,
                 ..
-            } => self.pointer_inputs(
-                original,
-                OperationSite { port, site },
-                (signature, callee),
-                arguments,
-                work,
-            ),
+            } => self.pointer_inputs(original, location, (signature, callee), arguments, work),
+            _ => Ok(()),
         }
     }
     /// A constraint relates its operand's actual type to its own expected type
@@ -457,6 +476,109 @@ impl Builder<'_, '_, '_> {
             signature.result,
             work,
         )
+    }
+    fn extended_value_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        kind: s::ValueKind,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        match kind {
+            s::ValueKind::Address(place) => self.address_input(original, ty, place, work),
+            s::ValueKind::Length(place) => self.length_input(original, ty, place, work),
+            s::ValueKind::TextEquals { place, .. } => {
+                self.text_equals_input(original, ty, place, work)
+            }
+            s::ValueKind::Union {
+                owner,
+                ordinal,
+                value: operand,
+            } => self.union_value(original, ty, owner, ordinal, operand, work),
+            s::ValueKind::Repeat { value: operand, .. } => {
+                self.repeat_input(original, ty, operand, work)
+            }
+            _ => Err("unexpected extended value input"),
+        }
+    }
+    fn address_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        let Node::RawPointer { pointee, .. } = self.arena.nodes[result.0 as usize] else {
+            return Err("source Address result is not a raw pointer");
+        };
+        let actual = Ports::place_type(self.domains.headers, original, place, work)?;
+        if self.node(original, actual, work)? != pointee {
+            return Err("source Address pointee differs from its place type");
+        }
+        Ok(())
+    }
+    fn length_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        if self.arena.nodes[result.0 as usize]
+            != Node::Scalar(crate::support::crates::Scalar::Usize)
+        {
+            return Err("source Length result is not usize");
+        }
+        let actual = Ports::place_type(self.domains.headers, original, place, work)?;
+        let base = self.node(original, actual, work)?;
+        if !matches!(
+            self.arena.nodes[base.0 as usize],
+            Node::Slice(_) | Node::Array { .. }
+        ) {
+            return Err("source Length requires a slice or array place");
+        }
+        Ok(())
+    }
+    fn text_equals_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        place: s::Place,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        if self.arena.nodes[result.0 as usize] != Node::Scalar(crate::support::crates::Scalar::Bool)
+        {
+            return Err("source TextEquals result is not bool");
+        }
+        let actual = Ports::place_type(self.domains.headers, original, place, work)?;
+        let base = self.node(original, actual, work)?;
+        if !matches!(
+            self.arena.nodes[base.0 as usize],
+            Node::Str | Node::Slice(_) | Node::Array { .. }
+        ) {
+            return Err("source TextEquals requires a str or byte sequence place");
+        }
+        Ok(())
+    }
+    fn repeat_input(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        operand: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let result = self.node(original, ty, work)?;
+        let Node::Array { element, .. } = self.arena.nodes[result.0 as usize] else {
+            return Err("source Repeat result is not an array");
+        };
+        let actual = self.node(original, original.values[operand as usize].ty, work)?;
+        if actual != element {
+            return Err("source Repeat operand differs from its array element type");
+        }
+        Ok(())
     }
 }
 impl Builder<'_, '_, '_> {

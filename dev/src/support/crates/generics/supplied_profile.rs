@@ -167,8 +167,17 @@ const fn bodies_only(kind: s::ValueKind) -> Option<&'static str> {
         s::ValueKind::AssociatedConstant { .. } => {
             "source associated constant reads require the version-fourteen declaration profile"
         }
-        s::ValueKind::PointerCast(_) => {
-            "source pointer casts require the version-fourteen body IR profile"
+        s::ValueKind::PointerCast(_)
+        | s::ValueKind::DirectEnumCast(_)
+        | s::ValueKind::AddressCast { .. }
+        | s::ValueKind::Unary { .. }
+        | s::ValueKind::Address(_)
+        | s::ValueKind::Length(_)
+        | s::ValueKind::Validate(_)
+        | s::ValueKind::TextEquals { .. }
+        | s::ValueKind::Union { .. }
+        | s::ValueKind::Repeat { .. } => {
+            "source extended value operations require the version-fourteen body IR profile"
         }
         s::ValueKind::ConstArgument(_) => {
             "source const argument reads require the version-fourteen declaration profile"

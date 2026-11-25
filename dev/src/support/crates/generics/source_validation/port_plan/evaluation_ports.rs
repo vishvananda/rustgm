@@ -73,91 +73,140 @@ impl Ports {
     ) -> Result<(), &'static str> {
         for (index, projection) in original.projections.iter().enumerate() {
             work.charge(1)?;
-            let base = builder.node(
-                original,
-                Self::place_type(builder.domains.headers, original, projection.base, work)?,
-                work,
-            )?;
-            let (raw_region, raw_mutable) = match projection.kind {
-                s::ProjectionKind::Field { owner, ordinal } => {
-                    builder.nominal_projection(
-                        original,
-                        Self::place_type(builder.domains.headers, original, projection.base, work)?,
-                        projection.ty,
-                        owner,
-                        ordinal,
-                        work,
-                    )?;
-                    // Version thirteen reads a field of a temporary, such as
-                    // `make().n`; the field is never writable, so a write
-                    // through it still requires wider proof.
-                    let writable = match projection.base {
-                        s::Place::Temporary(_) if builder.domains.bodies => false,
-                        base => self.writable(original, base, work)?,
-                    };
-                    self.access[index] = Access {
-                        writable,
-                        unique: self.unique(projection.base),
-                    };
-                    continue;
-                }
-                s::ProjectionKind::Tuple(ordinal) => {
-                    let Node::Tuple { elements } = builder.arena.nodes[base.0 as usize] else {
-                        return Err("source tuple projection base is not an actual tuple");
-                    };
-                    let expected = builder.arena.nominal_argument(elements, ordinal, work)?;
-                    let actual = builder.node(original, projection.ty, work)?;
-                    if actual != expected {
-                        return Err("source tuple projection differs from its ordered element");
-                    }
-                    let writable = match projection.base {
-                        s::Place::Temporary(_) if builder.domains.bodies => false,
-                        base => self.writable(original, base, work)?,
-                    };
-                    self.access[index] = Access {
-                        writable,
-                        unique: self.unique(projection.base),
-                    };
-                    continue;
-                }
-                s::ProjectionKind::Dereference { region, mutable } => (region, mutable),
-            };
-            let Node::Reference {
-                mutable,
-                region,
-                referent,
-            } = builder.arena.nodes[base.0 as usize]
-            else {
-                return Err("source dereference base is not an actual reference");
-            };
-            if referent != builder.node(original, projection.ty, work)?
-                || region
-                    != super::uses::region(
-                        builder.domains,
-                        &builder.arena,
-                        raw_region,
-                        super::nodes::Rewrite::Original,
-                        work,
-                    )?
-                || mutable != raw_mutable
-            {
-                return Err("source dereference changed its referent, lifetime or mutability");
-            }
-            // Version thirteen follows rustc: a mutable dereference is writable
-            // through a unique path even from an immutable owning local. Older
-            // profiles keep requiring a writable parent projection.
-            let path = match projection.base {
-                s::Place::Projection(parent) if !builder.domains.bodies => {
-                    self.access[parent as usize].writable
-                }
-                base => self.unique(base),
-            };
-            self.access[index] = Access {
-                writable: mutable && path,
-                unique: mutable && path,
-            };
+            self.projection_row(builder, original, index, projection, work)?;
         }
         Ok(())
+    }
+    fn projection_row(
+        &mut self,
+        builder: &mut Builder<'_, '_, '_>,
+        original: &s::Original,
+        index: usize,
+        projection: &s::Projection,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let base = builder.node(
+            original,
+            Self::place_type(builder.domains.headers, original, projection.base, work)?,
+            work,
+        )?;
+        let (raw_region, raw_mutable) = match projection.kind {
+            s::ProjectionKind::Field { owner, ordinal } => {
+                builder.nominal_projection(
+                    original,
+                    Self::place_type(builder.domains.headers, original, projection.base, work)?,
+                    projection.ty,
+                    owner,
+                    ordinal,
+                    work,
+                )?;
+                self.access[index] =
+                    self.subplace_access(builder, original, projection.base, work)?;
+                return Ok(());
+            }
+            s::ProjectionKind::UnionField { owner, ordinal } => {
+                builder.union_projection(
+                    original,
+                    Self::place_type(builder.domains.headers, original, projection.base, work)?,
+                    projection.ty,
+                    owner,
+                    ordinal,
+                    work,
+                )?;
+                self.access[index] =
+                    self.subplace_access(builder, original, projection.base, work)?;
+                return Ok(());
+            }
+            s::ProjectionKind::Tuple(ordinal) => {
+                let Node::Tuple { elements } = builder.arena.nodes[base.0 as usize] else {
+                    return Err("source tuple projection base is not an actual tuple");
+                };
+                let expected = builder.arena.nominal_argument(elements, ordinal, work)?;
+                let actual = builder.node(original, projection.ty, work)?;
+                if actual != expected {
+                    return Err("source tuple projection differs from its ordered element");
+                }
+                self.access[index] =
+                    self.subplace_access(builder, original, projection.base, work)?;
+                return Ok(());
+            }
+            s::ProjectionKind::RawDereference {
+                mutable: raw_mutable,
+            } => {
+                self.access[index] = Self::raw_deref_access(
+                    builder,
+                    original,
+                    base,
+                    projection.ty,
+                    raw_mutable,
+                    work,
+                )?;
+                return Ok(());
+            }
+            s::ProjectionKind::Index { .. }
+            | s::ProjectionKind::IndexParameter { .. }
+            | s::ProjectionKind::SliceIndex { .. }
+            | s::ProjectionKind::ConstantIndex(_)
+            | s::ProjectionKind::FromEnd { .. }
+            | s::ProjectionKind::Subslice { .. }
+            | s::ProjectionKind::Subarray { .. } => {
+                Self::sequence_projection(builder, original, base, projection, work)?;
+                self.access[index] =
+                    self.subplace_access(builder, original, projection.base, work)?;
+                return Ok(());
+            }
+            s::ProjectionKind::Dereference { region, mutable } => (region, mutable),
+        };
+        self.access[index] = self.deref_access(
+            builder,
+            original,
+            base,
+            projection,
+            (raw_region, raw_mutable),
+            work,
+        )?;
+        Ok(())
+    }
+    fn deref_access(
+        &self,
+        builder: &mut Builder<'_, '_, '_>,
+        original: &s::Original,
+        base: super::nodes::NodeId,
+        projection: &s::Projection,
+        (raw_region, raw_mutable): (s::RegionRef, bool),
+        work: &mut Work,
+    ) -> Result<Access, &'static str> {
+        let Node::Reference {
+            mutable,
+            region,
+            referent,
+        } = builder.arena.nodes[base.0 as usize]
+        else {
+            return Err("source dereference base is not an actual reference");
+        };
+        if referent != builder.node(original, projection.ty, work)?
+            || region
+                != super::uses::region(
+                    builder.domains,
+                    &builder.arena,
+                    raw_region,
+                    super::nodes::Rewrite::Original,
+                    work,
+                )?
+            || mutable != raw_mutable
+        {
+            return Err("source dereference changed its referent, lifetime or mutability");
+        }
+        let path = match projection.base {
+            s::Place::Projection(parent) if !builder.domains.bodies => {
+                self.access[parent as usize].writable
+            }
+            base => self.unique(base),
+        };
+        Ok(Access {
+            writable: mutable && path,
+            unique: mutable && path,
+        })
     }
     pub(super) fn place_type(
         headers: &crate::support::crates::generics::source::HeaderIndex<'_>,
@@ -215,6 +264,133 @@ impl Ports {
                 .get(parent as usize)
                 .is_some_and(|access| access.unique),
         }
+    }
+    fn raw_deref_access(
+        builder: &mut Builder<'_, '_, '_>,
+        original: &s::Original,
+        base: super::nodes::NodeId,
+        ty: g::TypeRef,
+        raw_mutable: bool,
+        work: &mut Work,
+    ) -> Result<Access, &'static str> {
+        let raw_base = match builder.arena.nodes[base.0 as usize] {
+            Node::Pattern { base, .. } => builder.arena.nodes[base.0 as usize],
+            node => node,
+        };
+        let Node::RawPointer { mutable, pointee } = raw_base else {
+            return Err("source raw dereference base is not an actual raw pointer");
+        };
+        if mutable != raw_mutable || pointee != builder.node(original, ty, work)? {
+            return Err("source raw dereference changed its pointee or mutability");
+        }
+        Ok(Access {
+            writable: mutable,
+            unique: mutable,
+        })
+    }
+    fn subplace_access(
+        &self,
+        builder: &Builder<'_, '_, '_>,
+        original: &s::Original,
+        base: s::Place,
+        work: &mut Work,
+    ) -> Result<Access, &'static str> {
+        let writable = match base {
+            s::Place::Temporary(_) if builder.domains.bodies => false,
+            place => self.writable(original, place, work)?,
+        };
+        Ok(Access {
+            writable,
+            unique: self.unique(base),
+        })
+    }
+    fn sequence_projection(
+        builder: &mut Builder<'_, '_, '_>,
+        original: &s::Original,
+        base: super::nodes::NodeId,
+        projection: &s::Projection,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let actual = builder.node(original, projection.ty, work)?;
+        let base_node = builder.arena.nodes[base.0 as usize];
+        let u64_const =
+            |arena: &Arena, node: super::nodes::NodeId| match arena.nodes[node.0 as usize] {
+                Node::ConstValue {
+                    scalar: crate::support::crates::Scalar::Usize,
+                    bits,
+                } => {
+                    let value = u128::from(bits[0])
+                        | (u128::from(bits[1]) << 32)
+                        | (u128::from(bits[2]) << 64)
+                        | (u128::from(bits[3]) << 96);
+                    u64::try_from(value).ok()
+                }
+                _ => None,
+            };
+        match projection.kind {
+            s::ProjectionKind::Index { length, .. } => {
+                let Node::Array { element, length: l } = base_node else {
+                    return Err("source array index base is not an actual array");
+                };
+                if actual != element || u64_const(&builder.arena, l) != Some(length) {
+                    return Err("source array index changed its element or length");
+                }
+            }
+            s::ProjectionKind::IndexParameter { length, .. } => {
+                let Node::Array { element, length: l } = base_node else {
+                    return Err("source parameterized array index base is not an actual array");
+                };
+                if actual != element || builder.arena.nodes[l.0 as usize] != Node::Parameter(length)
+                {
+                    return Err("source parameterized array index changed its element or slot");
+                }
+            }
+            s::ProjectionKind::SliceIndex { .. } => {
+                let Node::Slice(element) = base_node else {
+                    return Err("source slice index base is not an actual slice");
+                };
+                if actual != element {
+                    return Err("source slice index changed its element type");
+                }
+            }
+            s::ProjectionKind::ConstantIndex(offset) => match base_node {
+                Node::Slice(element) if actual == element => {}
+                Node::Array { element, length }
+                    if actual == element
+                        && u64_const(&builder.arena, length).is_none_or(|len| offset < len) => {}
+                _ => return Err("source constant index changed its sequence base or element"),
+            },
+            s::ProjectionKind::FromEnd { offset, minimum } => match base_node {
+                Node::Slice(element) | Node::Array { element, .. }
+                    if actual == element && offset >= 1 && offset <= minimum => {}
+                _ => return Err("source suffix index changed its sequence base or bounds"),
+            },
+            s::ProjectionKind::Subslice { .. } => {
+                if !matches!(base_node, Node::Slice(_)) || actual != base {
+                    return Err("source subslice projection changed its slice type");
+                }
+            }
+            s::ProjectionKind::Subarray { start, end } => {
+                let (
+                    Node::Array { element, .. },
+                    Node::Array {
+                        element: out_element,
+                        length,
+                    },
+                ) = (base_node, builder.arena.nodes[actual.0 as usize])
+                else {
+                    return Err("source subarray projection requires array base and result");
+                };
+                if start > end
+                    || out_element != element
+                    || u64_const(&builder.arena, length) != Some(end - start)
+                {
+                    return Err("source subarray projection changed its element or range length");
+                }
+            }
+            _ => return Err("unexpected sequence projection kind"),
+        }
+        Ok(())
     }
     pub(super) fn site(&self, value: u32, work: &mut Work) -> Result<u32, &'static str> {
         work.charge(1)?;

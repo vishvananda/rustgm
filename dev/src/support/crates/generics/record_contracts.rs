@@ -112,12 +112,32 @@ fn require_body_operations(
                 .saturating_add(1),
         )?;
         if !profile.declaration_policies()
-            && body
-                .projections
-                .iter()
-                .any(|projection| matches!(projection.kind, super::ProjectionKind::Tuple(_)))
+            && body.projections.iter().any(|projection| {
+                !matches!(
+                    projection.kind,
+                    super::ProjectionKind::Dereference { .. } | super::ProjectionKind::Field { .. }
+                )
+            })
         {
-            return Err("source tuple projections require the declaration policy profile");
+            return Err("source extended projections require the declaration policy profile");
+        }
+        if !profile.declaration_policies()
+            && body.values.iter().any(|value| {
+                matches!(
+                    value.kind,
+                    super::ValueKind::Unary { .. }
+                        | super::ValueKind::Address(_)
+                        | super::ValueKind::Length(_)
+                        | super::ValueKind::Validate(_)
+                        | super::ValueKind::TextEquals { .. }
+                        | super::ValueKind::Union { .. }
+                        | super::ValueKind::Repeat { .. }
+                        | super::ValueKind::DirectEnumCast(_)
+                        | super::ValueKind::AddressCast { .. }
+                )
+            })
+        {
+            return Err("source extended value operations require the declaration policy profile");
         }
         if !profile.nominals()
             && (body

@@ -73,9 +73,7 @@ pub(super) fn nominal_projection_write(
             id(out, owner.0)?;
             id(out, ordinal)
         }
-        s::ProjectionKind::Tuple(_) => {
-            Err("source tuple projections require the version-fourteen encoder")
-        }
+        _ => Err("source v14 projections require the version-fourteen encoder"),
     }
 }
 pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection, &'static str> {

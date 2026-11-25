@@ -138,9 +138,12 @@ fn context_write(row: &s::Original, generation: Generation) -> Result<u8, &'stat
     Ok(context | PRECISE_LIVE_DROPS)
 }
 fn has_text(values: &[s::Value]) -> bool {
-    values
-        .iter()
-        .any(|value| matches!(value.kind, s::ValueKind::Text(_)))
+    values.iter().any(|value| {
+        matches!(
+            value.kind,
+            s::ValueKind::Text(_) | s::ValueKind::TextEquals { .. }
+        )
+    })
 }
 fn has_assembly(values: &[s::Value]) -> bool {
     values
@@ -374,6 +377,17 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         }
         s::ValueKind::ConstArgument(_) => {
             Err("source const argument reads require the version-fourteen declaration profile")
+        }
+        s::ValueKind::Unary { .. }
+        | s::ValueKind::Address(_)
+        | s::ValueKind::Length(_)
+        | s::ValueKind::Validate(_)
+        | s::ValueKind::TextEquals { .. }
+        | s::ValueKind::Union { .. }
+        | s::ValueKind::Repeat { .. }
+        | s::ValueKind::DirectEnumCast(_)
+        | s::ValueKind::AddressCast { .. } => {
+            Err("source extended value operations require the version-fourteen body IR profile")
         }
         s::ValueKind::Call {
             signature,

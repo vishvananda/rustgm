@@ -88,6 +88,9 @@ impl Reservation {
         if self.next.is_none() {
             return proof.retain_body(facts, body, source);
         }
+        if proof.is_empty() {
+            return Ok(());
+        }
         self.reserve(facts, body, source, proof.regions.clone())?;
         if !proof.has_quantified() {
             for id in proof.regions.clone() {
@@ -114,15 +117,16 @@ impl Reservation {
         if self.next.is_none() {
             return proof.retain_body(facts, body, source);
         }
-        self.reserve(facts, body, source, proof.regions.clone())?;
-        if !proof.is_empty() {
-            facts
-                .quantified_proofs
-                .push(crate::sema::model::QuantifiedProof {
-                    body,
-                    evidence: crate::sema::model::LifetimeProof::new(source, proof),
-                });
+        if proof.is_empty() {
+            return Ok(());
         }
+        self.reserve(facts, body, source, proof.regions.clone())?;
+        facts
+            .quantified_proofs
+            .push(crate::sema::model::QuantifiedProof {
+                body,
+                evidence: crate::sema::model::LifetimeProof::new(source, proof),
+            });
         Ok(())
     }
 }
@@ -146,6 +150,9 @@ impl Obligations {
                 )
             });
             return Err("trait proof has foreign body region identities");
+        }
+        if self.is_empty() {
+            return Ok(());
         }
         if self.has_gaps() {
             // Failed trial identities can leave holes in a fresh, wholly

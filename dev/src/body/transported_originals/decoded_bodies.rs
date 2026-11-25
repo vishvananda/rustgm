@@ -118,7 +118,7 @@ fn build(
     allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (rebuilt, contract, environment, pending) = {
+    let (rebuilt, mut contract, environment, pending) = {
         let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
             .map_err(|e| report.body_optional_error(None, e))?
             .ok_or_else(|| {
@@ -160,7 +160,7 @@ fn build(
         Arc::clone(&environment),
         &pending,
         &rebuilt.body,
-        &contract,
+        &mut contract,
         work,
         allowance,
     )

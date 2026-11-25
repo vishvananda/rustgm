@@ -129,6 +129,7 @@ impl Arena {
         context: Context,
         (base, variant): (NodeId, Option<DeclarationRef>),
         ordinal: u32,
+        union: bool,
         work: &mut Work,
     ) -> Result<NodeId, &'static str> {
         work.charge(1)?;
@@ -149,7 +150,8 @@ impl Arena {
             return Err("source field base lacks its actual nominal header");
         };
         let row = &rows.nominals[index as usize];
-        if row.layout.form == s::NominalForm::Union {
+        let is_union = row.layout.form == s::NominalForm::Union;
+        if is_union != union {
             return Err(
                 "source union field operations require their explicit active-field contract",
             );
@@ -280,6 +282,7 @@ impl Builder<'_, '_, '_> {
                 context,
                 (base, variant),
                 u32::try_from(ordinal).map_err(|_| "source aggregate field ordinal overflow")?,
+                false,
                 work,
             )?;
             let actual = self.node(original, original.values[value as usize].ty, work)?;
@@ -368,14 +371,64 @@ impl Builder<'_, '_, '_> {
             return Err("source field projection changed its actual nominal owner");
         }
         let context = self.nominal_context(original)?;
-        let expected =
-            self.arena
-                .nominal_field(self.domains, context, (base, variant), ordinal, work)?;
+        let expected = self.arena.nominal_field(
+            self.domains,
+            context,
+            (base, variant),
+            ordinal,
+            false,
+            work,
+        )?;
         let actual = self.node(original, result, work)?;
         if actual != expected {
             return Err("source projected field type differs after actual nominal substitution");
         }
         Ok(())
+    }
+    pub(super) fn union_projection(
+        &mut self,
+        original: &s::Original,
+        base: g::TypeRef,
+        result: g::TypeRef,
+        owner: DeclarationRef,
+        ordinal: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let base = self.node(original, base, work)?;
+        if !matches!(
+            self.arena.nodes.get(base.0 as usize),
+            Some(Node::Nominal { declaration, .. })
+                if declaration.artifact.0 == 0 && declaration.declaration == owner
+        ) {
+            return Err("source union field projection changed its actual union owner");
+        }
+        let context = self.nominal_context(original)?;
+        let expected =
+            self.arena
+                .nominal_field(self.domains, context, (base, None), ordinal, true, work)?;
+        let actual = self.node(original, result, work)?;
+        if actual != expected {
+            return Err("source union field type differs after actual nominal substitution");
+        }
+        Ok(())
+    }
+    pub(super) fn union_value(
+        &mut self,
+        original: &s::Original,
+        ty: g::TypeRef,
+        owner: DeclarationRef,
+        ordinal: u32,
+        operand: u32,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        self.union_projection(
+            original,
+            ty,
+            original.values[operand as usize].ty,
+            owner,
+            ordinal,
+            work,
+        )
     }
     /// A constructor test reads an enum place of exactly the variant's enum
     /// and yields `bool`.

@@ -104,54 +104,7 @@ fn projections(
     for projection in &body.projections {
         stage.charge(1)?;
         stage.prepare_type_arena(facts, projection.ty)?;
-        let kind = match projection.kind {
-            ir::ProjectionKind::FutureField(_) => {
-                return Err(
-                    "generated future frame fields require authenticated authored-state transport",
-                );
-            }
-            ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
-                region: stage.region(region, context)?,
-                mutable,
-            },
-            ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
-                if stage.nominal_transport() =>
-            {
-                let identity = facts
-                    .members
-                    .identity(field)
-                    .ok_or("source projection lost its actual nominal field identity")?;
-                let enumerated = facts
-                    .aggregates
-                    .get(crate::types::ItemId(identity.owner.0))
-                    .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
-                if enumerated && stage.body_nodes() {
-                    // A downcast field names its variant; the consumer re-proves
-                    // that every use is dominated by that constructor's test.
-                    let variant = facts
-                        .members
-                        .variant(field)
-                        .ok_or("source downcast field lost its actual variant")?;
-                    s::ProjectionKind::Field {
-                        owner: stage.variant(variant)?,
-                        ordinal: identity.field,
-                    }
-                } else if identity.variant != 0 || enumerated {
-                    return Err("source nominal field requires its wider variant profile");
-                } else {
-                    s::ProjectionKind::Field {
-                        owner: stage.declaration(identity.owner)?,
-                        ordinal: identity.field,
-                    }
-                }
-            }
-            ir::ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
-                if stage.declaration_policies() =>
-            {
-                s::ProjectionKind::Tuple(ordinal)
-            }
-            _ => return Err("source projection transport requires its wider explicit contract"),
-        };
+        let kind = projection_kind(stage, facts, projection.kind, context)?;
         stage.reserve(4 * size_of::<s::Projection>())?;
         raw.projections.push(s::Projection {
             base: match projection.base {
@@ -165,6 +118,116 @@ fn projections(
         });
     }
     Ok(())
+}
+
+fn projection_kind(
+    stage: &mut Stage,
+    facts: &Declarations,
+    kind: ir::ProjectionKind,
+    context: Context,
+) -> Result<s::ProjectionKind, &'static str> {
+    Ok(match kind {
+        ir::ProjectionKind::FutureField(_) => {
+            return Err(
+                "generated future frame fields require authenticated authored-state transport",
+            );
+        }
+        ir::ProjectionKind::Dereference { region, mutable } => s::ProjectionKind::Dereference {
+            region: stage.region(region, context)?,
+            mutable,
+        },
+        ir::ProjectionKind::Field(crate::sema::members::Selection::Nominal(field))
+            if stage.nominal_transport() =>
+        {
+            let identity = facts
+                .members
+                .identity(field)
+                .ok_or("source projection lost its actual nominal field identity")?;
+            let enumerated = facts
+                .aggregates
+                .get(crate::types::ItemId(identity.owner.0))
+                .is_some_and(|shape| shape.kind == crate::types::aggregate::Kind::Enum);
+            if enumerated && stage.body_nodes() {
+                // A downcast field names its variant; the consumer re-proves
+                // that every use is dominated by that constructor's test.
+                let variant = facts
+                    .members
+                    .variant(field)
+                    .ok_or("source downcast field lost its actual variant")?;
+                s::ProjectionKind::Field {
+                    owner: stage.variant(variant)?,
+                    ordinal: identity.field,
+                }
+            } else if identity.variant != 0 || enumerated {
+                return Err("source nominal field requires its wider variant profile");
+            } else {
+                s::ProjectionKind::Field {
+                    owner: stage.declaration(identity.owner)?,
+                    ordinal: identity.field,
+                }
+            }
+        }
+        ir::ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
+            if stage.declaration_policies() =>
+        {
+            s::ProjectionKind::Tuple(ordinal)
+        }
+        ir::ProjectionKind::RawDereference { mutable } if stage.declaration_policies() => {
+            s::ProjectionKind::RawDereference { mutable }
+        }
+        ir::ProjectionKind::UnionField(crate::sema::members::Selection::Nominal(field))
+            if stage.declaration_policies() =>
+        {
+            let identity = facts
+                .members
+                .identity(field)
+                .ok_or("source union projection lost its actual nominal field identity")?;
+            s::ProjectionKind::UnionField {
+                owner: stage.declaration(identity.owner)?,
+                ordinal: identity.field,
+            }
+        }
+        ir::ProjectionKind::Index { index, length } if stage.declaration_policies() => {
+            s::ProjectionKind::Index {
+                index: index.0,
+                length,
+            }
+        }
+        ir::ProjectionKind::IndexParameter { index, length } if stage.declaration_policies() => {
+            match facts.types.const_kind(length) {
+                Some(crate::types::arguments::ConstKind::Parameter(id)) => {
+                    s::ProjectionKind::IndexParameter {
+                        index: index.0,
+                        length: stage.parameter_slot(id)?,
+                    }
+                }
+                Some(crate::types::arguments::ConstKind::Value(value)) => {
+                    s::ProjectionKind::Index {
+                        index: index.0,
+                        length: u64::try_from(value.bits)
+                            .map_err(|_| "source index length exceeds u64")?,
+                    }
+                }
+                _ => return Err("source index length requires a rigid parameter or scalar"),
+            }
+        }
+        ir::ProjectionKind::SliceIndex { index } if stage.declaration_policies() => {
+            s::ProjectionKind::SliceIndex { index: index.0 }
+        }
+        ir::ProjectionKind::ConstantIndex(offset) if stage.declaration_policies() => {
+            s::ProjectionKind::ConstantIndex(offset)
+        }
+        ir::ProjectionKind::FromEnd { offset, minimum } if stage.declaration_policies() => {
+            s::ProjectionKind::FromEnd { offset, minimum }
+        }
+        ir::ProjectionKind::Subslice { prefix, suffix } if stage.declaration_policies() => {
+            s::ProjectionKind::Subslice { prefix, suffix }
+        }
+        ir::ProjectionKind::Subarray { start, end } if stage.declaration_policies() => {
+            s::ProjectionKind::Subarray { start, end }
+        }
+        _ => return Err("source projection transport requires its wider explicit contract"),
+    })
 }
 fn terminator(
     terminator: ir::Terminator,

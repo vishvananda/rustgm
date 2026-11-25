@@ -906,6 +906,15 @@ fn originals(
                         ValueKind::Read(Place::Static(_))
                             | ValueKind::ConstArgument(_)
                             | ValueKind::PointerCast(_)
+                            | ValueKind::DirectEnumCast(_)
+                            | ValueKind::AddressCast { .. }
+                            | ValueKind::Unary { .. }
+                            | ValueKind::Address(_)
+                            | ValueKind::Length(_)
+                            | ValueKind::Validate(_)
+                            | ValueKind::TextEquals { .. }
+                            | ValueKind::Union { .. }
+                            | ValueKind::Repeat { .. }
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

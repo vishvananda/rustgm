@@ -41,6 +41,20 @@ pub(super) fn append(view: &SourceOriginal<'_>) -> Result<Rvalue, &'static str> 
     }
     Ok(Rvalue::Text(PENDING))
 }
+pub(super) fn append_equals(
+    view: &SourceOriginal<'_>,
+    place: crate::body::ir::Place,
+) -> Result<Rvalue, &'static str> {
+    if !view.rows().descriptor().profile().declaration_policies() {
+        return Err(
+            "source text-equals reconstruction requires the version-fourteen body IR profile",
+        );
+    }
+    Ok(Rvalue::TextEquals {
+        place,
+        text: PENDING,
+    })
+}
 /// Replace each pending text value, in value order, by its interned literal.
 pub(super) fn intern(
     facts: &mut Declarations,
@@ -53,11 +67,14 @@ pub(super) fn intern(
         .canonical_steps
         .saturating_add(body.values.len());
     for value in &mut body.values {
-        if matches!(value.kind, Rvalue::Text(id) if id == PENDING) {
-            let text = texts
-                .next()
-                .ok_or("source text value has no copied literal")?;
-            value.kind = Rvalue::Text(facts.texts.intern(text.as_bytes())?);
+        match &mut value.kind {
+            Rvalue::Text(id) | Rvalue::TextEquals { text: id, .. } if *id == PENDING => {
+                let text = texts
+                    .next()
+                    .ok_or("source text value has no copied literal")?;
+                *id = facts.texts.intern(text.as_bytes())?;
+            }
+            _ => {}
         }
     }
     if texts.next().is_some() {
@@ -76,7 +93,10 @@ pub(super) fn validate(
     let rows = record.texts.as_deref().map_or(&[][..], |texts| &texts.rows);
     let mut next = 0_usize;
     for (actual, record) in body.values.iter().zip(&record.values) {
-        let (Rvalue::Text(id), s::ValueKind::Text(ordinal)) = (actual.kind, record.kind) else {
+        let ((Rvalue::Text(id), s::ValueKind::Text(ordinal))
+        | (Rvalue::TextEquals { text: id, .. }, s::ValueKind::TextEquals { text: ordinal, .. })) =
+            (actual.kind, record.kind)
+        else {
             continue;
         };
         let expected = rows

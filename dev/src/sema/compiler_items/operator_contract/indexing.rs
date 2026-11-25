@@ -1,5 +1,8 @@
 //! Index shape checks borrow the actual Idx, associated owner and parent contract.
-use super::{DefId, Failure, Method, Mode, Operator, Report, Work, headers};
+use super::{
+    Convention, DefId, DefKind, Failure, Method, Mode, Operator, Report, SourceOperator, Work,
+    headers, imported_item,
+};
 use crate::{
     sema::model::Declarations,
     types::{
@@ -48,7 +51,21 @@ pub(super) fn parent(
     if !matches!(operator, Operator::IndexMut) {
         return Ok(None);
     }
-    let base = super::checked(report, facts, Operator::Index, work)?;
+    let base = match header.origin {
+        crate::resolve::body_origin::DeclarationOrigin::Source(_) => {
+            super::checked(report, facts, Operator::Index, work)?
+        }
+        crate::resolve::body_origin::DeclarationOrigin::Imported(_) => {
+            let catalog = facts
+                .source_bindings
+                .as_deref()
+                .ok_or("imported indexing parent lacks its actual source catalog")?;
+            let role = catalog
+                .role(crate::support::bindings::LangItem::Index)?
+                .ok_or("imported IndexMut requires its actual Index language declaration")?;
+            super::imported_operator(report, facts, role, Operator::Index, work)?
+        }
+    };
     work.charge(inputs.len())?;
     let exact = inputs.iter().any(|input| {
         let Clause::Predicate(predicate) = input.value else {
@@ -167,4 +184,117 @@ pub(super) fn target_policy(
         Policy::Local(Some(policy)) if policy.declared_unsafe() && unsafe_ => Ok(()),
         _ => Err("source indexing target-feature permission profile is not implemented".into()),
     }
+}
+
+fn imported_members(
+    report: &Report,
+    facts: &Declarations,
+    header: &headers::Trait<'_>,
+    operator: Operator,
+    work: &mut Work,
+) -> Result<(Option<DefId>, DefId), Failure> {
+    let own_output = operator.own_output();
+    if header.written.parameters != 1
+        || header.written.supertraits != usize::from(matches!(operator, Operator::IndexMut))
+        || header.members.len() != if own_output { 2 } else { 1 }
+    {
+        return Err("imported indexing operator changed its actual member profile".into());
+    }
+    let (mut output, mut method) = (None, None);
+    for &member in header.members {
+        work.charge(3)?;
+        let definition = report
+            .resolution
+            .definitions
+            .get(member.0 as usize)
+            .ok_or("imported operator member has no actual definition")?;
+        if facts.associated.trait_owner(member) != Some(header.definition) {
+            return Err("imported operator member belongs to another actual owner".into());
+        }
+        match (definition.kind, report.package.names.get(definition.name)) {
+            (DefKind::TypeAlias, "Output") if own_output && output.is_none() => {
+                output = Some(member);
+            }
+            (DefKind::Function, name) if name == operator.method() && method.is_none() => {
+                method = Some(member);
+            }
+            _ => return Err("imported indexing operator changed its actual member profile".into()),
+        }
+    }
+    let method = method.ok_or("imported indexing operator omitted its operation")?;
+    Ok((output, method))
+}
+
+pub(super) fn imported(
+    report: &Report,
+    facts: &Declarations,
+    header: &headers::Trait<'_>,
+    operator: Operator,
+    work: &mut Work,
+) -> Result<SourceOperator, Failure> {
+    work.charge(8)?;
+    header.profile(
+        &facts.types,
+        headers::Flags {
+            unsafe_: false,
+            auto_: false,
+            constant: header.flags.constant,
+        },
+        1,
+    )?;
+    let rhs = parameter(facts, header)?;
+    let own_output = operator.own_output();
+    let (output, method) = imported_members(report, facts, header, operator, work)?;
+    let inherited = parent(report, facts, header, operator, Some(rhs), work)?;
+    let output = output
+        .or(inherited.map(|(_, output)| output))
+        .ok_or("imported indexing operator omitted its Output")?;
+    let function = facts
+        .declaration_header(method)?
+        .ok_or("imported operator has no completed method header")?;
+    if function.body.is_some()
+        || function.universals != 1
+        || (own_output && facts.associated.families.contains_key(&output))
+        || facts
+            .generics
+            .parameters
+            .get(&method)
+            .is_some_and(|p| !p.is_empty())
+    {
+        return Err("imported indexing operator requires its required nongeneric profile".into());
+    }
+    let Some(Kind::Function {
+        bound_regions,
+        parameters,
+        result,
+        unsafe_: false,
+        convention: Convention::RUST,
+    }) = facts.types.kind(function.signature)
+    else {
+        return Err("imported indexing operator requires a safe Rust signature".into());
+    };
+    let contract = Method {
+        definition: method,
+        output: Some(output),
+        projection_owner: inherited.map_or(header.definition, |(owner, _)| owner),
+        rhs: Some(rhs),
+        mode: operator.mode(),
+    };
+    signature(
+        facts,
+        header,
+        &contract,
+        parameters,
+        result,
+        bound_regions,
+        work,
+    )?;
+    imported_item(facts, method, function.signature)?;
+    Ok(SourceOperator {
+        definition: header.definition,
+        method,
+        signature: function.signature,
+        rhs: Some(rhs),
+        output: Some(output),
+    })
 }

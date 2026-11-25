@@ -221,7 +221,7 @@ pub(super) fn prove(
     environment: Arc<Environment>,
     pending: &Pending,
     body: &Body,
-    contract: &crate::body::regions::Contract,
+    contract: &mut crate::body::regions::Contract,
     work: &mut ImportedOriginals,
     allowance: &super::decoded_bodies::Allowance,
 ) -> Result<(), String> {
@@ -260,7 +260,27 @@ pub(super) fn prove(
                 );
             }
         }
-        if !dispatcher.finish().is_empty() {
+        let proof = dispatcher.finish();
+        if applied {
+            let alias_only = proof.regions == (first..first.saturating_add(universals))
+                && proof.equalities.len() == universals as usize
+                && proof.outlives.is_empty()
+                && proof.types.is_empty()
+                && !proof.has_quantified();
+            if !alias_only {
+                let extra = proof
+                    .regions
+                    .len()
+                    .saturating_add(proof.equalities.len())
+                    .saturating_add(proof.outlives.len())
+                    .saturating_add(proof.types.len());
+                pay(
+                    extra,
+                    extra.saturating_mul(4 * size_of::<crate::body::regions::Obligation>()),
+                )?;
+                crate::body::dispatch::retain_proof(body, contract, proof);
+            }
+        } else if !proof.is_empty() {
             return Err(
                 "closed primitive source dispatch retained unsupported lifetime debts".into(),
             );

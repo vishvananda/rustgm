@@ -27,8 +27,17 @@ pub struct Projection {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProjectionKind {
     Dereference { region: RegionRef, mutable: bool },
+    RawDereference { mutable: bool },
     Field { owner: DeclarationRef, ordinal: u32 },
+    UnionField { owner: DeclarationRef, ordinal: u32 },
     Tuple(u32),
+    Index { index: u32, length: u64 },
+    IndexParameter { index: u32, length: super::SlotRef },
+    SliceIndex { index: u32 },
+    ConstantIndex(u64),
+    FromEnd { offset: u64, minimum: u64 },
+    Subslice { prefix: u64, suffix: u64 },
+    Subarray { start: u64, end: u64 },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OwnedRegion {
@@ -142,10 +151,57 @@ pub enum ValueKind {
     /// Version fourteen: the rigid const formal of this original or a
     /// captured declaration scope. Instantiation substitutes its own term.
     ConstArgument(super::SlotRef),
+    /// Version fourteen: closed primitive unary `!` or `-`.
+    Unary {
+        operator: UnaryOperator,
+        operand: u32,
+        literal: bool,
+    },
+    /// Version fourteen: raw address of a place without forming a reference loan.
+    Address(Place),
+    /// Version fourteen: dynamic slice or static array length (`usize`).
+    Length(Place),
+    /// Version fourteen: prove an impossible match's scrutinee initialized.
+    Validate(Place),
+    /// Version fourteen: compare a `str` place against the text literal at this ordinal.
+    TextEquals {
+        place: Place,
+        text: u32,
+    },
+    /// Version fourteen: initialize one selected field of a union nominal.
+    Union {
+        owner: DeclarationRef,
+        ordinal: u32,
+        value: u32,
+    },
+    /// Version fourteen: `[value; N]` array repeat (`constant` selects `RepeatMode::Constant`).
+    Repeat {
+        value: u32,
+        constant: bool,
+    },
+    /// Version fourteen: direct fieldless enum variant cast (`direct_variant: true`).
+    DirectEnumCast(u32),
+    /// Version fourteen: thin pointer, pointer-int or fn-pointer conversion.
+    AddressCast {
+        kind: AddressCast,
+        operand: u32,
+    },
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UnaryOperator {
+    Negate,
+    Not,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AddressCast {
+    PointerThin,
+    PointerToInteger,
+    IntegerToPointer,
+    FunctionPointer,
 }
 /// The reconstructable primitive operators. Add, Sub and Mul are checked: each
-/// consumer instance lowers its own overflow guard and abort exit. Division
-/// also rebuilds the ordinary zero and signed overflow checks for integers.
+/// consumer instance lowers its own overflow guard and abort exit. Division,
+/// remainder and shifts rebuild their ordinary zero/overflow/shift checks.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinaryOperator {
     Equal,
@@ -161,24 +217,37 @@ pub enum BinaryOperator {
     Sub,
     Mul,
     Div,
+    Rem,
+    Shl,
+    Shr,
 }
 impl BinaryOperator {
     #[must_use]
     pub const fn comparison(self) -> bool {
-        !matches!(
+        matches!(
             self,
-            Self::BitAnd
-                | Self::BitOr
-                | Self::BitXor
-                | Self::Add
-                | Self::Sub
-                | Self::Mul
-                | Self::Div
+            Self::Equal
+                | Self::NotEqual
+                | Self::Less
+                | Self::LessEqual
+                | Self::Greater
+                | Self::GreaterEqual
         )
     }
     #[must_use]
     pub const fn arithmetic(self) -> bool {
-        matches!(self, Self::Add | Self::Sub | Self::Mul | Self::Div)
+        matches!(
+            self,
+            Self::Add | Self::Sub | Self::Mul | Self::Div | Self::Rem
+        )
+    }
+    #[must_use]
+    pub const fn shift(self) -> bool {
+        matches!(self, Self::Shl | Self::Shr)
+    }
+    #[must_use]
+    pub const fn requires_v14(self) -> bool {
+        matches!(self, Self::Div | Self::Rem | Self::Shl | Self::Shr)
     }
 }
 /// Retained lexical operand form; data for promotion, never execution permission.
@@ -232,13 +301,14 @@ impl Value {
         Ok((from, to))
     }
 
-    /// Both operands share one closed non-unit primitive; comparisons yield bool
-    /// and bitwise operations keep their bool or integer operand type.
+    /// Both operands share one closed non-unit primitive (except shifts, where
+    /// the shift amount is any closed integer); comparisons yield bool,
+    /// arithmetic/shifts/bitwise keep the left operand type.
     pub(crate) fn binary_types(
         self,
         original: &Original,
         types: &[super::Type],
-    ) -> Result<crate::support::crates::Scalar, &'static str> {
+    ) -> Result<(), &'static str> {
         use crate::support::crates::Scalar;
         let ValueKind::Binary {
             operator,
@@ -249,36 +319,131 @@ impl Value {
         else {
             return Err("source binary request belongs to another value operation");
         };
-        let scalar = |value: u32| {
-            let operand = original
-                .values
-                .get(value as usize)
-                .ok_or("source binary operation lost its actual operand")?;
-            match types.get(operand.ty.0 as usize) {
-                Some(&super::Type::Scalar(ty)) if ty != Scalar::Unit => Ok(ty),
-                _ => Err("source binary operation requires closed primitive operands"),
+        let left_ty = original
+            .values
+            .get(left as usize)
+            .and_then(|value| types.get(value.ty.0 as usize))
+            .ok_or("source binary operation lost its actual operand")?;
+        let right_ty = original
+            .values
+            .get(right as usize)
+            .and_then(|value| types.get(value.ty.0 as usize))
+            .ok_or("source binary operation lost its actual operand")?;
+        let result_ty = types.get(self.ty.0 as usize);
+        if matches!(left_ty, super::Type::F16 | super::Type::F128) {
+            if right_ty != left_ty || (!operator.comparison() && !operator.arithmetic()) {
+                return Err("source wide-float binary operation has incompatible operands");
             }
-        };
-        let operand = scalar(left)?;
-        if scalar(right)? != operand {
-            return Err("source binary operation changed its shared operand type");
+            let expected = if operator.comparison() {
+                super::Type::Scalar(Scalar::Bool)
+            } else {
+                *left_ty
+            };
+            if result_ty != Some(&expected) {
+                return Err("source binary operation changed its primitive result type");
+            }
+            return Ok(());
         }
-        let result = if operator.comparison() {
-            Scalar::Bool
-        } else if operator.arithmetic() {
-            if matches!(operand, Scalar::Bool | Scalar::Char) {
-                return Err("source checked arithmetic requires integer or float operands");
-            }
-            operand
-        } else if matches!(operand, Scalar::Char | Scalar::F32 | Scalar::F64) {
-            return Err("source bitwise operation requires bool or integer operands");
-        } else {
-            operand
+        let (&super::Type::Scalar(lhs), &super::Type::Scalar(rhs)) = (left_ty, right_ty) else {
+            return Err("source binary operation requires closed primitive operands");
         };
-        if types.get(self.ty.0 as usize) != Some(&super::Type::Scalar(result)) {
+        if lhs == Scalar::Unit || rhs == Scalar::Unit {
+            return Err("source binary operation requires closed primitive operands");
+        }
+        let is_int = |ty: Scalar| {
+            !matches!(
+                ty,
+                Scalar::Unit | Scalar::Bool | Scalar::Char | Scalar::F32 | Scalar::F64
+            )
+        };
+        let result = if operator.shift() {
+            if !is_int(lhs) || !is_int(rhs) {
+                return Err("source shift operation requires integer operands");
+            }
+            lhs
+        } else {
+            if rhs != lhs {
+                return Err("source binary operation changed its shared operand type");
+            }
+            if operator.comparison() {
+                Scalar::Bool
+            } else if operator.arithmetic() {
+                if matches!(lhs, Scalar::Bool | Scalar::Char) {
+                    return Err("source checked arithmetic requires integer or float operands");
+                }
+                lhs
+            } else if matches!(lhs, Scalar::Char | Scalar::F32 | Scalar::F64) {
+                return Err("source bitwise operation requires bool or integer operands");
+            } else {
+                lhs
+            }
+        };
+        if result_ty != Some(&super::Type::Scalar(result)) {
             return Err("source binary operation changed its primitive result type");
         }
-        Ok(operand)
+        Ok(())
+    }
+
+    pub(crate) fn unary_type(
+        self,
+        original: &Original,
+        types: &[super::Type],
+    ) -> Result<(), &'static str> {
+        use crate::support::crates::Scalar;
+        let ValueKind::Unary {
+            operator, operand, ..
+        } = self.kind
+        else {
+            return Err("source unary request belongs to another value operation");
+        };
+        let input = original
+            .values
+            .get(operand as usize)
+            .ok_or("source unary operation lost its actual operand")?;
+        if input.ty != self.ty {
+            return Err("source unary operation changed its primitive result type");
+        }
+        let valid = matches!(
+            (operator, types.get(self.ty.0 as usize)),
+            (
+                UnaryOperator::Negate,
+                Some(
+                    super::Type::F16
+                        | super::Type::F128
+                        | super::Type::Scalar(
+                            Scalar::I8
+                                | Scalar::I16
+                                | Scalar::I32
+                                | Scalar::I64
+                                | Scalar::I128
+                                | Scalar::Isize
+                                | Scalar::F32
+                                | Scalar::F64,
+                        ),
+                ),
+            ) | (
+                UnaryOperator::Not,
+                Some(super::Type::Scalar(
+                    Scalar::Bool
+                        | Scalar::U8
+                        | Scalar::U16
+                        | Scalar::U32
+                        | Scalar::U64
+                        | Scalar::U128
+                        | Scalar::Usize
+                        | Scalar::I8
+                        | Scalar::I16
+                        | Scalar::I32
+                        | Scalar::I64
+                        | Scalar::I128
+                        | Scalar::Isize,
+                )),
+            )
+        );
+        if !valid {
+            return Err("source unary operation requires a compatible primitive type");
+        }
+        Ok(())
     }
 
     pub(crate) fn scalar_value(

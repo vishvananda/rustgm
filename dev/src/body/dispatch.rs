@@ -231,7 +231,11 @@ fn select_members(
     Ok(members)
 }
 
-fn retain_proof(body: &Body, contract: &mut Contract, proof: crate::sema::dispatch::Obligations) {
+pub(in crate::body) fn retain_proof(
+    body: &Body,
+    contract: &mut Contract,
+    proof: crate::sema::dispatch::Obligations,
+) {
     if proof.has_quantified() {
         contract
             .proofs

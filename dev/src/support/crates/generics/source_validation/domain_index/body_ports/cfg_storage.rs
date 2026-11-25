@@ -185,7 +185,9 @@ impl DomainIndex<'_, '_> {
         let mut next = 0_u32;
         for value in &original.values {
             work.charge(1)?;
-            if let s::ValueKind::Text(ordinal) = value.kind {
+            if let s::ValueKind::Text(ordinal) | s::ValueKind::TextEquals { text: ordinal, .. } =
+                value.kind
+            {
                 if ordinal != next {
                     return Err("source text ordinal leaves its value order");
                 }
