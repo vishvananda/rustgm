@@ -481,18 +481,23 @@ impl Value {
     pub(crate) fn scalar_value(
         self,
         types: &[super::Type],
-    ) -> Result<crate::support::crates::ScalarValue, &'static str> {
-        use crate::support::crates::{Scalar, ScalarValue};
+    ) -> Result<crate::support::crates::ScalarLiteral, &'static str> {
+        use crate::support::crates::{Scalar, ScalarLiteral, ScalarValue};
         let ValueKind::Scalar(bits) = self.kind else {
             return Err("source scalar request belongs to another value operation");
         };
-        let Some(&super::Type::Scalar(ty)) = types.get(self.ty.0 as usize) else {
-            return Err("source scalar value requires its actual closed primitive type");
-        };
-        if ty == Scalar::Unit {
-            return Err("source unit value requires its distinct Unit operation");
-        }
-        ScalarValue::new(ty, u128::from_le_bytes(bits))
+        let bits = u128::from_le_bytes(bits);
+        Ok(match types.get(self.ty.0 as usize) {
+            Some(&super::Type::Scalar(Scalar::Unit)) => {
+                return Err("source unit value requires its distinct Unit operation");
+            }
+            Some(&super::Type::Scalar(ty)) => ScalarLiteral::Primitive(ScalarValue::new(ty, bits)?),
+            Some(super::Type::F16) => ScalarLiteral::F16(
+                u16::try_from(bits).map_err(|_| "non-canonical source f16 scalar value")?,
+            ),
+            Some(super::Type::F128) => ScalarLiteral::F128(bits),
+            _ => return Err("source scalar value requires its actual closed primitive type"),
+        })
     }
     /// A text value is exactly a shared `'static` reference to `str`.
     pub(crate) fn text_type(

@@ -45,6 +45,23 @@ impl ScalarValue {
     }
 }
 
+/// Body literals use the source type's width without extending legacy scalar tags.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ScalarLiteral {
+    Primitive(ScalarValue),
+    F16(u16),
+    F128(u128),
+}
+impl ScalarLiteral {
+    pub(crate) fn bits(self) -> u128 {
+        match self {
+            Self::Primitive(value) => value.bits(),
+            Self::F16(bits) => u128::from(bits),
+            Self::F128(bits) => bits,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Constant {
     definition: ExternalDef,

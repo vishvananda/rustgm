@@ -27,6 +27,7 @@ pub use interface::{Function, Interface, LoaderFlags, Scalar, Symbol};
 pub use nominals::{Nominals, Record, RecordField, RecordRef, RecordRepr};
 pub use public_names::{PublicBinding, PublicModule, PublicNames};
 pub use retirements::{RemovedFeature, RemovedFeatures, RemovedVersion};
+pub(crate) use scalar_value::ScalarLiteral;
 pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 

@@ -8,8 +8,9 @@ The primitive feature requirement belongs to the resolved primitive, not an
 ordinary same-spelling declaration. Actual literal macro allowances use token
 origin; captured caller tokens do not inherit the definition allowance.
 
-Candidate local semantics and layouts remain unqualified until focused validation.
-All wider arithmetic/casts/patterns, metadata transport, native scalar lowering and
-C ABI remain explicit unsupported paths. No original upstream bytes are changed.
-The separate PA2 wide-bits table retains exact-value hypotheses; the exported
-static bit adapter remains unrun and these source observations do not prove bits.
+The complete candidate rerun of this parser/profile matrix remains pending.
+Wider arithmetic, casts, patterns, native scalar lowering and the C ABI remain
+open. Body-literal metadata and fresh-client constant evaluation have a separate
+contract in [source-wide-scalar-transport](../source-wide-scalar-transport/outcomes.json).
+The separate PA2 wide-bits table retains its own exact-value hypotheses.
+No original upstream bytes are changed.

@@ -1966,3 +1966,14 @@ late-bound reference result. Pinned rustc checks all six observations and the
 escaping-lifetime rejection; version 13 keeps its callable-argument refusal.
 Run `scripts/check_source_artifact_clients.py --case source-nested-item-arguments`
 with the prebuilt compilers.
+
+
+`spec/source-wide-scalar-transport/outcomes.json` declares version-14 body
+literal transport for `f16` and `f128`, with bit-exact fresh-client constant
+evaluation. Its eleven native integer observations cover low significand bits,
+subnormals, signed zero, binary128 pi and generic const bodies. Pinned rustc
+checks each result independently. The older profile refuses the wide type,
+and both compilers reject an implicit width change. Run
+`scripts/check_source_artifact_clients.py --case source-wide-scalar-transport`.
+The separate `runtime_provider.rs` / `runtime_client.rs` acceptance case remains
+unqualified: native wide-floating lowering is still an explicit open requirement.

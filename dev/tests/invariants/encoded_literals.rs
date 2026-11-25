@@ -23,6 +23,25 @@ pub(crate) fn provider() -> Result<crates::Interface> {
         "scalar_body_values",
     )
 }
+pub(crate) fn wide_provider() -> Result<crates::Interface> {
+    let foundation =
+        crate::test_source::fixture("pa31/tests/spec/source-enum-role-transport/provider.rs")?;
+    let prefix = foundation
+        .split_once("#[lang=\"tuple_trait\"]")
+        .ok_or("actual scalar fixture boundary")?
+        .0;
+    let tail = crate::test_source::fixture(
+        "pa31/tests/spec/source-wide-scalar-transport/runtime_provider.rs",
+    )?;
+    let source =
+        format!("#![feature(auto_traits,const_destruct,intrinsics,f16,f128)]\n{prefix}{tail}");
+    test::exported_profile(
+        &source,
+        SourcePublication::ModuleBodyOperations,
+        "wide_scalar_bodies",
+    )
+}
+
 #[test]
 fn primitive_literals_reconstruct_fresh_originals_and_emit_all_native_roots() -> Result {
     let artifact = provider()?;
@@ -95,7 +114,10 @@ fn primitive_bit_carrier_checks_type_width_unicode_and_float_payloads() -> Resul
             ty: g::TypeRef(0),
             kind: s::ValueKind::Scalar(bits.to_le_bytes()),
         };
-        assert_eq!(row.scalar_value(&[s::Type::Scalar(ty)])?, expected);
+        assert_eq!(
+            row.scalar_value(&[s::Type::Scalar(ty)])?,
+            crates::ScalarLiteral::Primitive(expected)
+        );
         assert_eq!(
             crate::sema::crates::export_scalar_value(
                 ty,
@@ -104,6 +126,29 @@ fn primitive_bit_carrier_checks_type_width_unicode_and_float_payloads() -> Resul
             expected
         );
     }
+    for (ty, expected) in [
+        (s::Type::F16, crates::ScalarLiteral::F16(0x8000)),
+        (s::Type::F16, crates::ScalarLiteral::F16(0x7e55)),
+        (s::Type::F128, crates::ScalarLiteral::F128(1_u128 << 127)),
+        (
+            s::Type::F128,
+            crates::ScalarLiteral::F128(0x7fff_8000_0000_0000_0000_0000_0000_0055),
+        ),
+    ] {
+        let row = s::Value {
+            ty: g::TypeRef(0),
+            kind: s::ValueKind::Scalar(expected.bits().to_le_bytes()),
+        };
+        assert_eq!(row.scalar_value(&[ty])?, expected);
+    }
+    let padded = s::Value {
+        ty: g::TypeRef(0),
+        kind: s::ValueKind::Scalar((1_u128 << 16).to_le_bytes()),
+    };
+    assert_eq!(
+        padded.scalar_value(&[s::Type::F16]).err(),
+        Some("non-canonical source f16 scalar value")
+    );
     for (ty, bits) in [
         (Scalar::Bool, 2_u128),
         (Scalar::Char, 0xd800),

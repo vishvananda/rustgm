@@ -27,7 +27,7 @@ fn value(view: &SourceOriginal<'_>, row: s::Value) -> Result<Scalar, &'static st
     if !view.rows().descriptor().profile().feature_predicates() {
         return Err("source scalar reconstruction requires its explicit v4 ordinary profile");
     }
-    crate::sema::crates::import_scalar_value(row.scalar_value(&view.rows().types)?)
+    crate::sema::crates::import_source_scalar_value(row.scalar_value(&view.rows().types)?)
 }
 pub(super) fn append(
     view: &SourceOriginal<'_>,

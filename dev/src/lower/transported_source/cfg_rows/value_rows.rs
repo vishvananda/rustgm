@@ -219,7 +219,9 @@ fn item(
                 },
             })
         }
-        ir::Rvalue::Scalar(id) if stage.feature_predicates() => scalar(facts, body, value.ty, id),
+        ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
+            scalar(facts, body, value.ty, id, stage.declaration_policies())
+        }
         ir::Rvalue::Text(text) if stage.body_nodes() => {
             text_literal(stage, facts, raw, value.ty, text)
         }
@@ -1008,14 +1010,13 @@ fn scalar(
     body: &Body,
     result: crate::types::TypeId,
     id: ir::ScalarId,
+    wide: bool,
 ) -> Result<s::ValueKind, &'static str> {
     let scalar = body
         .scalars
         .get(id.0 as usize)
         .copied()
         .ok_or("source scalar value has no actual body scalar slot")?;
-    let ty = crate::sema::crates::export_scalar(facts, result)
-        .map_err(|_| "source scalar value requires a closed supported primitive type")?;
-    let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
+    let value = crate::sema::crates::export_source_scalar_value(facts, result, scalar, wide)?;
     Ok(s::ValueKind::Scalar(value.bits().to_le_bytes()))
 }

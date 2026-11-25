@@ -1,8 +1,9 @@
 //! Shared closed primitive conversion preserves exact typed bits across metadata lanes.
 use crate::{
     literal::value::FloatBits,
-    sema::model::Scalar as Value,
-    support::crates::{Scalar, ScalarValue},
+    sema::model::{Declarations, Scalar as Value},
+    support::crates::{Scalar, ScalarLiteral, ScalarValue},
+    types::{Kind, Primitive, TypeId},
 };
 pub(crate) fn decode(value: ScalarValue) -> Result<Value, &'static str> {
     let bits = value.bits();
@@ -62,4 +63,37 @@ pub(crate) fn encode(ty: Scalar, value: Value) -> Result<ScalarValue, &'static s
         }
     };
     ScalarValue::new(ty, bits)
+}
+
+/// Decode already typed literal data after the raw source row's width check.
+pub(crate) fn decode_source(value: ScalarLiteral) -> Result<Value, &'static str> {
+    Ok(match value {
+        ScalarLiteral::Primitive(value) => return decode(value),
+        ScalarLiteral::F16(bits) => Value::Float(FloatBits::F16(bits)),
+        ScalarLiteral::F128(bits) => Value::Float(FloatBits::from_quad(bits)),
+    })
+}
+
+/// The completed body type chooses the literal width; no host float conversion occurs.
+pub(crate) fn encode_source(
+    facts: &Declarations,
+    ty: TypeId,
+    value: Value,
+    wide: bool,
+) -> Result<ScalarLiteral, &'static str> {
+    Ok(match (facts.types.kind(ty), value) {
+        (Some(Kind::Primitive(Primitive::F16)), Value::Float(FloatBits::F16(bits))) if wide => {
+            ScalarLiteral::F16(bits)
+        }
+        (Some(Kind::Primitive(Primitive::F128)), Value::Float(bits @ FloatBits::F128 { .. }))
+            if wide =>
+        {
+            ScalarLiteral::F128(bits.bits())
+        }
+        _ => {
+            let scalar = super::export_scalar(facts, ty)
+                .map_err(|_| "source scalar value requires a closed supported primitive type")?;
+            ScalarLiteral::Primitive(encode(scalar, value)?)
+        }
+    })
 }

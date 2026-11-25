@@ -24,7 +24,11 @@ use crate::{
     syntax::item::Safety,
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId},
 };
+#[cfg(test)]
 pub(crate) use closed_values::{decode as import_scalar_value, encode as export_scalar_value};
+pub(crate) use closed_values::{
+    decode_source as import_source_scalar_value, encode_source as export_source_scalar_value,
+};
 pub use export::{Exports, export};
 pub(crate) use export::{
     GenericRequest, export_with_originals, macro_table, scalar as export_scalar,
