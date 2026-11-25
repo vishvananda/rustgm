@@ -8,7 +8,8 @@ use crate::{
     sema::crates::typed_headers::{
         recipe_cursor::{Availability, Cursor, Demand, Maps, MemoReader, Port, Recorded, Reserved},
         unpaid_provided::{
-            ClosureHeader, InitializerHeader, OrdinaryDomain, OrdinaryRecords, ordinary_requests,
+            AnonymousHeader, ClosureHeader, InitializerHeader, OrdinaryDomain, OrdinaryRecords,
+            ordinary_requests,
         },
     },
     support::crates::generics::{self as g, source as s},
@@ -76,57 +77,7 @@ impl Lazy {
         if domain.environment().is_some() {
             return Ok(domain);
         }
-        let raw = domain.raw()?;
-        let rows = view.rows()?;
-        let original = rows
-            .originals
-            .get(rows.original_index(raw).map_err(error)?)
-            .ok_or_else(|| error("ordinary original lost its current raw body"))?;
-        let mut port = Recorded::ordinary(
-            Reserved::new(view, &self.maps, &facts.types, work)?.with_opaques(&facts.opaques),
-            &domain,
-            &facts.lifetimes.callables,
-        );
-        work.charge(
-            original
-                .locals
-                .len()
-                .saturating_add(original.values.len().saturating_mul(2))
-                .saturating_add(original.projections.len())
-                .saturating_add(original.calls.len())
-                .saturating_add(1),
-        )?;
-        let Writer {
-            cursor, constants, ..
-        } = &mut *writer;
-        let operands = operation_types(
-            original,
-            constants,
-            &mut port,
-            cursor,
-            &mut facts.types,
-            work,
-        )?;
-        for normalization in &rows.body_input(raw).map_err(error)?.normalizations {
-            work.charge(1)?;
-            if let Some(scoped) = &normalization.scoped {
-                for block in &scoped.blocks {
-                    work.charge(1)?;
-                    for relation in &block.types {
-                        require_type(cursor, &mut port, &mut facts.types, relation.ty, work)?;
-                    }
-                }
-            }
-        }
-        let super::Applications::Lazy { memo, reader } = &graph.applications else {
-            return Err(error(
-                "ordinary original lost its actual lazy application owner",
-            ));
-        };
-        let view = graph.recipe_view();
-        let mut applications = memo.writer(reader, &view, &facts.types, work)?;
-        ordinary_requests(raw, port, cursor, &mut applications, &mut facts.types, work)?;
-        constants.finish(raw, operands, cursor, facts, work)?;
+        self.prepare_body_operations(graph, facts, &mut writer, &domain, None, work)?;
         Ok(domain)
     }
     pub(super) fn prepare_closure_body(
@@ -151,15 +102,53 @@ impl Lazy {
         if domain.environment().is_some() {
             return Ok(domain);
         }
+        self.prepare_body_operations(graph, facts, &mut writer, &domain, Some(closure), work)?;
+        Ok(domain)
+    }
+    pub(super) fn prepare_anonymous_body(
+        &self,
+        graph: &super::Graph,
+        facts: &mut Declarations,
+        anonymous: AnonymousHeader,
+        work: &mut ReservationWork,
+    ) -> Result<OrdinaryDomain, Error> {
+        graph.require_store(&facts.types).map_err(error)?;
+        let view = graph.recipe_view();
+        let mut writer = self
+            .writer
+            .try_borrow_mut()
+            .map_err(|_| error("reentrant ordinary anonymous preparation"))?;
+        writer
+            .cursor
+            .require_reader(&self.reader, &view, &facts.types, work)?;
+        let domain = writer
+            .records
+            .prepare_anonymous(&view, facts, anonymous, work)?;
+        if domain.environment().is_some() {
+            return Ok(domain);
+        }
+        self.prepare_body_operations(graph, facts, &mut writer, &domain, None, work)?;
+        Ok(domain)
+    }
+    fn prepare_body_operations(
+        &self,
+        graph: &super::Graph,
+        facts: &mut Declarations,
+        writer: &mut Writer,
+        domain: &OrdinaryDomain,
+        closure: Option<ClosureHeader>,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        let view = graph.recipe_view();
         let raw = domain.raw()?;
         let rows = view.rows()?;
         let original = rows
             .originals
             .get(rows.original_index(raw).map_err(error)?)
-            .ok_or_else(|| error("ordinary closure lost its current raw body"))?;
+            .ok_or_else(|| error("ordinary original lost its current raw body"))?;
         let mut port = Recorded::ordinary(
             Reserved::new(view, &self.maps, &facts.types, work)?.with_opaques(&facts.opaques),
-            &domain,
+            domain,
             &facts.lifetimes.callables,
         );
         work.charge(
@@ -175,7 +164,7 @@ impl Lazy {
             cursor,
             constants,
             records,
-        } = &mut *writer;
+        } = writer;
         let operands = operation_types(
             original,
             constants,
@@ -195,24 +184,25 @@ impl Lazy {
                 }
             }
         }
-        self.prepare_closure_formation(
-            graph,
-            (&mut facts.types, &facts.opaques, &facts.lifetimes.callables),
-            closure,
-            &mut port,
-            (cursor, records),
-            work,
-        )?;
+        if let Some(closure) = closure {
+            self.prepare_closure_formation(
+                graph,
+                (&mut facts.types, &facts.opaques, &facts.lifetimes.callables),
+                closure,
+                &mut port,
+                (cursor, records),
+                work,
+            )?;
+        }
         let super::Applications::Lazy { memo, reader } = &graph.applications else {
             return Err(error(
-                "ordinary closure lost its actual lazy application owner",
+                "ordinary original lost its actual lazy application owner",
             ));
         };
         let view = graph.recipe_view();
         let mut applications = memo.writer(reader, &view, &facts.types, work)?;
         ordinary_requests(raw, port, cursor, &mut applications, &mut facts.types, work)?;
-        constants.finish(raw, operands, cursor, facts, work)?;
-        Ok(domain)
+        constants.finish(raw, operands, cursor, facts, work)
     }
 
     fn prepare_closure_formation(
@@ -283,6 +273,27 @@ impl Lazy {
             .require_reader(&self.reader, &view, &facts.types, work)?;
         let domain = writer.records.closure(&view, facts, closure, work)?;
         let parent = writer.records.domain_for_raw(&view, closure.parent_raw)?;
+        Ok((domain, parent))
+    }
+
+    pub(super) fn anonymous_body(
+        &self,
+        graph: &super::Graph,
+        facts: &Declarations,
+        anonymous: AnonymousHeader,
+        work: &mut ReservationWork,
+    ) -> Result<(OrdinaryDomain, Option<OrdinaryDomain>), Error> {
+        graph.require_store(&facts.types).map_err(error)?;
+        let view = graph.recipe_view();
+        let writer = self
+            .writer
+            .try_borrow()
+            .map_err(|_| error("reentrant ordinary anonymous lookup"))?;
+        writer
+            .cursor
+            .require_reader(&self.reader, &view, &facts.types, work)?;
+        let domain = writer.records.anonymous(&view, facts, anonymous, work)?;
+        let parent = writer.records.domain_for_raw(&view, anonymous.parent_raw)?;
         Ok((domain, parent))
     }
 

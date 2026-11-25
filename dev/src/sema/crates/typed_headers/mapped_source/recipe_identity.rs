@@ -149,7 +149,7 @@ impl Graph {
         let Some(table) = rows.closures() else {
             return Ok(());
         };
-        budget.charge(table.headers.len())?;
+        budget.charge(table.headers.len().saturating_add(table.anonymous.len()))?;
         let dummy = crate::resolve::unit::NodeKey {
             file: crate::resolve::unit::FileId(0),
             node: crate::syntax::ast::NodeId::new(0),
@@ -196,6 +196,43 @@ impl Graph {
                     origin,
                     header.public_binders,
                     header.constant,
+                )
+                .map_err(error)?;
+        }
+        for header in &table.anonymous {
+            let owner = context.definition(header.owner, budget)?;
+            let body_id = context
+                .catalog
+                .body_at(context.descriptor.identity(), header.body)
+                .map_err(error)?;
+            let origin = context.catalog.origin(body_id).map_err(error)?;
+            let parent_raw = rows
+                .body_owners()
+                .get(header.body.0 as usize)
+                .and_then(|row| row.parent)
+                .ok_or_else(|| error("imported anonymous body omitted its parent body"))?;
+            let parent_body_id = context
+                .catalog
+                .body_at(context.descriptor.identity(), parent_raw)
+                .map_err(error)?;
+            let parent_origin = context.catalog.origin(parent_body_id).map_err(error)?;
+            let imported_closure_owner =
+                if let Some((closure_ref, _)) = table.header_for_body(parent_raw) {
+                    Some(self.closure_id(closure_ref).map_err(error)?)
+                } else {
+                    None
+                };
+            facts
+                .inline_constants
+                .get_or_insert_with(Default::default)
+                .register_imported(
+                    origin,
+                    parent_origin,
+                    imported_closure_owner,
+                    owner,
+                    None,
+                    header.universals,
+                    header.deferred,
                 )
                 .map_err(error)?;
         }

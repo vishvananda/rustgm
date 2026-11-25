@@ -6,10 +6,16 @@ pub(super) fn declarations<'a>(graph: &mut Graph<'a>) -> Result<Vec<&'a Body>, &
     let Some(registry) = graph.facts.inline_constants.as_deref() else {
         return Ok(Vec::new());
     };
-    let count = registry.bodies().count();
+    let count = registry
+        .bodies()
+        .filter(|body| body.origin.source().is_some())
+        .count();
     graph.charge(count)?;
     graph.storage(count.saturating_mul(256 + size_of::<&Body>()))?;
-    let mut bodies: Vec<_> = registry.bodies().collect();
+    let mut bodies: Vec<_> = registry
+        .bodies()
+        .filter(|body| body.origin.source().is_some())
+        .collect();
     bodies.sort_unstable_by_key(|body| (body.source.file.0, body.source.node.get()));
     for body in &bodies {
         let result = body

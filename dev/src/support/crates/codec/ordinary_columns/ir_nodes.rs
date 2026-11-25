@@ -131,8 +131,9 @@ const FORMS: [s::OperandForm; 5] = [
 const VALUE_FORMS: [u8; 18] = [
     0, 2, 3, 6, 7, 10, 12, 14, 16, 17, 18, 22, 23, 24, 27, 28, 29, 30,
 ];
-const V14_VALUE_FORMS: [u8; 26] = [
-    0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+const V14_VALUE_FORMS: [u8; 27] = [
+    0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 20, 22, 23, 24, 25, 26, 27, 28, 29,
+    30,
 ];
 /// Stable `Rvalue::Invoke` call-trait flags.
 const CALLABLES: [crate::support::call_traits::CallTrait; 3] = [
@@ -407,6 +408,7 @@ fn extended_value_write(out: &mut Writer, kind: s::ValueKind) -> Result<(), &'st
             &[Operand::Value(value), Operand::Flag(u32::from(constant))],
         ),
         s::ValueKind::Unsize { value, conversion } => unsize_write(out, value, conversion),
+        s::ValueKind::InlineConstant(body) => node_write(out, 20, &[Operand::Flag(body.0)]),
         _ => Err("body IR extended value changed its form"),
     }
 }
@@ -648,6 +650,9 @@ fn extended_value_read(
                 Operand::Type(second),
             ],
         ) if v14 => unsize_read(value, flag, g::TypeRef(first), g::TypeRef(second)),
+        (20, &[Operand::Flag(body)]) if v14 => {
+            s::ValueKind::InlineConstant(crate::support::crates::owner_catalog::BodyRef(body))
+        }
         _ => {
             let forms: &[u8] = if v14 { &V14_VALUE_FORMS } else { &VALUE_FORMS };
             return Err(rejected(

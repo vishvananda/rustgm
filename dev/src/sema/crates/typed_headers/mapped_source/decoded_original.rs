@@ -45,6 +45,7 @@ enum OriginalHeader<'a> {
     Function(&'a super::super::Header),
     Initializer(super::super::unpaid_provided::InitializerHeader),
     Closure(super::super::unpaid_provided::ClosureHeader),
+    Anonymous(super::super::unpaid_provided::AnonymousHeader),
 }
 impl Graph {
     pub(in crate::sema::crates::typed_headers) fn owns_original(
@@ -240,6 +241,7 @@ impl Original<'_> {
             OriginalHeader::Function(header) => header.universals,
             OriginalHeader::Initializer(header) => header.universals,
             OriginalHeader::Closure(header) => header.universals,
+            OriginalHeader::Anonymous(header) => header.universals,
         }
     }
     pub(crate) fn rows(&self) -> s::ValidatedView<'_> {
@@ -257,7 +259,7 @@ impl Original<'_> {
     pub(crate) const fn signature(&self) -> Option<TypeId> {
         match self.header {
             OriginalHeader::Function(header) => Some(header.signature),
-            OriginalHeader::Initializer(_) => None,
+            OriginalHeader::Initializer(_) | OriginalHeader::Anonymous(_) => None,
             OriginalHeader::Closure(header) => match header.execution {
                 Some(execution) => Some(execution),
                 None => Some(header.signature),
@@ -271,17 +273,42 @@ impl Original<'_> {
             OriginalHeader::Closure(header) => {
                 Some((header.identity, header.signature, header.execution))
             }
-            OriginalHeader::Function(_) | OriginalHeader::Initializer(_) => None,
+            OriginalHeader::Function(_)
+            | OriginalHeader::Initializer(_)
+            | OriginalHeader::Anonymous(_) => None,
         }
+    }
+    pub(crate) const fn is_anonymous(&self) -> bool {
+        matches!(self.header, OriginalHeader::Anonymous(_))
     }
     pub(crate) const fn require_result_formation(&self) -> bool {
         match self.header {
             OriginalHeader::Closure(header) => header.require_result_formation,
-            OriginalHeader::Function(_) | OriginalHeader::Initializer(_) => false,
+            OriginalHeader::Function(_)
+            | OriginalHeader::Initializer(_)
+            | OriginalHeader::Anonymous(_) => false,
         }
     }
     pub(crate) fn source(&self) -> Result<BodyOrigin, &'static str> {
         self.catalog.origin(self.body)
+    }
+    pub(crate) fn anonymous_body(
+        &self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+        steps: &mut usize,
+    ) -> Result<BodyOrigin, &'static str> {
+        charge(steps)?;
+        if !self.rows.descriptor().profile().declaration_policies()
+            || self
+                .rows
+                .closures()
+                .and_then(|closures| closures.anonymous_for_body(body))
+                .is_none()
+        {
+            return Err("source inline constant names an unreserved anonymous body");
+        }
+        let id = self.catalog.body_at(self.descriptor()?.identity(), body)?;
+        self.catalog.origin(id)
     }
     pub(crate) fn environment(
         &self,
@@ -290,36 +317,63 @@ impl Original<'_> {
             (Mapping::Selected { body, .. }, _) => Some(body.environment()),
             (
                 Mapping::Ordinary { domain, .. },
-                OriginalHeader::Initializer(_) | OriginalHeader::Closure(_),
+                OriginalHeader::Initializer(_)
+                | OriginalHeader::Closure(_)
+                | OriginalHeader::Anonymous(_),
             ) => domain.as_ref().and_then(|domain| domain.environment()),
             (_, OriginalHeader::Function(header)) => header.environment.as_ref(),
         };
         actual.ok_or("source original requires its actual pending defining environment")
     }
-    pub(crate) fn closure_output(
+    pub(crate) fn nested_output(
         &self,
         steps: &mut usize,
     ) -> Result<Option<Arc<crate::sema::nested_outputs::Link>>, &'static str> {
-        let OriginalHeader::Closure(closure) = self.header else {
-            return Ok(None);
-        };
-        let table = self
-            .rows
-            .closures()
-            .ok_or("source closure output lost its columns")?;
-        let raw = table
-            .header(closure.closure_ref)
-            .ok_or("source closure output lost its header")?;
-        let Some(output) = raw.output else {
-            return Ok(None);
+        let (parent_raw, output, bridge_slice, closure_identity) = match self.header {
+            OriginalHeader::Closure(closure) => {
+                let table = self
+                    .rows
+                    .closures()
+                    .ok_or("source closure output lost its columns")?;
+                let raw = table
+                    .header(closure.closure_ref)
+                    .ok_or("source closure output lost its header")?;
+                let Some(output) = raw.output else {
+                    return Ok(None);
+                };
+                (
+                    closure.parent_raw,
+                    output,
+                    output.bridges.slice(&table.bridges)?,
+                    Some((closure.identity, table)),
+                )
+            }
+            OriginalHeader::Anonymous(anonymous) => {
+                let table = self
+                    .rows
+                    .closures()
+                    .ok_or("source anonymous output lost its columns")?;
+                let (_, raw) = table
+                    .anonymous_for_body(anonymous.raw)
+                    .ok_or("source anonymous output lost its header")?;
+                let Some(output) = raw.output else {
+                    return Ok(None);
+                };
+                (
+                    anonymous.parent_raw,
+                    output,
+                    output.bridges.slice(&table.anonymous_bridges)?,
+                    None,
+                )
+            }
+            OriginalHeader::Function(_) | OriginalHeader::Initializer(_) => return Ok(None),
         };
         let parent_body = self
             .catalog
-            .body_at(self.descriptor()?.identity(), closure.parent_raw)?;
+            .body_at(self.descriptor()?.identity(), parent_raw)?;
         let parent = self.catalog.origin(parent_body)?;
-        let raw_bridges = output.bridges.slice(&table.bridges)?;
-        let mut bridges = Vec::with_capacity(raw_bridges.len());
-        for &bridge in raw_bridges {
+        let mut bridges = Vec::with_capacity(bridge_slice.len());
+        for &bridge in bridge_slice {
             charge(steps)?;
             bridges.push(crate::sema::nested_outputs::Bridge {
                 slot: bridge.slot,
@@ -327,7 +381,9 @@ impl Original<'_> {
                 output: bridge.output,
             });
         }
-        let formation = if let Some(raw_formation) = output.formation {
+        let formation = if let (Some(raw_formation), Some((identity, table))) =
+            (output.formation, closure_identity)
+        {
             let raw_inputs = raw_formation.inputs.slice(&table.formation_inputs)?;
             let mut inputs = Vec::with_capacity(raw_inputs.len());
             for &input in raw_inputs {
@@ -341,7 +397,7 @@ impl Original<'_> {
             let raw_slots = raw_formation.callable_slots.slice(&table.callable_slots)?;
             charge(steps)?;
             Some(crate::sema::nested_outputs::Formation {
-                identity: closure.identity,
+                identity,
                 inputs: inputs.into_boxed_slice(),
                 inherited: raw_formation.inherited,
                 callable_slots: raw_slots.to_vec().into_boxed_slice(),

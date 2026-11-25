@@ -30,46 +30,12 @@ pub(super) fn append(
     let selected = super::versioned_calls::Index::new(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
     body_bound = body_bound.saturating_add(originals.retained_bytes().saturating_sub(before_index));
+    let start_row = originals.rows.len();
     for raw in &rows.originals {
         originals
             .charge(1)
             .map_err(|e| context.report.body_optional_error(None, e))?;
-        let target = if rows
-            .closures()
-            .and_then(|closures| closures.header_for_body(raw.body))
-            .is_some()
-        {
-            let identity =
-                crate::sema::crates::source_closure_identity(facts, raw.body, &mut originals.steps)
-                    .map_err(|e| context.report.body_optional_error(None, e))?
-                    .ok_or_else(|| {
-                        context.report.body_optional_error(
-                            None,
-                            "source closure original lost its canonical identity",
-                        )
-                    })?;
-            crate::sema::crates::prepare_source_closure_original(
-                context.report,
-                facts,
-                identity,
-                originals.steps,
-                body_bound,
-            )?;
-            Target::Closure(identity)
-        } else {
-            let definition = context
-                .imported
-                .generic_definition(context.owner, raw.declaration)
-                .map_err(|e| context.report.body_optional_error(None, e))?;
-            crate::sema::crates::prepare_source_original(
-                context.report,
-                facts,
-                definition,
-                originals.steps,
-                body_bound,
-            )?;
-            Target::Declaration(definition)
-        };
+        let target = prepare_target(context, facts, rows, raw, &mut originals.steps, body_bound)?;
         let profile = rows.descriptor().profile();
         if profile == s::Profile::Source2024ModuleConversions || profile.declaration_policies() {
             let current = facts
@@ -124,6 +90,14 @@ pub(super) fn append(
             .retain(original)
             .map_err(|e| context.report.body_error(source, e))?;
     }
+    if let Some(inline) = facts.inline_constants.as_deref() {
+        for row in &mut originals.rows[start_row..] {
+            if inline.has_children_origin(row.template.body.source) {
+                crate::body::instantiate::close_inline_operands(facts, &mut row.template.body)
+                    .map_err(|e| context.report.body_error(row.template.body.source, e))?;
+            }
+        }
+    }
     selected.release(originals);
     Ok(())
 }
@@ -138,6 +112,70 @@ pub(super) struct PendingBody {
 enum Target {
     Declaration(crate::resolve::model::DefId),
     Closure(crate::types::closure::ClosureId),
+    Anonymous(crate::resolve::body_origin::ImportedBodyId),
+}
+
+fn prepare_target(
+    context: &Import<'_>,
+    facts: &mut Declarations,
+    rows: s::ValidatedView<'_>,
+    raw: &s::Original,
+    steps: &mut usize,
+    body_bound: usize,
+) -> Result<Target, Error> {
+    let target = if rows
+        .closures()
+        .and_then(|closures| closures.header_for_body(raw.body))
+        .is_some()
+    {
+        let identity = crate::sema::crates::source_closure_identity(facts, raw.body, steps)
+            .map_err(|e| context.report.body_optional_error(None, e))?
+            .ok_or_else(|| {
+                context.report.body_optional_error(
+                    None,
+                    "source closure original lost its canonical identity",
+                )
+            })?;
+        crate::sema::crates::prepare_source_closure_original(
+            context.report,
+            facts,
+            identity,
+            *steps,
+            body_bound,
+        )?;
+        Target::Closure(identity)
+    } else if rows
+        .closures()
+        .and_then(|closures| closures.anonymous_for_body(raw.body))
+        .is_some()
+    {
+        let body_id = context
+            .catalog
+            .body_at(context.owner, raw.body)
+            .map_err(|e| context.report.body_optional_error(None, e))?;
+        crate::sema::crates::prepare_source_anonymous_original(
+            context.report,
+            facts,
+            body_id,
+            *steps,
+            body_bound,
+        )?;
+        Target::Anonymous(body_id)
+    } else {
+        let definition = context
+            .imported
+            .generic_definition(context.owner, raw.declaration)
+            .map_err(|e| context.report.body_optional_error(None, e))?;
+        crate::sema::crates::prepare_source_original(
+            context.report,
+            facts,
+            definition,
+            *steps,
+            body_bound,
+        )?;
+        Target::Declaration(definition)
+    };
+    Ok(target)
 }
 
 fn build(
@@ -157,6 +195,9 @@ fn build(
             }
             Target::Closure(identity) => {
                 crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)
+            }
+            Target::Anonymous(body_id) => {
+                crate::sema::crates::source_anonymous_original(facts, body_id, &mut work.steps)
             }
         }
         .map_err(|e| report.body_optional_error(None, e))?
@@ -302,6 +343,14 @@ pub(super) fn finish(
     .map_err(|e| report.body_error(source, e))?;
     promote::instance_reusing(report, facts, &mut body, &destruction, scratch)?;
     crate::body::constants::eligibility_charged(report, facts, &body)?;
+    if matches!(body.owner, crate::body::ir::Owner::AnonymousConstant) {
+        facts
+            .inline_constants
+            .as_mut()
+            .ok_or_else(|| report.body_error(source, "imported anonymous registry disappeared"))?
+            .complete_imported(source, body.result)
+            .map_err(|e| report.body_error(source, e))?;
+    }
     Ok(Original {
         template: Template {
             body,
@@ -346,7 +395,8 @@ pub(super) fn allocation<'a>(
         .saturating_mul(
             size_of::<Original>()
                 + size_of::<(crate::resolve::model::DefId, usize)>()
-                + size_of::<(crate::types::closure::ClosureId, usize)>(),
+                + size_of::<(crate::types::closure::ClosureId, usize)>()
+                + size_of::<(crate::resolve::body_origin::ImportedBodyId, usize)>(),
         );
     let mut visits = 0_usize;
     for raw in originals {
@@ -428,7 +478,14 @@ fn header_allocation(
         .closures()
         .and_then(|closures| closures.header_for_body(raw.body))
     {
-        let (bytes, items) = closure_output_allocation(closure);
+        let (bytes, items) = nested_output_allocation(closure.output);
+        return Ok((0, items, bytes));
+    }
+    if let Some((_, anonymous)) = rows
+        .closures()
+        .and_then(|closures| closures.anonymous_for_body(raw.body))
+    {
+        let (bytes, items) = nested_output_allocation(anonymous.output);
         return Ok((0, items, bytes));
     }
     let clauses = match rows.header(raw.declaration)? {
@@ -448,8 +505,8 @@ fn header_allocation(
     Ok((clauses, 0, 0))
 }
 
-fn closure_output_allocation(closure: &s::ClosureHeader) -> (usize, usize) {
-    let Some(output) = closure.output else {
+fn nested_output_allocation(output: Option<s::ClosureOutput>) -> (usize, usize) {
+    let Some(output) = output else {
         return (0, 0);
     };
     let mut items = (output.bridges.end - output.bridges.start) as usize;

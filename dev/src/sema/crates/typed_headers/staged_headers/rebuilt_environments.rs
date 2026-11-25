@@ -359,8 +359,10 @@ impl ContractParts {
         )?;
         let mut parameters = Vec::with_capacity(inputs.parameters.len());
         for &slot in &inputs.parameters {
+            // As in source Copy reproof, only type formals have abilities.
+            // Const and lifetime slots retain their checked body bindings.
             let Argument::Type(ty) = graph.slot(slot)? else {
-                return Err(error("ordinary Contract original formal is not a type"));
+                continue;
             };
             let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
                 return Err(error(

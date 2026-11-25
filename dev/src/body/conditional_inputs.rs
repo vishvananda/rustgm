@@ -78,22 +78,25 @@ impl Child {
         work: &mut usize,
     ) -> Result<(), &'static str> {
         let (enclosing, unit) = context;
+        let source = instance
+            .source_key()
+            .ok_or("conditional inline port requires a local source body")?;
         let row = facts
             .inline_constants
             .as_deref()
-            .and_then(|r| r.get(instance.source()))
+            .and_then(|r| r.get(source))
             .ok_or("conditional inline source is missing")?;
-        let actual = InlineInstance::select(facts, instance.source(), instance.enclosing())?;
+        let actual = InlineInstance::select(facts, source, instance.enclosing())?;
         let link = facts
             .nested_outputs
             .as_deref()
-            .and_then(|r| r.get(&instance.source()))
+            .and_then(|r| r.get(&source))
             .ok_or("conditional child lost its source link")?;
         if actual != instance
             || instance.enclosing() != crate::sema::inline_constants::Context::Callable(enclosing)
             || BodyOrigin::from(row.parent_body) != body.source
             || BodyOrigin::from(row.context_owner()) != body.source
-            || owner_unit(facts, instance.source(), work) != unit
+            || owner_unit(facts, source, work) != unit
             || !Arc::ptr_eq(link, &self.link)
             || self.link.formation.is_some()
         {
@@ -202,14 +205,17 @@ impl Sources {
             let Rvalue::InlineInstance(instance) = value.kind else {
                 continue;
             };
-            let Some(child) = self.children.get(&BodyOrigin::from(instance.source())) else {
+            let Some(source) = instance.source_key() else {
+                continue;
+            };
+            let Some(child) = self.children.get(&BodyOrigin::from(source)) else {
                 continue;
             };
             if child.parent != body.source {
                 continue;
             }
             child.validate_port(facts, body, instance, (enclosing, unit), &mut self.steps)?;
-            if seen.contains(&instance.source()) {
+            if seen.contains(&source) {
                 return Err("conditional inline source repeats its operand");
             }
             let storage = child.collection_bytes(ports.len(), obligations.len(), seen.len());
@@ -230,7 +236,7 @@ impl Sources {
             if self.bytes.saturating_add(storage) > BYTES {
                 return Err("conditional parent port storage budget exceeded");
             }
-            seen.insert(instance.source());
+            seen.insert(source);
             ports.push(Port {
                 ordinal: ports.len(),
                 operand: ValueId(u32::try_from(index).map_err(|_| "too many parent operands")?),
@@ -250,20 +256,7 @@ impl Sources {
         if ports.is_empty() {
             return Ok(None);
         }
-        let index_bytes = crate::support::retained::new_map::<NodeKey, usize>(ports.len());
-        if self.bytes.saturating_add(index_bytes) > BYTES {
-            return Err("conditional port index exceeds storage budget");
-        }
-        self.bytes = self.bytes.saturating_add(index_bytes);
-        self.steps = self.steps.saturating_add(ports.len());
-        if self.steps > LIMIT {
-            return Err("conditional port index work budget exhausted");
-        }
-        let index = ports
-            .iter()
-            .enumerate()
-            .map(|(i, port)| (port.instance.source(), i))
-            .collect();
+        let index = self.index_ports(&ports)?;
         input.obligations.extend(obligations);
         Ok(Some(Pending {
             epoch: declaration_epoch(facts)?,
@@ -274,6 +267,27 @@ impl Sources {
             ports,
             index,
         }))
+    }
+    fn index_ports(&mut self, ports: &[Port]) -> Result<HashMap<NodeKey, usize>, &'static str> {
+        let index_bytes = crate::support::retained::new_map::<NodeKey, usize>(ports.len());
+        if self.bytes.saturating_add(index_bytes) > BYTES {
+            return Err("conditional port index exceeds storage budget");
+        }
+        self.bytes = self.bytes.saturating_add(index_bytes);
+        self.steps = self.steps.saturating_add(ports.len());
+        if self.steps > LIMIT {
+            return Err("conditional port index work budget exhausted");
+        }
+        ports
+            .iter()
+            .enumerate()
+            .map(|(i, port)| {
+                port.instance
+                    .source_key()
+                    .map(|source| (source, i))
+                    .ok_or("conditional port lost its local source")
+            })
+            .collect()
     }
 }
 impl Pending {
@@ -325,19 +339,22 @@ impl Pending {
         if instance.enclosing() != crate::sema::inline_constants::Context::Callable(enclosing) {
             return Err("conditional request changed its complete original parent instance");
         }
+        let source = instance
+            .source_key()
+            .ok_or("conditional request requires a local source body")?;
         let port = self
             .index
-            .get(&instance.source())
+            .get(&source)
             .and_then(|&i| self.ports.get(i))
             .ok_or("conditional request has no exact paid operand")?;
         if port.instance != instance
             || port.result != result
-            || owner_unit(facts, instance.source(), work) != self.unit
-            || InlineInstance::select(facts, instance.source(), instance.enclosing())? != instance
+            || owner_unit(facts, source, work) != self.unit
+            || InlineInstance::select(facts, source, instance.enclosing())? != instance
             || !facts
                 .nested_outputs
                 .as_deref()
-                .and_then(|r| r.get(&instance.source()))
+                .and_then(|r| r.get(&source))
                 .is_some_and(|link| Arc::ptr_eq(link, &port.link))
         {
             return Err("conditional request has stale source identity");
@@ -355,13 +372,17 @@ impl Pending {
         *work = work.saturating_add(self.ports.len());
         self.validate_body(body, input)?;
         for port in &self.ports {
-            if owner_unit(facts, port.instance.source(), work) != self.unit
-                || InlineInstance::select(facts, port.instance.source(), port.instance.enclosing())?
+            let source = port
+                .instance
+                .source_key()
+                .ok_or("conditional parent port lost its local source")?;
+            if owner_unit(facts, source, work) != self.unit
+                || InlineInstance::select(facts, source, port.instance.enclosing())?
                     != port.instance
                 || !facts
                     .nested_outputs
                     .as_deref()
-                    .and_then(|r| r.get(&port.instance.source()))
+                    .and_then(|r| r.get(&source))
                     .is_some_and(|link| Arc::ptr_eq(link, &port.link))
             {
                 return Err("conditional parent port has stale source identity");
@@ -379,9 +400,13 @@ impl Pending {
             return Err("conditional parent proof belongs to another body");
         }
         for port in &self.ports {
+            let source = port
+                .instance
+                .source_key()
+                .ok_or("conditional parent port lost its local source")?;
             if !body.values.get(port.operand.0 as usize).is_some_and(|value|
                 matches!(value.kind, Rvalue::InlineInstance(instance) if instance == port.instance) && value.ty == port.result)
-                || port.link.parent != self.source || port.link.source != port.instance.source().into() {
+                || port.link.parent != self.source || port.link.source != source.into() {
                 return Err("conditional parent changed its exact operand or result");
             }
         }

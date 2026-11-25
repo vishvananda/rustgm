@@ -210,11 +210,14 @@ pub(super) fn binder_write(out: &mut Writer, row: &s::Binder) -> Result<(), &'st
         s::BinderKind::CallSignature { .. } => 5,
         s::BinderKind::DynamicType => 6,
         s::BinderKind::ClosureOriginal { .. } => 7,
+        s::BinderKind::AnonymousOriginal { .. } => 8,
     })?;
     if let s::BinderKind::CallSignature { body, value } = row.kind {
         id(out, body.0)?;
         id(out, value)?;
-    } else if let s::BinderKind::ClosureOriginal { body } = row.kind {
+    } else if let s::BinderKind::ClosureOriginal { body }
+    | s::BinderKind::AnonymousOriginal { body } = row.kind
+    {
         id(out, body.0)?;
     }
     id(out, row.count)
@@ -237,6 +240,9 @@ pub(super) fn binder_read(read: &mut Input<'_, '_>) -> Result<s::Binder, &'stati
         }
         6 if read.profile.declaration_policies() => s::BinderKind::DynamicType,
         7 if read.profile.declaration_policies() => s::BinderKind::ClosureOriginal {
+            body: BodyRef(read.id()?),
+        },
+        8 if read.profile.declaration_policies() => s::BinderKind::AnonymousOriginal {
             body: BodyRef(read.id()?),
         },
         _ => return Err("unsupported source binder kind"),

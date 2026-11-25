@@ -374,7 +374,7 @@ pub(super) fn build(
             predicates,
             source_copy,
         ))),
-        output: view.closure_output(&mut work.steps)?,
+        output: view.nested_output(&mut work.steps)?,
         require_result_formation: view.require_result_formation(),
     };
     if view.const_context() && view.signature().is_some() && view.closure_owner().is_none() {
@@ -397,7 +397,7 @@ fn declared_result(
     root: ProofSite,
     steps: &mut usize,
 ) -> Result<Option<Obligation>, &'static str> {
-    if view.closure_owner().is_some() {
+    if view.closure_owner().is_some() || view.is_anonymous() {
         return Ok(None);
     }
     let rows = view.rows();
@@ -763,20 +763,7 @@ pub(super) fn validate(
     let expected = Expected::new(view, facts, steps)?;
     let record = view.inputs();
     let parameters = view.type_parameters(&facts.types, steps)?;
-    let expected_output = view.closure_output(steps)?;
-    if contract.key != body.key()
-        || contract.source != view.source()?
-        || contract.signature != view.signature()
-        || contract.universals != view.universals()
-        || !same_output(contract.output.as_deref(), expected_output.as_deref())
-        || contract.require_result_formation != view.require_result_formation()
-        || contract.parameters.len() != parameters.len()
-        || contract.assumptions.len() != record.assumptions.len()
-        || contract.type_assumptions.len() != record.type_assumptions.len()
-        || contract.proofs.len() != record.normalizations.len()
-    {
-        return Err("source original changed its complete record contract/header domains");
-    }
+    validate_domains(view, body, contract, parameters.len(), steps)?;
     if contract.parameters != parameters {
         return Err("source original changed its canonical parameter order");
     }
@@ -827,6 +814,51 @@ pub(super) fn validate(
         .enumerate()
     {
         validate_normalization(view, index, record, actual, steps)?;
+    }
+    Ok(())
+}
+fn validate_domains(
+    view: &SourceOriginal<'_>,
+    body: &Body,
+    contract: &Contract,
+    parameters: usize,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    let record = view.inputs();
+    let expected_output = view.nested_output(steps)?;
+    if contract.key != body.key() || contract.source != view.source()? {
+        return Err(
+            "source original changed its complete record contract/header domains: body identity",
+        );
+    }
+    if contract.signature != view.signature() {
+        return Err(
+            "source original changed its complete record contract/header domains: signature",
+        );
+    }
+    if contract.universals != view.universals() {
+        return Err(
+            "source original changed its complete record contract/header domains: lifetime arity",
+        );
+    }
+    if !same_output(contract.output.as_deref(), expected_output.as_deref()) {
+        return Err(
+            "source original changed its complete record contract/header domains: nested output",
+        );
+    }
+    if contract.require_result_formation != view.require_result_formation() {
+        return Err(
+            "source original changed its complete record contract/header domains: result formation",
+        );
+    }
+    if contract.parameters.len() != parameters
+        || contract.assumptions.len() != record.assumptions.len()
+        || contract.type_assumptions.len() != record.type_assumptions.len()
+        || contract.proofs.len() != record.normalizations.len()
+    {
+        return Err(
+            "source original changed its complete record contract/header domains: input counts",
+        );
     }
     Ok(())
 }

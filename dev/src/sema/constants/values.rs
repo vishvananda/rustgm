@@ -150,8 +150,12 @@ impl<'a> Reader<'a> {
             .instance_value(instance, result)
     }
     #[must_use]
-    pub fn inline(self, source: crate::resolve::unit::NodeKey) -> Option<Constant> {
-        self.facts.inline_constants.as_deref()?.get(source)?.value
+    pub fn inline(self, source: crate::resolve::body_origin::BodyOrigin) -> Option<Constant> {
+        self.facts
+            .inline_constants
+            .as_deref()?
+            .get_origin(source)?
+            .value
     }
     #[must_use]
     pub fn associated(self, instance: crate::sema::values::Instance) -> Option<Constant> {

@@ -75,13 +75,19 @@ enum OriginalHeader<'rows> {
         header: &'rows s::ClosureHeader,
         parent: Option<DeclarationRef>,
     },
+    Anonymous {
+        header: &'rows s::AnonymousHeader,
+        parent: Option<DeclarationRef>,
+    },
 }
 
 impl OriginalHeader<'_> {
     const fn parent(self) -> Option<DeclarationRef> {
         match self {
             Self::Function(header) => header.parent,
-            Self::Constant { parent, .. } | Self::Closure { parent, .. } => parent,
+            Self::Constant { parent, .. }
+            | Self::Closure { parent, .. }
+            | Self::Anonymous { parent, .. } => parent,
         }
     }
     const fn unsafe_function(self) -> bool {
@@ -90,12 +96,14 @@ impl OriginalHeader<'_> {
     fn entry(
         self,
         rows: &s::SourceRows,
+        original: &s::Original,
     ) -> Result<(g::Range, g::TypeRef, Option<g::BinderRef>), &'static str> {
         match self {
             Self::Function(header) => {
                 Ok((header.original.parameters, header.original.result, None))
             }
             Self::Constant { result, .. } => Ok((g::Range { start: 0, end: 0 }, result, None)),
+            Self::Anonymous { .. } => Ok((g::Range { start: 0, end: 0 }, original.result, None)),
             Self::Closure { header, .. } => {
                 let Some(&s::Type::Function(signature)) =
                     rows.types.get(header.body_signature().0 as usize)
@@ -285,17 +293,22 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         work: &mut Work,
     ) -> Result<OriginalHeader<'rows>, &'static str> {
         if self.declaration_policies
-            && let Some((_, header)) = self
-                .headers
-                .rows()
-                .closures()
-                .and_then(|closures| closures.header_for_body(body))
+            && let Some(closures) = self.headers.rows().closures()
         {
-            if header.owner != declaration {
-                return Err("source closure body belongs to another declaration owner");
+            if let Some((_, header)) = closures.header_for_body(body) {
+                if header.owner != declaration {
+                    return Err("source closure body belongs to another declaration owner");
+                }
+                let parent = self.original_header(declaration, work)?.parent();
+                return Ok(OriginalHeader::Closure { header, parent });
             }
-            let parent = self.original_header(declaration, work)?.parent();
-            return Ok(OriginalHeader::Closure { header, parent });
+            if let Some((_, header)) = closures.anonymous_for_body(body) {
+                if header.owner != declaration {
+                    return Err("source anonymous body belongs to another declaration owner");
+                }
+                let parent = self.original_header(declaration, work)?.parent();
+                return Ok(OriginalHeader::Anonymous { header, parent });
+            }
         }
         self.original_header(declaration, work)
     }

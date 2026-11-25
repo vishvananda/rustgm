@@ -193,14 +193,19 @@ fn sibling_inline_values_cannot_borrow_anonymous_parent_equations() -> Result {
     let sibling = *instances
         .iter()
         .find(|instance| {
-            instance.source() != parent.source() && instance.enclosing() == parent.enclosing()
+            instance.source_key() != parent.source_key()
+                && instance.enclosing() == parent.enclosing()
         })
         .ok_or("same-context sibling")?;
     let Context::SourceInitializer(witness) = parent.enclosing() else {
         return Err("source witness".into());
     };
     let mut body = crate::body::templates::Prepared::default()
-        .anonymous(&report, &facts, parent.source())?
+        .anonymous(
+            &report,
+            &facts,
+            parent.source_key().ok_or("local inline parent")?,
+        )?
         .body;
     body.owner = Owner::AnonymousInstance(parent);
     let id = ValueId(u32::try_from(body.values.len())?);

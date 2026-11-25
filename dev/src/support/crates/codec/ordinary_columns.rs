@@ -183,12 +183,18 @@ pub(super) fn encode_module_availability(
             }
             let caller_sites = rows.cold().caller_sites.as_deref();
             let closures = rows.closures().filter(|c| !c.headers.is_empty());
-            out.u8(u8::from(caller_sites.is_some()) | (u8::from(closures.is_some()) << 1))?;
+            let anonymous = rows.closures().filter(|c| !c.anonymous.is_empty());
+            out.u8(u8::from(caller_sites.is_some())
+                | (u8::from(closures.is_some()) << 1)
+                | (u8::from(anonymous.is_some()) << 2))?;
             if let Some(sites) = caller_sites {
                 encode_caller_sites(out, sites)?;
             }
             if let Some(closures) = closures {
                 child_closure_wire::encode(out, closures)?;
+            }
+            if let Some(anonymous) = anonymous {
+                child_closure_wire::encode_anonymous(out, anonymous)?;
             }
         } else {
             compiler_wire::encode(out, rows)?;
@@ -341,7 +347,7 @@ fn decode_availability_profile(
                 compiler_wire::decode_opaque_declarations(&mut read, &mut rows)?;
             }
             let body_flags = read.reader.u8()?;
-            if body_flags > 3 {
+            if body_flags > 7 {
                 return Err("unknown v14 body extension trailer flag");
             }
             if body_flags & 1 != 0 {
@@ -357,6 +363,17 @@ fn decode_availability_profile(
                     .unwrap_or_default();
                 let closures = child_closure_wire::decode(&mut read, types)?;
                 read.cold(&mut rows)?.closures = Some(closures);
+            }
+            if body_flags & 4 != 0 {
+                let cold = read.cold(&mut rows)?;
+                if cold.closures.is_none() {
+                    read.reserve(size_of::<s::ClosureColumns>())?;
+                }
+                let closures = read
+                    .cold(&mut rows)?
+                    .closures
+                    .get_or_insert_with(|| Box::new(s::ClosureColumns::default()));
+                child_closure_wire::decode_anonymous(&mut read, closures)?;
             }
         } else {
             compiler_wire::decode(&mut read, &mut rows)?;

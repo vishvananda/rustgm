@@ -28,12 +28,13 @@ fn exact_anonymous_contexts_reject_foreign_owners_and_wrong_results()
         .collect::<Vec<_>>();
     assert_eq!(values.len(), 3);
     let (instance, result, value) = values[0];
+    let source = instance.source_key().ok_or("local source")?;
     let other = values
         .iter()
-        .find(|(other, _, _)| other.source() != instance.source())
+        .find(|(other, _, _)| other.source_key() != Some(source))
         .ok_or("missing second owner")?
         .0;
-    assert!(InlineInstance::select(&facts, instance.source(), other.enclosing()).is_err());
+    assert!(InlineInstance::select(&facts, source, other.enclosing()).is_err());
     let wrong = TypeId::primitive(Primitive::U16);
     let mut executor = facts.constant_executor.take().ok_or("missing service")?;
     assert!(
@@ -129,9 +130,11 @@ fn distinct_closures_in_one_declaration_cannot_exchange_inline_templates()
     assert_eq!(values.len(), 2);
     let first = values[0].0;
     let second = values[1].0;
+    let first_source = first.source_key().ok_or("first local source")?;
+    let second_source = second.source_key().ok_or("second local source")?;
     assert_ne!(first.enclosing(), second.enclosing());
-    assert!(InlineInstance::select(&facts, first.source(), second.enclosing()).is_err());
-    assert!(InlineInstance::select(&facts, second.source(), first.enclosing()).is_err());
+    assert!(InlineInstance::select(&facts, first_source, second.enclosing()).is_err());
+    assert!(InlineInstance::select(&facts, second_source, first.enclosing()).is_err());
     Ok(())
 }
 
@@ -263,7 +266,7 @@ fn captured_context_identity_cannot_replace_public_signature_or_erased_slots()
         })?;
         let instance = InlineInstance::select(
             &facts,
-            inline.source(),
+            inline.source_key().ok_or("inline local source")?,
             Context::Callable(Instance::closure(&facts.types, ty)?),
         )?;
         assert!(
@@ -358,16 +361,17 @@ fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
     assert!(executor.advance(&report, &mut facts, &request).is_err());
     *caller_region(&mut facts, caller, region)? = old;
     assert!(executor.check(&report, &mut facts, request.target).is_ok());
+    let instance_source = instance.source_key().ok_or("local source")?;
     let row = facts
         .inline_constants
         .as_deref_mut()
         .ok_or("inline registry")?
         .bodies
         .iter_mut()
-        .find(|body| body.source == instance.source())
+        .find(|body| body.source == instance_source)
         .ok_or("inline body")?;
     let old_result = row.result.take();
-    assert!(InlineInstance::select(&facts, instance.source(), instance.enclosing()).is_err());
+    assert!(InlineInstance::select(&facts, instance_source, instance.enclosing()).is_err());
     assert!(executor.check(&report, &mut facts, request.target).is_err());
     facts
         .inline_constants
@@ -375,7 +379,7 @@ fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
         .ok_or("inline registry")?
         .bodies
         .iter_mut()
-        .find(|body| body.source == instance.source())
+        .find(|body| body.source == instance_source)
         .ok_or("inline body")?
         .result = old_result;
     assert!(
@@ -393,7 +397,7 @@ fn source_inline_contexts_revalidate_warm_values_and_foreign_catalogs()
     facts.constant_executor = Some(executor);
     let foreign_report = test_source::resolve(&text, true)?;
     let foreign = pipeline::analyze_source(&foreign_report)?.facts;
-    assert!(InlineInstance::select(&foreign, instance.source(), instance.enclosing()).is_err());
+    assert!(InlineInstance::select(&foreign, instance_source, instance.enclosing()).is_err());
     println!(
         "source inline layout Context={} InlineInstance={} BodyKey={} Target={} Request={}",
         size_of::<Context>(),

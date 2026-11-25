@@ -477,6 +477,29 @@ pub(crate) fn is_source_closure_original(
     graph.owns_closure_original(catalog, identity, steps)
 }
 
+pub(crate) fn is_source_anonymous_original(
+    facts: &Declarations,
+    body: crate::resolve::body_origin::ImportedBodyId,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    *steps = steps.saturating_add(1);
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(false);
+    };
+    let Some(graph) = linkage
+        .originals
+        .as_deref()
+        .and_then(|headers| headers.source.as_ref())
+    else {
+        return Ok(false);
+    };
+    graph.require_store(&facts.types)?;
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source anonymous classification lacks its actual catalog")?;
+    graph.owns_anonymous_original(catalog, body, steps)
+}
+
 pub(crate) fn source_closure_identity(
     facts: &Declarations,
     body: crate::support::crates::owner_catalog::BodyRef,
@@ -541,7 +564,28 @@ pub(crate) fn source_closure_original<'a>(
         .ok_or("source closure original lacks its actual current catalog")?;
     graph.source_closure_original(catalog, facts, headers, identity, steps)
 }
+pub(crate) fn source_anonymous_original<'a>(
+    facts: &'a Declarations,
+    body: crate::resolve::body_origin::ImportedBodyId,
+    steps: &mut usize,
+) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
+    let Some(linkage) = facts.crates.as_deref() else {
+        return Ok(None);
+    };
+    let Some(headers) = linkage.originals.as_deref() else {
+        return Ok(None);
+    };
+    let Some(graph) = headers.source.as_ref() else {
+        return Ok(None);
+    };
+    *steps = steps.saturating_add(1);
+    let catalog = linkage
+        .origin_catalog()
+        .ok_or("source anonymous original lacks its actual current catalog")?;
+    graph.source_anonymous_original(catalog, facts, headers, body, steps)
+}
 pub(crate) use mapped_source::{
+    prepare_anonymous_original as prepare_source_anonymous_original,
     prepare_closure_original as prepare_source_closure_original,
     prepare_original as prepare_source_original,
 };

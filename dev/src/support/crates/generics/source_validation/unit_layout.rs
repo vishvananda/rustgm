@@ -106,11 +106,13 @@ fn original_scheme(
     work: &mut Work,
 ) -> Result<(BinderRef, u32), &'static str> {
     let rows = headers.rows();
-    if let Some((_, closure)) = rows
-        .closures()
-        .and_then(|closures| closures.header_for_body(original.body))
-    {
-        return Ok((closure.binder, closure.contract_universals()));
+    if let Some(closures) = rows.closures() {
+        if let Some((_, closure)) = closures.header_for_body(original.body) {
+            return Ok((closure.binder, closure.contract_universals()));
+        }
+        if let Some((_, anonymous)) = closures.anonymous_for_body(original.body) {
+            return Ok((anonymous.binder, anonymous.contract_universals()));
+        }
     }
     match headers.header(original.declaration, work)? {
         Some(HeaderRef::Function(index)) => {

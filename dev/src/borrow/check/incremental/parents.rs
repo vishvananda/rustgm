@@ -40,7 +40,13 @@ impl PaidInline<'_> {
             return Err("paid parent lost its immutable owner lineage");
         }
         if input.key != crate::body::ir::BodyKey::AnonymousInstance(self.port.instance)
-            || input.source != self.port.instance.source().into()
+            || input.source
+                != self
+                    .port
+                    .instance
+                    .source_key()
+                    .ok_or("conditional child requires a local source")?
+                    .into()
             || body.key() != input.key
             || body.source != input.source
             || body.instance.is_some()
@@ -178,7 +184,11 @@ fn validate_ports(
         .collect();
     for port in pending.ports() {
         *work = work.saturating_add(1);
-        let (original, summary) = templates.conditional_original(port.instance.source())?;
+        let (original, summary) = templates.conditional_original(
+            port.instance
+                .source_key()
+                .ok_or("conditional child requires a local source")?,
+        )?;
         let (parent, requirements) = summary
             .parent_goals(original)?
             .ok_or("paid child original is not conditional")?;

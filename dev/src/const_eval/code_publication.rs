@@ -12,7 +12,7 @@ pub(crate) struct Registration<'catalog> {
     code: std::rc::Rc<Code>,
     bytes: usize,
     index: usize,
-    expression: Option<super::NodeKey>,
+    expression: Option<crate::body::ir::BodyOrigin>,
     scope: Option<crate::const_eval::lease_codes::Scope>,
     actual: crate::types::TypeId,
     source: Option<crate::sema::values::execution::SourceComputation>,
@@ -247,7 +247,7 @@ impl Catalog {
         payload: usize,
     ) -> Result<usize, &'static str> {
         let extra = if matches!(code.owner, Owner::AnonymousConstant) {
-            crate::support::retained::new_map::<super::NodeKey, usize>(1)
+            crate::support::retained::new_map::<crate::body::ir::BodyOrigin, usize>(1)
         } else if matches!(code.owner, Owner::AnonymousInstance(_)) {
             crate::support::retained::new_map::<super::InlineKey, usize>(1).saturating_add(
                 if self.anonymous.is_none() {
@@ -281,7 +281,7 @@ impl Catalog {
         published: crate::types::TypeId,
         source_only: bool,
         scope: Option<crate::const_eval::lease_codes::Scope>,
-    ) -> Result<Option<super::NodeKey>, &'static str> {
+    ) -> Result<Option<crate::body::ir::BodyOrigin>, &'static str> {
         let mut expression = None;
         if let Some(instance) = code.instance {
             if self.functions.contains_key(&instance) {
@@ -294,10 +294,7 @@ impl Catalog {
                 return Err("duplicate constant body definition");
             }
         } else if matches!(code.owner, Owner::AnonymousConstant) {
-            let source = code
-                .source
-                .source()
-                .ok_or("imported anonymous Code requires its exact body-key index")?;
+            let source = code.source;
             if self.expressions.contains_key(&source) {
                 return Err("duplicate anonymous constant body");
             }

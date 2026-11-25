@@ -100,7 +100,12 @@ fn claim_closures(
     let Some(closures) = rows.closures() else {
         return Ok(());
     };
-    work.charge(closures.headers.len())?;
+    work.charge(
+        closures
+            .headers
+            .len()
+            .saturating_add(closures.anonymous.len()),
+    )?;
     let mut previous = None;
     for header in &closures.headers {
         if previous.is_some_and(|before| before >= header.body.0) {
@@ -116,6 +121,24 @@ fn claim_closures(
             || std::mem::replace(&mut seen[header.body.0 as usize], true)
         {
             return Err("source closure body has duplicate, foreign or incompatible ownership");
+        }
+        previous = Some(header.body.0);
+    }
+    let mut previous = None;
+    for header in &closures.anonymous {
+        if previous.is_some_and(|before| before >= header.body.0) {
+            return Err("source anonymous headers lack canonical body order");
+        }
+        let owner = rows
+            .body_owners
+            .get(header.body.0 as usize)
+            .ok_or("source anonymous body reference is unknown")?;
+        if owner.declaration != header.owner
+            || owner.parent.is_none()
+            || owner.kind != BodyKind::Anonymous
+            || std::mem::replace(&mut seen[header.body.0 as usize], true)
+        {
+            return Err("source anonymous body has duplicate, foreign or incompatible ownership");
         }
         previous = Some(header.body.0);
     }

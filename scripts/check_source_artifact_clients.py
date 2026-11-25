@@ -73,7 +73,8 @@ def main():
                                  "source-protocol-calls-transport",
                                  "source-closure-transport",
                                  "source-unsizing-and-literals-transport",
-                                 "source-unchecked-const-body-transport"))
+                                 "source-unchecked-const-body-transport",
+                                 "source-inline-const-transport"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
@@ -106,8 +107,10 @@ def main():
         raise ValueError("the fresh native client differed from the declared stdout")
     if refusal := contract.get("older_profile"):
         old = check.folder / "old.rgcrate"
+        older_options = ["--cfg", contract["older_profile_cfg"]] if "older_profile_cfg" in contract else []
         check.run("older-profile", [*exporter, "--source-profile", "module-bodies-v13",
-                                  "--metadata-output", old, source], 1, [refusal], timeout=30)
+                                  *older_options, "--metadata-output", old, source],
+                  1, [refusal], timeout=30)
         if old.exists():
             raise ValueError("older source profile published the new metadata")
     if error := contract.get("unmarked_error"):

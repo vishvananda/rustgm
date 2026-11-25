@@ -1330,7 +1330,8 @@ impl<'a> Builder<'a> {
         ) && source != self.source
         {
             if self.current.is_some() {
-                let value = self.evaluate(node, self.ty(node)?, Rvalue::InlineConstant(source))?;
+                let value =
+                    self.evaluate(node, self.ty(node)?, Rvalue::InlineConstant(source.into()))?;
                 self.save(node, value)?;
             }
             return Ok(());

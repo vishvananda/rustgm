@@ -95,7 +95,7 @@ impl Queries<'_> {
             return Ok(target);
         }
         Ok(Target::Expression {
-            source,
+            source: source.into(),
             result,
             context,
         })

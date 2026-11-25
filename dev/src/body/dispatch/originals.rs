@@ -56,23 +56,25 @@ pub(crate) fn anonymous(
     let inline = facts
         .inline_constants
         .as_deref()
-        .and_then(|registry| body.source.source().and_then(|source| registry.get(source)))
+        .and_then(|registry| registry.get_origin(body.source))
         .ok_or("original anonymous dispatch has no typed body")?;
     let definition = inline
         .declaration
         .ok_or("original anonymous dispatch has no declaration")?;
     if body.instance.is_some()
         || !matches!(body.owner, Owner::AnonymousConstant)
-        || body.key() != BodyKey::Anonymous(inline.source)
+        || body.key() != Owner::AnonymousConstant.key(body.source)
         || body.key() != contract.key
         || body.source != contract.source
         || inline.result != Some(body.result)
-        || inline.universals != contract.universals
+        || inline
+            .universals
+            .max(contract.output.as_ref().map_or(0, |link| link.universals))
+            != contract.universals
         || body
             .source
             .source()
-            .and_then(|source| facts.constant_body_type(source))
-            != Some(body.result)
+            .is_some_and(|source| facts.constant_body_type(source) != Some(body.result))
     {
         return Err("original anonymous dispatch belongs to another declaration or body".into());
     }

@@ -264,25 +264,51 @@ fn item(
         ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
             associated_constant(stage, facts, instance, context)
         }
+        ir::Rvalue::SourceAssociated(source) if stage.declaration_policies() => {
+            associated_constant(stage, facts, source.input(facts)?, context)
+        }
+        ir::Rvalue::InlineConstant(origin) if stage.declaration_policies() => {
+            let source = origin
+                .source()
+                .ok_or("source inline constant requires a local anonymous body")?;
+            Ok(s::ValueKind::InlineConstant(stage.anonymous_body(source)?))
+        }
+        ir::Rvalue::InlineInstance(instance) if stage.declaration_policies() => {
+            let source = instance
+                .source_key()
+                .ok_or("source inline instance requires a local anonymous body")?;
+            Ok(s::ValueKind::InlineConstant(stage.anonymous_body(source)?))
+        }
         ir::Rvalue::ConstArgument(term) if stage.declaration_policies() => {
-            match stage.const_term(facts, term, context)? {
-                s::ConstTerm::Parameter(slot) => Ok(s::ValueKind::ConstArgument(slot)),
-                s::ConstTerm::Variant(value) => Ok(s::ValueKind::VariantAggregate {
-                    variant: value.declaration,
-                    fields: g::Range { start: 0, end: 0 },
-                }),
-                s::ConstTerm::Value(constant) => {
-                    if stage.rows.types.get(constant.ty.0 as usize)
-                        == Some(&s::Type::Scalar(crate::support::crates::Scalar::Unit))
-                    {
-                        Ok(s::ValueKind::Unit)
-                    } else {
-                        Ok(s::ValueKind::Scalar(constant.bits.to_le_bytes()))
-                    }
-                }
-            }
+            const_argument(stage, facts, term, context)
+        }
+        ir::Rvalue::InlineConstant(_) | ir::Rvalue::InlineInstance(_) => {
+            Err("source anonymous body transport requires version fourteen")
         }
         _ => Err(WIDER),
+    }
+}
+fn const_argument(
+    stage: &mut Stage,
+    facts: &Declarations,
+    term: crate::types::arguments::ConstId,
+    context: Context,
+) -> Result<s::ValueKind, &'static str> {
+    match stage.const_term(facts, term, context)? {
+        s::ConstTerm::Parameter(slot) => Ok(s::ValueKind::ConstArgument(slot)),
+        s::ConstTerm::Variant(value) => Ok(s::ValueKind::VariantAggregate {
+            variant: value.declaration,
+            fields: g::Range { start: 0, end: 0 },
+        }),
+        s::ConstTerm::Value(constant) => {
+            if stage.rows.types.get(constant.ty.0 as usize)
+                == Some(&s::Type::Scalar(crate::support::crates::Scalar::Unit))
+            {
+                Ok(s::ValueKind::Unit)
+            } else {
+                Ok(s::ValueKind::Scalar(constant.bits.to_le_bytes()))
+            }
+        }
     }
 }
 fn associated_constant(
@@ -314,7 +340,7 @@ fn associated_constant(
         return stage.constant_read(instance.definition);
     }
     if facts.associated.trait_owner(instance.definition).is_none()
-        && !(inherent && stage.has_constant_original(instance.definition)?)
+        && !stage.has_constant_original(instance.definition)?
     {
         return Err("source associated constant requires its actual trait or inherent owner");
     }

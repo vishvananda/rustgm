@@ -72,12 +72,15 @@ impl Context {
                 .inline_constants
                 .as_deref()
                 .and_then(|registry| registry.at(index))
-                .map(|body| (body.source, body.result));
-            if entry.is_some_and(|(source, _)| stubbed.contains(report, facts, source)) {
+                .map(|body| (body.origin, body.result));
+            let Some((crate::resolve::body_origin::BodyOrigin::Source(source), result)) = entry
+            else {
+                continue;
+            };
+            if stubbed.contains(report, facts, source) {
                 continue;
             }
-            let (source, result) = entry
-                .and_then(|(source, result)| result.map(|result| (source, result)))
+            let result = result
                 .ok_or_else(|| Error::at(FileId(0), 0, "inline body type did not complete"))?;
             if let Some(registry) = facts.inline_constants.as_mut() {
                 registry.preparation_visits += 1;
@@ -97,7 +100,7 @@ impl Context {
                 report,
                 facts,
                 crate::sema::values::execution::Target::Expression {
-                    source,
+                    source: source.into(),
                     result,
                     context: None,
                 },

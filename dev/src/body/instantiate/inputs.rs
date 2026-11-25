@@ -220,26 +220,26 @@ pub(super) fn original_function_context(
         .get(item)
         .ok_or("anonymous original callable lost its lifetime header")?;
     let function = facts
-        .function_indices
-        .get(&owner)
-        .and_then(|&index| facts.functions.get(index))
+        .function_header(owner)?
         .ok_or("anonymous original callable has no real function")?;
+    let origin = instance
+        .origin(facts)
+        .ok_or("anonymous original callable has no typed inline body")?;
     let inline = facts
         .inline_constants
         .as_deref()
-        .and_then(|registry| registry.get(instance.source()))
+        .and_then(|registry| registry.get_origin(origin))
         .ok_or("anonymous original callable has no typed inline body")?;
     if facts.generics.has_parameters(owner)
         || facts.definitions.get(item.0 as usize).copied().flatten() != Some(callable.ty())
-        || function.definition != owner
-        || function.body != Some(inline.context_owner())
+        || function.body != Some(inline.context_owner_origin())
         || function.signature != signature
         || header.parameters as usize != scheme.captures as usize + scheme.early.len()
         || inline.universals != scheme.total
-        || original.key != crate::body::ir::BodyKey::Anonymous(instance.source())
-        || original.source != instance.source().into()
+        || original.key != Owner::AnonymousConstant.key(origin)
+        || original.source != origin
         || original.universals != inline.universals
-        || InlineInstance::select(facts, instance.source(), instance.enclosing())? != instance
+        || InlineInstance::select_origin(facts, origin, instance.enclosing())? != instance
     {
         return Err("anonymous original callable context changed its declaration or binder");
     }

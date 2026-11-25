@@ -22,7 +22,7 @@ pub(super) fn emit(
         .ok_or("source numbering lacks an original body")?;
     let allow_gaps = stage.declaration_policies();
     if facts.body_regions.unit_of(source) != source
-        && !(allow_gaps && matches!(body.owner, Owner::Closure { .. }))
+        && !(allow_gaps && matches!(body.owner, Owner::Closure { .. } | Owner::AnonymousConstant))
     {
         return Err("nested source numbering requires complete parent/unit transport");
     }
@@ -40,7 +40,7 @@ pub(super) fn emit(
                 .environment
         }
         Owner::Initializer { .. } => facts.generics.body_environment(definition),
-        Owner::Closure { .. } if allow_gaps => None,
+        Owner::Closure { .. } | Owner::AnonymousConstant if allow_gaps => None,
         _ => return Err("source numbering lost its actual declaration body"),
     };
     let aliases = environment.and_then(|row| row.body_aliases());

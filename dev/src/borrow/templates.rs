@@ -359,6 +359,20 @@ impl Checked<'_> {
             &self.state.regions.bodies[index],
         ))
     }
+    pub(crate) fn anonymous_proof(
+        &self,
+        source: crate::body::ir::NodeKey,
+    ) -> Option<(&Template, &Contract, &regions::Body)> {
+        let key = BodyKey::Anonymous(source);
+        let &index = self.state.anonymous.get(&key)?;
+        let template = self.templates.get(index)?;
+        let contract = &self.state.contracts[index];
+        (template.body.key() == key && contract.key == key).then_some((
+            template,
+            contract,
+            &self.state.regions.bodies[index],
+        ))
+    }
     /// The original lexical body already checked these child requirements.
     /// Native specialization transports them into its own ordinary proof scope.
     pub(crate) fn nested_requirements(&self, parent: BodyOrigin) -> &[NestedRequirements] {

@@ -99,7 +99,39 @@ pub(crate) fn prepare_closure(
             };
             let domain = lazy.prepare_closure_body(graph, facts, closure, work)?;
             let environment =
-                closure_environment(graph, facts, closure, &domain, work, allocation)?;
+                nested_environment(graph, facts, closure.owner, &domain, work, allocation)?;
+            domain.publish_environment(&environment, work)?;
+            Ok(())
+        },
+    )?;
+    Ok(())
+}
+
+pub(crate) fn prepare_anonymous(
+    report: &Report,
+    facts: &mut Declarations,
+    body: crate::resolve::body_origin::ImportedBodyId,
+    extra_work: usize,
+    extra_bytes: usize,
+) -> Result<(), Error> {
+    let _ = prepare_lazy(
+        report,
+        facts,
+        extra_work,
+        extra_bytes,
+        |graph, facts, work, allocation| {
+            let mut steps = work.steps;
+            let anonymous = graph.anonymous_header(&graph.origins, facts, body, &mut steps);
+            work.charge(steps.saturating_sub(work.steps))?;
+            let anonymous = anonymous
+                .map_err(error)?
+                .ok_or_else(|| error("ordinary anonymous body lost its actual header"))?;
+            let Canonical::Lazy(lazy) = &graph.canonical else {
+                return Err(error("ordinary anonymous body lost its lazy owner"));
+            };
+            let domain = lazy.prepare_anonymous_body(graph, facts, anonymous, work)?;
+            let environment =
+                nested_environment(graph, facts, anonymous.owner, &domain, work, allocation)?;
             domain.publish_environment(&environment, work)?;
             Ok(())
         },
@@ -169,10 +201,10 @@ fn prepare_lazy<T>(
     result.map(Some)
 }
 
-fn closure_environment(
+fn nested_environment(
     graph: &Graph,
     facts: &Declarations,
-    closure: super::super::unpaid_provided::ClosureHeader,
+    owner: DefId,
     domain: &OrdinaryDomain,
     work: &mut ReservationWork,
     allocation: &mut Allocation,
@@ -188,43 +220,35 @@ fn closure_environment(
         .body_inputs
         .get(rows.original_index(raw).map_err(error)?)
         .filter(|inputs| inputs.body == raw)
-        .ok_or_else(|| error("ordinary closure environment lost its actual body inputs"))?;
+        .ok_or_else(|| error("ordinary nested environment lost its actual body inputs"))?;
     let owner_header = facts
         .crates
         .as_deref()
         .and_then(|linkage| linkage.originals.as_deref())
-        .and_then(|headers| headers.get(closure.owner));
+        .and_then(|headers| headers.get(owner));
     match inputs.environment {
-        s::EnvironmentOrigin::Declaration(owner)
-            if view.definition(owner, work)? == closure.owner =>
-        {
-            facts
-                .generics
-                .environments
-                .get(&closure.owner)
-                .map(Arc::clone)
-                .ok_or_else(|| {
-                    error("ordinary closure environment lost its declaration construction")
-                })
-        }
+        s::EnvironmentOrigin::Declaration(row) if view.definition(row, work)? == owner => facts
+            .generics
+            .environments
+            .get(&owner)
+            .map(Arc::clone)
+            .ok_or_else(|| error("ordinary nested environment lost its declaration construction")),
         s::EnvironmentOrigin::ConstTraitDefault { member, trait_ } => {
-            if view.definition(member, work)? != closure.owner
-                || trait_.artifact != rows.policy.provider
-            {
+            if view.definition(member, work)? != owner || trait_.artifact != rows.policy.provider {
                 return Err(error(
-                    "const default closure environment changed its actual member or provider",
+                    "const default nested environment changed its actual member or provider",
                 ));
             }
-            let owner = view.definition(trait_.declaration, work)?;
-            if facts.associated.trait_owner(closure.owner) != Some(owner) {
+            let trait_owner = view.definition(trait_.declaration, work)?;
+            if facts.associated.trait_owner(owner) != Some(trait_owner) {
                 return Err(error(
-                    "const default closure environment changed its actual trait owner",
+                    "const default nested environment changed its actual trait owner",
                 ));
             }
             if let Some(actual) = owner_header.and_then(|header| header.environment.as_ref()) {
                 return Ok(Arc::clone(actual));
             }
-            default_environment(facts, closure.owner, owner, work, allocation)
+            default_environment(facts, owner, trait_owner, work, allocation)
         }
         s::EnvironmentOrigin::Contract => {
             let mut observed = Observed {
@@ -237,7 +261,7 @@ fn closure_environment(
             result
         }
         _ => Err(error(
-            "ordinary closure environment requires its actual defining construction profile",
+            "ordinary nested environment requires its actual defining construction profile",
         )),
     }
 }

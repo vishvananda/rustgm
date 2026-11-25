@@ -291,6 +291,19 @@ fn original_environment(
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
         return Ok(environment);
     }
+    if let BodyKey::Imported(body_id) = key {
+        let mut steps = 0;
+        let environment = {
+            let view = crate::sema::crates::source_anonymous_original(facts, body_id, &mut steps)?
+                .ok_or("instance source scope lost its original anonymous header")?;
+            if view.source()? != source {
+                return Err("instance source scope changed its actual original anonymous body");
+            }
+            Arc::clone(view.environment()?)
+        };
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        return Ok(environment);
+    }
     let definition = target_scope::owner(facts, key, source)?;
     let header = facts
         .function_header(definition)?

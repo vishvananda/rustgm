@@ -22,7 +22,7 @@ pub(crate) use publication::{Prepared, Registration};
 
 #[derive(Clone, Copy)]
 pub(crate) enum Inline {
-    Closed(NodeKey),
+    Closed(crate::body::ir::BodyOrigin),
     Instance(crate::sema::inline_constants::InlineInstance),
 }
 #[derive(Clone)]
@@ -340,7 +340,7 @@ pub(crate) struct Catalog {
     bodies: Vec<std::rc::Rc<Code>>,
     pub functions: HashMap<Instance, usize>,
     pub definitions: HashMap<DefId, usize>,
-    pub expressions: HashMap<NodeKey, usize>,
+    pub expressions: HashMap<crate::body::ir::BodyOrigin, usize>,
     pub anonymous: Option<Box<AnonymousIndex>>,
     pub associated: Option<Box<AssociatedIndex>>,
     pub sources: Option<Box<SourceIndex>>,
@@ -403,7 +403,7 @@ impl Catalog {
         &self,
         facts: &crate::sema::model::Declarations,
         index: usize,
-        source: NodeKey,
+        source: crate::body::ir::BodyOrigin,
         result: crate::types::TypeId,
     ) -> Result<&Code, &'static str> {
         self.validate_entry(index)?;
@@ -413,16 +413,17 @@ impl Catalog {
         let typed = facts
             .inline_constants
             .as_deref()
-            .and_then(|registry| registry.get(source))
+            .and_then(|registry| registry.get_origin(source))
             .and_then(|body| body.result)
             .or_else(|| {
-                facts
-                    .node(source)
+                source
+                    .source()
+                    .and_then(|node| facts.node(node))
                     .and_then(|node| node.adjustment.map(|a| a.target).or(node.ty))
             });
         if self.expressions.get(&source) != Some(&index)
             || !matches!(code.owner, Owner::AnonymousConstant)
-            || code.source.source() != Some(source)
+            || code.source != source
             || code.result != result
             || typed != Some(result)
             || !code.const_context

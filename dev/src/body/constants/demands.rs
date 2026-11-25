@@ -1,8 +1,8 @@
 //! Each demanded constant is evaluated once, in one fixed order.
 use super::{Evaluator, Rvalue, references};
 use crate::{
-    body::ir::Body,
-    resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
+    body::ir::{Body, BodyOrigin},
+    resolve::{expansion::Report, model::DefId, package::Error},
     sema::{
         inline_constants::InlineInstance,
         values::{Instance, execution::SourceComputation},
@@ -15,7 +15,7 @@ use crate::{
 pub(super) enum Demand {
     Definition(DefId),
     Static(DefId),
-    Inline(NodeKey),
+    Inline(BodyOrigin),
     InlineInstance(InlineInstance, TypeId),
     Source(SourceComputation),
     Associated(Instance),

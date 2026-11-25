@@ -1,8 +1,11 @@
-//! Authenticate the installed closure declaration and recorded domain of a closure original.
+//! Authenticate installed closure and anonymous declarations and recorded domains.
 use super::{Catalog, Declarations, Graph, Mapping, Original, OriginalHeader, charge, s};
 use crate::{
-    resolve::crates::ReservationWork,
-    sema::crates::typed_headers::{Headers, unpaid_provided::ClosureHeader},
+    resolve::{body_origin::ImportedBodyId, crates::ReservationWork},
+    sema::crates::typed_headers::{
+        Headers,
+        unpaid_provided::{AnonymousHeader, ClosureHeader},
+    },
     support::crates::owner_catalog::BodyRef,
     types::closure::ClosureId,
 };
@@ -195,6 +198,162 @@ impl Graph {
             rows,
             row: u32::try_from(rows.original_index(closure.raw)?)
                 .map_err(|_| "source closure row overflow")?,
+        };
+        original.check_locals(steps)?;
+        Ok(original)
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn owns_anonymous_original(
+        &self,
+        catalog: &Catalog,
+        body: ImportedBodyId,
+        steps: &mut usize,
+    ) -> Result<bool, &'static str> {
+        charge(steps)?;
+        let descriptor = self.descriptor(catalog)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(false);
+        }
+        let (provider, raw, _) = catalog.coordinate(body)?;
+        if provider != descriptor.identity() {
+            return Ok(false);
+        }
+        Ok(descriptor
+            .rows()
+            .closures()
+            .and_then(|closures| closures.anonymous_for_body(raw))
+            .is_some())
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn anonymous_header(
+        &self,
+        catalog: &Catalog,
+        facts: &Declarations,
+        body: ImportedBodyId,
+        steps: &mut usize,
+    ) -> Result<Option<AnonymousHeader>, &'static str> {
+        charge(steps)?;
+        let descriptor = self.descriptor(catalog)?;
+        if !descriptor.profile().declaration_policies() {
+            return Ok(None);
+        }
+        let (provider, raw, _) = catalog.coordinate(body)?;
+        if provider != descriptor.identity() {
+            return Ok(None);
+        }
+        let rows = descriptor.rows();
+        let Some((_, header)) = rows
+            .closures()
+            .and_then(|closures| closures.anonymous_for_body(raw))
+        else {
+            return Ok(None);
+        };
+        let owner = catalog.definition_at(descriptor.identity(), header.owner)?;
+        let body_owner = rows
+            .body_owners()
+            .get(header.body.0 as usize)
+            .ok_or("source anonymous body lost its actual body owner")?;
+        let parent_raw = body_owner
+            .parent
+            .ok_or("source anonymous body omitted its actual parent body")?;
+        let index = rows.original_index(raw)?;
+        let original = rows.original(raw)?;
+        let input = rows.body_input(raw)?;
+        let unit = rows
+            .body_units
+            .get(index)
+            .filter(|unit| unit.body == raw)
+            .ok_or("source anonymous body lost its actual numbering unit")?;
+        let installed = facts
+            .inline_constants
+            .as_deref()
+            .and_then(|registry| registry.get_imported(body))
+            .ok_or("source anonymous body lost its installed semantic declaration")?;
+        if original.declaration != header.owner
+            || original.context != s::CallContext::ClosedConst
+            || input.frame != header.binder
+            || unit.universals != header.contract_universals()
+            || installed.declaration != Some(owner)
+            || installed.universals != header.universals
+            || installed.origin != catalog.origin(body)?
+            || input.builtins.as_ref().is_some_and(|builtins| {
+                builtins.environment != s::EnvironmentOrigin::Absent
+                    && builtins.environment != input.environment
+            })
+        {
+            return Err("source anonymous body changed its actual declaration, header or context");
+        }
+        Ok(Some(AnonymousHeader {
+            owner,
+            owner_row: header.owner,
+            raw,
+            parent_raw,
+            body,
+            binder: header.binder,
+            universals: unit.universals,
+            deferred: header.deferred,
+        }))
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn source_anonymous_original<'a>(
+        &'a self,
+        catalog: &'a Catalog,
+        facts: &'a Declarations,
+        headers: &'a Headers,
+        body: ImportedBodyId,
+        steps: &mut usize,
+    ) -> Result<Option<Original<'a>>, &'static str> {
+        let Some(anonymous) = self.anonymous_header(catalog, facts, body, steps)? else {
+            return Ok(None);
+        };
+        self.source_anonymous(catalog, facts, headers, anonymous, steps)
+            .map(Some)
+    }
+
+    fn source_anonymous<'a>(
+        &'a self,
+        catalog: &'a Catalog,
+        facts: &'a Declarations,
+        headers: &'a Headers,
+        anonymous: AnonymousHeader,
+        steps: &mut usize,
+    ) -> Result<Original<'a>, &'static str> {
+        let super::super::Canonical::Lazy(lazy) = &self.canonical else {
+            return Err("source anonymous body requires its actual lazy declaration owner");
+        };
+        headers
+            .charge(0)
+            .map_err(|_| "source anonymous body has an exhausted header ledger")?;
+        if headers.base.saturating_add(headers.bytes) > crate::support::crates::MAX_BYTES {
+            return Err("source anonymous body has an exhausted header storage ledger");
+        }
+        let mut work = ReservationWork::default();
+        let domains = lazy.anonymous_body(self, facts, anonymous, &mut work);
+        *steps = steps.saturating_add(work.steps);
+        if *steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("source anonymous domain lookup work budget exceeded");
+        }
+        let (domain, parent_domain) =
+            domains.map_err(|_| "source anonymous body requires its actual current body domain")?;
+        if domain.environment().is_none() {
+            return Err("source anonymous body omitted its actual defining environment");
+        }
+        let rows = self.descriptor(catalog)?.rows();
+        let original = Original {
+            mapping: Mapping::Ordinary {
+                graph: self,
+                store: &facts.types,
+                domain: Some(domain),
+                parent_domain,
+            },
+            members: &facts.members,
+            catalog,
+            header: OriginalHeader::Anonymous(anonymous),
+            definition: anonymous.owner,
+            body: anonymous.body,
+            rows,
+            row: u32::try_from(rows.original_index(anonymous.raw)?)
+                .map_err(|_| "source anonymous row overflow")?,
         };
         original.check_locals(steps)?;
         Ok(original)

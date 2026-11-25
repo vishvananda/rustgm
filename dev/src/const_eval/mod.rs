@@ -52,7 +52,7 @@ use crate::sema::values::execution::{Progress, Requirement};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     body::ir::{Action, BlockId, Body, LocalKind, Owner, Terminator, ValueId},
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::model::DefId,
     sema::values::{Constant, Evaluator, Failure},
 };
 pub(crate) use reached_drop::Call as SourceNeedsDropCall;
@@ -141,7 +141,7 @@ pub struct Machine<'a, 'b> {
     slots: usize,
     active_initializers: HashSet<DefId>,
     active_associated: HashSet<(crate::sema::values::Instance, crate::types::TypeId)>,
-    active_inline: HashSet<NodeKey>,
+    active_inline: HashSet<crate::body::ir::BodyOrigin>,
     active_anonymous: HashSet<(
         crate::sema::inline_constants::InlineInstance,
         crate::types::TypeId,
@@ -159,7 +159,7 @@ pub(crate) struct State {
     slots: usize,
     active_initializers: HashSet<DefId>,
     active_associated: HashSet<(crate::sema::values::Instance, crate::types::TypeId)>,
-    active_inline: HashSet<NodeKey>,
+    active_inline: HashSet<crate::body::ir::BodyOrigin>,
     active_anonymous: HashSet<(
         crate::sema::inline_constants::InlineInstance,
         crate::types::TypeId,

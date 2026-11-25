@@ -387,11 +387,7 @@ fn anonymous_caller(
     site: (&Frame, ValueId),
     reference: Option<&ReferenceOpening<'_>>,
 ) -> Result<(), &'static str> {
-    let source = code
-        .source
-        .source()
-        .ok_or("anonymous selector has no source root")?;
-    catalog.expression(facts, site.0.body, source, code.result)?;
+    catalog.expression(facts, site.0.body, code.source, code.result)?;
     let row = inputs
         .ok_or("anonymous selector requires its actual proved caller inputs")?
         .checked(catalog, site.0.body, code)?;

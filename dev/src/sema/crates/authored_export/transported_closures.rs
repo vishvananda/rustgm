@@ -1,8 +1,8 @@
-//! Closure originals reserve child body rows after roots in canonical BFS order.
+//! Closure and inline-constant originals reserve child body rows after roots in canonical BFS order.
 use super::{Context, DeclarationRef, Declarations, DefId, Report, Stage, g, s};
 use crate::{
-    resolve::{model::ScopeId, unit::NodeKey},
-    sema::{closures::Body as ClosureBody, nested_outputs::Link},
+    resolve::{body_origin::BodyOrigin, model::ScopeId, unit::NodeKey},
+    sema::{closures::Body as ClosureBody, inline_constants::Evaluation, nested_outputs::Link},
     support::{
         call_traits::CallTrait,
         crates::owner_catalog::{BodyKind, BodyOwner, BodyRef},
@@ -16,7 +16,9 @@ use std::sync::Arc;
 #[derive(Default)]
 pub(super) struct Index {
     map: HashMap<ClosureId, (s::ClosureRef, BodyRef, Context)>,
+    anonymous: HashMap<NodeKey, (u32, BodyRef, Context)>,
     pending_outputs: Vec<PendingOutput>,
+    pending_anonymous_outputs: Vec<PendingAnonymousOutput>,
     finalized: bool,
 }
 
@@ -27,21 +29,66 @@ struct PendingOutput {
     link: Arc<Link>,
 }
 
+struct PendingAnonymousOutput {
+    ordinal: u32,
+    body: BodyRef,
+    link: Arc<Link>,
+}
+
 #[derive(Clone, Copy)]
 enum ParentLink {
     Root(BodyRef),
-    Closure(usize),
+    Nested(usize),
 }
 
-struct KeptClosure {
-    body: ClosureBody,
+enum KeptKind {
+    Closure(ClosureBody),
+    Anonymous {
+        parent_body: NodeKey,
+        universals: u32,
+        deferred: bool,
+    },
+}
+
+struct KeptNested {
+    kind: KeptKind,
+    source: NodeKey,
     owner: DefId,
     owner_body: BodyRef,
-    ordinal: usize,
+    sort_key: (u8, usize),
 }
 
-struct ReservedClosure {
-    body: ClosureBody,
+enum ReservedKind {
+    Closure(ClosureBody),
+    Anonymous { universals: u32, deferred: bool },
+}
+
+impl KeptNested {
+    fn contract(&self, facts: &Declarations, body_ref: BodyRef) -> (BodyKind, s::BinderKind, u32) {
+        let output_universals = facts
+            .nested_outputs
+            .as_deref()
+            .and_then(|registry| registry.get(&self.source))
+            .map_or(0, |link| link.universals);
+        match self.kind {
+            KeptKind::Closure(c) => (
+                BodyKind::Closure,
+                s::BinderKind::ClosureOriginal { body: body_ref },
+                c.execution
+                    .map_or(c.universals, |exec| exec.universals)
+                    .max(output_universals),
+            ),
+            KeptKind::Anonymous { universals, .. } => (
+                BodyKind::Anonymous,
+                s::BinderKind::AnonymousOriginal { body: body_ref },
+                universals.max(output_universals),
+            ),
+        }
+    }
+}
+
+struct ReservedNested {
+    kind: ReservedKind,
     body_ref: BodyRef,
     owner_decl: DeclarationRef,
     frame: Context,
@@ -49,7 +96,9 @@ struct ReservedClosure {
 
 impl Index {
     pub(super) fn require_finalized(&self) -> Result<(), &'static str> {
-        if !self.pending_outputs.is_empty() && !self.finalized {
+        if (!self.pending_outputs.is_empty() || !self.pending_anonymous_outputs.is_empty())
+            && !self.finalized
+        {
             return Err("source closure output links were not finalized before sealing");
         }
         Ok(())
@@ -90,6 +139,59 @@ fn append_closure_formation(
 impl Stage {
     pub(crate) fn has_closure(&self, id: ClosureId) -> bool {
         self.closures.map.contains_key(&id)
+    }
+
+    pub(crate) fn has_anonymous(&self, source: NodeKey) -> bool {
+        self.closures.anonymous.contains_key(&source)
+    }
+
+    pub(crate) fn anonymous_body(&mut self, source: NodeKey) -> Result<BodyRef, &'static str> {
+        self.charge(1)?;
+        self.closures
+            .anonymous
+            .get(&source)
+            .map(|&(_, body, _)| body)
+            .ok_or("source inline constant names an unreserved anonymous body")
+    }
+
+    pub(crate) fn anonymous_context(&mut self, source: NodeKey) -> Result<Context, &'static str> {
+        self.charge(1)?;
+        let &(_, body, context) = self
+            .closures
+            .anonymous
+            .get(&source)
+            .ok_or("source anonymous original has no reserved body")?;
+        if !matches!(self.functions.originals.get(body.0 as usize), Some(None)) {
+            return Err("source anonymous original is already collected or has no reserved row");
+        }
+        Ok(context)
+    }
+
+    pub(crate) fn record_anonymous_contract(
+        &mut self,
+        source: NodeKey,
+        output: Option<&Arc<Link>>,
+    ) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let &(ordinal, body, _) = self
+            .closures
+            .anonymous
+            .get(&source)
+            .ok_or("source anonymous contract names an unreserved body")?;
+        if let Some(link) = output {
+            if link.formation.is_some() || link.creator_only_from.is_some() {
+                return Err("source anonymous output cannot carry closure formation data");
+            }
+            self.reserve(4 * size_of::<PendingAnonymousOutput>())?;
+            self.closures
+                .pending_anonymous_outputs
+                .push(PendingAnonymousOutput {
+                    ordinal,
+                    body,
+                    link: Arc::clone(link),
+                });
+        }
+        Ok(())
     }
 
     pub(crate) fn closure_ref(&mut self, id: ClosureId) -> Result<s::ClosureRef, &'static str> {
@@ -154,6 +256,68 @@ impl Stage {
         for item in &pending {
             self.finalize_one_closure_output(facts, item)?;
         }
+        let anonymous = std::mem::take(&mut self.closures.pending_anonymous_outputs);
+        for item in &anonymous {
+            self.finalize_one_anonymous_output(item)?;
+        }
+        Ok(())
+    }
+
+    fn finalize_one_anonymous_output(
+        &mut self,
+        item: &PendingAnonymousOutput,
+    ) -> Result<(), &'static str> {
+        self.charge(1)?;
+        let parent_body = self
+            .rows
+            .body_owners
+            .get(item.body.0 as usize)
+            .and_then(|owner| owner.parent)
+            .ok_or("source anonymous output link lost its reserved parent body")?;
+        let parent_ctx = *self
+            .functions
+            .contexts
+            .get(parent_body.0 as usize)
+            .ok_or("source anonymous output link lost its parent body context")?;
+        let link = &item.link;
+        let mut bridges_vec = Vec::with_capacity(link.bridges.len());
+        for &bridge in &link.bridges {
+            self.charge(1)?;
+            bridges_vec.push(s::ClosureBridge {
+                slot: bridge.slot,
+                parent: self.region(bridge.parent, parent_ctx)?,
+                output: bridge.output,
+            });
+        }
+        self.reserve(
+            bridges_vec
+                .len()
+                .saturating_mul(4 * size_of::<s::ClosureBridge>()),
+        )?;
+        let table = self
+            .cold()?
+            .closures
+            .as_deref_mut()
+            .ok_or("source anonymous output lost its closure columns")?;
+        let bridge_start = u32::try_from(table.anonymous_bridges.len())
+            .map_err(|_| "source anonymous bridge table overflow")?;
+        table.anonymous_bridges.extend(bridges_vec);
+        let bridge_end = u32::try_from(table.anonymous_bridges.len())
+            .map_err(|_| "source anonymous bridge table overflow")?;
+        let header = table
+            .anonymous
+            .get_mut(item.ordinal as usize)
+            .ok_or("source anonymous output lost its header row")?;
+        header.output = Some(s::ClosureOutput {
+            revision: link.revision,
+            universals: link.universals,
+            bridges: g::Range {
+                start: bridge_start,
+                end: bridge_end,
+            },
+            formation: None,
+            creator_only_from: None,
+        });
         Ok(())
     }
 
@@ -262,23 +426,28 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
     ) -> Result<(), &'static str> {
-        if !self.declaration_policies() || facts.closures.all().is_empty() {
+        if !self.declaration_policies()
+            || (facts.closures.all().is_empty()
+                && facts
+                    .inline_constants
+                    .as_deref()
+                    .is_none_or(|r| r.len() == 0))
+        {
             return Ok(());
         }
-        let (kept, parents) = self.collect_kept_closures(report, facts)?;
+        let (kept, parents) = self.collect_kept_nested(report, facts)?;
         if kept.is_empty() {
             return Ok(());
         }
         let levels = bfs_levels(&kept, &parents)?;
-        let reserved = self.reserve_closure_levels(&kept, &parents, &levels)?;
-        self.emit_closure_headers(facts, reserved)
+        let reserved = self.reserve_nested_levels(facts, &kept, &parents, &levels)?;
+        self.emit_nested_headers(facts, reserved)
     }
 
-    fn collect_kept_closures(
+    fn root_body_map(
         &mut self,
-        report: &Report,
         facts: &Declarations,
-    ) -> Result<(Vec<KeptClosure>, Vec<ParentLink>), &'static str> {
+    ) -> Result<HashMap<NodeKey, BodyRef>, &'static str> {
         let mut root_bodies: HashMap<NodeKey, BodyRef> = HashMap::default();
         for f in &facts.functions {
             self.charge(1)?;
@@ -301,6 +470,31 @@ impl Stage {
                 root_bodies.insert(i.semantic_source(), body_ref);
             }
         }
+        Ok(root_bodies)
+    }
+
+    fn exported_owner_body(&self, owner: DefId) -> Option<BodyRef> {
+        let &owner_body = self.functions.bodies.get(&owner)?;
+        if !matches!(
+            self.rows.body_owners[owner_body.0 as usize].kind,
+            BodyKind::Function | BodyKind::Constant
+        ) || self
+            .rows
+            .compiler_operations
+            .iter()
+            .any(|op| op.body == owner_body)
+        {
+            return None;
+        }
+        Some(owner_body)
+    }
+
+    fn collect_kept_nested(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<(Vec<KeptNested>, Vec<ParentLink>), &'static str> {
+        let root_bodies = self.root_body_map(facts)?;
         let mut kept = Vec::new();
         let mut by_source: HashMap<NodeKey, usize> = HashMap::default();
         let mut by_scope: HashMap<ScopeId, usize> = HashMap::default();
@@ -317,39 +511,56 @@ impl Stage {
             let Some(owner) = body.owner else {
                 continue;
             };
-            let Some(&owner_body) = self.functions.bodies.get(&owner) else {
+            let Some(owner_body) = self.exported_owner_body(owner) else {
                 continue;
             };
-            if self
-                .rows
-                .compiler_operations
-                .iter()
-                .any(|op| op.body == owner_body)
-            {
-                continue;
-            }
             let index = kept.len();
-            by_source.insert(body.semantic_source(), index);
-            let owner_scope = report.resolution.definitions[owner.0 as usize].scope;
-            let module = report.resolution.scopes[owner_scope.0 as usize].module;
-            if let Some(&scope) = report
-                .resolution
-                .node_scopes
-                .get(&(module, body.source.node))
-            {
-                by_scope.insert(scope, index);
-            }
-            kept.push(KeptClosure {
-                body,
+            let source = body.semantic_source();
+            by_source.insert(source, index);
+            record_nested_scope(report, owner, body.source.node, index, &mut by_scope);
+            kept.push(KeptNested {
+                kind: KeptKind::Closure(body),
+                source,
                 owner,
                 owner_body,
-                ordinal,
+                sort_key: (0, ordinal),
             });
         }
-        let mut parents = Vec::with_capacity(kept.len());
+        if let Some(inline) = facts.inline_constants.as_deref() {
+            for (ordinal, row) in inline.bodies().enumerate() {
+                self.charge(1)?;
+                let BodyOrigin::Source(source) = row.origin else {
+                    continue;
+                };
+                if row.evaluation == Evaluation::SuppressedZeroRepeat || row.result.is_none() {
+                    continue;
+                }
+                let Some(owner) = row.declaration else {
+                    continue;
+                };
+                let Some(owner_body) = self.exported_owner_body(owner) else {
+                    continue;
+                };
+                let index = kept.len();
+                by_source.insert(source, index);
+                record_nested_scope(report, owner, source.node, index, &mut by_scope);
+                kept.push(KeptNested {
+                    kind: KeptKind::Anonymous {
+                        parent_body: row.parent_body,
+                        universals: row.universals,
+                        deferred: row.evaluation == Evaluation::DeferredTemplate,
+                    },
+                    source,
+                    owner,
+                    owner_body,
+                    sort_key: (1, ordinal),
+                });
+            }
+        }
+        let mut raw_parents = Vec::with_capacity(kept.len());
         for (index, item) in kept.iter().enumerate() {
             self.charge(1)?;
-            let parent = resolve_parent(
+            raw_parents.push(resolve_parent(
                 report,
                 facts,
                 &kept,
@@ -358,32 +569,34 @@ impl Stage {
                 &by_scope,
                 index,
                 item,
-            )?;
-            parents.push(parent);
+            )?);
         }
-        Ok((kept, parents))
+        prune_unrooted_nested(kept, raw_parents)
     }
 
-    fn reserve_closure_levels(
+    fn reserve_nested_levels(
         &mut self,
-        kept: &[KeptClosure],
+        facts: &Declarations,
+        kept: &[KeptNested],
         parents: &[ParentLink],
         levels: &[Vec<usize>],
-    ) -> Result<Vec<ReservedClosure>, &'static str> {
+    ) -> Result<Vec<ReservedNested>, &'static str> {
         let mut assigned = vec![None; kept.len()];
         let mut next_ordinal: HashMap<BodyRef, u32> = HashMap::default();
         let mut reserved = Vec::with_capacity(kept.len());
+        let mut closure_count = 0_u32;
+        let mut anonymous_count = 0_u32;
         for level in levels {
-            let mut batch: Vec<(BodyRef, usize, usize)> = Vec::with_capacity(level.len());
+            let mut batch: Vec<(BodyRef, (u8, usize), usize)> = Vec::with_capacity(level.len());
             for &index in level {
                 let parent_body = match parents[index] {
                     ParentLink::Root(body) => body,
-                    ParentLink::Closure(parent_index) => assigned[parent_index]
-                        .ok_or("source closure parent was not reserved before child")?,
+                    ParentLink::Nested(parent_index) => assigned[parent_index]
+                        .ok_or("source nested parent was not reserved before child")?,
                 };
-                batch.push((parent_body, kept[index].ordinal, index));
+                batch.push((parent_body, kept[index].sort_key, index));
             }
-            batch.sort_unstable_by_key(|&(parent, ordinal, _)| (parent.0, ordinal));
+            batch.sort_unstable_by_key(|&(parent, sort_key, _)| (parent.0, sort_key));
             for (parent_body, _, index) in batch {
                 let item = &kept[index];
                 let owner_decl = self.declaration(item.owner)?;
@@ -391,21 +604,13 @@ impl Stage {
                 let ordinal = *ordinal_slot;
                 *ordinal_slot = ordinal
                     .checked_add(1)
-                    .ok_or("source closure sibling ordinal overflow")?;
+                    .ok_or("source nested sibling ordinal overflow")?;
                 let body_ref = BodyRef(
                     u32::try_from(self.rows.body_owners.len())
-                        .map_err(|_| "source closure body owner table overflow")?,
+                        .map_err(|_| "source nested body owner table overflow")?,
                 );
-                let contract_universals = item
-                    .body
-                    .execution
-                    .map_or(item.body.universals, |exec| exec.universals);
-                let frame = self.frame(
-                    owner_decl,
-                    None,
-                    s::BinderKind::ClosureOriginal { body: body_ref },
-                    contract_universals,
-                )?;
+                let (body_kind, binder_kind, contract_universals) = item.contract(facts, body_ref);
+                let frame = self.frame(owner_decl, None, binder_kind, contract_universals)?;
                 let body_ctx = Context {
                     body: Some(body_ref),
                     ..frame
@@ -414,31 +619,59 @@ impl Stage {
                     4 * (size_of::<BodyOwner>()
                         + size_of::<Context>()
                         + size_of::<Option<(s::Original, s::BodyInputs)>>())
-                        + retained::new_map::<ClosureId, (s::ClosureRef, BodyRef, Context)>(1),
+                        + retained::new_map::<ClosureId, (s::ClosureRef, BodyRef, Context)>(1)
+                        + retained::new_map::<NodeKey, (u32, BodyRef, Context)>(1),
                 )?;
                 self.rows.body_owners.push(BodyOwner {
                     declaration: owner_decl,
                     parent: Some(parent_body),
-                    kind: BodyKind::Closure,
+                    kind: body_kind,
                     ordinal,
                 });
                 self.functions.contexts.push(body_ctx);
                 self.functions.originals.push(None);
-                let closure_ref = s::ClosureRef(
-                    u32::try_from(reserved.len())
-                        .map_err(|_| "source closure header table overflow")?,
-                );
-                if self
-                    .closures
-                    .map
-                    .insert(item.body.identity, (closure_ref, body_ref, body_ctx))
-                    .is_some()
-                {
-                    return Err("source closure identity reserved twice");
-                }
+                let kind = match item.kind {
+                    KeptKind::Closure(c) => {
+                        let closure_ref = s::ClosureRef(closure_count);
+                        closure_count = closure_count
+                            .checked_add(1)
+                            .ok_or("source closure header table overflow")?;
+                        if self
+                            .closures
+                            .map
+                            .insert(c.identity, (closure_ref, body_ref, body_ctx))
+                            .is_some()
+                        {
+                            return Err("source closure identity reserved twice");
+                        }
+                        ReservedKind::Closure(c)
+                    }
+                    KeptKind::Anonymous {
+                        universals,
+                        deferred,
+                        ..
+                    } => {
+                        let anon_ordinal = anonymous_count;
+                        anonymous_count = anonymous_count
+                            .checked_add(1)
+                            .ok_or("source anonymous header table overflow")?;
+                        if self
+                            .closures
+                            .anonymous
+                            .insert(item.source, (anon_ordinal, body_ref, body_ctx))
+                            .is_some()
+                        {
+                            return Err("source anonymous identity reserved twice");
+                        }
+                        ReservedKind::Anonymous {
+                            universals,
+                            deferred,
+                        }
+                    }
+                };
                 assigned[index] = Some(body_ref);
-                reserved.push(ReservedClosure {
-                    body: item.body,
+                reserved.push(ReservedNested {
+                    kind,
                     body_ref,
                     owner_decl,
                     frame,
@@ -448,129 +681,228 @@ impl Stage {
         Ok(reserved)
     }
 
-    fn emit_closure_headers(
+    fn emit_nested_headers(
         &mut self,
         facts: &mut Declarations,
-        reserved: Vec<ReservedClosure>,
+        reserved: Vec<ReservedNested>,
     ) -> Result<(), &'static str> {
-        self.reserve(
-            size_of::<s::ClosureColumns>().saturating_add(
-                reserved
-                    .len()
-                    .saturating_mul(4 * size_of::<s::ClosureHeader>()),
+        self.reserve(size_of::<s::ClosureColumns>().saturating_add(
+            reserved.len().saturating_mul(
+                4 * size_of::<s::ClosureHeader>().max(size_of::<s::AnonymousHeader>()),
             ),
-        )?;
+        ))?;
         for item in reserved {
             self.charge(1)?;
-            let c = item.body;
-            let closed = Context {
-                owner: item.owner_decl,
-                frame: None,
-                body: None,
-            };
-            self.prepare_type_arena(facts, c.signature)?;
-            let signature = self.ty(facts, c.signature, closed)?;
-            let public_binders = crate::sema::closures::actual::call_binders(facts, c)?;
-            let call_kind = call_trait(
-                facts
-                    .types
-                    .closure_kind(c.identity)
-                    .ok_or("source closure lost its completed call permission")?,
-            );
-            let execution = match c.execution {
-                Some(exec) => {
-                    self.prepare_type_arena(facts, exec.self_ty)?;
-                    let self_ty = self.ty(facts, exec.self_ty, item.frame)?;
-                    self.prepare_type_arena(facts, exec.signature)?;
-                    let exec_sig = self.ty(facts, exec.signature, closed)?;
-                    Some(s::ClosureExecution {
-                        self_ty,
-                        signature: exec_sig,
-                        universals: exec.universals,
-                        receiver: call_trait(exec.receiver),
-                    })
-                }
-                None => None,
-            };
             let binder = self.binder(item.frame)?;
-            self.cold()?
-                .closures
-                .get_or_insert_with(|| Box::new(s::ClosureColumns::default()))
-                .headers
-                .push(s::ClosureHeader {
-                    body: item.body_ref,
-                    owner: item.owner_decl,
-                    binder,
-                    signature,
-                    universals: c.universals,
-                    inherited: c.inherited,
-                    public_binders,
-                    call_kind,
-                    constant: c.constant.is_some(),
-                    execution,
-                    output: None,
-                    require_result_formation: false,
-                });
+            match item.kind {
+                ReservedKind::Closure(c) => {
+                    let closed = Context {
+                        owner: item.owner_decl,
+                        frame: None,
+                        body: None,
+                    };
+                    self.prepare_type_arena(facts, c.signature)?;
+                    let signature = self.ty(facts, c.signature, closed)?;
+                    let public_binders = crate::sema::closures::actual::call_binders(facts, c)?;
+                    let call_kind = call_trait(
+                        facts
+                            .types
+                            .closure_kind(c.identity)
+                            .ok_or("source closure lost its completed call permission")?,
+                    );
+                    let execution = match c.execution {
+                        Some(exec) => {
+                            self.prepare_type_arena(facts, exec.self_ty)?;
+                            let self_ty = self.ty(facts, exec.self_ty, item.frame)?;
+                            self.prepare_type_arena(facts, exec.signature)?;
+                            let exec_sig = self.ty(facts, exec.signature, closed)?;
+                            Some(s::ClosureExecution {
+                                self_ty,
+                                signature: exec_sig,
+                                universals: exec.universals,
+                                receiver: call_trait(exec.receiver),
+                            })
+                        }
+                        None => None,
+                    };
+                    self.cold()?
+                        .closures
+                        .get_or_insert_with(|| Box::new(s::ClosureColumns::default()))
+                        .headers
+                        .push(s::ClosureHeader {
+                            body: item.body_ref,
+                            owner: item.owner_decl,
+                            binder,
+                            signature,
+                            universals: c.universals,
+                            inherited: c.inherited,
+                            public_binders,
+                            call_kind,
+                            constant: c.constant.is_some(),
+                            execution,
+                            output: None,
+                            require_result_formation: false,
+                        });
+                }
+                ReservedKind::Anonymous {
+                    universals,
+                    deferred,
+                } => {
+                    self.cold()?
+                        .closures
+                        .get_or_insert_with(|| Box::new(s::ClosureColumns::default()))
+                        .anonymous
+                        .push(s::AnonymousHeader {
+                            body: item.body_ref,
+                            owner: item.owner_decl,
+                            binder,
+                            universals,
+                            deferred,
+                            output: None,
+                        });
+                }
+            }
         }
         Ok(())
     }
 }
 
+fn record_nested_scope(
+    report: &Report,
+    owner: DefId,
+    node: crate::syntax::ast::NodeId,
+    index: usize,
+    by_scope: &mut HashMap<ScopeId, usize>,
+) {
+    let owner_scope = report.resolution.definitions[owner.0 as usize].scope;
+    let module = report.resolution.scopes[owner_scope.0 as usize].module;
+    if let Some(&scope) = report.resolution.node_scopes.get(&(module, node))
+        && scope != owner_scope
+    {
+        by_scope.insert(scope, index);
+    }
+}
+
 #[expect(
     clippy::too_many_arguments,
-    reason = "parent resolution consults the report, declarations and indexed closure tables"
+    reason = "parent resolution consults the report, declarations and indexed nested tables"
 )]
 fn resolve_parent(
     report: &Report,
     facts: &Declarations,
-    kept: &[KeptClosure],
+    kept: &[KeptNested],
     root_bodies: &HashMap<NodeKey, BodyRef>,
     by_source: &HashMap<NodeKey, usize>,
     by_scope: &HashMap<ScopeId, usize>,
     index: usize,
-    item: &KeptClosure,
-) -> Result<ParentLink, &'static str> {
+    item: &KeptNested,
+) -> Result<Option<ParentLink>, &'static str> {
     if let Some(link) = facts
         .nested_outputs
         .as_deref()
-        .and_then(|registry| registry.get(&item.body.semantic_source()))
+        .and_then(|registry| registry.get(&item.source))
     {
         let parent_key = link
             .parent
             .source()
-            .ok_or("source closure output link lost its source parent")?;
+            .ok_or("source nested output link lost its source parent")?;
         if let Some(&parent_index) = by_source.get(&parent_key) {
-            return Ok(ParentLink::Closure(parent_index));
+            return Ok(Some(ParentLink::Nested(parent_index)));
         }
         if let Some(&root) = root_bodies.get(&parent_key) {
-            return Ok(ParentLink::Root(root));
+            return Ok(Some(ParentLink::Root(root)));
         }
-        return Err("source closure parent body is outside the exported body catalog");
+        return match item.kind {
+            KeptKind::Anonymous { .. } => Ok(None),
+            KeptKind::Closure(_) => {
+                Err("source closure parent body is outside the exported body catalog")
+            }
+        };
     }
+    if let KeptKind::Anonymous { parent_body, .. } = item.kind {
+        if let Some(&parent_index) = by_source.get(&parent_body) {
+            return Ok(Some(ParentLink::Nested(parent_index)));
+        }
+        if let Some(&root) = root_bodies.get(&parent_body) {
+            return Ok(Some(ParentLink::Root(root)));
+        }
+        return Ok(None);
+    }
+    let KeptKind::Closure(closure) = item.kind else {
+        return Ok(None);
+    };
     let owner_scope = report.resolution.definitions[item.owner.0 as usize].scope;
     let module = report.resolution.scopes[owner_scope.0 as usize].module;
     let mut cursor = report
         .resolution
         .node_scopes
-        .get(&(module, item.body.source.node))
+        .get(&(module, closure.source.node))
         .and_then(|&scope| report.resolution.scopes[scope.0 as usize].parent);
     while let Some(scope) = cursor {
         if let Some(&parent_index) = by_scope.get(&scope)
             && parent_index != index
             && kept[parent_index].owner == item.owner
         {
-            return Ok(ParentLink::Closure(parent_index));
+            return Ok(Some(ParentLink::Nested(parent_index)));
         }
         if scope == owner_scope {
             break;
         }
         cursor = report.resolution.scopes[scope.0 as usize].parent;
     }
-    Ok(ParentLink::Root(item.owner_body))
+    Ok(Some(ParentLink::Root(item.owner_body)))
+}
+
+fn prune_unrooted_nested(
+    kept: Vec<KeptNested>,
+    raw_parents: Vec<Option<ParentLink>>,
+) -> Result<(Vec<KeptNested>, Vec<ParentLink>), &'static str> {
+    let mut alive = vec![false; kept.len()];
+    for start in 0..kept.len() {
+        let mut steps = 0_usize;
+        let mut current = raw_parents[start];
+        let rooted = loop {
+            match current {
+                Some(ParentLink::Root(_)) => break true,
+                Some(ParentLink::Nested(parent)) => {
+                    steps = steps
+                        .checked_add(1)
+                        .filter(|&d| d <= kept.len())
+                        .ok_or("source nested body hierarchy contains a cycle")?;
+                    current = raw_parents[parent];
+                }
+                None => break false,
+            }
+        };
+        alive[start] = rooted;
+    }
+    let mut remap = vec![None; kept.len()];
+    let mut filtered = Vec::with_capacity(kept.len());
+    for (old, item) in kept.into_iter().enumerate() {
+        if alive[old] {
+            remap[old] = Some(filtered.len());
+            filtered.push(item);
+        }
+    }
+    let mut parents = Vec::with_capacity(filtered.len());
+    for (old, link) in raw_parents.into_iter().enumerate() {
+        if !alive[old] {
+            continue;
+        }
+        let parent = match link {
+            Some(ParentLink::Root(body)) => ParentLink::Root(body),
+            Some(ParentLink::Nested(parent)) => ParentLink::Nested(
+                remap[parent].ok_or("source nested parent was pruned unexpectedly")?,
+            ),
+            None => return Err("source nested pruning lost its rooted parent"),
+        };
+        parents.push(parent);
+    }
+    Ok((filtered, parents))
 }
 
 fn bfs_levels(
-    kept: &[KeptClosure],
+    kept: &[KeptNested],
     parents: &[ParentLink],
 ) -> Result<Vec<Vec<usize>>, &'static str> {
     let mut depths = vec![0_usize; kept.len()];
@@ -578,11 +910,11 @@ fn bfs_levels(
     for start in 0..kept.len() {
         let mut depth = 1_usize;
         let mut current = parents[start];
-        while let ParentLink::Closure(parent) = current {
+        while let ParentLink::Nested(parent) = current {
             depth = depth
                 .checked_add(1)
                 .filter(|&d| d <= kept.len())
-                .ok_or("source closure nesting contains a cycle")?;
+                .ok_or("source nested body hierarchy contains a cycle")?;
             current = parents[parent];
         }
         depths[start] = depth;

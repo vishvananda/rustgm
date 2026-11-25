@@ -916,6 +916,7 @@ fn originals(
                             | ValueKind::Union { .. }
                             | ValueKind::Repeat { .. }
                             | ValueKind::Unsize { .. }
+                            | ValueKind::InlineConstant(_)
                     ))
             {
                 return Err("source value operation requires a wider explicit profile");

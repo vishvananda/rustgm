@@ -65,11 +65,10 @@ fn prepare<'a>(
     for body in bodies.clone() {
         eligibility_charged(report, facts, body)?;
         if matches!(body.owner, super::ir::Owner::AnonymousConstant)
-            && facts.inline_constants.as_deref().is_some_and(|registry| {
-                body.source
-                    .source()
-                    .is_some_and(|source| registry.get(source).is_some())
-            })
+            && facts
+                .inline_constants
+                .as_deref()
+                .is_some_and(|registry| registry.get_origin(body.source).is_some())
         {
             continue;
         }

@@ -6,7 +6,8 @@ mod ingested_domains;
 mod lending_originals;
 mod recipe_identity;
 pub(crate) use lending_originals::{
-    prepare as prepare_original, prepare_closure as prepare_closure_original,
+    prepare as prepare_original, prepare_anonymous as prepare_anonymous_original,
+    prepare_closure as prepare_closure_original,
 };
 mod decoded_original;
 #[cfg(test)]

@@ -95,7 +95,7 @@ impl Builder<'_, '_, '_> {
         let header =
             self.domains
                 .original_header_for_body(original.body, original.declaration, work)?;
-        let (parameters, result, sig_frame) = header.entry(rows)?;
+        let (parameters, result, sig_frame) = header.entry(rows, original)?;
         let parameters = parameters.slice(&rows.roots)?;
         for (index, local) in original.locals.iter().enumerate() {
             work.charge(1)?;

@@ -186,11 +186,10 @@ impl Engine<'_, '_> {
                 facts.associated.owner(definition).is_some()
                     || facts.generics.has_parameters(definition)
             }
-            Owner::AnonymousConstant => self
-                .body
-                .source
-                .source()
-                .and_then(|source| facts.inline_constants.as_deref()?.get(source))
+            Owner::AnonymousConstant => facts
+                .inline_constants
+                .as_deref()
+                .and_then(|registry| registry.get_origin(self.body.source))
                 .is_some_and(|body| {
                     body.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate
                 }),

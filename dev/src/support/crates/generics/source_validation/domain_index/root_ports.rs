@@ -306,6 +306,59 @@ impl DomainIndex<'_, '_> {
                 self.closure_output_roots(closures, header, output, work)?;
             }
         }
+        for header in &closures.anonymous {
+            work.charge(1)?;
+            if let Some(output) = header.output {
+                self.anonymous_output_roots(closures, header, output, work)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn anonymous_output_roots(
+        &self,
+        closures: &s::ClosureColumns,
+        header: &s::AnonymousHeader,
+        output: s::ClosureOutput,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if output.formation.is_some() || output.creator_only_from.is_some() {
+            return Err("source anonymous output cannot carry closure formation data");
+        }
+        let rows = self.headers.rows();
+        let parent_body = rows
+            .body_owners
+            .get(header.body.0 as usize)
+            .and_then(|owner| owner.parent)
+            .ok_or("source anonymous output link lacks its enclosing parent body")?;
+        let parent_index = self.headers.original_index(parent_body)?;
+        let parent_ctx = Context {
+            owner: header.owner,
+            frame: Some(rows.body_inputs[parent_index].frame),
+            body: Some(parent_body),
+        };
+        let bridges = output.bridges.slice(&closures.anonymous_bridges)?;
+        let mut output_count = 0_u32;
+        let mut previous_slot = None;
+        for bridge in bridges {
+            work.charge(1)?;
+            if u32::from(bridge.slot) >= output.universals
+                || previous_slot.is_some_and(|before| before >= bridge.slot)
+            {
+                return Err("source anonymous output bridges have invalid or unordered slots");
+            }
+            self.types
+                .region(self.headers, &self.binders, parent_ctx, bridge.parent, work)?;
+            if bridge.output {
+                output_count = output_count
+                    .checked_add(1)
+                    .ok_or("source anonymous output revision overflow")?;
+            }
+            previous_slot = Some(bridge.slot);
+        }
+        if output_count != output.revision {
+            return Err("source anonymous output revision differs from its output bridges");
+        }
         Ok(())
     }
 

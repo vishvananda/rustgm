@@ -35,9 +35,15 @@ fn fixture(width: usize) -> Result<Fixture> {
             let link = facts
                 .nested_outputs
                 .as_deref()
-                .and_then(|r| r.get(&instance.source()))
+                .and_then(|r| instance.source_key().and_then(|source| r.get(&source)))
                 .ok_or("link")?;
-            sources.insert(instance.source().into(), body.source, link, &[], None)?;
+            sources.insert(
+                instance.source_key().ok_or("local inline source")?.into(),
+                body.source,
+                link,
+                &[],
+                None,
+            )?;
         }
     }
     let unit = facts
@@ -202,9 +208,9 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
     let parent = facts
         .body_regions
         .allocate(annotation(crate::test_sites::node(body.source)?))?;
-    let child = facts
-        .body_regions
-        .allocate(annotation(port.instance.source()))?;
+    let child = facts.body_regions.allocate(annotation(
+        port.instance.source_key().ok_or("local inline source")?,
+    ))?;
     assert_eq!(
         parent, child,
         "unrelated units deliberately reuse the same number"
@@ -213,7 +219,9 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
         facts
             .body_regions
             .unit_of(crate::test_sites::node(body.source)?),
-        facts.body_regions.unit_of(port.instance.source())
+        facts
+            .body_regions
+            .unit_of(port.instance.source_key().ok_or("local inline source")?)
     );
     let mut work = 0;
     assert!(
@@ -234,9 +242,10 @@ fn coincident_foreign_unit_ids_cannot_replace_a_prepared_child() -> Result {
     facts
         .body_regions
         .nest(crate::test_sites::node(body.source)?, foreign_source)?;
-    facts
-        .body_regions
-        .nest(port.instance.source(), foreign_source)?;
+    facts.body_regions.nest(
+        port.instance.source_key().ok_or("local inline source")?,
+        foreign_source,
+    )?;
     let before = work;
     assert!(
         pending
@@ -276,20 +285,22 @@ fn nested_shared_units_survive_foreign_allocation_interleaving() -> Result {
         .body_regions
         .nest(crate::test_sites::node(body.source)?, pending.unit)?;
     facts.body_regions.nest(
-        port.instance.source(),
+        port.instance.source_key().ok_or("local inline source")?,
         crate::test_sites::node(body.source)?,
     )?;
     let parent = facts
         .body_regions
         .allocate(annotation(crate::test_sites::node(body.source)?))?;
     let unrelated = facts.body_regions.allocate(annotation(foreign_source))?;
-    let child = facts
-        .body_regions
-        .allocate(annotation(port.instance.source()))?;
+    let child = facts.body_regions.allocate(annotation(
+        port.instance.source_key().ok_or("local inline source")?,
+    ))?;
     assert_eq!(parent, unrelated);
     assert_ne!(parent, child);
     assert_eq!(
-        facts.body_regions.unit_of(port.instance.source()),
+        facts
+            .body_regions
+            .unit_of(port.instance.source_key().ok_or("local inline source")?),
         pending.unit
     );
     assert_eq!(
@@ -297,7 +308,7 @@ fn nested_shared_units_survive_foreign_allocation_interleaving() -> Result {
             .body_regions
             .get(crate::test_sites::node(body.source)?, child)
             .map(|r| r.body),
-        Some(port.instance.source())
+        Some(port.instance.source_key().ok_or("local inline source")?)
     );
     let mut work = 0;
     pending.request(&facts, &body, &input, port.instance, port.result, &mut work)?;

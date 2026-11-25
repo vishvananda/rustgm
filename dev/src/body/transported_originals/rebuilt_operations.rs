@@ -103,6 +103,9 @@ pub(super) fn build(
     Ok(body)
 }
 pub(super) fn owner(view: &SourceOriginal<'_>) -> Owner {
+    if view.is_anonymous() {
+        return Owner::AnonymousConstant;
+    }
     if let Some((identity, signature, execution)) = view.closure_owner() {
         return Owner::Closure {
             identity,
@@ -296,6 +299,9 @@ fn extended_value_kind(
             value: ValueId(value),
             conversion: unsize_conversion(view, conversion, steps)?,
         },
+        s::ValueKind::InlineConstant(body) => {
+            Rvalue::InlineConstant(view.anonymous_body(body, steps)?)
+        }
         _ => return Err("source value operation requires its wider actual reconstruction profile"),
     })
 }
@@ -681,7 +687,7 @@ pub(super) fn validate(
         return Err("source original changed its complete supported body/header domain");
     }
     regional_records::validate(view, body, steps)?;
-    ports(view, body, steps)?;
+    ports(facts, view, body, steps)?;
     encoded_texts::validate(&facts.texts, view, body, steps)?;
     super::callsite_coordinates::validate(facts, view, body, steps)?;
     encoded_assembly::validate(view, body, steps)?;
@@ -736,7 +742,12 @@ pub(super) fn validate(
     }
     validate_owned(view, body, steps)
 }
-fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<(), &'static str> {
+fn ports(
+    facts: &crate::sema::model::Declarations,
+    view: &SourceOriginal<'_>,
+    body: &Body,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
     let record = view.raw();
     for (actual, record) in body.locals.iter().zip(&record.locals) {
         *steps = steps.saturating_add(1);
@@ -770,7 +781,7 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
     let mut scalar = 0;
     for (actual, record) in body.values.iter().zip(&record.values) {
         *steps = steps.saturating_add(1);
-        let same = same_value(view, (actual, *record), body, &mut scalar, steps)?;
+        let same = same_value(facts, view, (actual, *record), body, &mut scalar, steps)?;
         if !same || actual.ty != view.ty(record.ty, steps)? {
             return Err("source original changed an actual typed value operation");
         }
@@ -893,6 +904,7 @@ fn same_invocation(
     }))
 }
 fn same_extended_value(
+    facts: &crate::sema::model::Declarations,
     view: &SourceOriginal<'_>,
     (actual, record): (Rvalue, s::ValueKind),
     steps: &mut usize,
@@ -909,6 +921,7 @@ fn same_extended_value(
             | s::ValueKind::Union { .. }
             | s::ValueKind::Repeat { .. }
             | s::ValueKind::Unsize { .. }
+            | s::ValueKind::InlineConstant(_)
     ) {
         return Ok(None);
     }
@@ -981,10 +994,17 @@ fn same_extended_value(
                 conversion: raw_conversion,
             },
         ) => value.0 == raw_value && conversion == unsize_conversion(view, raw_conversion, steps)?,
+        (Rvalue::InlineConstant(actual), s::ValueKind::InlineConstant(raw)) => {
+            actual == view.anonymous_body(raw, steps)?
+        }
+        (Rvalue::InlineInstance(instance), s::ValueKind::InlineConstant(raw)) => {
+            instance.origin(facts) == Some(view.anonymous_body(raw, steps)?)
+        }
         _ => false,
     }))
 }
 fn same_value(
+    facts: &crate::sema::model::Declarations,
     view: &SourceOriginal<'_>,
     (actual, record): (&Value, s::Value),
     body: &Body,
@@ -1000,7 +1020,7 @@ fn same_value(
     if let Some(same) = same_invocation(view, (actual.kind, record.kind), steps)? {
         return Ok(same);
     }
-    if let Some(same) = same_extended_value(view, (actual.kind, record.kind), steps)? {
+    if let Some(same) = same_extended_value(facts, view, (actual.kind, record.kind), steps)? {
         return Ok(same);
     }
     Ok(match (actual.kind, record.kind) {

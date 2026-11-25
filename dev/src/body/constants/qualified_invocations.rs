@@ -263,12 +263,26 @@ fn imported_site(
             crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)?
                 .ok_or("imported const closure caller lost its actual closure original")?
         }
-        _ => return Err("imported const closure caller requires a function or closure owner"),
+        Owner::AnonymousConstant => {
+            let crate::resolve::body_origin::BodyOrigin::Imported(origin) = body.source else {
+                return Err("imported const closure caller lost its anonymous body origin");
+            };
+            crate::sema::crates::source_anonymous_original(facts, origin.id(), &mut work.steps)?
+                .ok_or("imported const closure caller lost its actual anonymous original")?
+        }
+        _ => {
+            return Err(
+                "imported const closure caller requires a function, closure or anonymous owner",
+            );
+        }
     };
     work.charge(2)?;
     if !view.rows().descriptor().profile().declaration_policies()
         || view.source()? != body.source
-        || view.raw().context != CallContext::ConstDefinition
+        || !matches!(
+            view.raw().context,
+            CallContext::ConstDefinition | CallContext::ClosedConst
+        )
     {
         return Err("imported const closure caller changed its defining body or effect");
     }

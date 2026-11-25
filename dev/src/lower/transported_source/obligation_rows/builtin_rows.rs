@@ -6,10 +6,10 @@ use std::sync::Arc;
 fn validate_environment(
     facts: &Declarations,
     definition: DefId,
-    closure_source: Option<crate::resolve::unit::NodeKey>,
+    body_source: Option<crate::resolve::unit::NodeKey>,
     environment: &Arc<Environment>,
 ) -> Result<(), &'static str> {
-    if let Some(source) = closure_source
+    if let Some(source) = body_source
         && facts
             .generics
             .builtin_requirements
@@ -33,7 +33,7 @@ fn translated_environment(
     stage: &mut Stage,
     facts: &Declarations,
     definition: DefId,
-    closure_source: Option<crate::resolve::unit::NodeKey>,
+    body_source: Option<crate::resolve::unit::NodeKey>,
     environment: Option<&Arc<Environment>>,
 ) -> Result<s::EnvironmentOrigin, &'static str> {
     let Some(environment) = environment else {
@@ -42,7 +42,7 @@ fn translated_environment(
     if facts.generics.body_environment(definition).is_none() {
         return Ok(s::EnvironmentOrigin::Contract);
     }
-    validate_environment(facts, definition, closure_source, environment)?;
+    validate_environment(facts, definition, body_source, environment)?;
     // A completed body cache does not turn a contract-derived scope into a
     // declaration environment. Feature premises still require explicit rows.
     if !facts.generics.environments.contains_key(&definition)
@@ -75,11 +75,28 @@ fn translated_environment(
     Ok(s::EnvironmentOrigin::Declaration(member))
 }
 
+// Without a source-retained builtin environment, anonymous Copy preparation
+// constructs its environment from this body's complete contract, not the
+// enclosing declaration. Import must replay that same construction.
+fn anonymous_contract(facts: &Declarations, cfg: &super::Body) -> bool {
+    matches!(cfg.owner, super::ir::Owner::AnonymousConstant)
+        && cfg
+            .source
+            .source()
+            .and_then(|source| facts.generics.builtin_requirements.get(&source))
+            .and_then(|input| input.environment.as_ref())
+            .is_none()
+}
+
 pub(super) fn body_environment(
     stage: &mut Stage,
     facts: &Declarations,
     definition: DefId,
+    cfg: &super::Body,
 ) -> Result<s::EnvironmentOrigin, &'static str> {
+    if anonymous_contract(facts, cfg) {
+        return Ok(s::EnvironmentOrigin::Contract);
+    }
     match facts.generics.body_environment(definition) {
         Some(environment) => {
             translated_environment(stage, facts, definition, None, Some(environment))
@@ -97,16 +114,35 @@ pub(super) fn emit(
     context: Context,
     sites: &mut Sites,
 ) -> Result<s::BuiltinInputs, &'static str> {
-    let closure_source = matches!(cfg.owner, super::ir::Owner::Closure { .. })
-        .then(|| cfg.source.source())
-        .flatten();
-    let environment = translated_environment(
-        stage,
-        facts,
-        definition,
-        closure_source,
-        builtins.environment.as_ref(),
-    )?;
+    let body_source = matches!(
+        cfg.owner,
+        super::ir::Owner::Closure { .. } | super::ir::Owner::AnonymousConstant
+    )
+    .then(|| cfg.source.source())
+    .flatten();
+    let environment = if anonymous_contract(facts, cfg) {
+        if builtins
+            .environment
+            .as_ref()
+            .is_some_and(|env| env.has_feature_assumptions())
+        {
+            return Err("source anonymous contract cannot fabricate defining feature premises");
+        }
+        builtins
+            .environment
+            .as_ref()
+            .map_or(s::EnvironmentOrigin::Absent, |_| {
+                s::EnvironmentOrigin::Contract
+            })
+    } else {
+        translated_environment(
+            stage,
+            facts,
+            definition,
+            body_source,
+            builtins.environment.as_ref(),
+        )?
+    };
     let mut rows = s::BuiltinInputs {
         environment,
         predicates: Vec::new(),

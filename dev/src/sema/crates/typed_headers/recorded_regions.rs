@@ -67,10 +67,23 @@ pub(in crate::sema::crates::typed_headers) struct ClosureHeader {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema::crates::typed_headers) struct AnonymousHeader {
+    pub owner: crate::resolve::model::DefId,
+    pub owner_row: DeclarationRef,
+    pub raw: BodyRef,
+    pub parent_raw: BodyRef,
+    pub body: ImportedBodyId,
+    pub binder: g::BinderRef,
+    pub universals: u32,
+    pub deferred: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum NumberedDeclaration {
     Function(RecordedFunction),
     Initializer(InitializerHeader),
     Closure(ClosureHeader),
+    Anonymous(AnonymousHeader),
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) struct RecordedFunction {
@@ -238,6 +251,37 @@ impl DomainStage {
         )
     }
 
+    pub(super) fn anonymous(
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: AnonymousHeader,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(12)?;
+        let rows = view.rows()?;
+        let (_, header) = rows
+            .closures()
+            .and_then(|closures| closures.anonymous_for_body(expected.raw))
+            .ok_or_else(|| error("recorded anonymous body lost its actual header"))?;
+        if header.body != expected.raw
+            || header.owner != expected.owner_row
+            || header.binder != expected.binder
+            || header.deferred != expected.deferred
+            || view.body(expected.raw, work)? != expected.body
+        {
+            return Err(error(
+                "recorded anonymous body changed its actual declaration, header or body",
+            ));
+        }
+        Self::numbered(
+            view,
+            store,
+            expected.body,
+            expected.raw,
+            NumberedDeclaration::Anonymous(expected),
+        )
+    }
+
     fn numbered(
         view: &RecipeView<'_>,
         store: &Store,
@@ -263,6 +307,12 @@ impl DomainStage {
                 expected.owner_row,
                 expected.binder,
                 s::BinderKind::ClosureOriginal { body: expected.raw },
+                expected.universals,
+            ),
+            NumberedDeclaration::Anonymous(expected) => (
+                expected.owner_row,
+                expected.binder,
+                s::BinderKind::AnonymousOriginal { body: expected.raw },
                 expected.universals,
             ),
         };
@@ -460,7 +510,9 @@ impl RecordedDomain {
     pub(super) fn expected_function(&self) -> Option<&RecordedFunction> {
         match &self.seal.expected {
             NumberedDeclaration::Function(ready) => Some(ready),
-            NumberedDeclaration::Initializer(_) | NumberedDeclaration::Closure(_) => None,
+            NumberedDeclaration::Initializer(_)
+            | NumberedDeclaration::Closure(_)
+            | NumberedDeclaration::Anonymous(_) => None,
         }
     }
     pub(super) const fn raw(&self) -> BodyRef {
@@ -490,6 +542,9 @@ impl RecordedDomain {
                 DomainStage::initializer(view, store, *ready, work)?
             }
             NumberedDeclaration::Closure(ready) => DomainStage::closure(view, store, *ready, work)?,
+            NumberedDeclaration::Anonymous(ready) => {
+                DomainStage::anonymous(view, store, *ready, work)?
+            }
         };
         self.require(&stage, store, work)
     }

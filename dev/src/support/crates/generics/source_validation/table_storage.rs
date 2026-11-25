@@ -231,6 +231,8 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
             count.vector(&closures.bridges, work)?;
             count.vector(&closures.formation_inputs, work)?;
             count.vector(&closures.callable_slots, work)?;
+            count.vector(&closures.anonymous, work)?;
+            count.vector(&closures.anonymous_bridges, work)?;
         }
     }
     Ok(())

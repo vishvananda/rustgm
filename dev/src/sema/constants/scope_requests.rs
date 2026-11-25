@@ -48,8 +48,8 @@ impl Queries<'_> {
                 .initializer_index(definition)
                 .and_then(|index| self.typing.facts.initializers.get(index))
                 .map(crate::sema::model::Initializer::semantic_source),
-            Requirement::InlineBody { source, .. } => Some(source),
-            Requirement::AnonymousBody { instance, .. } => Some(instance.source()),
+            Requirement::InlineBody { source, .. } => source.source(),
+            Requirement::AnonymousBody { instance, .. } => instance.source_key(),
         };
         if let Some(source) = source {
             self.schedule_pattern_owner(source, None)

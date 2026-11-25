@@ -3,7 +3,11 @@
 #[path = "../../../tests/invariants/anonymous_contexts.rs"]
 mod tests;
 use crate::{
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::{
+        body_origin::{BodyOrigin, ImportedBodyId},
+        model::DefId,
+        unit::NodeKey,
+    },
     sema::{model::Declarations, values},
     types::{Kind, instance::Instance},
 };
@@ -16,10 +20,20 @@ pub enum Context {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct InlineInstance {
-    source: NodeKey,
-    enclosing: Context,
+enum Repr {
+    LocalCallable(NodeKey, Instance),
+    LocalInitializer(NodeKey, values::Instance),
+    LocalSourceInitializer(NodeKey, values::execution::SourceComputation),
+    ImportedCallable(ImportedBodyId, Instance),
+    ImportedInitializer(ImportedBodyId, values::Instance),
+    ImportedSourceInitializer(ImportedBodyId, values::execution::SourceComputation),
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct InlineInstance(Repr);
+
+#[cfg(test)]
+const _: [(); 20] = [(); size_of::<InlineInstance>()];
 
 impl InlineInstance {
     /// Select a source-owned template in an exact checked enclosing context.
@@ -32,15 +46,27 @@ impl InlineInstance {
         source: NodeKey,
         enclosing: Context,
     ) -> Result<Self, &'static str> {
+        Self::select_origin(facts, BodyOrigin::Source(source), enclosing)
+    }
+
+    pub(crate) fn select_origin(
+        facts: &Declarations,
+        origin: BodyOrigin,
+        enclosing: Context,
+    ) -> Result<Self, &'static str> {
         let body = facts
             .inline_constants
             .as_deref()
-            .and_then(|table| table.get(source))
+            .and_then(|table| table.get_origin(origin))
             .ok_or("anonymous instance requires a retained typed template")?;
         if body.result.is_none() {
             return Err("anonymous instance result is not ready");
         }
-        let closure_owner = facts.closures.get(body.context_owner).map(|c| c.identity);
+        let closure_owner = if body.origin.source().is_some() {
+            facts.closures.get(body.context_owner).map(|c| c.identity)
+        } else {
+            body.imported_closure_owner()
+        };
         let owner = match enclosing {
             Context::Callable(instance) => {
                 if facts.types.contains_parameters(instance.ty()) != Some(false)
@@ -91,22 +117,87 @@ impl InlineInstance {
         if body.declaration != Some(owner) {
             return Err("anonymous instance belongs to another enclosing declaration");
         }
-        Ok(Self { source, enclosing })
+        let repr = match (origin, enclosing) {
+            (BodyOrigin::Source(source), Context::Callable(c)) => Repr::LocalCallable(source, c),
+            (BodyOrigin::Source(source), Context::Initializer(i)) => {
+                Repr::LocalInitializer(source, i)
+            }
+            (BodyOrigin::Source(source), Context::SourceInitializer(w)) => {
+                Repr::LocalSourceInitializer(source, w)
+            }
+            (BodyOrigin::Imported(body), Context::Callable(c)) => {
+                Repr::ImportedCallable(body.id(), c)
+            }
+            (BodyOrigin::Imported(body), Context::Initializer(i)) => {
+                Repr::ImportedInitializer(body.id(), i)
+            }
+            (BodyOrigin::Imported(body), Context::SourceInitializer(w)) => {
+                Repr::ImportedSourceInitializer(body.id(), w)
+            }
+        };
+        Ok(Self(repr))
     }
+
+    pub(crate) fn select_in(
+        self,
+        facts: &Declarations,
+        enclosing: Context,
+    ) -> Result<Self, &'static str> {
+        let origin = self
+            .origin(facts)
+            .ok_or("anonymous instance lost its retained typed template")?;
+        Self::select_origin(facts, origin, enclosing)
+    }
+
     #[must_use]
-    pub const fn source(self) -> NodeKey {
-        self.source
+    pub const fn source_key(self) -> Option<NodeKey> {
+        match self.0 {
+            Repr::LocalCallable(source, _)
+            | Repr::LocalInitializer(source, _)
+            | Repr::LocalSourceInitializer(source, _) => Some(source),
+            Repr::ImportedCallable(..)
+            | Repr::ImportedInitializer(..)
+            | Repr::ImportedSourceInitializer(..) => None,
+        }
     }
+
+    #[must_use]
+    pub fn origin(self, facts: &Declarations) -> Option<BodyOrigin> {
+        match self.0 {
+            Repr::LocalCallable(source, _)
+            | Repr::LocalInitializer(source, _)
+            | Repr::LocalSourceInitializer(source, _) => Some(BodyOrigin::Source(source)),
+            Repr::ImportedCallable(id, _)
+            | Repr::ImportedInitializer(id, _)
+            | Repr::ImportedSourceInitializer(id, _) => facts
+                .inline_constants
+                .as_deref()?
+                .get_imported(id)
+                .map(|body| body.origin),
+        }
+    }
+
     #[must_use]
     pub const fn enclosing(self) -> Context {
-        self.enclosing
+        match self.0 {
+            Repr::LocalCallable(_, c) | Repr::ImportedCallable(_, c) => Context::Callable(c),
+            Repr::LocalInitializer(_, i) | Repr::ImportedInitializer(_, i) => {
+                Context::Initializer(i)
+            }
+            Repr::LocalSourceInitializer(_, w) | Repr::ImportedSourceInitializer(_, w) => {
+                Context::SourceInitializer(w)
+            }
+        }
     }
 }
 
 impl std::fmt::Display for InlineInstance {
     fn fmt(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(out, "{}:{}@", self.source.file.0, self.source.node.get())?;
-        match self.enclosing {
+        match self.source_key() {
+            Some(source) => write!(out, "{}:{}@", source.file.0, source.node.get())?,
+            None => out.write_str("imported@")?,
+        }
+        match self.enclosing() {
             Context::SourceInitializer(_) => out.write_str("source-initializer"),
             Context::Callable(instance) => write!(out, "callable:{}", instance.ty().0),
             Context::Initializer(instance) => write!(
@@ -120,9 +211,25 @@ impl std::fmt::Display for InlineInstance {
 impl InlineInstance {
     pub(crate) fn order(self, facts: &Declarations) -> Result<[u32; 11], &'static str> {
         let mut key = [0; 11];
-        key[0] = self.source.file.0;
-        key[1] = self.source.node.get();
-        match self.enclosing {
+        match self.0 {
+            Repr::LocalCallable(source, _)
+            | Repr::LocalInitializer(source, _)
+            | Repr::LocalSourceInitializer(source, _) => {
+                key[0] = source.file.0;
+                key[1] = source.node.get();
+            }
+            Repr::ImportedCallable(id, _)
+            | Repr::ImportedInitializer(id, _)
+            | Repr::ImportedSourceInitializer(id, _) => {
+                key[0] = u32::MAX;
+                key[1] = facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|table| table.lookup_imported(id))
+                    .map_or(u32::MAX, |slot| slot.0);
+            }
+        }
+        match self.enclosing() {
             Context::Callable(instance) => key[3] = instance.ty().0,
             Context::Initializer(instance) => {
                 key[2] = 1;

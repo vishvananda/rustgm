@@ -93,7 +93,10 @@ impl Index {
                 .as_deref()
                 .and_then(|r| r.at(slot))
                 .ok_or("missing indexed inline original")?;
-            index.add(facts, inline.source, Owner::Anonymous, inline.declaration)?;
+            let Some(source) = inline.origin.source() else {
+                continue;
+            };
+            index.add(facts, source, Owner::Anonymous, inline.declaration)?;
         }
         index.connect(work)?;
         Ok(index)

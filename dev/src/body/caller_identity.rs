@@ -89,7 +89,7 @@ impl Owner {
             }
             Self::AnonymousInstance(selected) => {
                 if instance.is_some()
-                    || selected.source() != source
+                    || selected.source_key() != Some(source)
                     || crate::sema::inline_constants::InlineInstance::select(
                         facts,
                         source,

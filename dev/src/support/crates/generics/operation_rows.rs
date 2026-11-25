@@ -151,6 +151,9 @@ pub enum ValueKind {
         declaration: DeclarationRef,
         arguments: Range,
     },
+    /// Version fourteen: a read of an inline `const { ... }` body owned by this
+    /// enclosing body. Evaluation remains consumer-driven.
+    InlineConstant(crate::support::crates::owner_catalog::BodyRef),
     /// Version fourteen: the rigid const formal of this original or a
     /// captured declaration scope. Instantiation substitutes its own term.
     ConstArgument(super::SlotRef),

@@ -79,11 +79,8 @@ impl Selection {
                 ))
             }
             Self::Anonymous(instance) => {
-                let actual_source = source
-                    .source
-                    .source()
-                    .ok_or("source inline instance has an imported original")?;
-                let selected = InlineInstance::select(facts, actual_source, instance.enclosing())?;
+                let selected =
+                    InlineInstance::select_origin(facts, source.source, instance.enclosing())?;
                 if selected != instance
                     || source.instance.is_some()
                     || !matches!(source.owner, Owner::AnonymousConstant)
@@ -93,7 +90,7 @@ impl Selection {
                 let definition = facts
                     .inline_constants
                     .as_deref()
-                    .and_then(|r| source.source.source().and_then(|source| r.get(source)))
+                    .and_then(|r| r.get_origin(source.source))
                     .and_then(|b| b.declaration)
                     .ok_or("anonymous template has no declaration")?;
                 Ok((Owner::AnonymousInstance(instance), definition, None))
@@ -137,21 +134,21 @@ pub(super) fn operands(
     }
     for value in &mut body.values {
         if let Rvalue::InlineInstance(instance) = value.kind {
-            let selected = InlineInstance::select(facts, instance.source(), selection.context()?)?;
+            let selected = instance.select_in(facts, selection.context()?)?;
             if selected != instance {
                 return Err("copied inline operand belongs to another enclosing context");
             }
         }
-        if let Rvalue::InlineConstant(source) = value.kind {
+        if let Rvalue::InlineConstant(origin) = value.kind {
             let row = facts
                 .inline_constants
                 .as_deref()
-                .and_then(|r| r.get(source))
+                .and_then(|r| r.get_origin(origin))
                 .ok_or("inline operand lost its typed owner")?;
             if row.evaluation == crate::sema::inline_constants::Evaluation::DeferredTemplate {
-                value.kind = Rvalue::InlineInstance(InlineInstance::select(
+                value.kind = Rvalue::InlineInstance(InlineInstance::select_origin(
                     facts,
-                    source,
+                    origin,
                     selection.context()?,
                 )?);
             }
@@ -165,9 +162,10 @@ pub(crate) fn with_contract(
     instance: InlineInstance,
     original: &Contract,
 ) -> Result<Materialized, &'static str> {
-    if original.key != template.body.key()
-        || original.source != instance.source().into()
-        || original.output.is_some()
+    let origin = instance
+        .origin(facts)
+        .ok_or("anonymous instance lost its retained typed template")?;
+    if original.key != template.body.key() || original.source != origin || original.output.is_some()
     {
         return Err("anonymous specialized output interface is not implemented");
     }
@@ -194,7 +192,10 @@ pub(crate) fn with_result(
         return with_contract(facts, template, instance, original)
             .map(super::initializers::SourceMaterialized::plain);
     }
-    if original.key != template.body.key() || original.source != instance.source().into() {
+    let origin = instance
+        .origin(facts)
+        .ok_or("anonymous instance lost its retained typed template")?;
+    if original.key != template.body.key() || original.source != origin {
         return Err("anonymous result selects another original contract");
     }
     let mut inputs = anonymous_inputs(facts, instance, original)?;
@@ -221,8 +222,11 @@ pub(crate) fn conditional_result(
 ) -> Result<super::initializers::SourceMaterialized, &'static str> {
     let instance = port.instance;
     let requested = port.result;
+    let origin = instance
+        .origin(facts)
+        .ok_or("conditional child lost its retained typed template")?;
     if original.key != template.body.key()
-        || original.source != instance.source().into()
+        || original.source != origin
         || !original
             .output
             .as_ref()
@@ -462,11 +466,11 @@ pub(crate) fn original_context(
     facts: &Declarations,
     body: &Body,
 ) -> Result<Option<Instance>, &'static str> {
-    if !facts.inline_constants.as_deref().is_some_and(|registry| {
-        body.source
-            .source()
-            .is_some_and(|source| registry.has_children(source))
-    }) {
+    if !facts
+        .inline_constants
+        .as_deref()
+        .is_some_and(|registry| registry.has_children_origin(body.source))
+    {
         return Ok(None);
     }
     let owner = match body.owner {
@@ -486,11 +490,18 @@ pub(crate) fn original_context(
             .get(definition.0 as usize)
             .copied()
             .flatten(),
-        Owner::Closure { .. } => body
+        Owner::Closure { identity, .. } => body
             .source
             .source()
             .and_then(|source| facts.node(source))
-            .and_then(|node| node.ty),
+            .and_then(|node| node.ty)
+            .or_else(|| {
+                let ty = facts.closures.identity(identity)?.execution?.self_ty;
+                Some(match facts.types.kind(ty) {
+                    Some(crate::types::Kind::Reference { referent, .. }) => referent,
+                    _ => ty,
+                })
+            }),
         _ => None,
     };
     let Some(ty) = ty else {

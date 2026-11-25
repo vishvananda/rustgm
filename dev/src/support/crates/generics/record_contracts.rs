@@ -135,6 +135,7 @@ fn require_body_operations(
                         | super::ValueKind::DirectEnumCast(_)
                         | super::ValueKind::AddressCast { .. }
                         | super::ValueKind::Unsize { .. }
+                        | super::ValueKind::InlineConstant(_)
                 )
             })
         {

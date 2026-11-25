@@ -10,15 +10,13 @@ impl Machine<'_, '_> {
         if !matches!(body.owner, crate::body::ir::Owner::AnonymousConstant) {
             return Ok(());
         }
-        let Some(source) = body.source.source() else {
-            return Ok(());
-        };
+        let source = body.source;
         if self
             .evaluator
             .facts()
             .inline_constants
             .as_deref()
-            .is_none_or(|registry| registry.get(source).is_none())
+            .is_none_or(|registry| registry.get_origin(source).is_none())
         {
             return Ok(());
         }

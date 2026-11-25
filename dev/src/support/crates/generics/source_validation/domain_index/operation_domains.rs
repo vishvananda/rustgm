@@ -16,19 +16,7 @@ impl DomainIndex<'_, '_> {
         branching: bool,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
-        let mut runtime_format_bodies = [None; LangItem::RUNTIME_FORMAT_BODIES.len()];
-        if self.declaration_policies {
-            work.charge(rows.roles.len())?;
-            for binding in &rows.roles {
-                if let Some(index) = LangItem::RUNTIME_FORMAT_BODIES
-                    .iter()
-                    .position(|role| *role == binding.role)
-                    && binding.declaration.artifact.0 == 0
-                {
-                    runtime_format_bodies[index] = Some(binding.declaration.declaration);
-                }
-            }
-        }
+        let runtime_format_bodies = self.runtime_format_bodies(work)?;
         for original in &rows.originals {
             let input = &rows.body_inputs[self.headers.original_index(original.body)?];
             let header =
@@ -55,6 +43,9 @@ impl DomainIndex<'_, '_> {
                         s::CallContext::Runtime
                     },
                 ),
+                OriginalHeader::Anonymous { header, .. } => {
+                    (header.binder, s::CallContext::ClosedConst)
+                }
             };
             if input.frame != frame || original.context != call_context {
                 return Err("source original changed its exact defining frame or semantic context");
@@ -114,6 +105,26 @@ impl DomainIndex<'_, '_> {
             }
         }
         Ok(())
+    }
+    fn runtime_format_bodies(
+        &self,
+        work: &mut Work,
+    ) -> Result<[Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()], &'static str> {
+        let rows = self.headers.rows();
+        let mut runtime_format_bodies = [None; LangItem::RUNTIME_FORMAT_BODIES.len()];
+        if self.declaration_policies {
+            work.charge(rows.roles.len())?;
+            for binding in &rows.roles {
+                if let Some(index) = LangItem::RUNTIME_FORMAT_BODIES
+                    .iter()
+                    .position(|role| *role == binding.role)
+                    && binding.declaration.artifact.0 == 0
+                {
+                    runtime_format_bodies[index] = Some(binding.declaration.declaration);
+                }
+            }
+        }
+        Ok(runtime_format_bodies)
     }
     fn call_context(
         &self,
@@ -224,7 +235,8 @@ impl DomainIndex<'_, '_> {
             | s::ValueKind::TextEquals { .. }
             | s::ValueKind::Union { .. }
             | s::ValueKind::Repeat { .. }
-            | s::ValueKind::Unsize { .. } => {
+            | s::ValueKind::Unsize { .. }
+            | s::ValueKind::InlineConstant(_) => {
                 self.extended_value(context, original, index, value, work)?;
             }
             s::ValueKind::Function(_)
@@ -696,6 +708,23 @@ impl DomainIndex<'_, '_> {
                 value: operand,
                 conversion,
             } => self.unsize_value(context, original, index, operand, conversion, work),
+            s::ValueKind::InlineConstant(child) => {
+                let rows = self.headers.rows();
+                let Some((_, header)) = rows
+                    .closures()
+                    .and_then(|closures| closures.anonymous_for_body(child))
+                else {
+                    return Err("source inline constant references an unknown anonymous body");
+                };
+                let owner = rows
+                    .body_owners
+                    .get(child.0 as usize)
+                    .ok_or("source inline constant body owner is unknown")?;
+                if header.owner != context.owner || owner.parent != Some(original.body) {
+                    return Err("source inline constant belongs to another parent or declaration");
+                }
+                Ok(())
+            }
             _ => Err("source extended value changed its operation kind"),
         }
     }

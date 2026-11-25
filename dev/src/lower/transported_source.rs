@@ -41,6 +41,17 @@ pub(super) struct Source {
     numbering: Option<Vec<Option<s::BodyUnit>>>,
     collector: Option<Box<collector_origin::CollectorOrigin>>,
 }
+
+#[derive(Clone, Copy)]
+enum BodyTarget {
+    Declaration(DefId, Option<crate::types::TypeId>),
+    Closure(
+        DefId,
+        crate::types::TypeId,
+        crate::types::closure::ClosureId,
+    ),
+    Anonymous(DefId, NodeKey),
+}
 /// Neutral staged observations. Rows still require complete validation,
 /// serialization/authenticated import and fresh original/instance proof.
 pub struct SourceInspection {
@@ -400,6 +411,7 @@ impl Source {
         }
         source.collect_constant_originals(facts, checked)?;
         source.collect_closure_originals(facts, checked)?;
+        source.collect_anonymous_originals(facts, checked)?;
         Ok(source)
     }
 
@@ -422,6 +434,35 @@ impl Source {
             };
             if proof.key != input.key || proof.source != input.source || proof.instance.is_some() {
                 return Err("source closure template lost its actual checked proof");
+            }
+            self.collect_body(facts, &template.body, input)?;
+        }
+        Ok(())
+    }
+
+    fn collect_anonymous_originals(
+        &mut self,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+    ) -> Result<(), &'static str> {
+        if !self.stage.declaration_policies() {
+            return Ok(());
+        }
+        let sources: Vec<_> = facts
+            .inline_constants
+            .as_deref()
+            .into_iter()
+            .flat_map(crate::sema::inline_constants::Registry::bodies)
+            .filter_map(|row| row.origin.source())
+            .filter(|&source| self.stage.has_anonymous(source))
+            .collect();
+        for source in sources {
+            self.stage.charge(1)?;
+            let Some((template, input, proof)) = checked.anonymous_proof(source) else {
+                continue;
+            };
+            if proof.key != input.key || proof.source != input.source || proof.instance.is_some() {
+                return Err("source anonymous template lost its actual checked proof");
             }
             self.collect_body(facts, &template.body, input)?;
         }
@@ -625,6 +666,19 @@ impl Source {
         if !matches!(body.owner, Owner::AnonymousConstant) {
             return Ok(false);
         }
+        if self.stage.declaration_policies() {
+            if self.stage.has_anonymous(source) {
+                return Ok(false);
+            }
+            if facts
+                .inline_constants
+                .as_deref()
+                .and_then(|registry| registry.get(source))
+                .is_some()
+            {
+                return Ok(true);
+            }
+        }
         if facts
             .evaluated_arguments
             .as_ref()
@@ -689,28 +743,7 @@ impl Source {
         {
             return Ok(());
         }
-        let (definition, signature, closure_id) =
-            Self::body_owner(facts, body, self.stage.declaration_policies())?;
-        let context = match closure_id {
-            Some(identity) => self.stage.closure_context(identity)?,
-            None => self.stage.original_context(definition)?,
-        };
-        if body.instance.is_some()
-            || body.key() != input.key
-            || body.source != input.source
-            || input.signature != signature
-            || input.universals != self.stage.universals(context)?
-            || (closure_id.is_none() && (input.output.is_some() || input.require_result_formation))
-        {
-            return Err("source original changed its exact body, signature or paired input");
-        }
-        if let Some(identity) = closure_id {
-            self.stage.record_closure_contract(
-                identity,
-                input.require_result_formation,
-                input.output.as_ref(),
-            )?;
-        }
+        let (definition, context) = self.collect_body_contract(facts, body, input)?;
         self.stage.prepare_type_arena(facts, body.result)?;
         let mut sites = locations::Sites::new(&mut self.stage, body)?;
         let variables = obligation_rows::allocations(&mut self.stage, input, context, &mut sites)?;
@@ -754,18 +787,68 @@ impl Source {
         Ok(())
     }
 
+    fn collect_body_contract(
+        &mut self,
+        facts: &Declarations,
+        body: &Body,
+        input: &Contract,
+    ) -> Result<(DefId, Context), &'static str> {
+        let target = Self::body_owner(facts, body, self.stage.declaration_policies())?;
+        let (definition, signature, context, is_nested, allows_result_formation) = match target {
+            BodyTarget::Declaration(definition, signature) => (
+                definition,
+                signature,
+                self.stage.original_context(definition)?,
+                false,
+                false,
+            ),
+            BodyTarget::Closure(definition, signature, identity) => (
+                definition,
+                Some(signature),
+                self.stage.closure_context(identity)?,
+                true,
+                true,
+            ),
+            BodyTarget::Anonymous(definition, source) => (
+                definition,
+                None,
+                self.stage.anonymous_context(source)?,
+                true,
+                false,
+            ),
+        };
+        if body.instance.is_some()
+            || body.key() != input.key
+            || body.source != input.source
+            || input.signature != signature
+            || input.universals != self.stage.universals(context)?
+            || (!is_nested && input.output.is_some())
+            || (!allows_result_formation && input.require_result_formation)
+        {
+            return Err("source original changed its exact body, signature or paired input");
+        }
+        match target {
+            BodyTarget::Closure(_, _, identity) => {
+                self.stage.record_closure_contract(
+                    identity,
+                    input.require_result_formation,
+                    input.output.as_ref(),
+                )?;
+            }
+            BodyTarget::Anonymous(_, source) => {
+                self.stage
+                    .record_anonymous_contract(source, input.output.as_ref())?;
+            }
+            BodyTarget::Declaration(..) => {}
+        }
+        Ok((definition, context))
+    }
+
     fn body_owner(
         facts: &Declarations,
         body: &Body,
         declaration_policies: bool,
-    ) -> Result<
-        (
-            DefId,
-            Option<crate::types::TypeId>,
-            Option<crate::types::closure::ClosureId>,
-        ),
-        &'static str,
-    > {
+    ) -> Result<BodyTarget, &'static str> {
         match body.owner {
             Owner::Function {
                 definition,
@@ -780,7 +863,7 @@ impl Source {
                         "source original changed its exact body, signature or paired input",
                     );
                 }
-                Ok((definition, Some(signature), None))
+                Ok(BodyTarget::Declaration(definition, Some(signature)))
             }
             Owner::Initializer {
                 definition,
@@ -799,7 +882,7 @@ impl Source {
                         "source constant original changed its actual body or declared result",
                     );
                 }
-                Ok((definition, None, None))
+                Ok(BodyTarget::Declaration(definition, None))
             }
             Owner::Closure {
                 identity,
@@ -819,7 +902,29 @@ impl Source {
                 {
                     return Err("source closure original changed its actual body or signature");
                 }
-                Ok((owner, Some(execution.unwrap_or(signature)), Some(identity)))
+                Ok(BodyTarget::Closure(
+                    owner,
+                    execution.unwrap_or(signature),
+                    identity,
+                ))
+            }
+            Owner::AnonymousConstant if declaration_policies => {
+                let source = body
+                    .source
+                    .source()
+                    .ok_or("source anonymous original lost its source identity")?;
+                let inline = facts
+                    .inline_constants
+                    .as_deref()
+                    .and_then(|registry| registry.get(source))
+                    .ok_or("source anonymous original lost its actual semantic body")?;
+                let owner = inline
+                    .declaration
+                    .ok_or("source anonymous original has no enclosing declaration")?;
+                if inline.result != Some(body.result) {
+                    return Err("source anonymous original changed its actual result type");
+                }
+                Ok(BodyTarget::Anonymous(owner, source))
             }
             _ => Err("source transport requires an actual function or constant original"),
         }

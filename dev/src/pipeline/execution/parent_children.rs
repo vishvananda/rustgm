@@ -9,7 +9,9 @@ impl Engine {
         instance: InlineInstance,
         result: TypeId,
     ) -> Result<usize, Error> {
-        let source = instance.source();
+        let source = instance
+            .source_key()
+            .ok_or_else(|| Error::unlocated("conditional child requires a local source body"))?;
         let error = |message: &str| report.body_error(source, message);
         self.validate_parent_scope(facts, Target::Anonymous { instance, result })
             .map_err(error)?;

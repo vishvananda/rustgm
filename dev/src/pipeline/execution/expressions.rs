@@ -3,7 +3,10 @@ use super::{
     Arc, Body, BodyKey, Declarations, Engine, Environment, Error, Report, Target, Template,
     Templates, body,
 };
-use crate::{resolve::unit::NodeKey, types::TypeId};
+use crate::{
+    resolve::{body_origin::BodyOrigin, unit::NodeKey},
+    types::TypeId,
+};
 #[cfg(test)]
 #[path = "../../../tests/invariants/expression_owners.rs"]
 mod tests;
@@ -110,13 +113,16 @@ impl Engine {
         &mut self,
         report: &Report,
         facts: &mut Declarations,
-        source: NodeKey,
+        origin: BodyOrigin,
         result: TypeId,
     ) -> Result<usize, Error> {
         let target = Target::Expression {
-            source,
+            source: origin,
             result,
             context: None,
+        };
+        let BodyOrigin::Source(source) = origin else {
+            return self.imported_expression_root(report, facts, origin, result);
         };
         if let Some(index) = self.lent_expression(report, facts, source, result)? {
             self.roots.insert(target, index);
@@ -164,6 +170,74 @@ impl Engine {
             facts.constant_work.template_bytes = retained;
         }
         self.roots.insert(target, index);
+        Ok(index)
+    }
+
+    fn imported_expression_root(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        origin: BodyOrigin,
+        result: TypeId,
+    ) -> Result<usize, Error> {
+        let BodyOrigin::Imported(imported_origin) = origin else {
+            return Err(report.body_error(origin, "imported expression requires imported origin"));
+        };
+        self.ensure_imported_originals(report, facts)?;
+        let originals = self
+            .imported
+            .as_ref()
+            .map(std::rc::Rc::clone)
+            .ok_or_else(|| {
+                report.body_error(origin, "imported inline constant lacks proved originals")
+            })?;
+        let row = originals.anonymous(imported_origin.id()).ok_or_else(|| {
+            report.body_error(origin, "imported inline constant has no exact original row")
+        })?;
+        super::super::original_contexts::Original::validate_parts_charged(
+            facts,
+            &row.template().body,
+            row.contract(),
+        )
+        .map_err(|e| report.body_error(origin, e))?;
+        let mut body = row.template().body.clone();
+        let destruction = row.template().destruction.clone();
+        let mut contract = row.contract().clone();
+        let environment = Arc::clone(&row.template().environment);
+        if body.source != origin
+            || body.result != result
+            || !matches!(body.owner, crate::body::ir::Owner::AnonymousConstant)
+        {
+            return Err(report.body_error(origin, "imported inline CFG identity or result changed"));
+        }
+        body::constants::eligibility_charged(report, facts, &body)?;
+        body::dispatch::resolve(facts, &mut body, &mut contract)
+            .map_err(|e| report.body_error(origin, e))?;
+        body::promote::instance_reusing(
+            report,
+            facts,
+            &mut body,
+            &destruction,
+            &mut self.promotions,
+        )?;
+        let checked = self.prove_body(
+            report,
+            facts,
+            &body,
+            &destruction,
+            super::ProofInput::code(&environment, &contract),
+        )?;
+        let index = self
+            .publish_code(facts, checked, None)
+            .map_err(|e| report.body_error(origin, e))?;
+        self.roots.insert(
+            Target::Expression {
+                source: origin,
+                result,
+                context: None,
+            },
+            index,
+        );
         Ok(index)
     }
 

@@ -199,7 +199,9 @@ impl Engine {
             }
             let pending = active.owner.pending();
             if let Target::Anonymous { instance, result } = target
-                && pending.has_source(instance.source().into())
+                && instance
+                    .origin(facts)
+                    .is_some_and(|origin| pending.has_source(origin))
             {
                 pending.request(
                     facts,

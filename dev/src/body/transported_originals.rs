@@ -42,6 +42,7 @@ pub(crate) struct ImportedOriginals {
     rows: Vec<Original>,
     index: HashMap<DefId, usize>,
     closures: HashMap<crate::types::closure::ClosureId, usize>,
+    anonymous: HashMap<crate::resolve::body_origin::ImportedBodyId, usize>,
     steps: usize,
     payload: usize,
 }
@@ -59,6 +60,14 @@ impl ImportedOriginals {
             .get(&identity)
             .and_then(|&index| self.rows.get(index))
     }
+    pub(crate) fn anonymous(
+        &self,
+        body: crate::resolve::body_origin::ImportedBodyId,
+    ) -> Option<&Original> {
+        self.anonymous
+            .get(&body)
+            .and_then(|&index| self.rows.get(index))
+    }
     pub(crate) fn at(&self, index: usize) -> Option<&Original> {
         self.rows.get(index)
     }
@@ -74,6 +83,7 @@ impl ImportedOriginals {
             .saturating_add(crate::support::retained::vector(&self.rows))
             .saturating_add(crate::support::retained::map(&self.index))
             .saturating_add(crate::support::retained::map(&self.closures))
+            .saturating_add(crate::support::retained::map(&self.anonymous))
             .saturating_add(self.payload)
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
@@ -96,6 +106,10 @@ impl ImportedOriginals {
             self.closures.capacity(),
             1,
         ));
+        growth.include(Growth::map::<
+            crate::resolve::body_origin::ImportedBodyId,
+            usize,
+        >(self.anonymous.len(), self.anonymous.capacity(), 1));
         growth
     }
     pub(crate) fn append_selected(&mut self, row: Original) -> Result<(), &'static str> {
@@ -119,6 +133,19 @@ impl ImportedOriginals {
                 let std::collections::hash_map::Entry::Vacant(slot) = self.closures.entry(identity)
                 else {
                     return Err("duplicate imported closure original");
+                };
+                slot.insert(self.rows.len());
+            }
+            Owner::AnonymousConstant => {
+                let crate::resolve::body_origin::BodyOrigin::Imported(origin) =
+                    row.template.body.source
+                else {
+                    return Err("imported anonymous original lost its imported body origin");
+                };
+                let std::collections::hash_map::Entry::Vacant(slot) =
+                    self.anonymous.entry(origin.id())
+                else {
+                    return Err("duplicate imported anonymous original");
                 };
                 slot.insert(self.rows.len());
             }
@@ -248,6 +275,16 @@ pub(crate) fn validate_source_parts(
             crate::sema::crates::source_closure_original(facts, identity, steps)?
                 .ok_or("source closure original cannot execute an absent closure body")?
         }
+        Owner::AnonymousConstant => {
+            let crate::resolve::body_origin::BodyOrigin::Imported(origin) = body.source else {
+                return Err("source anonymous original lost its imported body origin");
+            };
+            if !crate::sema::crates::is_source_anonymous_original(facts, origin.id(), steps)? {
+                return Ok(false);
+            }
+            crate::sema::crates::source_anonymous_original(facts, origin.id(), steps)?
+                .ok_or("source anonymous original cannot execute an absent anonymous body")?
+        }
         _ => return Err("source original requires its actual imported declaration owner"),
     };
     rebuilt_operations::validate(facts, &view, body, steps)?;
@@ -293,6 +330,7 @@ pub(crate) fn build(
         rows: Vec::new(),
         index: HashMap::default(),
         closures: HashMap::default(),
+        anonymous: HashMap::default(),
         steps: 0,
         payload: 0,
     };

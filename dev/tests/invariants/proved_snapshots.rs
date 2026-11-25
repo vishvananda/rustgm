@@ -167,7 +167,7 @@ fn early_named_reference_initializer_reuses_its_exact_code_without_repeating_pro
     let key = crate::body::ir::BodyKey::Declaration(initializer.definition);
     assert!(!engine.concrete.contains_key(&key));
     let expression = super::super::Target::Expression {
-        source: initializer.value,
+        source: initializer.value.into(),
         result: initializer.ty,
         context: None,
     };

@@ -62,6 +62,10 @@ pub(super) fn validate(
             let original = &rows.originals[s::bodymap::original(index, header.body)?];
             closure_bindings(rows, original, header, &mut seen, work)?;
         }
+        for header in &closures.anonymous {
+            let original = &rows.originals[s::bodymap::original(index, header.body)?];
+            anonymous_bindings(original, work)?;
+        }
     }
     for (index, row) in rows.declarations.iter().enumerate() {
         if row.definition.kind != DefinitionKind::ValueParameter || seen[index] {
@@ -94,6 +98,19 @@ pub(super) fn validate(
                 "source value parameter/formal rows have incomplete actual header coverage",
             );
         }
+    }
+    Ok(())
+}
+
+fn anonymous_bindings(original: &s::Original, work: &mut Work) -> Result<(), &'static str> {
+    work.charge(1)?;
+    if !original.parameter_bindings.is_empty()
+        || original
+            .locals
+            .iter()
+            .any(|local| matches!(local.kind, g::LocalKind::Parameter(_)))
+    {
+        return Err("source anonymous body cannot carry parameter inputs");
     }
     Ok(())
 }

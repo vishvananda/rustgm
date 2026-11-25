@@ -293,15 +293,17 @@ impl Checker<'_> {
                 ));
             }
             Requirement::AnonymousBody { instance, .. } => {
-                return Err(self.error(
-                    instance.source(),
-                    "anonymous template must complete with its enclosing declaration",
+                let message = "anonymous template must complete with its enclosing declaration";
+                return Err(instance.source_key().map_or_else(
+                    || Error::at(FileId(0), 0, message),
+                    |source| self.error(source, message),
                 ));
             }
             Requirement::InlineBody { source, .. } => {
-                return Err(self.error(
-                    source,
-                    "inline constant body must complete with its owning declaration",
+                let message = "inline constant body must complete with its owning declaration";
+                return Err(source.source().map_or_else(
+                    || Error::at(FileId(0), 0, message),
+                    |source| self.error(source, message),
                 ));
             }
             Requirement::FunctionBody(instance) | Requirement::CleanupBody(instance) => {

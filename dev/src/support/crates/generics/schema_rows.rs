@@ -172,6 +172,9 @@ pub enum BinderKind {
     ClosureOriginal {
         body: BodyRef,
     },
+    AnonymousOriginal {
+        body: BodyRef,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Binder {

@@ -58,6 +58,17 @@ impl ImportedOwners {
             Self::Provided(_) => Ok(false),
         }
     }
+    pub(super) fn owns_anonymous_original(
+        &self,
+        catalog: &Catalog,
+        body: crate::resolve::body_origin::ImportedBodyId,
+        steps: &mut usize,
+    ) -> Result<bool, &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.owns_anonymous_original(catalog, body, steps),
+            Self::Provided(_) => Ok(false),
+        }
+    }
     pub(super) fn closure_identity_for_body(
         &self,
         catalog: &Catalog,
@@ -102,6 +113,23 @@ impl ImportedOwners {
             }
             Self::Provided(_) => {
                 Err("selected original does not own ordinary source closure bodies")
+            }
+        }
+    }
+    pub(super) fn source_anonymous_original<'a>(
+        &'a self,
+        catalog: &'a Catalog,
+        facts: &'a Declarations,
+        headers: &'a Headers,
+        body: crate::resolve::body_origin::ImportedBodyId,
+        steps: &mut usize,
+    ) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
+        match self {
+            Self::Ordinary(graph) => {
+                graph.source_anonymous_original(catalog, facts, headers, body, steps)
+            }
+            Self::Provided(_) => {
+                Err("selected original does not own ordinary source anonymous bodies")
             }
         }
     }

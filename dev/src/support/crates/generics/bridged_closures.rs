@@ -99,7 +99,27 @@ impl ClosureHeader {
     }
 }
 
-/// Out-of-line version-fourteen closure tables held inside [`super::ColdColumns`].
+/// One transported inline anonymous constant header, ordered by strictly increasing `body`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AnonymousHeader {
+    pub body: BodyRef,
+    pub owner: DeclarationRef,
+    pub binder: BinderRef,
+    pub universals: u32,
+    pub deferred: bool,
+    pub output: Option<ClosureOutput>,
+}
+impl AnonymousHeader {
+    /// Total original universals owned by this anonymous body's binder.
+    #[must_use]
+    pub fn contract_universals(&self) -> u32 {
+        self.output.map_or(self.universals, |output| {
+            self.universals.max(output.universals)
+        })
+    }
+}
+
+/// Out-of-line version-fourteen closure and inline-constant tables held inside [`super::ColdColumns`].
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ClosureColumns {
     pub types: Vec<ClosureType>,
@@ -107,6 +127,8 @@ pub struct ClosureColumns {
     pub bridges: Vec<ClosureBridge>,
     pub formation_inputs: Vec<ClosureFormationInput>,
     pub callable_slots: Vec<u16>,
+    pub anonymous: Vec<AnonymousHeader>,
+    pub anonymous_bridges: Vec<ClosureBridge>,
 }
 impl ClosureColumns {
     #[must_use]
@@ -116,6 +138,8 @@ impl ClosureColumns {
             && self.bridges.is_empty()
             && self.formation_inputs.is_empty()
             && self.callable_slots.is_empty()
+            && self.anonymous.is_empty()
+            && self.anonymous_bridges.is_empty()
     }
 
     #[must_use]
@@ -131,5 +155,15 @@ impl ClosureColumns {
             .ok()?;
         let reference = u32::try_from(index).ok()?;
         Some((ClosureRef(reference), &self.headers[index]))
+    }
+
+    #[must_use]
+    pub fn anonymous_for_body(&self, body: BodyRef) -> Option<(u32, &AnonymousHeader)> {
+        let index = self
+            .anonymous
+            .binary_search_by_key(&body.0, |header| header.body.0)
+            .ok()?;
+        let ordinal = u32::try_from(index).ok()?;
+        Some((ordinal, &self.anonymous[index]))
     }
 }

@@ -319,11 +319,7 @@ impl Engine {
         {
             let checked = (|| {
                 witness.validate(facts, witness.result(facts)?)?;
-                let selected = crate::sema::inline_constants::InlineInstance::select(
-                    facts,
-                    instance.source(),
-                    instance.enclosing(),
-                )?;
+                let selected = instance.select_in(facts, instance.enclosing())?;
                 if selected != instance {
                     return Err("anonymous request changed its source context");
                 }
@@ -524,7 +520,10 @@ impl Engine {
                 self.prepare_cleanup_body(report, facts, instance, state)
             }
             Requirement::AnonymousBody { instance, result } => {
-                if facts.patterns.pending_bodies.contains(&instance.source()) {
+                if instance
+                    .source_key()
+                    .is_some_and(|source| facts.patterns.pending_bodies.contains(&source))
+                {
                     return Ok(false);
                 }
                 self.root(report, facts, Target::Anonymous { instance, result })?;
@@ -535,9 +534,12 @@ impl Engine {
                     .inline_constants
                     .as_mut()
                     .ok_or_else(|| report.body_error(source, "missing required inline constant"))?
-                    .require(source, result)
+                    .require_origin(source, result)
                     .map_err(|e| report.body_error(source, e))?;
-                if facts.patterns.pending_bodies.contains(&source) {
+                if source
+                    .source()
+                    .is_some_and(|node| facts.patterns.pending_bodies.contains(&node))
+                {
                     return Ok(false);
                 }
                 self.root(
@@ -823,7 +825,10 @@ impl Engine {
         // provider retains the set or any selected imported Code can be published.
         let nested = originals.iter().any(|row| {
             row.contract().output.is_some()
-                || matches!(row.template().body.owner, Owner::Closure { .. })
+                || matches!(
+                    row.template().body.owner,
+                    Owner::Closure { .. } | Owner::AnonymousConstant
+                )
         });
         if nested {
             self.prove_nested_imported_originals(report, facts, &originals)?;
@@ -1131,7 +1136,14 @@ impl Engine {
         let imported_original = facts.uses_source_copy()
             && body.instance.is_none()
             && body.source.source().is_none()
-            && !matches!(body.owner, Owner::InitializerInstance { .. });
+            && !matches!(
+                body.owner,
+                Owner::InitializerInstance { .. } | Owner::AnonymousInstance(_)
+            )
+            // Imported expression entry already authenticated its immutable row.
+            // Executable dispatch may extend that row's fresh proof contract.
+            && !(input.purpose == ProofPurpose::Code
+                && matches!(body.owner, Owner::AnonymousConstant));
         let mut prepared = if imported_original {
             Some(
                 super::original_contexts::Original::prepare_imported(facts, body, input.contract)

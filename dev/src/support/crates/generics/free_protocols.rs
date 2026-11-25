@@ -242,32 +242,50 @@ pub(super) fn original_context(
     default_traits: DefaultTraits,
 ) -> Result<s::CallContext, &'static str> {
     let mut defining_default = None;
-    let context = match headers.header(body.declaration, work)? {
-        Some(s::HeaderRef::Function(index)) => {
-            let function = &rows.functions[index as usize];
-            if default_traits.provided(rows, headers, function, work)? {
-                defining_default = function.parent;
+    let context = if constant_initializers
+        && let Some(closures) = rows.closures()
+        && let Some((_, header)) = closures.header_for_body(body.body)
+    {
+        if header.constant {
+            s::CallContext::ConstDefinition
+        } else {
+            s::CallContext::Runtime
+        }
+    } else if constant_initializers
+        && rows
+            .closures()
+            .and_then(|closures| closures.anonymous_for_body(body.body))
+            .is_some()
+    {
+        s::CallContext::ClosedConst
+    } else {
+        match headers.header(body.declaration, work)? {
+            Some(s::HeaderRef::Function(index)) => {
+                let function = &rows.functions[index as usize];
+                if default_traits.provided(rows, headers, function, work)? {
+                    defining_default = function.parent;
+                }
+                let unchecked_const =
+                    constant_initializers && rows.is_unchecked_const_body(body.declaration);
+                if (function.constness == Constness::Const
+                    && !unchecked_const
+                    && !runtime_format_bodies.contains(&Some(body.declaration)))
+                    || defining_default.is_some()
+                {
+                    s::CallContext::ConstDefinition
+                } else {
+                    s::CallContext::Runtime
+                }
             }
-            let unchecked_const =
-                constant_initializers && rows.is_unchecked_const_body(body.declaration);
-            if (function.constness == Constness::Const
-                && !unchecked_const
-                && !runtime_format_bodies.contains(&Some(body.declaration)))
-                || defining_default.is_some()
+            Some(s::HeaderRef::Constant(index))
+                if constant_initializers
+                    && rows.constants()[index as usize].body
+                        == s::ConstantBody::Original(body.body) =>
             {
-                s::CallContext::ConstDefinition
-            } else {
-                s::CallContext::Runtime
+                s::CallContext::ClosedConst
             }
+            _ => return Err("source original has no actual callable header"),
         }
-        Some(s::HeaderRef::Constant(index))
-            if constant_initializers
-                && rows.constants()[index as usize].body
-                    == s::ConstantBody::Original(body.body) =>
-        {
-            s::CallContext::ClosedConst
-        }
-        _ => return Err("source original has no actual callable header"),
     };
     if context != s::CallContext::Runtime {
         constant_calls(

@@ -37,13 +37,9 @@ pub(crate) fn prepare(
                     && contract.key == BodyKey::InitializerInstance(instance)
             }
             Owner::AnonymousInstance(instance) => {
-                crate::body::ir::BodyOrigin::from(instance.source()) == body.source
+                instance.origin(facts) == Some(body.source)
                     && instance.enclosing() == Context::SourceInitializer(witness)
-                    && crate::sema::inline_constants::InlineInstance::select(
-                        facts,
-                        instance.source(),
-                        instance.enclosing(),
-                    )? == instance
+                    && instance.select_in(facts, instance.enclosing())? == instance
             }
             _ => false,
         };
@@ -98,19 +94,16 @@ fn roots(
             .get(id.0 as usize)
             .ok_or("missing prepared inline value")?;
         if let Rvalue::InlineInstance(instance) = value.kind {
+            let origin = instance
+                .origin(facts)
+                .ok_or("prepared inline request lost its typed owner")?;
             if instance.enclosing() != Context::SourceInitializer(witness)
                 || !facts
                     .inline_constants
                     .as_deref()
-                    .and_then(|r| r.get(instance.source()))
-                    .is_some_and(|row| {
-                        crate::body::ir::BodyOrigin::from(row.parent_body) == body.source
-                    })
-                || crate::sema::inline_constants::InlineInstance::select(
-                    facts,
-                    instance.source(),
-                    instance.enclosing(),
-                )? != instance
+                    .and_then(|r| r.get_origin(origin))
+                    .is_some_and(|row| row.parent_origin == body.source)
+                || instance.select_in(facts, instance.enclosing())? != instance
             {
                 return Err("prepared inline request belongs to another source parent");
             }

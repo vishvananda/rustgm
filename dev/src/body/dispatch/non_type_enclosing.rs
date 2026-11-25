@@ -64,7 +64,7 @@ pub(super) fn prepare(
     result
 }
 fn environment(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Environment>>, String> {
-    let Some(source) = body.source.source() else {
+    let Some(_) = body.source.source() else {
         return imported(facts, body);
     };
     let owner = match body.owner {
@@ -88,7 +88,7 @@ fn environment(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Envir
         Owner::AnonymousConstant | Owner::AnonymousInstance(_) => facts
             .inline_constants
             .as_deref()
-            .and_then(|registry| registry.get(source))
+            .and_then(|registry| registry.get_origin(body.source))
             .and_then(|constant| constant.declaration),
         Owner::ClosureAdapter { .. } => None,
     };

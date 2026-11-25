@@ -45,7 +45,7 @@ fn fixture(name: &str) -> TestResult<(Report, crate::pipeline::Analysis, Target)
             continue;
         };
         let target = Target::Expression {
-            source,
+            source: source.into(),
             result,
             context: None,
         };
@@ -77,10 +77,11 @@ fn identity(
     context.inspect_const_call(target, |catalog, inputs, index| -> TestResult<_> {
         let code = catalog.expression(facts, index, source, result)?;
         let row = inputs.checked(catalog, index, code)?;
+        let source_key = source.source().ok_or("local source")?;
         assert!(matches!(code.owner, Owner::AnonymousConstant));
         assert_eq!(
             row.contract().key,
-            crate::body::ir::BodyKey::Anonymous(source)
+            crate::body::ir::BodyKey::Anonymous(source_key)
         );
         assert!(!catalog.definitions.values().any(|&named| named == index));
         Ok((
@@ -156,7 +157,7 @@ fn check_anonymous_scalar_canonical_roots_reject_wrong_source_result_context_and
     let callback = context.inspect_const_call(target, |catalog, _, index| -> TestResult<_> {
         let function = *catalog.functions.values().next().ok_or("actual F")?;
         let body = catalog.code(function).ok_or("F Code")?;
-        let other = body.source.source().ok_or("F source")?;
+        let other = body.source;
         for _ in 0..2 {
             assert!(
                 catalog
@@ -196,7 +197,9 @@ fn check_anonymous_scalar_canonical_roots_reject_wrong_source_result_context_and
     for _ in 0..2 {
         assert!(executor.check(&report, &mut analysis.facts, wrong).is_err());
     }
-    let node = &mut analysis.facts.nodes[source.file.0 as usize][source.node.get() as usize];
+    let source_key = source.source().ok_or("local source")?;
+    let node =
+        &mut analysis.facts.nodes[source_key.file.0 as usize][source_key.node.get() as usize];
     let saved = *node;
     node.ty = Some(TypeId::UNIT);
     node.adjustment = None;
@@ -217,7 +220,7 @@ fn check_anonymous_scalar_canonical_roots_reject_wrong_source_result_context_and
             )
             .is_err()
     );
-    analysis.facts.nodes[source.file.0 as usize][source.node.get() as usize] = saved;
+    analysis.facts.nodes[source_key.file.0 as usize][source_key.node.get() as usize] = saved;
     executor.check(&report, &mut analysis.facts, target)?;
     Ok(())
 }

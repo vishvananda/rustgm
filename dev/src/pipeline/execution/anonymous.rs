@@ -9,17 +9,20 @@ impl Engine {
         instance: InlineInstance,
         result: TypeId,
     ) -> Result<usize, Error> {
-        let source = instance.source();
-        let selected = InlineInstance::select(facts, source, instance.enclosing())
-            .map_err(|e| report.body_error(source, e))?;
+        let origin = instance.origin(facts).ok_or_else(|| {
+            Error::unlocated("anonymous instance lost its retained typed template")
+        })?;
+        let selected = instance
+            .select_in(facts, instance.enclosing())
+            .map_err(|e| report.body_error(origin, e))?;
         if selected != instance {
-            return Err(report.body_error(source, "anonymous instance identity changed"));
+            return Err(report.body_error(origin, "anonymous instance identity changed"));
         }
         if self
             .original_components
             .as_ref()
             .and_then(|rows| rows.active.as_ref())
-            .is_some_and(|active| active.owner.pending().has_source(source.into()))
+            .is_some_and(|active| active.owner.pending().has_source(origin))
         {
             return self.paid_anonymous_root(report, facts, instance, result);
         }
@@ -28,10 +31,10 @@ impl Engine {
         {
             let parent_result = witness
                 .result(facts)
-                .map_err(|e| report.body_error(source, e))?;
+                .map_err(|e| report.body_error(origin, e))?;
             witness
                 .validate(facts, parent_result)
-                .map_err(|e| report.body_error(source, e))?;
+                .map_err(|e| report.body_error(origin, e))?;
             self.root(
                 report,
                 facts,
@@ -44,20 +47,11 @@ impl Engine {
         if let Some(&index) = self.roots.get(&Target::Anonymous { instance, result }) {
             return Ok(index);
         }
-        let (template, contract) = if let Some(retained) = self.anonymous.remove(&source) {
-            retained
-        } else {
-            self.anonymous_template(report, facts, source)?
-        };
-        let built =
-            body::instantiate::anonymous_result(facts, &template, instance, result, &contract)
-                .and_then(|materialized| materialized.into_requested(result))
-                .map_err(|e| report.body_error(source, e));
-        self.anonymous.insert(source, (template, contract));
-        let mut concrete = built?;
+        let (mut concrete, environment) =
+            self.specialize_anonymous(report, facts, instance, result, origin)?;
         body::constants::eligibility_charged(report, facts, &concrete.body)?;
         body::dispatch::resolve(facts, &mut concrete.body, &mut concrete.contract)
-            .map_err(|e| report.body_error(source, e))?;
+            .map_err(|e| report.body_error(origin, e))?;
         body::promote::instance_reusing(
             report,
             facts,
@@ -65,7 +59,6 @@ impl Engine {
             &concrete.destruction,
             &mut self.promotions,
         )?;
-        let environment = std::sync::Arc::clone(&self.anonymous[&source].0.environment);
         let mut checked = self.prove_body(
             report,
             facts,
@@ -82,7 +75,7 @@ impl Engine {
                 &concrete.contract,
                 witness,
             )
-            .map_err(|e| report.body_error(source, e))?
+            .map_err(|e| report.body_error(origin, e))?
         } else {
             Vec::new()
         };
@@ -91,19 +84,81 @@ impl Engine {
             .stage_anonymous(
                 checked
                     .take_code()
-                    .map_err(|e| report.body_error(source, e))?,
+                    .map_err(|e| report.body_error(origin, e))?,
                 result,
                 &results,
             )
-            .map_err(|e| report.body_error(source, e))?;
+            .map_err(|e| report.body_error(origin, e))?;
         let index = registration
             .publish_source(facts, &mut self.const_calls, checked.retained, None)
-            .map_err(|e| report.body_error(source, e))?;
+            .map_err(|e| report.body_error(origin, e))?;
         self.refresh_code_bytes(facts);
         facts.constant_work.anonymous_instances += 1;
         self.roots
             .insert(Target::Anonymous { instance, result }, index);
         Ok(index)
+    }
+    fn specialize_anonymous(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: InlineInstance,
+        result: TypeId,
+        origin: crate::body::ir::BodyOrigin,
+    ) -> Result<
+        (
+            body::instantiate::Materialized,
+            std::sync::Arc<crate::types::parameters::environment::Environment>,
+        ),
+        Error,
+    > {
+        Ok(match origin {
+            crate::resolve::body_origin::BodyOrigin::Source(source) => {
+                let (template, contract) = if let Some(retained) = self.anonymous.remove(&source) {
+                    retained
+                } else {
+                    self.anonymous_template(report, facts, source)?
+                };
+                let built = body::instantiate::anonymous_result(
+                    facts, &template, instance, result, &contract,
+                )
+                .and_then(|materialized| materialized.into_requested(result))
+                .map_err(|e| report.body_error(origin, e));
+                let environment = std::sync::Arc::clone(&template.environment);
+                self.anonymous.insert(source, (template, contract));
+                (built?, environment)
+            }
+            crate::resolve::body_origin::BodyOrigin::Imported(imported_origin) => {
+                self.ensure_imported_originals(report, facts)?;
+                let originals =
+                    self.imported
+                        .as_ref()
+                        .map(std::rc::Rc::clone)
+                        .ok_or_else(|| {
+                            report.body_error(origin, "imported anonymous constant lacks originals")
+                        })?;
+                let row = originals.anonymous(imported_origin.id()).ok_or_else(|| {
+                    report.body_error(origin, "imported anonymous constant has no original row")
+                })?;
+                super::super::original_contexts::Original::validate_parts_charged(
+                    facts,
+                    &row.template().body,
+                    row.contract(),
+                )
+                .map_err(|e| report.body_error(origin, e))?;
+                let built = body::instantiate::anonymous_result(
+                    facts,
+                    row.template(),
+                    instance,
+                    result,
+                    row.contract(),
+                )
+                .and_then(|materialized| materialized.into_requested(result))
+                .map_err(|e| report.body_error(origin, e))?;
+                let environment = std::sync::Arc::clone(&row.template().environment);
+                (built, environment)
+            }
+        })
     }
     pub(super) fn retain_anonymous(
         &mut self,

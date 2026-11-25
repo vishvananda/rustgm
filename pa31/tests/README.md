@@ -1938,3 +1938,13 @@ native and `const` clients while refusing constant execution of unchecked
 bodies and refusing version-13 export.
 Run `scripts/check_source_artifact_clients.py --case source-unchecked-const-body-transport`
 with the prebuilt compilers.
+
+`spec/source-inline-const-transport/outcomes.json` declares the version-14
+anonymous-body transport contract. Its separately compiled clients observe
+non-generic and const-generic inline constants, a closure-owned constant, nested
+inline constants, and a constant initializer. Pinned rustc independently checks
+the eight native observations, including type-dependent sizes, and the
+wrong-result-type rejection. Version 13 must refuse the anonymous body instead
+of publishing incomplete metadata.
+Run `scripts/check_source_artifact_clients.py --case source-inline-const-transport`
+with the prebuilt compilers.

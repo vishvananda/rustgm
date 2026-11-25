@@ -345,7 +345,7 @@ fn validate_context(
                 .is_some_and(|i| i.semantic_source() == source)
         }
         CallerInstance::Inline(instance) => {
-            instance.source() == source
+            instance.source_key() == Some(source)
                 && crate::sema::inline_constants::InlineInstance::select(
                     facts,
                     source,

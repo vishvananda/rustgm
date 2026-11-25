@@ -38,7 +38,84 @@ pub(super) fn decode(
         bridges,
         formation_inputs,
         callable_slots,
+        anonymous: Vec::new(),
+        anonymous_bridges: Vec::new(),
     }))
+}
+
+pub(super) fn encode_anonymous(
+    out: &mut Writer,
+    columns: &s::ClosureColumns,
+) -> Result<(), &'static str> {
+    if columns.anonymous.is_empty() {
+        return Err("source anonymous trailer requires actual anonymous headers");
+    }
+    write(out, &columns.anonymous, anonymous_header_write)?;
+    write(out, &columns.anonymous_bridges, |out, &row| {
+        bridge_write(out, row)
+    })
+}
+
+pub(super) fn decode_anonymous(
+    read: &mut Input<'_, '_>,
+    columns: &mut s::ClosureColumns,
+) -> Result<(), &'static str> {
+    let anonymous = read.list(crates::MAX_FUNCTIONS, 17, anonymous_header_read)?;
+    if anonymous.is_empty() {
+        return Err("source anonymous trailer requires actual anonymous headers");
+    }
+    let bridges = read.list(crates::MAX_COMPONENTS, 7, bridge_read)?;
+    columns.anonymous = anonymous;
+    columns.anonymous_bridges = bridges;
+    Ok(())
+}
+
+fn anonymous_header_write(out: &mut Writer, row: &s::AnonymousHeader) -> Result<(), &'static str> {
+    id(out, row.body.0)?;
+    id(out, row.owner.0)?;
+    id(out, row.binder.0)?;
+    let flags = u8::from(row.deferred) | (u8::from(row.output.is_some()) << 1);
+    out.u8(flags)?;
+    id(out, row.universals)?;
+    if let Some(output) = row.output {
+        if output.formation.is_some() || output.creator_only_from.is_some() {
+            return Err("source anonymous output cannot carry closure formation data");
+        }
+        id(out, output.revision)?;
+        id(out, output.universals)?;
+        range(out, output.bridges)?;
+    }
+    Ok(())
+}
+
+fn anonymous_header_read(read: &mut Input<'_, '_>) -> Result<s::AnonymousHeader, &'static str> {
+    let body = BodyRef(read.id()?);
+    let owner = DeclarationRef(read.id()?);
+    let binder = g::BinderRef(read.id()?);
+    let flags = read.reader.u8()?;
+    if flags & !3 != 0 {
+        return Err("unknown source anonymous header flags");
+    }
+    let universals = read.id()?;
+    let output = if flags & 2 != 0 {
+        Some(s::ClosureOutput {
+            revision: read.id()?,
+            universals: read.id()?,
+            bridges: read.range()?,
+            formation: None,
+            creator_only_from: None,
+        })
+    } else {
+        None
+    };
+    Ok(s::AnonymousHeader {
+        body,
+        owner,
+        binder,
+        universals,
+        deferred: flags & 1 != 0,
+        output,
+    })
 }
 
 fn call_trait_write(out: &mut Writer, kind: CallTrait) -> Result<(), &'static str> {

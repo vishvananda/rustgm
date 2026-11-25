@@ -380,6 +380,9 @@ fn call_context(
     ) {
         return Ok(s::CallContext::ClosedConst);
     }
+    if declaration_policies && matches!(body.owner, Owner::AnonymousConstant) {
+        return Ok(s::CallContext::ClosedConst);
+    }
     if declaration_policies && matches!(body.owner, Owner::Closure { .. }) {
         return Ok(if body.const_context {
             s::CallContext::ConstDefinition
@@ -423,7 +426,12 @@ fn validate(
         Owner::Initializer {
             kind: super::InitializerKind::Const,
             ..
-        } if stage.declaration_policies() => true,
+        }
+        | Owner::AnonymousConstant
+            if stage.declaration_policies() =>
+        {
+            true
+        }
         Owner::Closure { identity, .. } if stage.declaration_policies() => facts
             .closures
             .identity(identity)

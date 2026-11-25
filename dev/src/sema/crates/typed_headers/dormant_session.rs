@@ -27,7 +27,8 @@ mod template_demands;
 pub(super) use selected::SelectedHeaders;
 pub(super) use template_demands::OriginalBody;
 pub(in crate::sema::crates::typed_headers) use template_demands::{
-    ClosureHeader, InitializerHeader, Observed, OrdinaryDomain, OrdinaryRecords, ordinary_requests,
+    AnonymousHeader, ClosureHeader, InitializerHeader, Observed, OrdinaryDomain, OrdinaryRecords,
+    ordinary_requests,
 };
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]

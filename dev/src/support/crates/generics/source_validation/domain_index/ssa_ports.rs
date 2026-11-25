@@ -637,7 +637,8 @@ fn dependency(
         | s::ValueKind::Function(_)
         | s::ValueKind::Constant(_)
         | s::ValueKind::ConstArgument(_)
-        | s::ValueKind::AssociatedConstant { .. } => None,
+        | s::ValueKind::AssociatedConstant { .. }
+        | s::ValueKind::InlineConstant(_) => None,
     };
     match operand {
         Some(value) if (value as usize) < original.values.len() => Ok(Some(value as usize)),

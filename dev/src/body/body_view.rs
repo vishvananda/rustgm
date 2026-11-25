@@ -388,12 +388,17 @@ fn rvalue(body: &Body, value_kind: Rvalue, out: &mut impl Write) -> io::Result<(
         Rvalue::Function(id) => write!(out, "function def={}", id.0),
         Rvalue::Constant(id) => write!(out, "constant def={}", id.0),
         Rvalue::InlineInstance(instance) => write!(out, "inline-instance {instance}"),
-        Rvalue::InlineConstant(source) => write!(
-            out,
-            "inline-constant source={}:{}",
-            source.file.0,
-            source.node.get()
-        ),
+        Rvalue::InlineConstant(source) => match source {
+            crate::body::ir::BodyOrigin::Source(source) => write!(
+                out,
+                "inline-constant source={}:{}",
+                source.file.0,
+                source.node.get()
+            ),
+            crate::body::ir::BodyOrigin::Imported(_) => {
+                write!(out, "inline-constant source=imported")
+            }
+        },
         Rvalue::SourceAssociated(_) => write!(out, "source-associated"),
         Rvalue::AssociatedConstant(instance) => write!(
             out,

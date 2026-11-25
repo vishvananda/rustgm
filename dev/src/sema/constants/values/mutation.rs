@@ -84,29 +84,53 @@ impl Evaluator<'_> {
         ty: TypeId,
         value: Constant,
     ) -> Result<Constant, Error> {
+        self.checked_reference_result_with(ty, value, |queries, message| {
+            queries.error(query, message)
+        })
+    }
+
+    pub(super) fn checked_reference_result_origin(
+        &mut self,
+        origin: crate::resolve::body_origin::BodyOrigin,
+        ty: TypeId,
+        value: Constant,
+    ) -> Result<Constant, Error> {
+        self.checked_reference_result_with(ty, value, |queries, message| {
+            queries.report.body_error(origin, message)
+        })
+    }
+
+    fn checked_reference_result_with(
+        &mut self,
+        ty: TypeId,
+        value: Constant,
+        error: impl Fn(&super::Queries<'_>, &'static str) -> Error,
+    ) -> Result<Constant, Error> {
         if !self.facts().aggregates.has_shared_mutation() {
             return Ok(value);
         }
         let (answer, work) = Reader::new(self.facts())
             .shared_reference_work(ty, value)
-            .map_err(|e| self.queries.error(query, e))?;
+            .map_err(|e| error(&self.queries, e))?;
         self.queries.steps = self
             .queries
             .steps
             .checked_add(work)
             .filter(|steps| *steps <= self.queries.limit)
             .ok_or_else(|| {
-                self.queries
-                    .error(query, "constant reference storage work budget exceeded")
+                error(
+                    &self.queries,
+                    "constant reference storage work budget exceeded",
+                )
             })?;
         match answer {
             Answer::Ordinary => Ok(value),
-            Answer::Interior => Err(self.queries.error(
-                query,
+            Answer::Interior => Err(error(
+                &self.queries,
                 "constant reference cannot escape with interior mutable allocation backing",
             )),
-            Answer::Unresolved => Err(self.queries.error(
-                query,
+            Answer::Unresolved => Err(error(
+                &self.queries,
                 "constant reference storage requires completed type and value facts",
             )),
         }

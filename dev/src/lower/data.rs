@@ -26,7 +26,7 @@ use crate::{
 pub(super) enum Key {
     Definition(DefId),
     Associated(crate::sema::values::Instance),
-    Inline(crate::resolve::unit::NodeKey),
+    Inline(crate::body::ir::BodyOrigin),
     InlineInstance(crate::sema::inline_constants::InlineInstance, TypeId),
     ConstArgument(crate::types::arguments::ConstId),
     Location(LocationId),

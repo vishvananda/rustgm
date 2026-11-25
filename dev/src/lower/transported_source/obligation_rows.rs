@@ -102,7 +102,7 @@ pub(super) fn emit(
         body,
         frame: stage.binder(context)?,
         parameters: Vec::new(),
-        environment: builtin_rows::body_environment(stage, facts, definition)?,
+        environment: builtin_rows::body_environment(stage, facts, definition, cfg)?,
         assumptions: Vec::new(),
         type_assumptions: Vec::new(),
         obligations: Vec::new(),

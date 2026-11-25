@@ -7,7 +7,7 @@ pub(crate) use super::super::computation::{
 };
 use super::{Constant, Instance};
 use crate::{
-    resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
+    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
     types::{TypeId, instance},
 };
@@ -16,7 +16,7 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Target {
     Expression {
-        source: NodeKey,
+        source: BodyOrigin,
         result: TypeId,
         context: Option<Instance>,
     },
@@ -58,7 +58,7 @@ pub enum Requirement {
     CleanupBody(instance::Instance),
     InitializerBody(DefId),
     InlineBody {
-        source: NodeKey,
+        source: BodyOrigin,
         result: TypeId,
     },
     AnonymousBody {

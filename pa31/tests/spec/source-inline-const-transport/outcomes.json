@@ -1,0 +1,12 @@
+{
+  "features": ["auto_traits", "const_destruct", "intrinsics"],
+  "inputs": ["provider.rs", "client.rs", "wrong_result.rs", "observe.c"],
+  "stdout": "42 17 29 11 9 23 1 4\n",
+  "older_profile_cfg": "older_profile",
+  "older_profile": "source anonymous body transport requires version fourteen",
+  "restricted_client": {
+    "path": "wrong_result.rs",
+    "rustc": "mismatched types",
+    "rustgm": "incompatible types"
+  }
+}

@@ -147,7 +147,12 @@ pub(super) fn record(
                 (
                     "missing canonical Code",
                     Catalog::default()
-                        .expression(facts, call.frame.body, capture.source, call.code.result)
+                        .expression(
+                            facts,
+                            call.frame.body,
+                            capture.source.into(),
+                            call.code.result,
+                        )
                         .is_err(),
                 ),
             ],
@@ -235,7 +240,7 @@ fn actual_anonymous_reference_call_keeps_exact_row_frame_opening_and_foreign_opp
         .ok_or("foreign completed context")?
         .clone();
     let target = crate::sema::values::execution::Target::Expression {
-        source: foreign_root,
+        source: foreign_root.into(),
         result: TypeId::primitive(crate::types::Primitive::Usize),
         context: None,
     };

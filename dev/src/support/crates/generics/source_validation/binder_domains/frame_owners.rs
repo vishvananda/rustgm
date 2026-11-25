@@ -57,6 +57,19 @@ impl BinderIndex<'_> {
                     return Err("source closure binder is foreign or has another header role");
                 }
             }
+            for header in &closures.anonymous {
+                work.charge(1)?;
+                let frame = self
+                    .rows
+                    .binders
+                    .get(header.binder.0 as usize)
+                    .ok_or("source anonymous body omitted its actual binder")?;
+                if frame.owner != header.owner
+                    || frame.kind != (s::BinderKind::AnonymousOriginal { body: header.body })
+                {
+                    return Err("source anonymous binder is foreign or has another header role");
+                }
+            }
         }
         Ok(())
     }
@@ -162,6 +175,35 @@ impl BinderIndex<'_> {
                     return Err("source closure binder differs from its complete closure contract");
                 }
             }
+            s::BinderKind::AnonymousOriginal { body } => {
+                self.anonymous_frame(reference, frame, profile, parent, body)?;
+            }
+        }
+        Ok(())
+    }
+    fn anonymous_frame(
+        &self,
+        reference: g::BinderRef,
+        frame: &s::Binder,
+        profile: s::Profile,
+        parent: Option<&s::Binder>,
+        body: crate::support::crates::owner_catalog::BodyRef,
+    ) -> Result<(), &'static str> {
+        if !profile.declaration_policies() || parent.is_some() {
+            return Err("source anonymous binder requires a version-fourteen root frame");
+        }
+        let Some((_, header)) = self
+            .rows
+            .closures()
+            .and_then(|closures| closures.anonymous_for_body(body))
+        else {
+            return Err("source anonymous binder has no actual anonymous header");
+        };
+        if header.owner != frame.owner
+            || header.binder != reference
+            || frame.count != header.contract_universals()
+        {
+            return Err("source anonymous binder differs from its complete anonymous contract");
         }
         Ok(())
     }

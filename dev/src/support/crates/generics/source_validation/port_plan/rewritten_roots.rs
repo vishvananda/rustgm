@@ -788,6 +788,7 @@ fn function_domain(
                 OriginalHeader::Function(header) => header.declaration,
                 OriginalHeader::Constant { .. } => caller.owner,
                 OriginalHeader::Closure { header, .. } => header.owner,
+                OriginalHeader::Anonymous { header, .. } => header.owner,
             };
             (owner, caller)
         }
