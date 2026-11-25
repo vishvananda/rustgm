@@ -22,6 +22,8 @@ mod census;
 mod crates;
 #[path = "../../bin/driver.rs"]
 mod driver;
+#[path = "../../bin/export_census.rs"]
+mod export_census;
 #[path = "../../bin/link_manifest.rs"]
 mod link_manifest;
 #[path = "../../bin/modules.rs"]
