@@ -385,23 +385,22 @@ impl Stage {
             .parameters
             .get(&definition)
             .ok_or("source family definition lost its actual formals")?;
-        let binder = self.binder(parent)?;
-        if !self.declaration_policies()
-            || own.is_empty()
-            || !own.iter().all(|parameter| {
+        let own_regions = own
+            .iter()
+            .filter(|parameter| {
                 matches!(
                     parameter.argument,
                     crate::types::arguments::Argument::Lifetime(_)
                 )
             })
+            .count();
+        let binder = self.binder(parent)?;
+        if !self.declaration_policies()
+            || own.is_empty()
             || !family.regions.is_empty()
-            || family.requirements.as_ref().is_none_or(|requirements| {
-                requirements.iter().any(|clause| !matches!(clause,
-                    crate::types::parameters::clauses::Clause::Predicate(predicate)
-                    if matches!(predicate.bound, crate::types::parameters::predicates::Bound::Outlives(_))))
-            })
+            || family.requirements.is_none()
             || family.captures != self.rows.binders[binder.0 as usize].count
-            || family.captures as usize + own.len() != family.total as usize
+            || family.captures as usize + own_regions != family.total as usize
         {
             return Err("source family definition requires its wider parameter or premise profile");
         }

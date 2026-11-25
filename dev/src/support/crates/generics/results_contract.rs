@@ -33,13 +33,36 @@ pub(super) fn validate(
             if !families {
                 return Err("associated result definition families require their wider profile");
             }
-            for (offset, &slot) in (0_u32..).zip(own.slice(&rows.slots)?) {
+            let mut region_offset = 0_u32;
+            let mut seen_non_region = false;
+            for (index, &slot) in (own.start..own.end).zip(own.slice(&rows.slots)?) {
                 work.charge(1)?;
-                if slot.kind != ParameterKind::Region
-                    || slot.definition.is_none()
-                    || Some(slot.index) != captures.checked_add(offset)
+                if slot.definition.is_none()
+                    || slot.default.is_some()
+                    || super::const_defaults::find(
+                        &rows.cold().const_defaults,
+                        super::SlotRef(index),
+                    )
+                    .is_some()
                 {
-                    return Err("associated definition changed its actual owned lifetime slots");
+                    return Err("associated definition changed its actual owned generic slots");
+                }
+                match slot.kind {
+                    ParameterKind::Region => {
+                        if seen_non_region
+                            || Some(slot.index) != captures.checked_add(region_offset)
+                        {
+                            return Err(
+                                "associated definition changed its actual owned lifetime slots",
+                            );
+                        }
+                        region_offset = region_offset
+                            .checked_add(1)
+                            .ok_or("associated definition lifetime count overflow")?;
+                    }
+                    ParameterKind::Type { .. } | ParameterKind::Const { .. } => {
+                        seen_non_region = true;
+                    }
                 }
             }
         }
@@ -55,12 +78,15 @@ pub(super) fn validate(
         }
         for input in row.inputs.slice(&rows.clauses)? {
             work.charge(1)?;
-            if input.binder.is_some()
-                || !matches!(input.requirement, super::Requirement::TypeOutlives { .. })
-            {
-                return Err(
-                    "associated definition premises require their actual type outlives inputs",
-                );
+            let valid = match input.requirement {
+                super::Requirement::TypeOutlives { .. } => input.binder.is_none(),
+                super::Requirement::Trait { .. } | super::Requirement::ProjectionEqual { .. } => {
+                    true
+                }
+                super::Requirement::Outlives(_) | super::Requirement::UnstableFeature(_) => false,
+            };
+            if !valid {
+                return Err("associated definition premises require their actual family inputs");
             }
         }
     }

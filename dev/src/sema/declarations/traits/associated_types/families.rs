@@ -73,18 +73,10 @@ impl Checker<'_> {
             .map_err(Error::unlocated)?;
         let implementation = families::inputs(&mut self.facts, actual, &mut mapping.actual)
             .map_err(Error::unlocated)?;
-        if [&declaration, &implementation].iter().any(|premises| {
-            !premises.regions.is_empty()
-                || premises.clauses.iter().any(|clause| {
-                    !matches!(
-                        clause,
-                        Clause::Predicate(Predicate {
-                            bound: crate::types::parameters::predicates::Bound::Outlives(_),
-                            ..
-                        })
-                    )
-                })
-        }) {
+        if [&declaration, &implementation]
+            .iter()
+            .any(|premises| !premises.regions.is_empty())
+        {
             return Err(Error::unlocated(
                 "imported associated family requires its wider premise profile",
             ));
@@ -139,16 +131,56 @@ impl Checker<'_> {
             return Ok(());
         }
         let assumptions = &contract.assumptions.clauses;
-        let environment = if assumptions.is_empty() {
-            std::sync::Arc::clone(environment)
-        } else {
-            std::sync::Arc::new(
+        let has_value_params = contract
+            .mapping
+            .parameters
+            .iter()
+            .any(|parameter| !matches!(parameter.argument, Argument::Lifetime(_)));
+        let (environment, expanded) = if !has_value_params && assumptions.is_empty() {
+            (std::sync::Arc::clone(environment), None)
+        } else if !has_value_params {
+            let expanded = self
+                .facts
+                .generics
+                .expanded_clauses(&mut self.facts.types, assumptions.clone())
+                .map_err(Error::unlocated)?;
+            let environment = std::sync::Arc::new(
                 environment
                     .as_ref()
                     .clone()
-                    .with_clauses(&self.facts.types, assumptions)
+                    .with_clauses(&self.facts.types, &expanded)
                     .map_err(Error::unlocated)?,
+            );
+            (environment, Some(expanded))
+        } else {
+            let mut inputs: Vec<Clause> = crate::sema::declaration_inputs::all(
+                &self.facts.generics,
+                self.facts.crates.as_deref(),
+                owner,
             )
+            .map_err(Error::unlocated)?
+            .map(|input| input.value)
+            .collect();
+            inputs.extend(assumptions.iter().copied());
+            let expanded = self
+                .facts
+                .generics
+                .expanded_clauses(&mut self.facts.types, inputs)
+                .map_err(Error::unlocated)?;
+            let environment = self
+                .facts
+                .generics
+                .declared_scope(
+                    &self.facts.types,
+                    self.facts
+                        .generics
+                        .parameters_in_scope(owner)
+                        .copied()
+                        .chain(contract.mapping.parameters.iter().copied()),
+                )
+                .and_then(|env| env.with_clauses(&self.facts.types, &expanded))
+                .map_err(Error::unlocated)?;
+            (std::sync::Arc::new(environment), Some(expanded))
         };
         let mut proof = Proof::for_declaration(Some(environment), contract.mapping.total, 1);
         if let Some((value, _)) = contract.result
@@ -163,7 +195,8 @@ impl Checker<'_> {
         }
         self.prove_family_results(None, &contract.required, &mut proof)?;
         let evidence = proof.take_trait_proof();
-        self.prove_family_regions(owner, None, contract, assumptions, evidence.as_ref())
+        let region_assumptions = expanded.as_deref().unwrap_or(assumptions);
+        self.prove_family_regions(owner, None, contract, region_assumptions, evidence.as_ref())
     }
 
     pub(super) fn check_associated_family(

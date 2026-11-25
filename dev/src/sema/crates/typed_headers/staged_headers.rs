@@ -403,8 +403,8 @@ impl Walk<'_, '_> {
                 "source associated definition scope lost its actual impl owner",
             ));
         }
-        let own = raw.declared.end - raw.declared.start;
-        if own == 0 {
+        let own = raw.declared.slice(&rows.slots).map_err(error)?;
+        if own.is_empty() {
             return Ok(Inputs::Definition);
         }
         if !self.context.descriptor.profile().declaration_policies() {
@@ -412,10 +412,18 @@ impl Walk<'_, '_> {
                 "source associated definition families require their wider profile",
             ));
         }
+        budget.charge(own.len())?;
+        let own_regions = own
+            .iter()
+            .filter(|slot| slot.kind == s::ParameterKind::Region)
+            .count();
         let captures = rows.implementations[parent_index as usize].region_captures;
-        let total = captures.checked_add(own).ok_or_else(|| {
-            error("associated definition lifetime count exceeds its checked scope")
-        })?;
+        let total = u32::try_from(own_regions)
+            .ok()
+            .and_then(|regions| captures.checked_add(regions))
+            .ok_or_else(|| {
+                error("associated definition lifetime count exceeds its checked scope")
+            })?;
         let count = rows.cold().associated_definition_inputs.len();
         budget.charge(count.checked_ilog2().unwrap_or(0) as usize + 1)?;
         let inputs = if rows.cold().definition_inputs(index).is_some() {

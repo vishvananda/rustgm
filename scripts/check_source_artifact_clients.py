@@ -62,7 +62,8 @@ def main():
                                  "source-function-header-extensions",
                                  "source-inherent-const-and-tracked-traits",
                                  "source-free-and-inherent-const-originals",
-                                 "source-nonnull-parameter-pattern"))
+                                 "source-nonnull-parameter-pattern",
+                                 "source-generic-associated-definitions"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

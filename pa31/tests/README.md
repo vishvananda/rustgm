@@ -1840,3 +1840,11 @@ matching `core`'s `DispatchFromDyn` impl header and fresh-client `NonNull<dyn Tr
 dispatch, while retaining the version-13 refusal and unsatisfied-dispatch rejection.
 Run `scripts/check_source_artifact_clients.py --case source-nonnull-parameter-pattern`
 with the prebuilt compilers.
+
+`spec/source-generic-associated-definitions/outcomes.json` checks version-14
+transport of type- and mixed-lifetime/type-parameterized GAT impl definitions
+with trait and outlives bounds (`Cast<T: Element>`, `View<'a, T: Element> where Self: 'a`,
+`CastPtr<U>`), matching `core_simd`'s `SimdFloat`/`SimdConstPtr` impls, while
+retaining version-13 refusal and unsatisfied GAT bound rejection in fresh clients.
+Run `scripts/check_source_artifact_clients.py --case source-generic-associated-definitions`
+with the prebuilt compilers.

@@ -54,17 +54,46 @@ impl Generics {
     pub(in crate::sema) fn expanded_trait_bounds(
         &mut self,
         store: &mut Store,
-        mut inputs: Vec<Predicate>,
+        inputs: Vec<Predicate>,
     ) -> Result<(Vec<Predicate>, usize), &'static str> {
+        self.expand_bounds(
+            store,
+            inputs,
+            |predicate| predicate.value,
+            |predicate, value| Predicate {
+                source: predicate.source,
+                value,
+            },
+        )
+    }
+
+    /// Expand raw clauses without fabricating source locations for imported premises.
+    pub(in crate::sema) fn expanded_clauses(
+        &mut self,
+        store: &mut Store,
+        inputs: Vec<Clause>,
+    ) -> Result<Vec<Clause>, &'static str> {
+        let (clauses, _) =
+            self.expand_bounds(store, inputs, |clause| clause, |_, clause| clause)?;
+        Ok(clauses)
+    }
+
+    fn expand_bounds<T: Copy>(
+        &mut self,
+        store: &mut Store,
+        mut inputs: Vec<T>,
+        clause_of: impl Fn(T) -> Clause,
+        derive: impl Fn(T, Clause) -> T,
+    ) -> Result<(Vec<T>, usize), &'static str> {
         let mut written = HashSet::default();
-        inputs.retain(|p| written.insert(p.value));
-        let mut seen = Consequences::new(store, &inputs)?;
+        inputs.retain(|p| written.insert(clause_of(*p)));
+        let mut seen = Consequences::new(store, inputs.iter().map(|&item| clause_of(item)))?;
         let mut work = inputs;
         let initial = work.len();
         let mut next = 0;
         let mut steps = 0_usize;
         let mut binders = HashMap::default();
-        let mut results: Vec<Predicate> = Vec::new();
+        let mut results: Vec<T> = Vec::new();
         let mut ordinary = true;
         let mut ordinary_end = usize::MAX;
         while next < work.len() || !results.is_empty() {
@@ -76,7 +105,7 @@ impl Generics {
                 ordinary = false;
                 ordinary_end = work.len();
                 for predicate in results.drain(..) {
-                    if seen.insert(store, predicate.value)? {
+                    if seen.insert(store, clause_of(predicate))? {
                         work.push(predicate);
                     }
                 }
@@ -86,7 +115,7 @@ impl Generics {
             }
             let predicate = work[next];
             next += 1;
-            let Some((input, count)) = trait_input(store, predicate.value)? else {
+            let Some((input, count)) = trait_input(store, clause_of(predicate))? else {
                 continue;
             };
             let requirements = self
@@ -102,18 +131,15 @@ impl Generics {
             for &value in &requirements.implied {
                 let value = lift(store, &mut binders, count, value, &mut steps)?;
                 if seen.insert(store, value)? {
-                    work.push(Predicate {
-                        source: predicate.source,
-                        value,
-                    });
+                    work.push(derive(predicate, value));
                 }
             }
             if ordinary {
                 for &value in &requirements.results {
-                    results.push(Predicate {
-                        source: predicate.source,
-                        value: lift(store, &mut binders, count, value, &mut steps)?,
-                    });
+                    results.push(derive(
+                        predicate,
+                        lift(store, &mut binders, count, value, &mut steps)?,
+                    ));
                 }
             }
         }
@@ -124,11 +150,12 @@ impl Generics {
             // those user-trait results as independent caller permissions.
             for index in initial..work.len() {
                 let predicate = work[index];
+                let value = clause_of(predicate);
                 let quantified_result_lifetime = index >= ordinary_end
-                    && matches!(predicate.value, Clause::ForAll(_))
-                    && predicate.value.is_outlives(store)?;
+                    && matches!(value, Clause::ForAll(_))
+                    && value.is_outlives(store)?;
                 if !quantified_result_lifetime
-                    && (index < ordinary_end || trait_input(store, predicate.value)?.is_none())
+                    && (index < ordinary_end || trait_input(store, value)?.is_none())
                 {
                     work[retained] = predicate;
                     retained += 1;
@@ -156,10 +183,13 @@ struct Consequences {
     steps: usize,
 }
 impl Consequences {
-    fn new(store: &mut Store, inputs: &[Predicate]) -> Result<Self, &'static str> {
+    fn new(
+        store: &mut Store,
+        inputs: impl IntoIterator<Item = Clause>,
+    ) -> Result<Self, &'static str> {
         let mut result = Self::default();
-        for input in inputs {
-            result.insert(store, input.value)?;
+        for clause in inputs {
+            result.insert(store, clause)?;
         }
         Ok(result)
     }

@@ -1,0 +1,13 @@
+{
+  "features": [
+    "auto_traits"
+  ],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "29 11 77\n",
+  "older_profile": "source const/lifetime generic argument is not a type slot",
+  "restricted_client": {
+    "path": "bad_bound.rs",
+    "rustc": "is not satisfied",
+    "rustgm": "associated type requires an unambiguous implementation"
+  }
+}
