@@ -173,6 +173,9 @@ impl Graph {
                         | Kind::Array { .. }
                         | Kind::ArrayTerm { .. }
                         | Kind::Pointer { .. }
+                        | Kind::Reference { .. }
+                        | Kind::Tuple(_)
+                        | Kind::Function { .. }
                 )
             );
             return if descriptor.profile().declaration_policies() && actual {

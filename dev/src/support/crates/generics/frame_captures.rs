@@ -129,6 +129,8 @@ struct Frames {
     captures: u32,
 }
 
+type Pending = Vec<(TypeRef, TypeRef, Option<(BinderRef, BinderRef)>)>;
+
 /// Compares the impl's Self, written in its own frame, with a receiver base
 /// written in the method's original frame. Shapes must agree node for node;
 /// a region agrees when both are `'static` or both name the same captured slot.
@@ -140,8 +142,8 @@ fn same_self(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let error = "source method receiver differs from its actual implementation Self";
-    let mut pending = vec![(expected, actual)];
-    while let Some((expected, actual)) = pending.pop() {
+    let mut pending: Pending = vec![(expected, actual, None)];
+    while let Some((expected, actual, inner)) = pending.pop() {
         work.charge(1)?;
         if expected == actual {
             continue;
@@ -152,88 +154,153 @@ fn same_self(
         ) else {
             return Err(error);
         };
-        match (*left, *right) {
-            (
-                s::Type::Nominal {
-                    declaration: a,
-                    arguments: left,
-                },
-                s::Type::Nominal {
-                    declaration: b,
-                    arguments: right,
-                },
-            ) => {
-                same_nominal(rows, frames, (a, left), (b, right), &mut pending, work)?;
-            }
-            (
-                s::Type::Reference {
-                    mutable: a,
-                    region: left,
-                    referent: expected,
-                },
-                s::Type::Reference {
-                    mutable: b,
-                    region: right,
-                    referent: actual,
-                },
-            ) if a == b => {
-                same_region(rows, frames, left, right)?;
-                pending.push((expected, actual));
-            }
-            (s::Type::Tuple(left), s::Type::Tuple(right)) => {
-                let (left, right) = (left.slice(&rows.roots)?, right.slice(&rows.roots)?);
-                if left.len() != right.len() {
-                    return Err(error);
-                }
-                pending.extend(left.iter().copied().zip(right.iter().copied()));
-            }
-            // Version thirteen: the length terms agree exactly; a slot is the
-            // same captured const parameter, as a type parameter is.
-            (
-                s::Type::Array {
-                    element: expected,
-                    length: left,
-                },
-                s::Type::Array {
-                    element: actual,
-                    length: right,
-                },
-            ) => {
-                let lengths = rows.array_lengths();
-                let (Some(left), Some(right)) =
-                    (lengths.get(left.0 as usize), lengths.get(right.0 as usize))
-                else {
-                    return Err("source array type has no length row");
-                };
-                if left != right {
-                    return Err(error);
-                }
-                pending.push((expected, actual));
-            }
-            (s::Type::Slice(expected), s::Type::Slice(actual)) => {
-                pending.push((expected, actual));
-            }
-            (
-                s::Type::RawPointer {
-                    mutable: a,
-                    pointee: expected,
-                },
-                s::Type::RawPointer {
-                    mutable: b,
-                    pointee: actual,
-                },
-            ) if a == b => {
-                pending.push((expected, actual));
-            }
-            (s::Type::Dynamic(left), s::Type::Dynamic(right)) => {
-                same_dynamic(rows, frames, (left, right), &mut pending, work)?;
-            }
-            (s::Type::OpaqueResult(left), s::Type::OpaqueResult(right)) => {
-                same_opaque(rows, frames, (left, right), &mut pending, work)?;
-            }
-            _ => return Err(error),
-        }
+        same_type_node(rows, frames, (*left, *right), inner, &mut pending, work)?;
     }
+    Ok(())
+}
+
+fn same_type_node(
+    rows: &SourceRows,
+    frames: Frames,
+    (left, right): (s::Type, s::Type),
+    inner: Option<(BinderRef, BinderRef)>,
+    pending: &mut Pending,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let error = "source method receiver differs from its actual implementation Self";
+    match (left, right) {
+        (
+            s::Type::Nominal {
+                declaration: a,
+                arguments: left,
+            },
+            s::Type::Nominal {
+                declaration: b,
+                arguments: right,
+            },
+        ) => same_nominal(rows, frames, (a, left), (b, right), inner, pending, work),
+        (
+            s::Type::Reference {
+                mutable: a,
+                region: left,
+                referent: expected,
+            },
+            s::Type::Reference {
+                mutable: b,
+                region: right,
+                referent: actual,
+            },
+        ) if a == b => {
+            same_region_in(rows, frames, inner, (left, right))?;
+            pending.push((expected, actual, inner));
+            Ok(())
+        }
+        (s::Type::Tuple(left), s::Type::Tuple(right)) => {
+            same_type_range(rows, (left, right), inner, pending)
+        }
+        (
+            s::Type::Array {
+                element: expected,
+                length: left,
+            },
+            s::Type::Array {
+                element: actual,
+                length: right,
+            },
+        ) => {
+            let lengths = rows.array_lengths();
+            let (Some(left), Some(right)) =
+                (lengths.get(left.0 as usize), lengths.get(right.0 as usize))
+            else {
+                return Err("source array type has no length row");
+            };
+            if left != right {
+                return Err(error);
+            }
+            pending.push((expected, actual, inner));
+            Ok(())
+        }
+        (s::Type::Slice(expected), s::Type::Slice(actual)) => {
+            pending.push((expected, actual, inner));
+            Ok(())
+        }
+        (
+            s::Type::RawPointer {
+                mutable: a,
+                pointee: expected,
+            },
+            s::Type::RawPointer {
+                mutable: b,
+                pointee: actual,
+            },
+        ) if a == b => {
+            pending.push((expected, actual, inner));
+            Ok(())
+        }
+        (
+            s::Type::Pattern {
+                base: expected,
+                constraint: a,
+            },
+            s::Type::Pattern {
+                base: actual,
+                constraint: b,
+            },
+        ) if a == b => {
+            pending.push((expected, actual, inner));
+            Ok(())
+        }
+        (s::Type::Function(left), s::Type::Function(right)) => {
+            same_function(rows, (left, right), pending)
+        }
+        (s::Type::Dynamic(left), s::Type::Dynamic(right)) => {
+            same_dynamic(rows, frames, (left, right), inner, pending, work)
+        }
+        (s::Type::OpaqueResult(left), s::Type::OpaqueResult(right)) => {
+            same_opaque(rows, frames, (left, right), inner, pending, work)
+        }
+        _ => Err(error),
+    }
+}
+
+fn same_type_range(
+    rows: &SourceRows,
+    (left, right): (Range, Range),
+    inner: Option<(BinderRef, BinderRef)>,
+    pending: &mut Pending,
+) -> Result<(), &'static str> {
+    let (left, right) = (left.slice(&rows.roots)?, right.slice(&rows.roots)?);
+    if left.len() != right.len() {
+        return Err("source method receiver differs from its actual implementation Self");
+    }
+    pending.extend(
+        left.iter()
+            .copied()
+            .zip(right.iter().copied())
+            .map(|(a, b)| (a, b, inner)),
+    );
+    Ok(())
+}
+
+fn same_function(
+    rows: &SourceRows,
+    (left, right): (s::Signature, s::Signature),
+    pending: &mut Pending,
+) -> Result<(), &'static str> {
+    let (left_binder, right_binder) = (
+        rows.binders.get(left.binder.0 as usize),
+        rows.binders.get(right.binder.0 as usize),
+    );
+    if left.unsafe_ != right.unsafe_
+        || left.convention != right.convention
+        || left.variadic != right.variadic
+        || left_binder.map(|frame| frame.count) != right_binder.map(|frame| frame.count)
+    {
+        return Err("source method receiver differs from its actual implementation Self");
+    }
+    let inner = Some((left.binder, right.binder));
+    same_type_range(rows, (left.parameters, right.parameters), inner, pending)?;
+    pending.push((left.result, right.result, inner));
     Ok(())
 }
 
@@ -241,7 +308,8 @@ fn same_opaque(
     rows: &SourceRows,
     frames: Frames,
     (left, right): (s::OpaqueResultRef, s::OpaqueResultRef),
-    pending: &mut Vec<(TypeRef, TypeRef)>,
+    inner: Option<(BinderRef, BinderRef)>,
+    pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let error = "source method receiver differs from its actual implementation Self";
@@ -269,6 +337,7 @@ fn same_opaque(
             },
             right.captures,
         ),
+        inner,
         pending,
         work,
     )
@@ -279,7 +348,8 @@ fn same_nominal(
     frames: Frames,
     (a, left): (s::DeclarationAddress, Range),
     (b, right): (s::DeclarationAddress, Range),
-    pending: &mut Vec<(TypeRef, TypeRef)>,
+    inner: Option<(BinderRef, BinderRef)>,
+    pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let error = "source method receiver differs from its actual implementation Self";
@@ -291,11 +361,12 @@ fn same_nominal(
     for (left, right) in left.iter().zip(right) {
         match (*left, *right) {
             (s::Argument::Type(left), s::Argument::Type(right)) => {
-                pending.push((left, right));
+                pending.push((left, right, inner));
             }
             (s::Argument::Region(left), s::Argument::Region(right)) => {
-                same_region(rows, frames, left, right)?;
+                same_region_in(rows, frames, inner, (left, right))?;
             }
+            (s::Argument::Const(left), s::Argument::Const(right)) if left == right => {}
             _ => return Err(error),
         }
     }
@@ -306,7 +377,8 @@ fn same_dynamic(
     rows: &SourceRows,
     frames: Frames,
     (left, right): (s::DynamicTypeRef, s::DynamicTypeRef),
-    pending: &mut Vec<(TypeRef, TypeRef)>,
+    outer: Option<(BinderRef, BinderRef)>,
+    pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let error = "source method receiver differs from its actual implementation Self";
@@ -338,7 +410,7 @@ fn same_dynamic(
     {
         return Err(error);
     }
-    same_region(rows, frames, left.region, right.region)?;
+    same_region_in(rows, frames, outer, (left.region, right.region))?;
     let (left_args, right_args) = (
         left.arguments.slice(&rows.arguments)?,
         right.arguments.slice(&rows.arguments)?,
@@ -346,25 +418,30 @@ fn same_dynamic(
     if left_args.len() != right_args.len() {
         return Err(error);
     }
+    let inner = Some((left.binder, right.binder));
     work.charge(left_args.len())?;
     for (a, b) in left_args.iter().zip(right_args) {
         match (*a, *b) {
-            (s::Argument::Type(a), s::Argument::Type(b)) => pending.push((a, b)),
+            (s::Argument::Type(a), s::Argument::Type(b)) => pending.push((a, b, inner)),
             (s::Argument::Region(a), s::Argument::Region(b)) => {
-                same_dynamic_region(rows, frames, (left.binder, right.binder), (a, b))?;
+                same_region_in(rows, frames, inner, (a, b))?;
             }
+            (s::Argument::Const(a), s::Argument::Const(b)) if a == b => {}
             _ => return Err(error),
         }
     }
     Ok(())
 }
 
-fn same_dynamic_region(
+fn same_region_in(
     rows: &SourceRows,
     frames: Frames,
-    (left_binder, right_binder): (BinderRef, BinderRef),
+    inner: Option<(BinderRef, BinderRef)>,
     (expected, actual): (s::RegionRef, s::RegionRef),
 ) -> Result<(), &'static str> {
+    let Some((left_binder, right_binder)) = inner else {
+        return same_region(rows, frames, expected, actual);
+    };
     let (Some(left), Some(right)) = (
         rows.regions.get(expected.0 as usize),
         rows.regions.get(actual.0 as usize),

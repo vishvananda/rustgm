@@ -1848,3 +1848,12 @@ with trait and outlives bounds (`Cast<T: Element>`, `View<'a, T: Element> where 
 retaining version-13 refusal and unsatisfied GAT bound rejection in fresh clients.
 Run `scripts/check_source_artifact_clients.py --case source-generic-associated-definitions`
 with the prebuilt compilers.
+
+`spec/source-core-structural-inherents/outcomes.json` checks version-14
+transport of `#![rustc_coherence_is_core]` inherent impls on `()`, `(T,)`,
+`&T`, `&mut T`, and `fn(T) -> Ret` (including `core/src/primitive_docs.rs`'s
+empty doc impls, inherent methods/constants on unit, tuple, and reference
+types, and rustc's exclusion of function-pointer inherent method lookup),
+while retaining version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-core-structural-inherents`
+with the prebuilt compilers.

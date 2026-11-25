@@ -273,7 +273,14 @@ impl Checker<'_> {
         // Header installation authenticated the owner and each member link.
         let core_shape = matches!(
             head,
-            Head::Primitive(_) | Head::Never | Head::Slice | Head::Array | Head::Pointer(_)
+            Head::Primitive(_)
+                | Head::Never
+                | Head::Slice
+                | Head::Array
+                | Head::Pointer(_)
+                | Head::Reference(_)
+                | Head::Tuple
+                | Head::Function
         );
         let kind = self.report.resolution.definitions[member.0 as usize].kind;
         if !matches!(kind, DefKind::Function | DefKind::Const) {

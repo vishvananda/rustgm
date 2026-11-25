@@ -1,0 +1,12 @@
+{
+  "features": ["never_type"],
+  "attributes": ["rustc_coherence_is_core"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "11 17 29 41 53 6\n",
+  "older_profile": "source associated constants require their wider profile",
+  "restricted_client": {
+    "path": "fn_lookup_rejected.rs",
+    "rustc": "no method named `hidden_fn_method` found",
+    "rustgm": "receiver has no inherent nominal method"
+  }
+}

@@ -16,6 +16,9 @@ fn core_builtin_inherent(report: &Report, facts: &Declarations, self_type: TypeI
                     | Kind::Array { .. }
                     | Kind::ArrayTerm { .. }
                     | Kind::Pointer { .. }
+                    | Kind::Reference { .. }
+                    | Kind::Tuple(_)
+                    | Kind::Function { .. }
             )
         )
 }

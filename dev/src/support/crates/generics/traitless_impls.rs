@@ -41,19 +41,22 @@ pub(super) fn require_profile(
     for implementation in &rows.implementations {
         work.charge(1)?;
         if implementation.core_primitive_inherent {
-            let builtin = match rows.types.get(implementation.self_type.0 as usize) {
-                Some(Type::Scalar(tag)) => *tag != crate::support::crates::Scalar::Unit,
+            let builtin = matches!(
+                rows.types.get(implementation.self_type.0 as usize),
                 Some(
-                    Type::F16
-                    | Type::F128
-                    | Type::Str
-                    | Type::Never
-                    | Type::Slice(_)
-                    | Type::Array { .. }
-                    | Type::RawPointer { .. },
-                ) => true,
-                _ => false,
-            };
+                    Type::Scalar(_)
+                        | Type::F16
+                        | Type::F128
+                        | Type::Str
+                        | Type::Never
+                        | Type::Slice(_)
+                        | Type::Array { .. }
+                        | Type::RawPointer { .. }
+                        | Type::Reference { .. }
+                        | Type::Tuple(_)
+                        | Type::Function(_)
+                )
+            );
             if !(profile.declaration_policies()
                 && builtin
                 && implementation.trait_application.is_none()
