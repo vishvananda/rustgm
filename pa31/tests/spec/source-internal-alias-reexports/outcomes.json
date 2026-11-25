@@ -1,0 +1,12 @@
+{
+  "features": ["staged_api", "auto_traits"],
+  "attributes": ["unstable(feature=\"role_fixture\", issue=\"none\")"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "19 23 31 41\n",
+  "older_profile": "named, associated or generic alias transport requires its wider profile",
+  "restricted_client": {
+    "path": "private_alias.rs",
+    "rustc": "private",
+    "rustgm": "private"
+  }
+}

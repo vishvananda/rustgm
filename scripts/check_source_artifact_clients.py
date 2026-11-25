@@ -65,7 +65,8 @@ def main():
                                  "source-nonnull-parameter-pattern",
                                  "source-generic-associated-definitions",
                                  "source-core-structural-inherents",
-                                 "source-primitive-reexports"))
+                                 "source-primitive-reexports",
+                                 "source-internal-alias-reexports"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

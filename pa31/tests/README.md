@@ -1865,3 +1865,11 @@ per-binding `#[stable]`/`#[unstable]` availability enforcement, while retaining
 version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-primitive-reexports`
 with the prebuilt compilers.
+
+`spec/source-internal-alias-reexports/outcomes.json` checks version-14 transport
+of module-scoped restricted-visibility closed type aliases (`pub(crate) type`,
+direct/glob imports and crate-visible re-exports matching `core_arch/src/simd.rs`)
+alongside `#[stable]` public aliases and statics, while preserving private alias
+rejection in fresh clients and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-internal-alias-reexports`
+with the prebuilt compilers.

@@ -857,7 +857,10 @@ impl Stage {
         {
             return Err("named, associated or generic alias transport requires its wider profile");
         }
-        if declaration.access == Access::Public && facts.alias_requirements.contains(id) {
+        if (declaration.access == Access::Public
+            || self.declaration_policies() && is_module_scoped(report, declaration))
+            && facts.alias_requirements.contains(id)
+        {
             return Err("source alias has deferred proof requirements");
         }
         let source = declaration

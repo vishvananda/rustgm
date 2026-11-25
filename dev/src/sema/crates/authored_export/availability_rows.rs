@@ -422,9 +422,9 @@ impl Stage {
                     | DefKind::Variant
                     | DefKind::Function
                     | DefKind::Const
-            ) || (!self.rows.declarations[owner.0 as usize].public
-                && self.rows.declarations[owner.0 as usize].definition.kind
-                    == s::DefinitionKind::TypeAlias)
+                    | DefKind::Static
+            ) || self.rows.declarations[owner.0 as usize].definition.kind
+                == s::DefinitionKind::TypeAlias
                 || (self.declaration_policies()
                     && definition.kind == DefKind::TypeAlias
                     && self.rows.declarations[owner.0 as usize].definition.kind

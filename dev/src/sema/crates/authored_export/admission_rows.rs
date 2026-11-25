@@ -1,8 +1,8 @@
 //! The published declaration table uses the completed frontend declaration identities.
 use super::{
     DeclarationLeaves, DeclarationRef, ExportMode, Stage, complete_scope_owners,
-    implementation_result, kind, non_type_sources, require_foreign_declaration, s,
-    scoped_module_alias, statics,
+    implementation_result, is_module_scoped, kind, non_type_sources, require_foreign_declaration,
+    s, scoped_module_alias, statics,
 };
 use crate::{
     resolve::{
@@ -79,9 +79,9 @@ impl Stage {
                 return Ok(Some(s::DefinitionKind::TypeAlias));
             }
             self.closed_alias(report, facts, id)?;
-            return Ok(
-                (definition.access == Access::Public).then_some(s::DefinitionKind::TypeAlias)
-            );
+            return Ok((definition.access == Access::Public
+                || self.declaration_policies() && is_module_scoped(report, definition))
+            .then_some(s::DefinitionKind::TypeAlias));
         }
         if definition.kind == DefKind::Struct
             && matches!(mode, ExportMode::Nominals | ExportMode::CompilerOperations)
