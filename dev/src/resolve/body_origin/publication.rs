@@ -156,6 +156,7 @@ fn validate_definitions(
                     | DefKind::Trait
                     | DefKind::TraitAlias
                     | DefKind::ForeignType
+                    | DefKind::Primitive
                     | DefKind::TypeAlias
                     | DefKind::SelfType
                     | DefKind::Generic

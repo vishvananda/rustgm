@@ -675,6 +675,9 @@ impl Stage {
         if Some(id) == report.resolution.crate_root {
             return Ok(None);
         }
+        if kind == s::DefinitionKind::Primitive {
+            return Ok(report.resolution.crate_root);
+        }
         if kind == s::DefinitionKind::Variant {
             let variant = facts
                 .members

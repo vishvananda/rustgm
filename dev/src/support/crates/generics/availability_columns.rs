@@ -245,6 +245,7 @@ impl AvailabilityRows {
                     | DefinitionKind::RegionParameter
                     | DefinitionKind::ValueParameter
                     | DefinitionKind::Local
+                    | DefinitionKind::Primitive
             ) {
                 if row.regular.is_some() || row.constant.is_some() {
                     return Err("local or parameter declaration cannot carry API availability");

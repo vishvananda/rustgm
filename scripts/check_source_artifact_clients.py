@@ -64,7 +64,8 @@ def main():
                                  "source-free-and-inherent-const-originals",
                                  "source-nonnull-parameter-pattern",
                                  "source-generic-associated-definitions",
-                                 "source-core-structural-inherents"))
+                                 "source-core-structural-inherents",
+                                 "source-primitive-reexports"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

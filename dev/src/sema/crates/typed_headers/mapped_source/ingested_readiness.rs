@@ -2,7 +2,7 @@
 use super::{Catalog, DefId, DefKind, Graph, SignaturePort, s, slot_bindings};
 use crate::{
     sema::model::Declarations,
-    types::{ItemId, Kind, lifetime_proof::ScopeId},
+    types::{ItemId, Kind, Primitive, TypeId, lifetime_proof::ScopeId},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -203,6 +203,7 @@ impl Graph {
                     return Err("source foreign readiness lost its actual opaque type");
                 }
             }
+            s::DefinitionKind::Primitive => Self::primitive_ready(raw, *cell)?,
             s::DefinitionKind::SelfType => {
                 self.self_type_ready(rows, facts, definition, raw.definition.parent, *cell)?;
             }
@@ -232,6 +233,17 @@ impl Graph {
             }
         }
         Ok(Readiness::Declaration)
+    }
+
+    fn primitive_ready(raw: &s::Declaration, cell: Option<TypeId>) -> Result<(), &'static str> {
+        let tag = Primitive::ALL
+            .into_iter()
+            .find(|tag| Some(tag.name()) == raw.name.as_deref())
+            .ok_or("source primitive readiness has an unknown spelling")?;
+        if cell != Some(TypeId::primitive(tag)) {
+            return Err("source primitive readiness lost its actual primitive type");
+        }
+        Ok(())
     }
 
     fn self_type_ready(

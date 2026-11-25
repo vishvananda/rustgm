@@ -1857,3 +1857,11 @@ types, and rustc's exclusion of function-pointer inherent method lookup),
 while retaining version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-core-structural-inherents`
 with the prebuilt compilers.
+
+`spec/source-primitive-reexports/outcomes.json` checks version-14 transport of
+primitive type module re-exports (`pub use bool; ...`, matching `core/src/primitive.rs`),
+including fresh-client primitive type paths, primitive associated constants, and
+per-binding `#[stable]`/`#[unstable]` availability enforcement, while retaining
+version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-primitive-reexports`
+with the prebuilt compilers.

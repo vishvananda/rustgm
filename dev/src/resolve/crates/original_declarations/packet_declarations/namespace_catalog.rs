@@ -315,6 +315,7 @@ impl OwnedNamespaceCatalog {
                 | (
                     s::DefinitionKind::Module
                         | s::DefinitionKind::ForeignType
+                        | s::DefinitionKind::Primitive
                         | s::DefinitionKind::SelfType
                         | s::DefinitionKind::TypeParameter
                         | s::DefinitionKind::RegionParameter

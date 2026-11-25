@@ -3,7 +3,7 @@ use super::{Declarations, Error, Headers, Scope, error, mapped_source, s};
 use crate::{
     resolve::model::DefId,
     support::crates::owner_catalog::DeclarationRef,
-    types::{ItemId, Kind, TypeId, arguments::Argument},
+    types::{ItemId, Kind, Primitive, TypeId, arguments::Argument},
 };
 
 pub(super) fn prepare(
@@ -101,7 +101,8 @@ fn finish_cells(
             ));
         }
         let foreign = raw.definition.kind == s::DefinitionKind::ForeignType;
-        if foreign || cell.is_some() {
+        let primitive = raw.definition.kind == s::DefinitionKind::Primitive;
+        if foreign || primitive || cell.is_some() {
             let definition = context.definition(row, budget)?;
             if facts
                 .definitions
@@ -119,6 +120,12 @@ fn finish_cells(
                     .types
                     .intern(Kind::Foreign(ItemId(definition.0)))
                     .map_err(error)?
+            } else if primitive {
+                let tag = Primitive::ALL
+                    .into_iter()
+                    .find(|tag| Some(tag.name()) == raw.name.as_deref())
+                    .ok_or_else(|| error("source primitive declaration has an unknown spelling"))?;
+                TypeId::primitive(tag)
             } else {
                 cell.ok_or_else(|| error("source type cell is missing"))?
             };

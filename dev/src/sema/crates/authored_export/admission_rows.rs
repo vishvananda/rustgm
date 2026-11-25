@@ -29,6 +29,7 @@ impl Stage {
         facts: &Declarations,
         id: DefId,
         mode: ExportMode,
+        primitives: &[DefId],
     ) -> Result<Option<s::DefinitionKind>, &'static str> {
         let definition = &report.resolution.definitions[id.0 as usize];
         if self.declaration_policies() {
@@ -41,6 +42,9 @@ impl Stage {
                 DefKind::Static => {
                     statics::require_definition(report, facts, id)?;
                     return Ok(Some(s::DefinitionKind::Static));
+                }
+                DefKind::Primitive if primitives.contains(&id) => {
+                    return Ok(Some(s::DefinitionKind::Primitive));
                 }
                 DefKind::ExternCrate => {
                     self.private_self_alias(report, id)?;
@@ -241,6 +245,7 @@ impl Stage {
     ) -> Result<Vec<(DefId, s::DefinitionKind)>, &'static str> {
         let count = report.resolution.definitions.len();
         self.reserve(inventory_bytes(count))?;
+        let primitives = self.referenced_primitives(report)?;
         let mut admitted = Vec::with_capacity(count);
         let mut name_bytes = 0_usize;
         for index in 0..count {
@@ -249,7 +254,7 @@ impl Stage {
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             let definition = &report.resolution.definitions[index];
             definition_scope_owner(report, facts, owners, id, self.declaration_policies())?;
-            if let Some(kind) = self.exported_kind(report, facts, id, mode)? {
+            if let Some(kind) = self.exported_kind(report, facts, id, mode, &primitives)? {
                 let name = if id == root {
                     root_name
                 } else {
@@ -271,6 +276,39 @@ impl Stage {
         )?;
         self.rows.declarations.reserve_exact(admitted.len());
         Ok(admitted)
+    }
+
+    pub(super) fn referenced_primitives(
+        &mut self,
+        report: &Report,
+    ) -> Result<Vec<DefId>, &'static str> {
+        let mut referenced = Vec::new();
+        if !self.declaration_policies() {
+            return Ok(referenced);
+        }
+        for definition in &report.resolution.definitions {
+            self.charge(1)?;
+            if definition.kind != DefKind::Module {
+                continue;
+            }
+            let Some(scope) = definition.members else {
+                continue;
+            };
+            for (_, namespace, binding) in report.resolution.bindings.scope(scope) {
+                self.charge(1)?;
+                if namespace == Namespace::Type
+                    && report
+                        .resolution
+                        .definitions
+                        .get(binding.target.0 as usize)
+                        .is_some_and(|target| target.kind == DefKind::Primitive)
+                    && !referenced.contains(&binding.target)
+                {
+                    referenced.push(binding.target);
+                }
+            }
+        }
+        Ok(referenced)
     }
 }
 

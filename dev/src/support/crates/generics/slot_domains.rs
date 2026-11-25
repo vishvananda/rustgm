@@ -33,6 +33,8 @@ pub enum DefinitionKind {
     ForeignType,
     /// Version fourteen: a module-owned static allocation.
     Static,
+    /// Version fourteen: a language primitive type named by a module re-export.
+    Primitive,
 }
 impl DefinitionKind {
     pub(crate) const fn leading_regions(self) -> bool {
@@ -493,6 +495,7 @@ fn valid_parent(
         | DefinitionKind::ConstParameter
         | DefinitionKind::ForeignType
         | DefinitionKind::Static
+        | DefinitionKind::Primitive
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }

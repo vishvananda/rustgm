@@ -28,12 +28,13 @@ impl DeclCensus {
             checked: 0,
             refused: Vec::new(),
         };
+        let primitives = stage.referenced_primitives(report)?;
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             stage.charge(1)?;
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             let result = stage
-                .exported_kind(report, facts, id, mode)
+                .exported_kind(report, facts, id, mode, &primitives)
                 .and_then(|kind| match kind {
                     Some(s::DefinitionKind::Struct | s::DefinitionKind::Enum) => {
                         stage.charge(1)?;

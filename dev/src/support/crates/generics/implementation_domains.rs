@@ -366,6 +366,12 @@ impl ModuleContractColumns {
             | s::DefinitionKind::Struct
             | s::DefinitionKind::Enum
             | s::DefinitionKind::TypeAlias => Namespace::Type,
+            s::DefinitionKind::Primitive if variants => {
+                if entry.source == BindingSource::Declaration {
+                    return Err("primitive binding cannot be a direct module declaration");
+                }
+                Namespace::Type
+            }
             s::DefinitionKind::Function => {
                 if super::callable_paths::nested_function(
                     &rows.declarations,

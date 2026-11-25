@@ -1,0 +1,12 @@
+{
+  "features": ["staged_api"],
+  "attributes": ["unstable(feature=\"role_fixture\", issue=\"none\")"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "1 41 65 7 9\n",
+  "older_profile": "source header names an unreserved actual declaration",
+  "restricted_client": {
+    "path": "unstable_primitive.rs",
+    "rustc": "private",
+    "rustgm": "private"
+  }
+}

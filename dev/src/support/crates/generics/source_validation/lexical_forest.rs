@@ -2,6 +2,11 @@
 use super::{DefinitionKind, SourceRows, Work};
 use crate::support::crates::generics::source::Definition;
 
+const PRIMITIVES: [&str; 19] = [
+    "bool", "char", "str", "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64",
+    "u128", "usize", "f32", "f64", "f16", "f128",
+];
+
 pub(super) fn validate(
     rows: &SourceRows,
     work: &mut Work,
@@ -27,6 +32,19 @@ pub(super) fn validate(
                 && actual.definition.kind != DefinitionKind::Module
             {
                 return Err("source foreign declaration has no actual module owner");
+            }
+            if row.definition.kind == DefinitionKind::Primitive
+                && (actual.definition.kind != DefinitionKind::Module
+                    || actual.definition.parent.is_some()
+                    || !row.public
+                    || row
+                        .name
+                        .as_deref()
+                        .is_none_or(|name| !PRIMITIVES.contains(&name)))
+            {
+                return Err(
+                    "source primitive declaration changed its root owner, visibility or spelling",
+                );
             }
             if !valid_child(actual.definition.kind, row) || row.ordinal != ordinals[parent] {
                 return Err("source lexical child has a foreign kind, gap or duplicate ordinal");
