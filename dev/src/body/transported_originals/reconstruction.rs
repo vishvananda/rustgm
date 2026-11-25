@@ -54,7 +54,17 @@ pub(crate) fn demand(
         );
         let texts = super::encoded_texts::copy(view, &mut work)
             .map_err(|e| report.body_error(source, e))?;
-        decoded = Some(((body, texts), contract, environment));
+        let caller_sites = super::callsite_coordinates::copy(view, &mut work)
+            .map_err(|e| report.body_error(source, e))?;
+        decoded = Some((
+            decoded_bodies::PendingBody {
+                body,
+                texts,
+                caller_sites,
+            },
+            contract,
+            environment,
+        ));
         Ok(())
     });
     let charged = service.prepay(facts, work.steps.saturating_sub(before), 0);
@@ -72,7 +82,7 @@ pub(crate) fn validate(
     original: &Original,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
-    rebuilt_operations::validate(view, &facts.texts, &original.template.body, steps)?;
+    rebuilt_operations::validate(facts, view, &original.template.body, steps)?;
     rebuilt_inputs::validate(
         facts,
         view,

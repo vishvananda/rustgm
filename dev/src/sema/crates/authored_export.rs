@@ -8,6 +8,7 @@ mod authored_functions;
 mod authored_traits;
 mod bound_aliases;
 mod census;
+mod position_coordinates;
 pub use census::{DeclCensus, DeclFailure};
 mod canonical_nodes;
 mod collected_formals;
@@ -167,6 +168,8 @@ pub(crate) struct Stage {
     /// Version thirteen: an exported record variant gives every field row from
     /// its own on a name slot.
     record_variants: bool,
+    /// Version fourteen: deduplicated file paths for exported caller sites.
+    caller_site_files: Option<Box<crate::support::hash::HashMap<Box<str>, u32>>>,
 }
 /// The original body vocabulary a module publication may retain.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -330,6 +333,7 @@ impl Stage {
             .exact_callables
             .sort_unstable_by_key(|row| row.declaration.0);
         self.sort_const_defaults()?;
+        self.sort_caller_sites()?;
         self.opaques.require_empty()?;
         let work = self.work();
         for slot in self.functions.originals.into_iter().flatten() {
@@ -569,6 +573,7 @@ impl Stage {
             },
             variants: Vec::new(),
             record_variants: false,
+            caller_site_files: None,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()

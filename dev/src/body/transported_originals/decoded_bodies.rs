@@ -102,6 +102,12 @@ pub(super) fn append(
     selected.release(originals);
     Ok(())
 }
+pub(super) struct PendingBody {
+    pub(super) body: crate::body::ir::Body,
+    pub(super) texts: super::encoded_texts::Pending,
+    pub(super) caller_sites: super::callsite_coordinates::Pending,
+}
+
 fn build(
     context: &Import<'_>,
     facts: &mut Declarations,
@@ -112,7 +118,7 @@ fn build(
     allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (body, contract, environment, pending, texts) = {
+    let (rebuilt, contract, environment, pending) = {
         let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
             .map_err(|e| report.body_optional_error(None, e))?
             .ok_or_else(|| {
@@ -133,39 +139,51 @@ fn build(
             .map_err(|e| report.body_error(source, e))?;
         let texts =
             super::encoded_texts::copy(&view, work).map_err(|e| report.body_error(source, e))?;
+        let caller_sites = super::callsite_coordinates::copy(&view, work)
+            .map_err(|e| report.body_error(source, e))?;
         (
-            body,
+            PendingBody {
+                body,
+                texts,
+                caller_sites,
+            },
             contract,
             Arc::clone(
                 view.environment()
                     .map_err(|e| report.body_error(source, e))?,
             ),
             pending,
-            texts,
         )
     };
     super::versioned_calls::prove(
         facts,
         Arc::clone(&environment),
         &pending,
-        &body,
+        &rebuilt.body,
         &contract,
         work,
         allowance,
     )
-    .map_err(|e| report.body_error(body.source, e))?;
-    finish(report, facts, scratch, (body, texts), contract, environment)
+    .map_err(|e| report.body_error(rebuilt.body.source, e))?;
+    finish(report, facts, scratch, rebuilt, contract, environment)
 }
 pub(super) fn finish(
     report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
-    (mut body, texts): (crate::body::ir::Body, super::encoded_texts::Pending),
+    rebuilt: PendingBody,
     contract: crate::body::regions::Contract,
     environment: Arc<crate::types::parameters::environment::Environment>,
 ) -> Result<Original, Error> {
+    let PendingBody {
+        mut body,
+        texts,
+        caller_sites,
+    } = rebuilt;
     let source = body.source;
     super::encoded_texts::intern(facts, &mut body, texts)
+        .map_err(|error| report.body_error(source, error))?;
+    super::callsite_coordinates::intern(report, facts, &mut body, caller_sites)
         .map_err(|error| report.body_error(source, error))?;
     super::untupled_calls::check(facts, &body, &contract, &environment)
         .map_err(|error| report.body_error(source, error))?;
@@ -333,7 +351,9 @@ pub(super) fn allocation<'a>(
                 );
         }
         let (operation_bytes, associated) = rebuilt_operations::allocation(raw, work)?;
-        count = count.saturating_add(associated);
+        let (site_bytes, site_visits) = super::callsite_coordinates::allocation(rows, raw.body);
+        bytes = bytes.saturating_add(site_bytes);
+        count = count.saturating_add(associated).saturating_add(site_visits);
         visits = visits.saturating_add(count.saturating_mul(32));
         bytes = bytes
             .saturating_add(operation_bytes.saturating_mul(4))

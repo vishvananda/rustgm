@@ -779,6 +779,21 @@ pub struct DeclaredIntrinsic {
     pub declaration: DeclarationRef,
     pub source_fallback: bool,
 }
+/// Version fourteen: sealed provider call-site coordinates for non-tracked
+/// original bodies whose calls target `#[track_caller]` or `caller_location`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CallerSiteRow {
+    pub body: BodyRef,
+    pub value: u32,
+    pub file: u32,
+    pub line: u32,
+    pub column: u32,
+}
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct CallerSiteColumns {
+    pub files: Vec<Box<str>>,
+    pub rows: Vec<CallerSiteRow>,
+}
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,
@@ -806,6 +821,7 @@ pub struct ColdColumns {
     pub comptime_functions: Vec<DeclarationRef>,
     pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
+    pub caller_sites: Option<Box<CallerSiteColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
 static EMPTY_COLD: ColdColumns = ColdColumns {
@@ -840,6 +856,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
         declarations: Vec::new(),
     },
     statics: None,
+    caller_sites: None,
     bodies: None,
 };
 impl ColdColumns {
@@ -875,6 +892,7 @@ impl ColdColumns {
             && self.comptime_functions.is_empty()
             && self.opaques.is_empty()
             && self.statics.is_none()
+            && self.caller_sites.is_none()
             && self.bodies.is_none()
     }
 }

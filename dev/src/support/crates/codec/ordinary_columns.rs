@@ -180,11 +180,48 @@ pub(super) fn encode_module_availability(
             } else if !opaques.declarations.is_empty() {
                 return Err("source opaque declaration lacks its canonical application recipe");
             }
+            let caller_sites = rows.cold().caller_sites.as_deref();
+            out.u8(u8::from(caller_sites.is_some()))?;
+            if let Some(sites) = caller_sites {
+                encode_caller_sites(out, sites)?;
+            }
         } else {
             compiler_wire::encode(out, rows)?;
         }
     }
     Ok(())
+}
+fn encode_caller_sites(out: &mut Writer, sites: &s::CallerSiteColumns) -> Result<(), &'static str> {
+    if sites.files.is_empty() || sites.rows.is_empty() {
+        return Err("source caller site trailer requires actual entries");
+    }
+    write(out, &sites.files, |out, file| out.string(file))?;
+    write(out, &sites.rows, |out, row| {
+        id(out, row.body.0)?;
+        id(out, row.value)?;
+        id(out, row.file)?;
+        id(out, row.line)?;
+        id(out, row.column)
+    })
+}
+fn decode_caller_sites(
+    read: &mut Input<'_, '_>,
+) -> Result<Box<s::CallerSiteColumns>, &'static str> {
+    read.reserve(size_of::<s::CallerSiteColumns>())?;
+    let files = read.list(crates::MAX_COMPONENTS, 4, operation_columns::text_read)?;
+    let rows = read.list(crates::MAX_COMPONENTS, 20, |read| {
+        Ok(s::CallerSiteRow {
+            body: BodyRef(read.id()?),
+            value: read.id()?,
+            file: read.id()?,
+            line: read.id()?,
+            column: read.id()?,
+        })
+    })?;
+    if files.is_empty() || rows.is_empty() {
+        return Err("source caller site trailer requires actual entries");
+    }
+    Ok(Box::new(s::CallerSiteColumns { files, rows }))
 }
 pub(super) struct AvailabilityPacket {
     pub rows: s::SourceRows,
@@ -297,6 +334,14 @@ fn decode_availability_profile(
             compiler_wire::decode_operations(&mut read, &mut rows)?;
             if !rows.cold().opaques.applications.is_empty() {
                 compiler_wire::decode_opaque_declarations(&mut read, &mut rows)?;
+            }
+            let body_flags = read.reader.u8()?;
+            if body_flags > 1 {
+                return Err("unknown v14 body extension trailer flag");
+            }
+            if body_flags & 1 != 0 {
+                let sites = decode_caller_sites(&mut read)?;
+                read.cold(&mut rows)?.caller_sites = Some(sites);
             }
         } else {
             compiler_wire::decode(&mut read, &mut rows)?;

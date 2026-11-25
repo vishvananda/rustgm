@@ -82,6 +82,24 @@ impl Evaluator<'_> {
     ) -> Result<LocationId, Failure> {
         let report = self.queries.report;
         let (filename, position) = coordinates(report, self.facts(), source)?;
+        self.prepare_caller_location(filename, position.line, position.column)
+    }
+
+    pub(crate) fn prepare_caller_location(
+        &mut self,
+        filename: &str,
+        line: u32,
+        column: u32,
+    ) -> Result<LocationId, Failure> {
+        if filename.is_empty()
+            || filename.len() > 4096
+            || filename.as_bytes().contains(&0)
+            || line == 0
+            || column == 0
+        {
+            return Err("caller location has invalid filename, line or column".into());
+        }
+        let report = self.queries.report;
         let facts = &mut *self.queries.typing.facts;
         let catalog = facts
             .source_bindings
@@ -133,8 +151,8 @@ impl Evaluator<'_> {
         let value = self.fields(
             &[
                 filename_value,
-                Constant::scalar(Scalar::Integer(u128::from(position.line))),
-                Constant::scalar(Scalar::Integer(u128::from(position.column))),
+                Constant::scalar(Scalar::Integer(u128::from(line))),
+                Constant::scalar(Scalar::Integer(u128::from(column))),
                 marker,
             ],
             None,
@@ -145,7 +163,7 @@ impl Evaluator<'_> {
     }
 }
 
-impl Reader<'_> {
+impl<'a> Reader<'a> {
     pub(crate) fn declaration_location(self, target: DefId) -> Option<LocationId> {
         self.facts
             .constant_references
@@ -232,6 +250,53 @@ impl Reader<'_> {
             }
         }
         Ok(Constant::pointer(location))
+    }
+    pub(crate) fn caller_location_parts(
+        self,
+        location: LocationId,
+    ) -> Result<(&'a str, u32, u32), &'static str> {
+        self.caller_location_value(location)?;
+        let value = self
+            .location(location)?
+            .value
+            .ok_or("caller site lost its initialized value")?;
+        let super::View::Scalar(Scalar::Integer(line)) = self.view(self.field(value, 1)?)? else {
+            return Err("caller site line is not an integer");
+        };
+        let super::View::Scalar(Scalar::Integer(column)) = self.view(self.field(value, 2)?)? else {
+            return Err("caller site column is not an integer");
+        };
+        let line = u32::try_from(line).map_err(|_| "caller site line exceeds u32")?;
+        let column = u32::try_from(column).map_err(|_| "caller site column exceeds u32")?;
+        let pointer = self.field(self.field(value, 0)?, 0)?;
+        let Some(Metadata::Length(length)) = pointer.metadata() else {
+            return Err("caller filename pointer lacks length metadata");
+        };
+        let length = usize::try_from(length).map_err(|_| "caller filename length overflow")?;
+        let backing = pointer
+            .location()
+            .ok_or("caller filename lost its backing allocation")?;
+        let stored = self
+            .location(backing)?
+            .value
+            .ok_or("caller filename backing has no value")?;
+        let super::View::Bytes(text) = self.view(stored)? else {
+            return Err("caller filename backing changed its byte representation");
+        };
+        let bytes = self.bytes(text)?;
+        if bytes.len() != length.saturating_add(1) || bytes.last() != Some(&0) {
+            return Err("caller site filename lacks its NUL terminator");
+        }
+        let filename = std::str::from_utf8(
+            bytes
+                .get(..length)
+                .ok_or("caller site filename slice out of range")?,
+        )
+        .map_err(|_| "caller site filename is not UTF-8")?;
+        if filename.is_empty() || filename.len() > 4096 || filename.as_bytes().contains(&0) {
+            return Err("caller site filename is empty, oversized or contains NUL");
+        }
+        Ok((filename, line, column))
     }
 }
 impl Evaluator<'_> {

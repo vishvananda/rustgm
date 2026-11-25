@@ -1,0 +1,12 @@
+{
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Authored callable-role transport controls.",
+  "features": ["intrinsics", "pattern_types"],
+  "stdout": "12 5 126 126 131 133 131 133 158 153\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "restricted_client": {
+    "path": "private_helper.rs",
+    "rustc": "private",
+    "rustgm": "private"
+  }
+}

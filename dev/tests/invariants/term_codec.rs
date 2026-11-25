@@ -18,7 +18,8 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // three: objects, associated equalities and auto-trait markers. Declared
 // Declared intrinsics and comptime functions add two cold Vecs.
 // Opaque result applications and declarations add two more cold Vecs.
-const _: [(); 592] = [(); size_of::<s::ColdColumns>()];
+// Non-tracked body caller sites live out of line in one Option<Box<...>>.
+const _: [(); 600] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;

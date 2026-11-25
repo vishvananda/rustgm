@@ -90,6 +90,7 @@ pub(super) fn emit(
         });
     }
     lexical_rows::emit(stage, body, &mut raw, sites)?;
+    emit_caller_sites(stage, facts, body, reference)?;
     Ok(raw)
 }
 
@@ -355,10 +356,11 @@ fn validate(
     if body.closure_calls.is_some() {
         return Err("source selected closure entries require a wider transport profile");
     }
-    if body.resolved_callables.is_some()
-        && !(stage.declaration_policies() && forwarded_location(facts, body)?)
-    {
-        return Err("source resolved callable identities require a wider transport profile");
+    if body.resolved_callables.is_some() {
+        if !stage.declaration_policies() || !body.has_only_caller_sites() {
+            return Err("source resolved callable identities require a wider transport profile");
+        }
+        body.validate_caller_sites()?;
     }
     // Imported originals always re-run ordinary promotion analysis on the
     // consumer side; no provider promotion cache or proof is retained.
@@ -410,33 +412,27 @@ fn validate(
     Ok(())
 }
 
-fn forwarded_location(facts: &Declarations, body: &Body) -> Result<bool, &'static str> {
-    use crate::support::bindings::SourceIntrinsic;
-    let (Owner::Function { definition, .. }, Some(site)) = (body.owner, body.lone_caller_site())
-    else {
-        return Ok(false);
-    };
-    if !facts.recorded_caller_tracking(definition)? || body.caller_site(site.value)? != Some(site) {
-        return Ok(false);
+fn emit_caller_sites(
+    stage: &mut Stage,
+    facts: &Declarations,
+    body: &Body,
+    reference: crate::support::crates::owner_catalog::BodyRef,
+) -> Result<(), &'static str> {
+    let sites = body.caller_sites();
+    if sites.is_empty() {
+        return Ok(());
     }
-    let Some(ir::Rvalue::Call { callee, .. }) = body
-        .values
-        .get(site.value.0 as usize)
-        .map(|value| value.kind)
-    else {
-        return Ok(false);
-    };
-    let Some(callee) = body.values.get(callee.0 as usize) else {
-        return Ok(false);
-    };
-    let ir::Rvalue::Function(target) = callee.kind else {
-        return Ok(false);
-    };
-    let Some(catalog) = facts.source_bindings.as_deref() else {
-        return Ok(false);
-    };
-    Ok(callee.ty == site.callable
-        && catalog.intrinsic_kind(target)? == Some(SourceIntrinsic::CallerLocation))
+    if let Owner::Function { definition, .. } = body.owner
+        && facts.recorded_caller_tracking(definition)?
+    {
+        return Ok(());
+    }
+    let reader = crate::sema::values::Reader::new(facts);
+    for site in sites {
+        let (filename, line, column) = reader.caller_location_parts(site.location)?;
+        stage.record_caller_site(reference, site.value.0, filename, line, column)?;
+    }
+    Ok(())
 }
 pub(super) fn place(stage: &mut Stage, place: ir::Place) -> Result<s::Place, &'static str> {
     match place {

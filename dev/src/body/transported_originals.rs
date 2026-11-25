@@ -1,4 +1,5 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
+mod callsite_coordinates;
 mod decoded_bodies;
 mod encoded_assembly;
 mod encoded_literals;
@@ -218,7 +219,7 @@ pub(crate) fn validate_source_parts(
     }
     let view = crate::sema::crates::source_original(facts, definition, steps)?
         .ok_or("source original cannot execute an absent required method")?;
-    rebuilt_operations::validate(&view, &facts.texts, body, steps)?;
+    rebuilt_operations::validate(facts, &view, body, steps)?;
     rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
     Ok(true)
 }

@@ -1873,3 +1873,11 @@ alongside `#[stable]` public aliases and statics, while preserving private alias
 rejection in fresh clients and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-internal-alias-reexports`
 with the prebuilt compilers.
+
+`spec/source-caller-site-transport/outcomes.json` checks version-14 transport of
+both chained `#[track_caller]` forwarding and non-tracked body sealed caller
+sites (including multi-branch bodies and trait impl dispatch selecting tracked
+versus untracked implementations) across both native and `const` fresh-client
+execution, while retaining private helper rejection and version-13 refusal.
+Run `scripts/check_source_artifact_clients.py --case source-caller-site-transport`
+with the prebuilt compilers.

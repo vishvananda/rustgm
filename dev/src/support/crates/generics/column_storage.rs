@@ -80,7 +80,8 @@ impl Columns {
             || !cold.declared_intrinsics.is_empty()
             || !cold.comptime_functions.is_empty()
             || !cold.opaques.is_empty()
-            || cold.statics.is_some())
+            || cold.statics.is_some()
+            || cold.caller_sites.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -102,9 +103,22 @@ impl Columns {
                 comptime_functions: cold.comptime_functions.clone(),
                 opaques: cold.opaques.clone(),
                 statics: cold.statics.clone(),
+                caller_sites: cold.caller_sites.clone(),
                 bodies: None,
             })
         })
+    }
+    #[must_use]
+    pub fn caller_sites(
+        &self,
+        body: super::super::BodyRef,
+    ) -> (&[Box<str>], &[super::super::CallerSiteRow]) {
+        let Some(sites) = self.cold().caller_sites.as_deref() else {
+            return (&[], &[]);
+        };
+        let start = sites.rows.partition_point(|row| row.body.0 < body.0);
+        let end = sites.rows[start..].partition_point(|row| row.body == body);
+        (&sites.files, &sites.rows[start..start + end])
     }
     #[must_use]
     pub fn enums(&self) -> &super::super::EnumColumns {

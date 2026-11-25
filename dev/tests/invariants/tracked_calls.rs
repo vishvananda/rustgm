@@ -108,8 +108,13 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
         )?
         .location()
         .ok_or("real test allocation")?;
+    let origin = actual.source.source().ok_or("source owner")?;
+    let root = crate::resolve::body_origin::BodyOrigin::Source(crate::resolve::unit::NodeKey {
+        node: report.package.unit(origin.file).configured.ast.root,
+        ..origin
+    });
     let site = body::ir::CallerSite {
-        owner: actual.source.source().ok_or("source owner")?,
+        owner: actual.source,
         value: body::ir::ValueId(u32::try_from(index)?),
         callable,
         location,
@@ -122,7 +127,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     for invalid in 0..3 {
         let mut changed = site;
         match invalid {
-            0 => changed.owner.node = report.package.unit(changed.owner.file).configured.ast.root,
+            0 => changed.owner = root,
             1 => changed.value = body::ir::ValueId(u32::MAX),
             _ => changed.callable = TypeId::UNIT,
         }

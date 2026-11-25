@@ -105,6 +105,59 @@ pub(super) fn validate(
         return Err("source bodies have incomplete exclusive representation coverage");
     }
     local_declarations(rows, lookup, work)?;
+    caller_sites(rows, lookup, work)?;
+    Ok(())
+}
+
+fn caller_sites(
+    rows: &SourceRows,
+    lookup: Option<&s::bodymap::Lookup>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let Some(sites) = rows.cold().caller_sites.as_deref() else {
+        return Ok(());
+    };
+    if sites.files.is_empty() || sites.rows.is_empty() {
+        return Err("source caller site table must contain actual entries");
+    }
+    for file in &sites.files {
+        work.charge(file.len().saturating_add(1))?;
+        if file.is_empty() || file.len() > 4096 || file.as_bytes().contains(&0) {
+            return Err("source caller site filename is empty, oversized or contains NUL");
+        }
+    }
+    work.charge(sites.files.len())?;
+    let mut used = vec![false; sites.files.len()];
+    let mut previous = None;
+    for row in &sites.rows {
+        work.charge(1)?;
+        if previous.is_some_and(|before| before >= (row.body.0, row.value)) {
+            return Err("source caller sites lack canonical body and value order");
+        }
+        let index = s::bodymap::original(lookup, row.body)?;
+        let original = rows
+            .originals
+            .get(index)
+            .filter(|original| original.body == row.body)
+            .ok_or("source caller site references an unknown original body")?;
+        let Some(value) = original.values.get(row.value as usize) else {
+            return Err("source caller site references an unknown value");
+        };
+        if !matches!(value.kind, s::ValueKind::Call { .. }) {
+            return Err("source caller site must reference an actual Call value");
+        }
+        let used_file = used
+            .get_mut(row.file as usize)
+            .ok_or("source caller site file ordinal is out of range")?;
+        *used_file = true;
+        if row.line == 0 || row.column == 0 {
+            return Err("source caller site has invalid line or column");
+        }
+        previous = Some((row.body.0, row.value));
+    }
+    if used.contains(&false) {
+        return Err("source caller site file table contains an unreferenced path");
+    }
     Ok(())
 }
 

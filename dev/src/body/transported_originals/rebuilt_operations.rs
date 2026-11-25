@@ -533,8 +533,8 @@ fn value_counts(record: &s::Original) -> (usize, usize) {
 }
 
 pub(super) fn validate(
+    facts: &crate::sema::model::Declarations,
     view: &SourceOriginal<'_>,
-    texts: &crate::sema::text::Texts,
     body: &Body,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
@@ -551,7 +551,7 @@ pub(super) fn validate(
         || body.temporaries.len() != record.temporaries.len()
         || body.static_types != regional_records::static_types(view, steps)?
         || body.static_permissions.is_some()
-        || body.resolved_callables.is_some()
+        || !body.has_only_caller_sites()
         || body.closure_calls.is_some()
         || !same_guards(view, body, steps)?
         || body.arguments.len() != record.arguments.len()
@@ -570,7 +570,8 @@ pub(super) fn validate(
     }
     regional_records::validate(view, body, steps)?;
     ports(view, body, steps)?;
-    encoded_texts::validate(texts, view, body, steps)?;
+    encoded_texts::validate(&facts.texts, view, body, steps)?;
+    super::callsite_coordinates::validate(facts, view, body, steps)?;
     encoded_assembly::validate(view, body, steps)?;
     for (actual, record) in body.statements.iter().zip(&record.statements) {
         *steps = steps.saturating_add(1);

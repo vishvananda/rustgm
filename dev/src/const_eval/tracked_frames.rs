@@ -93,11 +93,9 @@ impl Machine<'_, '_> {
             };
             let id = next.ok_or("tracked const entry lacks a genuine caller destination")?;
             let site = code.caller_site(id)?;
-            // The imported leaf invokes the re-proved intrinsic under its
-            // own tracked header. The next frame still owes its actual site.
-            if site.is_none()
-                && (!tracked || index != self.frames.len() || code.source.source().is_some())
-            {
+            // An imported tracked body forwards its caller directly without
+            // sealing its own call site; the enclosing frame still owes one.
+            if site.is_none() && (!tracked || code.source.source().is_some()) {
                 return Err("const call lacks its sealed actual caller location".into());
             }
             let crate::body::ir::Rvalue::Call { callee, .. } = code

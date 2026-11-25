@@ -209,6 +209,18 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
             count.vector(&statics.headers, work)?;
             count.vector(&statics.values, work)?;
         }
+        if let Some(sites) = &cold.caller_sites {
+            work.charge(1)?;
+            count.bytes = count
+                .bytes
+                .saturating_add(size_of::<super::super::CallerSiteColumns>());
+            count.vector(&sites.files, work)?;
+            for file in &sites.files {
+                work.charge(file.len().saturating_add(1))?;
+                count.bytes = count.bytes.saturating_add(file.len());
+            }
+            count.vector(&sites.rows, work)?;
+        }
     }
     Ok(())
 }

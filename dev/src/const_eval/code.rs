@@ -195,7 +195,7 @@ impl Code {
             .binary_search_by_key(&destination.0, |site| site.value.0)
             .ok()
             .map(|index| sites[index]);
-        if site.is_some_and(|site| Some(site.owner) != self.source.source()) {
+        if site.is_some_and(|site| site.owner != self.source) {
             return Err("prepared caller site belongs to another actual Code owner");
         }
         Ok(site)

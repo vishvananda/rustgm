@@ -1,5 +1,5 @@
 //! Sparse caller-site data shares the existing callable input owner, never its proof.
-use super::ir::{Body, NodeKey, Rvalue, ValueId};
+use super::ir::{Body, BodyOrigin, NodeKey, Rvalue, ValueId};
 #[path = "coercion_inputs.rs"]
 mod nominal_inputs;
 use crate::{
@@ -11,7 +11,7 @@ pub(crate) use nominal_inputs::NominalUse;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct CallerSite {
-    pub owner: NodeKey,
+    pub owner: BodyOrigin,
     pub value: ValueId,
     pub callable: TypeId,
     pub location: LocationId,
@@ -70,16 +70,10 @@ impl Body {
             .as_ref()
             .map_or(&[], |inputs| inputs.sites.as_slice())
     }
-    pub(crate) fn lone_caller_site(&self) -> Option<CallerSite> {
-        let inputs = self.resolved_callables.as_deref()?;
-        if inputs.targets.is_some() || inputs.nominal.is_some() || inputs.value_reborrows.is_some()
-        {
-            return None;
-        }
-        let [site] = inputs.sites.as_slice() else {
-            return None;
-        };
-        Some(*site)
+    pub(crate) fn has_only_caller_sites(&self) -> bool {
+        self.resolved_callables.as_deref().is_none_or(|inputs| {
+            inputs.targets.is_none() && inputs.nominal.is_none() && inputs.value_reborrows.is_none()
+        })
     }
     pub(crate) fn caller_site(&self, value: ValueId) -> Result<Option<CallerSite>, &'static str> {
         let sites = self.caller_sites();
@@ -87,7 +81,7 @@ impl Body {
             .binary_search_by_key(&value.0, |site| site.value.0)
             .ok()
             .map(|index| sites[index]);
-        if site.is_some_and(|site| Some(site.owner) != self.source.source()) {
+        if site.is_some_and(|site| site.owner != self.source) {
             return Err("caller location belongs to another actual body");
         }
         Ok(site)
@@ -150,7 +144,7 @@ impl Body {
             if previous.is_some_and(|previous| previous >= site.value.0) {
                 return Err("caller-site value order changed");
             }
-            if Some(site.owner) != self.source.source() {
+            if site.owner != self.source {
                 return Err("caller-site owning body changed");
             }
             if self

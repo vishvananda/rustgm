@@ -67,11 +67,22 @@ def opponents(check, source, client, artifact, exporter, importer, contract, bas
         raise ValueError("expected one tracked forwarding source declaration")
     untracked = check.folder / "untracked-provider.rs"
     untracked.write_bytes(text.replace(marker, b""))
-    unsupported = check.folder / "untracked.rgcrate"
+    untracked_artifact = check.folder / "untracked.rgcrate"
+    untracked_provider = check.folder / "untracked-provider.lowir"
     check.run("untracked-provider", [*exporter, "--source-profile", "module-body-operations-v14",
-              "--metadata-output", unsupported, untracked], 1, [contract["untracked_body"]], timeout=30)
-    if unsupported.exists():
-        raise ValueError("untracked body published without its own source site")
+              "--metadata-output", untracked_artifact, "-o", untracked_provider, untracked],
+              timeout=30)
+    untracked_lowered = check.folder / "untracked-client.lowir"
+    check.run("untracked-client", [*importer, "--extern", f"base={untracked_artifact}",
+              "-o", untracked_lowered, client], timeout=30)
+    untracked_program = check.folder / "rustgm-untracked"
+    observer = check.folder / "observer.o"
+    backend.build_many([untracked_provider, untracked_lowered], untracked_program,
+                       native_objects=[observer])
+    untracked_observed = check.run("rustgm-untracked-observe", [untracked_program],
+                                   timeout=30).stdout
+    if untracked_observed != contract["untracked_stdout"].encode():
+        raise ValueError("untracked provider differed from expected provider coordinates")
 
     packet = artifact.read_bytes()
     length = (15).to_bytes(4, "little")

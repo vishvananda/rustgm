@@ -13,6 +13,9 @@ pub(super) fn require_profile(
             .saturating_add(1),
     )?;
     if !profile.declaration_policies() {
+        if rows.cold().caller_sites.is_some() {
+            return Err("source caller sites require the declaration policy profile");
+        }
         if !rows.cold().const_defaults.is_empty() {
             return Err("source const defaults require body operations");
         }
