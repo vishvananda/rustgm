@@ -122,7 +122,13 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<s::CallContext, &'static str> {
         work.charge(1)?;
-        if runtime_format_bodies.contains(&Some(header.declaration)) {
+        if (self.declaration_policies
+            && self
+                .headers
+                .rows()
+                .is_unchecked_const_body(header.declaration))
+            || runtime_format_bodies.contains(&Some(header.declaration))
+        {
             return Ok(s::CallContext::Runtime);
         }
         if (!self.declaration_policies
@@ -203,7 +209,11 @@ impl DomainIndex<'_, '_> {
                 }
                 prefix_value(original, left, index, work)?;
                 prefix_value(original, right, index, work)?;
-                value.binary_types(original, &self.headers.rows().types)?;
+                value.binary_types(
+                    original,
+                    &self.headers.rows().types,
+                    self.declaration_policies,
+                )?;
             }
             s::ValueKind::DirectEnumCast(_)
             | s::ValueKind::AddressCast { .. }

@@ -630,21 +630,28 @@ pub(super) fn effect_read(
     }
 }
 /// Function declaration eligibility is unconditional in version seven.
-/// Version fourteen tag 3 additionally marks `#[rustc_comptime]` functions.
+/// Version fourteen tags 3 and 4 additionally mark `#[rustc_comptime]` and
+/// `#[rustc_do_not_const_check]` const functions.
 /// Trait predicates keep their distinct Provided-only qualified reader.
 pub(super) fn function_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
-) -> Result<(Constness, bool), &'static str> {
+) -> Result<(Constness, Option<s::FunctionPolicyKind>), &'static str> {
     if !read.profile.unconditional_callables() {
-        return effect_read(read, unsupported).map(|effect| (effect, false));
+        return effect_read(read, unsupported).map(|effect| (effect, None));
     }
     match read.reader.u8()? {
-        0 => Ok((Constness::Ordinary, false)),
-        1 => Ok((Constness::Const, false)),
-        2 if read.profile.conversion_roles() => Ok((Constness::Conditional, false)),
+        0 => Ok((Constness::Ordinary, None)),
+        1 => Ok((Constness::Const, None)),
+        2 if read.profile.conversion_roles() => Ok((Constness::Conditional, None)),
         2 => Err("source conditional callable effect requires its wider profile"),
-        3 if read.profile.declaration_policies() => Ok((Constness::Const, true)),
+        3 if read.profile.declaration_policies() => {
+            Ok((Constness::Const, Some(s::FunctionPolicyKind::Comptime)))
+        }
+        4 if read.profile.declaration_policies() => Ok((
+            Constness::Const,
+            Some(s::FunctionPolicyKind::UncheckedConstBody),
+        )),
         _ => Err("unknown source constness effect"),
     }
 }

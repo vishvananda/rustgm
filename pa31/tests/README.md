@@ -1928,3 +1928,13 @@ implementations) across native and `const` fresh-client execution, while
 retaining unsatisfied-bound rejection and version-13 refusal.
 Run `scripts/check_source_artifact_clients.py --case source-unsizing-and-literals-transport`
 with the prebuilt compilers.
+
+`spec/source-unchecked-const-body-transport/outcomes.json` checks version-14
+transport of `#[rustc_do_not_const_check]` `const fn` declarations (free,
+generic, inherent, and fallback-bodied `#[rustc_intrinsic]` functions alongside
+`#[rustc_comptime]` functions) and raw-pointer binary comparisons, preserving
+`Constness::Const` headers with runtime defining-body context across fresh
+native and `const` clients while refusing constant execution of unchecked
+bodies and refusing version-13 export.
+Run `scripts/check_source_artifact_clients.py --case source-unchecked-const-body-transport`
+with the prebuilt compilers.

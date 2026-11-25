@@ -704,19 +704,33 @@ fn binary(
         if operand_id.0 as usize >= before {
             return Err("source binary operation changed its actual preceding operand");
         }
-        let input = body
-            .values
+        body.values
             .get(operand_id.0 as usize)
             .ok_or("source binary operation lost its actual operand")?;
-        if !wide_float(input.ty) {
-            crate::sema::crates::export_scalar(facts, input.ty)
-                .map_err(|_| "source binary operand requires a closed primitive type")?;
+    }
+    let pointer_cmp = stage.declaration_policies()
+        && operator.comparison()
+        && matches!(
+            facts.types.kind(body.values[left.0 as usize].ty),
+            Some(crate::types::Kind::Pointer { .. })
+        );
+    if !pointer_cmp {
+        for operand_id in [left, right] {
+            let input = body.values[operand_id.0 as usize];
+            if !wide_float(input.ty) {
+                crate::sema::crates::export_scalar(facts, input.ty)
+                    .map_err(|_| "source binary operand requires a closed primitive type")?;
+            }
         }
     }
     if !operator.shift() && body.values[left.0 as usize].ty != body.values[right.0 as usize].ty {
         return Err("source binary operation changed its shared operand type");
     }
-    if !wide_float(value.ty) {
+    if pointer_cmp {
+        if value.ty != crate::types::TypeId::primitive(crate::types::Primitive::Bool) {
+            return Err("source binary result requires a closed primitive type");
+        }
+    } else if !wide_float(value.ty) {
         crate::sema::crates::export_scalar(facts, value.ty)
             .map_err(|_| "source binary result requires a closed primitive type")?;
     }

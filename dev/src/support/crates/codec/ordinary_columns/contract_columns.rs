@@ -107,11 +107,11 @@ pub(super) fn functions_write(
     out: &mut Writer,
     rows: &[s::FunctionHeader],
     declared_intrinsics: &[s::DeclaredIntrinsic],
-    comptime_functions: &[DeclarationRef],
+    function_policies: &[s::FunctionPolicy],
 ) -> Result<(), &'static str> {
     out.u32(rows.len())?;
     let mut intrinsic_index = 0_usize;
-    let mut comptime_index = 0_usize;
+    let mut policy_index = 0_usize;
     for row in rows {
         let intrinsic = declared_intrinsics
             .get(intrinsic_index)
@@ -120,17 +120,20 @@ pub(super) fn functions_write(
         if intrinsic.is_some() {
             intrinsic_index += 1;
         }
-        let comptime = comptime_functions.get(comptime_index) == Some(&row.declaration);
-        if comptime {
-            comptime_index += 1;
+        let policy = function_policies
+            .get(policy_index)
+            .filter(|entry| entry.declaration == row.declaration)
+            .map(|entry| entry.kind);
+        if policy.is_some() {
+            policy_index += 1;
         }
-        function_write(out, row, intrinsic, comptime)?;
+        function_write(out, row, intrinsic, policy)?;
     }
     if intrinsic_index != declared_intrinsics.len() {
         return Err("source declared intrinsic has no function header in order");
     }
-    if comptime_index != comptime_functions.len() {
-        return Err("source comptime declaration has no function header in order");
+    if policy_index != function_policies.len() {
+        return Err("source function policy declaration has no function header in order");
     }
     Ok(())
 }
@@ -138,7 +141,7 @@ fn function_write(
     out: &mut Writer,
     row: &s::FunctionHeader,
     intrinsic: Option<s::DeclaredIntrinsic>,
-    comptime: bool,
+    policy: Option<s::FunctionPolicyKind>,
 ) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.scope.0)?;
@@ -164,13 +167,24 @@ fn function_write(
         }
         out.u8(u8::from(receiver.mutable_binding))?;
     }
-    if comptime {
-        if row.constness != crate::support::constness::Constness::Const {
-            return Err("source comptime declaration requires const effect");
+    match policy {
+        Some(s::FunctionPolicyKind::Comptime) => {
+            if row.constness != crate::support::constness::Constness::Const {
+                return Err("source comptime declaration requires const effect");
+            }
+            out.u8(3)?;
         }
-        out.u8(3)?;
-    } else {
-        super::recipe_columns::effect_write(out, row.constness)?;
+        Some(s::FunctionPolicyKind::UncheckedConstBody) => {
+            if row.constness != crate::support::constness::Constness::Const
+                || !matches!(row.body, s::FunctionBody::Original(_))
+            {
+                return Err(
+                    "source unchecked const-body policy requires a const function with an original body",
+                );
+            }
+            out.u8(4)?;
+        }
+        None => super::recipe_columns::effect_write(out, row.constness)?,
     }
     if let Some(intrinsic) = intrinsic {
         return match row.body {
@@ -198,7 +212,7 @@ fn function_write(
 pub(super) fn function_read(
     read: &mut Input<'_, '_>,
     declared_intrinsics: &mut Vec<s::DeclaredIntrinsic>,
-    comptime_functions: &mut Vec<DeclarationRef>,
+    function_policies: &mut Vec<s::FunctionPolicy>,
 ) -> Result<s::FunctionHeader, &'static str> {
     let declaration = DeclarationRef(read.id()?);
     let scope = DeclarationRef(read.id()?);
@@ -225,13 +239,13 @@ pub(super) fn function_read(
     } else {
         None
     };
-    let (constness, comptime) = super::recipe_columns::function_effect_read(
+    let (constness, policy) = super::recipe_columns::function_effect_read(
         read,
         "source callable effect requires a wider source profile",
     )?;
-    if comptime {
-        read.reserve(size_of::<DeclarationRef>())?;
-        comptime_functions.push(declaration);
+    if let Some(kind) = policy {
+        read.reserve(size_of::<s::FunctionPolicy>())?;
+        function_policies.push(s::FunctionPolicy { declaration, kind });
     }
     let body = match read.reader.u8()? {
         2 if read.profile.compiler_operations() => {

@@ -20,7 +20,7 @@ pub(super) fn require_profile(
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
     bodyless_intrinsics(rows, profile, work)?;
     declared_intrinsics(rows, profile, work)?;
-    comptime_functions(rows, profile, work)?;
+    function_policies(rows, profile, work)?;
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
@@ -180,52 +180,73 @@ fn declared_intrinsics(
     Ok(())
 }
 
-fn comptime_functions(
+fn function_policies(
     rows: &SourceRows,
     profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let comptime = &rows.cold().comptime_functions;
-    if comptime.is_empty() {
+    let policies = &rows.cold().function_policies;
+    let Some(first) = policies.first() else {
         return Ok(());
-    }
+    };
     if !profile.declaration_policies() {
-        return Err("always-comptime source contracts require a wider transport profile");
+        return Err(match first.kind {
+            super::FunctionPolicyKind::Comptime => {
+                "always-comptime source contracts require a wider transport profile"
+            }
+            super::FunctionPolicyKind::UncheckedConstBody => {
+                "source unchecked const-body policy requires a wider transport profile"
+            }
+        });
     }
-    work.charge(comptime.len())?;
+    work.charge(policies.len())?;
     let mut previous = None;
-    for &declaration in comptime {
+    for &policy in policies {
+        let declaration = policy.declaration;
         if previous.is_some_and(|prior| prior >= declaration.0) {
-            return Err("source comptime declarations are duplicated or out of order");
+            return Err("source function policy declarations are duplicated or out of order");
         }
         previous = Some(declaration.0);
         let Ok(index) = rows
             .functions
             .binary_search_by_key(&declaration.0, |row| row.declaration.0)
         else {
-            return Err("source comptime declaration lacks its actual function header");
+            return Err("source function policy declaration lacks its actual function header");
         };
         let header = &rows.functions[index];
-        let valid_owner = match header.parent {
-            None => true,
-            Some(parent) => rows
-                .implementations
-                .binary_search_by_key(&parent.0, |row| row.self_definition.0)
-                .is_ok_and(|idx| rows.implementations[idx].trait_application.is_none()),
-        };
-        let clauses = header.inputs.slice(&rows.clauses)?;
-        work.charge(clauses.len())?;
-        let has_conditional = clauses.iter().any(|clause| {
-            matches!(
-                clause.requirement,
-                super::Requirement::Trait {
-                    effect: Constness::Conditional,
-                    ..
+        match policy.kind {
+            super::FunctionPolicyKind::Comptime => {
+                let valid_owner = match header.parent {
+                    None => true,
+                    Some(parent) => rows
+                        .implementations
+                        .binary_search_by_key(&parent.0, |row| row.self_definition.0)
+                        .is_ok_and(|idx| rows.implementations[idx].trait_application.is_none()),
+                };
+                let clauses = header.inputs.slice(&rows.clauses)?;
+                work.charge(clauses.len())?;
+                let has_conditional = clauses.iter().any(|clause| {
+                    matches!(
+                        clause.requirement,
+                        super::Requirement::Trait {
+                            effect: Constness::Conditional,
+                            ..
+                        }
+                    )
+                });
+                if header.constness != Constness::Const || !valid_owner || has_conditional {
+                    return Err("source comptime declaration changed its checked effect or owner");
                 }
-            )
-        });
-        if header.constness != Constness::Const || !valid_owner || has_conditional {
-            return Err("source comptime declaration changed its checked effect or owner");
+            }
+            super::FunctionPolicyKind::UncheckedConstBody => {
+                if header.constness != Constness::Const
+                    || !matches!(header.body, FunctionBody::Original(_))
+                {
+                    return Err(
+                        "source unchecked const-body policy requires a const function with an original body",
+                    );
+                }
+            }
         }
     }
     Ok(())

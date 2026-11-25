@@ -677,8 +677,17 @@ fn require_source_profile(
     if !profile.declaration_policies() && !rows.cold().declared_intrinsics.is_empty() {
         return Err("source intrinsic declaration semantics require a wider metadata profile");
     }
-    if !profile.declaration_policies() && !rows.cold().comptime_functions.is_empty() {
-        return Err("always-comptime source contracts require a wider transport profile");
+    if !profile.declaration_policies()
+        && let Some(policy) = rows.cold().function_policies.first()
+    {
+        return Err(match policy.kind {
+            super::FunctionPolicyKind::Comptime => {
+                "always-comptime source contracts require a wider transport profile"
+            }
+            super::FunctionPolicyKind::UncheckedConstBody => {
+                "source unchecked const-body policy requires a wider transport profile"
+            }
+        });
     }
     if !profile.declaration_policies() && !rows.cold().opaques.is_empty() {
         return Err("source return-position opaque transport requires version fourteen");

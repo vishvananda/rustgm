@@ -248,7 +248,10 @@ pub(super) fn original_context(
             if default_traits.provided(rows, headers, function, work)? {
                 defining_default = function.parent;
             }
+            let unchecked_const =
+                constant_initializers && rows.is_unchecked_const_body(body.declaration);
             if (function.constness == Constness::Const
+                && !unchecked_const
                 && !runtime_format_bodies.contains(&Some(body.declaration)))
                 || defining_default.is_some()
             {

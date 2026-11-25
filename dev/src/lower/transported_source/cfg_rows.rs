@@ -13,23 +13,24 @@ pub(super) fn emit(
     variables: Vec<s::OwnedRegion>,
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
-    let runtime_panic = if stage.declaration_policies()
+    let unchecked_const = if stage.declaration_policies()
         && !body.const_context
         && let Owner::Function { definition, .. } = body.owner
         && facts.is_const_function(definition)
     {
-        crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+        stage.rows.is_unchecked_const_body(context.owner())
+            || crate::sema::compiler_items::runtime_format_entry(facts, definition)?
     } else {
         false
     };
-    validate(stage, facts, body, runtime_panic)?;
+    validate(stage, facts, body, unchecked_const)?;
     if stage.body_nodes() {
         instruction_rows::preflight(stage, facts, body)?;
     }
     let reference = context
         .body()
         .ok_or("source CFG has no actual original body identity")?;
-    let call_context = if runtime_panic {
+    let call_context = if unchecked_const {
         s::CallContext::Runtime
     } else {
         call_context(facts, body, stage.declaration_policies())?
@@ -411,12 +412,14 @@ fn validate(
     stage: &mut Stage,
     facts: &Declarations,
     body: &Body,
-    runtime_panic: bool,
+    unchecked_const: bool,
 ) -> Result<(), &'static str> {
     let scalar_values = stage.feature_predicates();
     let guards = stage.body_nodes();
     let const_context = match body.owner {
-        Owner::Function { definition, .. } => facts.is_const_function(definition) && !runtime_panic,
+        Owner::Function { definition, .. } => {
+            facts.is_const_function(definition) && !unchecked_const
+        }
         Owner::Initializer {
             kind: super::InitializerKind::Const,
             ..

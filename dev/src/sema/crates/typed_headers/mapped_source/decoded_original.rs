@@ -123,7 +123,8 @@ impl Graph {
         let context = if !(constant || default)
             || raw.context == s::CallContext::Runtime
                 && descriptor.profile().declaration_policies()
-                && crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+                && (rows.is_unchecked_const_body(row)
+                    || crate::sema::compiler_items::runtime_format_entry(facts, definition)?)
         {
             s::CallContext::Runtime
         } else {
@@ -230,6 +231,9 @@ impl Original<'_> {
     /// Defining checking mode only; current body proof and execution remain separate.
     pub(crate) fn const_context(&self) -> bool {
         self.raw().context != s::CallContext::Runtime
+    }
+    pub(crate) fn unchecked_const_body(&self) -> bool {
+        self.rows.is_unchecked_const_body(self.raw().declaration)
     }
     pub(crate) const fn universals(&self) -> u32 {
         match self.header {

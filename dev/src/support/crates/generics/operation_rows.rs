@@ -324,6 +324,7 @@ impl Value {
         self,
         original: &Original,
         types: &[super::Type],
+        declaration_policies: bool,
     ) -> Result<(), &'static str> {
         use crate::support::crates::Scalar;
         let ValueKind::Binary {
@@ -346,6 +347,18 @@ impl Value {
             .and_then(|value| types.get(value.ty.0 as usize))
             .ok_or("source binary operation lost its actual operand")?;
         let result_ty = types.get(self.ty.0 as usize);
+        if declaration_policies
+            && operator.comparison()
+            && matches!(left_ty, super::Type::RawPointer { .. })
+        {
+            if right_ty != left_ty {
+                return Err("source binary operation changed its shared operand type");
+            }
+            if result_ty != Some(&super::Type::Scalar(Scalar::Bool)) {
+                return Err("source binary operation changed its primitive result type");
+            }
+            return Ok(());
+        }
         if matches!(left_ty, super::Type::F16 | super::Type::F128) {
             if right_ty != left_ty || (!operator.comparison() && !operator.arithmetic()) {
                 return Err("source wide-float binary operation has incompatible operands");

@@ -233,6 +233,11 @@ fn source_fallback(
             report,
             function.definition,
         ),
+        "ptr_guaranteed_cmp" => Ok(crate::sema::header_attributes::intrinsic_fallback_is_spec(
+            facts,
+            report,
+            function.definition,
+        )? && facts.const_panic_markers(report, function.definition)?.0),
         "type_id_eq" => facts
             .const_panic_markers(report, function.definition)
             .map(|(runtime_body, _)| runtime_body),

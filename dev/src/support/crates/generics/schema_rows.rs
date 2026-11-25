@@ -787,6 +787,18 @@ pub struct DeclaredIntrinsic {
     pub declaration: DeclarationRef,
     pub source_fallback: bool,
 }
+/// Version fourteen: sparse per-function const-policy annotations outside the
+/// hot function header row (`#[rustc_comptime]` or `#[rustc_do_not_const_check]`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FunctionPolicyKind {
+    Comptime,
+    UncheckedConstBody,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FunctionPolicy {
+    pub declaration: DeclarationRef,
+    pub kind: FunctionPolicyKind,
+}
 /// Version fourteen: sealed provider call-site coordinates for non-tracked
 /// original bodies whose calls target `#[track_caller]` or `caller_location`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -826,7 +838,7 @@ pub struct ColdColumns {
     pub const_defaults: Vec<ConstDefault>,
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub declared_intrinsics: Vec<DeclaredIntrinsic>,
-    pub comptime_functions: Vec<DeclarationRef>,
+    pub function_policies: Vec<FunctionPolicy>,
     pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
     pub caller_sites: Option<Box<CallerSiteColumns>>,
@@ -859,7 +871,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     const_defaults: Vec::new(),
     trait_aliases: Vec::new(),
     declared_intrinsics: Vec::new(),
-    comptime_functions: Vec::new(),
+    function_policies: Vec::new(),
     opaques: OpaqueColumns {
         applications: Vec::new(),
         declarations: Vec::new(),
@@ -899,7 +911,7 @@ impl ColdColumns {
             && self.const_defaults.is_empty()
             && self.trait_aliases.is_empty()
             && self.declared_intrinsics.is_empty()
-            && self.comptime_functions.is_empty()
+            && self.function_policies.is_empty()
             && self.opaques.is_empty()
             && self.statics.is_none()
             && self.caller_sites.is_none()
@@ -961,6 +973,12 @@ impl Rows {
             .binary_search_by_key(&declaration.0, |row| row.declaration.0)
             .ok()
             .map(|index| rows[index]))
+    }
+
+    pub(crate) fn is_unchecked_const_body(&self, declaration: DeclarationRef) -> bool {
+        let rows = &self.cold().function_policies;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| rows[index].kind == FunctionPolicyKind::UncheckedConstBody)
     }
 
     pub(crate) fn type_aliases(&self) -> &[TypeAliasHeader] {

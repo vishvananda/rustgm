@@ -1,0 +1,11 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": ["auto_traits", "const_destruct", "intrinsics"],
+  "stdout": "17 50 15 42 41 10\n",
+  "older_profile": "source unchecked const-body policy requires a wider transport profile",
+  "restricted_client": {
+    "path": "const_exec_unchecked.rs",
+    "rustc": "non-const",
+    "rustgm": "non-const body requested during constant execution"
+  }
+}

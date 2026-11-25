@@ -78,7 +78,7 @@ impl Columns {
             || !cold.const_defaults.is_empty()
             || !cold.trait_aliases.is_empty()
             || !cold.declared_intrinsics.is_empty()
-            || !cold.comptime_functions.is_empty()
+            || !cold.function_policies.is_empty()
             || !cold.opaques.is_empty()
             || cold.statics.is_some()
             || cold.caller_sites.is_some()
@@ -101,7 +101,7 @@ impl Columns {
                 const_defaults: cold.const_defaults.clone(),
                 trait_aliases: cold.trait_aliases.clone(),
                 declared_intrinsics: cold.declared_intrinsics.clone(),
-                comptime_functions: cold.comptime_functions.clone(),
+                function_policies: cold.function_policies.clone(),
                 opaques: cold.opaques.clone(),
                 statics: cold.statics.clone(),
                 caller_sites: cold.caller_sites.clone(),
@@ -359,9 +359,17 @@ impl<'a> ValidatedView<'a> {
     }
 
     pub(crate) fn is_comptime(self, declaration: DeclarationRef) -> bool {
-        let rows = &self.source.columns.cold().comptime_functions;
-        rows.binary_search_by_key(&declaration.0, |row| row.0)
-            .is_ok()
+        let rows = &self.source.columns.cold().function_policies;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| rows[index].kind == super::super::FunctionPolicyKind::Comptime)
+    }
+
+    pub(crate) fn is_unchecked_const_body(self, declaration: DeclarationRef) -> bool {
+        let rows = &self.source.columns.cold().function_policies;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| {
+                rows[index].kind == super::super::FunctionPolicyKind::UncheckedConstBody
+            })
     }
     /// # Errors
     /// Older source profiles retain unknown availability.

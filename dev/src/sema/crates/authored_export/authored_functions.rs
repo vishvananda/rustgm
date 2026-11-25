@@ -256,7 +256,7 @@ impl Stage {
         {
             return Err("source function header has duplicate actual identity");
         }
-        self.record_function_policies(facts, function.definition, declaration, body)?;
+        self.record_function_policies(report, facts, function, declaration, body)?;
         self.rows.functions.push(header);
         Ok(())
     }
@@ -284,17 +284,41 @@ impl Stage {
 
     fn record_function_policies(
         &mut self,
+        report: &Report,
         facts: &Declarations,
-        definition: DefId,
+        function: &crate::sema::model::Function,
         declaration: DeclarationRef,
         body: s::FunctionBody,
     ) -> Result<(), &'static str> {
+        let definition = function.definition;
+        let unchecked_const = matches!(body, s::FunctionBody::Original(_))
+            && facts.is_const_function(definition)
+            && !facts.is_comptime_function(definition)
+            && function
+                .body
+                .map(|source| facts.unchecked_const_body(report, definition, source))
+                .transpose()?
+                .unwrap_or(false);
         if !self.declaration_policies() {
+            if unchecked_const {
+                return Err(
+                    "source unchecked const-body policy requires a wider transport profile",
+                );
+            }
             return Ok(());
         }
         if facts.is_comptime_function(definition) {
-            self.reserve(4 * size_of::<DeclarationRef>())?;
-            self.cold()?.comptime_functions.push(declaration);
+            self.reserve(4 * size_of::<s::FunctionPolicy>())?;
+            self.cold()?.function_policies.push(s::FunctionPolicy {
+                declaration,
+                kind: s::FunctionPolicyKind::Comptime,
+            });
+        } else if unchecked_const {
+            self.reserve(4 * size_of::<s::FunctionPolicy>())?;
+            self.cold()?.function_policies.push(s::FunctionPolicy {
+                declaration,
+                kind: s::FunctionPolicyKind::UncheckedConstBody,
+            });
         }
         if !matches!(body, s::FunctionBody::Intrinsic(_))
             && let Some(catalog) = facts.source_bindings.as_deref()

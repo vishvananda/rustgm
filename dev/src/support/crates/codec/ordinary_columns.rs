@@ -522,7 +522,7 @@ fn encode_profile(
         out,
         &rows.functions,
         &rows.cold().declared_intrinsics,
-        &rows.cold().comptime_functions,
+        &rows.cold().function_policies,
     )?;
     write(out, &rows.formals, contract_columns::formal_write)?;
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
@@ -649,7 +649,7 @@ fn decode_profile_with(
     let mut diagnostics = Vec::new();
     let mut consts = Vec::new();
     let mut declared_intrinsics = Vec::new();
-    let mut comptime_functions = Vec::new();
+    let mut function_policies = Vec::new();
     let mut rows = s::SourceRows {
         associated_types: Vec::new(),
         cold: None,
@@ -698,7 +698,7 @@ fn decode_profile_with(
             contract_columns::implementation_read,
         )?,
         functions: read.list(crates::MAX_FUNCTIONS, 98, |read| {
-            contract_columns::function_read(read, &mut declared_intrinsics, &mut comptime_functions)
+            contract_columns::function_read(read, &mut declared_intrinsics, &mut function_policies)
         })?,
         formals: read.list(crates::MAX_COMPONENTS, 5, contract_columns::formal_read)?,
         members: read.list(crates::MAX_COMPONENTS, 4, owner_rows::declaration_ref_read)?,
@@ -723,7 +723,7 @@ fn decode_profile_with(
         diagnostics,
         consts,
         declared_intrinsics,
-        comptime_functions,
+        function_policies,
     )?;
     Ok((rows, read.bytes))
 }
@@ -735,7 +735,7 @@ fn attach_cold_tables(
     diagnostics: Vec<s::DiagnosticBinding>,
     consts: Vec<s::ConstTerm>,
     declared_intrinsics: Vec<s::DeclaredIntrinsic>,
-    comptime_functions: Vec<DeclarationRef>,
+    function_policies: Vec<s::FunctionPolicy>,
 ) -> Result<(), &'static str> {
     if tables.ranges.is_empty()
         && tables.lengths.is_empty()
@@ -745,7 +745,7 @@ fn attach_cold_tables(
         && diagnostics.is_empty()
         && consts.is_empty()
         && declared_intrinsics.is_empty()
-        && comptime_functions.is_empty()
+        && function_policies.is_empty()
     {
         return Ok(());
     }
@@ -766,7 +766,7 @@ fn attach_cold_tables(
     cold.diagnostics = diagnostics;
     cold.consts = consts;
     cold.declared_intrinsics = declared_intrinsics;
-    cold.comptime_functions = comptime_functions;
+    cold.function_policies = function_policies;
     Ok(())
 }
 

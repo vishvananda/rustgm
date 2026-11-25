@@ -328,7 +328,8 @@ fn active_definition(
         if actual_source == source
             && !constant
             && !default
-            && crate::sema::compiler_items::runtime_format_entry(facts, definition)?
+            && (view.unchecked_const_body()
+                || crate::sema::compiler_items::runtime_format_entry(facts, definition)?)
         {
             // The validated original runs at runtime despite its const header.
             return Ok(None);

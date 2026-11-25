@@ -198,7 +198,7 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
         }
         count.vector(&cold.trait_aliases, work)?;
         count.vector(&cold.declared_intrinsics, work)?;
-        count.vector(&cold.comptime_functions, work)?;
+        count.vector(&cold.function_policies, work)?;
         count.vector(&cold.opaques.applications, work)?;
         count.vector(&cold.opaques.declarations, work)?;
         if let Some(statics) = &cold.statics {
