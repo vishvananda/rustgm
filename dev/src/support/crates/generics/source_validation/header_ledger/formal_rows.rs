@@ -1,15 +1,17 @@
 //! Header formals remain genuine declarations even when a required body is absent.
-use super::{DefinitionKind, SourceRows, Work, g, s};
+use super::{DefinitionKind, HeaderRef, SourceRows, Work, g, s};
 
 pub(super) fn validate(
     rows: &SourceRows,
+    headers: &[Option<HeaderRef>],
     index: Option<&s::bodymap::Lookup>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(rows.declarations.len().saturating_add(rows.formals.len()))?;
     let mut seen = vec![false; rows.declarations.len()];
     let mut covered = vec![false; rows.formals.len()];
-    for header in &rows.functions {
+    let mut destructured = vec![false; rows.functions.len()];
+    for (fn_index, header) in rows.functions.iter().enumerate() {
         let formals = header.formals.slice(&rows.formals)?;
         if formals.len() != header.original.parameters.slice(&rows.roots)?.len()
             || formals.len() != header.callable.parameters.slice(&rows.roots)?.len()
@@ -37,6 +39,8 @@ pub(super) fn validate(
                         "source formal has duplicate, foreign or fabricated body ownership",
                     );
                 }
+            } else {
+                destructured[fn_index] = true;
             }
         }
         if let s::FunctionBody::Original(body) = header.body {
@@ -49,12 +53,32 @@ pub(super) fn validate(
         }
     }
     work.charge(rows.declarations.len().saturating_add(covered.len()))?;
-    if covered.contains(&false)
-        || rows.declarations.iter().enumerate().any(|(index, row)| {
-            row.definition.kind == DefinitionKind::ValueParameter && !seen[index]
-        })
-    {
+    if covered.contains(&false) {
         return Err("source value parameter/formal rows have incomplete actual header coverage");
+    }
+    for (index, row) in rows.declarations.iter().enumerate() {
+        if row.definition.kind != DefinitionKind::ValueParameter || seen[index] {
+            continue;
+        }
+        let Some(HeaderRef::Function(fn_index)) = row
+            .definition
+            .parent
+            .and_then(|parent| headers.get(parent.0 as usize).copied().flatten())
+        else {
+            return Err(
+                "source value parameter/formal rows have incomplete actual header coverage",
+            );
+        };
+        let header = &rows.functions[fn_index as usize];
+        let body_matches = match header.body {
+            s::FunctionBody::Original(body) => row.local.is_some_and(|slot| slot.body == body),
+            _ => row.local.is_none(),
+        };
+        if !destructured[fn_index as usize] || !body_matches {
+            return Err(
+                "source value parameter/formal rows have incomplete actual header coverage",
+            );
+        }
     }
     Ok(())
 }

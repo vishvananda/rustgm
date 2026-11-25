@@ -60,6 +60,7 @@ pub enum Convention {
     Rust,
     RustCall,
     C,
+    Unadjusted,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Signature {

@@ -685,6 +685,7 @@ pub(super) fn projection_write(out: &mut Writer, row: &s::Projection) -> Result<
             3,
             &[Operand::Declaration(owner.0), Operand::Flag(ordinal)],
         ),
+        s::ProjectionKind::Tuple(ordinal) => node_write(out, 3, &[Operand::Flag(ordinal)]),
     }
 }
 pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection, &'static str> {
@@ -704,6 +705,9 @@ pub(super) fn projection_read(read: &mut Input<'_, '_>) -> Result<s::Projection,
             owner: DeclarationRef(owner),
             ordinal,
         },
+        (3, &[Operand::Flag(ordinal)]) if read.profile.declaration_policies() => {
+            s::ProjectionKind::Tuple(ordinal)
+        }
         (code, _) => {
             return Err(rejected(
                 &PROJECTIONS,

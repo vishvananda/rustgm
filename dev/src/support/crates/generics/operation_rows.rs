@@ -28,6 +28,7 @@ pub struct Projection {
 pub enum ProjectionKind {
     Dereference { region: RegionRef, mutable: bool },
     Field { owner: DeclarationRef, ordinal: u32 },
+    Tuple(u32),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OwnedRegion {

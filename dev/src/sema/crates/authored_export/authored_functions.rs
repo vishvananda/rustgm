@@ -98,7 +98,7 @@ impl Stage {
                 );
             }
             if targeted {
-                target_feature_form(facts, &function)?;
+                target_feature_form(facts, &function, self.declaration_policies())?;
             }
             if !self.declaration_policies()
                 && facts
@@ -907,12 +907,14 @@ mod effect_storage {
 mod conditional_tests;
 
 /// Version thirteen writes declared target features only for a free or
-/// inherent `unsafe fn` with the Rust ABI, in this order; the first failure
-/// wins. Its canonical signature is always unsafe, so the declared safety is
-/// read from the source row.
+/// inherent non-const `unsafe fn` with the Rust ABI, in this order; the first
+/// failure wins. Version fourteen also admits safe and `const` free/inherent
+/// Rust-ABI target-feature functions. Its canonical signature is always unsafe,
+/// so the declared safety is read from the source row.
 fn target_feature_form(
     facts: &Declarations,
     function: &crate::sema::model::Function,
+    declaration_policies: bool,
 ) -> Result<(), &'static str> {
     if facts
         .associated
@@ -936,11 +938,13 @@ fn target_feature_form(
         facts.types.kind(function.signature),
         Some(Kind::Function { convention, .. })
             if convention.abi == crate::types::callable::Abi::Rust
-    ) || facts.is_const_function(function.definition)
+    ) || (!declaration_policies && facts.is_const_function(function.definition))
     {
         return Err("source target-feature function form requires its wider profile");
     }
-    if !crate::sema::target_features::declared_unsafe(facts, function.definition) {
+    if !declaration_policies
+        && !crate::sema::target_features::declared_unsafe(facts, function.definition)
+    {
         return Err(
             "source safe target-feature function export requires its contextual call policy",
         );

@@ -101,6 +101,25 @@ impl Ports {
                     };
                     continue;
                 }
+                s::ProjectionKind::Tuple(ordinal) => {
+                    let Node::Tuple { elements } = builder.arena.nodes[base.0 as usize] else {
+                        return Err("source tuple projection base is not an actual tuple");
+                    };
+                    let expected = builder.arena.nominal_argument(elements, ordinal, work)?;
+                    let actual = builder.node(original, projection.ty, work)?;
+                    if actual != expected {
+                        return Err("source tuple projection differs from its ordered element");
+                    }
+                    let writable = match projection.base {
+                        s::Place::Temporary(_) if builder.domains.bodies => false,
+                        base => self.writable(original, base, work)?,
+                    };
+                    self.access[index] = Access {
+                        writable,
+                        unique: self.unique(projection.base),
+                    };
+                    continue;
+                }
                 s::ProjectionKind::Dereference { region, mutable } => (region, mutable),
             };
             let Node::Reference {

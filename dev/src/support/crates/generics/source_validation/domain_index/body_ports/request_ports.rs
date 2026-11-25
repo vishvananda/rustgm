@@ -142,6 +142,22 @@ impl DomainIndex<'_, '_> {
         }
         self.call_safety(original, (signature.unsafe_, safety), false, work)
     }
+    fn declared_target_features(
+        &self,
+        declaration: crate::support::crates::owner_catalog::DeclarationRef,
+        work: &mut Work,
+    ) -> Result<Option<&s::DeclaredFeatures>, &'static str> {
+        let Some(attributes) = self.attributes else {
+            return Ok(None);
+        };
+        let Some(HeaderRef::Function(index)) = self.headers.header(declaration, work)? else {
+            return Ok(None);
+        };
+        Ok(attributes
+            .functions
+            .get(index as usize)
+            .and_then(|contract| contract.target_features.as_deref()))
+    }
     /// A call's lexical context discharges exactly its callee's unsafety.
     /// Below version thirteen, an unsafe call inside or to an associated
     /// function needs a wider profile.
@@ -161,7 +177,12 @@ impl DomainIndex<'_, '_> {
                         "source unsafe associated Calls require their wider actual profile",
                     );
                 }
-                if safety == s::CallSafety::UnsafeFunction && !defining.unsafe_function() {
+                let safe_target_caller = self
+                    .declared_target_features(original.declaration, work)?
+                    .is_some_and(|features| features.safe);
+                if safety == s::CallSafety::UnsafeFunction
+                    && (!defining.unsafe_function() || safe_target_caller)
+                {
                     return Err(
                         "source unsafe-function Call changed its actual caller declaration",
                     );
@@ -228,12 +249,23 @@ impl DomainIndex<'_, '_> {
         if signature.unsafe_ != header.callable.unsafe_ {
             return Err("source Call changed its actual callable safety");
         }
-        self.call_safety(
-            original,
-            (signature.unsafe_, request.safety),
-            header.parent.is_some(),
-            work,
-        )?;
+        let safe_target_call = self.declaration_policies
+            && signature.unsafe_
+            && request.safety == s::CallSafety::Safe
+            && self
+                .declared_target_features(original.declaration, work)?
+                .is_some()
+            && self
+                .declared_target_features(header.declaration, work)?
+                .is_some_and(|features| features.safe);
+        if !safe_target_call {
+            self.call_safety(
+                original,
+                (signature.unsafe_, request.safety),
+                header.parent.is_some(),
+                work,
+            )?;
+        }
         if signature.parameters.slice(&rows.roots)?.len()
             != arguments.slice(&original.arguments)?.len()
         {

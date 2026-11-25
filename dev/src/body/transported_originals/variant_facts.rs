@@ -37,6 +37,7 @@ pub(super) fn check(facts: &mut Declarations, body: &Body) -> Result<(), &'stati
 enum Step {
     Dereference,
     Field(u32),
+    Tuple(u32),
 }
 /// The identity a fact is keyed and invalidated by.
 #[derive(Clone, Copy)]
@@ -168,6 +169,12 @@ impl<'a> Prover<'a> {
                         variant.map(|variant| (base.key, variant)).or(base.downcast),
                     )
                 }
+                ProjectionKind::Field(Selection::Tuple(ordinal)) => (
+                    Step::Tuple(ordinal),
+                    base.key.mutable,
+                    base.through,
+                    base.downcast,
+                ),
                 _ => return Err("source variant facts require reference and field places"),
             };
             tested |= downcast.is_some();

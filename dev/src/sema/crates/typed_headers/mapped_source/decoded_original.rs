@@ -714,13 +714,24 @@ impl Original<'_> {
             }
             let definition = self.declaration(reference, steps)?;
             let id = self.catalog.declaration(definition)?;
-            let kind = if matches!(
-                local.kind,
-                crate::support::crates::generics::LocalKind::Parameter(_)
-            ) {
-                DefKind::Parameter
-            } else {
-                DefKind::Local
+            let kind = match (local.kind, raw.definition.kind) {
+                (
+                    crate::support::crates::generics::LocalKind::Parameter(_),
+                    s::DefinitionKind::ValueParameter,
+                ) => DefKind::Parameter,
+                (
+                    crate::support::crates::generics::LocalKind::Binding,
+                    s::DefinitionKind::ValueParameter,
+                ) if descriptor.profile().declaration_policies() => DefKind::Parameter,
+                (
+                    crate::support::crates::generics::LocalKind::Binding,
+                    s::DefinitionKind::Local,
+                ) => DefKind::Local,
+                _ => {
+                    return Err(
+                        "source local definition changed its actual original/ordinal/scope",
+                    );
+                }
             };
             self.catalog.validate_declaration(id, definition, kind)?;
         }

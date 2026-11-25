@@ -115,6 +115,11 @@ with a private concrete hidden type, `+ use<...>` precise captures,
 `impl [const] Trait` bounds evaluated at compile time, higher-ranked and
 conditional closure-returning helpers, hidden-type opacity enforcement, and v13
 refusal.
+`spec/source-function-header-extensions/outcomes.json` checks v14 transport of
+destructured tuple/struct function parameters and generic tuple projections,
+private `unsafe extern "unadjusted"` imports (including tuple-returning and
+nominal/pointer forms), and safe/`const` free and inherent `#[target_feature]`
+functions with contextual safe call/coercion enforcement and v13 refusal.
 Run `scripts/check_source_artifact_clients.py --case CASE` with the case
 directory name and the pinned compiler.
 

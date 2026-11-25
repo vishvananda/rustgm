@@ -479,7 +479,7 @@ impl ValidatedRows {
             (indexed.retained_bytes(), profile.body_nodes()),
             work,
         )?;
-        let domains = indexed.profile_domains(profile, work)?;
+        let domains = indexed.profile_domains(profile, Some(&attributes), work)?;
         let inputs = domains.original_inputs(work)?;
         let peak = inputs
             .peak_bytes()

@@ -218,7 +218,9 @@ fn signature(
     match head {
         Some(Constructor::Function { .. }) => Ok((subject, Permission::Complete)),
         Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _)) => {
-            if facts.target_feature_functions.contains_key(&DefId(item.0)) {
+            if facts.target_feature_functions.contains_key(&DefId(item.0))
+                || crate::sema::target_features::has_imported(facts, DefId(item.0))
+            {
                 return Err(infer::Error::Mismatch);
             }
             Ok((

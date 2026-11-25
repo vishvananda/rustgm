@@ -28,6 +28,7 @@ struct Header {
     handle: ImportedDeclarationId,
     external: Option<ExternalDef>,
     definition_policy: u16,
+    targeted: bool,
 }
 pub(super) struct Headers {
     catalog: Rc<Catalog>,
@@ -88,6 +89,7 @@ impl Headers {
             handle,
             external: None,
             definition_policy: policy,
+            targeted: false,
         })
     }
 }
@@ -181,7 +183,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         work: Cell::new(steps),
     };
     let mut rows_with_features = Vec::new();
-    for (artifact, interface) in headers.inventory.artifacts().iter().enumerate() {
+    for (artifact, interface) in imported.dependencies().artifacts().iter().enumerate() {
         let Some(descriptor) = interface.source_descriptor() else {
             continue;
         };
@@ -231,7 +233,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         }
         if descriptor.profile().body_nodes() {
             bytes = callable_advisories(
-                &headers,
+                &mut headers,
                 &mut rows_with_features,
                 imported,
                 interface,
@@ -262,7 +264,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
 /// One fixed charge and slot per version-thirteen row with declared target
 /// features; names are paid when the row is checked.
 fn callable_advisories(
-    headers: &Headers,
+    headers: &mut Headers,
     found: &mut Vec<DefId>,
     imported: &crate::resolve::crates::Imported,
     interface: &crate::support::crates::Interface,
@@ -290,11 +292,13 @@ fn callable_advisories(
                 "imported header contracts exceed retained storage",
             ));
         }
-        found.push(
-            imported
-                .generic_definition(interface.identity(), contract.declaration)
-                .map_err(Error::unlocated)?,
-        );
+        let definition = imported
+            .generic_definition(interface.identity(), contract.declaration)
+            .map_err(Error::unlocated)?;
+        if let Some(entry) = headers.entries.get_mut(&definition) {
+            entry.targeted = true;
+        }
+        found.push(definition);
     }
     Ok(bytes)
 }
@@ -326,14 +330,31 @@ pub(in crate::sema) fn target_feature_rows(facts: &Declarations) -> &[DefId] {
         .and_then(|ledger| ledger.imported.as_deref())
         .map_or(&[], |headers| headers.targeted.as_slice())
 }
-/// An imported function's declared target features, re-proved on the
-/// consumer's installed header in the exporter's order (trait member, form,
-/// unsafe) and then resolved against the consumer's own table and closed.
-/// `None` when the row declares none.
-pub(in crate::sema) fn target_features(
+pub(in crate::sema) fn has_any_target_features(facts: &Declarations) -> bool {
+    !target_feature_rows(facts).is_empty()
+}
+pub(in crate::sema) fn has_target_features(facts: &Declarations, definition: DefId) -> bool {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+        .is_some_and(|headers| {
+            !headers.targeted.is_empty()
+                && headers
+                    .entries
+                    .get(&definition)
+                    .is_some_and(|header| header.targeted)
+        })
+}
+/// An imported function's declared target features and whether it was written
+/// `unsafe`, re-proved on the consumer's installed header in the exporter's
+/// order (trait member, form, unsafe) and then resolved against the consumer's
+/// own table and closed. `None` when the row declares none.
+pub(in crate::sema) fn target_feature_policy(
     facts: &Declarations,
     definition: DefId,
-) -> Result<Option<crate::sema::target_features::FeatureSet>, &'static str> {
+) -> Result<Option<(crate::sema::target_features::FeatureSet, bool)>, &'static str> {
     use crate::types::{Kind, callable::Abi};
     let Some(headers) = facts
         .must_use_contracts
@@ -400,18 +421,30 @@ pub(in crate::sema) fn target_features(
     else {
         return Err("imported target-feature function has no canonical signature");
     };
-    if convention.abi != Abi::Rust || facts.is_const_function(definition) {
+    let policies = descriptor.profile().declaration_policies();
+    if convention.abi != Abi::Rust || (!policies && facts.is_const_function(definition)) {
         return Err("source target-feature function form requires its wider profile");
     }
     if !unsafe_ {
         return Err("source target-feature function is not declared unsafe");
+    }
+    if declared.safe && !policies {
+        return Err(
+            "source safe target-feature function requires the version-fourteen header profile",
+        );
     }
     crate::sema::target_features::FeatureSet::imported(
         declared.names.iter().map(|name| &**name),
         |growth| budget(growth.work),
         |message| message,
     )
-    .map(Some)
+    .map(|features| Some((features, !declared.safe)))
+}
+pub(in crate::sema) fn target_features(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<crate::sema::target_features::FeatureSet>, &'static str> {
+    target_feature_policy(facts, definition).map(|policy| policy.map(|(features, _)| features))
 }
 /// Coherence and dyn checking use the imported declaration's validated header.
 pub(super) fn definition_policy(

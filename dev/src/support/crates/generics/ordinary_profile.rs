@@ -630,6 +630,9 @@ fn functions(
     {
         return Err("nested source modules require a wider source namespace profile");
     }
+    if roles.definition_policies == 0 {
+        require_simple_formals(rows, headers, work)?;
+    }
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
         captured::require_profile(rows, headers, header, roles.definition_policies != 0, work)?;
@@ -652,7 +655,13 @@ fn functions(
                 && !signature.variadic
                 && (callable
                     || async_callable
-                    || admitted_convention(rows, header.declaration, signature.convention, profile))
+                    || admitted_convention(
+                        rows,
+                        header.declaration,
+                        signature.convention,
+                        profile,
+                        roles.definition_policies != 0,
+                    ))
         };
         if (!free_effects
             && !conditional
@@ -689,34 +698,44 @@ fn functions(
         {
             return Err("source original region formals require their complete wider body profile");
         }
-        let parent = rows.declarations[header.declaration.0 as usize]
-            .definition
-            .parent
-            .ok_or("source function lacks its actual lexical declaration owner")?;
-        let parent_kind = rows.declarations[parent.0 as usize].definition.kind;
-        match header.body {
-            FunctionBody::Absent
-                if (header.parent != Some(parent)
-                    || parent_kind != super::super::DefinitionKind::Trait)
-                    && !rows.bodyless_runtime(header.declaration, work)?
-                    && rows.declared_intrinsic(header.declaration, work)?.is_none() =>
-            {
-                return Err(
-                    "source body absence is supported only for actual required trait members",
-                );
-            }
-            FunctionBody::Original(_)
-                if parent_kind != super::super::DefinitionKind::Module
-                    && !associated
-                    && !(bodies
-                        && profile == NamespaceProfile::CompilerOperations
-                        && super::nested_original(&rows.declarations, header).is_some()) =>
-            {
-                return Err("source original requires its actual supported root module owner");
-            }
-            _ => {}
-        }
+        check_body_owner(rows, header, associated, profile, bodies, work)?;
         headers.header(header.declaration, work)?;
+    }
+    Ok(())
+}
+
+fn check_body_owner(
+    rows: &SourceRows,
+    header: &super::super::FunctionHeader,
+    associated: bool,
+    profile: NamespaceProfile,
+    bodies: bool,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    let parent = rows.declarations[header.declaration.0 as usize]
+        .definition
+        .parent
+        .ok_or("source function lacks its actual lexical declaration owner")?;
+    let parent_kind = rows.declarations[parent.0 as usize].definition.kind;
+    match header.body {
+        FunctionBody::Absent
+            if (header.parent != Some(parent)
+                || parent_kind != super::super::DefinitionKind::Trait)
+                && !rows.bodyless_runtime(header.declaration, work)?
+                && rows.declared_intrinsic(header.declaration, work)?.is_none() =>
+        {
+            return Err("source body absence is supported only for actual required trait members");
+        }
+        FunctionBody::Original(_)
+            if parent_kind != super::super::DefinitionKind::Module
+                && !associated
+                && !(bodies
+                    && profile == NamespaceProfile::CompilerOperations
+                    && super::nested_original(&rows.declarations, header).is_some()) =>
+        {
+            return Err("source original requires its actual supported root module owner");
+        }
+        _ => {}
     }
     Ok(())
 }
@@ -2396,11 +2415,46 @@ fn slot_bindings(
     Ok(())
 }
 
+fn require_simple_formals(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(rows.declarations.len())?;
+    for (index, row) in rows.declarations.iter().enumerate() {
+        if row.definition.kind != super::super::DefinitionKind::ValueParameter {
+            continue;
+        }
+        let declaration = crate::support::crates::owner_catalog::DeclarationRef(
+            u32::try_from(index).map_err(|_| "source formal declaration identity overflow")?,
+        );
+        let Some(parent) = row.definition.parent else {
+            return Err("source destructured parameters require the declaration policy profile");
+        };
+        let Some(super::super::HeaderRef::Function(fn_index)) = headers.header(parent, work)?
+        else {
+            return Err("source destructured parameters require the declaration policy profile");
+        };
+        let formals = rows.functions[fn_index as usize]
+            .formals
+            .slice(&rows.formals)?;
+        work.charge(formals.len())?;
+        if !formals
+            .iter()
+            .any(|formal| formal.declaration == Some(declaration))
+        {
+            return Err("source destructured parameters require the declaration policy profile");
+        }
+    }
+    Ok(())
+}
+
 fn admitted_convention(
     rows: &SourceRows,
     declaration: crate::support::crates::owner_catalog::DeclarationRef,
     convention: Convention,
     profile: NamespaceProfile,
+    declaration_policies: bool,
 ) -> bool {
     convention == Convention::Rust
         || (matches!(
@@ -2410,7 +2464,8 @@ fn admitted_convention(
                 | NamespaceProfile::Safety
                 | NamespaceProfile::Conversions
                 | NamespaceProfile::CompilerOperations
-        ) && convention == Convention::C
+        ) && (convention == Convention::C
+            || declaration_policies && convention == Convention::Unadjusted)
             && rows
                 .exact_callables
                 .binary_search_by_key(&declaration.0, |row| row.declaration.0)

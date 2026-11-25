@@ -62,6 +62,7 @@ impl Stage {
                             .and_then(|facts| facts.binding)
                             .ok_or("source formal has no actual resolver binding")?,
                     ),
+                    _ if self.declaration_policies() => None,
                     _ => return Err("source destructured parameter transport is not implemented"),
                 }
             };

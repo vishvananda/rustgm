@@ -106,7 +106,7 @@ pub(super) fn validate(rows: &SourceRows, work: &mut Work) -> Result<Ledger, &'s
     member_rows::validate(rows, &headers, work)?;
     let bodies = s::bodymap::Lookup::build(rows, work)?;
     body_coverage::validate(rows, &headers, bodies.as_deref(), work)?;
-    formal_rows::validate(rows, bodies.as_deref(), work)?;
+    formal_rows::validate(rows, &headers, bodies.as_deref(), work)?;
     Ok((headers, bodies))
 }
 

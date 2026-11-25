@@ -2,6 +2,11 @@
 use super::{Input, Writer, id, s, write};
 use crate::support::crates::{MAX_FUNCTIONS, owner_catalog::DeclarationRef};
 
+/// Version fourteen packs safe `#[target_feature]` policy into the top bit of
+/// the declared-feature count; unsafe rows keep bit 31 clear and their exact
+/// version-thirteen bytes.
+const SAFE_TARGET_FEATURE_FLAG: u32 = 1 << 31;
+
 pub(super) fn encode(
     out: &mut Writer,
     columns: &s::HeaderAttributeColumns,
@@ -56,7 +61,18 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     }
     // Written as declared: the reader, not the writer, owns canonical form.
     if let Some(features) = &row.target_features {
-        out.u32(features.names.len())?;
+        let count = u32::try_from(features.names.len())
+            .map_err(|_| "source target-feature set exceeds transport profile limit")?;
+        if count & SAFE_TARGET_FEATURE_FLAG != 0 {
+            return Err("source target-feature set exceeds transport profile limit");
+        }
+        let encoded = count
+            | if features.safe {
+                SAFE_TARGET_FEATURE_FLAG
+            } else {
+                0
+            };
+        out.bytes(&encoded.to_le_bytes())?;
         for name in &features.names {
             out.string(name)?;
         }
@@ -145,7 +161,20 @@ fn optimization_read(bits: u8) -> Result<Option<s::Optimization>, &'static str> 
 /// Syntax only: support cannot see sema's feature table, so each consumer
 /// resolves the names when it checks its import ledger.
 fn features_read(read: &mut Input<'_, '_>) -> Result<s::DeclaredFeatures, &'static str> {
-    let count = read.reader.u32()?;
+    let raw = u32::from_le_bytes(
+        read.reader
+            .bytes(4)?
+            .try_into()
+            .map_err(|_| "truncated metadata u32")?,
+    );
+    let safe = raw & SAFE_TARGET_FEATURE_FLAG != 0;
+    if safe && !read.profile.declaration_policies() {
+        return Err(
+            "source safe target-feature function requires the version-fourteen header profile",
+        );
+    }
+    let count = usize::try_from(raw & !SAFE_TARGET_FEATURE_FLAG)
+        .map_err(|_| "metadata count exceeds host index")?;
     if count == 0 {
         return Err("source target-feature set is empty");
     }
@@ -172,7 +201,10 @@ fn features_read(read: &mut Input<'_, '_>) -> Result<s::DeclaredFeatures, &'stat
         }
         names.push(Box::from(name));
     }
-    Ok(s::DeclaredFeatures { names })
+    Ok(s::DeclaredFeatures {
+        names: names.into_boxed_slice(),
+        safe,
+    })
 }
 fn inline_read(read: &mut Input<'_, '_>) -> Result<s::InlineContract, &'static str> {
     Ok(s::InlineContract {

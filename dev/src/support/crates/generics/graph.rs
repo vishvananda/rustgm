@@ -147,6 +147,7 @@ pub(super) fn validate(rows: &Rows, work: &mut Work) -> Result<Graph, &'static s
                     Convention::Rust => 0,
                     Convention::RustCall => 1,
                     Convention::C => 2,
+                    Convention::Unadjusted => 3,
                 };
                 (
                     owner,

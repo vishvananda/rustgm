@@ -49,7 +49,9 @@ pub struct InlineContract {
 /// consumer resolves the names against its own table and closes them.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DeclaredFeatures {
-    pub names: Vec<Box<str>>,
+    pub names: Box<[Box<str>]>,
+    /// Version fourteen only: whether the function was declared without `unsafe`.
+    pub safe: bool,
 }
 /// Within a complete row, None is positively checked absence. An older profile
 /// has no columns at all and therefore cannot claim that absence.
@@ -201,10 +203,15 @@ impl HeaderAttributeColumns {
                 if !matches!(header.body, super::FunctionBody::Original(_)) {
                     return Err("source target features require an exported original body");
                 }
+                if features.safe && !profile.declaration_policies() {
+                    return Err(
+                        "source safe target-feature function requires the version-fourteen header profile",
+                    );
+                }
                 work.charge(features.names.len())?;
                 bytes = bytes
                     .saturating_add(size_of::<DeclaredFeatures>())
-                    .saturating_add(retained::vector(&features.names))
+                    .saturating_add(features.names.len().saturating_mul(size_of::<Box<str>>()))
                     .saturating_add(features.names.iter().map(|name| name.len()).sum());
             }
         }

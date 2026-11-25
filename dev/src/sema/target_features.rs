@@ -65,10 +65,11 @@ pub(super) fn publish(
     Ok(())
 }
 /// Unknown imported policy cannot authorize contextual safety weakening. A
-/// transported declared set widens only an imported body's asm CPU check,
-/// which reads it through [`imported`].
+/// version-fourteen imported safe row supplies its declared feature closure
+/// through `Policy::Imported`; older imported rows carry `declared_unsafe = true`.
 pub(super) enum Policy<'a> {
     Local(Option<&'a Contract>),
+    Imported(FeatureSet, bool),
     ImportedUnknown,
 }
 pub(super) fn query<'a>(
@@ -100,6 +101,12 @@ pub(super) fn query<'a>(
                 "local target-feature row changed to imported origin",
             ));
         }
+        if let Some((features, declared_unsafe)) =
+            header_attributes::imported_target_feature_policy(facts, definition)
+                .map_err(Error::unlocated)?
+        {
+            return Ok(Policy::Imported(features, declared_unsafe));
+        }
         return Ok(Policy::ImportedUnknown);
     };
     if actual.node != Some(source) {
@@ -127,6 +134,18 @@ pub(crate) fn imported(
     definition: DefId,
 ) -> Result<Option<FeatureSet>, &'static str> {
     header_attributes::imported_target_features(facts, definition)
+}
+pub(crate) fn imported_policy(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<(FeatureSet, bool)>, &'static str> {
+    header_attributes::imported_target_feature_policy(facts, definition)
+}
+pub(in crate::sema) fn has_any_imported(facts: &Declarations) -> bool {
+    header_attributes::has_any_imported_target_features(facts)
+}
+pub(in crate::sema) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
+    header_attributes::has_imported_target_features(facts, definition)
 }
 /// Every imported row with declared target features, checked once the
 /// consumer's headers are installed, so a forged row on an unused function is

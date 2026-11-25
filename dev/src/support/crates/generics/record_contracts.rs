@@ -49,25 +49,7 @@ pub(super) fn require_profile(
             }
         }
     }
-    for body in &rows.originals {
-        work.charge(
-            body.values
-                .len()
-                .saturating_add(body.projections.len())
-                .saturating_add(1),
-        )?;
-        if !profile.nominals()
-            && (body
-                .values
-                .iter()
-                .any(|value| matches!(value.kind, super::ValueKind::Aggregate { .. }))
-                || body.projections.iter().any(|projection| {
-                    matches!(projection.kind, super::ProjectionKind::Field { .. })
-                }))
-        {
-            return Err("source nominal operations require their explicit version-ten profile");
-        }
-    }
+    require_body_operations(rows, profile, work)?;
     if !profile.nominals()
         && (!rows.nominals.is_empty()
             || !rows.fields.is_empty()
@@ -103,6 +85,40 @@ pub(super) fn require_profile(
                     .is_some_and(|row| super::nominal_kind(row.definition.kind))
         }) {
             return Err("source nominal region parameters require the version-thirteen profile");
+        }
+    }
+    Ok(())
+}
+fn require_body_operations(
+    rows: &SourceRows,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for body in &rows.originals {
+        work.charge(
+            body.values
+                .len()
+                .saturating_add(body.projections.len())
+                .saturating_add(1),
+        )?;
+        if !profile.declaration_policies()
+            && body
+                .projections
+                .iter()
+                .any(|projection| matches!(projection.kind, super::ProjectionKind::Tuple(_)))
+        {
+            return Err("source tuple projections require the declaration policy profile");
+        }
+        if !profile.nominals()
+            && (body
+                .values
+                .iter()
+                .any(|value| matches!(value.kind, super::ValueKind::Aggregate { .. }))
+                || body.projections.iter().any(|projection| {
+                    matches!(projection.kind, super::ProjectionKind::Field { .. })
+                }))
+        {
+            return Err("source nominal operations require their explicit version-ten profile");
         }
     }
     Ok(())

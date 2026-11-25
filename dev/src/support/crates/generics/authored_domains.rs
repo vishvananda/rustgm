@@ -111,7 +111,7 @@ impl<'a> HeaderIndex<'a> {
         &'index self,
         work: &mut Work,
     ) -> Result<DomainIndex<'index, 'a>, &'static str> {
-        self.profile_domains(super::Profile::Source2024ModuleConversions, work)
+        self.profile_domains(super::Profile::Source2024ModuleConversions, None, work)
     }
     /// Inspect version-thirteen bodies, whose snapshot uses may cross a
     /// branching body when each one follows its evaluation in its own block.
@@ -121,14 +121,15 @@ impl<'a> HeaderIndex<'a> {
         &'index self,
         work: &mut Work,
     ) -> Result<DomainIndex<'index, 'a>, &'static str> {
-        self.profile_domains(super::Profile::Source2024ModuleBodies, work)
+        self.profile_domains(super::Profile::Source2024ModuleBodies, None, work)
     }
     pub(super) fn profile_domains<'index>(
         &'index self,
         profile: super::Profile,
+        attributes: Option<&'index super::HeaderAttributeColumns>,
         work: &mut Work,
     ) -> Result<DomainIndex<'index, 'a>, &'static str> {
-        DomainIndex::new_profile(self, profile, work)
+        DomainIndex::new_profile(self, profile, attributes, work)
     }
     /// Index the complete original declaration/header/body association once.
     /// # Errors

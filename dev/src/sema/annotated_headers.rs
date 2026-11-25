@@ -188,6 +188,9 @@ impl Declarations {
 pub(super) use bootstrap::owner as bootstrap_owner;
 pub(super) use imported::prepare as prepare_imported;
 pub(in crate::sema) use imported::{
+    has_any_target_features as has_any_imported_target_features,
+    has_target_features as has_imported_target_features,
+    target_feature_policy as imported_target_feature_policy,
     target_feature_rows as imported_target_feature_rows,
     target_features as imported_target_features,
 };

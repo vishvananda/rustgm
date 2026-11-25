@@ -137,6 +137,8 @@ pub(in crate::sema) fn body_unsafe(
     }
     match super::query(report, facts, definition)? {
         Policy::Local(Some(row)) => Ok(row.declared_unsafe),
-        Policy::Local(None) | Policy::ImportedUnknown => Ok(signature_unsafe),
+        Policy::Local(None) | Policy::Imported(_, _) | Policy::ImportedUnknown => {
+            Ok(signature_unsafe)
+        }
     }
 }

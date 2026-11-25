@@ -272,6 +272,7 @@ pub(super) fn signature_write(out: &mut Writer, row: g::Signature) -> Result<(),
         g::Convention::Rust => 0,
         g::Convention::RustCall => 1,
         g::Convention::C => 2,
+        g::Convention::Unadjusted => 3,
     })?;
     out.u8(u8::from(row.variadic))
 }
@@ -284,6 +285,7 @@ pub(super) fn signature_read(read: &mut Input<'_, '_>) -> Result<g::Signature, &
         0 => g::Convention::Rust,
         1 => g::Convention::RustCall,
         2 => g::Convention::C,
+        3 if read.profile.declaration_policies() => g::Convention::Unadjusted,
         _ => return Err("unknown source function convention"),
     };
     Ok(g::Signature {

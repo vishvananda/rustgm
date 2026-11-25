@@ -39,14 +39,17 @@ impl Stage {
             && facts
                 .weak_panic_import(report, function.definition)
                 .map_err(|_| "weak panic import lost its checked source claim")?;
-        let private_c_import = self.declaration_policies()
+        let private_foreign_import = self.declaration_policies()
             && record.linkage == Linkage::Import
             && function.body.is_none()
             && !self.rows.declarations[declaration.0 as usize].public
             && matches!(
                 facts.types.kind(function.signature),
                 Some(crate::types::Kind::Function { convention, .. })
-                    if convention.abi == crate::types::callable::Abi::C && !convention.variadic
+                    if matches!(
+                        convention.abi,
+                        crate::types::callable::Abi::C | crate::types::callable::Abi::Unadjusted
+                    ) && !convention.variadic
             );
         let body = match record.linkage {
             Linkage::Export if function.body.is_some() => Some(
@@ -61,7 +64,7 @@ impl Stage {
                     && function.body.is_none()
                     && (weak_panic
                         || runtime_import(facts, function.definition)?
-                        || private_c_import) =>
+                        || private_foreign_import) =>
             {
                 None
             }

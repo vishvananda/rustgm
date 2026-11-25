@@ -45,6 +45,7 @@ fn contract(inline: Option<s::InlineHint>, names: Option<&[&str]>) -> s::HeaderC
 fn declared(names: &[&str]) -> s::DeclaredFeatures {
     s::DeclaredFeatures {
         names: names.iter().map(|&name| Box::from(name)).collect(),
+        safe: false,
     }
 }
 fn written(row: &s::HeaderContract) -> Result<Vec<u8>> {
@@ -130,6 +131,19 @@ fn declared_feature_rows_write_bit_three_and_read_only_under_body_nodes() -> Res
     .concat();
     assert_eq!(bytes, expected);
     assert_eq!(read(&bytes, BODIES)?, stream);
+    let mut safe_keep = contract(None, Some(&["sse", "sse2"]));
+    if let Some(features) = safe_keep.target_features.as_deref_mut() {
+        features.safe = true;
+    }
+    let safe_bytes = written(&safe_keep)?;
+    assert_eq!(
+        read(&safe_bytes, s::Profile::Source2024ModuleBodyOperations)?,
+        safe_keep
+    );
+    assert_eq!(
+        read(&safe_bytes, BODIES).err(),
+        Some("source safe target-feature function requires the version-fourteen header profile")
+    );
     Ok(())
 }
 

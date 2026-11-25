@@ -104,14 +104,14 @@ pub(super) fn validate(
             {
                 return Err("source runtime import cannot acquire an original body");
             }
-            runtime_signatures(rows, header, work)?;
+            runtime_signatures(rows, header, private_import, work)?;
         } else {
             let body = row
                 .body
                 .ok_or("source exact import has no actual runtime role")?;
             original_owner(rows, headers, header, body)?;
             for signature in [header.original, header.callable] {
-                signature_shape(rows, signature, false, work)?;
+                signature_shape(rows, signature, false, false, work)?;
             }
         }
     }
@@ -304,11 +304,12 @@ fn original_owner(
 fn runtime_signatures(
     rows: &SourceRows,
     header: &super::super::FunctionHeader,
+    private_import: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let (original, callable) = (header.original, header.callable);
     for signature in [original, callable] {
-        signature_shape(rows, signature, true, work)?;
+        signature_shape(rows, signature, true, private_import, work)?;
     }
     if original.unsafe_ != callable.unsafe_
         || original.result != callable.result
@@ -319,38 +320,76 @@ fn runtime_signatures(
     Ok(())
 }
 
+fn unadjusted_type(
+    rows: &SourceRows,
+    ty: crate::support::crates::generics::TypeRef,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    work.charge(1)?;
+    Ok(match rows.types.get(ty.0 as usize) {
+        Some(Type::Scalar(_) | Type::F16 | Type::F128 | Type::Nominal { .. }) => true,
+        Some(Type::RawPointer { pointee, .. }) => matches!(
+            rows.types.get(pointee.0 as usize),
+            Some(Type::Nominal { .. } | Type::Scalar(_) | Type::F16 | Type::F128)
+        ),
+        Some(Type::Tuple(elements)) => {
+            let elements = elements.slice(&rows.roots)?;
+            work.charge(elements.len())?;
+            elements.iter().all(|element| {
+                matches!(
+                    rows.types.get(element.0 as usize),
+                    Some(Type::Scalar(_) | Type::F16 | Type::F128 | Type::Nominal { .. })
+                )
+            })
+        }
+        _ => false,
+    })
+}
+
 fn signature_shape(
     rows: &SourceRows,
     signature: crate::support::crates::generics::Signature,
     runtime: bool,
+    private_import: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let parameters = signature.parameters.slice(&rows.roots)?;
     work.charge(parameters.len().saturating_add(2))?;
-    if signature.convention != Convention::C
+    let unadjusted = private_import && signature.convention == Convention::Unadjusted;
+    if !(signature.convention == Convention::C || unadjusted)
         || signature.variadic
         || !runtime && signature.unsafe_
         || rows
             .binders
             .get(signature.binder.0 as usize)
             .is_none_or(|binder| binder.count != 0)
-        || parameters
-            .iter()
-            .chain(std::iter::once(&signature.result))
-            .any(|ty| !match rows.types.get(ty.0 as usize) {
-                Some(Type::Scalar(_)) => true,
-                Some(Type::RawPointer { pointee, .. }) if runtime => matches!(
-                    rows.types.get(pointee.0 as usize),
-                    Some(Type::Nominal { .. } | Type::Scalar(_))
-                ),
-                _ => false,
-            })
     {
         return Err(if runtime {
             "source runtime import requires its actual closed scalar/pointer C signature"
         } else {
             "exact callable requires its actual fixed primitive C signature"
         });
+    }
+    for &ty in parameters.iter().chain(std::iter::once(&signature.result)) {
+        let valid = if unadjusted {
+            unadjusted_type(rows, ty, work)?
+        } else {
+            match rows.types.get(ty.0 as usize) {
+                Some(Type::Scalar(_)) => true,
+                Some(Type::RawPointer { pointee, .. }) if runtime => matches!(
+                    rows.types.get(pointee.0 as usize),
+                    Some(Type::Nominal { .. } | Type::Scalar(_))
+                ),
+                _ => false,
+            }
+        };
+        if !valid {
+            return Err(if runtime {
+                "source runtime import requires its actual closed scalar/pointer C signature"
+            } else {
+                "exact callable requires its actual fixed primitive C signature"
+            });
+        }
     }
     Ok(())
 }

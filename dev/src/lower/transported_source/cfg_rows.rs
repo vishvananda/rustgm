@@ -144,6 +144,11 @@ fn projections(
                     }
                 }
             }
+            ir::ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
+                if stage.declaration_policies() =>
+            {
+                s::ProjectionKind::Tuple(ordinal)
+            }
             _ => return Err("source projection transport requires its wider explicit contract"),
         };
         stage.reserve(4 * size_of::<s::Projection>())?;

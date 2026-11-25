@@ -14,6 +14,16 @@ enum Permission {
     MissingFeatures,
 }
 impl Checker<'_> {
+    fn has_target_feature_policy(&self, definition: DefId) -> bool {
+        self.facts
+            .target_feature_functions
+            .contains_key(&definition)
+            || target_features::has_imported(self.facts, definition)
+    }
+    fn has_any_target_feature_policy(&self) -> bool {
+        !self.facts.target_feature_functions.is_empty()
+            || target_features::has_any_imported(self.facts)
+    }
     fn direct_function(
         &mut self,
         node: NodeId,
@@ -41,16 +51,14 @@ impl Checker<'_> {
         signature: TermId,
         callable: TermId,
     ) -> Result<(), Error> {
-        let policy_function = if self.facts.target_feature_functions.is_empty()
-            && !self.facts.has_deprecated_safe_2024()
-        {
-            None
-        } else {
-            self.direct_function(node, callable)?.filter(|id| {
-                self.facts.target_feature_functions.contains_key(id)
-                    || self.facts.is_deprecated_safe_2024(*id)
-            })
-        };
+        let policy_function =
+            if !self.has_any_target_feature_policy() && !self.facts.has_deprecated_safe_2024() {
+                None
+            } else {
+                self.direct_function(node, callable)?.filter(|id| {
+                    self.has_target_feature_policy(*id) || self.facts.is_deprecated_safe_2024(*id)
+                })
+            };
         let active = &self.state.call_types.active;
         let growth = Growth::map::<NodeId, ActiveCall>(active.len(), active.capacity(), 1);
         self.state
@@ -127,7 +135,7 @@ impl Checker<'_> {
         match target_features::query(self.report, self.facts, owner)? {
             Policy::Local(Some(row)) => Ok(row.features()),
             Policy::Local(None) => Ok(FeatureSet::default()),
-            Policy::ImportedUnknown => {
+            Policy::Imported(_, _) | Policy::ImportedUnknown => {
                 Err(self.error(node, "imported target-feature body policy is unavailable"))
             }
         }
@@ -140,6 +148,7 @@ impl Checker<'_> {
         let (features, declared_unsafe) =
             match target_features::query(self.report, self.facts, definition)? {
                 Policy::Local(Some(row)) => (row.features(), row.declared_unsafe()),
+                Policy::Imported(features, declared_unsafe) => (features, declared_unsafe),
                 Policy::Local(None) | Policy::ImportedUnknown => {
                     return Err(self.error(
                         node,
@@ -164,9 +173,7 @@ impl Checker<'_> {
         target: Option<DefId>,
         unsafe_: bool,
     ) -> Result<(), Error> {
-        if let Some(target) =
-            target.filter(|id| self.facts.target_feature_functions.contains_key(id))
-        {
+        if let Some(target) = target.filter(|id| self.has_target_feature_policy(*id)) {
             return match self.target_function_permission(node, target)? {
                 Permission::Safe => Ok(()),
                 Permission::UnsafeFunction => self.require_unsafe_call(node, Some(target)),
@@ -187,12 +194,12 @@ impl Checker<'_> {
         callable: TermId,
         signature: TermId,
     ) -> Result<TermId, Error> {
-        if self.facts.target_feature_functions.is_empty() {
+        if !self.has_any_target_feature_policy() {
             return Ok(signature);
         }
         let Some(target) = self
             .direct_function(node, callable)?
-            .filter(|id| self.facts.target_feature_functions.contains_key(id))
+            .filter(|id| self.has_target_feature_policy(*id))
         else {
             return Ok(signature);
         };

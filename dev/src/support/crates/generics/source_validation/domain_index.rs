@@ -106,6 +106,7 @@ pub struct DomainIndex<'index, 'rows> {
     /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
     bodies: bool,
     declaration_policies: bool,
+    attributes: Option<&'index s::HeaderAttributeColumns>,
     metadata_member: Option<s::DeclarationAddress>,
 }
 impl<'index, 'rows> DomainIndex<'index, 'rows> {
@@ -113,11 +114,12 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         headers: &'index HeaderIndex<'rows>,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
-        Self::new_profile(headers, s::Profile::Source2024FunctionContracts, work)
+        Self::new_profile(headers, s::Profile::Source2024FunctionContracts, None, work)
     }
     pub(super) fn new_profile(
         headers: &'index HeaderIndex<'rows>,
         profile: s::Profile,
+        attributes: Option<&'index s::HeaderAttributeColumns>,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
         let conversions = profile.conversion_roles();
@@ -152,6 +154,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             used_traits: vec![false; traits],
             bodies,
             declaration_policies: profile.declaration_policies(),
+            attributes,
             metadata_member: slice_metadata_member(headers, profile, work)?,
         };
         index.header_roots(work)?;

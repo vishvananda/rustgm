@@ -17,6 +17,13 @@ pub(super) fn check(
         return Ok(());
     }
     work.charge(1)?;
+    let caller_policy = if view.rows().descriptor().profile().declaration_policies()
+        && view.signature().is_some()
+    {
+        crate::sema::target_features::imported_policy(facts, view.definition())?
+    } else {
+        None
+    };
     let caller_unsafe = if let Some(signature) = view.signature() {
         let defining_header = facts
             .function_header(view.definition())?
@@ -27,7 +34,7 @@ pub(super) fn check(
         let Some(Kind::Function { unsafe_, .. }) = facts.types.kind(signature) else {
             return Err("source call safety caller signature is not a function");
         };
-        unsafe_
+        unsafe_ && !matches!(caller_policy, Some((_, false)))
     } else {
         if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
             return Err("source call safety changed its actual initializer body");
@@ -57,11 +64,13 @@ pub(super) fn check(
             .values
             .get(callee.0 as usize)
             .ok_or("source call safety has no actual function operand")?;
-        if !matches!(callee.kind, Rvalue::Function(definition) if definition == view.function(request.target, &mut work.steps)?)
-        {
+        let target = view.function(request.target, &mut work.steps)?;
+        if !matches!(callee.kind, Rvalue::Function(definition) if definition == target) {
             return Err("source call safety changed its actual selected declaration");
         }
-        matching(unsafe_, request.safety, caller_unsafe)?;
+        if !safe_target_call(facts, caller_policy, target, unsafe_, request.safety)? {
+            matching(unsafe_, request.safety, caller_unsafe)?;
+        }
     }
     // Version thirteen: a call through a fn pointer carries its own context.
     for (index, value) in view.raw().values.iter().enumerate() {
@@ -109,6 +118,26 @@ fn matching(unsafe_: bool, safety: s::CallSafety, caller_unsafe: bool) -> Result
         (true, s::CallSafety::UnsafeFunction) if caller_unsafe => Ok(()),
         _ => Err("source call safety has no matching actual caller obligation"),
     }
+}
+
+fn safe_target_call(
+    facts: &Declarations,
+    caller_policy: Option<(crate::sema::target_features::FeatureSet, bool)>,
+    target: crate::resolve::model::DefId,
+    unsafe_: bool,
+    safety: s::CallSafety,
+) -> Result<bool, &'static str> {
+    if !unsafe_ || safety != s::CallSafety::Safe {
+        return Ok(false);
+    }
+    let Some((available, _)) = caller_policy else {
+        return Ok(false);
+    };
+    Ok(
+        crate::sema::target_features::imported_policy(facts, target)?.is_some_and(
+            |(required, declared_unsafe)| !declared_unsafe && available.covers(required),
+        ),
+    )
 }
 
 #[cfg(test)]

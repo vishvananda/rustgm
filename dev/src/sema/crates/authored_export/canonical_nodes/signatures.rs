@@ -232,6 +232,9 @@ impl Stage {
                 crate::types::callable::Abi::CUnwind => {
                     return Err("C-unwind source metadata requires its versioned unwind ABI");
                 }
+                crate::types::callable::Abi::Unadjusted if self.declaration_policies() => {
+                    g::Convention::Unadjusted
+                }
                 crate::types::callable::Abi::Unadjusted => {
                     return Err("unadjusted ABI source metadata is not implemented");
                 }

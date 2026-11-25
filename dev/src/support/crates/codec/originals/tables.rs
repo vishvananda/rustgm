@@ -127,6 +127,9 @@ fn type_write(out: &mut Writer, ty: g::Type, calls: bool) -> Result<(), &'static
                 g::Convention::Rust => 0,
                 g::Convention::RustCall => 1,
                 g::Convention::C => 2,
+                g::Convention::Unadjusted => {
+                    return Err("unadjusted ABI requires the version-fourteen encoder");
+                }
             })?;
             out.u8(u8::from(signature.variadic))
         }

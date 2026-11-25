@@ -151,14 +151,21 @@ fn local_declarations(
         let declaration = DeclarationRef(
             u32::try_from(index).map_err(|_| "source local declaration identity overflow")?,
         );
+        let kind_ok = matches!(
+            (row.definition.kind, value.kind),
+            (
+                DefinitionKind::ValueParameter,
+                crate::support::crates::generics::LocalKind::Parameter(_)
+                    | crate::support::crates::generics::LocalKind::Binding,
+            ) | (
+                DefinitionKind::Local,
+                crate::support::crates::generics::LocalKind::Binding
+            )
+        );
         if row.definition.parent != Some(body.declaration)
             || value.definition != Some(declaration)
             || value.scope != local.scope
-            || matches!(row.definition.kind, DefinitionKind::ValueParameter)
-                != matches!(
-                    value.kind,
-                    crate::support::crates::generics::LocalKind::Parameter(_)
-                )
+            || !kind_ok
         {
             return Err("source local declaration is foreign to its actual typed body slot");
         }

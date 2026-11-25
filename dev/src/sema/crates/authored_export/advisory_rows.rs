@@ -433,10 +433,11 @@ impl Stage {
         contract.format_panic = self.declaration_policies()
             && crate::sema::compiler_items::runtime_panic_declaration(facts, definition)
                 .map_err(Error::unlocated)?;
-        // The export gate has admitted only a free or inherent unsafe Rust-ABI
-        // function; its explicitly named features are replayed, not re-parsed.
+        // The export gate has admitted only a free or inherent Rust-ABI
+        // function; its explicitly named features and safety are replayed, not re-parsed.
         if let Some(names) = crate::sema::target_features::declared_names(facts, definition) {
-            let names: Vec<Box<str>> = names.map(Box::from).collect();
+            let names: Box<[Box<str>]> = names.map(Box::from).collect();
+            let safe = !crate::sema::target_features::declared_unsafe(facts, definition);
             let bytes = names.iter().map(|name| name.len()).sum::<usize>();
             self.charge(1 + names.len() + bytes)
                 .map_err(Error::unlocated)?;
@@ -444,7 +445,7 @@ impl Stage {
                 size_of::<s::DeclaredFeatures>() + names.len() * size_of::<Box<str>>() + bytes,
             )
             .map_err(Error::unlocated)?;
-            contract.target_features = Some(Box::new(s::DeclaredFeatures { names }));
+            contract.target_features = Some(Box::new(s::DeclaredFeatures { names, safe }));
         }
         Ok(())
     }

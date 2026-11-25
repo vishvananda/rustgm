@@ -96,6 +96,9 @@ fn projection(
             s::ProjectionKind::Field { owner, ordinal } => {
                 ProjectionKind::Field(view.nominal_field(owner, ordinal, steps)?)
             }
+            s::ProjectionKind::Tuple(ordinal) => {
+                ProjectionKind::Field(crate::sema::members::Selection::Tuple(ordinal))
+            }
         },
     })
 }
