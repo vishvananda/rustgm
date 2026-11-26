@@ -352,5 +352,19 @@
     "native_acceptance": "source-fixed-registers/outcomes.json; original CPUID tail, outputs, RBX preservation and five 32-bit-view zero-extension observations",
     "discarded_outputs": "Typed discarded writes remain distinct from inputs and are refused by both source profiles and native admission; no discarded-result encoding is defined.",
     "stream_store": "Original SSE2 movnti exports/imports/lowers unchanged; runtime acceptance remains pending on pinned backend opcode support, with exact writes and surrounding sentinels still required."
+  },
+  "memory_output_extension": {
+    "options": [
+      "pure",
+      "readonly"
+    ],
+    "properties": "Pure invocations have DUPLICABLE rather than SIDE_EFFECT; readonly is a distinct read memory effect, nomem remains none.",
+    "vectors": "v14 carries complete 128-bit XMM output places and ordered output snapshots; v13 remains input-only.",
+    "acceptance": "source-memory-assembly/outcomes.json",
+    "native_controls": {
+      "pure.rs": "accept",
+      "readonly.rs": "accept"
+    },
+    "pending": "Original movntdqa acceptance remains expected success pending pinned backend opcode support."
   }
 }

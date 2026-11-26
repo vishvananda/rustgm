@@ -10,14 +10,14 @@
 //! each object and calls every function:
 //!
 //! - `rg_library_seed`: a read-only global holding 40;
-//! - `rg_library_answer(x)`: the seed plus `x`, through integer read/write AT&T assembly;
+//! - `rg_library_answer(x)`: the seed plus `x`, through pure readonly AT&T assembly;
 //! - `rg_library_swap(p)`: `{i64, f64}` to `{f64, i64}`, by `classes=` and
 //!   `result_classes=`;
 //! - `rg_library_apply(f, x, p)`: `f(p)` through a pointer, a call boundary
 //!   `as (...)` with an object temporary for its result;
 //! - `rg_library_tally(n, d)`: the variadic `rg_host_tally(1, {n, d})`, by
 //!   `arity=variadic` and a call-site `classes=1:`;
-//! - `rg_library_stream(d, s)`: one `movntps` through an assembly template;
+//! - `rg_library_stream(d, s)`: a pure vector snapshot, then one `movntps`;
 //! - `rg_library_turn(r)`: `{{f32, f32}, i64}` to `{i64, f32[2]}`, by the
 //!   `classes=` and `result_classes=` that `RustGM` states and that the
 //!   library derives for `library.c`'s record types;
@@ -28,7 +28,7 @@
 //! - `rg_library_tick()`: its thread's instance of the thread-local
 //!   `rg_library_ticks`, which starts at 10, incremented.
 use rustgm::lowir::{
-    asm::{self, Gpr, Kind},
+    asm::{self, Gpr, Kind, Memory},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
     data::{GlobalStorage, Item, Target},
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
@@ -77,20 +77,25 @@ fn answer(program: &mut Program) -> Result<(), &'static str> {
     let signature = program.signature(&[Type::I64], Type::I64, false)?;
     let symbol = program.declare("rg_library_answer".into(), signature, false)?;
     let mut draft = program.assembly()?;
-    draft.binding(Kind::Integer(Type::I64), Some(Gpr::Ax), true, true, false)?;
+    draft.binding(Kind::Integer(Type::I64), Some(Gpr::Ax), false, true, false)?;
+    draft.operand(Kind::Pointer)?;
     draft.binding(Kind::Integer(Type::I64), None, true, false, false)?;
-    draft.text("add ")?;
+    draft.text("mov (")?;
     draft.operand_use(1)?;
+    draft.text("), ")?;
+    draft.operand_use_view(0, 64)?;
+    draft.text("\nadd ")?;
+    draft.operand_use(2)?;
     draft.text(", ")?;
     draft.operand_use_view(0, 64)?;
-    let template = draft.finish_flags(asm::SIDE_EFFECT, 0, asm::FLAGS, true, true)?;
+    let template = draft.finish_memory(asm::DUPLICABLE, 0, asm::FLAGS, true, Memory::ReadOnly)?;
     let mut body = program.body_builder();
     let entry = body.block()?;
     body.enter(entry)?;
-    let loaded = body.load(Type::I64, Operand::Global(seed))?;
+    let seed_address = body.address(Operand::Global(seed))?;
     let slot = body.slot(Type::I64)?;
     let pointer = body.address(Operand::Slot(slot))?;
-    body.asm(template, &[loaded, pointer, parameter(Type::I64, 0)])?;
+    body.asm(template, &[pointer, seed_address, parameter(Type::I64, 0)])?;
     let sum = body.load(Type::I64, pointer.operand)?;
     body.terminate(Terminator::Return(Some(sum)))?;
     program.define(symbol, body.finish()?)
@@ -239,6 +244,13 @@ fn tally(program: &mut Program) -> Result<(), &'static str> {
 /// The `movntps` template and `rg_library_stream`.
 fn stream(program: &mut Program) -> Result<(), &'static str> {
     let mut draft = program.assembly()?;
+    draft.binding(Kind::Vector, None, true, true, false)?;
+    draft.text("movdqa ")?;
+    draft.operand_use(0)?;
+    draft.text(", ")?;
+    draft.operand_use(0)?;
+    let snapshot = draft.finish_memory(asm::DUPLICABLE, 0, 0, false, Memory::None)?;
+    let mut draft = program.assembly()?;
     draft.operand(Kind::Pointer)?;
     draft.operand(Kind::Vector)?;
     draft.text("movntps [")?;
@@ -251,10 +263,13 @@ fn stream(program: &mut Program) -> Result<(), &'static str> {
     let mut body = program.body_builder();
     let entry = body.block()?;
     body.enter(entry)?;
-    body.asm(
-        template,
-        &[parameter(Type::Ptr, 0), parameter(Type::Ptr, 1)],
-    )?;
+    let slot = body.object_slot(MemorySpan {
+        bytes: 16,
+        align: 16,
+    })?;
+    let pointer = body.address(Operand::Slot(slot))?;
+    body.asm(snapshot, &[parameter(Type::Ptr, 1), pointer])?;
+    body.asm(template, &[parameter(Type::Ptr, 0), pointer])?;
     body.terminate(Terminator::Return(None))?;
     program.define(symbol, body.finish()?)
 }

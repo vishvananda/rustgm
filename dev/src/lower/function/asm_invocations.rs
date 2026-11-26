@@ -1,12 +1,12 @@
-//! Checked pointer/vector inputs and 32-/64-bit general-register inputs and outputs.
+//! Checked pointer inputs, vector inputs/outputs and 32-/64-bit general registers.
 //! Output snapshots precede the CFG's ordered destination writes; dialect and
 //! memory effects remain explicit in each backend template.
-use super::{Lower, Selected};
+use super::{Address, Lower, Selected};
 use crate::{
     body::assembly::{self, Piece, Template},
     lower::context::Representation,
     lowir::{
-        asm::{self as lowir, Draft, Gpr, Kind},
+        asm::{self as lowir, Draft, Gpr, Kind, Memory},
         vocabulary::Type,
     },
     syntax::assembly::{self as syntax, Register},
@@ -60,7 +60,11 @@ impl Lower<'_, '_, '_> {
             }
             text(&mut draft, template, pieces(&data.pieces, template)?)?;
         }
-        let mut properties = lowir::SIDE_EFFECT;
+        let mut properties = if instruction.options & syntax::PURE == 0 {
+            lowir::SIDE_EFFECT
+        } else {
+            lowir::DUPLICABLE
+        };
         if instruction.options & syntax::NOSTACK == 0 {
             properties |= lowir::STACK | lowir::RED_ZONE;
         }
@@ -69,12 +73,19 @@ impl Lower<'_, '_, '_> {
         } else {
             0
         };
-        let template = draft.finish_flags(
+        let memory = if instruction.options & syntax::NOMEM != 0 {
+            Memory::None
+        } else if instruction.options & syntax::READONLY != 0 {
+            Memory::ReadOnly
+        } else {
+            Memory::ReadWrite
+        };
+        let template = draft.finish_memory(
             properties,
             READS,
             writes,
             instruction.options & syntax::ATT_SYNTAX != 0,
-            instruction.options & syntax::NOMEM != 0,
+            memory,
         )?;
         self.builder.asm(template, &self.arguments)?;
         Ok(Selected::Unit)
@@ -96,7 +107,13 @@ impl Lower<'_, '_, '_> {
             self.arguments.push(value);
         }
         if operand.output.is_some() {
-            let slot = self.builder.slot(kind.scalar_type())?;
+            let slot = match self.context.representation(ty)? {
+                Representation::Scalar(native) => self.builder.slot(native)?,
+                Representation::Object(span) if kind == Kind::Vector => {
+                    self.builder.object_slot(span)?
+                }
+                _ => return Err(OUTPUT),
+            };
             let pointer = self
                 .builder
                 .address(crate::lowir::program::Operand::Slot(slot))?;
@@ -119,6 +136,15 @@ impl Lower<'_, '_, '_> {
         ty: crate::types::TypeId,
         output: bool,
     ) -> Result<Kind, &'static str> {
+        if register == Register::Xmm {
+            return if matches!(self.context.types.kind(ty), Some(TypeKind::Adt(..)))
+                && matches!(self.context.representation(ty)?, Representation::Object(span) if span.bytes == 16)
+            {
+                Ok(Kind::Vector)
+            } else {
+                Err(XMM)
+            };
+        }
         if matches!(
             register,
             Register::General | Register::Explicit { xmm: false, .. }
@@ -136,11 +162,7 @@ impl Lower<'_, '_, '_> {
         if output {
             return Err(OUTPUT);
         }
-        Ok(if register == Register::Xmm {
-            Kind::Vector
-        } else {
-            Kind::Pointer
-        })
+        Ok(Kind::Pointer)
     }
     pub(super) fn assembly_output(
         &mut self,
@@ -159,12 +181,17 @@ impl Lower<'_, '_, '_> {
             .and_then(|outputs| outputs.get(&(instruction, operand)))
             .copied()
             .ok_or("assembly output lacks its native snapshot")?;
-        let Representation::Scalar(native) = self.context.representation(ty)? else {
-            return Err(OUTPUT);
-        };
-        self.builder
-            .load(native, pointer.operand)
-            .map(Selected::Runtime)
+        match self.context.representation(ty)? {
+            Representation::Scalar(native) => self
+                .builder
+                .load(native, pointer.operand)
+                .map(Selected::Runtime),
+            Representation::Object(span) => Ok(Selected::Object(Address {
+                operand: pointer.operand,
+                align: span.align,
+            })),
+            Representation::ScalarObject(_) => Err(OUTPUT),
+        }
     }
     /// A raw pointer is captured by value; a vector passes its snapshot's address.
     fn assembly_input(

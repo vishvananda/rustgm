@@ -54,7 +54,14 @@ impl DomainIndex<'_, '_> {
         for instruction in &rows.instructions {
             Self::site(original, instruction.site, work)?;
             instruction_profile(instruction, unsafe_, self.declaration_policies)?;
-            for operand in instruction.operands.slice(&rows.operands)? {
+            let operands = instruction.operands.slice(&rows.operands)?;
+            if self.declaration_policies {
+                profile::effects(
+                    instruction.options,
+                    operands.iter().any(|operand| operand.output.is_some()),
+                )?;
+            }
+            for operand in operands {
                 self.types.root(self.headers, context, operand.ty, work)?;
             }
             placeholders(rows, instruction, self.declaration_policies, work)?;
@@ -231,7 +238,11 @@ impl DomainIndex<'_, '_> {
                 _ => Err(profile::GENERAL),
             },
             s::AssemblyClass::Vector => match ty(operand.ty) {
-                Some(s::Type::Nominal { .. }) if operand.output.is_none() => Ok(()),
+                Some(s::Type::Nominal { .. })
+                    if operand.output.is_none() || self.declaration_policies =>
+                {
+                    Ok(())
+                }
                 _ => Err(profile::XMM),
             },
             s::AssemblyClass::Abcd => Err(profile::ABCD),
@@ -300,9 +311,6 @@ fn instruction_profile(
         profile::flags_option(row.options)?;
     } else {
         profile::option(row.options)?;
-    }
-    if row.options & profile::NOMEM != 0 && row.options & profile::READONLY != 0 {
-        return Err("source assembly options are incompatible");
     }
     match row.safety {
         s::CallSafety::Safe => Err("source inline assembly has no unsafe context"),

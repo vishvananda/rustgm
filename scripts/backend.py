@@ -45,7 +45,8 @@ BRIDGE_TEXT = (
     "[storage=readonly]",
     "[storage=thread_local]",
     " intel readwrite 1 0 0 2 {",
-    " att none 1 0 1 3 {",
+    " att read 2 0 1 3 {",
+    " intel none 2 0 0 2 {",
     "    asm @",
 )
 # The bridge crate builds apart from the frontend's Cargo cache.

@@ -153,6 +153,7 @@ pub const EIGHTBYTE_SSEUP: u8 = 3;
 pub const ASM_DIALECT_ATT: u8 = 0;
 pub const ASM_DIALECT_INTEL: u8 = 1;
 pub const ASM_MEMORY_NONE: u8 = 0;
+pub const ASM_MEMORY_READ: u8 = 1;
 pub const ASM_MEMORY_READ_WRITE: u8 = 3;
 pub const ASM_BANK_GPR: u8 = 0;
 pub const ASM_BANK_VECTOR: u8 = 1;

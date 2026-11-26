@@ -10,6 +10,8 @@ pub struct AssemblyId(pub u32);
 
 /// Property bit: the invocation has an observable side effect.
 pub const SIDE_EFFECT: u8 = 1;
+/// Property bit: the invocation may be duplicated; memory dependencies remain explicit.
+pub const DUPLICABLE: u8 = 2;
 /// Property bit: the assembly may use the stack.
 pub const STACK: u8 = 4;
 /// Property bit: the assembly may write the red zone.
@@ -35,20 +37,11 @@ pub enum Kind {
     Pointer,
     /// A signed/unsigned 32-bit or raw 64-bit integer in a general register.
     Integer(Type),
-    /// A `v128` whose `ptr` argument addresses its snapshot; the backend loads
-    /// it into one of xmm0 to xmm15.
+    /// A `v128` whose `ptr` arguments address its input/output snapshots,
+    /// bound to one of xmm0 to xmm15.
     Vector,
 }
 impl Kind {
-    /// The backend value type of the operand, before storage indirection.
-    #[must_use]
-    pub const fn scalar_type(self) -> Type {
-        match self {
-            Self::Pointer => Type::Ptr,
-            Self::Integer(ty) => ty,
-            Self::Vector => Type::V128,
-        }
-    }
     pub(super) const fn type_name(self) -> &'static str {
         match self {
             Self::Pointer => "ptr",
@@ -76,6 +69,25 @@ impl Kind {
                 "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", "xmm9",
                 "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
             ],
+        }
+    }
+}
+/// An invocation's effect on memory outside its output snapshots.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Memory {
+    /// No memory access apart from the invocation's output storage.
+    None,
+    /// May read memory, with no writes apart from output storage.
+    ReadOnly,
+    /// May read and write memory.
+    ReadWrite,
+}
+impl Memory {
+    pub(super) const fn name(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::ReadOnly => "read",
+            Self::ReadWrite => "readwrite",
         }
     }
 }
@@ -145,6 +157,16 @@ pub struct Binding {
     pub late: bool,
 }
 impl Binding {
+    /// Whether the input argument addresses storage. Output-only operands
+    /// have no input argument and must keep this flag clear.
+    #[must_use]
+    pub const fn input_storage(self) -> u8 {
+        if self.input.is_some() {
+            self.kind.stored()
+        } else {
+            0
+        }
+    }
     /// The singleton fixed register or the kind's selectable register groups.
     #[must_use]
     pub const fn registers(self) -> &'static [&'static str] {
@@ -169,7 +191,7 @@ pub(super) enum Piece {
 #[derive(Clone, Copy, Debug)]
 pub(super) struct Template {
     pub(super) att: bool,
-    pub(super) nomem: bool,
+    pub(super) memory: Memory,
     pub(super) arguments: u32,
     pub(super) properties: u8,
     pub(super) reads: u8,
@@ -212,7 +234,15 @@ impl<'a> Reading<'a> {
     /// Dialect and memory-free effect of the template.
     #[must_use]
     pub const fn flags(&self) -> (bool, bool) {
-        (self.template.att, self.template.nomem)
+        (
+            self.template.att,
+            matches!(self.template.memory, Memory::None),
+        )
+    }
+    /// The invocation's exact memory effect.
+    #[must_use]
+    pub const fn memory(&self) -> Memory {
+        self.template.memory
     }
     /// Number of input values and output storage addresses.
     #[must_use]
@@ -394,13 +424,36 @@ impl<'a> Draft<'a> {
         att: bool,
         nomem: bool,
     ) -> Result<AssemblyId, &'static str> {
+        self.finish_memory(
+            properties,
+            reads,
+            writes,
+            att,
+            if nomem {
+                Memory::None
+            } else {
+                Memory::ReadWrite
+            },
+        )
+    }
+    /// Finish a template with its dialect and exact memory effect.
+    /// # Errors
+    /// Rejects bits outside the backend vocabulary and exhausted identities.
+    pub fn finish_memory(
+        self,
+        properties: u8,
+        reads: u8,
+        writes: u8,
+        att: bool,
+        memory: Memory,
+    ) -> Result<AssemblyId, &'static str> {
         if properties & !PROPERTIES != 0 || (reads | writes) & !STATE != 0 {
             return Err("LowIR assembly header bits are outside the backend vocabulary");
         }
         let id = AssemblyId(index(self.assemblies.templates.len())?);
         self.assemblies.templates.push(Template {
             att,
-            nomem,
+            memory,
             arguments: self.arguments,
             properties,
             reads,

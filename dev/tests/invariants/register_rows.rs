@@ -571,3 +571,76 @@ fn fixed_registers_keep_their_width_alias_and_view_in_fresh_rows() -> Result {
     }
     Ok(())
 }
+
+fn memory_provider() -> Result<crates::Interface> {
+    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
+    let original = crate::test_source::fixture("pa41/tests/upstream/rust/sse41.rs")?;
+    let function = original
+        .find("pub unsafe fn _mm_stream_load_si128")
+        .ok_or("load")?;
+    let start = original[..function]
+        .rfind("#[inline]")
+        .ok_or("load header")?;
+    let end = function + original[function..].find("\n}").ok_or("load end")? + 2;
+    let body = crate::test_source::fixture("pa41/tests/spec/source-memory-assembly/provider.rs")?
+        .replace("// ORIGINAL_LOAD", &original[start..end]);
+    exported_profile(
+        &format!("#![feature(auto_traits)]\n{foundation}{body}"),
+        SourcePublication::ModuleBodyOperations,
+        "memory_assembly",
+    )
+}
+
+#[test]
+fn pure_vector_outputs_require_their_exact_memory_and_result_contract() -> Result {
+    let interface = memory_provider()?;
+    let bytes = crates::encode(&interface)?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    let (rows, _, _) = raw(&decoded)?;
+    let index = original(&rows, "movdqa {result}, [{p}]")?;
+    let actual = rows.originals[index]
+        .assembly
+        .as_deref()
+        .ok_or("actual vector load")?;
+    assert_eq!(actual.operands[0].class, s::AssemblyClass::Vector);
+    assert!(actual.operands[0].output.is_some());
+    assert_eq!(
+        actual.instructions[0].options,
+        profile::PURE | profile::READONLY | profile::NOSTACK | profile::PRESERVES_FLAGS
+    );
+    for (forgery, expected) in [
+        (
+            0,
+            "pure assembly requires real outputs and nomem or readonly, without noreturn",
+        ),
+        (1, "source assembly options are incompatible"),
+        (
+            2,
+            "pure assembly requires real outputs and nomem or readonly, without noreturn",
+        ),
+    ] {
+        let mut forged = rows.clone();
+        let assembly = columns(&mut forged.originals[index]);
+        match forgery {
+            0 => assembly.instructions[0].options &= !profile::READONLY,
+            1 => assembly.instructions[0].options |= profile::NOMEM,
+            _ => assembly.operands[0].output = None,
+        }
+        let (_, attributes, modules) = raw(&decoded)?;
+        let descriptor = decoded.source_descriptor().ok_or("actual descriptor")?;
+        let error = g::Payload::from_source_module_body_operations(
+            decoded.identity(),
+            forged,
+            attributes,
+            modules,
+            descriptor.availability()?.clone(),
+            0,
+            &mut g::Work::default(),
+        )
+        .err();
+        assert_eq!(error, Some(expected), "forgery {forgery}");
+    }
+    Ok(())
+}

@@ -10,19 +10,19 @@ use crate::{
     Failure, Forms, ffi, instructions,
     literals::{self, Context},
     records::{
-        ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER, ASM_OPERAND_READ,
-        ASM_OPERAND_WRITE, ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand,
-        AsmPiece, AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY,
-        CLASS_STATED, DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER,
-        EIGHTBYTE_NONE, EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE,
-        LINKAGE_DEFAULT, Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT,
-        STORAGE_READONLY, STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16,
-        TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID,
-        Type, object,
+        ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER, ASM_MEMORY_NONE,
+        ASM_MEMORY_READ, ASM_MEMORY_READ_WRITE, ASM_OPERAND_READ, ASM_OPERAND_WRITE,
+        ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand, AsmPiece,
+        AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY, CLASS_STATED,
+        DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE,
+        EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE, LINKAGE_DEFAULT,
+        Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT, STORAGE_READONLY,
+        STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64,
+        TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID, Type, object,
     },
 };
 use rustgm::lowir::{
-    asm::{Kind, Part},
+    asm::{Kind, Memory, Part},
     boundary::{self, Class, Classes},
     data::{GlobalId, GlobalKind, GlobalStorage, Item, Target},
     program::{
@@ -48,6 +48,14 @@ pub(crate) fn scalar(ty: Scalar) -> Type {
         Scalar::F64 => TYPE_F64,
         Scalar::Ptr => TYPE_PTR,
         Scalar::V128 => TYPE_V128,
+    }
+}
+
+fn memory(effect: Memory) -> u8 {
+    match effect {
+        Memory::None => ASM_MEMORY_NONE,
+        Memory::ReadOnly => ASM_MEMORY_READ,
+        Memory::ReadWrite => ASM_MEMORY_READ_WRITE,
     }
 }
 
@@ -355,7 +363,7 @@ impl<'p> Stater<'p> {
                     first_alternative: count(index)?,
                     alternative_count: 1,
                     flags: operand_flags(binding),
-                    input_storage: kind.stored(),
+                    input_storage: binding.input_storage(),
                     ..AsmOperand::default()
                 });
             }
@@ -390,7 +398,7 @@ impl<'p> Stater<'p> {
             }
             let id = self.module.assembly(&ffi::Template {
                 att: reading.flags().0,
-                nomem: reading.flags().1,
+                memory: memory(reading.memory()),
                 arguments: reading.arguments(),
                 properties: u16::from(properties),
                 reads: u32::from(reads),

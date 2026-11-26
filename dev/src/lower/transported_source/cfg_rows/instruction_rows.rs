@@ -45,6 +45,7 @@ pub(super) fn preflight(
                             Err("assembly fixed register width differs from its integer operand")
                         }
                     }
+                    Register::Xmm => input_type(facts, operand.register, ty),
                     _ if operand.output.is_some() => Err(OUTPUT),
                     _ => input_type(facts, operand.register, ty),
                 }

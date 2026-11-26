@@ -67,7 +67,11 @@ fn every_form_outside_the_profile_keeps_its_declared_fence() -> Result {
         let text = fixture_source(&format!("{SPEC}/{path}"))?;
         if matches!(
             path,
-            "opponents/att-syntax.rs" | "opponents/output.rs" | "opponents/inout.rs"
+            "opponents/att-syntax.rs"
+                | "opponents/output.rs"
+                | "opponents/inout.rs"
+                | "opponents/pure.rs"
+                | "opponents/readonly.rs"
         ) {
             let (_, templates) = lowered(&text, "asm_flags_extension", "f")?;
             assert_eq!(templates, Some(1));

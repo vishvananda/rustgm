@@ -191,7 +191,7 @@ fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
             out,
             "assembly @asm{index} {} {} {} {} {} {} {{",
             if template.att { "att" } else { "intel" },
-            if template.nomem { "none" } else { "readwrite" },
+            template.memory.name(),
             template.properties,
             template.reads,
             template.writes,
@@ -206,7 +206,7 @@ fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
                 "  operand {} {input} {output} {} {} 0 {{\n    alternative 1 {} -1 {{",
                 kind.type_name(),
                 binding.flags(),
-                kind.stored(),
+                binding.input_storage(),
                 u8::from(binding.output.is_some() && !binding.late)
             )?;
             for register in binding.registers() {

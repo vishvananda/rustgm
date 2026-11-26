@@ -1,4 +1,4 @@
-//! The initial assembly profile and its integer-register extension share
+//! The initial assembly profile and its memory/register extension share
 //! one check order over a body's payload. Its texts
 //! are `support::initial_assembly`'s, which every reader shares as well.
 use super::{Instruction, Payload, Template};
@@ -41,7 +41,8 @@ pub(crate) fn admit(
         input(operand.register, value)
     })
 }
-/// The flags extension retains integer register inputs and ordered outputs.
+/// The extension retains integer/vector register inputs and ordered outputs,
+/// with explicit memory and purity promises.
 pub(crate) fn flags(
     data: &Payload,
     instruction: &Instruction,
@@ -70,6 +71,12 @@ fn checked(
         .operands
         .get(instruction.operands.start as usize..instruction.operands.end as usize)
         .ok_or("assembly operand range is invalid")?;
+    if flags {
+        crate::support::initial_assembly::effects(
+            instruction.options,
+            operands.iter().any(|operand| operand.output.is_some()),
+        )?;
+    }
     for operand in operands {
         check(operand)?;
         if !(flags && matches!(operand.register, Register::Explicit { xmm: false, .. }))

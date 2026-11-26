@@ -1254,6 +1254,15 @@
       "adaptation": "none; original bytes retained; complete _mm_stream_si32 declaration and body inserted verbatim into a source provider",
       "oracle": "source-fixed-registers/outcomes.json",
       "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/sse41.rs",
+      "destination": "pa41/tests/upstream/rust/sse41.rs",
+      "sha256": "cf570ce5b07bf529bbf7e7759701a52a09e0ad119108ed58c600886e7f651647",
+      "adaptation": "none; original bytes retained; complete _mm_stream_load_si128 declaration and body inserted verbatim into a source provider",
+      "oracle": "source-memory-assembly/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

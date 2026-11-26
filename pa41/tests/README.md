@@ -72,3 +72,8 @@ The fixed-register fixture also retains the original `_mm_stream_si32` and its
 32-bit `e` register view. Five native integer inouts check zero extension after a 32-bit register write.
 Original `movnti` runtime acceptance and sentinel checks remain pending on
 pinned CPPGM opcode support.
+
+`spec/source-memory-assembly/outcomes.json` declares pure and readonly source
+assembly, full 128-bit output snapshots, aliased stores and memory dependencies.
+Run `check_source_artifact_clients.py --case source-memory-assembly`. Original
+SSE4.1 `movntdqa` runtime acceptance remains pending on pinned backend support.

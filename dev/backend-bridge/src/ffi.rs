@@ -11,10 +11,9 @@
     reason = "the pinned CPPGM LowIR library is a C interface; this module alone calls it"
 )]
 use crate::records::{
-    ABI_VERSION, ASM_DIALECT_ATT, ASM_DIALECT_INTEL, ASM_MEMORY_NONE, ASM_MEMORY_READ_WRITE,
-    ArgumentFact, AsmAlternative, AsmGroup, AsmOperand, AsmPiece, AsmRegister, BINDING_DEFAULT,
-    BodyCounts, Boundary, DataItem, Instruction, Literal, NO_ID, Parameter, Slot, TARGET_LINUX,
-    Type, Value,
+    ABI_VERSION, ASM_DIALECT_ATT, ASM_DIALECT_INTEL, ArgumentFact, AsmAlternative, AsmGroup,
+    AsmOperand, AsmPiece, AsmRegister, BINDING_DEFAULT, BodyCounts, Boundary, DataItem,
+    Instruction, Literal, NO_ID, Parameter, Slot, TARGET_LINUX, Type, Value,
 };
 use std::{
     ffi::{CStr, CString, c_char, c_int, c_void},
@@ -141,7 +140,7 @@ pub struct Body<'a> {
 /// One assembly template with its dialect, memory effect and invocation arity.
 pub struct Template<'a> {
     pub att: bool,
-    pub nomem: bool,
+    pub memory: u8,
     pub arguments: u32,
     pub properties: u16,
     pub reads: u32,
@@ -412,11 +411,7 @@ impl Module {
             } else {
                 ASM_DIALECT_INTEL
             },
-            memory: if template.nomem {
-                ASM_MEMORY_NONE
-            } else {
-                ASM_MEMORY_READ_WRITE
-            },
+            memory: template.memory,
             properties: template.properties,
             state_read: template.reads,
             state_write: template.writes,

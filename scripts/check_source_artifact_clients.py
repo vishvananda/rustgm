@@ -86,14 +86,14 @@ def main():
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
                                  "source-captured-protocol-requests",
-                                 "source-integer-assembly", "source-fixed-registers"))
+                                 "source-integer-assembly", "source-fixed-registers", "source-memory-assembly"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers") else FIXTURES
+    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers", "source-memory-assembly") else FIXTURES
     fixture = fixture_root / args.case
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")

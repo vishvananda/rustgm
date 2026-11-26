@@ -73,12 +73,29 @@ pub fn option(options: u16) -> Result<(), &'static str> {
     }
 }
 
-/// The flags profile also preserves memory-free effects and AT&T templates.
+/// The extended profile preserves pure, readonly and memory-free effects,
+/// alongside AT&T templates.
 /// Other options retain their original diagnostic order.
 /// # Errors
 /// Returns the first option outside the flags extension.
 pub fn flags_option(options: u16) -> Result<(), &'static str> {
-    option(options & !(NOMEM | ATT_SYNTAX))
+    option(options & !(PURE | NOMEM | READONLY | ATT_SYNTAX))
+}
+
+/// Check the memory and output promises of an admitted extended instruction.
+/// # Errors
+/// Refuses incompatible memory options and a pure instruction without a real
+/// result or a memory contract that permits repeated evaluation.
+pub fn effects(options: u16, output: bool) -> Result<(), &'static str> {
+    if options & NOMEM != 0 && options & READONLY != 0 {
+        return Err("source assembly options are incompatible");
+    }
+    if options & PURE != 0
+        && (options & (NOMEM | READONLY) == 0 || options & NORETURN != 0 || !output)
+    {
+        return Err("pure assembly requires real outputs and nomem or readonly, without noreturn");
+    }
+    Ok(())
 }
 
 /// The finite fixed-GPR forms carried by the version-fourteen extension.
