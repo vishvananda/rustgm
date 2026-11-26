@@ -844,9 +844,10 @@ fn function_domain(
             && frame.parent.is_none()
             && domains.types.region_independent(key.root, work)?
     };
+    let valid_owner = frame.owner == owner || constant_function_root(domains, key, frame, work)?;
     if frame.kind != s::BinderKind::CallableType
         || !valid_frame
-        || frame.owner != owner
+        || !valid_owner
         || signature.convention != g::Convention::Rust
         || signature.variadic
     {
@@ -859,6 +860,26 @@ fn function_domain(
     domains
         .types
         .root(domains.headers, root_context, key.root, work)
+}
+
+/// Closed constant reads retain their exact declaration-header type recipe.
+/// This admits no captured binder, parameter or original allocation.
+fn constant_function_root(
+    domains: &DomainIndex<'_, '_>,
+    key: Key,
+    frame: &s::Binder,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    if !domains.declaration_policies
+        || frame.parent.is_some()
+        || !domains.types.closed_root(key.root, work)?
+    {
+        return Ok(false);
+    }
+    let Some(s::HeaderRef::Constant(index)) = domains.headers.header(frame.owner, work)? else {
+        return Ok(false);
+    };
+    Ok(domains.headers.rows().constants()[index as usize].ty == key.root)
 }
 
 /// A nominal's header context, which forms its field roots.

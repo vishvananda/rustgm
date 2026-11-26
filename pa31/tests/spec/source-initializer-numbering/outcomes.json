@@ -1,0 +1,19 @@
+{
+  "features": [
+    "auto_traits",
+    "const_destruct"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "escape.rs",
+    "observe.c"
+  ],
+  "stdout": "7 13 19 29 23 31\n",
+  "restricted_client": {
+    "path": "escape.rs",
+    "rustc": "returns a value referencing data owned by the current function",
+    "rustgm": "required lifetime does not outlive its target"
+  },
+  "older_profile": "source pointer const value requires its wider profile"
+}

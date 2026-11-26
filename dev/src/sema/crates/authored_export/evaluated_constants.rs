@@ -416,6 +416,41 @@ impl Stage {
         }
         Ok(s::ValueKind::Constant(row))
     }
+    /// A closed original constant keeps its header's exact recipe identity.
+    /// Callable recipes otherwise receive the caller's distinct binder frame.
+    pub(crate) fn constant_value_type(
+        &mut self,
+        facts: &Declarations,
+        definition: DefId,
+        ty: TypeId,
+        caller: Context,
+    ) -> Result<crate::support::crates::generics::TypeRef, &'static str> {
+        let context = if self.declaration_policies()
+            && closed_type(facts, ty)
+            && facts
+                .definitions
+                .get(definition.0 as usize)
+                .copied()
+                .flatten()
+                == Some(ty)
+            && self.has_constant_original(definition)?
+        {
+            let body = self.functions.bodies[&definition];
+            let original = *self
+                .functions
+                .contexts
+                .get(body.0 as usize)
+                .ok_or("source constant read lost its actual defining frame")?;
+            Context {
+                body: None,
+                ..original
+            }
+        } else {
+            caller
+        };
+        self.ty(facts, ty, context)
+    }
+
     /// Version thirteen: a free const's initializer is not an original. Its
     /// value travels evaluated in its header row; an unnamed const's travels
     /// nowhere, since no consumer can name it.

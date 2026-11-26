@@ -43,7 +43,11 @@ pub(super) fn emit(
             }
             _ => item(stage, facts, body, context, raw, value)?,
         };
-        let ty = stage.ty(facts, value.ty, context)?;
+        let ty = if let ir::Rvalue::Constant(definition) = value.kind {
+            stage.constant_value_type(facts, definition, value.ty, context)?
+        } else {
+            stage.ty(facts, value.ty, context)?
+        };
         if requests_formation(stage, facts, value.ty, kind) {
             sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
         }

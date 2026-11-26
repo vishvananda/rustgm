@@ -77,7 +77,8 @@ def main():
                                  "source-inline-const-transport",
                                  "source-comptime-call-transport",
                                  "source-nested-item-arguments",
-                                 "source-wide-scalar-transport"))
+                                 "source-wide-scalar-transport",
+                                 "source-initializer-numbering"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

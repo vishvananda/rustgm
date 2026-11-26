@@ -113,7 +113,14 @@ fn valid_child(parent: DefinitionKind, child: &super::super::Declaration) -> boo
         | DefinitionKind::SelfType
         | DefinitionKind::Function => true,
         DefinitionKind::Constant => {
-            child.definition.kind == DefinitionKind::Local && child.local.is_some()
+            // A function-pointer type may bind lifetimes, and a closure's value
+            // parameters are lexically owned by the enclosing constant. Complete
+            // body/formal checks still bind their exact closure and local slot.
+            match child.definition.kind {
+                DefinitionKind::RegionParameter => child.local.is_none(),
+                DefinitionKind::Local | DefinitionKind::ValueParameter => child.local.is_some(),
+                _ => false,
+            }
         }
         DefinitionKind::TypeAlias => matches!(
             child.definition.kind,

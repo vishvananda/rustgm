@@ -565,6 +565,9 @@ impl Graph {
             {
                 return Ok(());
             }
+            // A constant's function-pointer type can bind named lifetimes.
+            // The sealed callable recipe owns them; the name installs no type.
+            Some(s::HeaderRef::Constant(_)) if declaration_policies => return Ok(()),
             // The implementation's region belongs to its captured frame.
             Some(s::HeaderRef::Implementation(index))
                 if rows.implementations.get(index as usize).is_some_and(|row| {

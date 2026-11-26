@@ -1977,3 +1977,11 @@ and both compilers reject an implicit width change. Run
 `scripts/check_source_artifact_clients.py --case source-wide-scalar-transport`.
 The separate `runtime_provider.rs` / `runtime_client.rs` acceptance case remains
 unqualified: native wide-floating lowering is still an explicit open requirement.
+
+`source-initializer-numbering` preserves the separate semantic initializer of a
+closure-rooted constant in its syntax root's numbering unit. Six fresh native
+observations cover named function-pointer constants, a higher-ranked borrowed
+result, a block-rooted control, an unnamed compile-time closure check and a
+forwarder. The borrowed result must still reject a local reference escaping the
+client. Version thirteen refuses pointer constants; the v14 metadata does not
+include a nested closure's allocations in its initializer's allocation order.

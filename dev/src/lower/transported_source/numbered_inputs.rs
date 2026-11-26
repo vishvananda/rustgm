@@ -21,8 +21,21 @@ pub(super) fn emit(
         .body()
         .ok_or("source numbering lacks an original body")?;
     let allow_gaps = stage.declaration_policies();
+    // An initializer rooted in a closure or inline constant has a separate
+    // semantic owner in the syntax root's numbering unit. collect_body_contract
+    // already matched that owner to its exact checked initializer. Preserve its
+    // own allocations and omit nested-body gaps just as for the nested originals.
     if facts.body_regions.unit_of(source) != source
-        && !(allow_gaps && matches!(body.owner, Owner::Closure { .. } | Owner::AnonymousConstant))
+        && !(allow_gaps
+            && matches!(
+                body.owner,
+                Owner::Closure { .. }
+                    | Owner::AnonymousConstant
+                    | Owner::Initializer {
+                        kind: crate::sema::model::InitializerKind::Const,
+                        ..
+                    }
+            ))
     {
         return Err("nested source numbering requires complete parent/unit transport");
     }
@@ -211,3 +224,7 @@ fn join(
     *target = slot;
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/numbering_initializers.rs"]
+mod tests;

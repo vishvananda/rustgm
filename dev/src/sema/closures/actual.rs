@@ -80,11 +80,14 @@ pub(crate) fn arguments(
         .callables
         .generic_parameters(ItemId(owner.0))
     {
-        Some(parameters) => parameters,
-        None if !facts.generics.has_parameters(owner) => &[],
+        Some(parameters) => Cow::Borrowed(parameters),
+        None if !facts.generics.has_parameters(owner) => Cow::Borrowed(&[][..]),
+        // Initializers own declaration parameters without a function catalog.
+        // This only maps arguments; ordinary original/instance proof is separate.
+        None if facts.function_header(owner)?.is_none() => defining_parameters(facts, owner)?,
         None => return Err("missing enclosing closure parameters"),
     };
-    bind_arguments(facts, instance, body, parameters)
+    bind_arguments(facts, instance, body, &parameters)
 }
 
 fn bind_arguments(
