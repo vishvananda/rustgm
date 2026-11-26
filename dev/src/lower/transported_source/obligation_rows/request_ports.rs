@@ -345,7 +345,13 @@ impl Ports<'_> {
         if check_method {
             self.method_target(key, item, callable_type)?;
         }
-        let callable_type = self.request_callable(key, callee, callable_type)?;
+        // Only the final method call uses this node's MethodCall entry.
+        // Implicit receiver steps retain their separately authenticated plans.
+        let callable_type = if check_method {
+            self.request_callable(key, callee, callable_type)?
+        } else {
+            callable_type
+        };
         let Some(Type::FunctionItem {
             item,
             arguments,

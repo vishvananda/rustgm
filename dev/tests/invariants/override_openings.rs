@@ -9,21 +9,20 @@ use crate::{
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn source() -> Result<String> {
+fn source(fixture: &str) -> Result<String> {
     let foundation =
         crate::test_source::fixture("pa31/tests/spec/source-enum-role-transport/provider.rs")?;
     let prefix = foundation
         .split_once("#[rustc_diagnostic_item = \"Option\"]")
         .ok_or("actual foundation boundary")?
         .0;
-    let tail =
-        crate::test_source::fixture("pa31/tests/spec/source-override-late-binders/provider.rs")?;
+    let tail = crate::test_source::fixture(&format!("pa31/tests/spec/{fixture}/provider.rs"))?;
     Ok(format!("#![feature(auto_traits)]\n{prefix}{tail}"))
 }
 
 #[test]
 fn trait_call_openings_survive_override_binder_changes_and_reject_forgery() -> Result {
-    let text = source()?;
+    let text = source("source-override-late-binders")?;
     let report = crate::test_source::source_provider(&text, "override_openings")?;
     let identity = report
         .package
@@ -146,5 +145,71 @@ fn check_opening_forgeries(artifact: &crates::Interface) -> Result {
             "forged opening {case}"
         );
     }
+    Ok(())
+}
+
+#[test]
+fn shared_method_sites_keep_separate_protocol_targets_and_complete_openings() -> Result {
+    let text = source("source-shared-method-sites")?;
+    let artifact = crate::module_packets::exported_profile(
+        &text,
+        SourcePublication::ModuleBodyOperations,
+        "shared_method_sites",
+    )?;
+    let fresh = crates::decode(&crates::encode(&artifact)?)?;
+    let (rows, _, _) = crate::module_packets::raw(&fresh)?;
+    for (name, count) in [
+        ("through", 2),
+        ("through_nested", 3),
+        ("through_generic", 2),
+        ("through_trait", 2),
+    ] {
+        let original = rows
+            .originals
+            .iter()
+            .find(|body| {
+                rows.declarations[body.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some(name)
+            })
+            .ok_or("actual shared-site method body")?;
+        assert_eq!(original.calls.len(), count, "{name}");
+        let site = original.calls[0].site;
+        let mut openings = Vec::new();
+        let mut targets = Vec::new();
+        for call in &original.calls {
+            assert_eq!(
+                call.site, site,
+                "calls must really share their semantic source node"
+            );
+            let opening = call.opening.ok_or("actual call opening")?;
+            openings.push(opening.regions.slice(&original.openings)?.len());
+            let target = rows.function_applications[call.target.0 as usize]
+                .declaration
+                .declaration;
+            targets.push(
+                rows.declarations[target.0 as usize]
+                    .name
+                    .as_deref()
+                    .ok_or("target name")?,
+            );
+        }
+        assert_eq!(openings.last(), Some(&2));
+        assert!(openings[..count - 1].iter().all(|&count| count == 1));
+        assert!(targets[..count - 1].iter().all(|&name| name == "deref"));
+        assert_eq!(
+            targets[count - 1],
+            if name == "through_trait" {
+                "select"
+            } else {
+                "choose"
+            }
+        );
+    }
+    crate::source_packets::client_analysis(
+        fresh,
+        "#![feature(no_core)]#![no_core]extern crate base;pub fn observe()->u32{base::through(&base::Outer(base::Value(11)),&base::Value(22),true)}",
+    )?;
     Ok(())
 }

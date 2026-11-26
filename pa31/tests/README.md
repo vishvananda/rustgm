@@ -2029,3 +2029,12 @@ forwarding, equal and unequal values remain distinct. A wrong right-hand operand
 rejects for incompatible types in both compilers; version 13 refuses the callable
 frames. The private witness requires the actual binder difference and rejects
 foreign, incomplete and missing openings without weakening raw validation.
+
+`source-shared-method-sites` checks eight native observations for method calls
+through one or two implicit dereferences, generic receivers and a final selected
+trait method. Each implicit receiver call has its own checked protocol plan; the
+source node's method entry belongs to the final call. Version 14 restores a
+method's original binder only for that final call. A private witness requires
+several calls at one source site, distinct targets and complete one/two-lifetime
+openings. A wrong argument rejects semantically in both compilers; version 13
+refuses the Deref role form.
