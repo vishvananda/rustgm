@@ -1236,6 +1236,15 @@
       "adaptation": "none; original bytes retained; x86-64 function bodies are inserted verbatim into the no_core fixture",
       "oracle": "source-integer-assembly/outcomes.json",
       "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/cpuid.rs",
+      "destination": "pa41/tests/upstream/rust/cpuid.rs",
+      "sha256": "7061c9caa88fe5ddeff983f94cb921c921f948f85bd483c56fd62001136747c3",
+      "adaptation": "none; original bytes retained; declaration and complete active tail are inserted verbatim into an authored generic wrapper",
+      "oracle": "source-fixed-registers/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

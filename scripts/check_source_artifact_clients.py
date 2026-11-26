@@ -86,14 +86,14 @@ def main():
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
                                  "source-captured-protocol-requests",
-                                 "source-integer-assembly"))
+                                 "source-integer-assembly", "source-fixed-registers"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    fixture_root = ROOT / "pa41/tests/spec" if args.case == "source-integer-assembly" else FIXTURES
+    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers") else FIXTURES
     fixture = fixture_root / args.case
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")
@@ -126,6 +126,25 @@ def main():
                   1, [refusal], timeout=30)
         if old.exists():
             raise ValueError("older source profile published the new metadata")
+    if fences := contract.get("profile_fences"):
+        prefix, found, _ = source.read_bytes().partition(fences["prefix_marker"].encode())
+        if not found:
+            raise ValueError("profile fence has no declared source prefix")
+        for name in fences["cases"]:
+            stem = Path(name).stem
+            fenced = check.folder / name
+            fenced.write_bytes(prefix + (fixture / name).read_bytes())
+            check.run(f"fence-rustc-{stem}", [args.rustc.resolve(strict=True), "--edition=2024",
+                      "--crate-type=lib", "--crate-name=base", "--emit=metadata", "-o",
+                      check.folder / f"{stem}.rmeta", fenced], fences["rustc_status"],
+                      timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
+            for profile in fences["profiles"]:
+                rejected = check.folder / f"{stem}-{profile}.rgcrate"
+                check.run(f"fence-{stem}-{profile}", [*exporter, "--source-profile", profile,
+                          "--metadata-output", rejected, "-o", check.folder / f"{stem}.lowir",
+                          fenced], fences["rustgm_status"], [fences["rustgm"]], timeout=30)
+                if rejected.exists():
+                    raise ValueError("unsupported profile published discarded writes")
     if error := contract.get("unmarked_error"):
         marker = b"#[rustc_promotable]\n"
         text = source.read_bytes()

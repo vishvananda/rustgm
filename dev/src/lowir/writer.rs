@@ -209,7 +209,7 @@ fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
                 kind.stored(),
                 u8::from(binding.output.is_some() && !binding.late)
             )?;
-            for register in kind.registers() {
+            for register in binding.registers() {
                 writeln!(out, "      group ({register}:0)")?;
             }
             writeln!(out, "    }}\n  }}")?;
@@ -221,7 +221,7 @@ fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
                     quoted(assemblies.text(range).map_err(io::Error::other)?, out)?;
                     writeln!(out)?;
                 }
-                Piece::Use(operand) => writeln!(out, "  use {operand} 0 0 0")?,
+                Piece::Use { operand, bits } => writeln!(out, "  use {operand} 0 {bits} 0")?,
             }
         }
         writeln!(out, "}}")?;

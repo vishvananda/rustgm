@@ -31,12 +31,22 @@ pub(super) fn preflight(
         if stage.declaration_policies() {
             assembly::profile::flags(data, instruction, |operand| {
                 let ty = operand.ty.ok_or("source assembly operand lost its type")?;
-                if operand.register == Register::General && flags_integer(facts, ty) {
-                    Ok(())
-                } else if operand.output.is_some() {
-                    Err(OUTPUT)
-                } else {
-                    input_type(facts, operand.register, ty)
+                let integer = match facts.types.kind(ty) {
+                    Some(Kind::Primitive(primitive)) => assembly::profile::integer_bytes(primitive),
+                    _ => None,
+                };
+                match operand.register {
+                    Register::General if integer.is_some() => Ok(()),
+                    Register::Explicit { base, bytes, xmm } => {
+                        crate::support::initial_assembly::fixed_register(base, bytes, xmm)?;
+                        if integer == Some(bytes) {
+                            Ok(())
+                        } else {
+                            Err("assembly fixed register width differs from its integer operand")
+                        }
+                    }
+                    _ if operand.output.is_some() => Err(OUTPUT),
+                    _ => input_type(facts, operand.register, ty),
                 }
             })?;
         } else {
@@ -179,6 +189,7 @@ fn operand_row(
     let class = match operand.register {
         Register::General => s::AssemblyClass::General,
         Register::Xmm => s::AssemblyClass::Vector,
+        Register::Explicit { base, bytes, xmm } => s::AssemblyClass::Explicit { base, bytes, xmm },
         register => return Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     };
     let ty = operand.ty.ok_or("source assembly operand lost its type")?;
@@ -221,12 +232,3 @@ const fn range(list: List) -> g::Range {
 #[cfg(test)]
 #[path = "../../../../tests/invariants/register_rows.rs"]
 mod tests;
-
-fn flags_integer(facts: &Declarations, ty: TypeId) -> bool {
-    matches!(
-        facts.types.kind(ty),
-        Some(Kind::Primitive(
-            Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize
-        ))
-    )
-}

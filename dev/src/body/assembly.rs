@@ -22,6 +22,8 @@ pub struct Operand {
     pub(crate) register: Register,
     pub input: Option<ValueId>,
     pub output: Option<Place>,
+    /// A write whose result is discarded, distinct from a read-only input.
+    pub discarded_output: bool,
     pub ty: Option<TypeId>,
     pub late: bool,
 }
@@ -168,6 +170,9 @@ pub(crate) fn validate(body: &super::ir::Body) -> Result<(), &'static str> {
                     return Err("assembly input order differs from retained operands");
                 }
                 for operand in operands {
+                    if operand.discarded_output && operand.output.is_some() {
+                        return Err("assembly output is both stored and discarded");
+                    }
                     if let Some(id) = operand.input
                         && body
                             .values

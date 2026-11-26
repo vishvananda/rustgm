@@ -344,5 +344,12 @@
     "transport": "v14 retains output places and AssemblyOutput nodes; v13 remains unchanged",
     "acceptance": "source-integer-assembly/outcomes.json",
     "backend_limit": "The pinned encoder rejects pushfq/popfq. Original flags runtime acceptance remains pending in source-integer-assembly/outcomes.json; integer register execution is independently qualified."
+  },
+  "cpuid_register_extension": {
+    "registers": "32- and 64-bit integer GPR inputs and outputs; fixed GPR aliases preserve exact base and width",
+    "views": "r selects the full 64-bit view of a general register; other new modifiers remain fenced",
+    "transport": "v14 carries fixed GPR payloads and r views; v13 rejects these forms before reading their payload",
+    "native_acceptance": "source-fixed-registers/outcomes.json; actual original CPUID tail with all outputs and RBX preservation",
+    "discarded_outputs": "Typed discarded writes remain distinct from inputs and are refused by both source profiles and native admission; no discarded-result encoding is defined."
   }
 }

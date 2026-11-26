@@ -1,0 +1,51 @@
+{
+  "foundation": "pa41/tests/spec/asm-native/native.rs",
+  "prefix_marker": "#[repr(simd)]",
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c",
+    "discarded-pointer.rs",
+    "discarded-fixed.rs"
+  ],
+  "originals": [
+    {
+      "path": "pa41/tests/upstream/rust/cpuid.rs",
+      "start": 415,
+      "end": 817,
+      "sha256": "d4c2d60a3ccbbb622c47e7aa131843a325ae43786dc01cbacb65dd4996b5aa30",
+      "marker": "// ORIGINAL_RESULT"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/cpuid.rs",
+      "start": 2811,
+      "end": 3703,
+      "sha256": "a2623cd0163995f301b02013a5a554d185da152e2d5ab8c0c796e14de1998432",
+      "marker": "// ORIGINAL_CPUID_TAIL"
+    }
+  ],
+  "stdout": "1 1 1 1 1 1 1 1 1 1 1 1 -1 123 1 32 42\n",
+  "older_profile": "inline assembly output operand is outside the initial assembly profile",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "mismatched types",
+    "rustgm": "incompatible types"
+  },
+  "profile_fences": {
+    "prefix_marker": "pub struct CpuidResult",
+    "cases": [
+      "discarded-pointer.rs",
+      "discarded-fixed.rs"
+    ],
+    "profiles": [
+      "module-body-operations-v14",
+      "module-bodies-v13"
+    ],
+    "rustc_status": 0,
+    "rustgm_status": 1,
+    "rustgm": "inline assembly output operand is outside the initial assembly profile",
+    "kind": "unsupported profile: discarded writes remain typed, never treated as read-only inputs"
+  },
+  "late_overlap": "A fixed input and late output may share a physical register in either operand order; this differs from illegal duplicate reads or early writes."
+}

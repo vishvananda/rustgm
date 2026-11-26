@@ -640,16 +640,15 @@ pub struct AssemblyPiece {
     /// Only zero decodes; no modifier encoding is defined yet.
     pub modifier: u8,
 }
-/// The register class tags. Only `General` (`reg`) and `Vector` (`xmm_reg`)
-/// have a wire layout; the others are reserved tags every reader refuses by
-/// their initial-profile texts, so a writer can only forge them.
+/// Register class tags: v13 carries general/vector inputs; v14 additionally
+/// retains the exact fixed GPR base, alias width and bank.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AssemblyClass {
     General,
     Abcd,
     Byte,
     Vector,
-    Explicit,
+    Explicit { base: u8, bytes: u8, xmm: bool },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AssemblyOperand {

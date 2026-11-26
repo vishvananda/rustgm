@@ -61,3 +61,9 @@ with `--case source-integer-assembly`.
 Original flags execution remains an unqualified expected-success case because
 the pinned encoder does not implement `pushfq`/`popfq`; the outcome manifest
 keeps that acceptance separate from the five qualified integer observers.
+
+`spec/source-fixed-registers/outcomes.json` declares v14 CPUID transport and
+native execution: 32-bit general outputs, exact fixed GPR aliases and the `r`
+view. The original active body tail is byte-preserved; independent C queries
+check all fields, a 64-bit RBX canary, signed inlateout and an ordinary control.
+Run `check_source_artifact_clients.py --case source-fixed-registers`.

@@ -437,3 +437,37 @@ fn asm_storage_and_width_growth_remain_cold_and_body_owned() -> Result {
     assert!(report.prepare_assembly(key, 1, 0).is_err());
     Ok(())
 }
+
+#[test]
+fn discarded_inout_writes_stay_distinct_from_read_only_inputs() -> Result {
+    for name in ["discarded-pointer", "discarded-fixed"] {
+        let input = crate::test_source::fixture(&format!(
+            "pa41/tests/spec/source-fixed-registers/{name}.rs"
+        ))?;
+        let text = format!("{}{}", vectors::foundation()?, input.replace("<T>", ""));
+        let report = crate::test_source::source_provider(&text, "discarded_asm")?;
+        let analysis = crate::pipeline::analyze_source(&report)?;
+        let bodies = body::build_concrete(&report, &analysis.facts)?;
+        let actual = bodies
+            .bodies
+            .iter()
+            .find(|body| body.assembly.is_some())
+            .ok_or("discarded assembly body")?;
+        super::validate(actual)?;
+        let data = actual.assembly.as_deref().ok_or("actual payload")?;
+        assert_eq!(data.operands.len(), 1);
+        let operand = data.operands[0];
+        assert!(operand.discarded_output && operand.input.is_some() && operand.output.is_none());
+        let instruction = &data.instructions[0];
+        let text = crate::support::initial_assembly::OUTPUT;
+        assert_eq!(
+            super::profile::admit(data, instruction, |_, _| Ok(())).err(),
+            Some(text)
+        );
+        assert_eq!(
+            super::profile::flags(data, instruction, |_| Ok(())).err(),
+            Some(text)
+        );
+    }
+    Ok(())
+}

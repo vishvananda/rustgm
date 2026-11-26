@@ -1,7 +1,5 @@
-//! Version thirteen's cold inline assembly columns. Only the initial assembly
-//! profile's forms have a wire layout: every other defined tag, bit or byte
-//! is refused by the profile's own text, and no reserved payload is written
-//! or read.
+//! Inline assembly columns: v13 admits the initial profile; v14 additionally
+//! carries integer outputs, exact fixed GPR aliases and full-register views.
 use super::{Input, Writer, crates, id, option, range, s, write};
 use crate::support::initial_assembly as profile;
 
@@ -72,26 +70,32 @@ fn instruction_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyInstruction, 
 }
 fn piece_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyPiece, &'static str> {
     let (start, end, operand) = (read.id()?, read.id()?, read.id()?);
-    if read.reader.u8()? != 0 {
+    let modifier = read.reader.u8()?;
+    if modifier != 0 && !(modifier == b'r' && read.profile.declaration_policies()) {
         return Err(profile::MODIFIER);
     }
     Ok(s::AssemblyPiece {
         start,
         end,
         operand,
-        modifier: 0,
+        modifier,
     })
 }
 fn operand_write(out: &mut Writer, row: &s::AssemblyOperand) -> Result<(), &'static str> {
-    // Reserved class tags have no payload layout, so neither side has one.
+    // Tag four has an exact fixed-register payload only in version fourteen.
     let tag = match row.class {
         s::AssemblyClass::General => 0,
         s::AssemblyClass::Abcd => return Err(profile::ABCD),
         s::AssemblyClass::Byte => return Err(profile::BYTE),
         s::AssemblyClass::Vector => 3,
-        s::AssemblyClass::Explicit => return Err(profile::EXPLICIT),
+        s::AssemblyClass::Explicit { .. } => 4,
     };
     out.u8(tag)?;
+    if let s::AssemblyClass::Explicit { base, bytes, xmm } = row.class {
+        out.u8(base)?;
+        out.u8(bytes)?;
+        out.u8(u8::from(xmm))?;
+    }
     option(out, row.input)?;
     out.u8(u8::from(row.output.is_some()))?;
     if let Some(place) = row.output {
@@ -106,6 +110,11 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyOperand, &'static
         1 => return Err(profile::ABCD),
         2 => return Err(profile::BYTE),
         3 => s::AssemblyClass::Vector,
+        4 if read.profile.declaration_policies() => s::AssemblyClass::Explicit {
+            base: read.reader.u8()?,
+            bytes: read.reader.u8()?,
+            xmm: read.boolean()?,
+        },
         4 => return Err(profile::EXPLICIT),
         _ => return Err("unknown source assembly register class"),
     };

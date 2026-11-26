@@ -411,3 +411,144 @@ fn integer_outputs_keep_exact_effect_place_type_and_version_boundaries() -> Resu
     );
     Ok(())
 }
+
+fn fixed_provider() -> Result<crates::Interface> {
+    let foundation = crate::test_source::fixture(PROVIDER)?;
+    let (foundation, _) = foundation.split_once(MARKER).ok_or("assembly foundation")?;
+    let original = crate::test_source::fixture("pa41/tests/upstream/rust/cpuid.rs")?;
+    let structure = original
+        .find("pub struct CpuidResult")
+        .ok_or("original result")?;
+    let structure_end = structure + original[structure..].find("\n}").ok_or("result end")? + 2;
+    let function = original
+        .find("pub fn __cpuid_count")
+        .ok_or("original query")?;
+    let tail = function
+        + original[function..]
+            .find("    let eax;")
+            .ok_or("output declarations")?;
+    let tail_end = tail + original[tail..].find("\n}").ok_or("query end")? + 2;
+    let body = crate::test_source::fixture("pa41/tests/spec/source-fixed-registers/provider.rs")?
+        .replace("// ORIGINAL_RESULT", &original[structure..structure_end])
+        .replace("// ORIGINAL_CPUID_TAIL", &original[tail..tail_end]);
+    exported_profile(
+        &format!("{foundation}{body}"),
+        SourcePublication::ModuleBodyOperations,
+        "fixed_registers",
+    )
+}
+
+type FixedForgery = fn(&mut s::Original);
+const FIXED_FORGED: [(&str, FixedForgery, &str); 7] = [
+    (
+        "reserved base",
+        |body| {
+            columns(body).operands[1].class = s::AssemblyClass::Explicit {
+                base: 4,
+                bytes: 4,
+                xmm: false,
+            }
+        },
+        "source assembly fixed register is reserved or outside the profile",
+    ),
+    (
+        "wrong width",
+        |body| {
+            columns(body).operands[1].class = s::AssemblyClass::Explicit {
+                base: 0,
+                bytes: 8,
+                xmm: false,
+            }
+        },
+        "assembly fixed register width differs from its integer operand",
+    ),
+    (
+        "same physical register",
+        |body| {
+            columns(body).operands[2].class = s::AssemblyClass::Explicit {
+                base: 0,
+                bytes: 4,
+                xmm: false,
+            }
+        },
+        "source assembly operands overlap the same explicit register",
+    ),
+    (
+        "unknown view",
+        |body| columns(body).pieces[0].modifier = b'e',
+        profile::MODIFIER,
+    ),
+    (
+        "erased view",
+        |body| columns(body).pieces[0].modifier = 0,
+        MALFORMED,
+    ),
+    (
+        "explicit placeholder",
+        |body| columns(body).pieces[0].operand = 1,
+        "source assembly explicit register is named by a placeholder",
+    ),
+    (
+        "wrong bank",
+        |body| {
+            columns(body).operands[1].class = s::AssemblyClass::Explicit {
+                base: 0,
+                bytes: 4,
+                xmm: true,
+            }
+        },
+        "source assembly fixed register is reserved or outside the profile",
+    ),
+];
+
+#[test]
+fn fixed_registers_keep_their_width_alias_and_view_in_fresh_rows() -> Result {
+    let interface = fixed_provider()?;
+    let bytes = crates::encode(&interface)?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    let (rows, _, _) = raw(&decoded)?;
+    let index = original(&rows, "mov {0:r}, rbx")?;
+    let actual = rows.originals[index]
+        .assembly
+        .as_deref()
+        .ok_or("actual CPUID payload")?;
+    assert_eq!(actual.operands.len(), 4);
+    assert_eq!(actual.operands[0].class, s::AssemblyClass::General);
+    for (operand, base) in [(1, 0), (2, 1), (3, 2)] {
+        assert_eq!(
+            actual.operands[operand].class,
+            s::AssemblyClass::Explicit {
+                base,
+                bytes: 4,
+                xmm: false
+            }
+        );
+    }
+    assert_eq!(
+        actual
+            .pieces
+            .iter()
+            .filter(|piece| piece.modifier == b'r')
+            .count(),
+        2
+    );
+    for (name, forge, expected) in FIXED_FORGED {
+        let mut forged = rows.clone();
+        forge(&mut forged.originals[index]);
+        let (_, attributes, modules) = raw(&decoded)?;
+        let descriptor = decoded.source_descriptor().ok_or("actual descriptor")?;
+        let error = g::Payload::from_source_module_body_operations(
+            decoded.identity(),
+            forged,
+            attributes,
+            modules,
+            descriptor.availability()?.clone(),
+            0,
+            &mut g::Work::default(),
+        )
+        .err();
+        assert_eq!(error, Some(expected), "{name}");
+    }
+    Ok(())
+}

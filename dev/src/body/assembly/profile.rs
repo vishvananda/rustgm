@@ -1,5 +1,5 @@
-//! The initial assembly profile's one check order over a body's payload,
-//! shared by native lowering and version-thirteen source export. Its texts
+//! The initial assembly profile and its integer-register extension share
+//! one check order over a body's payload. Its texts
 //! are `support::initial_assembly`'s, which every reader shares as well.
 use super::{Instruction, Payload, Template};
 use crate::{
@@ -32,6 +32,9 @@ pub(crate) fn admit(
     mut input: impl FnMut(Register, ValueId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     checked(data, instruction, false, |operand| {
+        if operand.discarded_output {
+            return Err(OUTPUT);
+        }
         let (Some(value), None) = (operand.input, operand.output) else {
             return Err(OUTPUT);
         };
@@ -46,7 +49,7 @@ pub(crate) fn flags(
 ) -> Result<(), &'static str> {
     let mut operand = operand;
     checked(data, instruction, true, |value| {
-        if value.input.is_none() && value.output.is_none() {
+        if value.discarded_output || value.input.is_none() && value.output.is_none() {
             return Err(OUTPUT);
         }
         operand(value)
@@ -69,7 +72,9 @@ fn checked(
         .ok_or("assembly operand range is invalid")?;
     for operand in operands {
         check(operand)?;
-        if let Some(form) = class(operand.register) {
+        if !(flags && matches!(operand.register, Register::Explicit { xmm: false, .. }))
+            && let Some(form) = class(operand.register)
+        {
             return Err(form);
         }
     }
@@ -83,7 +88,14 @@ fn checked(
             .ok_or("assembly piece range is invalid")
     };
     for template in templates {
-        if pieces(template)?.iter().any(|piece| piece.modifier != 0) {
+        if pieces(template)?.iter().any(|piece| {
+            piece.modifier != 0
+                && !(flags
+                    && piece.modifier == b'r'
+                    && operands
+                        .get(piece.operand as usize)
+                        .is_some_and(|operand| operand.register == Register::General))
+        }) {
             return Err(MODIFIER);
         }
     }
@@ -95,4 +107,14 @@ fn checked(
         comments.template(&template.text, spans)?;
     }
     Ok(())
+}
+
+/// Widths admitted by the integer-register extension, on the course target.
+pub(crate) const fn integer_bytes(primitive: crate::types::Primitive) -> Option<u8> {
+    use crate::types::Primitive;
+    match primitive {
+        Primitive::I32 | Primitive::U32 => Some(4),
+        Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize => Some(8),
+        _ => None,
+    }
 }

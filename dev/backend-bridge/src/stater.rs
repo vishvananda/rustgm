@@ -320,7 +320,7 @@ impl<'p> Stater<'p> {
             for (index, &binding) in kinds.iter().enumerate() {
                 let kind = binding.kind;
                 let first_group = count(groups.len())?;
-                for name in kind.registers() {
+                for name in binding.registers() {
                     let Some(register) = register(name) else {
                         self.forms
                             .note("assembly register the bridge does not name");
@@ -348,7 +348,7 @@ impl<'p> Stater<'p> {
                     ty: match kind {
                         Kind::Pointer => TYPE_PTR,
                         Kind::Vector => TYPE_V128,
-                        Kind::Integer => TYPE_I64,
+                        Kind::Integer(ty) => scalar(ty),
                     },
                     input: binding.input.unwrap_or(NO_ID),
                     output: binding.output.unwrap_or(NO_ID),
@@ -376,9 +376,10 @@ impl<'p> Stater<'p> {
                             ..AsmPiece::default()
                         }
                     }
-                    Part::Use(operand) => AsmPiece {
+                    Part::Use { operand, bits } => AsmPiece {
                         kind: ASM_PIECE_OPERAND,
                         operand,
+                        bits,
                         ..AsmPiece::default()
                     },
                 });

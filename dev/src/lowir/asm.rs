@@ -1,5 +1,8 @@
 //! Inline assembly templates: typed operand kinds, literal text and operand uses.
-use super::program::{Range, index};
+use super::{
+    program::{Range, index},
+    vocabulary::Type,
+};
 
 /// A program-wide template identity, in definition order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -30,17 +33,26 @@ const STATE: u8 = 63;
 pub enum Kind {
     /// A captured `ptr` bound to a general register other than rbx, rbp and rsp.
     Pointer,
-    /// A 64-bit integer in a general register.
-    Integer,
+    /// A signed/unsigned 32-bit or raw 64-bit integer in a general register.
+    Integer(Type),
     /// A `v128` whose `ptr` argument addresses its snapshot; the backend loads
     /// it into one of xmm0 to xmm15.
     Vector,
 }
 impl Kind {
+    /// The backend value type of the operand, before storage indirection.
+    #[must_use]
+    pub const fn scalar_type(self) -> Type {
+        match self {
+            Self::Pointer => Type::Ptr,
+            Self::Integer(ty) => ty,
+            Self::Vector => Type::V128,
+        }
+    }
     pub(super) const fn type_name(self) -> &'static str {
         match self {
             Self::Pointer => "ptr",
-            Self::Integer => "i64",
+            Self::Integer(ty) => ty.name(),
             Self::Vector => "v128",
         }
     }
@@ -48,7 +60,7 @@ impl Kind {
     #[must_use]
     pub const fn stored(self) -> u8 {
         match self {
-            Self::Pointer | Self::Integer => 0,
+            Self::Pointer | Self::Integer(_) => 0,
             Self::Vector => 1,
         }
     }
@@ -56,7 +68,7 @@ impl Kind {
     #[must_use]
     pub const fn registers(self) -> &'static [&'static str] {
         match self {
-            Self::Pointer | Self::Integer => &[
+            Self::Pointer | Self::Integer(_) => &[
                 "rax", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14",
                 "r15",
             ],
@@ -67,15 +79,80 @@ impl Kind {
         }
     }
 }
+/// A fixed general register admitted by Rust's x86-64 operand rules.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Gpr {
+    Ax,
+    Cx,
+    Dx,
+    Si,
+    Di,
+    R8,
+    R9,
+    R10,
+    R11,
+    R12,
+    R13,
+    R14,
+    R15,
+}
+impl Gpr {
+    /// # Errors
+    /// Refuses reserved or unknown physical register numbers.
+    pub fn from_base(base: u8) -> Result<Self, &'static str> {
+        match base {
+            0 => Ok(Self::Ax),
+            1 => Ok(Self::Cx),
+            2 => Ok(Self::Dx),
+            6 => Ok(Self::Si),
+            7 => Ok(Self::Di),
+            8 => Ok(Self::R8),
+            9 => Ok(Self::R9),
+            10 => Ok(Self::R10),
+            11 => Ok(Self::R11),
+            12 => Ok(Self::R12),
+            13 => Ok(Self::R13),
+            14 => Ok(Self::R14),
+            15 => Ok(Self::R15),
+            _ => Err("unsupported LowIR fixed general register"),
+        }
+    }
+    const fn registers(self) -> &'static [&'static str] {
+        match self {
+            Self::Ax => &["rax"],
+            Self::Cx => &["rcx"],
+            Self::Dx => &["rdx"],
+            Self::Si => &["rsi"],
+            Self::Di => &["rdi"],
+            Self::R8 => &["r8"],
+            Self::R9 => &["r9"],
+            Self::R10 => &["r10"],
+            Self::R11 => &["r11"],
+            Self::R12 => &["r12"],
+            Self::R13 => &["r13"],
+            Self::R14 => &["r14"],
+            Self::R15 => &["r15"],
+        }
+    }
+}
 /// One register operand and its positions in the invocation argument list.
 #[derive(Clone, Copy, Debug)]
 pub struct Binding {
     pub kind: Kind,
+    pub fixed: Option<Gpr>,
     pub input: Option<u32>,
     pub output: Option<u32>,
     pub late: bool,
 }
 impl Binding {
+    /// The singleton fixed register or the kind's selectable register groups.
+    #[must_use]
+    pub const fn registers(self) -> &'static [&'static str] {
+        match self.fixed {
+            Some(register) => register.registers(),
+            None => self.kind.registers(),
+        }
+    }
     /// Backend operand read/write bits.
     #[must_use]
     pub const fn flags(self) -> u8 {
@@ -87,7 +164,7 @@ pub(super) enum Piece {
     /// Literal assembly bytes in the shared text.
     Text(Range),
     /// The register bound to one operand, in its type's view.
-    Use(u32),
+    Use { operand: u32, bits: u16 },
 }
 #[derive(Clone, Copy, Debug)]
 pub(super) struct Template {
@@ -114,7 +191,7 @@ pub enum Part<'a> {
     /// Literal assembly text.
     Text(&'a str),
     /// The register bound to one operand of the template.
-    Use(u32),
+    Use { operand: u32, bits: u16 },
 }
 /// One defined template, read in definition order by a serializer.
 #[derive(Clone, Copy)]
@@ -155,7 +232,7 @@ impl<'a> Reading<'a> {
             .iter()
             .map(|piece| match *piece {
                 Piece::Text(range) => self.assemblies.text(range).map(Part::Text),
-                Piece::Use(operand) => Ok(Part::Use(operand)),
+                Piece::Use { operand, bits } => Ok(Part::Use { operand, bits }),
             })
             .collect()
     }
@@ -209,7 +286,7 @@ impl<'a> Draft<'a> {
     /// # Errors
     /// Rejects an operand after the first piece and exhausted identities.
     pub fn operand(&mut self, kind: Kind) -> Result<(), &'static str> {
-        self.binding(kind, true, false, false)
+        self.binding(kind, None, true, false, false)
     }
     /// Append an input, an output snapshot, or a read/write register operand.
     /// # Errors
@@ -217,12 +294,18 @@ impl<'a> Draft<'a> {
     pub fn binding(
         &mut self,
         kind: Kind,
+        fixed: Option<Gpr>,
         input: bool,
         output: bool,
         late: bool,
     ) -> Result<(), &'static str> {
         if index(self.assemblies.pieces.len())? != self.pieces || (!input && !output) {
             return Err("invalid LowIR assembly operand or order");
+        }
+        if matches!(kind, Kind::Integer(ty) if !matches!(ty, Type::I32 | Type::U32 | Type::I64))
+            || fixed.is_some() && kind == Kind::Vector
+        {
+            return Err("unsupported LowIR assembly register type");
         }
         index(self.assemblies.operands.len() + 1)?;
         let mut next = || -> Result<u32, &'static str> {
@@ -236,6 +319,7 @@ impl<'a> Draft<'a> {
         let output = output.then(&mut next).transpose()?;
         self.assemblies.operands.push(Binding {
             kind,
+            fixed,
             input,
             output,
             late,
@@ -274,12 +358,24 @@ impl<'a> Draft<'a> {
     /// # Errors
     /// Rejects a use of an operand this template does not declare.
     pub fn operand_use(&mut self, operand: u32) -> Result<(), &'static str> {
+        self.operand_use_view(operand, 0)
+    }
+    /// Use the default register view or its full 64-bit general-register view.
+    /// # Errors
+    /// Refuses stale operands, unsupported views and vector widening.
+    pub fn operand_use_view(&mut self, operand: u32, bits: u16) -> Result<(), &'static str> {
         let declared = index(self.assemblies.operands.len())? - self.operands;
         if operand >= declared {
             return Err("LowIR assembly use names an undeclared operand");
         }
         index(self.assemblies.pieces.len() + 1)?;
-        self.assemblies.pieces.push(Piece::Use(operand));
+        if !matches!(bits, 0 | 64)
+            || bits != 0
+                && self.assemblies.operands[(self.operands + operand) as usize].kind == Kind::Vector
+        {
+            return Err("unsupported LowIR assembly operand view");
+        }
+        self.assemblies.pieces.push(Piece::Use { operand, bits });
         Ok(())
     }
     /// # Errors

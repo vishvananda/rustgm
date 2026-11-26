@@ -28,7 +28,7 @@
 //! - `rg_library_tick()`: its thread's instance of the thread-local
 //!   `rg_library_ticks`, which starts at 10, incremented.
 use rustgm::lowir::{
-    asm::{self, Kind},
+    asm::{self, Gpr, Kind},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
     data::{GlobalStorage, Item, Target},
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
@@ -77,12 +77,12 @@ fn answer(program: &mut Program) -> Result<(), &'static str> {
     let signature = program.signature(&[Type::I64], Type::I64, false)?;
     let symbol = program.declare("rg_library_answer".into(), signature, false)?;
     let mut draft = program.assembly()?;
-    draft.binding(Kind::Integer, true, true, false)?;
-    draft.binding(Kind::Integer, true, false, false)?;
+    draft.binding(Kind::Integer(Type::I64), Some(Gpr::Ax), true, true, false)?;
+    draft.binding(Kind::Integer(Type::I64), None, true, false, false)?;
     draft.text("add ")?;
     draft.operand_use(1)?;
     draft.text(", ")?;
-    draft.operand_use(0)?;
+    draft.operand_use_view(0, 64)?;
     let template = draft.finish_flags(asm::SIDE_EFFECT, 0, asm::FLAGS, true, true)?;
     let mut body = program.body_builder();
     let entry = body.block()?;

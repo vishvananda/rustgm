@@ -81,6 +81,17 @@ pub fn flags_option(options: u16) -> Result<(), &'static str> {
     option(options & !(NOMEM | ATT_SYNTAX))
 }
 
+/// The finite fixed-GPR forms carried by the version-fourteen extension.
+/// # Errors
+/// Refuses reserved registers, unsupported widths and vector aliases.
+pub fn fixed_register(base: u8, bytes: u8, xmm: bool) -> Result<(), &'static str> {
+    if !xmm && matches!(base, 0..=2 | 6..=15) && matches!(bytes, 4 | 8) {
+        Ok(())
+    } else {
+        Err("source assembly fixed register is reserved or outside the profile")
+    }
+}
+
 /// Where the pinned assembler's reading of an instruction's text stands.
 #[derive(Clone, Copy, Default)]
 enum Lexeme {

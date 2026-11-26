@@ -202,6 +202,14 @@ impl Builder<'_> {
                 register,
                 input: input_value,
                 output: out,
+                discarded_output: output.is_none()
+                    && matches!(
+                        direction,
+                        Direction::Out
+                            | Direction::LateOut
+                            | Direction::InOut
+                            | Direction::InLateOut
+                    ),
                 ty,
                 late: matches!(direction, Direction::LateOut | Direction::InLateOut),
             });

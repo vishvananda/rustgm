@@ -511,9 +511,9 @@ impl Builder {
     pub fn asm(&mut self, template: AssemblyId, arguments: &[Value]) -> Result<(), &'static str> {
         if arguments
             .iter()
-            .any(|argument| !matches!(argument.ty, Type::Ptr | Type::I64))
+            .any(|argument| !matches!(argument.ty, Type::Ptr | Type::I32 | Type::U32 | Type::I64))
         {
-            return Err("LowIR assembly arguments require pointers or 64-bit integers");
+            return Err("LowIR assembly arguments require pointers or 32-/64-bit integers");
         }
         let arguments = self.arguments(arguments)?;
         self.emit(

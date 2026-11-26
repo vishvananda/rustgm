@@ -4,7 +4,7 @@
 //! check comes last. The consumer still re-proves Copy inputs, CPU features
 //! and lowering over its own body.
 use super::{Context, DomainIndex, Work, g, s};
-use crate::support::initial_assembly as profile;
+use crate::support::{crates::Scalar, initial_assembly as profile};
 
 impl DomainIndex<'_, '_> {
     /// `unsafe_` is the defining header's own unsafety, the only context a
@@ -57,7 +57,7 @@ impl DomainIndex<'_, '_> {
             for operand in instruction.operands.slice(&rows.operands)? {
                 self.types.root(self.headers, context, operand.ty, work)?;
             }
-            placeholders(rows, instruction, work)?;
+            placeholders(rows, instruction, self.declaration_policies, work)?;
         }
         for value in &original.values {
             if let s::ValueKind::Assembly {
@@ -96,6 +96,7 @@ impl DomainIndex<'_, '_> {
     ) -> Result<(), &'static str> {
         let arguments = arguments.slice(&original.arguments)?;
         let mut inputs = arguments.iter();
+        let mut fixed = [0_u8; 16];
         for operand in operands {
             work.charge(1)?;
             if operand.output.is_some() && !self.declaration_policies {
@@ -132,6 +133,7 @@ impl DomainIndex<'_, '_> {
                 }
             }
             self.class(operand)?;
+            fixed_alias(operand, &mut fixed)?;
         }
         if inputs.next().is_some() {
             return Err("assembly input order differs from retained operands");
@@ -210,7 +212,9 @@ impl DomainIndex<'_, '_> {
         match operand.class {
             s::AssemblyClass::General => match ty(operand.ty) {
                 Some(s::Type::Scalar(
-                    crate::support::crates::Scalar::I64
+                    crate::support::crates::Scalar::I32
+                    | crate::support::crates::Scalar::U32
+                    | crate::support::crates::Scalar::I64
                     | crate::support::crates::Scalar::U64
                     | crate::support::crates::Scalar::Isize
                     | crate::support::crates::Scalar::Usize,
@@ -232,7 +236,24 @@ impl DomainIndex<'_, '_> {
             },
             s::AssemblyClass::Abcd => Err(profile::ABCD),
             s::AssemblyClass::Byte => Err(profile::BYTE),
-            s::AssemblyClass::Explicit => Err(profile::EXPLICIT),
+            s::AssemblyClass::Explicit { base, bytes, xmm } => {
+                if !self.declaration_policies {
+                    return Err(profile::EXPLICIT);
+                }
+                profile::fixed_register(base, bytes, xmm)?;
+                let actual = match ty(operand.ty) {
+                    Some(s::Type::Scalar(Scalar::I32 | Scalar::U32)) => Some(4),
+                    Some(s::Type::Scalar(
+                        Scalar::I64 | Scalar::U64 | Scalar::Isize | Scalar::Usize,
+                    )) => Some(8),
+                    _ => None,
+                };
+                if actual == Some(bytes) {
+                    Ok(())
+                } else {
+                    Err("assembly fixed register width differs from its integer operand")
+                }
+            }
         }
     }
 }
@@ -297,13 +318,11 @@ fn instruction_profile(
 fn placeholders(
     rows: &s::Assembly,
     instruction: &s::AssemblyInstruction,
+    extended: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     const MALFORMED: &str = "source assembly placeholder is malformed";
-    let operands = instruction
-        .operands
-        .end
-        .saturating_sub(instruction.operands.start);
+    let operands = instruction.operands.slice(&rows.operands)?;
     for template in instruction.templates.slice(&rows.templates)? {
         let mut next = 0_usize;
         for piece in template.pieces.slice(&rows.pieces)? {
@@ -313,11 +332,22 @@ fn placeholders(
             if start < next || !text.starts_with('{') || !text.ends_with('}') || text.len() < 2 {
                 return Err(MALFORMED);
             }
-            if piece.operand >= operands {
-                return Err(MALFORMED);
+            let operand = operands.get(piece.operand as usize).ok_or(MALFORMED)?;
+            if matches!(operand.class, s::AssemblyClass::Explicit { .. }) {
+                return Err("source assembly explicit register is named by a placeholder");
             }
-            if piece.modifier != 0 {
+            if piece.modifier != 0
+                && !(extended
+                    && piece.modifier == b'r'
+                    && operand.class == s::AssemblyClass::General)
+            {
                 return Err(profile::MODIFIER);
+            }
+            let written = text[1..text.len() - 1]
+                .rsplit_once(':')
+                .map(|(_, suffix)| suffix.trim());
+            if written != (piece.modifier != 0).then_some("r") {
+                return Err(MALFORMED);
             }
             next = end;
         }
@@ -341,5 +371,23 @@ fn comments(
             .map(|piece| (piece.start, piece.end));
         comments.template(&template.text, spans)?;
     }
+    Ok(())
+}
+
+/// Check physical aliases once, including a late output's allowed input overlap.
+fn fixed_alias(operand: &s::AssemblyOperand, seen: &mut [u8; 16]) -> Result<(), &'static str> {
+    let s::AssemblyClass::Explicit { base, .. } = operand.class else {
+        return Ok(());
+    };
+    let previous = &mut seen[base as usize]; // The class check admitted the base.
+    let reads = operand.input.is_some();
+    let writes = operand.output.is_some();
+    if reads && *previous & (1 | 4) != 0
+        || writes && (*previous & 2 != 0 || !operand.late && *previous & 1 != 0)
+    {
+        return Err("source assembly operands overlap the same explicit register");
+    }
+    *previous |=
+        u8::from(reads) | (u8::from(writes) << 1) | (u8::from(writes && !operand.late) << 2);
     Ok(())
 }

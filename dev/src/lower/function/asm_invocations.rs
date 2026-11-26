@@ -1,4 +1,4 @@
-//! Checked pointer/vector inputs and 64-bit general-register inputs and outputs.
+//! Checked pointer/vector inputs and 32-/64-bit general-register inputs and outputs.
 //! Output snapshots precede the CFG's ordered destination writes; dialect and
 //! memory effects remain explicit in each backend template.
 use super::{Lower, Selected};
@@ -6,7 +6,7 @@ use crate::{
     body::assembly::{self, Piece, Template},
     lower::context::Representation,
     lowir::{
-        asm::{self as lowir, Draft, Kind},
+        asm::{self as lowir, Draft, Gpr, Kind},
         vocabulary::Type,
     },
     syntax::assembly::{self as syntax, Register},
@@ -34,30 +34,12 @@ impl Lower<'_, '_, '_> {
         self.arguments.clear();
         let mut bindings = Vec::new();
         assembly::profile::flags(data, instruction, |operand| {
-            let ty = operand.ty.ok_or("assembly operand lost its type")?;
-            let kind = self.assembly_kind(operand.register, ty, operand.output.is_some())?;
-            if let Some(input) = operand.input {
-                let value = if kind == Kind::Integer {
-                    self.value(input)?.runtime()?
-                } else {
-                    self.assembly_input(operand.register, input)?
-                };
-                self.arguments.push(value);
-            }
-            if operand.output.is_some() {
-                let slot = self.builder.slot(Type::I64)?;
-                let pointer = self
-                    .builder
-                    .address(crate::lowir::program::Operand::Slot(slot))?;
-                self.arguments.push(pointer);
-                let ordinal =
-                    u32::try_from(bindings.len()).map_err(|_| "too many assembly operands")?;
-                self.assembly_outputs
-                    .get_or_insert_with(Default::default)
-                    .insert((id, ordinal), pointer);
-            }
+            let ordinal =
+                u32::try_from(bindings.len()).map_err(|_| "too many assembly operands")?;
+            let (kind, fixed) = self.assembly_operand(id, ordinal, operand)?;
             bindings.push((
                 kind,
+                fixed,
                 operand.input.is_some(),
                 operand.output.is_some(),
                 operand.late,
@@ -69,8 +51,8 @@ impl Lower<'_, '_, '_> {
             .get(instruction.templates.start as usize..instruction.templates.end as usize)
             .ok_or("assembly template range is invalid")?;
         let mut draft = self.context.output.assembly()?;
-        for (kind, input, output, late) in bindings {
-            draft.binding(kind, input, output, late)?;
+        for (kind, fixed, input, output, late) in bindings {
+            draft.binding(kind, fixed, input, output, late)?;
         }
         for (index, template) in templates.iter().enumerate() {
             if index != 0 {
@@ -97,24 +79,59 @@ impl Lower<'_, '_, '_> {
         self.builder.asm(template, &self.arguments)?;
         Ok(Selected::Unit)
     }
+    fn assembly_operand(
+        &mut self,
+        id: u32,
+        ordinal: u32,
+        operand: &assembly::Operand,
+    ) -> Result<(Kind, Option<Gpr>), &'static str> {
+        let ty = operand.ty.ok_or("assembly operand lost its type")?;
+        let kind = self.assembly_kind(operand.register, ty, operand.output.is_some())?;
+        if let Some(input) = operand.input {
+            let value = if matches!(kind, Kind::Integer(_)) {
+                self.value(input)?.runtime()?
+            } else {
+                self.assembly_input(operand.register, input)?
+            };
+            self.arguments.push(value);
+        }
+        if operand.output.is_some() {
+            let slot = self.builder.slot(kind.scalar_type())?;
+            let pointer = self
+                .builder
+                .address(crate::lowir::program::Operand::Slot(slot))?;
+            self.arguments.push(pointer);
+            self.assembly_outputs
+                .get_or_insert_with(Default::default)
+                .insert((id, ordinal), pointer);
+        }
+        let fixed = match operand.register {
+            Register::Explicit {
+                base, xmm: false, ..
+            } => Some(Gpr::from_base(base)?),
+            _ => None,
+        };
+        Ok((kind, fixed))
+    }
     fn assembly_kind(
         &mut self,
         register: Register,
         ty: crate::types::TypeId,
         output: bool,
     ) -> Result<Kind, &'static str> {
-        if register == Register::General
-            && matches!(
-                self.context.types.kind(ty),
-                Some(TypeKind::Primitive(
-                    crate::types::Primitive::I64
-                        | crate::types::Primitive::U64
-                        | crate::types::Primitive::Isize
-                        | crate::types::Primitive::Usize
-                ))
-            )
+        if matches!(
+            register,
+            Register::General | Register::Explicit { xmm: false, .. }
+        ) && let Some(TypeKind::Primitive(primitive)) = self.context.types.kind(ty)
+            && let Some(bytes) = assembly::profile::integer_bytes(primitive)
         {
-            return Ok(Kind::Integer);
+            if matches!(register, Register::Explicit { bytes: declared, .. } if declared != bytes) {
+                return Err("assembly fixed register width differs from its integer operand");
+            }
+            let Representation::Scalar(native) = self.context.representation(ty)? else {
+                return Err(GENERAL);
+            };
+            return Ok(Kind::Integer(native));
         }
         if output {
             return Err(OUTPUT);
@@ -211,7 +228,7 @@ fn text(draft: &mut Draft<'_>, template: &Template, pieces: &[Piece]) -> Result<
             return Err("assembly placeholders lost their checked order");
         }
         literal(draft, template.text.get(cursor..start))?;
-        draft.operand_use(piece.operand)?;
+        draft.operand_use_view(piece.operand, if piece.modifier == b'r' { 64 } else { 0 })?;
         cursor = piece.end as usize;
     }
     literal(draft, template.text.get(cursor..))

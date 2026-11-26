@@ -13,7 +13,7 @@ use crate::{
     },
     support::{
         crates::generics::source as s,
-        initial_assembly::{ABCD, BYTE, CONSTANT, EXPLICIT},
+        initial_assembly::{ABCD, BYTE, CONSTANT},
     },
     syntax::{assembly::Register, ast::List},
 };
@@ -133,7 +133,9 @@ fn operand(
             s::AssemblyClass::Vector => Register::Xmm,
             s::AssemblyClass::Abcd => return Err(ABCD),
             s::AssemblyClass::Byte => return Err(BYTE),
-            s::AssemblyClass::Explicit => return Err(EXPLICIT),
+            s::AssemblyClass::Explicit { base, bytes, xmm } => {
+                Register::Explicit { base, bytes, xmm }
+            }
         },
         input: row.input.map(ValueId),
         output: row
@@ -142,6 +144,7 @@ fn operand(
             .transpose()?,
         ty: Some(view.ty(row.ty, steps)?),
         late: row.late,
+        discarded_output: false,
     })
 }
 const fn piece(row: &s::AssemblyPiece) -> Piece {
@@ -227,6 +230,7 @@ pub(super) fn validate(
         if actual.register != expected.register
             || actual.input != expected.input
             || actual.output != expected.output
+            || actual.discarded_output != expected.discarded_output
             || actual.ty != expected.ty
             || actual.late != expected.late
         {
