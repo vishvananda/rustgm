@@ -116,6 +116,10 @@ always-applicable trait without requesting specialization is rejected.
 can request the feature named directly by an imported API's `implied_by`.
 It checks reverse and chained implication, a missing request, and the
 diagnostic for the previous name of a feature.
+`spec/source-unwind-marker-transport/outcomes.json` checks the diagnostic
+identities of two safe auto traits across a separate crate boundary. Native
+clients prove the owned and shared cases, a unique reference fails the
+provider's negative impl, and a foreign diagnostic owner is rejected.
 `spec/source-deprecated-macro-transport/outcomes.json` covers direct and aliased
 macro calls through a separately compiled provider, caller lint policy,
 scheduled deprecation, and annotations on re-exports with current and

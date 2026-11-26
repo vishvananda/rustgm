@@ -212,14 +212,16 @@ pub(in crate::sema::compiler_items) fn traits(
 }
 
 /// `Destruct` and the auto markers, each admitted as an empty free trait;
-/// version thirteen admits Send, Sync, Unpin and `UnsafeUnpin` as Freeze is.
-const FREE_MARKERS: [LangItem; 6] = [
+/// their admitted header retains the exact flags of the selected marker.
+const FREE_MARKERS: [LangItem; 8] = [
     LangItem::Destruct,
     LangItem::Freeze,
     LangItem::Send,
     LangItem::Sync,
     LangItem::Unpin,
     LangItem::UnsafeUnpin,
+    LangItem::UnwindSafe,
+    LangItem::RefUnwindSafe,
 ];
 
 // These roles are checked together after the individual headers.

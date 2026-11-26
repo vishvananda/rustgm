@@ -12,7 +12,9 @@ the source bodies that use those declarations.
 - Establish explicit source sysroot and crate identities. Bind language items,
   diagnostic items, builtin macros and derives, and intrinsic declarations by
   validated source identity. Check the actual owner, signature, parameter
-  kinds, feature permission, and duplicate or missing bindings.
+  kinds, feature permission, and duplicate or missing bindings. Transport
+  the diagnostic-owned unwind-safety traits by their actual declarations so
+  fresh clients retain the auto-trait roles.
 - Keep compiler language requests, library API stability, const API
   eligibility, body policies, and unsafe permission distinct. Retain the
   exact macro expansion that grants an internal allowance. A declaration's

@@ -1563,8 +1563,8 @@ fn bindings_with_policy(
     profile: BindingProfile,
     bootstrap: bool,
 ) -> Result<Bindings, &'static str> {
-    let declarations = binding_declarations(rows, headers, work, profile)?;
-    let send = diagnostic_bindings(rows, headers, work, profile, &declarations)?;
+    let mut declarations = binding_declarations(rows, headers, work, profile)?;
+    diagnostic_bindings(rows, headers, work, profile, &mut declarations)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let bound = |role: LangItem| declarations[role.index()];
     let sizing = [LangItem::Sized, LangItem::MetaSized, LangItem::PointeeSized].map(bound);
@@ -1635,7 +1635,7 @@ fn bindings_with_policy(
         definition_policies: profile.definition_policies(),
         markers: if languages {
             [
-                send,
+                bound(LangItem::Send),
                 bound(LangItem::Sync),
                 bound(LangItem::Unpin),
                 bound(LangItem::UnsafeUnpin),
@@ -1665,23 +1665,20 @@ fn bindings_with_policy(
     })
 }
 
-/// Version thirteen's diagnostic identities: each names, once, one of this
-/// provider's own declarations. `NonNull` names a struct nominal, as the local
-/// rule requires; `Send` names an unsafe auto trait, whose exact empty
-/// declaration `trait_headers` re-proves. Returns `Send`'s declaration.
+/// Each diagnostic identity names one of the provider's own declarations.
+/// Diagnostic-owned marker slots use the same declaration index as language roles.
 fn diagnostic_bindings(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: BindingProfile,
-    declarations: &[Option<crate::support::crates::owner_catalog::DeclarationRef>],
-) -> Result<Option<crate::support::crates::owner_catalog::DeclarationRef>, &'static str> {
+    declarations: &mut [Option<crate::support::crates::owner_catalog::DeclarationRef>],
+) -> Result<(), &'static str> {
     let diagnostics = rows.diagnostics();
     if !diagnostics.is_empty() && !profile.languages() {
         return Err("source diagnostic identity requires a language role table");
     }
     let mut seen = [false; super::super::DiagnosticRole::ALL.len()];
-    let mut send = None;
     for row in diagnostics {
         work.charge(1)?;
         if row.declaration.artifact != super::super::ArtifactRef(0) {
@@ -1707,20 +1704,19 @@ fn diagnostic_bindings(
                     );
                 }
             }
-            super::super::DiagnosticRole::Send => {
-                let Some(super::super::HeaderRef::Trait(index)) = header else {
-                    return Err(SEND);
-                };
-                if kind != Some(super::super::DefinitionKind::Trait)
-                    || rows
-                        .traits
-                        .get(index as usize)
-                        .map(|t| t.flags.bits() & !profile.definition_policies())
-                        != Some(TraitFlags::UNSAFE | TraitFlags::AUTO)
-                {
-                    return Err(SEND);
+            super::super::DiagnosticRole::Send
+            | super::super::DiagnosticRole::UnwindSafe
+            | super::super::DiagnosticRole::RefUnwindSafe => {
+                let marker = row
+                    .role
+                    .auto_marker()
+                    .ok_or("source diagnostic marker disappeared")?;
+                validate_diagnostic_marker(rows, profile, marker, kind, header)?;
+                work.charge(declarations.len())?;
+                if declarations.contains(&Some(row.declaration.declaration)) {
+                    return Err("source diagnostic marker shares another role's declaration");
                 }
-                send = Some(row.declaration.declaration);
+                declarations[marker.index()] = Some(row.declaration.declaration);
             }
             super::super::DiagnosticRole::Eq => {
                 if profile != BindingProfile::BodyOperations
@@ -1760,8 +1756,40 @@ fn diagnostic_bindings(
             }
         }
     }
-    diagnostic_role_requirements(seen, declarations)?;
-    Ok(send)
+    diagnostic_role_requirements(seen, declarations)
+}
+
+fn validate_diagnostic_marker(
+    rows: &SourceRows,
+    profile: BindingProfile,
+    role: LangItem,
+    kind: Option<super::super::DefinitionKind>,
+    header: Option<super::super::HeaderRef>,
+) -> Result<(), &'static str> {
+    let (flags, error) = if role == LangItem::Send {
+        (TraitFlags::UNSAFE | TraitFlags::AUTO, SEND)
+    } else {
+        if profile != BindingProfile::BodyOperations {
+            return Err("source unwind safety diagnostic identities require version fourteen");
+        }
+        (
+            TraitFlags::AUTO,
+            "source unwind safety diagnostic item requires its safe auto trait declaration",
+        )
+    };
+    let Some(super::super::HeaderRef::Trait(index)) = header else {
+        return Err(error);
+    };
+    if kind != Some(super::super::DefinitionKind::Trait)
+        || rows
+            .traits
+            .get(index as usize)
+            .map(|row| row.flags.bits() & !profile.definition_policies())
+            != Some(flags)
+    {
+        return Err(error);
+    }
+    Ok(())
 }
 
 fn diagnostic_role_requirements(

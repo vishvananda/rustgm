@@ -65,6 +65,7 @@ def main():
                                  "source-specialization-policies",
                                  "source-feature-relationships",
                                  "source-deprecated-macro-transport",
+                                 "source-unwind-marker-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
@@ -188,7 +189,7 @@ def main():
                   client], 1, [error], timeout=30)
     if role := contract.get("foreign_role"):
         packet = bytearray(artifact.read_bytes())
-        offset = role_address(packet, 255, role["spelling"]) - 4
+        offset = role_address(packet, role.get("tag", 255), role["spelling"]) - 4
         packet[offset:offset + 4] = (1).to_bytes(4, "little")
         forged = check.folder / "foreign-role.rgcrate"
         forged.write_bytes(packet)

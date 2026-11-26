@@ -1,0 +1,17 @@
+{
+  "inputs": ["provider.rs", "client.rs", "reject-unique.rs", "observe.c"],
+  "features": ["auto_traits", "negative_impls"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "",
+  "older_reader": "unknown source diagnostic identity spelling",
+  "foreign_role": {
+    "tag": 254,
+    "spelling": "ref_unwind_safe_trait",
+    "diagnostic": "source diagnostic identity belongs to a foreign provider"
+  },
+  "restricted_client": {
+    "path": "reject-unique.rs",
+    "rustc": "is not satisfied",
+    "rustgm": "negative implementation cannot become positive trait evidence"
+  }
+}

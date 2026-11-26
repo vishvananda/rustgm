@@ -469,17 +469,13 @@ fn reserve_roles(
     let mut result = [None; LangItem::ALL.len()];
     let mut attributes = [crate::resolve::bindings::HeaderAttributes::EMPTY; LangItem::ALL.len()];
     diagnostic_roles(descriptor, origins, work)?;
-    // Version thirteen: `Send`'s diagnostic identity fills this consumer's own
-    // `LangItem::Send` slot, as a provider's reservations do.
-    let send = rows
-        .diagnostics()
-        .iter()
-        .filter(|row| row.role == s::DiagnosticRole::Send)
-        .map(|row| s::RoleBinding {
-            role: LangItem::Send,
+    let markers = rows.diagnostics().iter().filter_map(|row| {
+        Some(s::RoleBinding {
+            role: row.role.auto_marker()?,
             declaration: row.declaration,
-        });
-    for role in roles.iter().copied().chain(send) {
+        })
+    });
+    for role in roles.iter().copied().chain(markers) {
         charge(work, 1)?;
         if role.declaration.artifact != s::ArtifactRef(0) {
             return Err("source provider role names a foreign defining artifact");
@@ -559,6 +555,10 @@ fn diagnostic_roles(
             s::DiagnosticRole::Send => (
                 DefKind::Trait,
                 "imported Send diagnostic item requires its unsafe auto trait declaration",
+            ),
+            s::DiagnosticRole::UnwindSafe | s::DiagnosticRole::RefUnwindSafe => (
+                DefKind::Trait,
+                "imported unwind safety diagnostic item requires its safe auto trait declaration",
             ),
             s::DiagnosticRole::Eq => (
                 DefKind::Trait,

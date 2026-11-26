@@ -316,6 +316,18 @@ impl Stage {
                     .language(LangItem::ResultOk)
                     .and_then(|_| reservations.result_declaration()),
             ),
+            (
+                s::DiagnosticRole::UnwindSafe,
+                reservations
+                    .language(LangItem::UnwindSafe)
+                    .filter(|_| self.declaration_policies()),
+            ),
+            (
+                s::DiagnosticRole::RefUnwindSafe,
+                reservations
+                    .language(LangItem::RefUnwindSafe)
+                    .filter(|_| self.declaration_policies()),
+            ),
         ] {
             let Some(declaration) = declaration else {
                 continue;
@@ -334,6 +346,9 @@ impl Stage {
                     }
                     s::DiagnosticRole::Result => {
                         "source Result diagnostic identity requires version 14"
+                    }
+                    s::DiagnosticRole::UnwindSafe | s::DiagnosticRole::RefUnwindSafe => {
+                        "source unwind safety diagnostic identities require version 14"
                     }
                 });
             }
@@ -408,19 +423,14 @@ impl Stage {
         {
             return Err("source Pointee contract transport is not implemented");
         }
-        // Version thirteen writes Send's diagnostic identity in a separate row.
-        if role == LangItem::Send {
-            return if self.body_nodes() {
-                Ok(None)
-            } else {
-                Err("source Send diagnostic contract transport is not implemented")
-            };
-        }
-        // The historical profile treated unwind safety as ordinary auto traits.
-        if matches!(role, LangItem::UnwindSafe | LangItem::RefUnwindSafe)
-            && !self.declaration_policies()
-        {
-            return Ok(None);
+        // Diagnostic-owned markers use their own rows. The older language
+        // profile kept unwind safety traits as ordinary nominal identities.
+        match role {
+            LangItem::Send if !self.body_nodes() => {
+                return Err("source Send diagnostic contract transport is not implemented");
+            }
+            LangItem::Send | LangItem::UnwindSafe | LangItem::RefUnwindSafe => return Ok(None),
+            _ => {}
         }
         let kind = report.resolution.definitions[declaration.definition.0 as usize].kind;
         if kind != DefKind::Trait {

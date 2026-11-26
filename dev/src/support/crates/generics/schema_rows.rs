@@ -378,15 +378,27 @@ pub enum DiagnosticRole {
     Display,
     /// The actual enum owner of the Result variant roles.
     Result,
+    UnwindSafe,
+    RefUnwindSafe,
 }
 impl DiagnosticRole {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 7] = [
         Self::NonNull,
         Self::Send,
         Self::Eq,
         Self::Display,
         Self::Result,
+        Self::UnwindSafe,
+        Self::RefUnwindSafe,
     ];
+    pub(crate) const fn auto_marker(self) -> Option<LangItem> {
+        match self {
+            Self::Send => Some(LangItem::Send),
+            Self::UnwindSafe => Some(LangItem::UnwindSafe),
+            Self::RefUnwindSafe => Some(LangItem::RefUnwindSafe),
+            _ => None,
+        }
+    }
     #[must_use]
     pub const fn spelling(self) -> &'static str {
         match self {
@@ -395,6 +407,8 @@ impl DiagnosticRole {
             Self::Eq => "Eq",
             Self::Display => "Display",
             Self::Result => "Result",
+            Self::UnwindSafe => "unwind_safe_trait",
+            Self::RefUnwindSafe => "ref_unwind_safe_trait",
         }
     }
     #[must_use]

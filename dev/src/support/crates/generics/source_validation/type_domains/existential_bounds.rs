@@ -26,8 +26,10 @@ impl Markers {
                 }
             }
             for role in rows.diagnostics() {
-                if role.role == s::DiagnosticRole::Send {
-                    declarations[0] = Some(role.declaration);
+                if let Some(marker) = role.role.auto_marker()
+                    && let Some(index) = MARKERS.iter().position(|item| item.lang_item() == marker)
+                {
+                    declarations[index] = Some(role.declaration);
                 }
             }
         }
