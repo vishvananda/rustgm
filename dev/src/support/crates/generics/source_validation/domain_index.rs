@@ -134,6 +134,7 @@ pub struct DomainIndex<'index, 'rows> {
     // for every application. Broader nested function-item-only forms reject.
     used_functions: Vec<bool>,
     used_traits: Vec<bool>,
+    signature_recipe_nodes: Vec<bool>,
     /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
     bodies: bool,
     declaration_policies: bool,
@@ -161,7 +162,13 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         let functions = headers.rows().function_applications.len();
         let traits = headers.rows().trait_applications.len();
         let applications = functions.saturating_add(traits);
-        work.charge(applications)?;
+        let signature_nodes = if profile.declaration_policies() {
+            headers.rows().types.len().saturating_add(functions)
+        } else {
+            0
+        };
+        let coverage = applications.saturating_add(signature_nodes);
+        work.charge(coverage)?;
         let binders = BinderIndex::new(headers, work, profile)?;
         let mut types = Types::new(headers, &binders, profile, work)?;
         let overhead =
@@ -169,11 +176,8 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         types.bytes = types
             .bytes
             .saturating_add(overhead)
-            .saturating_add(applications);
-        types.peak = types
-            .peak
-            .saturating_add(overhead)
-            .saturating_add(applications);
+            .saturating_add(coverage);
+        types.peak = types.peak.saturating_add(overhead).saturating_add(coverage);
         if types.peak > crate::support::crates::MAX_BYTES {
             return Err("source domain view exceeds the combined storage budget");
         }
@@ -184,6 +188,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             observed: DomainWork::default(),
             used_functions: vec![false; functions],
             used_traits: vec![false; traits],
+            signature_recipe_nodes: vec![false; signature_nodes],
             bodies,
             declaration_policies: profile.declaration_policies(),
             bootstrap_bindings: profile.bootstrap_bindings(),
@@ -367,6 +372,24 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
                     pending.push(nested);
                 }
             }
+        }
+        Ok(())
+    }
+    /// The actual operation owns the item recipes formed inside its signature's binder.
+    fn call_signature(
+        &mut self,
+        context: Context,
+        ty: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        self.types.root(self.headers, context, ty, work)?;
+        if self.declaration_policies {
+            self.types.claim_signature_items(
+                self.headers.rows(),
+                ty,
+                (&mut self.signature_recipe_nodes, &mut self.used_functions),
+                work,
+            )?;
         }
         Ok(())
     }

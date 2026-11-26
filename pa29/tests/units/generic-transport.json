@@ -216,7 +216,9 @@
     "tests/spec/initializer-local-items/reject-private-function.rs",
     "tests/spec/initializer-local-items/reject-private-type.rs",
     "tests/spec/runtime-closure-calls/provider.rs",
-    "tests/spec/runtime-closure-calls/client.rs"
+    "tests/spec/runtime-closure-calls/client.rs",
+    "tests/spec/regional-function-items/provider.rs",
+    "tests/spec/regional-function-items/client.rs"
   ],
   "cases": [
     {
@@ -7486,6 +7488,45 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/runtime-closure-calls/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/regional-function-items/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "regional_function_items_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/regional-function-items/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "regional_function_items",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/regional-function-items/observe.c"
       }
     }
   ]

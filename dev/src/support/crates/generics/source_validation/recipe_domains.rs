@@ -5,6 +5,8 @@ mod existential_bounds;
 mod node_rows;
 #[path = "type_domains/recipe_queries.rs"]
 mod queries;
+#[path = "type_domains/row_edges.rs"]
+mod row_edges;
 use super::{HeaderIndex, HeaderRef, Work, binder_domains::BinderIndex};
 use crate::support::{
     crates::{
@@ -28,6 +30,7 @@ struct Summary {
     body: Option<BodyRef>,
     bound: Option<BoundUse>,
     has_function: bool,
+    has_item: bool,
 }
 pub(super) struct Types {
     summaries: Vec<Summary>,
@@ -144,6 +147,63 @@ impl Types {
             .copied()
             .ok_or("source type summary is absent")
     }
+
+    /// The caller already checked the root's complete scope. Walk its recipes
+    /// only to register the applications that actually contribute to the call.
+    pub(super) fn claim_signature_items(
+        &mut self,
+        rows: &s::SourceRows,
+        root: g::TypeRef,
+        (seen, applications): (&mut [bool], &mut [bool]),
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !self.summary(root, work)?.has_item {
+            return Ok(());
+        }
+        let edges = row_edges::Edges::new(rows, self.declaration_policies);
+        let mut pending = Vec::new();
+        self.push_signature_node(&mut pending, root.0 as usize, work)?;
+        while let Some(node) = pending.pop() {
+            work.charge(1)?;
+            if seen[node] {
+                continue;
+            }
+            seen[node] = true;
+            if let Some(application) = node.checked_sub(self.type_count) {
+                applications[application] = true;
+            }
+            edges.visit(node, work, |child, work| {
+                if self.summaries[child].has_item && !seen[child] {
+                    self.push_signature_node(&mut pending, child, work)?;
+                }
+                Ok(())
+            })?;
+        }
+        Ok(())
+    }
+
+    fn push_signature_node(
+        &mut self,
+        pending: &mut Vec<usize>,
+        node: usize,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let growth = retained::Growth::vector::<usize>(pending.len(), pending.capacity(), 1);
+        work.charge(growth.work.saturating_add(1))?;
+        let peak = self
+            .bytes
+            .saturating_add(retained::vector(pending))
+            .saturating_add(growth.bytes);
+        if peak > crates::MAX_BYTES {
+            return Err("source call signature recipes exceed the aggregate storage budget");
+        }
+        pending
+            .try_reserve(1)
+            .map_err(|_| "source call signature work stack allocation failed")?;
+        self.peak = self.peak.max(peak);
+        pending.push(node);
+        Ok(())
+    }
 }
 impl Builder<'_, '_> {
     fn root(&mut self, root: usize, work: &mut Work) -> Result<(), &'static str> {
@@ -167,7 +227,9 @@ impl Builder<'_, '_> {
             } else {
                 self.colours[node] = 1;
                 self.push((node, true), work)?;
-                self.dependencies(node, work)?;
+                let edges =
+                    row_edges::Edges::new(self.headers.rows(), self.profile.declaration_policies());
+                edges.visit(node, work, |child, work| self.push((child, false), work))?;
             }
         }
         Ok(())
@@ -205,13 +267,6 @@ impl Builder<'_, '_> {
             return Err("source type child was not completed before its parent");
         }
         Ok(self.result.summaries[index])
-    }
-    fn push_type(&mut self, ty: g::TypeRef, work: &mut Work) -> Result<(), &'static str> {
-        work.charge(1)?;
-        if ty.0 as usize >= self.result.type_count {
-            return Err("source type reference crosses its typed table namespace");
-        }
-        self.push((ty.0 as usize, false), work)
     }
     fn merge(
         &self,
@@ -267,6 +322,7 @@ impl Builder<'_, '_> {
             _ => {}
         }
         left.has_function |= right.has_function;
+        left.has_item |= right.has_item;
         Ok(left)
     }
 }

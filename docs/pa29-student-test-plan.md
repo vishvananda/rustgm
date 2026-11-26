@@ -12,7 +12,7 @@ with the provider's objects. PA32 uses this same path for pinned `core`.
 | `generic-transport` | Checked generic templates, including private helper bodies, traits and associated types, callable values, const expressions, regions, and the context that owns each declaration and body. Clients instantiate and evaluate them after reload. |
 
 1. Use all four unit manifests as the baseline. The current drafts contain
-   262 cases. Run their text oracles and independent Rust and native checks on
+   263 cases. Run their text oracles and independent Rust and native checks on
    one immutable compiler. Review disagreements at the first diagnostic or
    failed observation.
 2. Recover the ordinary Rust cases declared in
@@ -89,7 +89,7 @@ as explicit inputs to this remapping. Source-specific permissions retain their
 actual owner and provenance. Preserve the earlier wire profiles while adding
 coverage for the common model.
 
-The current student export passes all 262 cases. Independent Rust and native
+The current student export passes all 263 cases. Independent Rust and native
 checks pass across the four components. The initializer-scope regression
 includes native observations and separate rejections for a hidden function
 and type.
@@ -121,4 +121,5 @@ and type.
 | PA31 | Qualified. A provider calls a target-feature function under an explicit unsafe block and from an unsafe function body. A fresh client exercises both wrappers. A feature-mismatched call without lexical permission still rejects. |
 | PA31 | Qualified. A fresh client imports a provider closure that shares the target features of its enclosing function and calls a function requiring those features. Both the source-bound and ordinary bootstrap profiles pass. |
 | PA31 | Qualified. Publish the const closure in the original `Iterator::count` method. A fresh client evaluates count at compile time and at runtime. Closure cleanup uses its own defining environment and const execution proves the selected callback's substituted requirements. |
-| PA32 | The original build cleared the receiver, body operation, namespace, labelled lifetime-alias, target-call and const-closure environment checks. It reached 24 applications whose header or body request was missing. The original artifact and all 18 fresh consumers remain open. |
+| PA29 | Qualified. A provider passes a trait function item whose arguments include a borrowed const-generic nominal type through a generic receiver, directly and inside a tuple. A fresh client observes two const instantiations. A detached application still rejects. |
+| PA32 | The typed signature fix clears all 24 previously unclaimed applications in the analysis census. The census groups remaining failures by coercion inputs, projected fields, signature comparisons, operation relations and a borrow check. The original artifact and all 18 fresh consumers remain open. |

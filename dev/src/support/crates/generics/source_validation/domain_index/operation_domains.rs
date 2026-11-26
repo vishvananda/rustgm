@@ -351,7 +351,7 @@ impl DomainIndex<'_, '_> {
                 arguments,
                 ..
             } => {
-                self.types.root(self.headers, context, signature, work)?;
+                self.call_signature(context, signature, work)?;
                 prefix_value(original, callee, index, work)?;
                 for &argument in arguments.slice(&original.arguments)? {
                     prefix_value(original, argument, index, work)?;
@@ -362,7 +362,7 @@ impl DomainIndex<'_, '_> {
                 arguments,
                 ..
             } => {
-                self.types.root(self.headers, context, signature, work)?;
+                self.call_signature(context, signature, work)?;
                 if arguments.slice(&original.arguments)?.is_empty() {
                     return Err("source call operator lost its actual receiver");
                 }

@@ -232,6 +232,16 @@ impl Arena {
             }
             (Node::Tuple { elements: a }, Node::Tuple { elements: b }) => ((a, b), None),
             (
+                Node::AppliedFunctionItem {
+                    declaration: a,
+                    arguments: ac,
+                },
+                Node::AppliedFunctionItem {
+                    declaration: b,
+                    arguments: bc,
+                },
+            ) if a == b => ((ac, bc), None),
+            (
                 Node::Array {
                     element: ae,
                     length: al,

@@ -17,170 +17,6 @@ impl Builder<'_, '_> {
         )
     }
 
-    /// An application's arguments, pushed so the first is visited first.
-    fn push_arguments(&mut self, arguments: g::Range, work: &mut Work) -> Result<(), &'static str> {
-        let rows = self.headers.rows();
-        for argument in arguments.slice(&rows.arguments)?.iter().rev() {
-            self.push_argument(*argument, work)?;
-        }
-        Ok(())
-    }
-
-    pub(super) fn dependencies(
-        &mut self,
-        node: usize,
-        work: &mut Work,
-    ) -> Result<(), &'static str> {
-        use s::Type::{F16, F128, Foreign, Never, Parameter, Scalar, Str};
-        let rows = self.headers.rows();
-        if node < self.result.type_count {
-            match rows.types[node] {
-                s::Type::Nominal { arguments, .. } => self.push_arguments(arguments, work)?,
-                s::Type::Dynamic(reference) => {
-                    self.push_arguments(self.dynamic_row(reference)?.arguments, work)?;
-                }
-                s::Type::Projection(reference) => {
-                    let row = rows
-                        .projections
-                        .get(reference.0 as usize)
-                        .ok_or("unknown source projection recipe")?;
-                    self.push_type(row.subject, work)?;
-                    let application = rows
-                        .trait_applications
-                        .get(row.trait_application.0 as usize)
-                        .ok_or("unknown projection trait application")?;
-                    for range in [application.arguments, row.arguments] {
-                        for argument in range.slice(&rows.arguments)?.iter().rev() {
-                            if let s::Argument::Type(ty) = argument {
-                                self.push_type(*ty, work)?;
-                            }
-                        }
-                    }
-                }
-                s::Type::OpaqueFuture(reference) => {
-                    let row = rows
-                        .opaque_futures
-                        .get(reference.0 as usize)
-                        .ok_or("unknown source opaque future recipe")?;
-                    self.push_type(row.output, work)?;
-                    self.push_arguments(row.captures, work)?;
-                }
-                s::Type::OpaqueResult(reference) => {
-                    let row = rows
-                        .cold()
-                        .opaques
-                        .applications
-                        .get(reference.0 as usize)
-                        .ok_or("unknown source opaque result recipe")?;
-                    self.push_arguments(row.captures, work)?;
-                }
-                s::Type::Closure(reference) => {
-                    let row = rows
-                        .closures()
-                        .and_then(|closures| closures.types.get(reference.0 as usize))
-                        .ok_or("unknown source closure type recipe")?;
-                    self.push_type(row.environment, work)?;
-                    self.push_type(row.signature, work)?;
-                    self.push_arguments(row.arguments, work)?;
-                }
-                s::Type::Reference {
-                    referent: child, ..
-                }
-                | s::Type::RawPointer { pointee: child, .. }
-                | s::Type::Slice(child)
-                | s::Type::Pattern { base: child, .. } => self.push_type(child, work)?,
-                s::Type::Array { element, length } => {
-                    self.push_term(rows.array_lengths().get(length.0 as usize), work)?;
-                    self.push_type(element, work)?;
-                }
-                s::Type::Tuple(elements) => {
-                    for &element in elements.slice(&rows.roots)?.iter().rev() {
-                        self.push_type(element, work)?;
-                    }
-                }
-                s::Type::Function(signature) => {
-                    self.push_type(signature.result, work)?;
-                    for &input in signature.parameters.slice(&rows.roots)?.iter().rev() {
-                        self.push_type(input, work)?;
-                    }
-                }
-                s::Type::FunctionItem(application) => {
-                    if application.0 as usize >= self.result.function_count {
-                        return Err("source function item crosses its application table namespace");
-                    }
-                    self.push(
-                        (
-                            self.result
-                                .type_count
-                                .saturating_add(application.0 as usize),
-                            false,
-                        ),
-                        work,
-                    )?;
-                }
-                s::Type::ApplicationSignature(_) => {
-                    return Err(
-                        "source application signature recipes require a complete wider profile",
-                    );
-                }
-                Scalar(_) | Foreign(_) | F16 | F128 | Never | Parameter(_) | Str => {}
-            }
-        } else {
-            self.application_dependencies(node - self.result.type_count, work)?;
-        }
-        Ok(())
-    }
-    fn application_dependencies(
-        &mut self,
-        offset: usize,
-        work: &mut Work,
-    ) -> Result<(), &'static str> {
-        let rows = self.headers.rows();
-        let arguments = if offset < self.result.function_count {
-            rows.function_applications[offset].arguments
-        } else {
-            let application = rows
-                .trait_applications
-                .get(offset - self.result.function_count)
-                .ok_or("source trait application is unknown")?;
-            self.push_type(application.subject, work)?;
-            application.arguments
-        };
-        // A region argument has no separate type recipe child.
-        for argument in arguments.slice(&rows.arguments)?.iter().rev() {
-            work.charge(1)?;
-            self.push_argument(*argument, work)?;
-        }
-        Ok(())
-    }
-    /// A type argument's row, or a const value's primitive row, is a child
-    /// that completes before its parent.
-    fn push_argument(
-        &mut self,
-        argument: s::Argument,
-        work: &mut Work,
-    ) -> Result<(), &'static str> {
-        match argument {
-            s::Argument::Type(ty) => self.push_type(ty, work),
-            s::Argument::Const(term) => {
-                self.push_term(self.headers.rows().consts().get(term.0 as usize), work)
-            }
-            s::Argument::Region(_) => Ok(()),
-        }
-    }
-    /// A const value's type row precedes it; a slot or an absent term
-    /// depends on no row, and its finisher names the gap.
-    fn push_term(
-        &mut self,
-        term: Option<&s::ConstTerm>,
-        work: &mut Work,
-    ) -> Result<(), &'static str> {
-        match term {
-            Some(&s::ConstTerm::Value(value)) => self.push_type(value.ty, work),
-            Some(&s::ConstTerm::Variant(value)) => self.push_type(value.ty, work),
-            _ => Ok(()),
-        }
-    }
     pub(super) fn finish(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();
         if node >= self.result.type_count {
@@ -634,10 +470,14 @@ impl Builder<'_, '_> {
     fn application(&self, node: usize, work: &mut Work) -> Result<Summary, &'static str> {
         let rows = self.headers.rows();
         let application = &rows.function_applications[node];
+        let mut summary = Summary {
+            has_item: true,
+            ..Summary::default()
+        };
         work.charge(1)?;
         if application.declaration.artifact != s::ArtifactRef(0) {
             if self.profile.bootstrap_bindings() {
-                return self.dependency_arguments(application.arguments, Summary::default(), work);
+                return self.dependency_arguments(application.arguments, summary, work);
             }
             return Err(
                 "source function application requires authenticated wider artifact transport",
@@ -688,7 +528,6 @@ impl Builder<'_, '_> {
             return Err("source application omitted or added actual unused type formals");
         }
         let formals = self.type_space_formals(scope, work)?;
-        let mut summary = Summary::default();
         for (index, argument) in arguments.iter().enumerate() {
             work.charge(1)?;
             let formal = index

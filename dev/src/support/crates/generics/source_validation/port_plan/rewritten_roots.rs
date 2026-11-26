@@ -42,6 +42,7 @@ enum Recipe {
 #[derive(Clone, Copy)]
 enum ArgumentOwner {
     Nominal(s::DeclarationAddress),
+    FunctionItem(s::DeclarationAddress),
     Dynamic(s::DynamicTypeRef),
     OpaqueFuture(s::OpaqueFutureRef),
     OpaqueResult(s::OpaqueResultRef),
@@ -50,9 +51,11 @@ impl ArgumentOwner {
     const fn regions(self, declaration_policies: bool) -> Regions {
         match self {
             Self::Nominal(declaration) if !declaration_policies => Regions::of(declaration),
-            Self::Nominal(_) | Self::Dynamic(_) | Self::OpaqueFuture(_) | Self::OpaqueResult(_) => {
-                Regions::Local
-            }
+            Self::Nominal(_)
+            | Self::FunctionItem(_)
+            | Self::Dynamic(_)
+            | Self::OpaqueFuture(_)
+            | Self::OpaqueResult(_) => Regions::Local,
         }
     }
 }
@@ -335,6 +338,10 @@ impl Arena {
                 declaration,
                 arguments,
             },
+            ArgumentOwner::FunctionItem(declaration) => Node::AppliedFunctionItem {
+                declaration,
+                arguments,
+            },
             ArgumentOwner::Dynamic(reference) => {
                 let recipe = dynamic_recipe(domains, reference)?;
                 let canonical = self.canonical_dynamic(domains, reference, work)?;
@@ -477,10 +484,9 @@ impl Arena {
         work: &mut Work,
     ) -> Result<Recipe, &'static str> {
         work.charge(1)?;
+        let rows = domains.headers.rows();
         Ok(
-            match *domains
-                .headers
-                .rows()
+            match *rows
                 .types
                 .get(key.root.0 as usize)
                 .ok_or("source input type root is unknown")?
@@ -548,6 +554,16 @@ impl Arena {
                     constraint,
                     child: uses::key(domains, base, key.rewrite, key.caller, work)?,
                 },
+                s::Type::FunctionItem(application) if domains.declaration_policies => {
+                    let application = rows
+                        .function_applications
+                        .get(application.0 as usize)
+                        .ok_or("source function-item recipe has no actual application")?;
+                    Recipe::Application(
+                        ArgumentOwner::FunctionItem(application.declaration),
+                        application.arguments,
+                    )
+                }
                 s::Type::FunctionItem(application) if key.rewrite == Rewrite::Original => {
                     Recipe::Leaf(Node::FunctionItem(application))
                 }

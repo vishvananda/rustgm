@@ -100,10 +100,12 @@ impl Builder<'_, '_, '_> {
                 work,
             ),
             s::ValueKind::Function(application) => {
-                let node = self.node(original, value.ty, work)?;
-                if self.arena.nodes[node.0 as usize] != Node::FunctionItem(application) {
+                let rows = self.domains.headers.rows();
+                if rows.types.get(value.ty.0 as usize) != Some(&s::Type::FunctionItem(application))
+                {
                     return Err("source Function operation has another actual application type");
                 }
+                self.node(original, value.ty, work)?;
                 Ok(())
             }
             s::ValueKind::Reify(operand)

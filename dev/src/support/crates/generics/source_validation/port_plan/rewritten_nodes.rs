@@ -110,6 +110,10 @@ pub(super) enum Node {
         constraint: s::PatternConstraint,
     },
     FunctionItem(s::FunctionApplicationRef),
+    AppliedFunctionItem {
+        declaration: s::DeclarationAddress,
+        arguments: NodeId,
+    },
     SignatureResult(NodeId),
     SignatureInput {
         ty: NodeId,
@@ -426,7 +430,7 @@ impl Arena {
             // Preserve the old parameter formation rule outside Functions.
             // A Function explicitly retains opaque parameter conditionality.
             Node::Parameter(_) => NodeFacts(NodeFacts::FORMED | NodeFacts::PARAMETER),
-            Node::FunctionItem(_) => NodeFacts(NodeFacts::ITEM),
+            Node::FunctionItem(_) | Node::AppliedFunctionItem { .. } => NodeFacts(NodeFacts::ITEM),
             Node::Reference {
                 region, referent, ..
             } => {
