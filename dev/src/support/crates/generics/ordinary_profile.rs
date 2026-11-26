@@ -706,11 +706,20 @@ fn functions(
             bodies && !inherent_const && trait_const_method(rows, headers, header, roles, work)?;
         let async_callable =
             callable_roles::async_required_member(header, roles.async_callables, work)?;
+        let callable_impl = roles.definition_policies != 0
+            && callable_roles::implementation_member(
+                rows,
+                headers,
+                header,
+                (roles.callables, roles.async_callables),
+                work,
+            )?;
         let supported_signature = |signature: super::super::Signature| {
             (safety || !signature.unsafe_)
                 && !signature.variadic
                 && (callable
                     || async_callable
+                    || callable_impl
                     || admitted_convention(
                         rows,
                         header.declaration,

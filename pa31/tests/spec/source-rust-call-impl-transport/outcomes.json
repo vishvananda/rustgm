@@ -1,0 +1,5 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "features": ["auto_traits"],
+  "stdout": ""
+}

@@ -112,3 +112,54 @@ pub(super) fn async_required_member(
     }
     Ok(true)
 }
+
+/// An implementation's convention follows its exact callable trait member.
+pub(super) fn implementation_member(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    function: &s::FunctionHeader,
+    (sync, asynchronous): (Roles, [Option<DeclarationRef>; 3]),
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = function.parent.filter(|_| {
+        function.original.convention == Convention::RustCall
+            && function.callable.convention == Convention::RustCall
+    }) else {
+        return Ok(false);
+    };
+    let Some(s::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(false);
+    };
+    let implementation = &rows.implementations[index as usize];
+    let Some(application) = implementation
+        .trait_application
+        .and_then(|id| rows.trait_applications.get(id.0 as usize))
+    else {
+        return Ok(false);
+    };
+    let owner = application.declaration;
+    if owner.artifact != s::ArtifactRef(0)
+        || !(sync.callable(owner.declaration) || asynchronous.contains(&Some(owner.declaration)))
+        || !implementation.polarity.is_positive()
+    {
+        return Ok(false);
+    }
+    let members = implementation.members.slice(&rows.member_links)?;
+    work.charge(members.len())?;
+    let Some(member) = members.iter().find_map(|link| {
+        link.trait_member
+            .filter(|_| link.implementation == Some(function.declaration))
+    }) else {
+        return Ok(false);
+    };
+    if member.artifact != owner.artifact {
+        return Ok(false);
+    }
+    let Some(s::HeaderRef::Function(index)) = headers.header(member.declaration, work)? else {
+        return Ok(false);
+    };
+    let actual = &rows.functions[index as usize];
+    Ok(actual.parent == Some(owner.declaration)
+        && (required_member(actual, sync, work)?
+            || async_required_member(actual, asynchronous, work)?))
+}

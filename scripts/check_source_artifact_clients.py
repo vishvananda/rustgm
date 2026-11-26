@@ -67,6 +67,7 @@ def main():
                                  "source-feature-relationships",
                                  "source-deprecated-macro-transport",
                                  "source-unwind-marker-transport",
+                                 "source-rust-call-impl-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
