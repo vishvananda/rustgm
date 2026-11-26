@@ -30,6 +30,7 @@ struct Relation {
     site: Site,
     actual: NodeId,
     expected: NodeId,
+    array_to_slice: bool,
 }
 #[derive(Default)]
 pub(super) struct Coverage {
@@ -144,15 +145,14 @@ impl Coverage {
                     uses::key(domains, expected, Rewrite::Original, Some(context), work)?,
                     work,
                 )?;
-                if !unsize {
-                    arena.reserve(retained::new_map::<Relation, ()>(1), 0, work)?;
-                    self.relations.insert(Relation {
-                        body,
-                        site: input.site.into(),
-                        actual,
-                        expected,
-                    });
-                }
+                arena.reserve(retained::new_map::<Relation, ()>(1), 0, work)?;
+                self.relations.insert(Relation {
+                    body,
+                    site: input.site.into(),
+                    actual,
+                    expected,
+                    array_to_slice: unsize,
+                });
             }
             s::InputKind::Coercion {
                 actual,
@@ -235,17 +235,26 @@ impl Coverage {
         actual: NodeId,
         expected: NodeId,
         work: &mut Work,
-    ) -> Result<(), &'static str> {
+    ) -> Result<bool, &'static str> {
         work.charge(1)?;
-        if !self.relations.contains(&Relation {
+        let key = Relation {
             body,
             site: site.into(),
             actual,
             expected,
-        }) {
-            return Err("source Constrain omitted its exact operation coercion input");
+            array_to_slice: false,
+        };
+        if self.relations.contains(&key) {
+            return Ok(false);
         }
-        Ok(())
+        work.charge(1)?;
+        if self.relations.contains(&Relation {
+            array_to_slice: true,
+            ..key
+        }) {
+            return Ok(true);
+        }
+        Err("source Constrain omitted its exact operation coercion input")
     }
     pub(super) fn copy(
         &self,

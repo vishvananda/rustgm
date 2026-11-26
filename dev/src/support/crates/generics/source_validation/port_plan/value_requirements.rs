@@ -162,17 +162,22 @@ impl Builder<'_, '_, '_> {
         let actual = original.values[operand as usize].ty;
         let actual_node = self.node(original, actual, work)?;
         let expected_node = self.node(original, expected, work)?;
-        self.coverage.relation(
+        let array_to_slice = self.coverage.relation(
             original.body,
             s::InputSite::Body(site),
             actual_node,
             expected_node,
             work,
         )?;
+        let (actual_shape, expected_shape) = if array_to_slice {
+            self.array_to_slice_elements(actual_node, expected_node, work)?
+        } else {
+            (actual_node, expected_node)
+        };
         self.arena.same(
             self.domains,
-            actual_node,
-            expected_node,
+            actual_shape,
+            expected_shape,
             Opening::Relation {
                 body: original.body,
             },
@@ -184,6 +189,43 @@ impl Builder<'_, '_, '_> {
             RequiredKind::Relation { actual, expected },
             work,
         )
+    }
+    fn array_to_slice_elements(
+        &self,
+        actual: NodeId,
+        expected: NodeId,
+        work: &mut Work,
+    ) -> Result<(NodeId, NodeId), &'static str> {
+        const SHAPE: &str = "source array-to-slice coercion changed its reference or referent";
+        work.charge(4)?;
+        let (
+            Node::Reference {
+                mutable: from_mut,
+                referent: from,
+                ..
+            },
+            Node::Reference {
+                mutable: to_mut,
+                referent: to,
+                ..
+            },
+        ) = (
+            self.arena.nodes[actual.0 as usize],
+            self.arena.nodes[expected.0 as usize],
+        )
+        else {
+            return Err(SHAPE);
+        };
+        if to_mut && !from_mut {
+            return Err(SHAPE);
+        }
+        match (
+            self.arena.nodes[from.0 as usize],
+            self.arena.nodes[to.0 as usize],
+        ) {
+            (Node::Array { element: from, .. }, Node::Slice(to)) => Ok((from, to)),
+            _ => Err(SHAPE),
+        }
     }
     /// Version thirteen: a reification re-proves its operand's applied item
     /// signature against its own pointer type. The operand's Function value
