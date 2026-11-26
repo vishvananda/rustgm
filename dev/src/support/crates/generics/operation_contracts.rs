@@ -44,7 +44,6 @@ pub(super) fn require_profile(
     work.charge(rows.types.len().saturating_add(rows.functions.len()))?;
     bodyless_intrinsics(rows, profile, work)?;
     declared_intrinsics(rows, profile, work)?;
-    function_policies(rows, profile, work)?;
     // Version thirteen carries declared results and their projections; only
     // version eleven carries opaque futures and symbolic operations.
     let results = profile.compiler_operations() || profile.body_nodes();
@@ -204,25 +203,12 @@ fn declared_intrinsics(
     Ok(())
 }
 
-fn function_policies(
+pub(super) fn validate_function_policies(
     rows: &SourceRows,
-    profile: Profile,
+    headers: &HeaderIndex<'_>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     let policies = &rows.cold().function_policies;
-    let Some(first) = policies.first() else {
-        return Ok(());
-    };
-    if !profile.declaration_policies() {
-        return Err(match first.kind {
-            super::FunctionPolicyKind::Comptime => {
-                "always-comptime source contracts require a wider transport profile"
-            }
-            super::FunctionPolicyKind::UncheckedConstBody => {
-                "source unchecked const-body policy requires a wider transport profile"
-            }
-        });
-    }
     work.charge(policies.len())?;
     let mut previous = None;
     for &policy in policies {
@@ -231,21 +217,19 @@ fn function_policies(
             return Err("source function policy declarations are duplicated or out of order");
         }
         previous = Some(declaration.0);
-        let Ok(index) = rows
-            .functions
-            .binary_search_by_key(&declaration.0, |row| row.declaration.0)
-        else {
+        let Some(HeaderRef::Function(index)) = headers.header(declaration, work)? else {
             return Err("source function policy declaration lacks its actual function header");
         };
-        let header = &rows.functions[index];
+        let header = &rows.functions[index as usize];
         match policy.kind {
             super::FunctionPolicyKind::Comptime => {
                 let valid_owner = match header.parent {
                     None => true,
-                    Some(parent) => rows
-                        .implementations
-                        .binary_search_by_key(&parent.0, |row| row.self_definition.0)
-                        .is_ok_and(|idx| rows.implementations[idx].trait_application.is_none()),
+                    Some(parent) => matches!(
+                        headers.header(parent, work)?,
+                        Some(HeaderRef::Implementation(index))
+                            if rows.implementations[index as usize].trait_application.is_none()
+                    ),
                 };
                 let clauses = header.inputs.slice(&rows.clauses)?;
                 work.charge(clauses.len())?;

@@ -10,11 +10,6 @@ pub const trait Destruct: PointeeSized {}
 #[lang = "drop_glue"]
 pub unsafe fn drop_glue<T: PointeeSized>(_: &mut T) {}
 
-impl Clone for u32 {
-    fn clone(&self) -> Self { *self }
-}
-impl Copy for u32 {}
-
 pub const fn seed(x: u32) -> u32 { x }
 
 const fn generic_seed<const N: u32>() -> u32 { N }
@@ -34,3 +29,8 @@ impl Wrap {
     #[rustc_comptime]
     pub fn value(&self) -> u32 { seed(self.0) }
 }
+
+impl Clone for u32 {
+    fn clone(&self) -> Self { *self }
+}
+impl Copy for u32 {}

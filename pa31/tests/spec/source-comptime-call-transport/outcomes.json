@@ -4,6 +4,7 @@
   "inputs": ["provider.rs", "client.rs", "runtime_comptime.rs", "observe.c"],
   "stdout": "19 19 37 41 23 19\n",
   "older_profile": "source effective const eligibility requires its actual marker transport",
+  "older_reader": "source comptime declaration changed its checked effect or owner",
   "restricted_client": {
     "path": "runtime_comptime.rs",
     "rustc": "compile time",

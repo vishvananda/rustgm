@@ -449,6 +449,7 @@ impl ValidatedRows {
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.declaration_policies() {
+            super::operation_contracts::validate_function_policies(&rows, &indexed, work)?;
             attributes.validate_legacy_const_slots(&rows, &indexed, work)?;
         }
         if profile.definitions() {
