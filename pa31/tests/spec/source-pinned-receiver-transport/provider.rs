@@ -23,6 +23,14 @@ impl<T: PointeeSized> Deref for &mut T {
     }
 }
 
+impl<T: PointeeSized> Deref for &T {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        *self
+    }
+}
+
 impl<P: Deref> Deref for Pin<P> {
     type Target = P::Target;
 
@@ -44,5 +52,13 @@ impl<'a> Resume for Pin<&'a mut u8> {
             (7, 3) => 4,
             _ => 0,
         }
+    }
+}
+
+pub struct Read<'a>(pub &'a u8);
+
+impl<'a> Read<'a> {
+    pub const fn read(self: Pin<&Self>) -> u8 {
+        *self.pointer.0
     }
 }

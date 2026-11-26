@@ -157,11 +157,7 @@ fn pinned_referent(
         return Ok(None);
     };
     match rows.types.get(pointer.0 as usize) {
-        Some(s::Type::Reference {
-            mutable: true,
-            referent,
-            ..
-        }) => Ok(Some(*referent)),
+        Some(s::Type::Reference { referent, .. }) => Ok(Some(*referent)),
         _ => Ok(None),
     }
 }

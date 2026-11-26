@@ -128,8 +128,8 @@ provider's negative impl, and a foreign diagnostic owner is rejected.
 `extern "rust-call"` implementation and calls the implementation's body
 with two different inputs in a fresh native client.
 `spec/source-pinned-receiver-transport/outcomes.json` calls a trait method
-with `Pin<&mut Self>` across the crate boundary. The implementation's
-`Self` already contains a distinct captured lifetime.
+with `Pin<&mut Self>` and a const method with `Pin<&Self>`. Both
+implementations' `Self` types already contain a distinct captured lifetime.
 `spec/source-internal-c-transport/outcomes.json` tests the PA30 calling
 convention in a source artifact. A fresh client instantiates a generic
 provider that calls a private, mangled C-ABI definition with a record.
