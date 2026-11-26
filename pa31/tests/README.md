@@ -1955,7 +1955,7 @@ with the prebuilt compilers.
 
 `spec/source-closure-transport/outcomes.json` checks version-14 transport of
 closure declarations, closure types, nested output links, capture boundaries,
-and unique immutable borrows across non-capturing `const` closures (in both
+unique immutable capture borrows, non-capturing `const` closures (in both
 `const` and native evaluation), closure-to-`fn`-pointer reification, capturing
 `Fn`/`FnMut`/`FnOnce` closures with receiver adapters, nested reference-capturing
 closures, and RPIT-returned capturing closures, while retaining non-callable

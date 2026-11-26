@@ -91,7 +91,8 @@ pub fn capture_fn_and_adapt<T: Copy>(x: u32, _tag: T) -> u32 {
 pub fn capture_unique_mut(mut acc: u32) -> u32 {
     let r = &mut acc;
     let mut bump = |d: u32| {
-        *r = *r + d;
+        let previous = **&r;
+        *r = previous + d;
     };
     bump(4);
     bump(6);
