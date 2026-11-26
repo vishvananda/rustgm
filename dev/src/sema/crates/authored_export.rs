@@ -3,6 +3,7 @@ mod admission_rows;
 mod admitted_contracts;
 mod advisory_rows;
 mod availability_rows;
+mod dependency_coordinates;
 pub(crate) use admitted_contracts::HeaderCompletion;
 mod authored_functions;
 mod authored_traits;
@@ -172,6 +173,7 @@ pub(crate) struct Stage {
     record_variants: bool,
     /// Version fourteen: deduplicated file paths for exported caller sites.
     caller_site_files: Option<Box<crate::support::hash::HashMap<Box<str>, u32>>>,
+    dependencies: Option<Box<dependency_coordinates::Dependencies>>,
 }
 /// The original body vocabulary a module publication may retain.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -602,11 +604,13 @@ impl Stage {
             variants: Vec::new(),
             record_variants: false,
             caller_site_files: None,
+            dependencies: None,
             role_installation_steps: facts
                 .source_bindings
                 .as_deref()
                 .map_or(0, crate::sema::compiler_items::Catalog::binding_work),
         };
+        stage.prepare_dependency_coordinates(report)?;
         if mode.feature_predicates() {
             stage.reserve(size_of::<
                 crate::support::hash::HashMap<DefId, s::TraitApplicationRef>,
@@ -1101,6 +1105,9 @@ fn complete_scope_owners(
 ) -> Result<(), &'static str> {
     for owner in facts.associated.owners() {
         stage.charge(1)?;
+        if stage.is_dependency_owner(facts, owner)? {
+            continue;
+        }
         let owner = owner.source_owner()?;
         let definition = match owner.kind {
             OwnerKind::Trait { definition, .. } => definition,

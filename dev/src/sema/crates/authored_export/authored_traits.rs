@@ -112,6 +112,9 @@ impl Stage {
                 let OwnerKind::Trait { definition, .. } = owner.kind else {
                     continue;
                 };
+                if self.is_dependency_owner(facts, owner)? {
+                    continue;
+                }
                 let slot = emitted
                     .get_mut(definition.0 as usize)
                     .ok_or("ordinary trait owner is outside its actual declaration arena")?;
@@ -126,7 +129,10 @@ impl Stage {
             .associated
             .owners()
             .iter()
-            .filter(|owner| matches!(owner.kind, OwnerKind::Trait { .. }))
+            .filter(|owner| {
+                matches!(owner.kind, OwnerKind::Trait { .. })
+                    && (!self.bootstrap_bindings() || owner.source.is_some())
+            })
             .count();
         self.charge(facts.associated.owners().len())?;
         if self.rows.traits.len() != expected {

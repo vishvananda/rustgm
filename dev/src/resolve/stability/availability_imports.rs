@@ -613,14 +613,9 @@ fn install_binding(
         .generic_definition(owner, row.module)
         .map_err(Error::unlocated)?;
     let artifact_row = &result.inventory.artifacts()[artifact];
-    let target_owner = if row.target.artifact.0 == 0 {
-        owner
-    } else {
-        artifact_row
-            .dependencies()
-            .get((row.target.artifact.0 - 1) as usize)
-            .ok_or_else(|| Error::unlocated("availability binding target artifact is absent"))?
-    };
+    let target_owner = artifact_row
+        .declaration_owner(row.target.artifact)
+        .map_err(Error::unlocated)?;
     let target = imported
         .generic_definition(target_owner, row.target.declaration)
         .map_err(Error::unlocated)?;

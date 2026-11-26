@@ -287,10 +287,13 @@ impl Resolver<'_> {
         let external = self.new_scope(None, ModuleId(0), true)?;
         let artifacts = Arc::clone(&dependencies);
         let mut imported = Imported::new(dependencies);
-        let mut roots = Vec::with_capacity(artifacts.artifacts().len());
-        for (artifact_index, artifact) in artifacts.artifacts().iter().enumerate() {
+        // The sealed order visits each identity index once; later namespace
+        // passes still pair these roots with the canonical identity table.
+        let mut roots = vec![ScopeId(0); artifacts.artifacts().len()];
+        for artifact_index in artifacts.installation_order() {
+            let artifact = &artifacts.artifacts()[artifact_index];
             let scope = self.reserve_artifact_root(artifact, &mut imported)?;
-            roots.push(scope);
+            roots[artifact_index] = scope;
             if artifact.public_names().is_some() {
                 self.reserve_public_modules(scope, artifact, &mut imported)?;
             }

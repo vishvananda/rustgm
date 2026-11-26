@@ -171,7 +171,7 @@ impl ModuleContractColumns {
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
         raw: ModuleContractRows,
-        (base, variants): (usize, bool),
+        (base, profile): (usize, s::Profile),
         work: &mut Work,
     ) -> Result<(Self, usize, usize), &'static str> {
         let bytes = raw.storage_bytes(rows.declarations.len(), work)?;
@@ -183,7 +183,7 @@ impl ModuleContractColumns {
         }
         let index = ModuleIndex::new(rows, headers, work)?;
         let result = Self { rows: raw, index };
-        result.namespace(rows, (headers, variants), work)?;
+        result.namespace(rows, (headers, profile), work)?;
         result.domains(rows, headers, work)?;
         for field in &rows.fields {
             work.charge(1)?;
@@ -204,7 +204,7 @@ impl ModuleContractColumns {
     fn namespace(
         &self,
         rows: &SourceRows,
-        (headers, variants): (&HeaderIndex<'_>, bool),
+        (headers, profile): (&HeaderIndex<'_>, s::Profile),
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let names = &self.rows.namespace;
@@ -243,7 +243,7 @@ impl ModuleContractColumns {
             if name_bytes > crates::MAX_NAME_BYTES {
                 return Err("module binding names exceed their combined byte budget");
             }
-            self.binding(rows, entry, (headers, variants), work)?;
+            self.binding(rows, entry, (headers, profile), work)?;
         }
         for pair in names.bindings.windows(2) {
             if compare(&pair[0], &pair[1], work)? != Ordering::Less {
@@ -294,13 +294,14 @@ impl ModuleContractColumns {
         let bindings = &self.rows.namespace.bindings;
         for (index, entry) in bindings.iter().enumerate() {
             work.charge(1)?;
+            if entry.source != BindingSource::Declaration {
+                continue;
+            }
             let target = rows
                 .declarations
                 .get(entry.target.declaration.0 as usize)
                 .ok_or("module target declaration is absent")?;
-            if entry.source != BindingSource::Declaration
-                || target.definition.kind != s::DefinitionKind::Variant
-            {
+            if target.definition.kind != s::DefinitionKind::Variant {
                 continue;
             }
             let owner = target
@@ -360,15 +361,22 @@ impl ModuleContractColumns {
         &self,
         rows: &SourceRows,
         entry: &ModuleBindingRow,
-        (headers, variants): (&HeaderIndex<'_>, bool),
+        (headers, profile): (&HeaderIndex<'_>, s::Profile),
         work: &mut Work,
     ) -> Result<(), &'static str> {
         self.view().require_module(entry.module)?;
         site(rows, entry.module, entry.source_site)?;
         crates::identity::validate_component(&entry.name)?;
         if entry.target.artifact != s::ArtifactRef(0) {
-            return Err("foreign module targets require the mixed-provider namespace profile");
+            if !profile.bootstrap_bindings() {
+                return Err("foreign module targets require the mixed-provider namespace profile");
+            }
+            if entry.source == BindingSource::Declaration {
+                return Err("foreign module targets require an ordinary imported binding");
+            }
+            return self.binding_visibility(entry);
         }
+        let variants = profile.body_nodes();
         let target = rows
             .declarations
             .get(entry.target.declaration.0 as usize)
@@ -412,17 +420,9 @@ impl ModuleContractColumns {
         if expected != entry.namespace {
             return Err("module binding changed its target namespace");
         }
-        match entry.visibility {
-            ModuleVisibility::Public if !target.public => {
-                return Err("public module binding exposes a private declaration");
-            }
-            ModuleVisibility::Within(ancestor) => {
-                self.view().require_module(ancestor)?;
-                if !self.index.within(entry.module, ancestor)? {
-                    return Err("module binding visibility is not an actual ancestor");
-                }
-            }
-            ModuleVisibility::Public => {}
+        self.binding_visibility(entry)?;
+        if entry.visibility == ModuleVisibility::Public && !target.public {
+            return Err("public module binding exposes a private declaration");
         }
         if entry.source == BindingSource::Declaration
             && (binding_owner(rows, target) != Some(entry.module)
@@ -433,6 +433,16 @@ impl ModuleContractColumns {
         }
         Ok(())
     }
+    fn binding_visibility(&self, entry: &ModuleBindingRow) -> Result<(), &'static str> {
+        if let ModuleVisibility::Within(ancestor) = entry.visibility {
+            self.view().require_module(ancestor)?;
+            if !self.index.within(entry.module, ancestor)? {
+                return Err("module binding visibility is not an actual ancestor of its owner");
+            }
+        }
+        Ok(())
+    }
+
     fn domains(
         &self,
         rows: &SourceRows,

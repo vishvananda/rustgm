@@ -42,6 +42,9 @@ impl Stage {
                 .owner(actual.owner)
                 .and_then(|owner| facts.associated.get(owner))
                 .ok_or("source implementation has no actual associated owner")?;
+            if self.is_dependency_owner(facts, owner)? {
+                continue;
+            }
             let owner = owner.source_owner()?;
             if owner.self_definition != actual.owner || Some(owner.source) != actual.source {
                 return Err("source implementation changed its defining Self or source owner");

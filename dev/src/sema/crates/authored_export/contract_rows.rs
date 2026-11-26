@@ -249,10 +249,14 @@ impl Stage {
     }
 
     pub(crate) fn address(&mut self, actual: DefId) -> Result<s::DeclarationAddress, &'static str> {
-        Ok(s::DeclarationAddress {
-            artifact: s::ArtifactRef(0),
-            declaration: self.declaration(actual)?,
-        })
+        if let Some(declaration) = self.definitions.get(actual.0 as usize).copied().flatten() {
+            self.charge(1)?;
+            return Ok(s::DeclarationAddress {
+                artifact: s::ArtifactRef(0),
+                declaration,
+            });
+        }
+        self.dependency_address(actual)
     }
 
     pub(super) fn push_trait(

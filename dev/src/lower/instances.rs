@@ -373,8 +373,13 @@ pub fn build_source_library_profile(
                     .crates
                     .as_ref()
                     .map_or_else(Vec::new, |imported| {
-                        imported
-                            .dependencies()
+                        let dependencies = imported.dependencies();
+                        if profile == SourcePublication::BootstrapModuleBodies
+                            && !dependencies.publication_dependencies().is_empty()
+                        {
+                            return dependencies.publication_dependencies().to_vec();
+                        }
+                        dependencies
                             .aliases()
                             .iter()
                             .map(|alias| alias.identity().clone())

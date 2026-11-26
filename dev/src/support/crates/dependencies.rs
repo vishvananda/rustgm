@@ -65,6 +65,8 @@ pub struct Dependencies {
     aliases: Vec<Dependency>,
     edges: usize,
     typed: Typed,
+    order: Vec<usize>,
+    publication: Vec<CrateIdentity>,
 }
 #[derive(Debug, Default)]
 struct Typed {
@@ -176,13 +178,23 @@ impl Dependencies {
         if atoms > MAX_COMPONENTS || names > MAX_NAME_BYTES {
             return Err("crate graph payload exceeds profile budget");
         }
-        let edges = validate_graph(&artifacts, &indices)?;
+        let (edges, order, publication) = if typed.bootstrap == 0 {
+            let (edges, _) = validate_graph(&artifacts, &indices, false)?;
+            (edges, Vec::new(), Vec::new())
+        } else {
+            let (edges, order) = validate_graph(&artifacts, &indices, true)?;
+            super::public_names::exposure::validate_typed(&artifacts, &indices)?;
+            let publication = publication_dependencies(&artifacts, &aliases, &indices, &order)?;
+            (edges, order, publication)
+        };
         super::public_names::exposure::validate(&artifacts, &indices)?;
         Ok(Self {
             artifacts,
             aliases,
             edges,
             typed,
+            order,
+            publication,
         })
     }
     #[must_use]
@@ -193,6 +205,16 @@ impl Dependencies {
     pub fn aliases(&self) -> &[Dependency] {
         &self.aliases
     }
+    /// Original declarations and headers of a typed graph require their
+    /// dependencies first. The sealed permutation indexes the identity table.
+    pub(crate) fn installation_order(&self) -> impl Iterator<Item = usize> + '_ {
+        (0..self.artifacts.len()).map(|slot| self.order.get(slot).copied().unwrap_or(slot))
+    }
+
+    pub(crate) fn publication_dependencies(&self) -> &[CrateIdentity] {
+        &self.publication
+    }
+
     /// Total retained generic payload bytes for the sealed graph.
     pub(crate) const fn generic_bytes(&self) -> usize {
         self.typed.bytes
@@ -210,7 +232,8 @@ impl Dependencies {
 fn validate_graph(
     artifacts: &[Interface],
     indices: &HashMap<&CrateIdentity, usize>,
-) -> Result<usize, &'static str> {
+    retain_order: bool,
+) -> Result<(usize, Vec<usize>), &'static str> {
     let mut incoming = vec![0usize; artifacts.len()];
     let mut users = vec![Vec::new(); artifacts.len()];
     let mut edges = 0usize;
@@ -248,7 +271,11 @@ fn validate_graph(
         .filter_map(|(index, &count)| (count == 0).then_some(index))
         .collect();
     let mut completed = 0;
+    let mut order = Vec::with_capacity(if retain_order { artifacts.len() } else { 0 });
     while let Some(index) = ready.pop_front() {
+        if retain_order {
+            order.push(index);
+        }
         completed += 1;
         for &user in &users[index] {
             incoming[user] -= 1;
@@ -260,5 +287,36 @@ fn validate_graph(
     if completed != artifacts.len() {
         return Err("cyclic crate dependency metadata");
     }
-    Ok(edges)
+    Ok((edges, order))
+}
+
+fn publication_dependencies(
+    artifacts: &[Interface],
+    aliases: &[Dependency],
+    indices: &HashMap<&CrateIdentity, usize>,
+    order: &[usize],
+) -> Result<Vec<CrateIdentity>, &'static str> {
+    let mut reachable = vec![false; artifacts.len()];
+    for alias in aliases {
+        let &index = indices
+            .get(alias.identity())
+            .ok_or("missing publication alias owner")?;
+        reachable[index] = true;
+    }
+    for &index in order.iter().rev() {
+        if reachable[index] {
+            for dependency in artifacts[index].dependencies() {
+                let &dependency = indices
+                    .get(dependency)
+                    .ok_or("missing publication dependency owner")?;
+                reachable[dependency] = true;
+            }
+        }
+    }
+    Ok(artifacts
+        .iter()
+        .zip(reachable)
+        .filter(|&(_, reachable)| reachable)
+        .map(|(artifact, _)| artifact.identity().clone())
+        .collect())
 }

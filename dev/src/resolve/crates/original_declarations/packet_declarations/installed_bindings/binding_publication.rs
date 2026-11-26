@@ -41,7 +41,7 @@ pub(super) fn prepare(
     module_bindings(
         resolver,
         (rows, names),
-        definitions,
+        (definitions, artifact, imported),
         &mut keys,
         &mut bindings,
         work,
@@ -272,7 +272,7 @@ fn private_weak_import(
 fn module_bindings(
     resolver: &mut Resolver<'_>,
     (rows, names): (s::ValidatedView<'_>, &s::ModuleNamespace),
-    definitions: &[DefId],
+    (definitions, artifact, imported): (&[DefId], &Interface, &Imported),
     keys: &mut HashSet<(ScopeId, NameId, Namespace)>,
     bindings: &mut Vec<PendingBinding>,
     work: &mut Work,
@@ -306,12 +306,22 @@ fn module_bindings(
         {
             return Err(error("v2 namespace has duplicate/preexisting keys"));
         }
+        let target = if entry.target.artifact == s::ArtifactRef(0) {
+            definitions[entry.target.declaration.0 as usize]
+        } else {
+            let owner = artifact
+                .declaration_owner(entry.target.artifact)
+                .map_err(error)?;
+            imported
+                .generic_definition(owner, entry.target.declaration)
+                .map_err(error)?
+        };
         bindings.push(PendingBinding {
             scope,
             name,
             namespace,
             binding: Binding {
-                target: definitions[entry.target.declaration.0 as usize],
+                target,
                 access: module_access(rows, entry)?,
                 origin: Origin::Direct,
                 ambiguous: false,
@@ -323,6 +333,11 @@ fn module_bindings(
 fn module_access(rows: s::ValidatedView<'_>, entry: &s::ModuleBindingRow) -> Result<Access, Error> {
     if entry.visibility != s::ModuleVisibility::Public {
         return Ok(Access::ExternalPrivate);
+    }
+    // The dependency graph checked that the foreign declaration can be named
+    // publicly in the dependency's namespace before resolution.
+    if entry.target.artifact != s::ArtifactRef(0) {
+        return Ok(Access::Public);
     }
     // A provider can name and re-export its own constructor. Every imported
     // value path to that constructor keeps the foreign crate restriction.

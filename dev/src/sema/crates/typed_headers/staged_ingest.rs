@@ -69,7 +69,8 @@ fn active_indices(report: &Report, imported: &Imported) -> Result<Vec<u32>, Erro
         .transpose()
         .map_err(error)?;
     let mut indices = Vec::new();
-    for (position, artifact) in dependencies.artifacts().iter().enumerate() {
+    for position in dependencies.installation_order() {
+        let artifact = &dependencies.artifacts()[position];
         if artifact.generic_payload().is_none() {
             continue;
         }

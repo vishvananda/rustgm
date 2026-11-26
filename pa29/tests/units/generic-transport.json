@@ -6271,10 +6271,11 @@
       "crates": [
         {
           "name": "base",
-          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+          "path": "tests/spec/generic-contracts/library.rs",
           "crate_name": "transport",
-          "disambiguator": "minimal_provider",
-          "externs": {}
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
         },
         {
           "name": "relay",
@@ -6283,7 +6284,8 @@
           "disambiguator": "reexport",
           "externs": {
             "base": "base"
-          }
+          },
+          "source_profile": "bootstrap-bodies-v15"
         }
       ],
       "externs": {

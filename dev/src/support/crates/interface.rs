@@ -486,6 +486,19 @@ impl Interface {
     pub fn dependencies(&self) -> &[CrateIdentity] {
         &self.dependencies
     }
+    pub(crate) fn declaration_owner(
+        &self,
+        address: super::generics::source::ArtifactRef,
+    ) -> Result<&CrateIdentity, &'static str> {
+        if let Some(index) = address.0.checked_sub(1) {
+            self.dependencies
+                .get(index as usize)
+                .ok_or("declaration target is outside the artifact's dependency inventory")
+        } else {
+            Ok(&self.identity)
+        }
+    }
+
     #[must_use]
     pub fn functions(&self) -> &[Function] {
         &self.functions

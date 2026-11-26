@@ -74,3 +74,101 @@ pub(crate) fn validate(
     }
     Ok(())
 }
+
+/// Authenticate typed imports against the reachable namespace of the actual
+/// defining artifact. Packet-local sealing checks the importing module.
+pub(crate) fn validate_typed(
+    artifacts: &[Interface],
+    indices: &HashMap<&CrateIdentity, usize>,
+) -> Result<(), &'static str> {
+    use crate::support::crates::{Namespace, generics::source::ArtifactRef};
+    let mut exposed = HashMap::default();
+    for artifact in artifacts {
+        let Some(descriptor) = artifact
+            .source_descriptor()
+            .filter(|descriptor| descriptor.profile().bootstrap_bindings())
+        else {
+            continue;
+        };
+        for binding in &descriptor.module_contracts()?.rows().namespace.bindings {
+            if binding.target.artifact == ArtifactRef(0) {
+                continue;
+            }
+            let target = artifact.declaration_owner(binding.target.artifact)?;
+            let &index = indices
+                .get(target)
+                .ok_or("typed namespace target has no dependency artifact")?;
+            let permitted = match exposed.entry(index) {
+                std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
+                std::collections::hash_map::Entry::Vacant(entry) => {
+                    entry.insert(typed_exports(&artifacts[index])?)
+                }
+            };
+            let flag = match binding.namespace {
+                Namespace::Type => 1,
+                Namespace::Value => 2,
+            };
+            if permitted
+                .get(binding.target.declaration.0 as usize)
+                .is_none_or(|namespaces| namespaces & flag == 0)
+            {
+                return Err(
+                    "typed namespace dependency target is private, absent or in another namespace",
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+fn typed_exports(artifact: &Interface) -> Result<Vec<u8>, &'static str> {
+    use crate::support::crates::{
+        Namespace,
+        generics::source::{
+            ArtifactRef, DefinitionKind, Exhaustiveness, HeaderRef, ModuleVisibility,
+        },
+    };
+    let descriptor = artifact
+        .source_descriptor()
+        .filter(|descriptor| descriptor.profile().bootstrap_bindings())
+        .ok_or("typed namespace dependency requires its ordinary typed artifact")?;
+    let rows = descriptor.rows();
+    let modules = descriptor.module_contracts()?;
+    let namespace = &modules.rows().namespace;
+    let mut exposed = vec![0; rows.declarations.len()];
+    let mut pending = vec![namespace.root];
+    exposed[namespace.root.0 as usize] = 1;
+    while let Some(module) = pending.pop() {
+        let start = namespace
+            .bindings
+            .partition_point(|entry| entry.module.0 < module.0);
+        let end = namespace
+            .bindings
+            .partition_point(|entry| entry.module.0 <= module.0);
+        for binding in &namespace.bindings[start..end] {
+            if binding.visibility != ModuleVisibility::Public
+                || binding.target.artifact != ArtifactRef(0)
+            {
+                continue;
+            }
+            let row = binding.target.declaration;
+            if let Some(HeaderRef::Constructor(index)) = rows.header(row)?
+                && rows.nominals[index as usize].exhaustiveness == Exhaustiveness::Open
+            {
+                continue;
+            }
+            let flag = match binding.namespace {
+                Namespace::Type => 1,
+                Namespace::Value => 2,
+            };
+            let exposed = &mut exposed[row.0 as usize];
+            if *exposed == 0
+                && rows.declarations[row.0 as usize].definition.kind == DefinitionKind::Module
+            {
+                pending.push(row);
+            }
+            *exposed |= flag;
+        }
+    }
+    Ok(exposed)
+}

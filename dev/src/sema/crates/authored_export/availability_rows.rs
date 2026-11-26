@@ -113,7 +113,7 @@ impl Stage {
             });
         }
         for (index, binding) in modules.namespace.bindings.iter().enumerate() {
-            if binding.target.artifact != self.rows.policy.provider {
+            if !self.bootstrap_bindings() && binding.target.artifact != self.rows.policy.provider {
                 return Err("foreign binding requires its actual availability producer");
             }
             rows.bindings.push(s::BindingAvailability {
