@@ -19,6 +19,7 @@ type OptionalLink = (DefId, Option<DefId>);
 pub(in crate::sema) struct ImplMembers {
     pub methods: Vec<OptionalLink>,
     pub types: Vec<(DefId, DefId)>,
+    pub inherited_types: Vec<DefId>,
     pub constants: Vec<OptionalLink>,
 }
 
@@ -146,7 +147,7 @@ impl Graph {
         let result = self.associated_row(store, owner, schema, members, &mut steps);
         budget.charge(steps)?;
         result.map_err(error)?;
-        let members = self.remap_member_links(rows, descriptor.identity(), raw.members, budget)?;
+        let members = self.remap_member_links(rows, descriptor.identity(), raw, budget)?;
         Ok(Some(ImportedMemberPlan {
             arena: self.store.clone(),
             catalog: Rc::clone(&self.origins),
@@ -161,11 +162,17 @@ impl Graph {
         &self,
         rows: s::ValidatedView<'_>,
         provider: &CrateIdentity,
-        range: crate::support::crates::generics::Range,
+        raw: &s::ImplHeader,
         budget: &mut super::super::Headers,
     ) -> Result<ImplMembers, super::super::Error> {
         use super::super::error;
-        let links = range.slice(&rows.member_links).map_err(error)?;
+        let specializes = if let Some(graph) = &rows.cold().specialization {
+            budget.charge(graph.lookup_work())?;
+            graph.parent(raw.self_definition).is_some()
+        } else {
+            false
+        };
+        let links = raw.members.slice(&rows.member_links).map_err(error)?;
         budget.reserve(
             links
                 .len()
@@ -194,8 +201,10 @@ impl Graph {
                     members.constants.push((member, actual));
                 }
                 (TraitMember::Type, Some(actual)) => members.types.push((member, actual)),
+                (TraitMember::Type, None) if specializes => members.inherited_types.push(member),
                 (TraitMember::Method(_), actual) => {
                     if actual.is_none()
+                        && !specializes
                         && !rows.transported_default(rows.header(member_row).map_err(error)?)
                     {
                         return Err(error(

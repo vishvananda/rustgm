@@ -69,7 +69,9 @@ actual source signatures and selected bodies.
   Retain the checked `#[rustc_as_ptr]` diagnostic marker on the function or
   method that declares it. Preserve a trait method's written `final` policy
   through metadata so a separate client uses the provided body and rejects
-  an attempted override.
+  an attempted override. Carry a specializing impl's parent, generic
+  substitution and written method defaultness. Fresh clients use inherited
+  methods and associated types through the provider's checked impls.
 
 ## Check your implementation
 

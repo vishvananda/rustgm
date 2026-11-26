@@ -127,6 +127,7 @@ pub struct HeaderAttributeView<'a> {
     pub(crate) imported_promotable: ContractKnowledge<ContractOrigin<'a>>,
     pub(crate) imported_pointer_lint_marker: ContractKnowledge<()>,
     pub(crate) imported_final_trait_method: ContractKnowledge<()>,
+    pub(crate) imported_default_impl_method: ContractKnowledge<()>,
 }
 #[derive(Default)]
 pub(in crate::sema) struct Ledger {

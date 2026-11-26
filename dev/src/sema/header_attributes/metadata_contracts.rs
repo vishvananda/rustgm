@@ -560,6 +560,7 @@ fn attribute_view<'a>(
             imported_promotable: ContractKnowledge::Unknown,
             imported_pointer_lint_marker: ContractKnowledge::Unknown,
             imported_final_trait_method: ContractKnowledge::Unknown,
+            imported_default_impl_method: ContractKnowledge::Unknown,
         });
     };
     let must_use = if let Some(value) = &row.must_use {
@@ -603,6 +604,13 @@ fn attribute_view<'a>(
         imported_final_trait_method: if !declaration_policies {
             ContractKnowledge::Unknown
         } else if row.advisories.final_trait_method() {
+            ContractKnowledge::KnownPresent(())
+        } else {
+            ContractKnowledge::KnownAbsent
+        },
+        imported_default_impl_method: if !declaration_policies {
+            ContractKnowledge::Unknown
+        } else if row.advisories.default_impl_method() {
             ContractKnowledge::KnownPresent(())
         } else {
             ContractKnowledge::KnownAbsent

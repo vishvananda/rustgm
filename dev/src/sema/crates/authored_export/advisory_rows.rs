@@ -99,45 +99,14 @@ impl Stage {
             if !selected.header() {
                 continue;
             }
-            let final_trait_method = !matches!(mode, Collection::ProvidedContracts)
-                && publication_method_policy(report, declaration, self.declaration_policies())?;
+            let policy = if matches!(mode, Collection::ProvidedContracts) {
+                None
+            } else {
+                publication_method_policy(report, declaration, self.declaration_policies())?
+            };
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
-            let pointer_lint_marker = facts.publication_pointer_lint_marker(
-                report,
-                definition,
-                self.body_nodes(),
-                self.declaration_policies(),
-            )?;
-            let view = facts.profiled_publication_header_contracts(
-                report,
-                definition,
-                self.declaration_policies(),
-            )?;
-            if view
-                .origin
-                .source()
-                .is_none_or(|source| source.declaration != declaration)
-            {
-                return Err(Error::at(
-                    declaration.file,
-                    0,
-                    "source contract completion belongs to another actual header",
-                ));
-            }
-            let mut contract = self.header_contract(row, view)?;
-            if self.body_nodes() {
-                self.callable_advisories(
-                    report,
-                    facts,
-                    definition,
-                    pointer_lint_marker,
-                    &mut contract,
-                )?;
-            }
-            contract.advisories = contract
-                .advisories
-                .with_final_trait_method(final_trait_method);
+            let contract = self.complete_header_contract(report, facts, &selected, row, policy)?;
             optimizations += usize::from(contract.optimization.is_some());
             if completed[row.0 as usize].replace(contract).is_some() {
                 return Err(Error::at(
@@ -156,6 +125,55 @@ impl Stage {
         }
         self.finish_columns(completed)
     }
+    fn complete_header_contract(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        selected: &CollectedScope,
+        row: super::DeclarationRef,
+        policy: Option<crate::syntax::gate_sites::Kind>,
+    ) -> Result<s::HeaderContract, Error> {
+        let definition = selected.definition();
+        let declaration = selected.source();
+        let pointer_lint_marker = facts.publication_pointer_lint_marker(
+            report,
+            definition,
+            self.body_nodes(),
+            self.declaration_policies(),
+        )?;
+        let view = facts.profiled_publication_header_contracts(
+            report,
+            definition,
+            self.declaration_policies(),
+        )?;
+        if view
+            .origin
+            .source()
+            .is_none_or(|source| source.declaration != declaration)
+        {
+            return Err(Error::at(
+                declaration.file,
+                0,
+                "source contract completion belongs to another actual header",
+            ));
+        }
+        let mut contract = self.header_contract(row, view)?;
+        if self.body_nodes() {
+            self.callable_advisories(
+                report,
+                facts,
+                definition,
+                pointer_lint_marker,
+                &mut contract,
+            )?;
+        }
+        contract.advisories = contract
+            .advisories
+            .with_final_trait_method(policy == Some(crate::syntax::gate_sites::Kind::FinalFunction))
+            .with_default_impl_method(policy == Some(crate::syntax::gate_sites::Kind::Function));
+        Ok(contract)
+    }
+
     fn finish_columns(
         &mut self,
         mut completed: Vec<Option<s::HeaderContract>>,
@@ -534,32 +552,26 @@ pub(crate) fn require_defaultness_transport(
 fn publication_method_policy(
     report: &Report,
     declaration: NodeKey,
-    final_allowed: bool,
-) -> Result<bool, Error> {
-    if let Some(modifier) = report.active_finalness(declaration)? {
-        return if final_allowed {
-            Ok(true)
-        } else {
-            Err(report.diagnostic(Error::at(
-                declaration.file,
-                modifier.span.start,
-                "source final trait method contract transport is not implemented",
-            )))
-        };
-    }
-    let Some(defaultness) = report.active_defaultness(declaration)? else {
-        return Ok(false);
+    extended: bool,
+) -> Result<Option<crate::syntax::gate_sites::Kind>, Error> {
+    use crate::syntax::gate_sites::Kind;
+    let Some(modifier) = report.active_method_modifier(declaration)? else {
+        return Ok(None);
     };
-    if defaultness.node != declaration.node {
+    if modifier.node != declaration.node {
         return Err(Error::at(
             declaration.file,
-            defaultness.span.start,
-            "source defaultness header names another declaration",
+            modifier.span.start,
+            "source method policy names another declaration",
         ));
     }
-    Err(report.diagnostic(Error::at(
-        declaration.file,
-        defaultness.span.start,
-        "source defaultness contract transport is not implemented",
-    )))
+    if extended && matches!(modifier.kind, Kind::FinalFunction | Kind::Function) {
+        return Ok(Some(modifier.kind));
+    }
+    let message = if modifier.kind == Kind::FinalFunction {
+        "source final trait method contract transport is not implemented"
+    } else {
+        "source defaultness contract transport is not implemented"
+    };
+    Err(report.diagnostic(Error::at(declaration.file, modifier.span.start, message)))
 }

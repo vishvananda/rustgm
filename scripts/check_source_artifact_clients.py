@@ -61,6 +61,7 @@ def main():
                                  "source-private-c-import-transport",
                                  "source-pointer-lint-transport",
                                  "source-final-method-transport",
+                                 "source-specialization-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",

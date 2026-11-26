@@ -212,6 +212,11 @@ impl MemberRows<'_> {
                 }
             }
             Self::Implementation(links) => {
+                use super::versioned_members::TraitMember;
+                let specializes = rows.cold().specialization.as_ref().is_some_and(|graph| {
+                    *steps = steps.saturating_add(graph.lookup_work());
+                    graph.parent(owner).is_some()
+                });
                 for link in *links {
                     *steps = steps.saturating_add(1);
                     let expected =
@@ -225,7 +230,11 @@ impl MemberRows<'_> {
                             raw,
                             actual.next().copied(),
                         )?;
-                    } else if expected.is_none_or(|member| !member.has_default()) {
+                    } else if !expected.is_some_and(|member| {
+                        member.has_default()
+                            || specializes
+                                && matches!(member, TraitMember::Method(_) | TraitMember::Type)
+                    }) {
                         return Err("imported required member omitted its actual implementation");
                     }
                 }

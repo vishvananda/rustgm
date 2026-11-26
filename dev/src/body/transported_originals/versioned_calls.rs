@@ -81,6 +81,28 @@ impl Pending {
             .chain(applied.iter().copied().flatten().map(Operand::Applied))
     }
 }
+// Provided and inherited members keep the body in its defining owner.
+fn outside_implementation(
+    rows: s::ValidatedView<'_>,
+    link: &s::MemberLink,
+    specializes: bool,
+) -> Result<bool, &'static str> {
+    let Some(expected) = link.trait_member.filter(|expected| {
+        rows.descriptor().profile().declaration_policies() && expected.artifact == s::ArtifactRef(0)
+    }) else {
+        return Ok(false);
+    };
+    let declaration = rows.header(expected.declaration)?;
+    Ok(matches!(declaration, Some(s::HeaderRef::Constant(_)))
+        || link.implementation.is_none()
+            && (rows.transported_default(declaration)
+                || specializes
+                    && matches!(
+                        declaration,
+                        Some(s::HeaderRef::Function(_) | s::HeaderRef::AssociatedType(_))
+                    )))
+}
+
 impl<'a> Index<'a> {
     pub(super) fn new(
         rows: s::ValidatedView<'a>,
@@ -96,9 +118,12 @@ impl<'a> Index<'a> {
             return Ok(result);
         }
         let growth = retained::new_map::<DeclarationRef, Member>(rows.member_links.len());
+        let ancestry = rows.cold().specialization.as_deref();
+        let per_header = ancestry.map_or(1, |graph| graph.lookup_work() + 1);
         work.charge(
             rows.implementations
                 .len()
+                .saturating_mul(per_header)
                 .saturating_add(rows.member_links.len()),
         )?;
         if allowance
@@ -120,18 +145,11 @@ impl<'a> Index<'a> {
             if header.trait_application.is_none() {
                 continue;
             }
+            let specializes =
+                ancestry.is_some_and(|graph| graph.parent(header.self_definition).is_some());
             for link in header.members.slice(&rows.member_links)? {
-                if rows.descriptor().profile().declaration_policies()
-                    && let Some(expected) = link.trait_member
-                    && expected.artifact == s::ArtifactRef(0)
-                {
-                    let declaration = rows.header(expected.declaration)?;
-                    if matches!(declaration, Some(s::HeaderRef::Constant(_)))
-                        || link.implementation.is_none() && rows.transported_default(declaration)
-                    {
-                        // A provided body is indexed under its declaring trait.
-                        continue;
-                    }
+                if outside_implementation(rows, link, specializes)? {
+                    continue;
                 }
                 let (Some(actual), Some(expected)) = (link.implementation, link.trait_member)
                 else {

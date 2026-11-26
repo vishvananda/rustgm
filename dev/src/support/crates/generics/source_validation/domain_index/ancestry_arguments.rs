@@ -32,6 +32,31 @@ impl DomainIndex<'_, '_> {
         acyclic(&graph.parents, work)
     }
 
+    pub(super) fn default_impl_method(
+        &self,
+        index: usize,
+        method: &s::FunctionHeader,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        if !self
+            .attributes
+            .and_then(|attributes| attributes.functions.get(index))
+            .is_some_and(|contract| contract.advisories.default_impl_method())
+        {
+            return Ok(());
+        }
+        if !self.declaration_policies || !matches!(method.body, s::FunctionBody::Original(_)) {
+            return Err(
+                "source default impl method requires an extended profile and original body",
+            );
+        }
+        let owner = method
+            .parent
+            .ok_or("source default impl method has no actual implementation owner")?;
+        self.specialization_impl(owner, work)?;
+        Ok(())
+    }
+
     fn specialization_impl(
         &self,
         owner: DeclarationRef,

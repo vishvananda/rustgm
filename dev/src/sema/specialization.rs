@@ -40,7 +40,10 @@ pub(in crate::sema) use graph_pairs::{compare, remembered, requested};
 
 pub(in crate::sema) use graph_closure::{prepare as prepare_graph, require_execution, seal};
 
-pub(in crate::sema) use member_paths::{conformance_order, inherited_body, inherited_type};
+pub(in crate::sema) use member_paths::{
+    conformance_order, imported_parent, inherited_body, inherited_type,
+    unfinished_imported_ancestors,
+};
 
 pub(in crate::sema) use candidate_order::{
     Order, defining_type, open, order, require_unordered_import,

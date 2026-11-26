@@ -25,10 +25,11 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     id(out, row.declaration.0)?;
     id(out, row.declaration_site)?;
     // Bit 0 retains the original must-use presence. Version fourteen adds
-    // the pointer diagnostic and final trait-method policy in bits 1 and 2.
+    // the pointer diagnostic, final trait method and default impl method in bits 1 through 3.
     out.u8(u8::from(row.must_use.is_some())
         | u8::from(row.advisories.pointer_lint_marker()) << 1
-        | u8::from(row.advisories.final_trait_method()) << 2)?;
+        | u8::from(row.advisories.final_trait_method()) << 2
+        | u8::from(row.advisories.default_impl_method()) << 3)?;
     if let Some(value) = &row.must_use {
         id(out, value.owner_site)?;
         out.u8(u8::from(value.reason.is_some()))?;
@@ -88,12 +89,15 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
     let declaration_site = read.id()?;
     let diagnostic_flags = read.reader.u8()?;
     let max_flags = if read.profile.declaration_policies() {
-        7
+        15
     } else {
         1
     };
     if diagnostic_flags > max_flags {
         return Err("invalid source boolean");
+    }
+    if diagnostic_flags & 0b1100 == 0b1100 {
+        return Err("source method cannot be both final and default");
     }
     let must_use = if diagnostic_flags & 1 != 0 {
         Some(s::MustUseContract {
@@ -145,7 +149,8 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         must_use,
         inline,
         advisories: s::AdvisoryFlags::new(flags & 2 != 0, diagnostic_flags & 2 != 0)
-            .with_final_trait_method(diagnostic_flags & 4 != 0),
+            .with_final_trait_method(diagnostic_flags & 4 != 0)
+            .with_default_impl_method(diagnostic_flags & 8 != 0),
         caller_tracking: flags & 4 != 0,
         target_features,
         optimization,

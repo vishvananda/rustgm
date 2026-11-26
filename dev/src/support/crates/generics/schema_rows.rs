@@ -852,6 +852,18 @@ pub struct SpecializationParent {
 pub struct SpecializationColumns {
     pub parents: Vec<SpecializationParent>,
 }
+impl SpecializationColumns {
+    pub(crate) fn parent(&self, child: DeclarationRef) -> Option<&SpecializationParent> {
+        self.parents
+            .binary_search_by_key(&child.0, |edge| edge.child.0)
+            .ok()
+            .map(|index| &self.parents[index])
+    }
+
+    pub(crate) fn lookup_work(&self) -> usize {
+        self.parents.len().checked_ilog2().unwrap_or(0) as usize + 1
+    }
+}
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,

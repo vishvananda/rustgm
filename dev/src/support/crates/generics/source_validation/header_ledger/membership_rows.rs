@@ -89,6 +89,7 @@ impl<'a> Members<'a> {
             .and_then(|index| index.checked_add(1))
             .ok_or("source implementation member stamp overflow")?;
         let trait_ = self.application(implementation, work)?;
+        let specializes = self.specializes(implementation, work)?;
         for (offset, link) in implementation
             .members
             .slice(&self.rows.member_links)?
@@ -102,7 +103,7 @@ impl<'a> Members<'a> {
             ) {
                 return Err("source implementation member mapping is repeated");
             }
-            self.link(implementation, trait_, stamp, link, work)?;
+            self.link(implementation, trait_, stamp, link, specializes, work)?;
         }
         Ok(())
     }
@@ -161,6 +162,7 @@ impl<'a> Members<'a> {
         trait_: Option<&s::TraitApplication>,
         stamp: u32,
         link: &s::MemberLink,
+        specializes: bool,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let mut kind = DefinitionKind::Function;
@@ -188,8 +190,17 @@ impl<'a> Members<'a> {
                 {
                     return Err("source implementation maps a foreign actual trait member");
                 }
-                if link.implementation.is_none() && !self.has_default(header) {
-                    return Err("source required member has no actual implementation");
+                if link.implementation.is_none() {
+                    if matches!(
+                        kind,
+                        DefinitionKind::Function | DefinitionKind::AssociatedType
+                    ) && specializes
+                    {
+                        return Ok(());
+                    }
+                    if !self.has_default(header) {
+                        return Err("source required member has no actual implementation");
+                    }
                 }
             }
             (None, None) if link.implementation.is_some() => {}
@@ -221,6 +232,18 @@ impl<'a> Members<'a> {
         }
         Ok(())
     }
+    fn specializes(
+        &self,
+        implementation: &s::ImplHeader,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Some(graph) = &self.rows.cold().specialization else {
+            return Ok(false);
+        };
+        work.charge(graph.lookup_work())?;
+        Ok(graph.parent(implementation.self_definition).is_some())
+    }
+
     fn has_default(&self, header: Option<HeaderRef>) -> bool {
         match header {
             Some(HeaderRef::Function(index)) => {

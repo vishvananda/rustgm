@@ -56,7 +56,7 @@ impl Stage {
                     "source associated type/value implementation transport is not implemented",
                 );
             }
-            self.implementation(facts, &owner, actual)?;
+            self.implementation(report, facts, &owner, actual)?;
             count = count
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
@@ -238,6 +238,7 @@ impl Stage {
 
     fn implementation(
         &mut self,
+        report: &Report,
         facts: &Declarations,
         owner: &crate::sema::associated::SourceOwner,
         actual: &crate::sema::traits::implementations::Implementation,
@@ -272,7 +273,8 @@ impl Stage {
             schema.captures,
         )?;
         let self_type = self.ty(facts, schema.self_type, context)?;
-        self.specialization_parent(facts, owner.self_definition, declaration, context)?;
+        let specializes =
+            self.specialization_parent(facts, owner.self_definition, declaration, context)?;
         let (application, effect) = predicate
             .bound
             .trait_parts()
@@ -305,6 +307,9 @@ impl Stage {
         let region_bounds = self.region_bounds(&schema.bounds, context)?;
         let members = self.implementation_members(&actual.methods, trait_application)?;
         self.implementation_results(facts, &actual.types, context, members)?;
+        if specializes {
+            self.inherited_result_links(report, facts, actual)?;
+        }
         self.implementation_constants(&actual.constants)?;
         let members = g::Range {
             start: members.start,
@@ -341,7 +346,7 @@ impl Stage {
         owner: DefId,
         declaration: DeclarationRef,
         context: super::Context,
-    ) -> Result<(), &'static str> {
+    ) -> Result<bool, &'static str> {
         if let Some((parent, arguments)) =
             crate::sema::specialization::immediate_parent(facts, owner)?
         {
@@ -363,6 +368,50 @@ impl Stage {
                     parent,
                     arguments,
                 });
+            return Ok(true);
+        }
+        Ok(false)
+    }
+
+    fn inherited_result_links(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        actual: &crate::sema::traits::implementations::Implementation,
+    ) -> Result<(), &'static str> {
+        let (application, _) = actual
+            .predicate
+            .bound
+            .trait_parts()
+            .ok_or("source specialization requires its actual trait application")?;
+        let trait_ = facts
+            .types
+            .trait_application(application)
+            .ok_or("source specialization lost its defining trait")?;
+        let members = facts
+            .associated
+            .owner(DefId(trait_.item.0))
+            .and_then(|owner| facts.associated.owner_members(owner))
+            .ok_or("source specialization lost the trait member inventory")?;
+        for &member in members {
+            self.charge(1)?;
+            if report.resolution.definitions[member.0 as usize].kind
+                != crate::resolve::model::DefKind::TypeAlias
+            {
+                continue;
+            }
+            let types = &actual.types;
+            self.charge(types.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+            if types
+                .binary_search_by_key(&member.0, |(id, _)| id.0)
+                .is_err()
+            {
+                if !crate::sema::specialization::inherited_type(facts, actual.owner, member)? {
+                    return Err("source specializing impl lost an inherited associated type");
+                }
+                self.reserve(4 * size_of::<s::MemberLink>())?;
+                self.implementation_member_link(member, None)?;
+            }
         }
         Ok(())
     }

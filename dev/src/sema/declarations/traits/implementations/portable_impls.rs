@@ -154,6 +154,74 @@ impl Checker<'_> {
         Ok(())
     }
 
+    fn check_specialized_members(
+        &self,
+        owner: DefId,
+        plan: &crate::sema::crates::ImportedMemberPlan,
+    ) -> Result<bool, Error> {
+        use crate::sema::{header_attributes::ContractKnowledge, specialization};
+        let members = &plan.members;
+        let Some(parent) =
+            specialization::imported_parent(&self.facts, owner).map_err(Error::unlocated)?
+        else {
+            if !members.inherited_types.is_empty() {
+                return Err(Error::unlocated(
+                    "imported result inheritance lacks a specialization parent",
+                ));
+            }
+            return Ok(false);
+        };
+        if !members.types.is_empty()
+            || members
+                .constants
+                .iter()
+                .any(|(_, definition)| definition.is_some())
+        {
+            return Err(Error::unlocated(
+                "imported specialization overrides a final associated result or constant",
+            ));
+        }
+        for &member in &members.inherited_types {
+            if !specialization::inherited_type(&self.facts, owner, member)
+                .map_err(Error::unlocated)?
+            {
+                return Err(Error::unlocated(
+                    "imported specialization omits a required associated type",
+                ));
+            }
+        }
+        let registry = self
+            .facts
+            .generics
+            .implementations
+            .as_deref()
+            .ok_or_else(|| {
+                Error::unlocated("imported specialization lost its implementation registry")
+            })?;
+        for &(member, actual) in &members.methods {
+            if actual.is_none() {
+                continue;
+            }
+            let method = registry
+                .direct_method(parent, member)
+                .map_err(Error::unlocated)?
+                .ok_or_else(|| {
+                    Error::unlocated("specializing method overrides a final inherited member")
+                })?;
+            if !matches!(
+                self.facts
+                    .header_attribute_contracts(self.report, method)?
+                    .imported_default_impl_method,
+                ContractKnowledge::KnownPresent(())
+            ) {
+                return Err(Error::unlocated(
+                    "specializing method overrides a final parent member",
+                ));
+            }
+        }
+        Ok(true)
+    }
+
     fn check_imported_members(
         &mut self,
         owner: DefId,
@@ -162,6 +230,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
+        let specializes = self.check_specialized_members(owner, plan)?;
         let members = &plan.members;
         self.check_imported_results(owner, predicate, &members.types, plan.declaration_policies)?;
         let definitions = crate::sema::traits::conformance::Definitions::new(
@@ -172,6 +241,12 @@ impl Checker<'_> {
         .map_err(Error::unlocated)?;
         for &(expected, actual) in &members.methods {
             let Some(actual) = actual else {
+                if specializes
+                    && crate::sema::specialization::inherited_body(&self.facts, owner, expected)
+                        .map_err(Error::unlocated)?
+                {
+                    continue;
+                }
                 if (plan.declaration_policies
                     || self
                         .facts

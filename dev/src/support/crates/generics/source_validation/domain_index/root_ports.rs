@@ -208,7 +208,8 @@ impl DomainIndex<'_, '_> {
         for projection in &rows.projections {
             self.used_traits[projection.trait_application.0 as usize] = true;
         }
-        for header in &rows.functions {
+        for (index, header) in rows.functions.iter().enumerate() {
+            self.default_impl_method(index, header, work)?;
             let context = Context {
                 owner: header.scope,
                 frame: Some(header.original.binder),

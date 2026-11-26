@@ -2,12 +2,12 @@
 use super::{
     graph_pairs,
     header_conditions::{self, Conditions},
-    registry_graph::{Relation, State},
+    registry_graph::{Forest, Graph, Relation, State},
     retention_work::Budget,
 };
 use crate::{
     resolve::model::DefId,
-    sema::model::Declarations,
+    sema::{model::Declarations, traits::implementations::EntryKey},
     types::{GenericArgs, arguments::Argument},
 };
 pub(in crate::sema) struct SelectedMethod {
@@ -45,20 +45,17 @@ impl SelectedMethod {
             .specialization_graph()
             .ok_or("inherited member lost its graph owner")?;
         graph.current(facts)?;
-        if !matches!(graph.state, State::Sealed(_)) || !budget.same_owner(&graph.budget) {
+        if !budget.same_owner(&graph.budget) {
             return Err("inherited member proof belongs to another or unfinished graph");
         }
         let (owner, _) = self
             .implementation
             .ok_or("inherited member has no actual defining implementation")?;
-        let State::Sealed(forest) = &graph.state else {
-            return Err("inherited member lost its graph seal");
-        };
-        super::member_paths::checked(forest, registry, registry.entry_key(owner)?)?
-            .ok_or("inherited member lost its defining source witness")?;
-        if registry.direct_method(registry.entry_key(owner)?, self.declaration)?
-            != Some(self.definition)
-        {
+        let key = registry.entry_key(owner)?;
+        let forest = execution_forest(graph, key)?.ok_or("inherited member lost its graph seal")?;
+        super::member_paths::checked(forest, registry, key)?
+            .ok_or("inherited member lost its defining witness")?;
+        if registry.direct_method(key, self.declaration)? != Some(self.definition) {
             return Err("inherited member defining declaration changed");
         }
         Ok(())
@@ -82,17 +79,7 @@ pub(in crate::sema) fn resolve(
     };
     graph.current(facts)?;
     let key = registry.entry_key(owner)?;
-    let forest = match &graph.state {
-        State::Sealed(forest) => forest,
-        State::Building(builder) if !builder.sources.contains_key(&key) => {
-            return ordinary(registry, owner, arguments, declaration);
-        }
-        State::Conforming(forest) if !forest.by_entry.contains_key(&key) => {
-            return ordinary(registry, owner, arguments, declaration);
-        }
-        _ => return Err("inherited member selection requires sealed specialization conformance"),
-    };
-    if !forest.by_entry.contains_key(&key) {
+    if execution_forest(graph, key)?.is_none() {
         return ordinary(registry, owner, arguments, declaration);
     }
     let budget = graph.budget.alias()?;
@@ -124,9 +111,8 @@ pub(in crate::sema) fn resolve(
             .specialization_graph()
             .ok_or("specialization graph disappeared during member selection")?;
         graph.current(facts)?;
-        let State::Sealed(forest) = &graph.state else {
-            return Err("specialization member selection lost its seal");
-        };
+        let forest = execution_forest(graph, current)?
+            .ok_or("specialization member selection lost its seal")?;
         let vertex = super::member_paths::checked(forest, registry, current)?
             .ok_or("inherited member lost its actual vertex")?;
         if let Some(definition) = registry.direct_method(current, declaration)? {
@@ -157,6 +143,17 @@ pub(in crate::sema) fn resolve(
         }
         arguments = translate(facts, relation, arguments, &budget)?;
         current = relation.parent;
+    }
+}
+fn execution_forest(graph: &Graph, key: EntryKey) -> Result<Option<&Forest>, &'static str> {
+    if let Some(forest) = graph.imported_forest(key) {
+        return Ok(Some(forest));
+    }
+    match &graph.state {
+        State::Sealed(forest) => Ok(forest.by_entry.contains_key(&key).then_some(forest)),
+        State::Building(builder) if !builder.sources.contains_key(&key) => Ok(None),
+        State::Conforming(forest) if !forest.by_entry.contains_key(&key) => Ok(None),
+        _ => Err("inherited member selection requires sealed specialization conformance"),
     }
 }
 fn ordinary(

@@ -82,6 +82,16 @@ impl AdvisoryFlags {
     pub const fn final_trait_method(self) -> bool {
         self.0 & 4 != 0
     }
+
+    #[must_use]
+    pub const fn with_default_impl_method(self, written: bool) -> Self {
+        Self(self.0 | (written as u8) << 3)
+    }
+
+    #[must_use]
+    pub const fn default_impl_method(self) -> bool {
+        self.0 & 8 != 0
+    }
 }
 
 /// Within a complete row, None is positively checked absence. An older profile
@@ -92,7 +102,7 @@ pub struct HeaderContract {
     pub declaration_site: u32,
     pub must_use: Option<MustUseContract>,
     pub inline: Option<InlineContract>,
-    /// Written callable advisories and final trait-method policy.
+    /// Written callable advisories and method override policy.
     pub advisories: AdvisoryFlags,
     /// Version thirteen only, on function rows: the written caller ABI policy.
     pub caller_tracking: bool,

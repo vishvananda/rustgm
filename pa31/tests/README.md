@@ -103,6 +103,11 @@ returned pointers and a wrong-result client checks the regular type rule.
 `spec/source-final-method-transport/outcomes.json` checks a provided final
 trait method, an overridable sibling, and an attempted override of the final
 method in a fresh client.
+`spec/source-specialization-transport/outcomes.json` checks a blanket array
+impl and a specializing impl in one provider. The fresh client observes the
+default and overriding methods, the inherited const argument and the
+inherited associated type. The rejection checks an override of a final
+parent method.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

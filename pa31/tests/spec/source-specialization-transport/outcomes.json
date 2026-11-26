@@ -1,0 +1,15 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "final-override.rs"],
+  "features": ["min_specialization"],
+  "stdout": "",
+  "older_reader": "invalid source boolean",
+  "profile_fences": {
+    "prefix_marker": "pub trait Answer",
+    "cases": ["final-override.rs"],
+    "profiles": ["module-body-operations-v14"],
+    "rustc_status": 1,
+    "rustc": ["specializes an item from a parent"],
+    "rustgm_status": 1,
+    "rustgm": "specializing method overrides a final parent member"
+  }
+}

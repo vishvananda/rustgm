@@ -151,6 +151,20 @@ impl Checker<'_> {
         {
             return Ok(());
         }
+        let ancestors =
+            crate::sema::specialization::unfinished_imported_ancestors(&self.facts, owner)
+                .map_err(Error::unlocated)?;
+        for (parent, predicate) in ancestors.into_iter().rev() {
+            if !self
+                .facts
+                .generics
+                .implementations
+                .as_deref()
+                .is_some_and(|registry| registry.is_validated(parent))
+            {
+                self.validate_imported_trait_implementation(parent, predicate)?;
+            }
+        }
         #[cfg(test)]
         crate::sema::copy_trace::record(|| format!("imported conformance owner={}", owner.0));
         self.validate_imported_trait_implementation(owner, predicate)

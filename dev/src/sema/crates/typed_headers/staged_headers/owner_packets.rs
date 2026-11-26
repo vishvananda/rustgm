@@ -122,6 +122,12 @@ fn implementation_members(
     budget: &mut Headers,
 ) -> Result<MemberLinks, Error> {
     let rows = context.descriptor.rows();
+    let specializes = if let Some(graph) = &rows.cold().specialization {
+        budget.charge(graph.lookup_work())?;
+        graph.parent(raw.self_definition).is_some()
+    } else {
+        false
+    };
     let links = raw.members.slice(&rows.member_links).map_err(error)?;
     budget.reserve(
         links
@@ -138,9 +144,14 @@ fn implementation_members(
             .map_err(error)?
             .flatten();
         let Some(actual) = link.implementation else {
-            // The trait owns the default's original, so it contributes no
-            // declaration to the implementation's own lexical inventory.
-            if rows.transported_default(declaration) {
+            // A provided or inherited member contributes no lexical declaration.
+            if rows.transported_default(declaration)
+                || specializes
+                    && matches!(
+                        declaration,
+                        Some(s::HeaderRef::Function(_) | s::HeaderRef::AssociatedType(_))
+                    )
+            {
                 continue;
             }
             return Err(error("v4 method conformance requires its actual override"));
