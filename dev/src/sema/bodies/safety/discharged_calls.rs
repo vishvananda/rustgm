@@ -45,7 +45,31 @@ impl Checker<'_> {
                 },
             );
         }
-        self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+        self.retain_lexical_call(
+            node,
+            kind,
+            "call to unsafe function requires an unsafe context",
+        )
+    }
+
+    pub(in crate::sema::bodies) fn require_target_call_context(
+        &mut self,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        self.retain_lexical_call(
+            node,
+            self.lexical_call_context(),
+            "call requires an unsafe context or the callee's target features",
+        )
+    }
+
+    fn retain_lexical_call(
+        &mut self,
+        node: NodeId,
+        kind: CallSafety,
+        message: &'static str,
+    ) -> Result<(), Error> {
+        self.require_unsafe(node, message)?;
         if kind == CallSafety::Safe {
             return Err(self.error(node, "completed unsafe call lost its lexical context"));
         }
