@@ -143,6 +143,7 @@ struct Lower<'a, 'b, 'c> {
     context: &'a mut Context<'c>,
     body: &'b ir::Body,
     callable_origins: Option<Box<crate::body::operand_origins::Origins<'b>>>,
+    assembly_outputs: Option<Box<crate::support::hash::HashMap<(u32, u32), Value>>>,
     cleanup: Option<Box<cleanup::Pending<'b>>>,
     vararg: Option<crate::body::vararg::Start<'b>>,
     builder: Builder,
@@ -215,6 +216,7 @@ pub(super) fn lower<'b>(
         context,
         body,
         callable_origins: None,
+        assembly_outputs: None,
         cleanup,
         vararg,
         builder,
@@ -901,7 +903,7 @@ impl Lower<'_, '_, '_> {
             Rvalue::Assembly { instruction, .. } => return self.assembly(instruction),
             Rvalue::AssemblyOutput { effect, operand } => {
                 crate::body::assembly::output(self.body, effect, operand, value.ty)?;
-                return Err(asm_invocations::OUTPUT);
+                return self.assembly_output(effect, operand, value.ty);
             }
             Rvalue::Intrinsic {
                 intrinsic,

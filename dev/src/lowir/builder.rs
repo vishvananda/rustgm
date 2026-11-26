@@ -504,13 +504,16 @@ impl Builder {
             self.value(result, operation).map(Some)
         }
     }
-    /// Invoke a defined template, passing each operand's `ptr` argument in
-    /// template order; it has no result in the initial profile.
+    /// Invoke a defined template with inputs and output snapshot addresses in
+    /// the binding's argument order. The effect has no SSA result.
     /// # Errors
-    /// Rejects non-pointer arguments, exhausted identities and invalid state.
+    /// Rejects unsupported argument types, exhausted identities and invalid state.
     pub fn asm(&mut self, template: AssemblyId, arguments: &[Value]) -> Result<(), &'static str> {
-        if arguments.iter().any(|argument| argument.ty != Type::Ptr) {
-            return Err("LowIR assembly arguments are pointers in the initial profile");
+        if arguments
+            .iter()
+            .any(|argument| !matches!(argument.ty, Type::Ptr | Type::I64))
+        {
+            return Err("LowIR assembly arguments require pointers or 64-bit integers");
         }
         let arguments = self.arguments(arguments)?;
         self.emit(

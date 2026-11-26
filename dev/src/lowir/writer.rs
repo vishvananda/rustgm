@@ -189,18 +189,25 @@ fn templates(program: &Program, out: &mut impl Write) -> io::Result<()> {
         let operands = assemblies.operands(template).map_err(io::Error::other)?;
         writeln!(
             out,
-            "assembly @asm{index} intel readwrite {} {} {} {} {{",
+            "assembly @asm{index} {} {} {} {} {} {} {{",
+            if template.att { "att" } else { "intel" },
+            if template.nomem { "none" } else { "readwrite" },
             template.properties,
             template.reads,
             template.writes,
-            operands.len()
+            template.arguments
         )?;
-        for (input, kind) in operands.iter().enumerate() {
+        for binding in operands {
+            let kind = binding.kind;
+            let input = binding.input.map_or(-1, i64::from);
+            let output = binding.output.map_or(-1, i64::from);
             writeln!(
                 out,
-                "  operand {} {input} -1 1 {} 0 {{\n    alternative 1 0 -1 {{",
+                "  operand {} {input} {output} {} {} 0 {{\n    alternative 1 {} -1 {{",
                 kind.type_name(),
-                kind.stored()
+                binding.flags(),
+                kind.stored(),
+                u8::from(binding.output.is_some() && !binding.late)
             )?;
             for register in kind.registers() {
                 writeln!(out, "      group ({register}:0)")?;
@@ -249,13 +256,13 @@ fn invocation(
         .ok_or_else(|| io::Error::other("LowIR assembly invocation without templates"))?;
     let declared = assemblies
         .template(template)
-        .and_then(|template| assemblies.operands(template))
-        .map_err(io::Error::other)?;
+        .map_err(io::Error::other)?
+        .arguments;
     let values = function
         .arguments
         .get(arguments.start as usize..arguments.end as usize)
         .ok_or_else(|| io::Error::other("invalid LowIR assembly argument range"))?;
-    if values.len() != declared.len() {
+    if values.len() != declared as usize {
         return Err(io::Error::other(
             "LowIR assembly invocation differs from its template arity",
         ));

@@ -265,7 +265,9 @@ fn item(
             value: operand.0,
             constant: mode == ir::RepeatMode::Constant,
         }),
-        ir::Rvalue::Assembly { .. } if stage.body_nodes() => assembly(value.kind),
+        ir::Rvalue::Assembly { .. } | ir::Rvalue::AssemblyOutput { .. } if stage.body_nodes() => {
+            assembly(body, value)
+        }
         ir::Rvalue::Constant(item) if stage.body_nodes() => stage.constant_read(item),
         ir::Rvalue::AssociatedConstant(instance) if stage.declaration_policies() => {
             associated_constant(stage, facts, instance, context)

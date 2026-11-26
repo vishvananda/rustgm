@@ -1,6 +1,6 @@
-//! The initial assembly profile: raw-pointer `reg` and 128-bit vector
-//! `xmm_reg` inputs, Intel templates and the `nostack`/`preserves_flags`
-//! options. Every other checked form fails here with its own text.
+//! Checked pointer/vector inputs and 64-bit general-register inputs and outputs.
+//! Output snapshots precede the CFG's ordered destination writes; dialect and
+//! memory effects remain explicit in each backend template.
 use super::{Lower, Selected};
 use crate::{
     body::assembly::{self, Piece, Template},
@@ -13,7 +13,7 @@ use crate::{
     types::Kind as TypeKind,
 };
 
-pub(super) use crate::support::initial_assembly::OUTPUT;
+use crate::support::initial_assembly::OUTPUT;
 use crate::support::initial_assembly::{GENERAL, XMM};
 /// Status flags hold an undefined value on entry and DF is clear, so no
 /// status read is needed; the template may depend on rounding control.
@@ -32,26 +32,45 @@ impl Lower<'_, '_, '_> {
             .as_deref()
             .ok_or("assembly effect has no retained body data")?;
         self.arguments.clear();
-        assembly::profile::admit(data, instruction, |register, input| {
-            let argument = self.assembly_input(register, input)?;
-            self.arguments.push(argument);
+        let mut bindings = Vec::new();
+        assembly::profile::flags(data, instruction, |operand| {
+            let ty = operand.ty.ok_or("assembly operand lost its type")?;
+            let kind = self.assembly_kind(operand.register, ty, operand.output.is_some())?;
+            if let Some(input) = operand.input {
+                let value = if kind == Kind::Integer {
+                    self.value(input)?.runtime()?
+                } else {
+                    self.assembly_input(operand.register, input)?
+                };
+                self.arguments.push(value);
+            }
+            if operand.output.is_some() {
+                let slot = self.builder.slot(Type::I64)?;
+                let pointer = self
+                    .builder
+                    .address(crate::lowir::program::Operand::Slot(slot))?;
+                self.arguments.push(pointer);
+                let ordinal =
+                    u32::try_from(bindings.len()).map_err(|_| "too many assembly operands")?;
+                self.assembly_outputs
+                    .get_or_insert_with(Default::default)
+                    .insert((id, ordinal), pointer);
+            }
+            bindings.push((
+                kind,
+                operand.input.is_some(),
+                operand.output.is_some(),
+                operand.late,
+            ));
             Ok(())
         })?;
-        let operands = data
-            .operands
-            .get(instruction.operands.start as usize..instruction.operands.end as usize)
-            .ok_or("assembly operand range is invalid")?;
         let templates = data
             .templates
             .get(instruction.templates.start as usize..instruction.templates.end as usize)
             .ok_or("assembly template range is invalid")?;
         let mut draft = self.context.output.assembly()?;
-        for operand in operands {
-            draft.operand(if operand.register == Register::Xmm {
-                Kind::Vector
-            } else {
-                Kind::Pointer
-            })?;
+        for (kind, input, output, late) in bindings {
+            draft.binding(kind, input, output, late)?;
         }
         for (index, template) in templates.iter().enumerate() {
             if index != 0 {
@@ -68,9 +87,67 @@ impl Lower<'_, '_, '_> {
         } else {
             0
         };
-        let template = draft.finish(properties, READS, writes)?;
+        let template = draft.finish_flags(
+            properties,
+            READS,
+            writes,
+            instruction.options & syntax::ATT_SYNTAX != 0,
+            instruction.options & syntax::NOMEM != 0,
+        )?;
         self.builder.asm(template, &self.arguments)?;
         Ok(Selected::Unit)
+    }
+    fn assembly_kind(
+        &mut self,
+        register: Register,
+        ty: crate::types::TypeId,
+        output: bool,
+    ) -> Result<Kind, &'static str> {
+        if register == Register::General
+            && matches!(
+                self.context.types.kind(ty),
+                Some(TypeKind::Primitive(
+                    crate::types::Primitive::I64
+                        | crate::types::Primitive::U64
+                        | crate::types::Primitive::Isize
+                        | crate::types::Primitive::Usize
+                ))
+            )
+        {
+            return Ok(Kind::Integer);
+        }
+        if output {
+            return Err(OUTPUT);
+        }
+        Ok(if register == Register::Xmm {
+            Kind::Vector
+        } else {
+            Kind::Pointer
+        })
+    }
+    pub(super) fn assembly_output(
+        &mut self,
+        effect: crate::body::ir::ValueId,
+        operand: u32,
+        ty: crate::types::TypeId,
+    ) -> Result<Selected, &'static str> {
+        let crate::body::ir::Rvalue::Assembly { instruction, .. } =
+            self.body.values[effect.0 as usize].kind
+        else {
+            return Err("assembly output lost its effect");
+        };
+        let pointer = self
+            .assembly_outputs
+            .as_deref()
+            .and_then(|outputs| outputs.get(&(instruction, operand)))
+            .copied()
+            .ok_or("assembly output lacks its native snapshot")?;
+        let Representation::Scalar(native) = self.context.representation(ty)? else {
+            return Err(OUTPUT);
+        };
+        self.builder
+            .load(native, pointer.operand)
+            .map(Selected::Runtime)
     }
     /// A raw pointer is captured by value; a vector passes its snapshot's address.
     fn assembly_input(

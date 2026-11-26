@@ -25,11 +25,13 @@ pub const MXCSR_CONTROL: u8 = 16;
 const PROPERTIES: u8 = 127;
 const STATE: u8 = 63;
 
-/// One operand of a template. Every kind is a read-only register input.
+/// The backend value bound to one register operand.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     /// A captured `ptr` bound to a general register other than rbx, rbp and rsp.
     Pointer,
+    /// A 64-bit integer in a general register.
+    Integer,
     /// A `v128` whose `ptr` argument addresses its snapshot; the backend loads
     /// it into one of xmm0 to xmm15.
     Vector,
@@ -38,6 +40,7 @@ impl Kind {
     pub(super) const fn type_name(self) -> &'static str {
         match self {
             Self::Pointer => "ptr",
+            Self::Integer => "i64",
             Self::Vector => "v128",
         }
     }
@@ -45,7 +48,7 @@ impl Kind {
     #[must_use]
     pub const fn stored(self) -> u8 {
         match self {
-            Self::Pointer => 0,
+            Self::Pointer | Self::Integer => 0,
             Self::Vector => 1,
         }
     }
@@ -53,7 +56,7 @@ impl Kind {
     #[must_use]
     pub const fn registers(self) -> &'static [&'static str] {
         match self {
-            Self::Pointer => &[
+            Self::Pointer | Self::Integer => &[
                 "rax", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14",
                 "r15",
             ],
@@ -62,6 +65,21 @@ impl Kind {
                 "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
             ],
         }
+    }
+}
+/// One register operand and its positions in the invocation argument list.
+#[derive(Clone, Copy, Debug)]
+pub struct Binding {
+    pub kind: Kind,
+    pub input: Option<u32>,
+    pub output: Option<u32>,
+    pub late: bool,
+}
+impl Binding {
+    /// Backend operand read/write bits.
+    #[must_use]
+    pub const fn flags(self) -> u8 {
+        (self.input.is_some() as u8) | ((self.output.is_some() as u8) << 1)
     }
 }
 #[derive(Clone, Copy, Debug)]
@@ -73,6 +91,9 @@ pub(super) enum Piece {
 }
 #[derive(Clone, Copy, Debug)]
 pub(super) struct Template {
+    pub(super) att: bool,
+    pub(super) nomem: bool,
+    pub(super) arguments: u32,
     pub(super) properties: u8,
     pub(super) reads: u8,
     pub(super) writes: u8,
@@ -83,7 +104,7 @@ pub(super) struct Template {
 #[derive(Default)]
 pub struct Assemblies {
     pub(super) templates: Vec<Template>,
-    pub(super) operands: Vec<Kind>,
+    pub(super) operands: Vec<Binding>,
     pub(super) pieces: Vec<Piece>,
     pub(super) text: String,
 }
@@ -111,9 +132,19 @@ impl<'a> Reading<'a> {
             self.template.writes,
         )
     }
+    /// Dialect and memory-free effect of the template.
+    #[must_use]
+    pub const fn flags(&self) -> (bool, bool) {
+        (self.template.att, self.template.nomem)
+    }
+    /// Number of input values and output storage addresses.
+    #[must_use]
+    pub const fn arguments(&self) -> u32 {
+        self.template.arguments
+    }
     /// # Errors
     /// Rejects a malformed operand range.
-    pub fn operands(&self) -> Result<&'a [Kind], &'static str> {
+    pub fn operands(&self) -> Result<&'a [Binding], &'static str> {
         self.assemblies.operands(self.template)
     }
     /// # Errors
@@ -137,7 +168,7 @@ impl Assemblies {
             template,
         })
     }
-    pub(super) fn operands(&self, template: &Template) -> Result<&[Kind], &'static str> {
+    pub(super) fn operands(&self, template: &Template) -> Result<&[Binding], &'static str> {
         self.operands
             .get(template.operands.start as usize..template.operands.end as usize)
             .ok_or("invalid LowIR assembly operand range")
@@ -164,10 +195,12 @@ pub struct Draft<'a> {
     assemblies: &'a mut Assemblies,
     operands: u32,
     pieces: u32,
+    arguments: u32,
 }
 impl<'a> Draft<'a> {
     pub(super) fn new(assemblies: &'a mut Assemblies) -> Result<Self, &'static str> {
         Ok(Self {
+            arguments: 0,
             operands: index(assemblies.operands.len())?,
             pieces: index(assemblies.pieces.len())?,
             assemblies,
@@ -176,11 +209,37 @@ impl<'a> Draft<'a> {
     /// # Errors
     /// Rejects an operand after the first piece and exhausted identities.
     pub fn operand(&mut self, kind: Kind) -> Result<(), &'static str> {
-        if index(self.assemblies.pieces.len())? != self.pieces {
-            return Err("LowIR assembly operand follows its template text");
+        self.binding(kind, true, false, false)
+    }
+    /// Append an input, an output snapshot, or a read/write register operand.
+    /// # Errors
+    /// Rejects empty operands, exhausted identities and operands after text.
+    pub fn binding(
+        &mut self,
+        kind: Kind,
+        input: bool,
+        output: bool,
+        late: bool,
+    ) -> Result<(), &'static str> {
+        if index(self.assemblies.pieces.len())? != self.pieces || (!input && !output) {
+            return Err("invalid LowIR assembly operand or order");
         }
         index(self.assemblies.operands.len() + 1)?;
-        self.assemblies.operands.push(kind);
+        let mut next = || -> Result<u32, &'static str> {
+            let id = self.arguments;
+            self.arguments = id
+                .checked_add(1)
+                .ok_or("LowIR assembly arguments exhausted")?;
+            Ok(id)
+        };
+        let input = input.then(&mut next).transpose()?;
+        let output = output.then(&mut next).transpose()?;
+        self.assemblies.operands.push(Binding {
+            kind,
+            input,
+            output,
+            late,
+        });
         Ok(())
     }
     /// Append literal text, extending an adjacent text piece.
@@ -226,11 +285,27 @@ impl<'a> Draft<'a> {
     /// # Errors
     /// Rejects bits outside the backend vocabulary and exhausted identities.
     pub fn finish(self, properties: u8, reads: u8, writes: u8) -> Result<AssemblyId, &'static str> {
+        self.finish_flags(properties, reads, writes, false, false)
+    }
+    /// Finish a template with its dialect and exact memory effect.
+    /// # Errors
+    /// Rejects bits outside the backend vocabulary and exhausted identities.
+    pub fn finish_flags(
+        self,
+        properties: u8,
+        reads: u8,
+        writes: u8,
+        att: bool,
+        nomem: bool,
+    ) -> Result<AssemblyId, &'static str> {
         if properties & !PROPERTIES != 0 || (reads | writes) & !STATE != 0 {
             return Err("LowIR assembly header bits are outside the backend vocabulary");
         }
         let id = AssemblyId(index(self.assemblies.templates.len())?);
         self.assemblies.templates.push(Template {
+            att,
+            nomem,
+            arguments: self.arguments,
             properties,
             reads,
             writes,

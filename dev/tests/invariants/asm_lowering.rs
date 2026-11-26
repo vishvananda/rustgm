@@ -65,6 +65,20 @@ fn every_form_outside_the_profile_keeps_its_declared_fence() -> Result {
         };
         assert_eq!(status, "0", "{path}: rustc must accept every opponent");
         let text = fixture_source(&format!("{SPEC}/{path}"))?;
+        if matches!(
+            path,
+            "opponents/att-syntax.rs" | "opponents/output.rs" | "opponents/inout.rs"
+        ) {
+            let (_, templates) = lowered(&text, "asm_flags_extension", "f")?;
+            assert_eq!(templates, Some(1));
+            count += 1;
+            continue;
+        }
+        let expected = if matches!(path, "opponents/nomem.rs" | "opponents/reg-integer.rs") {
+            crate::support::initial_assembly::COMMENT
+        } else {
+            expected
+        };
         let error = lowered(&text, "asm_form_fence", "f")
             .err()
             .ok_or_else(|| format!("{path}: unsupported form lowered"))?;

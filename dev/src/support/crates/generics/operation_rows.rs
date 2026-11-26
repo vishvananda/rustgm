@@ -55,6 +55,11 @@ pub enum RegionAllocation {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ValueKind {
+    /// Version fourteen: read one operand snapshot after its assembly effect.
+    AssemblyOutput {
+        effect: u32,
+        operand: u32,
+    },
     Aggregate {
         fields: Range,
     },
@@ -650,8 +655,8 @@ pub enum AssemblyClass {
 pub struct AssemblyOperand {
     pub class: AssemblyClass,
     pub input: Option<u32>,
-    /// Only `false` decodes; an output place has no encoding yet.
-    pub output: bool,
+    /// Version fourteen retains the actual destination of each ordered output.
+    pub output: Option<Place>,
     pub ty: TypeRef,
     pub late: bool,
 }

@@ -53,7 +53,7 @@ impl DomainIndex<'_, '_> {
         }
         for instruction in &rows.instructions {
             Self::site(original, instruction.site, work)?;
-            instruction_profile(instruction, unsafe_)?;
+            instruction_profile(instruction, unsafe_, self.declaration_policies)?;
             for operand in instruction.operands.slice(&rows.operands)? {
                 self.types.root(self.headers, context, operand.ty, work)?;
             }
@@ -79,6 +79,7 @@ impl DomainIndex<'_, '_> {
                 )?;
             }
         }
+        self.outputs(original, rows, work)?;
         for instruction in &rows.instructions {
             comments(rows, instruction, work)?;
         }
@@ -94,24 +95,110 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         let arguments = arguments.slice(&original.arguments)?;
-        if operands.len() != arguments.len() {
-            return Err("assembly input order differs from retained operands");
-        }
-        for (operand, &argument) in operands.iter().zip(arguments) {
+        let mut inputs = arguments.iter();
+        for operand in operands {
             work.charge(1)?;
-            if operand.output {
+            if operand.output.is_some() && !self.declaration_policies {
                 return Err(profile::OUTPUT);
             }
-            if operand.input != Some(argument) {
-                return Err("assembly input order differs from retained operands");
+            if operand.input.is_none() && operand.output.is_none() {
+                return Err("source assembly operand has neither input nor output");
             }
-            if original.values[argument as usize].ty != operand.ty {
-                return Err("assembly input type differs from retained operand");
+            if let Some(input) = operand.input {
+                if inputs.next() != Some(&input) {
+                    return Err("assembly input order differs from retained operands");
+                }
+                if original
+                    .values
+                    .get(input as usize)
+                    .is_none_or(|value| value.ty != operand.ty)
+                {
+                    return Err("assembly input type differs from retained operand");
+                }
             }
-            if operand.late {
+            if operand.late && operand.output.is_none() {
                 return Err("source assembly input cannot be late");
             }
+            if let Some(place) = operand.output {
+                self.place(original, place, None, work)?;
+                let ty = match place {
+                    s::Place::Local(id) => original.locals[id as usize].ty,
+                    s::Place::Projection(id) => original.projections[id as usize].ty,
+                    s::Place::Temporary(id) => original.values[id as usize].ty,
+                    s::Place::Static(id) => self.headers.static_header(id, work)?.ty,
+                };
+                if ty != operand.ty {
+                    return Err("assembly output type differs from retained place");
+                }
+            }
             self.class(operand)?;
+        }
+        if inputs.next().is_some() {
+            return Err("assembly input order differs from retained operands");
+        }
+        Ok(())
+    }
+    fn outputs(
+        &self,
+        original: &s::Original,
+        rows: &s::Assembly,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        // The legacy vocabulary and input-only pass already exclude output nodes.
+        if !self.declaration_policies {
+            return Ok(());
+        }
+        let mut stores = crate::support::hash::HashMap::default();
+        for statement in &original.statements {
+            work.charge(1)?;
+            if let s::Action::Store { place, value } = statement.action
+                && matches!(
+                    original.values.get(value as usize).map(|value| value.kind),
+                    Some(s::ValueKind::AssemblyOutput { .. })
+                )
+                && stores.insert(value, place).is_some()
+            {
+                return Err("source assembly output has repeated stores");
+            }
+        }
+        let mut outputs = vec![false; rows.operands.len()];
+        for (index, value) in original.values.iter().enumerate() {
+            let s::ValueKind::AssemblyOutput { effect, operand } = value.kind else {
+                continue;
+            };
+            work.charge(1)?;
+            let Some(s::Value {
+                kind: s::ValueKind::Assembly { instruction, .. },
+                ..
+            }) = original.values.get(effect as usize)
+            else {
+                return Err("assembly output names another value kind");
+            };
+            let range = rows.instructions[*instruction as usize].operands;
+            let operands = range.slice(&rows.operands)?;
+            let output = operands
+                .get(operand as usize)
+                .ok_or("assembly output operand is stale")?;
+            if output.output.is_none() || output.ty != value.ty || effect as usize >= index {
+                return Err("assembly output differs from its retained typed place");
+            }
+            let emitted = &mut outputs[range.start as usize + operand as usize];
+            if *emitted
+                || stores
+                    .get(&u32::try_from(index).map_err(|_| "source value overflow")?)
+                    .copied()
+                    != output.output
+            {
+                return Err("source assembly output differs from its ordered store");
+            }
+            *emitted = true;
+        }
+        if outputs
+            .iter()
+            .zip(&rows.operands)
+            .any(|(&emitted, operand)| emitted != operand.output.is_some())
+        {
+            return Err("source assembly output column differs from its output values");
         }
         Ok(())
     }
@@ -122,15 +209,25 @@ impl DomainIndex<'_, '_> {
         let ty = |reference: g::TypeRef| types.get(reference.0 as usize);
         match operand.class {
             s::AssemblyClass::General => match ty(operand.ty) {
+                Some(s::Type::Scalar(
+                    crate::support::crates::Scalar::I64
+                    | crate::support::crates::Scalar::U64
+                    | crate::support::crates::Scalar::Isize
+                    | crate::support::crates::Scalar::Usize,
+                )) if self.declaration_policies => Ok(()),
                 Some(s::Type::RawPointer { pointee, .. })
                     if !matches!(ty(*pointee), Some(s::Type::Slice(_) | s::Type::Str) | None) =>
                 {
-                    Ok(())
+                    if operand.output.is_some() {
+                        Err(profile::OUTPUT)
+                    } else {
+                        Ok(())
+                    }
                 }
                 _ => Err(profile::GENERAL),
             },
             s::AssemblyClass::Vector => match ty(operand.ty) {
-                Some(s::Type::Nominal { .. }) => Ok(()),
+                Some(s::Type::Nominal { .. }) if operand.output.is_none() => Ok(()),
                 _ => Err(profile::XMM),
             },
             s::AssemblyClass::Abcd => Err(profile::ABCD),
@@ -170,11 +267,22 @@ fn partition(
     Ok(next as usize == length)
 }
 /// The instruction's own options and safety, in the profile's order.
-fn instruction_profile(row: &s::AssemblyInstruction, unsafe_: bool) -> Result<(), &'static str> {
+fn instruction_profile(
+    row: &s::AssemblyInstruction,
+    unsafe_: bool,
+    flags: bool,
+) -> Result<(), &'static str> {
     if row.options & !profile::KNOWN != 0 {
         return Err("unknown source assembly option");
     }
-    profile::option(row.options)?;
+    if flags {
+        profile::flags_option(row.options)?;
+    } else {
+        profile::option(row.options)?;
+    }
+    if row.options & profile::NOMEM != 0 && row.options & profile::READONLY != 0 {
+        return Err("source assembly options are incompatible");
+    }
     match row.safety {
         s::CallSafety::Safe => Err("source inline assembly has no unsafe context"),
         s::CallSafety::ExplicitUnsafeBlock => Ok(()),

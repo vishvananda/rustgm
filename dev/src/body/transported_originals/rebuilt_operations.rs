@@ -145,7 +145,9 @@ fn value_kind(
         },
         s::ValueKind::Scalar(_) => encoded_literals::append(view, value, body)?,
         s::ValueKind::Text(_) => encoded_texts::append(view)?,
-        s::ValueKind::Assembly { .. } => encoded_assembly::value(view, value.kind)?,
+        s::ValueKind::Assembly { .. } | s::ValueKind::AssemblyOutput { .. } => {
+            encoded_assembly::value(view, value.kind)?
+        }
         s::ValueKind::Read(place) => {
             Rvalue::Read(regional_records::place(view, place, &mut work.steps)?)
         }

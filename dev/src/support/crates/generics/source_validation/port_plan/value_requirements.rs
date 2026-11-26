@@ -63,6 +63,7 @@ impl Builder<'_, '_, '_> {
             | s::ValueKind::Binary { .. }
             | s::ValueKind::Text(_)
             | s::ValueKind::Assembly { .. }
+            | s::ValueKind::AssemblyOutput { .. }
             | s::ValueKind::Constant(_)
             | s::ValueKind::AssociatedConstant { .. }
             | s::ValueKind::ConstArgument(_)

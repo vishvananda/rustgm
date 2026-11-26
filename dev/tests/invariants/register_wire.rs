@@ -153,7 +153,9 @@ fn forged_store_columns_reject_by_profile_text_at_decode() -> Result {
     );
     // Row 7: an output flag; no output place is read.
     assert_eq!(
-        forged(&rows, |rows| rows.operands[0].output = true)?.err(),
+        forged(&rows, |rows| rows.operands[0].output =
+            Some(s::Place::Local(0)))?
+        .err(),
         Some(profile::OUTPUT)
     );
     // Row 9 and the unallocated safety tags.

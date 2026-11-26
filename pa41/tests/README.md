@@ -51,3 +51,13 @@ pa29's associated-unsafe item, returns `inherent.rs` as the client of the
 now-exported `export_controls.inherent`. They are checkpoint
 inputs, not an active grading suite. The evidence is in
 [target-feature-rows.md](../../docs/parallel/target-feature-rows.md).
+
+`spec/source-integer-assembly/outcomes.json` declares the v14 flags extension:
+original pinned x86-64 flags functions, 64-bit register inputs and output
+snapshots, AT&T templates and `nomem`. Fresh native clients check inout, lateout,
+aliased output ordering and output through a reference; v13 and unsafe controls
+retain their declared refusals. Run `scripts/check_source_artifact_clients.py`
+with `--case source-integer-assembly`.
+Original flags execution remains an unqualified expected-success case because
+the pinned encoder does not implement `pushfq`/`popfq`; the outcome manifest
+keeps that acceptance separate from the five qualified integer observers.

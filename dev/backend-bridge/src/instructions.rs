@@ -655,7 +655,7 @@ impl Body<'_, '_> {
             .extend_from_slice(&self.scratch.arguments);
         Ok(())
     }
-    /// `asm @asmN(arguments)`: every argument is read as `ptr`.
+    /// `asm @asmN(arguments)`: input values and output snapshot addresses.
     fn invocation(&mut self, template: u32, arguments: Range) -> Result<Record, Failure> {
         let &(id, operands) = self
             .stater
@@ -678,7 +678,7 @@ impl Body<'_, '_> {
         let mut read = std::mem::take(&mut self.scratch.arguments);
         read.clear();
         for value in values {
-            read.push(self.value(value.operand, Context::Scalar(Scalar::Ptr))?);
+            read.push(self.value(value.operand, Context::Scalar(value.ty))?);
         }
         self.scratch.arguments = read;
         self.pool(&mut record)?;

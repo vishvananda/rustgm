@@ -11,13 +11,14 @@ use crate::{
     literals::{self, Context},
     records::{
         ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER, ASM_OPERAND_READ,
-        ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand, AsmPiece,
-        AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY, CLASS_STATED,
-        DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE,
-        EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE, LINKAGE_DEFAULT,
-        Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT, STORAGE_READONLY,
-        STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64,
-        TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID, Type, object,
+        ASM_OPERAND_WRITE, ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand,
+        AsmPiece, AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY,
+        CLASS_STATED, DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER,
+        EIGHTBYTE_NONE, EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE,
+        LINKAGE_DEFAULT, Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT,
+        STORAGE_READONLY, STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16,
+        TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID,
+        Type, object,
     },
 };
 use rustgm::lowir::{
@@ -316,7 +317,8 @@ impl<'p> Stater<'p> {
             let mut operands = Vec::with_capacity(kinds.len());
             let mut alternatives = Vec::with_capacity(kinds.len());
             let (mut groups, mut registers) = (Vec::new(), Vec::new());
-            for (input, &kind) in kinds.iter().enumerate() {
+            for (index, &binding) in kinds.iter().enumerate() {
+                let kind = binding.kind;
                 let first_group = count(groups.len())?;
                 for name in kind.registers() {
                     let Some(register) = register(name) else {
@@ -338,20 +340,21 @@ impl<'p> Stater<'p> {
                     group_count: u16::try_from(groups.len() - first_group as usize)
                         .map_err(|_| Failure::from("too many LowIR assembly registers"))?,
                     locations: ASM_LOCATION_REGISTER,
+                    early_write: u8::from(binding.output.is_some() && !binding.late),
                     ..AsmAlternative::default()
                 });
                 // `operand T input -1 1 stored 0`: read only, one alternative.
                 operands.push(AsmOperand {
-                    ty: if kind == Kind::Pointer {
-                        TYPE_PTR
-                    } else {
-                        TYPE_V128
+                    ty: match kind {
+                        Kind::Pointer => TYPE_PTR,
+                        Kind::Vector => TYPE_V128,
+                        Kind::Integer => TYPE_I64,
                     },
-                    input: count(input)?,
-                    output: NO_ID,
-                    first_alternative: count(input)?,
+                    input: binding.input.unwrap_or(NO_ID),
+                    output: binding.output.unwrap_or(NO_ID),
+                    first_alternative: count(index)?,
                     alternative_count: 1,
-                    flags: ASM_OPERAND_READ,
+                    flags: operand_flags(binding),
                     input_storage: kind.stored(),
                     ..AsmOperand::default()
                 });
@@ -381,10 +384,13 @@ impl<'p> Stater<'p> {
                 });
             }
             if self.forms.total() != noted {
-                self.templates.push((NO_ID, kinds.len()));
+                self.templates.push((NO_ID, reading.arguments() as usize));
                 continue;
             }
             let id = self.module.assembly(&ffi::Template {
+                att: reading.flags().0,
+                nomem: reading.flags().1,
+                arguments: reading.arguments(),
                 properties: u16::from(properties),
                 reads: u32::from(reads),
                 writes: u32::from(writes),
@@ -395,7 +401,7 @@ impl<'p> Stater<'p> {
                 registers: &registers,
                 pieces: &pieces,
             })?;
-            self.templates.push((id, kinds.len()));
+            self.templates.push((id, reading.arguments() as usize));
         }
         Ok(())
     }
@@ -444,4 +450,10 @@ impl<'p> Stater<'p> {
             Err(Failure::Unsupported(self.forms))
         }
     }
+}
+
+/// Map the model's direction to the pinned library's operand vocabulary.
+fn operand_flags(binding: rustgm::lowir::asm::Binding) -> u8 {
+    (u8::from(binding.input.is_some()) * ASM_OPERAND_READ)
+        | (u8::from(binding.output.is_some()) * ASM_OPERAND_WRITE)
 }

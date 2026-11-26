@@ -1227,6 +1227,15 @@
       "adaptation": "none; complete original module retained; a reduced provider uses the exact declaration interval",
       "oracle": "source-fragment",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/eflags.rs",
+      "destination": "pa41/tests/upstream/rust/eflags.rs",
+      "sha256": "9662f8eaabf031a5c941ea3e9473bd781115fb2581c7e0c38d8e8ae18beb92d9",
+      "adaptation": "none; original bytes retained; x86-64 function bodies are inserted verbatim into the no_core fixture",
+      "oracle": "source-integer-assembly/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

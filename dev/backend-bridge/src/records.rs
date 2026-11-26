@@ -150,12 +150,15 @@ pub const EIGHTBYTE_INTEGER: u8 = 1;
 pub const EIGHTBYTE_SSE: u8 = 2;
 pub const EIGHTBYTE_SSEUP: u8 = 3;
 
+pub const ASM_DIALECT_ATT: u8 = 0;
 pub const ASM_DIALECT_INTEL: u8 = 1;
+pub const ASM_MEMORY_NONE: u8 = 0;
 pub const ASM_MEMORY_READ_WRITE: u8 = 3;
 pub const ASM_BANK_GPR: u8 = 0;
 pub const ASM_BANK_VECTOR: u8 = 1;
 pub const ASM_LOCATION_REGISTER: u8 = 1;
 pub const ASM_OPERAND_READ: u8 = 1;
+pub const ASM_OPERAND_WRITE: u8 = 2;
 pub const ASM_PIECE_TEXT: u8 = 0;
 pub const ASM_PIECE_OPERAND: u8 = 1;
 

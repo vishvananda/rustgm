@@ -19,6 +19,15 @@ use crate::{
 };
 
 pub(super) fn value(view: &SourceOriginal<'_>, kind: s::ValueKind) -> Result<Rvalue, &'static str> {
+    if let s::ValueKind::AssemblyOutput { effect, operand } = kind {
+        if !view.rows().descriptor().profile().declaration_policies() {
+            return Err("source assembly outputs require the version-fourteen body IR profile");
+        }
+        return Ok(Rvalue::AssemblyOutput {
+            effect: ValueId(effect),
+            operand,
+        });
+    }
     let s::ValueKind::Assembly {
         instruction,
         arguments,
@@ -53,7 +62,15 @@ pub(super) const fn same(actual: Rvalue, record: s::ValueKind) -> Option<bool> {
         ) => {
             Some(instruction == ordinal && arguments.start == raw.start && arguments.end == raw.end)
         }
-        (Rvalue::Assembly { .. }, _) | (_, s::ValueKind::Assembly { .. }) => Some(false),
+        (
+            Rvalue::AssemblyOutput { effect, operand },
+            s::ValueKind::AssemblyOutput {
+                effect: raw,
+                operand: ordinal,
+            },
+        ) => Some(effect.0 == raw && operand == ordinal),
+        (Rvalue::Assembly { .. } | Rvalue::AssemblyOutput { .. }, _)
+        | (_, s::ValueKind::Assembly { .. } | s::ValueKind::AssemblyOutput { .. }) => Some(false),
         _ => None,
     }
 }
@@ -119,7 +136,10 @@ fn operand(
             s::AssemblyClass::Explicit => return Err(EXPLICIT),
         },
         input: row.input.map(ValueId),
-        output: None,
+        output: row
+            .output
+            .map(|place| super::regional_records::place(view, place, steps))
+            .transpose()?,
         ty: Some(view.ty(row.ty, steps)?),
         late: row.late,
     })
@@ -206,7 +226,7 @@ pub(super) fn validate(
         let expected = operand(view, row, steps)?;
         if actual.register != expected.register
             || actual.input != expected.input
-            || actual.output.is_some()
+            || actual.output != expected.output
             || actual.ty != expected.ty
             || actual.late != expected.late
         {

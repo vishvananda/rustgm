@@ -595,7 +595,8 @@ fn dependency(
                 Ok(None)
             };
         }
-        s::ValueKind::Constrain(value)
+        s::ValueKind::AssemblyOutput { effect: value, .. }
+        | s::ValueKind::Constrain(value)
         | s::ValueKind::ScalarCast(value)
         | s::ValueKind::PointerCast(value)
         | s::ValueKind::EnumCast(value)

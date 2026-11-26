@@ -870,55 +870,7 @@ fn originals(
         }
         for value in &original.values {
             work.charge(1)?;
-            if !(matches!(
-                value.kind,
-                ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_)
-            ) || features
-                && matches!(
-                    value.kind,
-                    ValueKind::Function(_)
-                        | ValueKind::Call { .. }
-                        | ValueKind::Scalar(_)
-                        | ValueKind::Aggregate { .. }
-                )
-                || regional
-                    && matches!(
-                        value.kind,
-                        ValueKind::Borrow(_)
-                            | ValueKind::TwoPhaseBorrow(_)
-                            | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
-                            | ValueKind::ScalarCast(_)
-                            | ValueKind::Binary { .. }
-                            | ValueKind::Invoke { .. }
-                            | ValueKind::VariantAggregate { .. }
-                            | ValueKind::IsVariant { .. }
-                            | ValueKind::EnumCast(_)
-                            | ValueKind::Text(_)
-                            | ValueKind::Reify(_)
-                            | ValueKind::PointerCall { .. }
-                            | ValueKind::Assembly { .. }
-                            | ValueKind::Constant(_)
-                            | ValueKind::AssociatedConstant { .. }
-                    )
-                || constant_initializers
-                    && matches!(
-                        value.kind,
-                        ValueKind::Read(Place::Static(_))
-                            | ValueKind::ConstArgument(_)
-                            | ValueKind::PointerCast(_)
-                            | ValueKind::DirectEnumCast(_)
-                            | ValueKind::AddressCast { .. }
-                            | ValueKind::Unary { .. }
-                            | ValueKind::Address(_)
-                            | ValueKind::Length(_)
-                            | ValueKind::Validate(_)
-                            | ValueKind::TextEquals { .. }
-                            | ValueKind::Union { .. }
-                            | ValueKind::Repeat { .. }
-                            | ValueKind::Unsize { .. }
-                            | ValueKind::InlineConstant(_)
-                    ))
-            {
+            if !original_value(value.kind, features, regional, constant_initializers) {
                 return Err("source value operation requires a wider explicit profile");
             }
         }
@@ -2507,3 +2459,61 @@ fn admitted_convention(
 #[cfg(test)]
 #[path = "../../../../tests/invariants/valued_slots.rs"]
 mod const_tests;
+
+/// Whether this profile supplies the complete vocabulary for an original value.
+fn original_value(
+    kind: ValueKind,
+    features: bool,
+    regional: bool,
+    constant_initializers: bool,
+) -> bool {
+    matches!(
+        kind,
+        ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_)
+    ) || features
+        && matches!(
+            kind,
+            ValueKind::Function(_)
+                | ValueKind::Call { .. }
+                | ValueKind::Scalar(_)
+                | ValueKind::Aggregate { .. }
+        )
+        || regional
+            && matches!(
+                kind,
+                ValueKind::Borrow(_)
+                    | ValueKind::TwoPhaseBorrow(_)
+                    | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
+                    | ValueKind::ScalarCast(_)
+                    | ValueKind::Binary { .. }
+                    | ValueKind::Invoke { .. }
+                    | ValueKind::VariantAggregate { .. }
+                    | ValueKind::IsVariant { .. }
+                    | ValueKind::EnumCast(_)
+                    | ValueKind::Text(_)
+                    | ValueKind::Reify(_)
+                    | ValueKind::PointerCall { .. }
+                    | ValueKind::Assembly { .. }
+                    | ValueKind::Constant(_)
+                    | ValueKind::AssociatedConstant { .. }
+            )
+        || constant_initializers
+            && matches!(
+                kind,
+                ValueKind::Read(Place::Static(_))
+                    | ValueKind::AssemblyOutput { .. }
+                    | ValueKind::ConstArgument(_)
+                    | ValueKind::PointerCast(_)
+                    | ValueKind::DirectEnumCast(_)
+                    | ValueKind::AddressCast { .. }
+                    | ValueKind::Unary { .. }
+                    | ValueKind::Address(_)
+                    | ValueKind::Length(_)
+                    | ValueKind::Validate(_)
+                    | ValueKind::TextEquals { .. }
+                    | ValueKind::Union { .. }
+                    | ValueKind::Repeat { .. }
+                    | ValueKind::Unsize { .. }
+                    | ValueKind::InlineConstant(_)
+            )
+}

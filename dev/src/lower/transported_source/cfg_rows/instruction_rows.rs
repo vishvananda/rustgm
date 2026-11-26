@@ -28,13 +28,26 @@ pub(super) fn preflight(
             .saturating_add(text_bytes(data)),
     )?;
     for instruction in &data.instructions {
-        assembly::profile::admit(data, instruction, |register, input| {
-            let value = body
-                .values
-                .get(input.0 as usize)
-                .ok_or("assembly input lost its value")?;
-            input_type(facts, register, value.ty)
-        })?;
+        if stage.declaration_policies() {
+            assembly::profile::flags(data, instruction, |operand| {
+                let ty = operand.ty.ok_or("source assembly operand lost its type")?;
+                if operand.register == Register::General && flags_integer(facts, ty) {
+                    Ok(())
+                } else if operand.output.is_some() {
+                    Err(OUTPUT)
+                } else {
+                    input_type(facts, operand.register, ty)
+                }
+            })?;
+        } else {
+            assembly::profile::admit(data, instruction, |register, input| {
+                let value = body
+                    .values
+                    .get(input.0 as usize)
+                    .ok_or("assembly input lost its value")?;
+                input_type(facts, register, value.ty)
+            })?;
+        }
     }
     Ok(())
 }
@@ -62,11 +75,18 @@ fn input_type(facts: &Declarations, register: Register, ty: TypeId) -> Result<()
     }
 }
 /// The value row of one assembly invocation; its columns are copied once.
-pub(super) fn value(kind: ir::Rvalue) -> Result<s::ValueKind, &'static str> {
+pub(super) fn value(body: &Body, value: ir::Value) -> Result<s::ValueKind, &'static str> {
+    if let ir::Rvalue::AssemblyOutput { effect, operand } = value.kind {
+        assembly::output(body, effect, operand, value.ty)?;
+        return Ok(s::ValueKind::AssemblyOutput {
+            effect: effect.0,
+            operand,
+        });
+    }
     let ir::Rvalue::Assembly {
         instruction,
         arguments,
-    } = kind
+    } = value.kind
     else {
         return Err("source assembly value changed its actual form");
     };
@@ -161,15 +181,15 @@ fn operand_row(
         Register::Xmm => s::AssemblyClass::Vector,
         register => return Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     };
-    if operand.output.is_some() {
-        return Err(OUTPUT);
-    }
     let ty = operand.ty.ok_or("source assembly operand lost its type")?;
     stage.prepare_type_arena(facts, ty)?;
     Ok(s::AssemblyOperand {
         class,
         input: operand.input.map(|value| value.0),
-        output: false,
+        output: operand
+            .output
+            .map(|place| super::place(stage, place))
+            .transpose()?,
         ty: stage.ty(facts, ty, context)?,
         late: operand.late,
     })
@@ -201,3 +221,12 @@ const fn range(list: List) -> g::Range {
 #[cfg(test)]
 #[path = "../../../../tests/invariants/register_rows.rs"]
 mod tests;
+
+fn flags_integer(facts: &Declarations, ty: TypeId) -> bool {
+    matches!(
+        facts.types.kind(ty),
+        Some(Kind::Primitive(
+            Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize
+        ))
+    )
+}

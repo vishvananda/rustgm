@@ -1,0 +1,43 @@
+{
+  "foundation": "pa41/tests/spec/asm-native/native.rs",
+  "prefix_marker": "#[repr(simd)]",
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c",
+    "runtime_client.rs",
+    "runtime_observe.c"
+  ],
+  "stdout": "11 77 22 99 7\n",
+  "older_profile": "inline assembly nomem option is outside the initial assembly profile",
+  "originals": [
+    {
+      "path": "pa41/tests/upstream/rust/eflags.rs",
+      "start": 901,
+      "end": 1047,
+      "sha256": "539fcfab8763feb13ca38ec416cc8df1e632a840150000d65ae2c3b681af608e",
+      "marker": "// ORIGINAL___readeflags"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/eflags.rs",
+      "start": 1878,
+      "end": 1996,
+      "sha256": "73c6a0279fd886f888e14d617b3e67aaff87c34fdc098ec0b247d5882bcd356d",
+      "marker": "// ORIGINAL___writeeflags"
+    }
+  ],
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "requires unsafe block",
+    "rustgm": "call to unsafe function requires an unsafe context"
+  },
+  "pending_runtime": {
+    "client": "runtime_client.rs",
+    "observer": "runtime_observe.c",
+    "expected_status": 0,
+    "stdout": "1 11 77 22 99 7\n",
+    "status": "unqualified acceptance",
+    "blocker": "Pinned CPPGM v0.10.3 assembly encoder does not implement pushfq or popfq; the original templates must remain intact."
+  }
+}

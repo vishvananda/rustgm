@@ -31,19 +31,47 @@ pub(crate) fn admit(
     instruction: &Instruction,
     mut input: impl FnMut(Register, ValueId) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
-    option(instruction.options)?;
+    checked(data, instruction, false, |operand| {
+        let (Some(value), None) = (operand.input, operand.output) else {
+            return Err(OUTPUT);
+        };
+        input(operand.register, value)
+    })
+}
+/// The flags extension retains integer register inputs and ordered outputs.
+pub(crate) fn flags(
+    data: &Payload,
+    instruction: &Instruction,
+    operand: impl FnMut(&super::Operand) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    let mut operand = operand;
+    checked(data, instruction, true, |value| {
+        if value.input.is_none() && value.output.is_none() {
+            return Err(OUTPUT);
+        }
+        operand(value)
+    })
+}
+fn checked(
+    data: &Payload,
+    instruction: &Instruction,
+    flags: bool,
+    mut check: impl FnMut(&super::Operand) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    if flags {
+        crate::support::initial_assembly::flags_option(instruction.options)?;
+    } else {
+        option(instruction.options)?;
+    }
     let operands = data
         .operands
         .get(instruction.operands.start as usize..instruction.operands.end as usize)
         .ok_or("assembly operand range is invalid")?;
     for operand in operands {
-        let (Some(value), None) = (operand.input, operand.output) else {
-            return Err(OUTPUT);
-        };
+        check(operand)?;
         if let Some(form) = class(operand.register) {
             return Err(form);
         }
-        input(operand.register, value)?;
     }
     let templates = data
         .templates

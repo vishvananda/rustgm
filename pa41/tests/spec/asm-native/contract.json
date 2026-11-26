@@ -327,5 +327,22 @@
     "opponents/xmm-scalar.rs": "e13d8b426dab41b8c9e35b09c5980c80c875e33c7eb61304d924e1ac70f46dcd",
     "opponents.tsv": "dd5a302741d81e8b4598d7ec55eaab2239acd83553f7f4e8c610304e8c7169a3",
     "stream-template.lowir": "b2ab124985e4755193c76c01a4bd05a181cf2b2cf75301bdcda9edf007365270"
+  },
+  "integer_flags_extension": {
+    "options": [
+      "nomem",
+      "att_syntax"
+    ],
+    "operands": "64-bit integer reg input, out, lateout, inout and inlateout; output snapshots precede ordered Rust stores",
+    "native_controls": {
+      "att-syntax.rs": "accept",
+      "output.rs": "accept",
+      "inout.rs": "accept",
+      "nomem.rs": "reject unsupported block comment",
+      "reg-integer.rs": "reject unsupported block comment"
+    },
+    "transport": "v14 retains output places and AssemblyOutput nodes; v13 remains unchanged",
+    "acceptance": "source-integer-assembly/outcomes.json",
+    "backend_limit": "The pinned encoder rejects pushfq/popfq. Original flags runtime acceptance remains pending in source-integer-assembly/outcomes.json; integer register execution is independently qualified."
   }
 }

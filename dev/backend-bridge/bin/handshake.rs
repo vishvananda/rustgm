@@ -10,7 +10,7 @@
 //! each object and calls every function:
 //!
 //! - `rg_library_seed`: a read-only global holding 40;
-//! - `rg_library_answer(x)`: the seed plus `x`;
+//! - `rg_library_answer(x)`: the seed plus `x`, through integer read/write AT&T assembly;
 //! - `rg_library_swap(p)`: `{i64, f64}` to `{f64, i64}`, by `classes=` and
 //!   `result_classes=`;
 //! - `rg_library_apply(f, x, p)`: `f(p)` through a pointer, a call boundary
@@ -76,11 +76,22 @@ fn answer(program: &mut Program) -> Result<(), &'static str> {
     )?;
     let signature = program.signature(&[Type::I64], Type::I64, false)?;
     let symbol = program.declare("rg_library_answer".into(), signature, false)?;
+    let mut draft = program.assembly()?;
+    draft.binding(Kind::Integer, true, true, false)?;
+    draft.binding(Kind::Integer, true, false, false)?;
+    draft.text("add ")?;
+    draft.operand_use(1)?;
+    draft.text(", ")?;
+    draft.operand_use(0)?;
+    let template = draft.finish_flags(asm::SIDE_EFFECT, 0, asm::FLAGS, true, true)?;
     let mut body = program.body_builder();
     let entry = body.block()?;
     body.enter(entry)?;
     let loaded = body.load(Type::I64, Operand::Global(seed))?;
-    let sum = body.binary(Binary::Add, loaded, parameter(Type::I64, 0))?;
+    let slot = body.slot(Type::I64)?;
+    let pointer = body.address(Operand::Slot(slot))?;
+    body.asm(template, &[loaded, pointer, parameter(Type::I64, 0)])?;
+    let sum = body.load(Type::I64, pointer.operand)?;
     body.terminate(Terminator::Return(Some(sum)))?;
     program.define(symbol, body.finish()?)
 }

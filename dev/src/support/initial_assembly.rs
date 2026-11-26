@@ -73,6 +73,14 @@ pub fn option(options: u16) -> Result<(), &'static str> {
     }
 }
 
+/// The flags profile also preserves memory-free effects and AT&T templates.
+/// Other options retain their original diagnostic order.
+/// # Errors
+/// Returns the first option outside the flags extension.
+pub fn flags_option(options: u16) -> Result<(), &'static str> {
+    option(options & !(NOMEM | ATT_SYNTAX))
+}
+
 /// Where the pinned assembler's reading of an instruction's text stands.
 #[derive(Clone, Copy, Default)]
 enum Lexeme {

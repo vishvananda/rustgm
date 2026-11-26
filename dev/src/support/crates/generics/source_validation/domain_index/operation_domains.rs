@@ -267,7 +267,8 @@ impl DomainIndex<'_, '_> {
                 self.variant(variant, work)?;
                 self.value_place(original, index, place, work)?;
             }
-            s::ValueKind::Unit => {}
+            // Assembly's own indexed pass checks the exact earlier effect and output type.
+            s::ValueKind::Unit | s::ValueKind::AssemblyOutput { .. } => {}
         }
         Ok(())
     }

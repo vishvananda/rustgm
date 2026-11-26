@@ -391,7 +391,8 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         s::ValueKind::ConstArgument(_) => {
             Err("source const argument reads require the version-fourteen declaration profile")
         }
-        s::ValueKind::Unary { .. }
+        s::ValueKind::AssemblyOutput { .. }
+        | s::ValueKind::Unary { .. }
         | s::ValueKind::Address(_)
         | s::ValueKind::Length(_)
         | s::ValueKind::Validate(_)

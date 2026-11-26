@@ -323,6 +323,9 @@ pub(super) fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'stat
             0,
             &[Operand::Flag(instruction), Operand::Range(arguments)],
         ),
+        s::ValueKind::AssemblyOutput { effect, operand } => {
+            node_write(out, 1, &[Operand::Value(effect), Operand::Flag(operand)])
+        }
         s::ValueKind::Constrain(value) => node_write(out, 24, &[Operand::Value(value)]),
         // Flag zero is a closed primitive `as` whose operation the types decide.
         s::ValueKind::ScalarCast(value) => {
@@ -548,6 +551,11 @@ pub(super) fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static 
             instruction,
             arguments,
         },
+        (1, &[Operand::Value(effect), Operand::Flag(operand)])
+            if read.profile.declaration_policies() =>
+        {
+            s::ValueKind::AssemblyOutput { effect, operand }
+        }
         (24, &[Operand::Value(value)]) => s::ValueKind::Constrain(value),
         (
             27,

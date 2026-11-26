@@ -11,9 +11,10 @@
     reason = "the pinned CPPGM LowIR library is a C interface; this module alone calls it"
 )]
 use crate::records::{
-    ABI_VERSION, ASM_DIALECT_INTEL, ASM_MEMORY_READ_WRITE, ArgumentFact, AsmAlternative, AsmGroup,
-    AsmOperand, AsmPiece, AsmRegister, BINDING_DEFAULT, BodyCounts, Boundary, DataItem,
-    Instruction, Literal, NO_ID, Parameter, Slot, TARGET_LINUX, Type, Value,
+    ABI_VERSION, ASM_DIALECT_ATT, ASM_DIALECT_INTEL, ASM_MEMORY_NONE, ASM_MEMORY_READ_WRITE,
+    ArgumentFact, AsmAlternative, AsmGroup, AsmOperand, AsmPiece, AsmRegister, BINDING_DEFAULT,
+    BodyCounts, Boundary, DataItem, Instruction, Literal, NO_ID, Parameter, Slot, TARGET_LINUX,
+    Type, Value,
 };
 use std::{
     ffi::{CStr, CString, c_char, c_int, c_void},
@@ -137,8 +138,11 @@ pub struct Body<'a> {
     /// Parameters first, then every defined temporary.
     pub temporaries: u32,
 }
-/// One Intel-syntax assembly template that reads and writes memory.
+/// One assembly template with its dialect, memory effect and invocation arity.
 pub struct Template<'a> {
+    pub att: bool,
+    pub nomem: bool,
+    pub arguments: u32,
     pub properties: u16,
     pub reads: u32,
     pub writes: u32,
@@ -403,12 +407,20 @@ impl Module {
     /// Reports the library's refusal.
     pub fn assembly(&mut self, template: &Template<'_>) -> Result<u32, Rejected> {
         let record = Assembly {
-            dialect: ASM_DIALECT_INTEL,
-            memory: ASM_MEMORY_READ_WRITE,
+            dialect: if template.att {
+                ASM_DIALECT_ATT
+            } else {
+                ASM_DIALECT_INTEL
+            },
+            memory: if template.nomem {
+                ASM_MEMORY_NONE
+            } else {
+                ASM_MEMORY_READ_WRITE
+            },
             properties: template.properties,
             state_read: template.reads,
             state_write: template.writes,
-            argument_count: count(template.operands.len())?,
+            argument_count: template.arguments,
             location: ptr::null(),
             text: template.text.as_ptr().cast(),
             operands: template.operands.as_ptr(),

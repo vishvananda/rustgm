@@ -51,7 +51,11 @@ fn instruction_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyInstruction, 
     if options & !profile::KNOWN != 0 {
         return Err("unknown source assembly option");
     }
-    profile::option(options)?;
+    if read.profile.declaration_policies() {
+        profile::flags_option(options)?;
+    } else {
+        profile::option(options)?;
+    }
     let safety = match read.reader.u8()? {
         0 => return Err("source inline assembly has no unsafe context"),
         1 => s::CallSafety::ExplicitUnsafeBlock,
@@ -89,7 +93,10 @@ fn operand_write(out: &mut Writer, row: &s::AssemblyOperand) -> Result<(), &'sta
     };
     out.u8(tag)?;
     option(out, row.input)?;
-    out.u8(u8::from(row.output))?;
+    out.u8(u8::from(row.output.is_some()))?;
+    if let Some(place) = row.output {
+        super::ir_nodes::place_write(out, place)?;
+    }
     id(out, row.ty.0)?;
     out.u8(u8::from(row.late))
 }
@@ -103,13 +110,15 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyOperand, &'static
         _ => return Err("unknown source assembly register class"),
     };
     let input = read.option()?;
-    if read.reader.u8()? != 0 {
-        return Err(profile::OUTPUT);
-    }
+    let output = match read.reader.u8()? {
+        0 => None,
+        1 if read.profile.declaration_policies() => Some(super::ir_nodes::place_read(read)?),
+        _ => return Err(profile::OUTPUT),
+    };
     Ok(s::AssemblyOperand {
         class,
         input,
-        output: false,
+        output,
         ty: super::g::TypeRef(read.id()?),
         late: read.boolean()?,
     })
