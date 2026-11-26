@@ -194,13 +194,19 @@ pub(super) fn visit_words(
 }
 
 impl Declarations {
-    /// Diagnostic knowledge remains tied to the completed current physical header.
-    #[cfg(test)]
-    pub(crate) fn pointer_lint_marker(
+    /// Returns the actual function's diagnostic marker.
+    /// # Errors
+    /// Rejects changed source headers and mismatched imported declarations.
+    pub fn pointer_lint_marker(
         &self,
         report: &Report,
         definition: DefId,
     ) -> Result<ContractKnowledge<()>, Error> {
+        if crate::sema::header_attributes::has_imported(self, definition) {
+            return Ok(self
+                .header_attribute_contracts(report, definition)?
+                .imported_pointer_lint_marker);
+        }
         let mut present = false;
         if !visit_words(self, report, definition, |name| {
             present |= name == Some("rustc_as_ptr");
@@ -219,18 +225,17 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<(), Error> {
-        self.reject_profiled_advisory_transport(report, definition, false, false)
+        self.publication_pointer_lint_marker(report, definition, false, false)
+            .map(|_| ())
     }
-    /// `cold_rows` is true for version-thirteen cold advisory rows;
-    /// `declaration_policies` is true for version-fourteen comptime and
-    /// non-const trait-member constness transport.
-    pub(crate) fn reject_profiled_advisory_transport(
+    /// Check callable advisory compatibility while reading the checked marker.
+    pub(crate) fn publication_pointer_lint_marker(
         &self,
         report: &Report,
         definition: DefId,
         cold_rows: bool,
         declaration_policies: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<bool, Error> {
         let actual = report
             .resolution
             .definitions
@@ -239,7 +244,7 @@ impl Declarations {
                 Error::unlocated("function advisory publication lost its declaration")
             })?;
         if actual.kind != DefKind::Function {
-            return Ok(());
+            return Ok(false);
         }
         self.reject_legacy_indices_transport(report, definition)?;
         if !declaration_policies
@@ -267,12 +272,14 @@ impl Declarations {
             ));
         }
         let mut required = None;
+        let mut pointer_lint_marker = false;
         if !visit_words(self, report, definition, |name| {
+            pointer_lint_marker |= name == Some("rustc_as_ptr");
             let message = match name {
                 Some("rustc_legacy_const_generics") => Some(
                     "legacy const generic indices require their cross-crate transport and argument protocol",
                 ),
-                Some("rustc_as_ptr") => {
+                Some("rustc_as_ptr") if !declaration_policies => {
                     Some("source rustc_as_ptr diagnostic marker transport is not implemented")
                 }
                 Some("cold") if !cold_rows => {
@@ -290,7 +297,7 @@ impl Declarations {
         }
         match required {
             Some(message) => Err(Error::unlocated(message)),
-            None => Ok(()),
+            None => Ok(pointer_lint_marker),
         }
     }
 

@@ -96,6 +96,10 @@ client outlives rejection.
 module-owned `safe fn` C imports (`libm` shape) and function-local `extern "C"`
 imports duplicating a runtime-role symbol (`c_str::strlen` shape), plus private
 module access rejection in fresh clients.
+`spec/source-pointer-lint-transport/outcomes.json` checks a free function and
+an inherent method carrying `#[rustc_as_ptr]` across a separate crate boundary.
+The free function also carries a `#[must_use]` reason. The client reads the
+returned pointers and a wrong-result client checks the regular type rule.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

@@ -57,7 +57,7 @@ impl Stage {
             declaration_site: self.site(declaration, key)?,
             must_use,
             inline: None,
-            cold: false,
+            advisories: s::AdvisoryFlags::default(),
             caller_tracking: false,
             format_panic: false,
             promotable: None,

@@ -156,3 +156,74 @@ fn missing_marker_owner() -> Result {
     );
     Ok(())
 }
+
+#[test]
+fn pointer_lint_marker_survives_a_fresh_import() -> Result {
+    use crate::{
+        lower::instances::SourcePublication, sema::header_attributes::ContractKnowledge,
+        support::crates,
+    };
+    const FIXTURE: &str = "pa31/tests/spec/source-pointer-lint-transport";
+    let foundation =
+        test_source::fixture("pa31/tests/spec/source-enum-role-transport/provider.rs")?;
+    let (foundation, _) = foundation
+        .split_once("#[rustc_diagnostic_item = \"Option\"]")
+        .ok_or("source provider foundation boundary")?;
+    let provider = format!(
+        "{foundation}{}",
+        test_source::fixture(&format!("{FIXTURE}/provider.rs"))?
+    );
+    let client = test_source::fixture(&format!("{FIXTURE}/client.rs"))?;
+    let artifact = crate::module_packets::exported_profile(
+        &provider,
+        SourcePublication::ModuleBodyOperations,
+        "pointer_lint_marker",
+    )?;
+    let artifact = crates::decode(&crates::encode(&artifact)?)?;
+    let descriptor = artifact.source_descriptor().ok_or("source descriptor")?;
+    let owner = artifact.identity().clone();
+    let rows = descriptor.rows();
+    let selected: Vec<_> = rows
+        .functions
+        .iter()
+        .filter_map(|header| {
+            let name = rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()?;
+            matches!(name, "pointer" | "as_ptr" | "plain").then_some((
+                header.declaration,
+                name != "plain",
+                name == "pointer",
+            ))
+        })
+        .collect();
+    assert_eq!(selected.len(), 3);
+    let (report, analysis, _) = crate::source_packets::client_analysis(artifact, &client)?;
+    let imported = report.resolution.crates.as_ref().ok_or("fresh catalog")?;
+    for (declaration, marked, must_use) in selected {
+        let definition = imported.generic_definition(&owner, declaration)?;
+        let marker = analysis.facts.pointer_lint_marker(&report, definition)?;
+        assert!(matches!(
+            (marker, marked),
+            (ContractKnowledge::KnownPresent(()), true) | (ContractKnowledge::KnownAbsent, false)
+        ));
+        let view = analysis
+            .facts
+            .header_attribute_contracts(&report, definition)?;
+        assert_eq!(
+            view.origin
+                .imported()
+                .ok_or("imported identity")?
+                .coordinate()
+                .1,
+            declaration
+        );
+        if must_use {
+            let ContractKnowledge::KnownPresent(advisory) = view.must_use else {
+                return Err("marked pointer lost its must_use contract".into());
+            };
+            assert_eq!(advisory.reason, Some("keep the returned pointer"));
+        }
+    }
+    Ok(())
+}

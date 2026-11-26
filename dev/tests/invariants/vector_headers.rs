@@ -22,7 +22,7 @@ fn header(repr: RecordRepr) -> s::NominalHeader {
             declaration_site: 2,
             must_use: None,
             inline: None,
-            cold: false,
+            advisories: s::AdvisoryFlags::default(),
             caller_tracking: false,
             format_panic: false,
             promotable: None,

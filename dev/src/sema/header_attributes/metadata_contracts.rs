@@ -558,6 +558,7 @@ fn attribute_view<'a>(
             inline: ContractKnowledge::Unknown,
             optimization: ContractKnowledge::Unknown,
             imported_promotable: ContractKnowledge::Unknown,
+            imported_pointer_lint_marker: ContractKnowledge::Unknown,
         });
     };
     let must_use = if let Some(value) = &row.must_use {
@@ -591,6 +592,13 @@ fn attribute_view<'a>(
     Ok(HeaderAttributeView {
         origin: site(Some(row.declaration_site))?,
         imported_promotable,
+        imported_pointer_lint_marker: if !declaration_policies {
+            ContractKnowledge::Unknown
+        } else if row.advisories.pointer_lint_marker() {
+            ContractKnowledge::KnownPresent(())
+        } else {
+            ContractKnowledge::KnownAbsent
+        },
         must_use,
         inline,
         optimization: if declaration_policies {

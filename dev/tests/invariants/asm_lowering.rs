@@ -264,7 +264,7 @@ fn inline_asm_bodies_join_v13_module_body_transport() -> Result {
         inline,
         Some((s::InlineHint::Hint, s::InlineApplicability::FunctionBody))
     );
-    assert!(!row.cold && !row.caller_tracking);
+    assert!(!row.advisories.cold() && !row.caller_tracking);
     let names = row
         .target_features
         .as_deref()

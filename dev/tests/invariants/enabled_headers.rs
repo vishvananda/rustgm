@@ -34,7 +34,7 @@ fn contract(inline: Option<s::InlineHint>, names: Option<&[&str]>) -> s::HeaderC
             hint,
             applicability: s::InlineApplicability::FunctionBody,
         }),
-        cold: false,
+        advisories: s::AdvisoryFlags::default(),
         caller_tracking: false,
         format_panic: false,
         promotable: None,
@@ -100,6 +100,32 @@ fn optimization_intent_round_trips_only_in_the_v14_header_profile() -> Result {
     }
     Ok(())
 }
+#[test]
+fn pointer_lint_and_must_use_flags_share_the_diagnostic_byte() -> Result {
+    let mut row = contract(None, None);
+    row.advisories = s::AdvisoryFlags::new(true, true);
+    for reason in [None, Some("retain the returned pointer")] {
+        row.must_use = reason.map(|reason| s::MustUseContract {
+            owner_site: 0,
+            reason: Some(reason.into()),
+        });
+        let bytes = written(&row)?;
+        assert_eq!(bytes[8], 2 + u8::from(reason.is_some()));
+        assert_eq!(
+            read(&bytes, s::Profile::Source2024ModuleBodyOperations)?,
+            row
+        );
+        assert_eq!(read(&bytes, BODIES), Err("invalid source boolean"));
+        let mut unknown = bytes;
+        unknown[8] |= 4;
+        assert_eq!(
+            read(&unknown, s::Profile::Source2024ModuleBodyOperations),
+            Err("invalid source boolean")
+        );
+    }
+    Ok(())
+}
+
 fn fixture(name: &str) -> Result<String> {
     Ok(crate::test_source::fixture(&format!("{SPEC}/{name}.rs"))?)
 }
@@ -217,7 +243,10 @@ fn feature_rows(interface: &crates::Interface) -> Result<Vec<(String, Vec<String
                 declaration.name.clone().unwrap_or_default(),
                 features.names.iter().map(ToString::to_string).collect(),
             ));
-        } else if contract.inline.is_some() || contract.cold || contract.caller_tracking {
+        } else if contract.inline.is_some()
+            || contract.advisories.cold()
+            || contract.caller_tracking
+        {
             return Err(format!("unexpected advisory on {:?}", declaration.name).into());
         }
     }

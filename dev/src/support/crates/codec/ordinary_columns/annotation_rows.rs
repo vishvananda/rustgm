@@ -24,7 +24,9 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<s::HeaderAttributeColum
 pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.declaration_site)?;
-    out.u8(u8::from(row.must_use.is_some()))?;
+    // The original must-use presence byte keeps bit 0. Version fourteen
+    // uses bit 1 for the pointer lint marker, with no additional payload.
+    out.u8(u8::from(row.must_use.is_some()) | u8::from(row.advisories.pointer_lint_marker()) << 1)?;
     if let Some(value) = &row.must_use {
         id(out, value.owner_site)?;
         out.u8(u8::from(value.reason.is_some()))?;
@@ -38,7 +40,7 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     // bits 4 and 5, the formatting panic policy in bit 6 and promotion in bit 7.
     // Unmarked rows keep their exact earlier bytes.
     out.u8(u8::from(row.inline.is_some())
-        | u8::from(row.cold) << 1
+        | u8::from(row.advisories.cold()) << 1
         | u8::from(row.caller_tracking) << 2
         | u8::from(row.target_features.is_some()) << 3
         | optimization_bits(row.optimization) << 4
@@ -82,7 +84,16 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
 pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'static str> {
     let declaration = DeclarationRef(read.id()?);
     let declaration_site = read.id()?;
-    let must_use = if read.boolean()? {
+    let diagnostic_flags = read.reader.u8()?;
+    let max_flags = if read.profile.declaration_policies() {
+        3
+    } else {
+        1
+    };
+    if diagnostic_flags > max_flags {
+        return Err("invalid source boolean");
+    }
+    let must_use = if diagnostic_flags & 1 != 0 {
         Some(s::MustUseContract {
             owner_site: read.id()?,
             reason: if read.boolean()? {
@@ -131,7 +142,7 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         declaration_site,
         must_use,
         inline,
-        cold: flags & 2 != 0,
+        advisories: s::AdvisoryFlags::new(flags & 2 != 0, diagnostic_flags & 2 != 0),
         caller_tracking: flags & 4 != 0,
         target_features,
         optimization,

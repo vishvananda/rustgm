@@ -1,0 +1,13 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "wrong-result.rs"],
+  "features": ["auto_traits"],
+  "stdout": "41 73\n",
+  "older_profile": "source rustc_as_ptr diagnostic marker transport is not implemented",
+  "older_profile_cfg": "older_profile",
+  "older_reader": "invalid source boolean",
+  "restricted_client": {
+    "path": "wrong-result.rs",
+    "rustc": "error[E0308]",
+    "rustgm": "incompatible types"
+  }
+}

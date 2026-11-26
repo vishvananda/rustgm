@@ -104,7 +104,7 @@ impl Stage {
             }
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
-            facts.reject_profiled_advisory_transport(
+            let pointer_lint_marker = facts.publication_pointer_lint_marker(
                 report,
                 definition,
                 self.body_nodes(),
@@ -128,7 +128,13 @@ impl Stage {
             }
             let mut contract = self.header_contract(row, view)?;
             if self.body_nodes() {
-                self.callable_advisories(report, facts, definition, &mut contract)?;
+                self.callable_advisories(
+                    report,
+                    facts,
+                    definition,
+                    pointer_lint_marker,
+                    &mut contract,
+                )?;
             }
             optimizations += usize::from(contract.optimization.is_some());
             if completed[row.0 as usize].replace(contract).is_some() {
@@ -268,7 +274,7 @@ impl Stage {
             declaration_site,
             must_use,
             inline,
-            cold: false,
+            advisories: s::AdvisoryFlags::default(),
             caller_tracking: false,
             format_panic: false,
             promotable: None,
@@ -406,13 +412,14 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         definition: DefId,
+        pointer_lint_marker: bool,
         contract: &mut s::HeaderContract,
     ) -> Result<(), Error> {
         if report.resolution.definitions[definition.0 as usize].kind != DefKind::Function {
             return Ok(());
         }
         self.charge(2).map_err(Error::unlocated)?;
-        contract.cold = match facts.cold_advisory(report, definition)? {
+        let cold = match facts.cold_advisory(report, definition)? {
             ContractKnowledge::Unknown => {
                 return Err(Error::unlocated(
                     "source cold advisory producer is incomplete",
@@ -421,6 +428,7 @@ impl Stage {
             ContractKnowledge::KnownAbsent => false,
             ContractKnowledge::KnownPresent(()) => true,
         };
+        contract.advisories = s::AdvisoryFlags::new(cold, pointer_lint_marker);
         contract.caller_tracking = facts.checked_caller_tracking(report, definition)?;
         if self.declaration_policies()
             && let ContractKnowledge::KnownPresent(origin) =

@@ -53,6 +53,27 @@ pub struct DeclaredFeatures {
     /// Version fourteen only: whether the function was declared without `unsafe`.
     pub safe: bool,
 }
+/// Compact storage for callable advisory flags carried in separate wire bytes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct AdvisoryFlags(u8);
+
+impl AdvisoryFlags {
+    #[must_use]
+    pub const fn new(cold: bool, pointer_lint_marker: bool) -> Self {
+        Self((cold as u8) | (pointer_lint_marker as u8) << 1)
+    }
+
+    #[must_use]
+    pub const fn cold(self) -> bool {
+        self.0 & 1 != 0
+    }
+
+    #[must_use]
+    pub const fn pointer_lint_marker(self) -> bool {
+        self.0 & 2 != 0
+    }
+}
+
 /// Within a complete row, None is positively checked absence. An older profile
 /// has no columns at all and therefore cannot claim that absence.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -61,8 +82,8 @@ pub struct HeaderContract {
     pub declaration_site: u32,
     pub must_use: Option<MustUseContract>,
     pub inline: Option<InlineContract>,
-    /// Version thirteen only, on function rows: the written cold advisory.
-    pub cold: bool,
+    /// Written cold and pointer lint advisories on this function.
+    pub advisories: AdvisoryFlags,
     /// Version thirteen only, on function rows: the written caller ABI policy.
     pub caller_tracking: bool,
     /// Version thirteen only, on function rows with an original body: the
@@ -87,7 +108,7 @@ impl HeaderContract {
 
     #[must_use]
     pub const fn callable_advisories(&self) -> bool {
-        self.cold
+        self.advisories.0 != 0
             || self.caller_tracking
             || self.target_features.is_some()
             || self.optimization.is_some()
@@ -111,7 +132,12 @@ impl HeaderAttributeColumns {
         let [_, _, range_sub] = super::interval_roles::bound_roles(rows, profile, work)?;
         let panics = format_panics(rows, profile, work)?;
         self.validate_headers(
-            (&rows.declarations, &rows.functions, &rows.traits),
+            (
+                &rows.declarations,
+                &rows.functions,
+                &rows.traits,
+                &rows.exact_callables,
+            ),
             base,
             profile,
             range_sub,
@@ -127,7 +153,12 @@ impl HeaderAttributeColumns {
         work: &mut Work,
     ) -> Result<usize, &'static str> {
         self.validate_headers(
-            (&rows.declarations, &rows.functions, &rows.traits),
+            (
+                &rows.declarations,
+                &rows.functions,
+                &rows.traits,
+                &rows.exact_callables,
+            ),
             base,
             profile,
             None,
@@ -137,10 +168,11 @@ impl HeaderAttributeColumns {
     }
     fn validate_headers(
         &self,
-        (declarations, functions, traits): (
+        (declarations, functions, traits, exact_callables): (
             &[super::Declaration],
             &[super::FunctionHeader],
             &[super::TraitHeader],
+            &[super::ExactCallable],
         ),
         base: usize,
         profile: super::Profile,
@@ -172,6 +204,19 @@ impl HeaderAttributeColumns {
                 return Err(
                     "source target-feature rows require the version-thirteen header profile",
                 );
+            }
+            if contract.advisories.pointer_lint_marker() {
+                if !profile.declaration_policies() {
+                    return Err(
+                        "source pointer lint marker requires the version-fourteen header profile",
+                    );
+                }
+                if exact_callables
+                    .binary_search_by_key(&header.declaration.0, |row| row.declaration.0)
+                    .is_ok_and(|index| exact_callables[index].body.is_none())
+                {
+                    return Err("source pointer lint marker requires a non-foreign function");
+                }
             }
             if contract.promotable.is_some()
                 && (!profile.declaration_policies()

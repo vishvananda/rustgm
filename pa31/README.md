@@ -66,6 +66,8 @@ actual source signatures and selected bodies.
   type projections and const parameters. Preserve associated constant owners
   and the construction and pattern rules for `#[non_exhaustive]` structs and
   enums. Fresh clients must be able to check these rules against the artifact.
+  Retain the checked `#[rustc_as_ptr]` diagnostic marker on the function or
+  method that declares it.
 
 ## Check your implementation
 

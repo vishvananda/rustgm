@@ -510,6 +510,7 @@ pub(super) fn query<'a>(
             inline: ContractKnowledge::Unknown,
             optimization: ContractKnowledge::Unknown,
             imported_promotable: ContractKnowledge::Unknown,
+            imported_pointer_lint_marker: ContractKnowledge::Unknown,
         });
     };
     validate_header(report, facts, definition, key, header)?;
@@ -548,6 +549,7 @@ pub(super) fn query<'a>(
         inline,
         optimization,
         imported_promotable: ContractKnowledge::Unknown,
+        imported_pointer_lint_marker: ContractKnowledge::Unknown,
     })
 }
 
