@@ -127,6 +127,9 @@ provider's negative impl, and a foreign diagnostic owner is rejected.
 `spec/source-rust-call-impl-transport/outcomes.json` publishes an
 `extern "rust-call"` implementation and calls the implementation's body
 with two different inputs in a fresh native client.
+`spec/source-pinned-receiver-transport/outcomes.json` calls a trait method
+with `Pin<&mut Self>` across the crate boundary. The implementation's
+`Self` already contains a distinct captured lifetime.
 `spec/source-deprecated-macro-transport/outcomes.json` covers direct and aliased
 macro calls through a separately compiled provider, caller lint policy,
 scheduled deprecation, and annotations on re-exports with current and

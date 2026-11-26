@@ -20,6 +20,7 @@ pub(super) fn method(
     headers: &HeaderIndex<'_>,
     function: &s::FunctionHeader,
     (trait_impls, effect): (bool, Constness),
+    pin: Option<DeclarationRef>,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -73,14 +74,9 @@ pub(super) fn method(
         if receiver.references > 1
             || receiver.formal as usize >= function.formals.slice(&rows.formals)?.len()
         {
-            return Err("source method receiver differs from its actual implementation Self");
+            return Err(SELF_MISMATCH);
         }
-        let frames = Frames {
-            implementation: implementation.self_definition,
-            original: function.original.binder,
-            captures: implementation.region_captures,
-        };
-        same_self(rows, frames, implementation.self_type, receiver.base, work)?;
+        same_receiver_self(rows, implementation, function, receiver, pin, work)?;
     }
     Ok(true)
 }
@@ -110,16 +106,68 @@ pub(super) fn same_receiver_self(
     rows: &SourceRows,
     implementation: &s::ImplHeader,
     function: &s::FunctionHeader,
-    receiver: TypeRef,
+    receiver: s::Receiver,
+    pin: Option<DeclarationRef>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    let expected = implementation.self_type;
+    if expected == receiver.base {
+        return Ok(());
+    }
     let frames = Frames {
         implementation: implementation.self_definition,
         original: function.original.binder,
         captures: implementation.region_captures,
     };
-    same_self(rows, frames, implementation.self_type, receiver, work)
+    let direct = same_self(rows, frames, expected, receiver.base, work);
+    if matches!(direct, Err(SELF_MISMATCH | REGION_MISMATCH))
+        && let Some(pin) = pin
+        && let Some(referent) = pinned_referent(rows, function, receiver, pin, work)?
+    {
+        return same_self(rows, frames, expected, referent, work);
+    }
+    direct
 }
+
+fn pinned_referent(
+    rows: &SourceRows,
+    function: &s::FunctionHeader,
+    receiver: s::Receiver,
+    pin: DeclarationRef,
+    work: &mut Work,
+) -> Result<Option<TypeRef>, &'static str> {
+    work.charge(1)?;
+    if receiver.formal != 0 || receiver.references != 0 {
+        return Ok(None);
+    }
+    let Some(s::Type::Nominal {
+        declaration,
+        arguments,
+    }) = rows.types.get(receiver.base.0 as usize)
+    else {
+        return Ok(None);
+    };
+    if declaration.artifact != s::ArtifactRef(0)
+        || declaration.declaration != pin
+        || function.original.parameters.slice(&rows.roots)?.first() != Some(&receiver.base)
+    {
+        return Ok(None);
+    }
+    let [s::Argument::Type(pointer)] = arguments.slice(&rows.arguments)? else {
+        return Ok(None);
+    };
+    match rows.types.get(pointer.0 as usize) {
+        Some(s::Type::Reference {
+            mutable: true,
+            referent,
+            ..
+        }) => Ok(Some(*referent)),
+        _ => Ok(None),
+    }
+}
+
+const SELF_MISMATCH: &str = "source method receiver differs from its actual implementation Self";
+const REGION_MISMATCH: &str = "source captured method receiver changed its impl's lifetime slot";
 
 #[derive(Clone, Copy)]
 struct Frames {
@@ -141,7 +189,6 @@ fn same_self(
     actual: TypeRef,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let error = "source method receiver differs from its actual implementation Self";
     let mut pending: Pending = vec![(expected, actual, None)];
     while let Some((expected, actual, inner)) = pending.pop() {
         work.charge(1)?;
@@ -152,7 +199,7 @@ fn same_self(
             rows.types.get(expected.0 as usize),
             rows.types.get(actual.0 as usize),
         ) else {
-            return Err(error);
+            return Err(SELF_MISMATCH);
         };
         same_type_node(rows, frames, (*left, *right), inner, &mut pending, work)?;
     }
@@ -167,7 +214,6 @@ fn same_type_node(
     pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let error = "source method receiver differs from its actual implementation Self";
     match (left, right) {
         (
             s::Type::Nominal {
@@ -215,7 +261,7 @@ fn same_type_node(
                 return Err("source array type has no length row");
             };
             if left != right {
-                return Err(error);
+                return Err(SELF_MISMATCH);
             }
             pending.push((expected, actual, inner));
             Ok(())
@@ -259,7 +305,7 @@ fn same_type_node(
         (s::Type::OpaqueResult(left), s::Type::OpaqueResult(right)) => {
             same_opaque(rows, frames, (left, right), inner, pending, work)
         }
-        _ => Err(error),
+        _ => Err(SELF_MISMATCH),
     }
 }
 
@@ -271,7 +317,7 @@ fn same_type_range(
 ) -> Result<(), &'static str> {
     let (left, right) = (left.slice(&rows.roots)?, right.slice(&rows.roots)?);
     if left.len() != right.len() {
-        return Err("source method receiver differs from its actual implementation Self");
+        return Err(SELF_MISMATCH);
     }
     pending.extend(
         left.iter()
@@ -296,7 +342,7 @@ fn same_function(
         || left.variadic != right.variadic
         || left_binder.map(|frame| frame.count) != right_binder.map(|frame| frame.count)
     {
-        return Err("source method receiver differs from its actual implementation Self");
+        return Err(SELF_MISMATCH);
     }
     let inner = Some((left.binder, right.binder));
     same_type_range(rows, (left.parameters, right.parameters), inner, pending)?;
@@ -312,13 +358,12 @@ fn same_opaque(
     pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let error = "source method receiver differs from its actual implementation Self";
     let apps = &rows.cold().opaques.applications;
     let (Some(left), Some(right)) = (apps.get(left.0 as usize), apps.get(right.0 as usize)) else {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     };
     if left.declaration != right.declaration || left.ordinal != right.ordinal {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     }
     same_nominal(
         rows,
@@ -352,10 +397,9 @@ fn same_nominal(
     pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let error = "source method receiver differs from its actual implementation Self";
     let (left, right) = (left.slice(&rows.arguments)?, right.slice(&rows.arguments)?);
     if a != b || left.len() != right.len() {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     }
     work.charge(left.len())?;
     for (left, right) in left.iter().zip(right) {
@@ -367,7 +411,7 @@ fn same_nominal(
                 same_region_in(rows, frames, inner, (left, right))?;
             }
             (s::Argument::Const(left), s::Argument::Const(right)) if left == right => {}
-            _ => return Err(error),
+            _ => return Err(SELF_MISMATCH),
         }
     }
     Ok(())
@@ -381,13 +425,12 @@ fn same_dynamic(
     pending: &mut Pending,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let error = "source method receiver differs from its actual implementation Self";
     let columns = &rows.cold().dynamics;
     let (Some(left), Some(right)) = (
         columns.objects.get(left.0 as usize),
         columns.objects.get(right.0 as usize),
     ) else {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     };
     let (left_bindings, right_bindings) = (
         left.bindings.slice(&columns.bindings)?,
@@ -408,7 +451,7 @@ fn same_dynamic(
         || left_bindings != right_bindings
         || left_markers != right_markers
     {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     }
     same_region_in(rows, frames, outer, (left.region, right.region))?;
     let (left_args, right_args) = (
@@ -416,7 +459,7 @@ fn same_dynamic(
         right.arguments.slice(&rows.arguments)?,
     );
     if left_args.len() != right_args.len() {
-        return Err(error);
+        return Err(SELF_MISMATCH);
     }
     let inner = Some((left.binder, right.binder));
     work.charge(left_args.len())?;
@@ -427,7 +470,7 @@ fn same_dynamic(
                 same_region_in(rows, frames, inner, (a, b))?;
             }
             (s::Argument::Const(a), s::Argument::Const(b)) if a == b => {}
-            _ => return Err(error),
+            _ => return Err(SELF_MISMATCH),
         }
     }
     Ok(())
@@ -524,6 +567,6 @@ fn same_region(
         {
             Ok(())
         }
-        _ => Err("source captured method receiver changed its impl's lifetime slot"),
+        _ => Err(REGION_MISMATCH),
     }
 }

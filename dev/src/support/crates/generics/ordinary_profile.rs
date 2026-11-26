@@ -548,7 +548,7 @@ fn associated_method(
                 header,
                 (roles.languages, roles.definition_policies != 0),
                 Constness::Ordinary,
-                roles.drop.zip(roles.pin),
+                roles.pin,
                 work,
             )? || bodies
                 && (captured::method(
@@ -556,6 +556,7 @@ fn associated_method(
                     headers,
                     header,
                     (roles.definition_policies != 0, Constness::Ordinary),
+                    roles.pin,
                     work,
                 )? || reservation_parent(rows, headers, header, work)?.is_some())))
 }
@@ -621,10 +622,17 @@ fn trait_const_method(
         header,
         (modern && roles.languages, modern),
         Constness::Const,
-        None,
+        roles.pin,
         work,
     )? || (modern || owner.is_some_and(|owner| roles.dereferences.contains(&Some(owner))))
-        && captured::method(rows, headers, header, (true, Constness::Const), work)?)
+        && captured::method(
+            rows,
+            headers,
+            header,
+            (true, Constness::Const),
+            roles.pin,
+            work,
+        )?)
 }
 
 fn ordinary_trait_default(
