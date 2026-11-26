@@ -15,6 +15,9 @@ mod rebuilt_inputs;
 mod rebuilt_operations;
 mod regional_records;
 mod safety_requests;
+#[cfg(test)]
+#[path = "../../tests/invariants/postloan_callable_cache.rs"]
+mod tests;
 mod untupled_calls;
 mod variant_facts;
 mod versioned_calls;

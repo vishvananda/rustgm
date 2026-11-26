@@ -2009,3 +2009,13 @@ universally; caller-local debts retain their existing proof path.
 A local-reference escape rejects in both compilers. Version 13 refuses the
 fixture's early/captured callable frames. Run the source-artifact client driver
 with the prebuilt compilers.
+
+`source-captured-callable-equalities` checks seven native observations through
+fresh clients of a method that accepts a mutable captured callback and returns
+its borrowed receiver. Nested reference assignment requires the provider's solved
+callable-lifetime identities. Version 14 transports the original operations and
+obligations; each client recomputes its own loan-derived target map. The cases
+observe callback mutation, replacement and retention of the referenced value,
+and a free-function control. Assigning a borrowed local into a longer-lived
+reference slot remains a lifetime error. The source-artifact client driver checks
+the pinned compiler and the older-profile refusal.

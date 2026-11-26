@@ -1,0 +1,19 @@
+{
+  "features": [
+    "auto_traits",
+    "const_destruct"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c"
+  ],
+  "stdout": "17 41 17 73 41 29 17\n",
+  "older_profile": "source Drop operation transport requires version fourteen",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "does not live long enough",
+    "rustgm": "required lifetime does not outlive its target"
+  }
+}
