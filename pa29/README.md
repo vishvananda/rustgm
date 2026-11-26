@@ -41,7 +41,10 @@ or evaluate, including the declarations, types, constants and private
 dependencies those bodies refer to. Use a shared, versioned representation
 for these facts. Give references stable identities and remap them into the
 fresh client's own tables when it reads the artifact. Preserve binders,
-obligations and the defining context needed to check the bodies.
+obligations and the defining context needed to check the bodies. Nested items
+keep their lexical owners even when the provider has already evaluated an
+enclosing constant or static initializer. Their names stay outside the crate's
+published namespace.
 
 Validate an artifact before admitting it. Use the ordinary compiler pipeline
 to instantiate an imported body and check obligations that depend on the

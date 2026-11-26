@@ -24,10 +24,10 @@ function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$f$5_6170706c79$
   block ^b0:
     store u8 %p0, $s0
     %t0 = load u8 $s0
-    %t1 = call u8 @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$3.i5(%t0)
+    %t1 = call u8 @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$4.i5(%t0)
     return u8 %t1
 }
-function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$3.i5(%p0 : u8) -> u8 {
+function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$4.i5(%p0 : u8) -> u8 {
   slot $s0 : u8
   block ^b0:
     store u8 %p0, $s0

@@ -275,7 +275,7 @@ impl Stage {
         Ok(declarations)
     }
 
-    pub(super) fn constant_lexical_owners(
+    pub(super) fn initializer_lexical_owners(
         &mut self,
         report: &Report,
         facts: &Declarations,
@@ -283,21 +283,22 @@ impl Stage {
     ) -> Result<(), &'static str> {
         for initializer in &facts.initializers {
             self.charge(1)?;
-            if !self.provided_constant(report, facts, initializer.definition) {
+            let index = initializer.definition.0 as usize;
+            if self.definitions[index].is_none() {
                 continue;
             }
-            let definition = &report.resolution.definitions[initializer.definition.0 as usize];
+            let definition = &report.resolution.definitions[index];
             let module = report.resolution.scopes[definition.scope.0 as usize].module;
             let scope = *report
                 .resolution
                 .node_scopes
                 .get(&(module, initializer.node.node))
-                .ok_or("source constant initializer has no actual lexical scope")?;
+                .ok_or("source initializer has no actual lexical scope")?;
             if owners[scope.0 as usize]
                 .replace(initializer.definition)
                 .is_some()
             {
-                return Err("source constant initializer has a duplicate lexical owner");
+                return Err("source initializer has a duplicate lexical owner");
             }
         }
         Ok(())
@@ -456,9 +457,8 @@ impl Stage {
         self.ty(facts, ty, context)
     }
 
-    /// Version thirteen: a free const's initializer is not an original. Its
-    /// value travels evaluated in its header row; an unnamed const's travels
-    /// nowhere, since no consumer can name it.
+    /// A completed constant's value travels in its header. An unnamed
+    /// constant only supplies lexical ownership for its nested declarations.
     pub(crate) fn evaluated_initializer(
         &mut self,
         facts: &Declarations,
@@ -493,7 +493,12 @@ impl Stage {
                 self.rows
                     .declarations
                     .get(row.0 as usize)
-                    .is_some_and(|row| row.definition.kind == s::DefinitionKind::Constant)
+                    .is_some_and(|row| {
+                        matches!(
+                            row.definition.kind,
+                            s::DefinitionKind::Constant | s::DefinitionKind::AnonymousConstant
+                        )
+                    })
             }))
     }
     /// One row per exported constant declaration, in declaration order.
@@ -521,6 +526,13 @@ impl Stage {
             let Some(declaration) = self.definitions.get(index).copied().flatten() else {
                 continue;
             };
+            if self.rows.declarations[declaration.0 as usize]
+                .definition
+                .kind
+                != s::DefinitionKind::Constant
+            {
+                continue;
+            }
             let id = DefId(u32::try_from(index).map_err(|_| "source constant identity overflow")?);
             let ty = facts
                 .definitions

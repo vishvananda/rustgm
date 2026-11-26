@@ -184,6 +184,11 @@ impl Graph {
                 self.function_ready(catalog, facts, headers, definition, steps)?;
             }
             s::DefinitionKind::Constant => self.constant_ready(rows, row, *cell)?,
+            s::DefinitionKind::AnonymousConstant => {
+                if cell.is_some() || rows.header(row)?.is_some() {
+                    return Err("anonymous constant scope cannot have a typed header");
+                }
+            }
             s::DefinitionKind::TypeAlias => {
                 self.alias_ready(rows, facts, (definition, row), *cell, steps)?;
             }

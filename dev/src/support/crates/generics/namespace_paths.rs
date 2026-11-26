@@ -10,8 +10,9 @@ pub(crate) fn nested_function(
     let declaration = declarations.get(definition.0 as usize)?;
     let parent = declarations.get(declaration.definition.parent?.0 as usize)?;
     (declaration.definition.kind == DefinitionKind::Function
-        && parent.definition.kind == DefinitionKind::Function)
-        .then_some(declaration)
+        && (parent.definition.kind == DefinitionKind::Function
+            || parent.definition.kind.initializer_scope()))
+    .then_some(declaration)
 }
 
 /// A private body original is addressed by its body and declaration slots.

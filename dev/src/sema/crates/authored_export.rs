@@ -1143,7 +1143,7 @@ fn complete_scope_owners(
         owners[scope.0 as usize] = Some(function.definition);
     }
     if stage.declaration_policies() {
-        stage.constant_lexical_owners(report, facts, owners)?;
+        stage.initializer_lexical_owners(report, facts, owners)?;
         stage.require_contextual_bindings(report, facts, owners)?;
         if !stage.bootstrap_bindings() {
             authored_traits::require_role_transport(report, facts, true, true, true)?;

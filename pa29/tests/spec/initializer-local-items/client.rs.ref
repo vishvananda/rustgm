@@ -1,0 +1,108 @@
+declare global @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$static$17 : obj<1x1> [storage=readonly]
+function @first(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = addr $s1
+    call void @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.15.i3(%t1, %t0)
+    %t2 = addr $s1
+    %t3 = call u8 @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$1$d$8.i4(%t2)
+    return u8 %t3
+}
+function @second(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = addr $s1
+    call void @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.15.i3(%t1, %t0)
+    %t2 = addr $s1
+    %t3 = call u8 @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$3$d$14.i7(%t2)
+    return u8 %t3
+}
+function @values() -> u8 {
+  block ^b0:
+    %t0 = load u8 @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$static$17
+    %t1 = binary xor u8 17, %t0
+    return u8 %t1
+}
+function @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.15.i3(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store u8 %t0, $s1
+    %t1 = addr $s1
+    copyobj 1x1 %t1, %p0
+    return void
+}
+function @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$1$d$8.i4(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = addr $s1
+    call void @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.18.i5(%t2, %t1)
+    %t3 = addr $s1
+    %t4 = call u8 @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$0$d$6.i6(%t3)
+    %t5 = binary xor u8 %t4, 3
+    return u8 %t5
+}
+function @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$3$d$14.i7(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    %t2 = addr $s1
+    call void @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.24.i8(%t2, %t1)
+    %t3 = addr $s1
+    %t4 = call u8 @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$2$d$12.i9(%t3)
+    return u8 %t4
+}
+function @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.18.i5(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store u8 %t0, $s1
+    %t1 = addr $s1
+    copyobj 1x1 %t1, %p0
+    return void
+}
+function @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$0$d$6.i6(%p0 : ptr) -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 1x1 %p0, %t0
+    %t1 = load u8 $s0
+    return u8 %t1
+}
+function @rgc$6_636c69656e74$28_706132395f636f6e73745f6c6f63616c5f6974656d5f636c69656e74$internal$rg.24.i8(%p0 : ptr, %p1 : u8) -> void {
+  slot $s0 : u8
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p1, $s0
+    %t0 = load u8 $s0
+    store u8 %t0, $s1
+    %t1 = addr $s1
+    copyobj 1x1 %t1, %p0
+    return void
+}
+function @rgc$4_62617365$21_706132395f636f6e73745f6c6f63616c5f6974656d$b$2$d$12.i9(%p0 : ptr) -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 1x1 %p0, %t0
+    %t1 = load u8 $s0
+    %t2 = binary xor u8 %t1, 5
+    return u8 %t2
+}

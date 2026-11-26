@@ -59,7 +59,9 @@ fn owners_mode(
                 .ok_or_else(|| error("source owner scope lost its parent"))?;
             let parent = scopes[parent.0 as usize]
                 .ok_or_else(|| error("source owner scope is incomplete"))?;
-            let scope = if modules && row.definition.kind == s::DefinitionKind::Module
+            let scope = if modules
+                && (row.definition.kind == s::DefinitionKind::Module
+                    || row.definition.kind.initializer_scope())
                 || matches!(
                     row.definition.kind,
                     s::DefinitionKind::Trait

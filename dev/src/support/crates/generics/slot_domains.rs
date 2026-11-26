@@ -35,10 +35,19 @@ pub enum DefinitionKind {
     Static,
     /// Version fourteen: a language primitive type named by a module re-export.
     Primitive,
+    /// Version fourteen: a `const _` initializer's private lexical scope.
+    AnonymousConstant,
 }
 impl DefinitionKind {
     pub(crate) const fn owns_free_constant(self) -> bool {
-        matches!(self, Self::Module | Self::Function | Self::Constant)
+        matches!(self, Self::Module | Self::Function) || self.initializer_scope()
+    }
+
+    pub(crate) const fn initializer_scope(self) -> bool {
+        matches!(
+            self,
+            Self::Constant | Self::Static | Self::AnonymousConstant
+        )
     }
 
     pub(crate) const fn leading_regions(self) -> bool {
@@ -467,25 +476,18 @@ fn valid_parent(
                         .and_then(|parent| definitions.get(parent.0 as usize))
                         .is_some_and(|parent| parent.kind.owns_free_constant()))
         }
-        DefinitionKind::Function => {
-            match definition.parent {
-                None => parent.is_none(),
-                Some(expected) if parent.is_none() => definitions
-                    .get(expected.0 as usize)
-                    .is_some_and(|definition| {
-                        matches!(
-                            definition.kind,
-                            DefinitionKind::Module | DefinitionKind::Function
-                        )
-                    }),
-                Some(expected) if parent == Some(expected) => true,
-                Some(expected) => parent
-                    .and_then(|parent| definitions.get(parent.0 as usize))
-                    .is_some_and(|parent| {
-                        parent.kind == DefinitionKind::SelfType && parent.parent == Some(expected)
-                    }),
-            }
-        }
+        DefinitionKind::Function => match definition.parent {
+            None => parent.is_none(),
+            Some(expected) if parent.is_none() => definitions
+                .get(expected.0 as usize)
+                .is_some_and(|definition| definition.kind.owns_free_constant()),
+            Some(expected) if parent == Some(expected) => true,
+            Some(expected) => parent
+                .and_then(|parent| definitions.get(parent.0 as usize))
+                .is_some_and(|parent| {
+                    parent.kind == DefinitionKind::SelfType && parent.parent == Some(expected)
+                }),
+        },
         // A variant shares its enum's frame and owns no parameter scope.
         DefinitionKind::Module
         | DefinitionKind::Variant
@@ -495,6 +497,7 @@ fn valid_parent(
         | DefinitionKind::ForeignType
         | DefinitionKind::Static
         | DefinitionKind::Primitive
+        | DefinitionKind::AnonymousConstant
         | DefinitionKind::ValueParameter
         | DefinitionKind::Local => false,
     }

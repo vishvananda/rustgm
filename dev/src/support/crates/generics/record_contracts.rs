@@ -36,6 +36,13 @@ pub(super) fn require_profile(
         {
             return Err("source primitive re-exports require the declaration policies profile");
         }
+        if rows
+            .declarations
+            .iter()
+            .any(|row| row.definition.kind == DefinitionKind::AnonymousConstant)
+        {
+            return Err("anonymous constant scopes require the declaration policies profile");
+        }
         work.charge(rows.nominals.len())?;
         for row in &rows.nominals {
             if row.fundamental {

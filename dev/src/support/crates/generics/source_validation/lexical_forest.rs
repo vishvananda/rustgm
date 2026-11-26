@@ -58,6 +58,11 @@ pub(super) fn validate(
             }
             roots += 1;
         }
+        if row.definition.kind == DefinitionKind::AnonymousConstant
+            && (row.public || row.name.as_deref() != Some("_"))
+        {
+            return Err("anonymous constant changed its actual spelling or visibility");
+        }
         if row.local.is_some()
             && !matches!(
                 row.definition.kind,
@@ -112,11 +117,20 @@ fn valid_child(parent: DefinitionKind, child: &super::super::Declaration) -> boo
         | DefinitionKind::Trait
         | DefinitionKind::SelfType
         | DefinitionKind::Function => true,
-        DefinitionKind::Constant => {
-            // A constant initializer may declare its own constant items.
-            // Function-pointer binders and closure locals also keep this owner.
+        DefinitionKind::Constant | DefinitionKind::Static | DefinitionKind::AnonymousConstant => {
             match child.definition.kind {
-                DefinitionKind::Constant | DefinitionKind::RegionParameter => child.local.is_none(),
+                DefinitionKind::Module
+                | DefinitionKind::Struct
+                | DefinitionKind::Enum
+                | DefinitionKind::Trait
+                | DefinitionKind::TraitAlias
+                | DefinitionKind::Function
+                | DefinitionKind::TypeAlias
+                | DefinitionKind::Constant
+                | DefinitionKind::AnonymousConstant
+                | DefinitionKind::Static
+                | DefinitionKind::SelfType
+                | DefinitionKind::RegionParameter => child.local.is_none(),
                 DefinitionKind::Local | DefinitionKind::ValueParameter => child.local.is_some(),
                 _ => false,
             }

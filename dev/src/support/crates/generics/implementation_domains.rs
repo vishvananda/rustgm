@@ -401,6 +401,14 @@ impl ModuleContractColumns {
             .declarations
             .get(entry.target.declaration.0 as usize)
             .ok_or("module target declaration is absent")?;
+        if binding_owner(rows, target).is_some_and(|owner| {
+            rows.declarations[owner.0 as usize]
+                .definition
+                .kind
+                .initializer_scope()
+        }) {
+            return Err("module binding cannot name an initializer-local declaration");
+        }
         let expected = match target.definition.kind {
             s::DefinitionKind::Module
             | s::DefinitionKind::Trait

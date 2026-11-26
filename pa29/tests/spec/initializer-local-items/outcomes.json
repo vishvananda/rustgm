@@ -1,0 +1,20 @@
+{
+  "provider": "provider.rs",
+  "inputs": [
+    "client.rs",
+    "reject-private-function.rs",
+    "reject-private-type.rs",
+    "observe.c"
+  ],
+  "native_values": [
+    8,
+    30,
+    14,
+    24,
+    12
+  ],
+  "rejections": {
+    "reject-private-function.rs": "initializer-local function has no crate path",
+    "reject-private-type.rs": "initializer-local type has no crate path"
+  }
+}

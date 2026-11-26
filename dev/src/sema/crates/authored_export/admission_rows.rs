@@ -118,12 +118,13 @@ impl Stage {
                 DefKind::Generic if definition.namespace == Namespace::Value => {
                     return Ok(Some(s::DefinitionKind::ConstParameter));
                 }
-                // Version thirteen: a named const item. An unnamed const has
-                // no row: its provider already evaluated it and no consumer
-                // can name it.
                 DefKind::Const => {
                     return if report.package.names.get(definition.name) == "_" {
-                        Ok(None)
+                        // The provider evaluated this initializer. Its private
+                        // scope remains the owner of any declarations inside it.
+                        Ok(self
+                            .declaration_policies()
+                            .then_some(s::DefinitionKind::AnonymousConstant))
                     } else if facts.associated.owner(id).is_some()
                         && !self.range_required_constant(facts, id)
                         && !self.authored_required_constant(report, facts, id)

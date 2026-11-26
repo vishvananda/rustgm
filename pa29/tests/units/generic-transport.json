@@ -210,7 +210,11 @@
     "tests/spec/static-initializer-closure/provider.rs",
     "tests/spec/static-initializer-closure/client.rs",
     "tests/spec/captured-receiver-const/provider.rs",
-    "tests/spec/captured-receiver-const/client.rs"
+    "tests/spec/captured-receiver-const/client.rs",
+    "tests/spec/initializer-local-items/provider.rs",
+    "tests/spec/initializer-local-items/client.rs",
+    "tests/spec/initializer-local-items/reject-private-function.rs",
+    "tests/spec/initializer-local-items/reject-private-type.rs"
   ],
   "cases": [
     {
@@ -7329,6 +7333,117 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/captured-receiver-const/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-local-items/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine",
+        "pa28.memory"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_local_item_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/initializer-local-items/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_local_item",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/initializer-local-items/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/initializer-local-items/reject-private-function.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine",
+        "pa28.memory"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_local_item_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/initializer-local-items/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_local_item",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/initializer-local-items/reject-private-type.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine",
+        "pa28.memory"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_local_item_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/initializer-local-items/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_local_item",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
       }
     }
   ]
