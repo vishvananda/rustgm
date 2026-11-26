@@ -289,3 +289,115 @@ fn check_signature_rows(artifact: &crate::support::crates::Interface) -> Result 
     );
     Ok(())
 }
+
+#[test]
+fn captured_protocol_requests_keep_their_semantic_callable_and_lifetime_frame() -> Result {
+    use crate::{
+        sema::{
+            model::Operation,
+            protocol_plans::{self, Kind},
+        },
+        support::crates,
+        types,
+    };
+    let (facts, artifact) = source_originals("source-captured-protocol-requests")?;
+    let retained = facts
+        .methods
+        .operands
+        .as_deref()
+        .and_then(|rows| rows.dispatched.as_deref())
+        .ok_or("actual source dispatch replacements")?;
+    let mut captured_mismatch = false;
+    for (&(owner, site, original), &selected) in retained {
+        let Some(types::Kind::FunctionItem {
+            signature: original_signature,
+            ..
+        }) = facts.types.kind(original)
+        else {
+            continue;
+        };
+        let Some(types::Kind::FunctionItem {
+            signature: selected_signature,
+            ..
+        }) = facts.types.kind(selected)
+        else {
+            continue;
+        };
+        let Some(Operation::MethodReceiver { plan: id }) =
+            facts.node(site).and_then(|node| node.operation)
+        else {
+            continue;
+        };
+        let plan = id.current(&facts, owner, site)?;
+        let Kind::Receiver { steps, .. } = plan.kind else {
+            return Err("actual receiver plan".into());
+        };
+        for step in protocol_plans::access::rows(&facts, plan, owner, steps)? {
+            if step.call.callable != original {
+                continue;
+            }
+            let opening = |signature| {
+                types::callable::late_result::opening_regions(
+                    &facts.types,
+                    signature,
+                    step.call.signature,
+                    &|_, _| Ok(()),
+                )
+            };
+            if opening(selected_signature)?.is_none() {
+                assert!(opening(original_signature)?.is_some());
+                captured_mismatch = true;
+            }
+        }
+    }
+    assert!(
+        captured_mismatch,
+        "the fixture must need the original captured-lifetime frame"
+    );
+    let fresh = crates::decode(&crates::encode(&artifact)?)?;
+    check_protocol_request_parents(&fresh)?;
+    crate::source_packets::client_analysis(
+        fresh,
+        "#![feature(no_core)]#![no_core]extern crate base;pub fn observe()->u32{let x=11;base::through(&base::Outer(base::Inner{value:&x}))}",
+    )?;
+    Ok(())
+}
+
+fn check_protocol_request_parents(artifact: &crate::support::crates::Interface) -> Result {
+    let (rows, _, _) = crate::module_packets::raw(artifact)?;
+    for (name, role) in [
+        ("through", "Deref"),
+        ("coerced", "Deref"),
+        ("field", "Deref"),
+        ("indexed", "Index"),
+        ("direct_index", "Index"),
+        ("replaced", "DerefMut"),
+    ] {
+        let body = rows
+            .originals
+            .iter()
+            .find(|body| {
+                rows.declarations[body.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some(name)
+            })
+            .ok_or("actual protocol caller")?;
+        assert!(
+            body.calls.iter().any(|call| {
+                let declaration = rows.function_applications[call.target.0 as usize]
+                    .declaration
+                    .declaration;
+                rows.functions
+                    .iter()
+                    .find(|header| header.declaration == declaration)
+                    .and_then(|header| header.parent)
+                    .is_some_and(|parent| {
+                        rows.declarations[parent.0 as usize].name.as_deref() == Some(role)
+                    })
+            }),
+            "{name} must retain its actual {role} trait request"
+        );
+    }
+    Ok(())
+}

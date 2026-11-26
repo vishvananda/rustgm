@@ -2049,3 +2049,15 @@ containers, distinct implementations, forwarding and both lexical unsafe forms
 are checked in fresh clients. Missing unsafe context rejects in both compilers;
 v13 refuses nested callable arguments. The private witness checks exact retention
 boundaries and rejects a same-arity signature naming a different implementation.
+
+`source-captured-protocol-requests` qualifies eleven native observations through
+receivers whose implementations capture a lifetime. A protocol's completed plan
+retains its own exact semantic callable, so publication can preserve the original
+request instead of exporting the selected implementation's private lifetime
+frame. Unchanged method signatures use the same rule; rewritten higher-order
+signatures retain their completed applications. Fresh consumers select and
+prove implementations anew. The cases cover borrowed results, nested receivers,
+coercions, fields, indexing and mutable dereferencing. The anchored escape of a
+local reference rejects in both compilers; v13 refuses the role form. The private
+witness requires a real selected-frame mismatch and verifies the original
+Deref/DerefMut/Index requests survive fresh metadata.

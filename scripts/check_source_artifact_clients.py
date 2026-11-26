@@ -84,7 +84,8 @@ def main():
                                  "source-captured-callable-equalities",
                                  "source-override-late-binders",
                                  "source-shared-method-sites",
-                                 "source-dispatched-call-signatures"))
+                                 "source-dispatched-call-signatures",
+                                 "source-captured-protocol-requests"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

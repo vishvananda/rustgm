@@ -1,0 +1,18 @@
+{
+  "features": [
+    "auto_traits"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c"
+  ],
+  "stdout": "11 22 33 44 55 66 77 88 99 111 123\n",
+  "older_profile": "source role form is outside the complete first transport family",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "cannot return value referencing local variable",
+    "rustgm": "required lifetime does not outlive its target"
+  }
+}

@@ -69,6 +69,7 @@ struct CompletedCall {
     check_method: bool,
     // Safety was discharged against the semantic signature before dispatch.
     semantic_signature: crate::types::TypeId,
+    protocol_callable: Option<crate::types::TypeId>,
 }
 
 struct Ports<'a> {
@@ -150,6 +151,7 @@ impl Ports<'_> {
                 source_use,
                 check_method: true,
                 semantic_signature: signature,
+                protocol_callable: None,
             });
         }
         let key = self
@@ -159,12 +161,15 @@ impl Ports<'_> {
             .source()
             .ok_or("source Call has no actual source operation")?;
         self.source.stage.charge(2)?;
-        if let Some(source_use) = self.conversion_or_index_step(key, callable, signature)? {
+        if let Some((source_use, original)) =
+            self.conversion_or_index_step(key, callable, signature)?
+        {
             return Ok(CompletedCall {
                 key,
                 source_use,
                 check_method: false,
                 semantic_signature: signature,
+                protocol_callable: Some(original),
             });
         }
         let operation = self.facts.node(key).and_then(|facts| facts.operation);
@@ -184,15 +189,17 @@ impl Ports<'_> {
                 source_use,
                 check_method: true,
                 semantic_signature: retained,
+                protocol_callable: None,
             });
         }
-        let (key, source_use, check_method) =
+        let (key, source_use, check_method, original) =
             self.protocol_plan_call(key, operation, callable, signature)?;
         Ok(CompletedCall {
             key,
             source_use,
             check_method,
             semantic_signature: signature,
+            protocol_callable: Some(original),
         })
     }
     fn protocol_plan_call(
@@ -201,7 +208,15 @@ impl Ports<'_> {
         operation: Option<Operation>,
         callable: crate::types::TypeId,
         signature: crate::types::TypeId,
-    ) -> Result<(NodeKey, crate::sema::model::SourceCallUse, bool), &'static str> {
+    ) -> Result<
+        (
+            NodeKey,
+            crate::sema::model::SourceCallUse,
+            bool,
+            crate::types::TypeId,
+        ),
+        &'static str,
+    > {
         use crate::sema::protocol_plans::Kind;
         match operation {
             Some(Operation::Field { plan: Some(id), .. }) => {
@@ -209,66 +224,54 @@ impl Ports<'_> {
                 let Kind::Field { steps, .. } = plan.kind else {
                     return Err("source field plan changed its protocol kind");
                 };
-                if self.matches_access_steps(key, plan, steps, callable, signature)? {
-                    return Ok((key, plan.source_use, false));
-                }
-                Err("source field protocol call changed its completed signature or target")
+                self.matches_access_steps(key, plan, steps, callable, signature)?
+                    .map(|original| (key, plan.source_use, false, original))
+                    .ok_or("source field protocol call changed its completed signature or target")
             }
             Some(Operation::MethodReceiver { plan: id }) => {
                 let plan = id.current(self.facts, self.owner, key)?;
                 let Kind::Receiver { steps, call, .. } = plan.kind else {
                     return Err("source method receiver plan changed its protocol kind");
                 };
-                if self.matches_plan_call(key, call, callable, signature)? {
-                    return Ok((key, plan.source_use, true));
+                if let Some(original) = self.matches_plan_call(key, call, callable, signature)? {
+                    return Ok((key, plan.source_use, true, original));
                 }
-                if self.matches_access_steps(key, plan, steps, callable, signature)? {
-                    return Ok((key, plan.source_use, false));
-                }
-                Err(
-                    "source method receiver protocol call changed its completed signature or target",
-                )
+                self.matches_access_steps(key, plan, steps, callable, signature)?
+                    .map(|original| (key, plan.source_use, false, original))
+                    .ok_or("source method receiver protocol call changed its completed signature or target")
             }
             Some(Operation::Try { plan: id }) => {
                 let plan = id.current(self.facts, self.owner, key)?;
-                let matched = match plan.kind {
-                    Kind::Block { from_output, .. } => {
-                        self.matches_plan_call(key, from_output, callable, signature)?
-                    }
+                let calls = match plan.kind {
+                    Kind::Block { from_output, .. } => [Some(from_output), None],
                     Kind::Branch {
                         branch, residual, ..
-                    } => {
-                        self.matches_plan_call(key, branch, callable, signature)?
-                            || self.matches_plan_call(key, residual, callable, signature)?
-                    }
+                    } => [Some(branch), Some(residual)],
                     _ => return Err("source Try plan changed its protocol kind"),
                 };
-                if matched {
-                    Ok((key, plan.source_use, false))
-                } else {
-                    Err("source Try protocol call changed its completed signature or target")
-                }
+                self.matches_calls(key, calls.into_iter().flatten(), callable, signature)?
+                    .map(|original| (key, plan.source_use, false, original))
+                    .ok_or("source Try protocol call changed its completed signature or target")
             }
             Some(Operation::Iteration { plan: id }) => {
                 let plan = id.current(self.facts, self.owner, key)?;
                 let Kind::Iteration { plan: for_plan, .. } = plan.kind else {
                     return Err("source iteration plan changed its protocol kind");
                 };
-                if self.matches_plan_call(key, for_plan.into_iter, callable, signature)?
-                    || self.matches_plan_call(key, for_plan.next, callable, signature)?
-                {
-                    Ok((key, plan.source_use, false))
-                } else {
-                    Err("source iteration protocol call changed its completed signature or target")
-                }
+                self.matches_calls(
+                    key,
+                    [for_plan.into_iter, for_plan.next],
+                    callable,
+                    signature,
+                )?
+                .map(|original| (key, plan.source_use, false, original))
+                .ok_or("source iteration protocol call changed its completed signature or target")
             }
             Some(Operation::OffsetOf { plan: id }) => {
                 let plan = id.current(self.facts, self.owner, key)?;
-                if self.matches_plan_call(key, plan.call, callable, signature)? {
-                    Ok((key, plan.source_use, false))
-                } else {
-                    Err("source offset_of call changed its completed signature or target")
-                }
+                self.matches_plan_call(key, plan.call, callable, signature)?
+                    .map(|original| (key, plan.source_use, false, original))
+                    .ok_or("source offset_of call changed its completed signature or target")
             }
             _ => Err(
                 "source Call has no exact completed owner/effect publication; ForPlan transport is not implemented",
@@ -280,7 +283,8 @@ impl Ports<'_> {
         key: NodeKey,
         callable: crate::types::TypeId,
         signature: crate::types::TypeId,
-    ) -> Result<Option<crate::sema::model::SourceCallUse>, &'static str> {
+    ) -> Result<Option<(crate::sema::model::SourceCallUse, crate::types::TypeId)>, &'static str>
+    {
         let conversion = self
             .facts
             .reference_adjustments
@@ -294,8 +298,10 @@ impl Ports<'_> {
             else {
                 return Err("source conversion or index plan changed its protocol kind");
             };
-            if self.matches_access_steps(key, plan, steps, callable, signature)? {
-                return Ok(Some(plan.source_use));
+            if let Some(original) =
+                self.matches_access_steps(key, plan, steps, callable, signature)?
+            {
+                return Ok(Some((plan.source_use, original)));
             }
         }
         Ok(None)
@@ -307,17 +313,26 @@ impl Ports<'_> {
         steps: crate::sema::protocol_plans::access::Range,
         callable: crate::types::TypeId,
         signature: crate::types::TypeId,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<Option<crate::types::TypeId>, &'static str> {
         let calls = crate::sema::protocol_plans::access::rows(self.facts, plan, self.owner, steps)?
             .iter()
             .map(|step| step.call)
             .collect::<Vec<_>>();
-        for step_call in calls {
-            if self.matches_plan_call(key, step_call, callable, signature)? {
-                return Ok(true);
+        self.matches_calls(key, calls, callable, signature)
+    }
+    fn matches_calls(
+        &mut self,
+        key: NodeKey,
+        calls: impl IntoIterator<Item = crate::sema::iteration::Call>,
+        callable: crate::types::TypeId,
+        signature: crate::types::TypeId,
+    ) -> Result<Option<crate::types::TypeId>, &'static str> {
+        for planned in calls {
+            if let Some(original) = self.matches_plan_call(key, planned, callable, signature)? {
+                return Ok(Some(original));
             }
         }
-        Ok(false)
+        Ok(None)
     }
     fn matches_plan_call(
         &mut self,
@@ -325,20 +340,20 @@ impl Ports<'_> {
         planned: crate::sema::iteration::Call,
         callable: crate::types::TypeId,
         signature: crate::types::TypeId,
-    ) -> Result<bool, &'static str> {
+    ) -> Result<Option<crate::types::TypeId>, &'static str> {
         self.source.stage.charge(1)?;
         if planned.signature != signature {
-            return Ok(false);
+            return Ok(None);
         }
         if planned.callable == callable {
-            return Ok(true);
+            return Ok(Some(planned.callable));
         }
         if let Some(selected) = self
             .facts
             .methods
             .dispatched(self.owner, key, planned.callable)
         {
-            return Ok(selected == callable);
+            return Ok((selected == callable).then_some(planned.callable));
         }
         let selected = self.source.stage.paying(|pay| {
             crate::sema::dispatch::selected_callable_with_projections(
@@ -348,7 +363,7 @@ impl Ports<'_> {
                 pay,
             )
         })?;
-        Ok(selected == Some(callable))
+        Ok((selected == Some(callable)).then_some(planned.callable))
     }
     fn one(
         &mut self,
@@ -371,6 +386,7 @@ impl Ports<'_> {
             source_use,
             check_method,
             semantic_signature,
+            protocol_callable,
         } = self.completed_call(statement, callable_type, signature)?;
         let effect = source_use.effect_for(self.facts, self.owner)?;
         self.source.stage.charge(32)?;
@@ -382,13 +398,13 @@ impl Ports<'_> {
         if check_method {
             self.method_target(key, item, callable_type)?;
         }
-        // Only the final method call uses this node's MethodCall entry.
-        // Implicit receiver steps retain their separately authenticated plans.
-        let callable_type = if check_method {
-            self.request_callable(key, callee, callable_type)?
-        } else {
-            callable_type
-        };
+        let callable_type = self.request_callable(
+            key,
+            callee,
+            callable_type,
+            protocol_callable,
+            signature != semantic_signature,
+        )?;
         let Some(Type::FunctionItem {
             item,
             arguments,
@@ -431,42 +447,37 @@ impl Ports<'_> {
         });
         Ok(())
     }
-    /// Dispatch may select an override with a different late binder. Retain the
-    /// checked trait operand for that call so its actual opening stays exact;
-    /// every fresh consumer performs ordinary dispatch and its lifetime proof.
+    /// Preserve the semantic operand while its checked signature is unchanged.
+    /// A rewritten higher-order call keeps its exact selected application;
+    /// each fresh consumer performs ordinary dispatch and its lifetime proof.
     fn request_callable(
         &mut self,
         key: NodeKey,
         callee: ir::ValueId,
         selected: crate::types::TypeId,
+        protocol_callable: Option<crate::types::TypeId>,
+        signature_changed: bool,
     ) -> Result<crate::types::TypeId, &'static str> {
         if !self.source.stage.declaration_policies() {
             return Ok(selected);
         }
-        let Some(method) = self.facts.methods.calls.get(&key).copied() else {
+        // Matching the completed method or protocol plan already authenticated
+        // its full selected target. Each protocol call keeps its own operand.
+        let Some(original) = protocol_callable.or_else(|| {
+            self.facts
+                .methods
+                .calls
+                .get(&key)
+                .map(|method| method.callable)
+        }) else {
             return Ok(selected);
         };
-        let count = |ty| match self.facts.types.kind(ty) {
-            Some(Type::FunctionItem { signature, .. }) => match self.facts.types.kind(signature) {
-                Some(Type::Function { bound_regions, .. }) => Some(bound_regions),
-                _ => None,
-            },
-            _ => None,
-        };
-        if count(selected) == count(method.callable) {
+        if original == selected || signature_changed {
             return Ok(selected);
-        }
-        if self
-            .facts
-            .methods
-            .dispatched(self.owner, key, method.callable)
-            != Some(selected)
-        {
-            return Err("source request changed its exact original dispatch");
         }
         let Some(Type::FunctionItem {
             item, arguments, ..
-        }) = self.facts.types.kind(method.callable)
+        }) = self.facts.types.kind(original)
         else {
             return Err("source request original is not a function item");
         };
@@ -474,14 +485,11 @@ impl Ports<'_> {
             self.source
                 .stage
                 .function_application(self.facts, item, arguments, self.context)?;
-        let ty = self
-            .source
-            .stage
-            .ty(self.facts, method.callable, self.context)?;
+        let ty = self.source.stage.ty(self.facts, original, self.context)?;
         self.sites.function_formation(
             &mut self.source.stage,
             self.body.source.root_body_site(),
-            method.callable,
+            original,
             ty,
         )?;
         let row = self
@@ -494,7 +502,7 @@ impl Ports<'_> {
         }
         row.ty = ty;
         row.kind = s::ValueKind::Function(application);
-        Ok(method.callable)
+        Ok(original)
     }
     fn method_target(
         &mut self,
