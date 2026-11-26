@@ -27,7 +27,7 @@ pub(super) fn checked<'a>(
     let header = registry.checked_entry(key)?;
     if vertex.witness.key != key
         || header.predicate != vertex.witness.predicate
-        || header.source != Some(vertex.witness.policy.source)
+        || header.source != vertex.witness.policy.as_ref().map(|policy| policy.source)
     {
         return Err("specialization candidate header changed after closure");
     }

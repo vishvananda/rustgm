@@ -63,6 +63,11 @@ pub(super) fn prepare(
             application(rows, reference, demand)?;
         }
     }
+    if let Some(ancestry) = &rows.cold().specialization {
+        for edge in &ancestry.parents {
+            arguments(rows, edge.arguments, demand)?;
+        }
+    }
     for clause in &rows.clauses {
         match &clause.requirement {
             s::Requirement::Bootstrap { subject, .. } => demand(Root::Type(*subject))?,
@@ -120,11 +125,14 @@ fn application(
         .get(reference.0 as usize)
         .ok_or_else(|| error("ordinary header lost its actual trait application"))?;
     demand(Root::Type(application.subject))?;
-    for argument in application
-        .arguments
-        .slice(&rows.arguments)
-        .map_err(error)?
-    {
+    arguments(rows, application.arguments, demand)
+}
+fn arguments(
+    rows: s::ValidatedView<'_>,
+    arguments: crate::support::crates::generics::Range,
+    demand: &mut impl FnMut(Root) -> Result<(), Error>,
+) -> Result<(), Error> {
+    for argument in arguments.slice(&rows.arguments).map_err(error)? {
         match *argument {
             s::Argument::Type(ty) => demand(Root::Type(ty))?,
             s::Argument::Region(region) => demand(Root::Region(region))?,
@@ -132,7 +140,7 @@ fn application(
                 Some(s::ConstTerm::Value(value)) => demand(Root::Type(value.ty))?,
                 Some(s::ConstTerm::Variant(value)) => demand(Root::Type(value.ty))?,
                 Some(s::ConstTerm::Parameter(_)) => {}
-                None => return Err(error("source trait argument lost its const term")),
+                None => return Err(error("source header argument lost its const term")),
             },
         }
     }

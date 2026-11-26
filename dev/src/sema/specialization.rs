@@ -23,6 +23,7 @@ mod predicate_basis;
 mod proof_attempt;
 #[path = "specialization/directional_inputs.rs"]
 mod proof_inputs;
+mod ranked_forest;
 mod registry_graph;
 mod retention_work;
 #[path = "specialization/ancestor_target.rs"]
@@ -32,6 +33,7 @@ pub(in crate::sema) use annotation_reads::marker;
 pub(in crate::sema) use annotation_rows::{bind_trait, consume, finish, observe_owner, prepare};
 pub(in crate::sema) use annotation_store::LocalMarkers;
 pub(in crate::sema) use applicable_rules::verify as verify_applicable_impls;
+pub(in crate::sema) use ranked_forest::{ImportedParent, install_imported};
 pub(in crate::sema) use registry_graph::Graph;
 
 pub(in crate::sema) use graph_pairs::{compare, remembered, requested};

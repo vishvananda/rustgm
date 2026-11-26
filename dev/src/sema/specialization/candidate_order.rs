@@ -4,7 +4,7 @@
 use super::{
     graph_pairs::{self, Settled},
     member_paths::checked,
-    registry_graph::{Comparison, Graph, PairKey, Relation, State},
+    registry_graph::{Comparison, Forest, Graph, PairKey, Relation, State},
     retention_work::Budget,
 };
 use crate::{
@@ -67,20 +67,12 @@ pub(in crate::sema) fn order(
     graph.budget.charge(2, 0)?;
     let a = registry.entry_key(previous)?;
     let b = registry.entry_key(next)?;
+    if let Some(forest) = graph.imported_forest(a) {
+        return ancestry_order(forest, registry, a, b);
+    }
     let key = match &graph.state {
         State::Sealed(forest) | State::Conforming(forest) => {
-            let (Some(x), Some(y)) = (checked(forest, registry, a)?, checked(forest, registry, b)?)
-            else {
-                return Ok(Order::Unordered);
-            };
-            graph.budget.charge(2, 0)?;
-            return Ok(if x.preorder < y.preorder && y.preorder <= x.subtree_end {
-                Order::Prefer(next)
-            } else if y.preorder < x.preorder && x.preorder <= y.subtree_end {
-                Order::Prefer(previous)
-            } else {
-                Order::Unordered
-            });
+            return ancestry_order(forest, registry, a, b);
         }
         State::Building(builder) => {
             let key = PairKey::new(a, b)?;
@@ -104,6 +96,24 @@ pub(in crate::sema) fn order(
         Settled::Undecided => Order::Unordered,
     })
 }
+pub(super) fn ancestry_order(
+    forest: &Forest,
+    registry: &Implementations,
+    a: EntryKey,
+    b: EntryKey,
+) -> Result<Order, String> {
+    let (Some(x), Some(y)) = (checked(forest, registry, a)?, checked(forest, registry, b)?) else {
+        return Ok(Order::Unordered);
+    };
+    Ok(if x.preorder < y.preorder && y.preorder <= x.subtree_end {
+        Order::Prefer(b.owner())
+    } else if y.preorder < x.preorder && x.preorder <= y.subtree_end {
+        Order::Prefer(a.owner())
+    } else {
+        Order::Unordered
+    })
+}
+
 /// Only positive local impls have source witnesses that closure authenticates.
 fn local(
     facts: &Declarations,
@@ -164,30 +174,16 @@ pub(in crate::sema) fn defining_type(
             .type_definition(key.owner(), item)
             .is_some()
     };
-    let path = match &graph.state {
-        State::Sealed(forest) | State::Conforming(forest) => {
-            let mut path = Vec::new();
-            let mut current = start;
-            loop {
-                budget.charge(1, size_of::<Relation>())?;
-                let Some(edge) =
-                    checked(forest, registry, current)?.and_then(|vertex| vertex.parent)
-                else {
-                    break None;
-                };
-                let relation = *forest
-                    .parents
-                    .get(edge.index())
-                    .ok_or("inherited type parent edge disappeared")?;
-                path.push(relation);
-                if defines(relation.parent) {
-                    break Some(path);
-                }
-                current = relation.parent;
+    let path = if let Some(forest) = graph.imported_forest(start) {
+        defining_path(forest, registry, start, defines, &budget)?
+    } else {
+        match &graph.state {
+            State::Sealed(forest) | State::Conforming(forest) => {
+                defining_path(forest, registry, start, defines, &budget)?
             }
+            State::Building(builder) => search(&builder.relations, start, defines, &budget)?,
+            State::Failed => return Err("specialization graph validation previously failed"),
         }
-        State::Building(builder) => search(&builder.relations, start, defines, &budget)?,
-        State::Failed => return Err("specialization graph validation previously failed"),
     };
     let Some(path) = path else {
         return Ok(None);
@@ -199,6 +195,31 @@ pub(in crate::sema) fn defining_type(
         defining = relation.parent.owner();
     }
     Ok(Some((defining, arguments)))
+}
+fn defining_path(
+    forest: &Forest,
+    registry: &Implementations,
+    mut current: EntryKey,
+    defines: impl Fn(EntryKey) -> bool,
+    budget: &Budget,
+) -> Result<Option<Vec<Relation>>, &'static str> {
+    let mut path = Vec::new();
+    loop {
+        budget.charge(1, size_of::<Relation>())?;
+        let Some(edge) = checked(forest, registry, current)?.and_then(|vertex| vertex.parent)
+        else {
+            return Ok(None);
+        };
+        let relation = *forest
+            .parents
+            .get(edge.index())
+            .ok_or("inherited type parent edge disappeared")?;
+        path.push(relation);
+        if defines(relation.parent) {
+            return Ok(Some(path));
+        }
+        current = relation.parent;
+    }
 }
 /// Before closure, each contested selection recorded `child -> parent`
 /// relations along its winners, so every applicable ancestor is reachable.

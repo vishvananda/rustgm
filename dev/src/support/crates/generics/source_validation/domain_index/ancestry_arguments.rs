@@ -81,10 +81,15 @@ impl DomainIndex<'_, '_> {
             .scopes()
             .declared_slots(parent.scope, work)?
             .slice(&rows.slots)?;
-        if formals.len() != arguments.len() {
-            return Err("source specialization parent changed its argument count");
-        }
-        for (&argument, formal) in arguments.iter().zip(formals) {
+        work.charge(formals.len())?;
+        let mut arguments = arguments.iter().copied();
+        for formal in formals {
+            if matches!(formal.kind, s::ParameterKind::Region) {
+                continue;
+            }
+            let argument = arguments
+                .next()
+                .ok_or("source specialization parent changed its argument count")?;
             match (argument, formal.kind) {
                 (s::Argument::Type(ty), s::ParameterKind::Type { .. }) => {
                     self.types.root(self.headers, context, ty, work)?;
@@ -97,6 +102,9 @@ impl DomainIndex<'_, '_> {
                     .const_parameter_root(self.headers, context, term, ty, work)?,
                 _ => return Err("source specialization parent changed its parameter kind"),
             }
+        }
+        if arguments.next().is_some() {
+            return Err("source specialization parent changed its argument count");
         }
         Ok(())
     }

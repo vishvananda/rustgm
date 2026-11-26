@@ -3,6 +3,7 @@ mod artifact_graphs;
 pub(super) mod checked_rows;
 mod dag_recipes;
 pub(in crate::sema) use artifact_graphs::Graphs;
+mod ancestry_ingest;
 mod ingest_roots;
 mod ingested_domains;
 mod lending_originals;
@@ -71,6 +72,7 @@ pub(in crate::sema) struct Graph {
     trait_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     trait_alias_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
+    specialization: Vec<crate::sema::specialization::ImportedParent>,
 }
 enum Canonical {
     Eager {
@@ -294,6 +296,7 @@ impl Graph {
             trait_inputs: Vec::new(),
             trait_alias_inputs: Vec::new(),
             impl_inputs: Vec::new(),
+            specialization: Vec::new(),
         })
     }
     pub(in crate::sema) fn require_store(

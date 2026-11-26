@@ -175,7 +175,7 @@ impl Checker<'_> {
                 )
                 .map_err(Error::unlocated)?;
         }
-        Ok(())
+        crate::sema::specialization::install_imported(facts, self.report).map_err(Error::unlocated)
     }
 
     fn library_implementation_headers(

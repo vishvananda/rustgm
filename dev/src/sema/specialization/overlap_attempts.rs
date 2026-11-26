@@ -67,6 +67,12 @@ pub(in crate::sema) fn remembered(
     };
     existing.current(facts)?;
     let key = pair(facts, owners)?;
+    if super::ranked_forest::verify_pair(facts, key)? {
+        return Ok(true);
+    }
+    let existing = registry(facts)?
+        .specialization_graph()
+        .ok_or("specialization graph disappeared after imported comparison")?;
     let State::Building(builder) = &existing.state else {
         return Err("coherence comparison arrived after specialization closure".into());
     };
@@ -173,11 +179,12 @@ fn advance(facts: &mut Declarations, key: PairKey) -> Result<(), String> {
         Ok(Progress::Complete(Some(relation))) => {
             // A selection may order its pair before coherence authenticates
             // the sources; closure authenticates every child before admission.
-            if builder
-                .sources
-                .get(&relation.child)
-                .is_some_and(|witness| !witness.policy.may_specialize())
-            {
+            if builder.sources.get(&relation.child).is_some_and(|witness| {
+                witness
+                    .policy
+                    .as_ref()
+                    .is_none_or(|policy| !policy.may_specialize())
+            }) {
                 graph.fail();
                 return Err(
                     "specializing implementation requires its actual feature authority".into(),
@@ -237,7 +244,8 @@ pub(in crate::sema) fn drain(facts: &mut Declarations, report: &Report) -> Resul
         builder
             .sources
             .get(&relation.child)
-            .is_none_or(|witness| !witness.policy.may_specialize())
+            .and_then(|witness| witness.policy.as_ref())
+            .is_none_or(|policy| !policy.may_specialize())
     }) {
         graph.fail();
         return Err("specializing implementation requires its actual feature authority".into());

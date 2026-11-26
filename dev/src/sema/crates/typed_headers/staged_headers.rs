@@ -157,6 +157,7 @@ impl Stage {
         let applications = remap.finish(&mut facts.types, budget)?;
         graph.finish_applications(applications, &facts.types, budget)?;
         finish_inputs(context, &mut graph, &scopes, budget)?;
+        graph.remap_specialization(context, &mut facts.types, budget)?;
         rebuilt_environments::complete(context, &graph, facts, &mut scopes, budget)?;
         budget.reserve(2 * size_of::<usize>())?;
         budget

@@ -56,7 +56,7 @@ pub(in crate::sema) fn prepare(facts: &mut Declarations, report: &Report) -> Res
     graph_pairs::active_graph(facts)?.state = State::Conforming(Box::new(forest));
     Ok(())
 }
-fn families(
+pub(super) fn families(
     facts: &Declarations,
     forest: &mut Forest,
     budget: &Budget,
@@ -155,6 +155,8 @@ pub(in crate::sema) fn seal(facts: &mut Declarations, report: &Report) -> Result
         vertex
             .witness
             .policy
+            .as_ref()
+            .ok_or("local specialization lost its source policy")?
             .validate(report, &graph.requests, |steps, bytes| {
                 graph.budget.charge(steps, bytes)
             })

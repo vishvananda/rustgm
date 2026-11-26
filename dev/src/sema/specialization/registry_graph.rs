@@ -75,7 +75,7 @@ impl EdgeId {
 pub(super) struct Witness {
     pub key: EntryKey,
     pub predicate: Predicate,
-    pub policy: ImplPolicy,
+    pub policy: Option<ImplPolicy>,
 }
 #[derive(Clone, Copy)]
 pub(super) struct Relation {
@@ -121,6 +121,7 @@ pub(in crate::sema) struct Graph {
     pub(super) requests: Requests,
     pub(super) budget: Budget,
     pub(super) state: State,
+    pub(super) imported: Option<Box<Forest>>,
 }
 impl Graph {
     pub(super) fn new(facts: &mut Declarations, report: &Report) -> Result<Box<Self>, String> {
@@ -133,6 +134,7 @@ impl Graph {
             requests,
             budget,
             state: State::Building(Box::default()),
+            imported: None,
         }))
     }
     pub(super) fn current(&self, facts: &Declarations) -> Result<(), &'static str> {
@@ -169,6 +171,11 @@ impl Graph {
             }
         }
     }
+    pub(super) fn imported_forest(&self, entry: EntryKey) -> Option<&Forest> {
+        self.imported
+            .as_deref()
+            .filter(|forest| forest.by_entry.contains_key(&entry))
+    }
     pub(super) fn building(&mut self) -> Result<&mut Builder, &'static str> {
         match &mut self.state {
             State::Building(builder) => Ok(builder),
@@ -200,12 +207,14 @@ impl Graph {
         if let State::Building(builder) = &self.state
             && let Some(witness) = builder.sources.get(&key)
         {
-            if witness.predicate != header.predicate || Some(witness.policy.source) != header.source
-            {
+            let policy = witness
+                .policy
+                .as_ref()
+                .ok_or("local specialization lost its source policy")?;
+            if witness.predicate != header.predicate || Some(policy.source) != header.source {
                 return Err("specialization source header changed".into());
             }
-            witness
-                .policy
+            policy
                 .validate(report, &self.requests, |steps, bytes| {
                     self.budget.charge(steps, bytes)
                 })
@@ -233,7 +242,7 @@ impl Graph {
         let witness = Witness {
             key,
             predicate: header.predicate,
-            policy,
+            policy: Some(policy),
         };
         Ok(Some(witness))
     }
@@ -276,7 +285,7 @@ impl Forest {
         for vertex in &self.vertices {
             let header = registry.checked_entry(vertex.witness.key)?;
             if header.predicate != vertex.witness.predicate
-                || header.source != Some(vertex.witness.policy.source)
+                || header.source != vertex.witness.policy.as_ref().map(|policy| policy.source)
             {
                 return Err("sealed specialization header changed");
             }
