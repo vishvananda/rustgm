@@ -130,6 +130,9 @@ with two different inputs in a fresh native client.
 `spec/source-pinned-receiver-transport/outcomes.json` calls a trait method
 with `Pin<&mut Self>` across the crate boundary. The implementation's
 `Self` already contains a distinct captured lifetime.
+`spec/source-internal-c-transport/outcomes.json` tests the PA30 calling
+convention in a source artifact. A fresh client instantiates a generic
+provider that calls a private, mangled C-ABI definition with a record.
 `spec/source-deprecated-macro-transport/outcomes.json` covers direct and aliased
 macro calls through a separately compiled provider, caller lint policy,
 scheduled deprecation, and annotations on re-exports with current and

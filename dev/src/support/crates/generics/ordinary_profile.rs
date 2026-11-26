@@ -730,7 +730,7 @@ fn functions(
                     || callable_impl
                     || admitted_convention(
                         rows,
-                        header.declaration,
+                        header,
                         signature.convention,
                         profile,
                         roles.definition_policies != 0,
@@ -2546,11 +2546,19 @@ fn require_simple_formals(
 
 fn admitted_convention(
     rows: &SourceRows,
-    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    header: &super::super::FunctionHeader,
     convention: Convention,
     profile: NamespaceProfile,
     declaration_policies: bool,
 ) -> bool {
+    // A checked fixed-arity definition retains its ABI independently of its symbol name.
+    if declaration_policies
+        && convention == Convention::C
+        && header.parent.is_none()
+        && matches!(header.body, FunctionBody::Original(_))
+    {
+        return true;
+    }
     convention == Convention::Rust
         || (matches!(
             profile,
@@ -2563,7 +2571,7 @@ fn admitted_convention(
             || declaration_policies && convention == Convention::Unadjusted)
             && rows
                 .exact_callables
-                .binary_search_by_key(&declaration.0, |row| row.declaration.0)
+                .binary_search_by_key(&header.declaration.0, |row| row.declaration.0)
                 .is_ok())
 }
 

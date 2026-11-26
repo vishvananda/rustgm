@@ -69,6 +69,7 @@ def main():
                                  "source-unwind-marker-transport",
                                  "source-rust-call-impl-transport",
                                  "source-pinned-receiver-transport",
+                                 "source-internal-c-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
