@@ -583,7 +583,7 @@ fn associated(
         return Err("associated result has no actual parent trait");
     };
     let parent = &rows.traits[index as usize];
-    sizing(rows, header, work)?;
+    sizing(rows, header, false, work)?;
     if header.inputs.start != header.inputs.end || header.declared_inputs != 0 {
         return Err("associated own-family inputs require their complete wider profile");
     }
@@ -844,26 +844,40 @@ fn constructor_signature(
 pub(super) fn sizing(
     rows: &SourceRows,
     header: &super::AssociatedTypeHeader,
+    bootstrap: bool,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let sized = role(rows, LangItem::Sized)?;
+    let sized = if bootstrap {
+        None
+    } else {
+        Some(role(rows, LangItem::Sized)?)
+    };
     let mut direct = false;
     for clause in header.bounds.slice(&rows.clauses)? {
         work.charge(1)?;
-        if let super::Requirement::Trait {
-            application,
-            effect: Constness::Ordinary,
-        } = clause.requirement
-        {
-            let application = rows
-                .trait_applications
-                .get(application.0 as usize)
-                .ok_or("associated sizing bound lost its actual trait application")?;
-            direct |= clause.binder.is_none()
-                && application.subject == header.projection
-                && application.declaration == sized
-                && application.arguments.start == application.arguments.end;
+        if clause.binder.is_some() {
+            continue;
         }
+        let matches = match clause.requirement {
+            super::Requirement::Bootstrap {
+                subject,
+                bound: super::BootstrapBound::Sized,
+            } if bootstrap => subject == header.projection,
+            super::Requirement::Trait {
+                application,
+                effect: Constness::Ordinary,
+            } if !bootstrap => {
+                let application = rows
+                    .trait_applications
+                    .get(application.0 as usize)
+                    .ok_or("associated sizing bound lost its actual trait application")?;
+                application.subject == header.projection
+                    && Some(application.declaration) == sized
+                    && application.arguments.start == application.arguments.end
+            }
+            _ => false,
+        };
+        direct |= matches;
     }
     if header.sized != direct || header.copy || header.clone_ {
         return Err("associated builtin promises require their complete transitive bound profile");

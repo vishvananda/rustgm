@@ -13,7 +13,7 @@ pub(super) fn validate(
 ) -> Result<(), &'static str> {
     let families = profile.declaration_policies();
     for header in &rows.associated_types {
-        declared(rows, headers, header, families, work)?;
+        declared(rows, headers, header, profile, work)?;
     }
     for projection in &rows.projections {
         super::operation_contracts::projection_contract(rows, headers, projection, families, work)?;
@@ -99,7 +99,7 @@ fn declared(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     header: &super::AssociatedTypeHeader,
-    families: bool,
+    profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(4)?;
@@ -107,7 +107,8 @@ fn declared(
         return Err("associated result has no actual parent trait");
     };
     let parent = &rows.traits[index as usize];
-    super::operation_contracts::sizing(rows, header, work)?;
+    super::operation_contracts::sizing(rows, header, profile.bootstrap_bindings(), work)?;
+    let families = profile.declaration_policies();
     if !families && (header.inputs.start != header.inputs.end || header.declared_inputs != 0) {
         return Err("associated own-family inputs require their complete wider profile");
     }

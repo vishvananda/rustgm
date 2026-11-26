@@ -553,7 +553,7 @@ pub struct ImplHeader {
 pub struct MemberLink {
     /// None only for an actual inherent member, never a trait implementation.
     pub trait_member: Option<DeclarationAddress>,
-    /// None denotes its actual default, not omitted conformance checking.
+    /// None identifies a trait-provided or inherited member.
     pub implementation: Option<DeclarationRef>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
