@@ -176,7 +176,7 @@ impl Stage {
                     .ok_or_else(|| error("source constant effect destination disappeared"))
             })
             .transpose()?;
-        let (member_rows, shapes, nominal_owners) = if let Some(nominals) = nominals {
+        let (member_rows, shapes, nominal_owners, cast_enums) = if let Some(nominals) = nominals {
             (
                 Some(nominals.members.ready(&mut facts.members).map_err(error)?),
                 Some(
@@ -186,9 +186,10 @@ impl Stage {
                         .map_err(error)?,
                 ),
                 nominals.owners,
+                nominals.cast_enums,
             )
         } else {
-            (None, None, Vec::new())
+            (None, None, Vec::new(), Vec::new())
         };
         if let Some(rows) = member_rows {
             rows.install();
@@ -208,6 +209,7 @@ impl Stage {
             plan.install(catalog);
         }
         install_nominal_facts(facts, nominal_owners, nominal_bounds, generic);
+        facts.enum_casts.extend(cast_enums);
         installation.owners.extend(owners);
         installation.graphs.push(self.graph);
         publish_scopes(self.scopes, facts, budget);

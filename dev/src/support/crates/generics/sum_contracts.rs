@@ -23,6 +23,8 @@ pub struct EnumHeader {
     /// An explicit integer `repr`; `None` is the default representation, whose
     /// discriminants are `isize` values.
     pub tag: Option<Scalar>,
+    /// Version fourteen's checked provider rule for a cast to an integer.
+    pub cast_eligible: bool,
     pub variants: Range,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -256,6 +258,14 @@ pub(super) fn require_profile(
         {
             return Err("source enum without variants is outside the initial profile");
         }
+        if rows
+            .enums()
+            .headers
+            .iter()
+            .any(|header| header.cast_eligible)
+        {
+            return Err("source enum cast eligibility requires the declaration policy profile");
+        }
         if rows.nominals.iter().any(|row| {
             row.contract.must_use.is_some()
                 && rows
@@ -305,6 +315,9 @@ pub(super) fn headers(
         let data = table
             .iter()
             .any(|variant| variant.fields.start != variant.fields.end);
+        if data && header.cast_eligible {
+            return Err("source enum integer-cast policy requires fieldless variants");
+        }
         for (ordinal, variant) in table.iter().enumerate() {
             work.charge(1)?;
             let index = header.variants.start as usize + ordinal;

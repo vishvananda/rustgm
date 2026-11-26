@@ -1,0 +1,33 @@
+function @explicit() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 16, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}
+function @implicit() -> u8 {
+  block ^b0:
+    return u8 17
+}
+function @empty_tuple() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = call u8 @rgc$6_636c69656e74$16_706132395f656e756d5f636c69656e74$internal$rg.19.i5()
+    store u8 %t0, $s0
+    %t1 = load u8 $s0
+    return u8 %t1
+}
+function @empty_record() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 1, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}
+function @rgc$6_636c69656e74$16_706132395f656e756d5f636c69656e74$internal$rg.19.i5() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}

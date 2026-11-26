@@ -23,8 +23,9 @@ consume the original `core` crate.
 - Export typed signatures, scalar bits, and the required nominal and array
   facts after checking the provider. Reconstruct those facts in a fresh
   consumer. Carry evaluated array lengths and enum discriminants with their
-  types and variant declarations. Preserve field privacy, canonical type
-  identities, and the obligations that apply when a declaration is used.
+  types and variant declarations. A fresh client can cast an eligible
+  imported enum directly to an integer. Preserve checked cast eligibility,
+  field privacy, canonical type identities, and use-site obligations.
 - Validate metadata before using it. Preserve dependency identities and fail
   clearly on missing or incompatible metadata. Use deterministic artifact
   and LowIR output. Each provider retains its private executable instances.

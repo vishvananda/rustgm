@@ -86,25 +86,37 @@ fn names_read(
 }
 fn header_write(out: &mut Writer, row: s::EnumHeader) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
-    // Tag zero is the default representation; otherwise the integer Scalar's
-    // permanent byte follows.
-    match row.tag {
-        None => out.u8(0)?,
-        Some(tag) => out.bytes(&[1, tag as u8])?,
+    // Bit 0 carries the optional integer tag. Bit 1 carries cast eligibility.
+    out.u8(u8::from(row.tag.is_some()) | (u8::from(row.cast_eligible) << 1))?;
+    if let Some(tag) = row.tag {
+        out.u8(tag as u8)?;
     }
     range(out, row.variants)
 }
 fn header_read(read: &mut Input<'_, '_>) -> Result<s::EnumHeader, &'static str> {
+    let declaration = DeclarationRef(read.id()?);
+    let flags = read.reader.u8()?;
+    let max_flags = if read.profile.declaration_policies() {
+        3
+    } else {
+        1
+    };
+    if flags > max_flags {
+        return Err("unknown source enum representation");
+    }
+    let tag = if flags & 1 != 0 {
+        Some(read.reader.scalar()?)
+    } else {
+        None
+    };
     Ok(s::EnumHeader {
-        declaration: DeclarationRef(read.id()?),
-        tag: match read.reader.u8()? {
-            0 => None,
-            1 => Some(read.reader.scalar()?),
-            _ => return Err("unknown source enum representation"),
-        },
+        declaration,
+        tag,
+        cast_eligible: flags & 2 != 0,
         variants: read.range()?,
     })
 }
+
 fn variant_write(out: &mut Writer, row: s::VariantHeader) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.ordinal)?;

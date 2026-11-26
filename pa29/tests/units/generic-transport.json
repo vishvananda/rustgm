@@ -188,7 +188,11 @@
     "tests/spec/evaluated-array-count/provider.rs",
     "tests/spec/evaluated-array-count/client.rs",
     "tests/spec/evaluated-discriminant/provider.rs",
-    "tests/spec/evaluated-discriminant/client.rs"
+    "tests/spec/evaluated-discriminant/client.rs",
+    "tests/spec/imported-enum-casts/provider.rs",
+    "tests/spec/imported-enum-casts/client.rs",
+    "tests/spec/imported-enum-casts/reject-payload.rs",
+    "tests/spec/imported-enum-casts/reject-explicit-empty.rs"
   ],
   "cases": [
     {
@@ -6728,6 +6732,112 @@
         "generic-transport"
       ],
       "input": "file"
+    },
+    {
+      "path": "tests/spec/imported-enum-casts/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/imported-enum-casts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_imported_enum_casts",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/imported-enum-casts/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/imported-enum-casts/reject-payload.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/imported-enum-casts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_imported_enum_casts",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/imported-enum-casts/reject-explicit-empty.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/imported-enum-casts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_imported_enum_casts",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
     }
   ]
 }

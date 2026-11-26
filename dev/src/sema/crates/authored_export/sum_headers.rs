@@ -163,9 +163,13 @@ impl Stage {
         }
         self.reserve(4 * size_of::<s::EnumHeader>())?;
         let end = count(self.rows.enums().variants.len())?;
+        let cast_eligible = self.declaration_policies()
+            && facts.enum_casts.contains(&item)
+            && !facts.destructors.has_declared(item);
         self.cold()?.enums.headers.push(s::EnumHeader {
             declaration,
             tag,
+            cast_eligible,
             variants: g::Range { start, end },
         });
         Ok(())

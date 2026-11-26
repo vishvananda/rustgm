@@ -21,6 +21,7 @@ pub(super) struct Prepared {
     pub members: PreparedMembers,
     pub shapes: PreparedShapes,
     pub owners: Vec<DefId>,
+    pub cast_enums: Vec<ItemId>,
 }
 #[derive(Default)]
 struct MemberGroups {
@@ -88,6 +89,7 @@ pub(super) fn prepare(
     let mut open_structs = Vec::new();
     let mut open_enums = Vec::new();
     let mut enum_shapes = Vec::new();
+    let mut cast_enums = Vec::new();
     let constructors = super::definition_cells::struct_constructors(rows, budget)?;
     let policies = nominal_roles(context, budget)?;
     for (row, constructor) in rows.nominals.iter().zip(constructors) {
@@ -101,14 +103,12 @@ pub(super) fn prepare(
                 budget.reserve(4 * size_of::<ItemId>())?;
                 open_enums.push(ItemId(owner.0));
             }
-            let (members, shape) = enum_rows(
-                context,
-                graph,
-                facts,
-                budget,
-                owner,
-                &rows.enums().headers[index],
-            )?;
+            let header = &rows.enums().headers[index];
+            let (members, shape) = enum_rows(context, graph, facts, budget, owner, header)?;
+            if header.cast_eligible {
+                budget.reserve(4 * size_of::<ItemId>())?;
+                cast_enums.push(ItemId(owner.0));
+            }
             groups.variants.push(members);
             enum_shapes.push(shape);
             owners.push(owner);
@@ -154,11 +154,30 @@ pub(super) fn prepare(
         .aggregates
         .prepare_imported_nominals(&facts.types, &shapes, &enum_shapes, &limits, pay)
         .map_err(error)?;
+    reserve_cast_enums(facts, cast_enums.len(), budget)?;
     Ok(Some(Prepared {
         members,
         shapes,
         owners,
+        cast_enums,
     }))
+}
+
+fn reserve_cast_enums(
+    facts: &mut Declarations,
+    count: usize,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    if count == 0 {
+        return Ok(());
+    }
+    let existing = &mut facts.enum_casts;
+    let growth = retained::Growth::map::<ItemId, ()>(existing.len(), existing.capacity(), count);
+    budget.charge(growth.work)?;
+    budget.reserve(growth.bytes)?;
+    existing
+        .try_reserve(count)
+        .map_err(|_| error("source enum integer-cast reservation failed"))
 }
 
 fn mapped_struct(
