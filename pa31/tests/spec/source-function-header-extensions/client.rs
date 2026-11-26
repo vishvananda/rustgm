@@ -27,6 +27,7 @@ pub extern "C" fn observe_extensions(
     e: &mut u32,
     f: &mut u32,
     g: &mut u32,
+    h: &mut u32,
 ) {
     *a = base::sum_pair((10, 22));
     let (y, x) = base::swap_pair((7_u32, 13_u32));
@@ -36,4 +37,5 @@ pub extern "C" fn observe_extensions(
     *e = TF_CONST;
     *f = base::call_with_block(13);
     *g = unsafe { base::call_with_function_context(29) };
+    *h = unsafe { base::call_in_closure(31) };
 }

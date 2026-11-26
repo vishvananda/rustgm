@@ -65,6 +65,12 @@ pub unsafe fn call_with_function_context(value: u32) -> u32 {
 }
 
 #[target_feature(enable = "sse2")]
+pub fn call_in_closure(value: u32) -> u32 {
+    let apply = move || safe_add(value, 11);
+    apply()
+}
+
+#[target_feature(enable = "sse2")]
 pub const fn const_add(a: u32, b: u32) -> u32 {
     wrapping_add(a, b)
 }

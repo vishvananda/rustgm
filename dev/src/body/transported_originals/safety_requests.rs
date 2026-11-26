@@ -3,7 +3,7 @@ use super::ImportedOriginals;
 use crate::{
     body::ir::{Body, Rvalue},
     sema::{crates::SourceOriginal, model::Declarations},
-    support::crates::generics::source as s,
+    support::crates::{generics::source as s, owner_catalog::BodyKind},
     types::Kind,
 };
 
@@ -17,7 +17,7 @@ pub(super) fn check(
         return Ok(());
     }
     work.charge(1)?;
-    let (caller_policy, caller_unsafe) = caller_context(facts, view, body)?;
+    let (caller_policy, caller_unsafe) = caller_context(facts, view, body, work)?;
     for request in &view.raw().calls {
         work.charge(1)?;
         view.site(request.site, &mut work.steps)?;
@@ -157,15 +157,21 @@ fn caller_context(
     facts: &Declarations,
     view: &SourceOriginal<'_>,
     body: &Body,
+    work: &mut ImportedOriginals,
 ) -> Result<(CallerPolicy, bool), &'static str> {
-    let caller_policy = if view.rows().descriptor().profile().declaration_policies()
+    let mut caller_policy = if view.rows().descriptor().profile().declaration_policies()
         && view.signature().is_some()
-        && view.closure_owner().is_none()
     {
         crate::sema::target_features::imported_policy(facts, view.definition())?
     } else {
         None
     };
+    if caller_policy.is_some()
+        && view.closure_owner().is_some()
+        && !enclosed_by_function(view, work)?
+    {
+        caller_policy = None;
+    }
     let caller_unsafe = if view.closure_owner().is_some() {
         if body.owner != super::rebuilt_operations::owner(view) || body.source != view.source()? {
             return Err("source call safety changed its actual closure body");
@@ -189,6 +195,30 @@ fn caller_context(
         false
     };
     Ok((caller_policy, caller_unsafe))
+}
+
+/// Only closures share the enclosing function's target features. A constant
+/// or initializer body starts its own feature context.
+fn enclosed_by_function(
+    view: &SourceOriginal<'_>,
+    work: &mut ImportedOriginals,
+) -> Result<bool, &'static str> {
+    let view_rows = view.rows();
+    let rows = view_rows.body_owners();
+    let mut current = view.raw().body;
+    loop {
+        work.charge(1)?;
+        let owner = rows
+            .get(current.0 as usize)
+            .ok_or("source closure has no actual lexical owner")?;
+        match owner.kind {
+            BodyKind::Closure => {
+                current = owner.parent.ok_or("source closure has no enclosing body")?;
+            }
+            BodyKind::Function => return Ok(owner.declaration == view.raw().declaration),
+            _ => return Ok(false),
+        }
+    }
 }
 
 /// A recorded context discharges exactly its callee's unsafety.

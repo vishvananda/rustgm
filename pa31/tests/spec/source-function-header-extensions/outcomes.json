@@ -1,6 +1,6 @@
 {
   "features": ["abi_unadjusted", "link_llvm_intrinsics", "intrinsics", "const_destruct", "auto_traits"],
-  "stdout": "32 30 19 63 19 17 38\n",
+  "stdout": "32 30 19 63 19 17 38 42\n",
   "older_profile": "source destructured parameter transport is not implemented",
   "restricted_client": {
     "path": "unsafe_feature_call.rs",
