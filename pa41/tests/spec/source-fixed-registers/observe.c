@@ -16,4 +16,13 @@ static int preserved(void) {
     __asm__ volatile("" : "+r"(saved));
     return saved == UINT64_C(0x123456789abcdef0);
 }
-int main(void) { check(0,0);check(7,0);check(7,1);printf("%d %u %d %u %u\n",obs_signed(-2),obs_ordinary(),preserved(),obs_overlap(),obs_reverse());return 0; }
+uint64_t obs_narrow(uint64_t);
+static void streams(void) {
+    const int32_t inputs[4] = {0, -1, INT32_MIN, INT32_MAX};
+    for (unsigned i=0;i<4;i++) {
+        const uint64_t wide = UINT64_C(0xfedcba9800000000) | (uint32_t)inputs[i];
+        printf("%d ",obs_narrow(wide)==(uint32_t)inputs[i]);
+    }
+    printf("%d\n",obs_narrow(UINT64_C(0xfedcba9887654321))==UINT64_C(0x87654321));
+}
+int main(void) { check(0,0);check(7,0);check(7,1);printf("%d %u %d %u %u ",obs_signed(-2),obs_ordinary(),preserved(),obs_overlap(),obs_reverse());streams();return 0; }

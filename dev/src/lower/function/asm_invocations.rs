@@ -228,7 +228,12 @@ fn text(draft: &mut Draft<'_>, template: &Template, pieces: &[Piece]) -> Result<
             return Err("assembly placeholders lost their checked order");
         }
         literal(draft, template.text.get(cursor..start))?;
-        draft.operand_use_view(piece.operand, if piece.modifier == b'r' { 64 } else { 0 })?;
+        let bits = match piece.modifier {
+            b'e' => 32,
+            b'r' => 64,
+            _ => 0,
+        };
+        draft.operand_use_view(piece.operand, bits)?;
         cursor = piece.end as usize;
     }
     literal(draft, template.text.get(cursor..))

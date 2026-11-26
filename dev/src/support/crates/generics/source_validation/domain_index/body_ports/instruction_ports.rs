@@ -314,7 +314,7 @@ fn instruction_profile(
     }
 }
 /// Pieces are sorted, disjoint `{...}` spans on character boundaries of their
-/// template, each naming an operand of its instruction, with no modifier.
+/// template, each naming an operand with its exact admitted register view.
 fn placeholders(
     rows: &s::Assembly,
     instruction: &s::AssemblyInstruction,
@@ -338,7 +338,7 @@ fn placeholders(
             }
             if piece.modifier != 0
                 && !(extended
-                    && piece.modifier == b'r'
+                    && matches!(piece.modifier, b'e' | b'r')
                     && operand.class == s::AssemblyClass::General)
             {
                 return Err(profile::MODIFIER);
@@ -346,7 +346,12 @@ fn placeholders(
             let written = text[1..text.len() - 1]
                 .rsplit_once(':')
                 .map(|(_, suffix)| suffix.trim());
-            if written != (piece.modifier != 0).then_some("r") {
+            let expected = match piece.modifier {
+                b'e' => Some("e"),
+                b'r' => Some("r"),
+                _ => None,
+            };
+            if written != expected {
                 return Err(MALFORMED);
             }
             next = end;

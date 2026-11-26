@@ -428,9 +428,13 @@ fn fixed_provider() -> Result<crates::Interface> {
             .find("    let eax;")
             .ok_or("output declarations")?;
     let tail_end = tail + original[tail..].find("\n}").ok_or("query end")? + 2;
+    let sse2 = crate::test_source::fixture("pa41/tests/upstream/rust/sse2.rs")?;
+    let store = sse2.find("pub unsafe fn _mm_stream_si32").ok_or("store")?;
+    let store_end = store + sse2[store..].find("\n}").ok_or("store end")? + 2;
     let body = crate::test_source::fixture("pa41/tests/spec/source-fixed-registers/provider.rs")?
         .replace("// ORIGINAL_RESULT", &original[structure..structure_end])
-        .replace("// ORIGINAL_CPUID_TAIL", &original[tail..tail_end]);
+        .replace("// ORIGINAL_CPUID_TAIL", &original[tail..tail_end])
+        .replace("// ORIGINAL_STREAM_SI32", &sse2[store..store_end]);
     exported_profile(
         &format!("{foundation}{body}"),
         SourcePublication::ModuleBodyOperations,
@@ -439,7 +443,7 @@ fn fixed_provider() -> Result<crates::Interface> {
 }
 
 type FixedForgery = fn(&mut s::Original);
-const FIXED_FORGED: [(&str, FixedForgery, &str); 7] = [
+const FIXED_FORGED: [(&str, FixedForgery, &str); 8] = [
     (
         "reserved base",
         |body| {
@@ -475,8 +479,13 @@ const FIXED_FORGED: [(&str, FixedForgery, &str); 7] = [
     ),
     (
         "unknown view",
-        |body| columns(body).pieces[0].modifier = b'e',
+        |body| columns(body).pieces[0].modifier = b'x',
         profile::MODIFIER,
+    ),
+    (
+        "changed view disagrees with template",
+        |body| columns(body).pieces[0].modifier = b'e',
+        MALFORMED,
     ),
     (
         "erased view",
@@ -508,6 +517,16 @@ fn fixed_registers_keep_their_width_alias_and_view_in_fresh_rows() -> Result {
     let decoded = crates::decode(&bytes)?;
     assert_eq!(crates::encode(&decoded)?, bytes);
     let (rows, _, _) = raw(&decoded)?;
+    let store = original(&rows, "movnti ")?;
+    assert!(
+        rows.originals[store]
+            .assembly
+            .as_deref()
+            .ok_or("actual store payload")?
+            .pieces
+            .iter()
+            .any(|piece| piece.modifier == b'e')
+    );
     let index = original(&rows, "mov {0:r}, rbx")?;
     let actual = rows.originals[index]
         .assembly

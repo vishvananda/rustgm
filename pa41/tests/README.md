@@ -67,3 +67,8 @@ native execution: 32-bit general outputs, exact fixed GPR aliases and the `r`
 view. The original active body tail is byte-preserved; independent C queries
 check all fields, a 64-bit RBX canary, signed inlateout and an ordinary control.
 Run `check_source_artifact_clients.py --case source-fixed-registers`.
+
+The fixed-register fixture also retains the original `_mm_stream_si32` and its
+32-bit `e` register view. Five native integer inouts check zero extension after a 32-bit register write.
+Original `movnti` runtime acceptance and sentinel checks remain pending on
+pinned CPPGM opcode support.

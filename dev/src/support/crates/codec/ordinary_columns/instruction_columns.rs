@@ -71,7 +71,7 @@ fn instruction_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyInstruction, 
 fn piece_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyPiece, &'static str> {
     let (start, end, operand) = (read.id()?, read.id()?, read.id()?);
     let modifier = read.reader.u8()?;
-    if modifier != 0 && !(modifier == b'r' && read.profile.declaration_policies()) {
+    if modifier != 0 && !(matches!(modifier, b'e' | b'r') && read.profile.declaration_policies()) {
         return Err(profile::MODIFIER);
     }
     Ok(s::AssemblyPiece {

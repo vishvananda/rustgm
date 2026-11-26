@@ -1245,6 +1245,15 @@
       "adaptation": "none; original bytes retained; declaration and complete active tail are inserted verbatim into an authored generic wrapper",
       "oracle": "source-fixed-registers/outcomes.json",
       "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/sse2.rs",
+      "destination": "pa41/tests/upstream/rust/sse2.rs",
+      "sha256": "d156dbd31cc547034e7950cc169943e9ec69bfc3e74911f0529d6fca3030c7a5",
+      "adaptation": "none; original bytes retained; complete _mm_stream_si32 declaration and body inserted verbatim into a source provider",
+      "oracle": "source-fixed-registers/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

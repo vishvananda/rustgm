@@ -347,9 +347,10 @@
   },
   "cpuid_register_extension": {
     "registers": "32- and 64-bit integer GPR inputs and outputs; fixed GPR aliases preserve exact base and width",
-    "views": "r selects the full 64-bit view of a general register; other new modifiers remain fenced",
-    "transport": "v14 carries fixed GPR payloads and r views; v13 rejects these forms before reading their payload",
-    "native_acceptance": "source-fixed-registers/outcomes.json; actual original CPUID tail with all outputs and RBX preservation",
-    "discarded_outputs": "Typed discarded writes remain distinct from inputs and are refused by both source profiles and native admission; no discarded-result encoding is defined."
+    "views": "e selects a 32-bit view and r the full 64-bit view of a general register; other new modifiers remain fenced",
+    "transport": "v14 carries fixed GPR payloads and e/r views; v13 rejects these forms before reading their payload",
+    "native_acceptance": "source-fixed-registers/outcomes.json; original CPUID tail, outputs, RBX preservation and five 32-bit-view zero-extension observations",
+    "discarded_outputs": "Typed discarded writes remain distinct from inputs and are refused by both source profiles and native admission; no discarded-result encoding is defined.",
+    "stream_store": "Original SSE2 movnti exports/imports/lowers unchanged; runtime acceptance remains pending on pinned backend opcode support, with exact writes and surrounding sentinels still required."
   }
 }

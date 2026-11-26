@@ -9,3 +9,4 @@ extern crate base;
 #[unsafe(no_mangle)]pub extern "C" fn obs_ordinary()->u32 {base::ordinary::<u32>(123)}
 #[unsafe(no_mangle)]pub extern "C" fn obs_overlap()->u32 {base::late_split::<u32>(31)}
 #[unsafe(no_mangle)]pub extern "C" fn obs_reverse()->u32 {base::late_reverse::<u32>(41)}
+#[unsafe(no_mangle)]pub extern "C" fn obs_narrow(value:u64)->u64{base::narrow::<u32>(value)}

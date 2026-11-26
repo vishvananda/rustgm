@@ -21,3 +21,11 @@ native lowerer may silently turn an unsupported discarded result into an input.
 A split fixed input/late output pair shares EAX legally, in both operand orders;
 its two native controls return 32 and 42. This tests the allowed alias branch
 alongside forged overlapping-input rejection.
+
+The original SSE2 `_mm_stream_si32` function, including its target feature,
+macro template and `:e` view, is inserted verbatim from pinned `sse2.rs`. The full
+stream runtime case retains expected success and four exact store/sentinel
+checks in `runtime_client.rs` and `runtime_observe.c`. Pinned CPPGM does not
+implement `movnti`, so that execution remains unqualified; no opcode is changed.
+The qualified native controls use `mov` with the 32-bit view on five u64
+inouts, checking each low-half pattern and requiring a zero upper half.

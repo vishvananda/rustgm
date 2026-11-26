@@ -360,7 +360,7 @@ impl<'a> Draft<'a> {
     pub fn operand_use(&mut self, operand: u32) -> Result<(), &'static str> {
         self.operand_use_view(operand, 0)
     }
-    /// Use the default register view or its full 64-bit general-register view.
+    /// Use the default register view or an explicit 32-/64-bit general view.
     /// # Errors
     /// Refuses stale operands, unsupported views and vector widening.
     pub fn operand_use_view(&mut self, operand: u32, bits: u16) -> Result<(), &'static str> {
@@ -369,7 +369,7 @@ impl<'a> Draft<'a> {
             return Err("LowIR assembly use names an undeclared operand");
         }
         index(self.assemblies.pieces.len() + 1)?;
-        if !matches!(bits, 0 | 64)
+        if !matches!(bits, 0 | 32 | 64)
             || bits != 0
                 && self.assemblies.operands[(self.operands + operand) as usize].kind == Kind::Vector
         {

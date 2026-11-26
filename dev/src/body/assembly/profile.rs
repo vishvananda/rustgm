@@ -91,7 +91,7 @@ fn checked(
         if pieces(template)?.iter().any(|piece| {
             piece.modifier != 0
                 && !(flags
-                    && piece.modifier == b'r'
+                    && matches!(piece.modifier, b'e' | b'r')
                     && operands
                         .get(piece.operand as usize)
                         .is_some_and(|operand| operand.register == Register::General))
