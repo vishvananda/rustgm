@@ -1,0 +1,14 @@
+{
+  "inputs": ["provider.rs", "client.rs", "wrong-type.rs"],
+  "profile": "module-body-operations-v14",
+  "client": {
+    "compile_status": 0,
+    "native_exit": 0,
+    "observed_entry_result": 42
+  },
+  "wrong-type": {
+    "compile_status": 1,
+    "rustc_diagnostic": "error[E0308]",
+    "cause": "a bool argument for the provider's u8 const parameter"
+  }
+}

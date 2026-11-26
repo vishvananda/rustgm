@@ -1,0 +1,71 @@
+function @entry() -> i32 {
+  slot $s0 : i32
+  slot $s1 : i32
+  slot $s2 : obj<1x1>
+  slot $s3 : obj<1x1>
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$4_68696768$.i1()
+    store u8 %t0, $s2
+    %t1 = load u8 $s2
+    %t2 = call u8 @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$4_636f6465$.i2(%t1)
+    %t3 = cmp eq u8 %t2, 39
+    %t4 = convert trunc i1 i64 %t3
+    branch %t4, ^b2, ^b3
+  block ^b3:
+    jump ^b9
+  block ^b9:
+    store i32 7, $s0
+    jump ^b1
+  block ^b2:
+    %t5 = call u8 @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$3_6c6f77$.i3()
+    store u8 %t5, $s3
+    %t6 = load u8 $s3
+    %t7 = call u8 @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$4_636f6465$.i2(%t6)
+    %t8 = cmp eq u8 %t7, 3
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b5, ^b6
+  block ^b6:
+    jump ^b7
+  block ^b7:
+    store i32 8, $s1
+    jump ^b4
+  block ^b5:
+    store i32 42, $s1
+    jump ^b4
+  block ^b4:
+    %t10 = load i32 $s1
+    store i32 %t10, $s0
+    jump ^b1
+  block ^b1:
+    %t11 = load i32 $s0
+    return i32 %t11
+  block ^b8:
+    unreachable
+  block ^b10:
+    unreachable
+}
+function @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$4_68696768$.i1() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 39, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}
+function @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$4_636f6465$.i2(%p0 : u8) -> u8 {
+  slot $s0 : obj<1x1>
+  slot $s1 : obj<1x1>
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = addr $s0
+    %t1 = addr $s1
+    copyobj 1x1 %t0, %t1
+    %t2 = load u8 $s1
+    return u8 %t2
+}
+function @rgc$4_62617365$15_706132395f656e756d5f6d61746368$f$3_6c6f77$.i3() -> u8 {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    store u8 3, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}

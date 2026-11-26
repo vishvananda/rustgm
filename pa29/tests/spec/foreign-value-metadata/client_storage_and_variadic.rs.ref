@@ -1,0 +1,74 @@
+declare global @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_494d4d$ : obj<4x4> [storage=readonly]
+declare global @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_524546$ : obj<8x8> [storage=readonly]
+declare global @SAFE_EXT : obj<4x4> [storage=readonly]
+declare global @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_4d5554$ : obj<4x4>
+declare global @MUT_EXT : obj<4x4>
+function @rg.30() -> void {
+  block ^b0:
+    %t0 = load u32 @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_494d4d$
+    %t1 = cmp eq u32 %t0, 7
+    %t2 = convert trunc i1 i64 %t1
+    call void @rg.29(%t2)
+    %t3 = addr @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_494d4d$
+    %t4 = load ptr @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_524546$
+    %t5 = cmp eq ptr %t3, %t4
+    %t6 = convert trunc i1 i64 %t5
+    call void @rg.29(%t6)
+    %t7 = load u32 @SAFE_EXT
+    %t8 = cmp eq u32 %t7, 23
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.29(%t9)
+    store u32 41, @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_4d5554$
+    %t10 = load u32 @rgc$9_6370726f765f6c6962$6_766d5f633330$s$3_4d5554$
+    %t11 = cmp eq u32 %t10, 41
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.29(%t12)
+    %t13 = load u32 @MUT_EXT
+    %t14 = cmp eq u32 %t13, 29
+    %t15 = convert trunc i1 i64 %t14
+    call void @rg.29(%t15)
+    store u32 31, @MUT_EXT
+    %t16 = load u32 @MUT_EXT
+    %t17 = cmp eq u32 %t16, 31
+    %t18 = convert trunc i1 i64 %t17
+    call void @rg.29(%t18)
+    %t19 = copy i32 10
+    %t20 = copy i32 12
+    %t21 = copy i32 20
+    %t22 = call i32 @sum_va(3, %t19, %t20, %t21)
+    %t23 = cmp eq i32 %t22, 42
+    %t24 = convert trunc i1 i64 %t23
+    call void @rg.29(%t24)
+    return void
+}
+function @rg.29(%p0 : i1) -> void {
+  slot $s0 : i1
+  slot $s1 : u8
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    store u8 0, $s1
+    %t2 = load u8 $s1
+    %t3 = cmp eq u8 %t2, 0
+    branch %t3, ^b4, ^b5
+  block ^b5:
+    %t4 = binary udiv u8 1, %t2
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+declare function @sum_va(%p0 : i32) -> i32 [arity=variadic]
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.30()
+    return i64 0
+}

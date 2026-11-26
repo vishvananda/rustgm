@@ -11,9 +11,10 @@ with aborting panics. Use the original sources at
 Complete the following parts of the bootstrap path.
 
 - [PA31](../pa31/README.md)'s source bindings and runtime integration.
-- The source and generic-body metadata needed to export library APIs
-  and instantiate them in fresh clients. [PA29](../pa29/README.md)
-  introduces the declaration format.
+- [PA29's declaration and generic-body metadata](../pa29/README.md#generic-and-provided-bodies).
+  Use the same metadata model and import path for the original library. Extend
+  it with the source bindings and policies from PA31 and the target and
+  assembly facts required below.
 - The core prerequisites for layout, target features, and assembly below.
 
 ## Prepare the core build

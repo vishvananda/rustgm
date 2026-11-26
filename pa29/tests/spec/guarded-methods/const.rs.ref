@@ -1,0 +1,5 @@
+function @entry() -> i32 {
+  block ^b0:
+    %t0 = convert zext i32 u8 42
+    return i32 %t0
+}

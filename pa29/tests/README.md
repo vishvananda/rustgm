@@ -2,8 +2,36 @@
 
 The released `declarations` component publishes `units/declarations.json` and
 the reference sidecars of its 30 cases; see the
-[release record](../../docs/pa29-declarations-release.md). Every other family
-here is unpublished.
+[release record](../../docs/pa29-declarations-release.md). Three additional
+unpublished draft components prepare canonical manifests and verified sidecars
+while remaining unpublished until integration:
+
+- `provided-profile` (`units/provided-profile.json`, 9 cases, 3 native
+  executables): `provided-contracts-v1` encoded provided-method transport,
+  renamed alias, provider impl override, type/arity/trait/lifetime rejections,
+  mismatched provider owner, and corrupt version envelope.
+- `value-metadata` (`units/value-metadata.json`, 45 cases, 21 native
+  executables, 3 objects): `storage-metadata`, `array-storage`,
+  `closed-records`, `borrowed-interfaces` (excluding the documented unsupported
+  `early-bound.rs` and `output-only.rs`), and `spec/foreign-value-metadata/`
+  C-ABI callables, aggregates, extern statics, variadics, ABI/const-eval
+  rejections, and corrupt version envelope.
+- `generic-transport` (`units/generic-transport.json`, 147 cases, 97 native
+  executables, 4 objects): 14 `module-bodies-v13` generic/body/const/nominal/
+  callable/macro/guard transport packets (`language-roles`, `associated-results`,
+  `callable-roles`, `enum-match`, `inherent-methods`, `const-methods`,
+  `const-parameters`, `array-types`, `pointer-slices`, `transparent-records`,
+  `record-variants`, `named-constants`, `macro-contexts`, `guarded-methods`).
+  It also covers ordinary generic identity and private helper calls, a
+  transitive generic re-export, and a v14 nested inline const in runtime and
+  const consumers.
+
+The [student test plan](../../docs/pa29-student-test-plan.md) retains the wider
+ordinary generic matrix. Its full provider, const and lifetime binders, trait
+dispatch, and generic relay body still need transport before their clients can
+be graded.
+
+Every other family here is unpublished.
 
 PA29 is closed at its finite contract: `manifest.json` is exactly the union of
 the released unit manifests, written by

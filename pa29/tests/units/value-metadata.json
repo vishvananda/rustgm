@@ -1,0 +1,1445 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "discovery": [
+    "tests/spec/storage-metadata",
+    "tests/spec/array-storage",
+    "tests/spec/closed-records",
+    "tests/spec/borrowed-interfaces/first.rs",
+    "tests/spec/borrowed-interfaces/second.rs",
+    "tests/spec/borrowed-interfaces/client.rs",
+    "tests/spec/borrowed-interfaces/const-call.rs",
+    "tests/spec/borrowed-interfaces/dangling.rs",
+    "tests/spec/borrowed-interfaces/exclusive-result.rs",
+    "tests/spec/borrowed-interfaces/shared-to-mut.rs",
+    "tests/spec/borrowed-interfaces/unsafe-call.rs",
+    "tests/spec/borrowed-interfaces/wrong-output-slot.rs",
+    "tests/spec/foreign-value-metadata"
+  ],
+  "cases": [
+    {
+      "path": "tests/spec/storage-metadata/hidden-client.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "crates": [
+        {
+          "name": "hidden",
+          "path": "tests/spec/storage-metadata/hidden.rs",
+          "crate_name": "hidden",
+          "disambiguator": "vm_hidden",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "hidden": "hidden"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage-metadata/hidden-private.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "crates": [
+        {
+          "name": "hidden",
+          "path": "tests/spec/storage-metadata/hidden.rs",
+          "crate_name": "hidden",
+          "disambiguator": "vm_hidden",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "hidden": "hidden"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/storage-metadata/cycle-client.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "crates": [
+        {
+          "name": "cycle",
+          "path": "tests/spec/storage-metadata/cycle.rs",
+          "crate_name": "cycle",
+          "disambiguator": "vm_cycle",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cycle": "cycle"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/storage-metadata/shared-roots-8.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "library": {
+        "crate_name": "shared_roots_8",
+        "disambiguator": "vm_scale"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "shared static root scaling library (8 roots) verified through object emission"
+      }
+    },
+    {
+      "path": "tests/spec/storage-metadata/shared-roots-32.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "library": {
+        "crate_name": "shared_roots_32",
+        "disambiguator": "vm_scale"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "shared static root scaling library (32 roots) verified through object emission"
+      }
+    },
+    {
+      "path": "tests/spec/storage-metadata/shared-roots-128.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.storage-metadata"
+      ],
+      "library": {
+        "crate_name": "shared_roots_128",
+        "disambiguator": "vm_scale"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "shared static root scaling library (128 roots) verified through object emission"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/values.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/bytes.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/empty.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/identity.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/field.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/const.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/local-repeat.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/private.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/length.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/mutate.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/move.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-storage/index.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.array-storage"
+      ],
+      "crates": [
+        {
+          "name": "arrays",
+          "path": "tests/spec/array-storage/arrays.rs",
+          "crate_name": "arrays",
+          "disambiguator": "vm_arrays",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "arrays": "arrays"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-construct.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-distinct-libraries.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-nested.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-pattern.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-private-value.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-private-wildcard.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-return.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-static-field.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-distinct-nominal.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-moved-nested.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-moved-record.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-construct.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-field.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/reject-private-pattern.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/closed-records/pass-local-wrapper.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.closed-records"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/closed-records/first.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/closed-records/second.rs",
+          "crate_name": "records",
+          "disambiguator": "vm_cr2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/client.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/const-call.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/dangling.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/exclusive-result.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/shared-to-mut.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/unsafe-call.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-interfaces/wrong-output-slot.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.borrowed-interfaces"
+      ],
+      "crates": [
+        {
+          "name": "first",
+          "path": "tests/spec/borrowed-interfaces/first.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi1",
+          "externs": {}
+        },
+        {
+          "name": "second",
+          "path": "tests/spec/borrowed-interfaces/second.rs",
+          "crate_name": "borrowed",
+          "disambiguator": "vm_bi2",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "one": "first",
+        "two": "second"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/foreign-value-metadata/client_callable_and_aggregates.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.value-metadata",
+        "pa30.convention",
+        "pa30.aggregate"
+      ],
+      "crates": [
+        {
+          "name": "cprov",
+          "path": "tests/spec/foreign-value-metadata/c_provider.rs",
+          "crate_name": "cprov_lib",
+          "disambiguator": "vm_c30",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cprov": "cprov"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass",
+        "providers": [
+          "tests/spec/foreign-value-metadata/c_host.c"
+        ]
+      }
+    },
+    {
+      "path": "tests/spec/foreign-value-metadata/client_storage_and_variadic.rs",
+      "exit_status": 0,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.value-metadata",
+        "pa30.static",
+        "pa30.variadic"
+      ],
+      "crates": [
+        {
+          "name": "cprov",
+          "path": "tests/spec/foreign-value-metadata/c_provider.rs",
+          "crate_name": "cprov_lib",
+          "disambiguator": "vm_c30",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cprov": "cprov"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "outcome": "pass",
+        "providers": [
+          "tests/spec/foreign-value-metadata/c_host.c"
+        ]
+      }
+    },
+    {
+      "path": "tests/spec/foreign-value-metadata/reject_c_as_rust_fn.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.value-metadata",
+        "pa30.convention"
+      ],
+      "crates": [
+        {
+          "name": "cprov",
+          "path": "tests/spec/foreign-value-metadata/c_provider.rs",
+          "crate_name": "cprov_lib",
+          "disambiguator": "vm_c30",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cprov": "cprov"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/foreign-value-metadata/reject_foreign_static_const.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.value-metadata",
+        "pa30.static",
+        "pa25.const-memory"
+      ],
+      "crates": [
+        {
+          "name": "cprov",
+          "path": "tests/spec/foreign-value-metadata/c_provider.rs",
+          "crate_name": "cprov_lib",
+          "disambiguator": "vm_c30",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cprov": "cprov"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/foreign-value-metadata/reject_corrupt_version.rs",
+      "exit_status": 1,
+      "work_units": [
+        "value-metadata"
+      ],
+      "features": [
+        "pa29.value-metadata"
+      ],
+      "crates": [
+        {
+          "name": "cprov",
+          "path": "tests/spec/foreign-value-metadata/c_provider.rs",
+          "crate_name": "cprov_lib",
+          "disambiguator": "vm_c30",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "cprov": "cprov"
+      },
+      "forge": {
+        "provider": "cprov",
+        "kind": "corrupt_version"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "reason": "corrupted candidate metadata version header control; rustc compiles against the valid provider rlib"
+      }
+    }
+  ]
+}

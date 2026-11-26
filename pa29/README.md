@@ -1,14 +1,13 @@
 # RustGM Programming Assignment 29 — Crates and metadata
 
 Build on [PA18](../pa18/README.md) to compile libraries and consume their
-typed declarations in a separate client. Use Rust 1.98.0, edition 2024,
-on Linux x86-64 with checked arithmetic and aborting panics.
+typed declarations and generic bodies in a separate client. Use Rust 1.98.0,
+edition 2024, on Linux x86-64 with checked arithmetic and aborting panics.
 
-[The PA29 manifest](tests/manifest.json) defines the declarations profile.
-It covers crate identities, public namespaces, scalar signatures and values,
-and the closed record, array, and reference facts the supplied graphs use.
-PA44 carries broader value metadata and executable generic-body transport.
-The original-library bootstrap also needs the relevant transport capabilities.
+[The PA29 manifest](tests/manifest.json) lists the graded cases. Start with
+the declaration artifacts, then use the same crate boundary for executable
+generic bodies. [PA32](../pa32/README.md) uses this mechanism to build and
+consume the original `core` crate.
 
 ## Provider and consumer contracts
 
@@ -32,6 +31,27 @@ The original-library bootstrap also needs the relevant transport capabilities.
   available. `--dependency-metadata FILE` supplies a transitive artifact while
   leaving its name out of the client's extern prelude. Native linking still
   includes all of the graph's object producers.
+
+## Generic and provided bodies
+
+Serialize the checked typed body templates a client may need to instantiate
+or evaluate, including the declarations, types, constants and private
+dependencies those bodies refer to. Use a shared, versioned representation
+for these facts. Give references stable identities and remap them into the
+fresh client's own tables when it reads the artifact. Preserve binders,
+obligations and the defining context needed to check the bodies.
+
+Validate an artifact before admitting it. Use the ordinary compiler pipeline
+to instantiate an imported body and check obligations that depend on the
+client's use. The client has the artifact and the provider's native output.
+It can instantiate the body without reopening the provider's Rust source.
+
+Start with small crate graphs that combine features already implemented in
+earlier assignments. Check a generic call at multiple concrete types, a
+provided trait method and an imported const call. Link and run the runtime
+clients. Check reproducible artifacts and reject incompatible metadata and
+invalid client arguments. As later assignments add language features, extend
+the same representation for any new facts a separate client needs.
 
 ## Build and run a crate graph
 

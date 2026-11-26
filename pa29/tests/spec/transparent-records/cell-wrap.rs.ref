@@ -1,0 +1,82 @@
+function @entry() -> i32 {
+  slot $s0 : i32
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  slot $s3 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s1
+    call void @rgc$6_636c69656e74$26_706132395f7472616e73706172656e745f7265636f7264735f63$internal$rg.78.i1(%t0, 42)
+    %t1 = addr $s2
+    %t2 = addr $s1
+    call void @rgc$6_636c69656e74$26_706132395f7472616e73706172656e745f7265636f7264735f63$internal$rg.85.i2(%t1, %t2)
+    %t3 = addr $s3
+    %t4 = addr $s2
+    call void @rgc$4_62617365$24_706132395f7472616e73706172656e745f7265636f726473$f$10_696e746f5f696e6e6572$.i3(%t3, %t4)
+    %t5 = addr $s3
+    %t6 = call u32 @rgc$4_62617365$24_706132395f7472616e73706172656e745f7265636f726473$f$6_756e77726170$.i4(%t5)
+    %t7 = cmp eq u32 %t6, 42
+    %t8 = convert trunc i1 i64 %t7
+    branch %t8, ^b2, ^b3
+  block ^b3:
+    jump ^b4
+  block ^b4:
+    store i32 7, $s0
+    jump ^b1
+  block ^b2:
+    store i32 42, $s0
+    jump ^b1
+  block ^b1:
+    %t9 = load i32 $s0
+    return i32 %t9
+  block ^b5:
+    unreachable
+}
+function @rgc$6_636c69656e74$26_706132395f7472616e73706172656e745f7265636f7264735f63$internal$rg.78.i1(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+function @rgc$6_636c69656e74$26_706132395f7472616e73706172656e745f7265636f7264735f63$internal$rg.85.i2(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  slot $s2 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s1
+    %t4 = addr $s2
+    copyobj 4x4 %t3, %t4
+    %t5 = addr $s2
+    copyobj 4x4 %t5, %p0
+    return void
+}
+function @rgc$4_62617365$24_706132395f7472616e73706172656e745f7265636f726473$f$10_696e746f5f696e6e6572$.i3(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<4x4>
+  slot $s1 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p1, %t0
+    %t1 = addr $s0
+    %t2 = addr $s1
+    copyobj 4x4 %t1, %t2
+    %t3 = addr $s1
+    copyobj 4x4 %t3, %p0
+    return void
+}
+function @rgc$4_62617365$24_706132395f7472616e73706172656e745f7265636f726473$f$6_756e77726170$.i4(%p0 : ptr) -> u32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 4x4 %p0, %t0
+    %t1 = load u32 $s0
+    return u32 %t1
+}

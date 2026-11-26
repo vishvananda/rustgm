@@ -1,0 +1,35 @@
+function @entry() -> i32 {
+  slot $s0 : u8
+  slot $s1 : i32
+  slot $s2 : ptr
+  block ^b0:
+    store u8 42, $s0
+    %t0 = addr $s0
+    %t1 = call ptr @rgc$4_62617365$19_706132395f706f696e7465725f736c69636573$f$4_73616d65$.i1(%t0)
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    %t3 = load u8 %t2
+    %t4 = cmp eq u8 %t3, 42
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b2, ^b3
+  block ^b3:
+    jump ^b4
+  block ^b4:
+    store i32 7, $s1
+    jump ^b1
+  block ^b2:
+    store i32 42, $s1
+    jump ^b1
+  block ^b1:
+    %t6 = load i32 $s1
+    return i32 %t6
+  block ^b5:
+    unreachable
+}
+function @rgc$4_62617365$19_706132395f706f696e7465725f736c69636573$f$4_73616d65$.i1(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return ptr %t0
+}

@@ -31,10 +31,33 @@ class HarnessTests(unittest.TestCase):
             for changes in ({"source_provider": "yes"}, {"source_provider": 1},
                             {"library": None}, {"library": {}},
                             {"args": ["--crate-name", "counterfeit"]},
-                            {"rustc": {"kind": "program", "status": 0}}):
+                            {"rustc": {"kind": "program", "status": 0}},
+                            {"source_profile": "invalid-profile"}):
                 manifest["cases"] = [case | changes]
                 (tests / "manifest.json").write_text(json.dumps(manifest))
                 with self.subTest(changes=changes), self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+            profiled = case | {"source_profile": "module-bodies-v13"}
+            (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-lowir", "cases": [profiled]}))
+            load_cases(root, "pa1")
+            _, actual = run_case(root, "pa1", "--emit-lowir", profiled, app, 2)
+            argv = json.loads(actual[0])
+            self.assertIn("--source-profile", argv)
+            self.assertIn("module-bodies-v13", argv)
+            self.assertIn("--metadata-output", argv)
+            prog = {"path": "tests/x.rs", "exit_status": 0, "source_program": True,
+                    "rustc": {"kind": "program", "status": 0},
+                    "library": {"crate_name": "actual", "disambiguator": "prog_1"}}
+            (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-lowir", "cases": [prog]}))
+            load_cases(root, "pa1")
+            _, actual = run_case(root, "pa1", "--emit-lowir", prog, app, 2)
+            self.assertEqual(json.loads(actual[0]), ["--emit-lowir", "--edition=2024", "--source-core",
+                "actual@prog_1", "--crate-name", "actual", "--crate-disambiguator", "prog_1"])
+            for bad in (prog | {"source_program": "yes"}, prog | {"source_provider": True},
+                        prog | {"rustc": {"kind": "library", "status": 0}},
+                        prog | {"library": None}):
+                (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-lowir", "cases": [bad]}))
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
                     load_cases(root, "pa1")
 
     def test_library_contract_preserves_source_and_separates_identity_arguments(self):
@@ -131,6 +154,23 @@ class HarnessTests(unittest.TestCase):
                 case["args"] = invalid
                 (tests / "manifest.json").write_text(json.dumps({"mode": "--emit-tokens", "cases": [case]}))
                 with self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
+    def test_case_edition_is_validated_and_passed_to_the_compiler(self):
+        with tempfile.TemporaryDirectory() as name:
+            for edition in ("2015", "2018", "2021", "2024"):
+                case = {"path": "tests/x.rs", "exit_status": 0, "edition": edition}
+                root, tests = self.fixture_root(name + f"-{edition}", [case])
+                (tests / "x.rs").write_text("input")
+                load_cases(root, "pa1")
+                app = [sys.executable, "-c", "import json,sys; print(json.dumps(sys.argv[1:]))"]
+                _, actual = run_case(root, "pa1", "--emit-tokens", case, app, 2)
+                self.assertEqual(json.loads(actual[0]), ["--emit-tokens", f"--edition={edition}"])
+            for bad in ("2020", 2021, "", None):
+                case = {"path": "tests/x.rs", "exit_status": 0, "edition": bad}
+                root, tests = self.fixture_root(name + f"-bad-{bad}", [case])
+                (tests / "x.rs").write_text("input")
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
                     load_cases(root, "pa1")
 
     def test_environment_is_explicit_and_null_removes_an_inherited_value(self):

@@ -1,0 +1,22 @@
+function @entry() -> i32 {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call ptr @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$f$6_7363616c6572$.i1()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 %t1(42) as (%p0 : u8) -> u8
+    %t3 = convert zext i32 u8 %t2
+    return i32 %t3
+}
+function @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$f$6_7363616c6572$.i1() -> ptr {
+  block ^b0:
+    %t0 = addr @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$b$52$d$133.i2
+    return ptr %t0
+}
+function @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$b$52$d$133.i2(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}

@@ -1,0 +1,19 @@
+declare global @rgc$6_617272617973$9_766d5f617272617973$s$4_5a45524f$ : obj<1x1> [storage=readonly]
+declare global @rgc$6_617272617973$9_766d5f617272617973$s$4_48494748$ : obj<8x8> [storage=readonly]
+function @rg.28() -> void {
+  block ^b0:
+    %t0 = cmp uge i64 8589934592, 8589934593
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = load ptr @rgc$6_617272617973$9_766d5f617272617973$s$4_48494748$
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.28()
+    return i64 0
+}

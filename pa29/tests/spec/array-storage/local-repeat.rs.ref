@@ -1,0 +1,67 @@
+declare global @rgc$6_617272617973$9_766d5f617272617973$s$3_524546$ : obj<8x8> [storage=readonly]
+function @rg.28() -> void {
+  slot $s0 : obj<256x8>
+  slot $s1 : obj<256x8>
+  slot $s2 : i64
+  block ^b0:
+    %t0 = load ptr @rgc$6_617272617973$9_766d5f617272617973$s$3_524546$
+    store i64 0, $s2
+    jump ^b4
+  block ^b4:
+    %t1 = load i64 $s2
+    %t2 = cmp ult i64 %t1, 32
+    branch %t2, ^b5, ^b6
+  block ^b5:
+    %t3 = binary mul i64 %t1, 8
+    %t4 = addr $s1
+    %t5 = index u8 %t4, %t3
+    store ptr %t0, %t5
+    %t6 = binary add i64 %t1, 1
+    store i64 %t6, $s2
+    jump ^b4
+  block ^b6:
+    %t7 = addr $s1
+    %t8 = addr $s0
+    copyobj 256x8 %t7, %t8
+    %t9 = cmp uge i64 31, 32
+    branch %t9, ^b7, ^b8
+  block ^b8:
+    %t10 = binary mul i64 31, 8
+    %t11 = addr $s0
+    %t12 = index u8 %t11, %t10
+    %t13 = load ptr %t12
+    %t14 = load u32 %t13
+    %t15 = cmp ne u32 %t14, 22
+    %t16 = convert trunc i1 i64 %t15
+    branch %t16, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t17 = call u8 @rg.27(0)
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b7:
+    call void @abort()
+    unreachable
+}
+function @rg.27(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.28()
+    return i64 0
+}

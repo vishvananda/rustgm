@@ -1,0 +1,40 @@
+function @entry() -> i32 {
+  slot $s0 : i32
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$19_706132395f6d6163726f5f636f6e7465787473$f$10_706c75735f666f727479$.i1(2)
+    %t1 = cmp eq u8 %t0, 42
+    %t2 = convert trunc i1 i64 %t1
+    branch %t2, ^b2, ^b3
+  block ^b3:
+    jump ^b4
+  block ^b4:
+    store i32 7, $s0
+    jump ^b1
+  block ^b2:
+    store i32 42, $s0
+    jump ^b1
+  block ^b1:
+    %t3 = load i32 $s0
+    return i32 %t3
+  block ^b5:
+    unreachable
+}
+function @rgc$4_62617365$19_706132395f6d6163726f5f636f6e7465787473$f$10_706c75735f666f727479$.i1(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = binary add u8 38, 2
+    %t2 = cmp ult u8 %t1, 38
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary add u8 %t0, %t1
+    %t4 = cmp ult u8 %t3, %t0
+    branch %t4, ^b1, ^b3
+  block ^b3:
+    return u8 %t3
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

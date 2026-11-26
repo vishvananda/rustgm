@@ -1,0 +1,47 @@
+function @entry() -> i32 {
+  slot $s0 : obj<8x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$4_62617365$19_706132395f6c616e67756167655f726f6c6573$f$5_7363616c65$.i1(%t0, 1, 65536, 65536)
+    %t1 = addr $s0
+    %t2 = index u8 %t1, 4
+    %t3 = load i32 %t2
+    return i32 %t3
+}
+function @rgc$4_62617365$19_706132395f6c616e67756167655f726f6c6573$f$5_7363616c65$.i1(%p0 : ptr, %p1 : i32, %p2 : i32, %p3 : i32) -> void {
+  slot $s0 : i32
+  slot $s1 : i32
+  slot $s2 : i32
+  slot $s3 : i32
+  slot $s4 : obj<8x4>
+  block ^b0:
+    store i32 %p1, $s0
+    store i32 %p2, $s1
+    store i32 %p3, $s2
+    %t0 = load i32 $s1
+    store i32 %t0, $s3
+    %t1 = load i32 $s2
+    %t2 = load i32 $s3
+    %t3 = convert sext i64 i32 %t2
+    %t4 = convert sext i64 i32 %t1
+    %t5 = binary mul i64 %t3, %t4
+    %t6 = convert trunc i32 i64 %t5
+    %t7 = convert sext i64 i32 %t6
+    %t8 = cmp ne i64 %t5, %t7
+    branch %t8, ^b1, ^b2
+  block ^b2:
+    store i32 %t6, $s3
+    %t9 = load i32 $s0
+    %t10 = load i32 $s3
+    store i32 %t9, $s4
+    %t11 = addr $s4
+    %t12 = index u8 %t11, 4
+    store i32 %t10, %t12
+    %t13 = addr $s4
+    copyobj 8x4 %t13, %p0
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

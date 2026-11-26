@@ -1,0 +1,4 @@
+function @entry() -> i32 {
+  block ^b0:
+    return i32 42
+}

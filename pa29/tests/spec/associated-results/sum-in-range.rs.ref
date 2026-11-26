@@ -1,0 +1,37 @@
+function @entry() -> i32 {
+  block ^b0:
+    %t0 = call i32 @rgc$4_62617365$23_706132395f6173736f6369617465645f726573756c7473$f$3_73756d$.i1(40, 2)
+    return i32 %t0
+}
+function @rgc$4_62617365$23_706132395f6173736f6369617465645f726573756c7473$f$3_73756d$.i1(%p0 : i32, %p1 : i32) -> i32 {
+  slot $s0 : i32
+  slot $s1 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    store i32 %p1, $s1
+    %t0 = load i32 $s0
+    %t1 = load i32 $s1
+    %t2 = call i32 @rgc$4_62617365$23_706132395f6173736f6369617465645f726573756c7473$b$0$d$24.i2(%t0, %t1)
+    return i32 %t2
+}
+function @rgc$4_62617365$23_706132395f6173736f6369617465645f726573756c7473$b$0$d$24.i2(%p0 : i32, %p1 : i32) -> i32 {
+  slot $s0 : i32
+  slot $s1 : i32
+  block ^b0:
+    store i32 %p0, $s0
+    store i32 %p1, $s1
+    %t0 = load i32 $s0
+    %t1 = load i32 $s1
+    %t2 = binary add i32 %t0, %t1
+    %t3 = binary xor i32 %t0, %t2
+    %t4 = binary xor i32 %t2, %t1
+    %t5 = binary and i32 %t3, %t4
+    %t6 = cmp lt i32 %t5, 0
+    branch %t6, ^b1, ^b2
+  block ^b2:
+    return i32 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

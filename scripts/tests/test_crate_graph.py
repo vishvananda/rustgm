@@ -95,6 +95,114 @@ class CrateGraphs(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_cases(root, "pa1")
 
+    def test_source_core_client_and_forge_mutations_work_and_reject_invalid_specs(self):
+        with tempfile.TemporaryDirectory() as name:
+            provider = FIRST | {"source_core": True, "source_profile": "provided-contracts-v1", "rustc_oracle": True}
+            case = {"path": "tests/client.rs", "exit_status": 0, "input": "file",
+                    "crates": [provider], "externs": {"base": "first"}, "source_client": "first"}
+            root, app = self.stage(name, case)
+            (root / "pa1/tests/second.rs").unlink()
+            load_cases(root, "pa1")
+            graph = crate_graph.candidate_graph(root, "pa1", case, app, root / "out", 5)
+            built = json.loads(graph.units[0].read_text())
+            self.assertEqual(built[:8], ["--emit-lowir", "--edition=2024", "--source-core",
+                                         "shared@first", "--crate-type=lib", "--crate-name",
+                                         "shared", "--crate-disambiguator"])
+            self.assertIn("--source-profile", built)
+            self.assertNotIn("rustc_oracle", built)
+            self.assertEqual(graph.arguments[:2], ["--source-client", "shared@first"])
+
+            mismatch = case | {"exit_status": 1, "source_client_mismatch": True}
+            self.write(root, mismatch)
+            load_cases(root, "pa1")
+            mismatch_graph = crate_graph.candidate_graph(root, "pa1", mismatch, app, root / "out-mismatch", 5)
+            self.assertEqual(mismatch_graph.arguments[:2], ["--source-client", "shared@first_mismatch"])
+
+            packet = (b"RGMETA\r\n\x00\x00\x00\x00\x0a\x01\x00\x00"
+                      + b"\xff" + (4).to_bytes(4, "little") + b"next" + (0).to_bytes(4, "little") + (11).to_bytes(4, "little")
+                      + b"\xff" + (9).to_bytes(4, "little") + b"into_iter" + (0).to_bytes(4, "little") + (22).to_bytes(4, "little")
+                      + b"\xfe" + (7).to_bytes(4, "little") + b"NonNull" + (0).to_bytes(4, "little") + (33).to_bytes(4, "little"))
+            raw = root / "raw.rgm"
+            raw.write_bytes(packet)
+            corrupt = crate_graph.apply_forge(raw, {"provider": "first", "kind": "corrupt_version"}, root / "c.rgm").read_bytes()
+            self.assertEqual(corrupt[13:15], b"\xff\xff")
+            swapped = crate_graph.apply_forge(raw, {"provider": "first", "kind": "swap_roles", "tag": 255, "first": "next", "second": "into_iter"}, root / "s.rgm").read_bytes()
+            self.assertIn(b"next" + (0).to_bytes(4, "little") + (22).to_bytes(4, "little"), swapped)
+            self.assertIn(b"into_iter" + (0).to_bytes(4, "little") + (11).to_bytes(4, "little"), swapped)
+            foreign = crate_graph.apply_forge(raw, {"provider": "first", "kind": "foreign_role", "tag": 255, "spelling": "next"}, root / "f.rgm").read_bytes()
+            self.assertIn(b"next" + (1).to_bytes(4, "little") + (11).to_bytes(4, "little"), foreign)
+            redirect = crate_graph.apply_forge(raw, {"provider": "first", "kind": "redirect_role", "tag": 254, "target": "NonNull", "source_tag": 255, "source": "next"}, root / "r.rgm").read_bytes()
+            self.assertIn(b"NonNull" + (0).to_bytes(4, "little") + (11).to_bytes(4, "little"), redirect)
+
+            for bad in (case | {"crates": [FIRST | {"source_profile": "module-bodies-v13"}]},
+                        case | {"crates": [FIRST | {"source_core": True, "source_profile": "unknown"}]},
+                        case | {"crates": [FIRST | {"rustc_oracle": True}]},
+                        case | {"crates": [FIRST | {"source_core": True, "rustc_oracle": "yes"}]},
+                        case | {"crates": [FIRST], "source_client": "first"},
+                        case | {"source_client_mismatch": True},
+                        case | {"forge": {"provider": "first", "kind": "corrupt_version"}},
+                        case | {"exit_status": 1, "forge": {"provider": "absent", "kind": "corrupt_version"}},
+                        case | {"exit_status": 1, "forge": {"provider": "first", "kind": "swap_roles", "tag": 255, "first": "a", "second": "a"}}):
+                self.write(root, bad)
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
+    def test_provider_editions_features_cfgs_environment_and_auxiliary(self):
+        with tempfile.TemporaryDirectory() as name:
+            provider = FIRST | {
+                "edition": "2018",
+                "cap_lints": "allow",
+                "features": ["extra"],
+                "cfgs": ["ready"],
+                "environment": {"OUT_DIR": "out", "LIB_TAG": "v1"},
+                "auxiliary": ["tests/out/gen.rs"],
+            }
+            case = {"path": "tests/client.rs", "exit_status": 0, "input": "file", "edition": "2021",
+                    "crates": [provider], "externs": {"renamed": "first"}}
+            root, app = self.stage(name, case)
+            (root / "pa1/tests/second.rs").unlink()
+            (root / "pa1/tests/out").mkdir()
+            (root / "pa1/tests/out/gen.rs").write_text("pub const N: u8 = 7;\n")
+            _, cases = load_cases(root, "pa1")
+            self.assertEqual(support_files(cases[0]), ["tests/first.rs", "tests/out/gen.rs"])
+            graph = crate_graph.candidate_graph(root, "pa1", case, app, root / "out", 5)
+            built = json.loads(graph.units[0].read_text())
+            self.assertEqual(built[:7], ["--emit-lowir", "--edition=2018", "--cap-lints=allow",
+                                         "--cfg", 'feature="extra"', "--cfg", "ready"])
+            _, actual = run_case(root, "pa1", "--emit-lowir", case, app, 5, graph=graph)
+            self.assertEqual(json.loads(actual[0])[:2], ["--emit-lowir", "--edition=2021"])
+            for bad in (provider | {"edition": "2020"},
+                        provider | {"cap_lints": "warn"},
+                        provider | {"features": []},
+                        provider | {"features": ["dup", "dup"]},
+                        provider | {"cfgs": [""]},
+                        provider | {"environment": {"BAD=KEY": "1"}},
+                        provider | {"auxiliary": ["tests/first.rs"]},
+                        provider | {"auxiliary": ["tests/client.rs"]}):
+                self.write(root, case | {"crates": [bad]})
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
+    def test_host_driver_executes_library_cases_and_rejects_invalid_combinations(self):
+        from check_native import classification
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/client.rs", "exit_status": 0, "input": "file",
+                    "rustc": {"kind": "library", "status": 0, "emit": "obj"},
+                    "library": {"crate_name": "client", "disambiguator": "drv"},
+                    "native": {"kind": "execute", "outcome": "pass", "driver": "tests/driver.c"}}
+            root, _ = self.stage(name, case)
+            (root / "pa1/tests/first.rs").unlink()
+            (root / "pa1/tests/second.rs").unlink()
+            (root / "pa1/tests/driver.c").write_text("int main(void){return 0;}\n")
+            _, cases = load_cases(root, "pa1")
+            self.assertEqual(support_files(cases[0]), ["tests/driver.c"])
+            classification(cases[0])
+            for bad in (case | {"rustc": {"kind": "program", "status": 0}, "library": None},
+                        case | {"native": {"kind": "object", "reason": "x", "driver": "tests/driver.c"}},
+                        case | {"native": {"kind": "execute", "outcome": "pass", "driver": "tests/driver.c", "providers": ["tests/driver.c"]}}):
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
+                    classification(bad)
+
     def test_a_host_linked_candidate_aborts_through_the_host_library(self):
         aborted = type("Result", (), {"stdout": b"", "stderr": b"", "returncode": -6})()
         exited = type("Result", (), {"stdout": b"", "stderr": b"", "returncode": 134})()

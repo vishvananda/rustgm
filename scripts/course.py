@@ -14,13 +14,14 @@ import tempfile
 import time
 import reference_batches
 from case_inputs import source_bytes, support_files, validate as validate_inputs
-from crate_graph import candidate_graph
+from crate_graph import candidate_graph, validate_source_profile
 from course_suites import check_publishers, discovery, run_released, shared_outputs, suite_paths
 import finite_contracts
 from storage import cleanup_roots
 
 ROOT = Path(__file__).resolve().parents[1]
 SIDECARS = (".ref", ".ref.stderr", ".ref.exit_status")
+EDITIONS = ("2015", "2018", "2021", "2024")
 
 
 def check_relative_path(value, stage):
@@ -29,21 +30,46 @@ def check_relative_path(value, stage):
         raise ValueError(f"{stage}: fixture identities must be normalized relative paths")
 
 
+def case_edition(case, stage="course"):
+    edition = case.get("edition", "2024")
+    if not isinstance(edition, str) or edition not in EDITIONS:
+        raise ValueError(f"{stage}: edition must be one of {EDITIONS}")
+    return edition
+
+
+def validate_environment(stage, environment):
+    if (not isinstance(environment, dict)
+            or any(not isinstance(key, str) or not key or "=" in key or "\0" in key
+                   or (value is not None and (not isinstance(value, str) or "\0" in value))
+                   for key, value in environment.items())):
+        raise ValueError(f"{stage}: environment must map valid names to strings or null")
+
+
 def library_arguments(case, mode):
     """A library's identity is explicit and cannot be overridden by case arguments."""
     library = case.get("library")
     provider = case.get("source_provider", False)
-    if not isinstance(provider, bool):
-        raise ValueError("source_provider must be an explicit boolean")
-    library_kind = case.get("rustc", {}).get("kind") == "library"
+    program = case.get("source_program", False)
+    if not isinstance(provider, bool) or not isinstance(program, bool):
+        raise ValueError("source_provider and source_program must be explicit booleans")
+    if provider and program:
+        raise ValueError("source_provider and source_program are mutually exclusive")
+    kind = case.get("rustc", {}).get("kind")
+    library_kind = kind == "library"
     if provider and not library_kind:
         raise ValueError("source providers require an explicit library identity")
-    required = library_kind and (mode == "--emit-lowir" or provider)
+    if program and (kind != "program" or "crates" in case):
+        raise ValueError("source_program requires a standalone program case")
+    if "source_profile" in case:
+        if not provider or mode != "--emit-lowir" or "crates" in case:
+            raise ValueError("source_profile requires a standalone --emit-lowir source_provider case")
+        validate_source_profile("course", case["source_profile"])
+    required = (library_kind and (mode == "--emit-lowir" or provider)) or program
     if library is None and not required:
         return []
     if (not required or not isinstance(library, dict)
             or set(library) != {"crate_name", "disambiguator"}):
-        raise ValueError("LowIR libraries require an explicit crate_name and disambiguator")
+        raise ValueError("LowIR libraries and source programs require an explicit crate_name and disambiguator")
     name, disambiguator = library["crate_name"], library["disambiguator"]
     if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]{0,63}", name)
             or name == "_" or not isinstance(disambiguator, str)
@@ -51,8 +77,8 @@ def library_arguments(case, mode):
         raise ValueError("invalid library identity")
     if "--crate-name" in case.get("args", [])[::2]:
         raise ValueError("library identity cannot have a competing crate-name argument")
-    context = ["--source-core", f"{name}@{disambiguator}"] if provider else []
-    artifact = ["--crate-type=lib"] if mode == "--emit-lowir" else []
+    context = ["--source-core", f"{name}@{disambiguator}"] if (provider or program) else []
+    artifact = ["--crate-type=lib"] if (library_kind and mode == "--emit-lowir") else []
     return [*context, *artifact, "--crate-name", name, "--crate-disambiguator", disambiguator]
 
 
@@ -102,12 +128,8 @@ def load_cases(root, stage, *, unit=None):
                 raise ValueError(f"{stage}: invalid auxiliary path {file}")
             auxiliary.add(file)
         auxiliary.update(validate_inputs(root, stage, case, set(paths), case.get("mode", manifest["mode"])))
-        environment = case.get("environment", {})
-        if (not isinstance(environment, dict)
-                or any(not isinstance(key, str) or not key or "=" in key or "\0" in key
-                       or (value is not None and (not isinstance(value, str) or "\0" in value))
-                       for key, value in environment.items())):
-            raise ValueError(f"{stage}: environment must map valid names to strings or null")
+        case_edition(case, stage)
+        validate_environment(stage, case.get("environment", {}))
         args = case.get("args", [])
         if "cfg" in case:
             raise ValueError(f'{stage}: per-case cfg is unsupported; use args: ["--cfg", "test"]')
@@ -152,7 +174,7 @@ def run_case(root, stage, mode, case, app, timeout, *, graph=None):
     """Run the candidate on one case; a crate-graph case first builds its providers unless given them."""
     fixture = root / stage / case["path"]
     mode = case.get("mode", mode)
-    command = [*app, mode, "--edition=2024", *case.get("args", []), *library_arguments(case, mode)]
+    command = [*app, mode, f"--edition={case_edition(case, stage)}", *case.get("args", []), *library_arguments(case, mode)]
     data = source_bytes(root, stage, case)
     source = []
     if case.get("input") == "file":
@@ -160,6 +182,15 @@ def run_case(root, stage, mode, case, app, timeout, *, graph=None):
         data = b""
     env = case_environment(case)
     if "crates" not in case:
+        if "source_profile" in case:
+            with tempfile.TemporaryDirectory(prefix="rustgm-profile-") as folder:
+                metadata = Path(folder) / "provider.rgm"
+                actual = execute([*command, "--source-profile", case["source_profile"],
+                                  "--metadata-output", str(metadata), *source],
+                                 data, timeout, cwd=root, env=env)
+                if actual[2] != b"0\n" and metadata.exists():
+                    raise ValueError("rejected source provider published a metadata artifact")
+                return fixture, actual
         return fixture, execute([*command, *source], data, timeout, cwd=root, env=env)
     if graph is not None:
         return fixture, execute([*command, *graph.arguments, *source], data, timeout, cwd=root, env=env)
@@ -238,7 +269,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
     (artifacts / "results.json").write_text(json.dumps({"stage": stage, **paths.identity, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
-        "bless": bless, "cases": [{"path": case["path"], "mode": case.get("mode", manifest["mode"]), "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
+        "bless": bless, "cases": [{"path": case["path"], "mode": case.get("mode", manifest["mode"]), "edition": case.get("edition", "2024"), "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):

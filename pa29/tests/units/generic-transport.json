@@ -1,0 +1,6290 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "discovery": [
+    "tests/spec/language-roles/provider.rs",
+    "tests/spec/language-roles/bump-in-range.rs",
+    "tests/spec/language-roles/bump-overflow.rs",
+    "tests/spec/language-roles/lower-in-range.rs",
+    "tests/spec/language-roles/lower-overflow.rs",
+    "tests/spec/language-roles/scale-in-range.rs",
+    "tests/spec/language-roles/scale-overflow.rs",
+    "tests/spec/language-roles/mismatch.rs",
+    "tests/spec/associated-results/provider.rs",
+    "tests/spec/associated-results/fetch-hit.rs",
+    "tests/spec/associated-results/sum-in-range.rs",
+    "tests/spec/associated-results/sum-overflow.rs",
+    "tests/spec/associated-results/fetch-mismatch.rs",
+    "tests/spec/associated-results/fetch-unimplemented.rs",
+    "tests/spec/callable-roles/provider.rs",
+    "tests/spec/callable-roles/once-item.rs",
+    "tests/spec/callable-roles/once-closure.rs",
+    "tests/spec/callable-roles/once-capture.rs",
+    "tests/spec/callable-roles/mut-item.rs",
+    "tests/spec/callable-roles/mut-closure.rs",
+    "tests/spec/callable-roles/mut-capture.rs",
+    "tests/spec/callable-roles/ref-item.rs",
+    "tests/spec/callable-roles/ref-closure.rs",
+    "tests/spec/callable-roles/ref-capture.rs",
+    "tests/spec/callable-roles/wrong-output.rs",
+    "tests/spec/callable-roles/ref-mutating.rs",
+    "tests/spec/callable-roles/mut-consuming.rs",
+    "tests/spec/enum-match/provider.rs",
+    "tests/spec/enum-match/fieldless.rs",
+    "tests/spec/enum-match/tagged.rs",
+    "tests/spec/enum-match/generic.rs",
+    "tests/spec/enum-match/mapped.rs",
+    "tests/spec/enum-match/by-ref.rs",
+    "tests/spec/enum-match/wrong-enum.rs",
+    "tests/spec/enum-match/wrong-payload.rs",
+    "tests/spec/inherent-methods/provider.rs",
+    "tests/spec/inherent-methods/map-call.rs",
+    "tests/spec/inherent-methods/auto-ref.rs",
+    "tests/spec/inherent-methods/unwrap-or.rs",
+    "tests/spec/inherent-methods/path-call.rs",
+    "tests/spec/inherent-methods/slot.rs",
+    "tests/spec/inherent-methods/present.rs",
+    "tests/spec/inherent-methods/missing-method.rs",
+    "tests/spec/inherent-methods/wrong-default.rs",
+    "tests/spec/inherent-methods/moved-receiver.rs",
+    "tests/spec/inherent-methods/foreign-instance.rs",
+    "tests/spec/const-methods/provider.rs",
+    "tests/spec/const-methods/new.rs",
+    "tests/spec/const-methods/from-str.rs",
+    "tests/spec/const-methods/relay.rs",
+    "tests/spec/const-methods/make.rs",
+    "tests/spec/const-methods/plain.rs",
+    "tests/spec/const-methods/const-count.rs",
+    "tests/spec/const-methods/const-relay.rs",
+    "tests/spec/const-methods/const-plain.rs",
+    "tests/spec/const-methods/const-held.rs",
+    "tests/spec/const-methods/const-fn.rs",
+    "tests/spec/const-methods/runtime-in-const.rs",
+    "tests/spec/const-methods/runtime-argument.rs",
+    "tests/spec/const-methods/wrong-payload.rs",
+    "tests/spec/const-methods/text-leak.rs",
+    "tests/spec/const-parameters/provider.rs",
+    "tests/spec/const-parameters/tag.rs",
+    "tests/spec/const-parameters/mixed.rs",
+    "tests/spec/const-parameters/scalars.rs",
+    "tests/spec/const-parameters/applied.rs",
+    "tests/spec/const-parameters/wrong-value.rs",
+    "tests/spec/const-parameters/wrong-sign.rs",
+    "tests/spec/const-parameters/wrong-order.rs",
+    "tests/spec/const-parameters/misapplied.rs",
+    "tests/spec/array-types/provider.rs",
+    "tests/spec/array-types/values.rs",
+    "tests/spec/array-types/generic.rs",
+    "tests/spec/array-types/fields.rs",
+    "tests/spec/array-types/wide.rs",
+    "tests/spec/array-types/copies.rs",
+    "tests/spec/array-types/wrong-length.rs",
+    "tests/spec/array-types/wrong-element.rs",
+    "tests/spec/array-types/moved.rs",
+    "tests/spec/array-types/wide-length.rs",
+    "tests/spec/pointer-slices/provider.rs",
+    "tests/spec/pointer-slices/same.rs",
+    "tests/spec/pointer-slices/same-mut.rs",
+    "tests/spec/pointer-slices/generic.rs",
+    "tests/spec/pointer-slices/raw-field.rs",
+    "tests/spec/pointer-slices/raw-literal.rs",
+    "tests/spec/pointer-slices/text-ptr.rs",
+    "tests/spec/pointer-slices/slices.rs",
+    "tests/spec/pointer-slices/wrong-pointee.rs",
+    "tests/spec/pointer-slices/const-for-mut.rs",
+    "tests/spec/pointer-slices/deref-safe.rs",
+    "tests/spec/pointer-slices/slice-mismatch.rs",
+    "tests/spec/transparent-records/provider.rs",
+    "tests/spec/transparent-records/wrap.rs",
+    "tests/spec/transparent-records/wrap-call.rs",
+    "tests/spec/transparent-records/tagged.rs",
+    "tests/spec/transparent-records/cell.rs",
+    "tests/spec/transparent-records/cell-wrap.rs",
+    "tests/spec/transparent-records/ptr.rs",
+    "tests/spec/transparent-records/outer.rs",
+    "tests/spec/transparent-records/mismatch.rs",
+    "tests/spec/transparent-records/pair.rs",
+    "tests/spec/record-variants/provider.rs",
+    "tests/spec/record-variants/construct.rs",
+    "tests/spec/record-variants/nul.rs",
+    "tests/spec/record-variants/record-value.rs",
+    "tests/spec/record-variants/record-call.rs",
+    "tests/spec/record-variants/missing-field.rs",
+    "tests/spec/record-variants/unknown-field.rs",
+    "tests/spec/named-constants/provider.rs",
+    "tests/spec/named-constants/read.rs",
+    "tests/spec/named-constants/local-const.rs",
+    "tests/spec/named-constants/length.rs",
+    "tests/spec/named-constants/pattern.rs",
+    "tests/spec/named-constants/body.rs",
+    "tests/spec/named-constants/secret.rs",
+    "tests/spec/named-constants/nested.rs",
+    "tests/spec/named-constants/float.rs",
+    "tests/spec/named-constants/wide.rs",
+    "tests/spec/named-constants/const-call.rs",
+    "tests/spec/named-constants/inner-pair.rs",
+    "tests/spec/named-constants/wrong-length.rs",
+    "tests/spec/named-constants/wrong-type.rs",
+    "tests/spec/named-constants/private.rs",
+    "tests/spec/macro-contexts/provider.rs",
+    "tests/spec/macro-contexts/forty-two.rs",
+    "tests/spec/macro-contexts/plus-forty.rs",
+    "tests/spec/macro-contexts/relay.rs",
+    "tests/spec/macro-contexts/answer.rs",
+    "tests/spec/macro-contexts/mismatch.rs",
+    "tests/spec/guarded-methods/provider.rs",
+    "tests/spec/guarded-methods/assoc.rs",
+    "tests/spec/guarded-methods/bare.rs",
+    "tests/spec/guarded-methods/bound.rs",
+    "tests/spec/guarded-methods/captured.rs",
+    "tests/spec/guarded-methods/client-impl.rs",
+    "tests/spec/guarded-methods/const.rs",
+    "tests/spec/guarded-methods/formatter.rs",
+    "tests/spec/guarded-methods/generic.rs",
+    "tests/spec/guarded-methods/inside.rs",
+    "tests/spec/guarded-methods/late.rs",
+    "tests/spec/guarded-methods/method.rs",
+    "tests/spec/guarded-methods/missing.rs",
+    "tests/spec/guarded-methods/path.rs",
+    "tests/spec/guarded-methods/reified.rs",
+    "tests/spec/guarded-methods/relay.rs",
+    "tests/spec/guarded-methods/trait.rs",
+    "tests/spec/guarded-methods/vtable.rs",
+    "tests/spec/generic-contracts/pass-id.rs",
+    "tests/spec/generic-contracts/minimal-id-library.rs",
+    "tests/spec/generic-contracts/pass-imported-id-const.rs",
+    "tests/spec/generic-contracts/reject-copy.rs",
+    "tests/spec/generic-contracts/reject-unused-source.rs",
+    "tests/spec/generic-contracts/pass-helper-unused.rs",
+    "tests/spec/generic-contracts/call-library.rs",
+    "tests/spec/generic-contracts/call-const.rs",
+    "tests/spec/generic-contracts/call-reject-copy.rs",
+    "tests/spec/generic-contracts/call-reject-unused.rs",
+    "tests/spec/generic-contracts/call-reject-private.rs",
+    "tests/spec/generic-contracts/reject-unused-outlives.rs",
+    "tests/spec/inline-const-artifact/client.rs",
+    "tests/spec/inline-const-artifact/provider.rs",
+    "tests/spec/inline-const-artifact/wrong-type.rs",
+    "tests/spec/generic-contracts/pass-reexport.rs",
+    "tests/spec/generic-contracts/reexport.rs"
+  ],
+  "cases": [
+    {
+      "path": "tests/spec/language-roles/bump-in-range.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/bump-overflow.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "no_core overflow abort calls C abort directly without std panic stderr; verified via object emission"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/lower-in-range.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/lower-overflow.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "no_core overflow abort calls C abort directly without std panic stderr; verified via object emission"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/scale-in-range.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/scale-overflow.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "no_core overflow abort calls C abort directly without std panic stderr; verified via object emission"
+      }
+    },
+    {
+      "path": "tests/spec/language-roles/mismatch.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa26.hook-closure"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_language_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/language-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_language_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/associated-results/fetch-hit.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_associated_results_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_associated_results",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/associated-results/sum-in-range.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_associated_results_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_associated_results",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/associated-results/sum-overflow.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_associated_results_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_associated_results",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "no_core overflow abort calls C abort directly without std panic stderr; verified via object emission"
+      }
+    },
+    {
+      "path": "tests/spec/associated-results/fetch-mismatch.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_associated_results_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_associated_results",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/associated-results/fetch-unimplemented.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_associated_results_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_associated_results",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/once-item.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/once-closure.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/once-capture.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/mut-item.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/mut-closure.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/mut-capture.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/ref-item.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/ref-closure.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/ref-capture.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/wrong-output.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/ref-mutating.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/callable-roles/mut-consuming.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_callable_roles_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/callable-roles/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_callable_roles",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/fieldless.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/tagged.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/generic.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/mapped.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/by-ref.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/wrong-enum.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/enum-match/wrong-payload.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_enum_match_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/enum-match/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_enum_match",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/map-call.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/auto-ref.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/unwrap-or.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/path-call.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/slot.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/present.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/missing-method.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/wrong-default.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/moved-receiver.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/inherent-methods/foreign-instance.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_inherent_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inherent-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inherent_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/new.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/from-str.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/relay.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/make.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/plain.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/const-count.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/const-relay.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/const-plain.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/const-held.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/const-fn.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/runtime-in-const.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/runtime-argument.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/wrong-payload.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-methods/text-leak.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/tag.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/mixed.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/scalars.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/applied.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/wrong-value.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/wrong-sign.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/wrong-order.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/const-parameters/misapplied.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_const_parameters_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/const-parameters/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_const_parameters",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-types/values.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/array-types/generic.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/array-types/fields.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/array-types/wide.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/array-types/copies.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/array-types/wrong-length.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-types/wrong-element.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-types/moved.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/array-types/wide-length.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_types_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/array-types/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_types",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/same.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/same-mut.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/generic.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/raw-field.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/raw-literal.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/text-ptr.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/slices.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/wrong-pointee.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/const-for-mut.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/deref-safe.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/pointer-slices/slice-mismatch.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa28.memory"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_pointer_slices_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/pointer-slices/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_pointer_slices",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/wrap.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/wrap-call.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/tagged.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/cell.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/cell-wrap.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/ptr.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/outer.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/mismatch.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/transparent-records/pair.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa30.convention"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_transparent_records_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/transparent-records/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_transparent_records",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/construct.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/nul.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/record-value.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/record-call.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/missing-field.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/record-variants/unknown-field.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_record_variants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/record-variants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_record_variants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/read.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/local-const.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/length.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/pattern.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/body.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/secret.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/nested.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/float.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/wide.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/const-call.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/inner-pair.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/wrong-length.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/wrong-type.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/named-constants/private.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_named_constants_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/named-constants/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_named_constants",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/macro-contexts/forty-two.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa31.source-declarations"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_macro_contexts_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/macro-contexts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_macro_contexts",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/macro-contexts/plus-forty.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa31.source-declarations"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_macro_contexts_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/macro-contexts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_macro_contexts",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/macro-contexts/relay.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa31.source-declarations"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_macro_contexts_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/macro-contexts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_macro_contexts",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/macro-contexts/answer.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa31.source-declarations"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_macro_contexts_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/macro-contexts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_macro_contexts",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/macro-contexts/mismatch.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa31.source-declarations"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_macro_contexts_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/macro-contexts/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_macro_contexts",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/assoc.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/bare.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/bound.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/captured.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/client-impl.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/const.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/formatter.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/generic.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/inside.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/late.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/method.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/missing.rs",
+      "exit_status": 1,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/path.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/reified.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/relay.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/trait.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/guarded-methods/vtable.rs",
+      "exit_status": 0,
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_guarded_methods_c"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/guarded-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_guarded_methods",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-bodies-v13",
+          "cap_lints": "allow",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-id.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "crates": [
+        {
+          "name": "minimal-provider",
+          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "minimal_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "minimal-provider"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-imported-id-const.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "crates": [
+        {
+          "name": "minimal-provider",
+          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "minimal_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "minimal-provider"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-copy.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "crates": [
+        {
+          "name": "minimal-provider",
+          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "minimal_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "minimal-provider"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-unused-source.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "library": {
+        "crate_name": "transport",
+        "disambiguator": "invalid_unused"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-helper-unused.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "crates": [
+        {
+          "name": "calls-provider",
+          "path": "tests/spec/generic-contracts/call-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "calls_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "calls-provider"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/call-const.rs",
+      "exit_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "crates": [
+        {
+          "name": "calls-provider",
+          "path": "tests/spec/generic-contracts/call-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "calls_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "calls-provider"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/call-reject-copy.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "crates": [
+        {
+          "name": "calls-provider",
+          "path": "tests/spec/generic-contracts/call-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "calls_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "calls-provider"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/call-reject-unused.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "crates": [
+        {
+          "name": "calls-provider",
+          "path": "tests/spec/generic-contracts/call-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "calls_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "calls-provider"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/call-reject-private.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "crates": [
+        {
+          "name": "calls-provider",
+          "path": "tests/spec/generic-contracts/call-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "calls_provider",
+          "externs": {}
+        }
+      ],
+      "externs": {
+        "base": "calls-provider"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-unused-outlives.rs",
+      "exit_status": 1,
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "library": {
+        "crate_name": "invalid",
+        "disambiguator": "reject_unused_outlives"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inline-const-artifact/client.rs",
+      "exit_status": 0,
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "inline_const_0"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inline-const-artifact/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inline_const",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-body-operations-v14",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/generic-transport-drivers/driver42.c"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/inline-const-artifact/wrong-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "inline_const_1"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/inline-const-artifact/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_inline_const",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-body-operations-v14",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "input": "file"
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-reexport.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
+          "crate_name": "transport",
+          "disambiguator": "minimal_provider",
+          "externs": {}
+        },
+        {
+          "name": "relay",
+          "path": "tests/spec/generic-contracts/reexport.rs",
+          "crate_name": "relay",
+          "disambiguator": "reexport",
+          "externs": {
+            "base": "base"
+          }
+        }
+      ],
+      "externs": {
+        "relay": "relay"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    }
+  ]
+}

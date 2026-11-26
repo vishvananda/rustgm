@@ -1,0 +1,35 @@
+function @rg.54() -> void {
+  slot $s0 : u8
+  slot $s1 : u8
+  block ^b0:
+    %t0 = call u8 @rg.35.i1(1, 7)
+    store u8 %t0, $s0
+    %t1 = load u8 $s0
+    %t2 = call u8 @rgc$4_62617365$9_706132395f70726f76$f$6_486f6c646572$5_6361727279$.i2(%t1)
+    store u8 %t2, $s1
+    %t3 = load u8 $s1
+    call void @observe(%t3)
+    return void
+}
+function @rg.35.i1(%p0 : u8, %p1 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    store u8 %p1, $s1
+    %t0 = load u8 $s1
+    return u8 %t0
+}
+function @rgc$4_62617365$9_706132395f70726f76$f$6_486f6c646572$5_6361727279$.i2(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
+}
+declare function @observe(%p0 : u8) -> void
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.54()
+    return i64 0
+}

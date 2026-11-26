@@ -1,0 +1,85 @@
+function @entry() -> i32 {
+  slot $s0 : i32
+  slot $s1 : u8
+  slot $s2 : u8
+  slot $s3 : obj<2x1>
+  block ^b0:
+    %t0 = cmp ne f32 4.25000000000000000e1, 4.25000000000000000e1
+    branch %t0, ^b9, ^b10
+  block ^b9:
+    store u8 0, $s1
+    jump ^b15
+  block ^b10:
+    %t1 = cmp ge f32 4.25000000000000000e1, 2.56000000000000000e2
+    branch %t1, ^b11, ^b12
+  block ^b11:
+    store u8 255, $s1
+    jump ^b15
+  block ^b12:
+    %t2 = cmp le f32 4.25000000000000000e1, 0.00000000000000000e0
+    branch %t2, ^b13, ^b14
+  block ^b13:
+    store u8 0, $s1
+    jump ^b15
+  block ^b14:
+    %t3 = convert fptoui u8 f32 4.25000000000000000e1
+    store u8 %t3, $s1
+    jump ^b15
+  block ^b15:
+    %t4 = load u8 $s1
+    %t5 = cmp ne f64 4.22500000000000000e1, 4.22500000000000000e1
+    branch %t5, ^b16, ^b17
+  block ^b16:
+    store u8 0, $s2
+    jump ^b22
+  block ^b17:
+    %t6 = cmp ge f64 4.22500000000000000e1, 2.56000000000000000e2
+    branch %t6, ^b18, ^b19
+  block ^b18:
+    store u8 255, $s2
+    jump ^b22
+  block ^b19:
+    %t7 = cmp le f64 4.22500000000000000e1, 0.00000000000000000e0
+    branch %t7, ^b20, ^b21
+  block ^b20:
+    store u8 0, $s2
+    jump ^b22
+  block ^b21:
+    %t8 = convert fptoui u8 f64 4.22500000000000000e1
+    store u8 %t8, $s2
+    jump ^b22
+  block ^b22:
+    %t9 = load u8 $s2
+    store u8 %t4, $s3
+    %t10 = addr $s3
+    %t11 = index u8 %t10, 1
+    store u8 %t9, %t11
+    %t12 = load u8 $s3
+    %t13 = cmp eq u8 %t12, 42
+    %t14 = convert trunc i1 i64 %t13
+    branch %t14, ^b4, ^b3
+  block ^b4:
+    %t15 = addr $s3
+    %t16 = index u8 %t15, 1
+    %t17 = load u8 %t16
+    %t18 = cmp eq u8 %t17, 42
+    %t19 = convert trunc i1 i64 %t18
+    branch %t19, ^b2, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    jump ^b6
+  block ^b6:
+    store i32 1, $s0
+    jump ^b1
+  block ^b2:
+    store i32 42, $s0
+    jump ^b1
+  block ^b1:
+    %t20 = load i32 $s0
+    return i32 %t20
+  block ^b7:
+    unreachable
+  block ^b8:
+    unreachable
+}

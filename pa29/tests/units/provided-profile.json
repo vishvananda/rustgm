@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "discovery": [
+    "tests/spec/provided-profile"
+  ],
+  "cases": [
+    {
+      "path": "tests/spec/provided-profile/caller_native.rs",
+      "exit_status": 0,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 0},
+      "native": {"outcome": "pass", "providers": ["tests/spec/provided-profile/verify_seven.c"]}
+    },
+    {
+      "path": "tests/spec/provided-profile/caller_renamed_alias.rs",
+      "exit_status": 0,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"renamed_base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 0},
+      "native": {"outcome": "pass", "providers": ["tests/spec/provided-profile/verify_seven.c"]}
+    },
+    {
+      "path": "tests/spec/provided-profile/caller_impl_override.rs",
+      "exit_status": 0,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 0},
+      "native": {"outcome": "pass", "providers": ["tests/spec/provided-profile/verify_seven.c"]}
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_wrong_type.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 1}
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_wrong_arity.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 1}
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_wrong_trait.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 1}
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_escaped_borrow.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "rustc": {"kind": "program", "status": 1}
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_wrong_owner.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "source_client_mismatch": true,
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "reason": "mismatched candidate --source-client disambiguator control; rustc compiles against the valid provider rlib"
+      }
+    },
+    {
+      "path": "tests/spec/provided-profile/reject_corrupt_version.rs",
+      "exit_status": 1,
+      "work_units": ["provided-profile"],
+      "features": ["pa29.provided-profile", "pa31.source-declarations"],
+      "environment": {"RUSTC_BOOTSTRAP": "1"},
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/provided-profile/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_prov",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "provided-contracts-v1",
+          "rustc_oracle": true
+        }
+      ],
+      "externs": {"base": "base"},
+      "source_client": "base",
+      "forge": {"provider": "base", "kind": "corrupt_version"},
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "reason": "corrupted candidate metadata version header control; rustc compiles against the valid provider rlib"
+      }
+    }
+  ]
+}

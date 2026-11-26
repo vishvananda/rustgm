@@ -120,7 +120,9 @@ def check_publishers(root):
                 raise ValueError(f"unit case contract disagrees with active parent: {key}")
             primary[key] = unit["id"]
             auxiliary.update((root / unit["owner"] / name).resolve()
-                             for name in [*case.get("auxiliary", []), *filter(None, [case.get("prelude")])])
+                             for name in [*case.get("auxiliary", []),
+                                          *(aux for p in case.get("crates", []) for aux in p.get("auxiliary", [])),
+                                          *filter(None, [case.get("prelude")])])
     if set(primary) & auxiliary:
         raise ValueError("unit primary source is also claimed as an auxiliary")
 

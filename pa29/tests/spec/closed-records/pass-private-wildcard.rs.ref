@@ -1,0 +1,13 @@
+function @rg.37() -> void {
+  slot $s0 : obj<1x1>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$7_7265636f726473$6_766d5f637231$f$6_6f7061717565$(%t0, 1)
+    return void
+}
+declare function @rgc$7_7265636f726473$6_766d5f637231$f$6_6f7061717565$(%p0 : ptr, %p1 : u8) -> void
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.37()
+    return i64 0
+}

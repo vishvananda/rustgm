@@ -19,7 +19,9 @@ EMPTY_UNIT_REASON = ("Entry-free source contract with no exported root: acceptan
                      "and both objects must define nothing.")
 # Draft tables name the independent outcome in several historical ways, strongest first.
 RUST_STATUS_KEYS = ("rustc_expected", "rustc_status", "rustc_hypothesis")
-COPIED_KEYS = ("args", "auxiliary", "library", "source_provider", "warnings", "environment", "crates", "externs")
+COPIED_KEYS = ("edition", "args", "auxiliary", "library", "source_provider", "source_program",
+               "source_profile", "source_client", "source_client_mismatch", "forge", "warnings",
+               "environment", "crates", "externs")
 CALLS_CHECK = re.compile(r"\bcheck\s*\(")
 DEFINES_CHECK = re.compile(r"\bfn\s+check\b")
 FEATURE_REQUEST = re.compile(r"^\s*#!\[feature\(", re.M)

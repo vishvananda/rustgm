@@ -22,7 +22,7 @@ def declared_file(root, stage, name, suffix, role):
 
 def validate(root, stage, case, primaries, mode):
     """Check one case's prelude, host providers and crate graph; return the extra Rust sources it declares."""
-    sources = validate_graph(root, stage, case, mode)
+    sources = validate_graph(root, stage, case, mode, primaries)
     if "prelude" in case:
         prelude = case["prelude"]
         declared_file(root, stage, prelude, ".rs", "prelude")
@@ -42,6 +42,11 @@ def validate(root, stage, case, primaries, mode):
             raise ValueError(f"{stage}: native providers must be a nonempty list of unique paths")
         for provider in providers:
             declared_file(root, stage, provider, ".c", "host provider")
+    if isinstance(native, dict) and "driver" in native:
+        driver = native["driver"]
+        if not isinstance(driver, str):
+            raise ValueError(f"{stage}: native driver must be a relative .c path")
+        declared_file(root, stage, driver, ".c", "host driver")
     return sources
 
 
@@ -53,6 +58,8 @@ def support_files(case):
     native = case.get("native")
     if isinstance(native, dict):
         files.extend(native.get("providers", []))
+        if "driver" in native:
+            files.append(native["driver"])
     files.extend(provider_sources(case))
     return list(dict.fromkeys(files))
 

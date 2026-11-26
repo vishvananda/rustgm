@@ -1,0 +1,150 @@
+function @rg.30() -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<16x8>
+  slot $s2 : i1
+  slot $s3 : obj<40x8>
+  slot $s4 : i1
+  slot $s5 : obj<16x8>
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<40x8>
+  slot $s8 : obj<40x8>
+  slot $s9 : obj<40x8>
+  block ^b0:
+    %t0 = addr @rgc$9_6370726f765f6c6962$6_766d5f633330$f$3_616464$
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u32 %t1(20, 22) as (%p0 : u32, %p1 : u32) -> u32
+    %t3 = cmp eq u32 %t2, 42
+    %t4 = convert trunc i1 i64 %t3
+    call void @rg.29(%t4)
+    %t5 = call f64 @rgc$9_6370726f765f6c6962$6_766d5f633330$f$4_7265616c$(1.25000000000000000e0, 2.50000000000000000e0)
+    %t6 = cmp eq f64 %t5, 3.75000000000000000e0
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.29(%t7)
+    %t8 = call u32 @rgc$9_6370726f765f6c6962$6_766d5f633330$f$7_67756172646564$(41)
+    %t9 = cmp eq u32 %t8, 42
+    %t10 = convert trunc i1 i64 %t9
+    call void @rg.29(%t10)
+    %t11 = call u32 @rustgm_vm_exact(38)
+    %t12 = cmp eq u32 %t11, 42
+    %t13 = convert trunc i1 i64 %t12
+    call void @rg.29(%t13)
+    store i64 10, $s5
+    %t14 = addr $s5
+    %t15 = index u8 %t14, 8
+    store f64 1.50000000000000000e0, %t15
+    %o0 = call obj<16x8> @rgc$9_6370726f765f6c6962$6_766d5f633330$f$10_62756d705f6d69786564$($s5)
+    %t16 = addr $s6
+    copyobj 16x8 %o0, %t16
+    %t17 = addr $s6
+    %t18 = addr $s1
+    copyobj 16x8 %t17, %t18
+    %t19 = load i64 $s1
+    %t20 = cmp eq i64 %t19, 13
+    %t21 = convert trunc i1 i64 %t20
+    branch %t21, ^b1, ^b2
+  block ^b2:
+    store i1 %t21, $s2
+    jump ^b3
+  block ^b1:
+    %t22 = addr $s1
+    %t23 = index u8 %t22, 8
+    %t24 = load f64 %t23
+    %t25 = cmp eq f64 %t24, 4.00000000000000000e0
+    %t26 = convert trunc i1 i64 %t25
+    store i1 %t26, $s2
+    jump ^b3
+  block ^b3:
+    %t27 = load i1 $s2
+    call void @rg.29(%t27)
+    store i64 1, $s7
+    %t28 = addr $s7
+    %t29 = index u8 %t28, 8
+    store i64 2, %t29
+    %t30 = addr $s7
+    %t31 = index u8 %t30, 16
+    store i64 3, %t31
+    %t32 = addr $s7
+    %t33 = index u8 %t32, 24
+    store i64 4, %t33
+    %t34 = addr $s7
+    %t35 = index u8 %t34, 32
+    store i64 35, %t35
+    %t36 = addr $s7
+    %t37 = addr $s8
+    copyobj 40x8 %t36, %t37
+    %o1 = call obj<40x8> @rgc$9_6370726f765f6c6962$6_766d5f633330$f$10_62756d705f6c61726765$($s8)
+    %t38 = addr $s9
+    copyobj 40x8 %o1, %t38
+    %t39 = addr $s9
+    %t40 = addr $s3
+    copyobj 40x8 %t39, %t40
+    %t41 = cmp uge i64 0, 5
+    branch %t41, ^b7, ^b8
+  block ^b8:
+    %t42 = binary mul i64 0, 8
+    %t43 = addr $s3
+    %t44 = index u8 %t43, %t42
+    %t45 = load i64 %t44
+    %t46 = cmp eq i64 %t45, 1
+    %t47 = convert trunc i1 i64 %t46
+    branch %t47, ^b4, ^b5
+  block ^b5:
+    store i1 %t47, $s4
+    jump ^b6
+  block ^b4:
+    %t48 = cmp uge i64 4, 5
+    branch %t48, ^b7, ^b9
+  block ^b9:
+    %t49 = binary mul i64 4, 8
+    %t50 = addr $s3
+    %t51 = index u8 %t50, %t49
+    %t52 = load i64 %t51
+    %t53 = cmp eq i64 %t52, 42
+    %t54 = convert trunc i1 i64 %t53
+    store i1 %t54, $s4
+    jump ^b6
+  block ^b6:
+    %t55 = load i1 $s4
+    call void @rg.29(%t55)
+    return void
+  block ^b7:
+    call void @abort()
+    unreachable
+}
+declare function @rgc$9_6370726f765f6c6962$6_766d5f633330$f$3_616464$(%p0 : u32, %p1 : u32) -> u32
+function @rg.29(%p0 : i1) -> void {
+  slot $s0 : i1
+  slot $s1 : u8
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    store u8 0, $s1
+    %t2 = load u8 $s1
+    %t3 = cmp eq u8 %t2, 0
+    branch %t3, ^b4, ^b5
+  block ^b5:
+    %t4 = binary udiv u8 1, %t2
+    jump ^b3
+  block ^b3:
+    return void
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+declare function @rgc$9_6370726f765f6c6962$6_766d5f633330$f$4_7265616c$(%p0 : f64, %p1 : f64) -> f64
+declare function @rgc$9_6370726f765f6c6962$6_766d5f633330$f$7_67756172646564$(%p0 : u32) -> u32
+declare function @rustgm_vm_exact(%p0 : u32) -> u32
+declare function @rgc$9_6370726f765f6c6962$6_766d5f633330$f$10_62756d705f6d69786564$(%p0 : obj<16x8> [classes=integer_sse]) -> obj<16x8> [result_classes=integer_sse]
+declare function @rgc$9_6370726f765f6c6962$6_766d5f633330$f$10_62756d705f6c61726765$(%p0 : obj<40x8>) -> obj<40x8>
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.30()
+    return i64 0
+}

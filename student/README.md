@@ -21,10 +21,12 @@ Test reports are written to `obj/tests/`. Set
 
 ## Course order
 
-1. Work through PA1–PA30 in order.
+1. Work through PA1–PA30 in order. PA29 establishes separate compilation,
+   including the shared metadata for generic bodies used by fresh clients.
 2. Complete PA31's source bindings and runtime integration. In PA32, prepare
-   the pinned build, finish the required target and generic-body support,
-   and build standalone `core` with independently compiled consumers.
+   the pinned build, finish the required target support, and use PA29's
+   metadata mechanism to build standalone `core` with independently compiled
+   consumers.
 3. Build `alloc` in PA33, extend the crate-build driver in PA34, then run
    PA35's core-only and allocation-dependent upstream checks. Build `std`
    in PA36.

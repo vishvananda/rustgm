@@ -412,6 +412,7 @@
       "title": "Completed constant and foreign value metadata",
       "implementation": "partial",
       "publication": "unpublished",
+      "manifest": "pa29/tests/units/value-metadata.json",
       "depends_on": [
         "declarations",
         "c-abi",
@@ -430,9 +431,11 @@
       "title": "Provided-body public artifact profile",
       "implementation": "implemented",
       "publication": "unpublished",
+      "manifest": "pa29/tests/units/provided-profile.json",
       "depends_on": [
         "declarations",
-        "source-declarations"
+        "source-declarations",
+        "c-abi"
       ],
       "scope": "Qualified tag11/v1 carry/borrow artifact with fresh named original/instance proof and native7; excludes universal source-body contracts.",
       "requirements": [
@@ -450,6 +453,7 @@
       "title": "Generic and source body transport closure",
       "implementation": "partial",
       "publication": "unpublished",
+      "manifest": "pa29/tests/units/generic-transport.json",
       "depends_on": [
         "declarations",
         "source-declarations",

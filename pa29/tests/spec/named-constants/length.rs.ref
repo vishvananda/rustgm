@@ -1,0 +1,32 @@
+global @rgc$6_636c69656e74$22_706132395f6e616d65645f636f6e7374616e74735f63$internal$rg.data.0 : obj<4x1> [storage=readonly] = {
+  u8 1
+  u8 2
+  u8 3
+  u8 4
+}
+function @entry() -> i32 {
+  slot $s0 : obj<4x1>
+  slot $s1 : ptr
+  block ^b0:
+    store u8 1, $s0
+    %t0 = addr $s0
+    %t1 = index u8 %t0, 1
+    store u8 2, %t1
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 2
+    store u8 3, %t3
+    %t4 = addr $s0
+    %t5 = index u8 %t4, 3
+    store u8 4, %t5
+    %t6 = addr @rgc$6_636c69656e74$22_706132395f6e616d65645f636f6e7374616e74735f63$internal$rg.data.0
+    store ptr %t6, $s1
+    %t7 = load ptr $s1
+    %t8 = call i32 @rgc$6_636c69656e74$22_706132395f6e616d65645f636f6e7374616e74735f63$internal$rg.62(%t7)
+    return i32 %t8
+}
+function @rgc$6_636c69656e74$22_706132395f6e616d65645f636f6e7374616e74735f63$internal$rg.62(%p0 : ptr) -> i32 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return i32 42
+}

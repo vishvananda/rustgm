@@ -1,0 +1,27 @@
+global @rgc$6_636c69656e74$22_706132395f677561726465645f6d6574686f64735f63$internal$rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+function @entry() -> i32 {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$22_706132395f677561726465645f6d6574686f64735f63$internal$rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$f$7_7669615f676574$.i2(%t1)
+    %t3 = convert zext i32 u8 %t2
+    return i32 %t3
+}
+function @rgc$4_62617365$20_706132395f677561726465645f6d6574686f6473$f$7_7669615f676574$.i2(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u8 @rgc$6_636c69656e74$22_706132395f677561726465645f6d6574686f64735f63$internal$rg.279(%t0)
+    return u8 %t1
+}
+function @rgc$6_636c69656e74$22_706132395f677561726465645f6d6574686f64735f63$internal$rg.279(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 42
+}

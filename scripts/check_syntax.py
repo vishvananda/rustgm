@@ -11,7 +11,7 @@ import sys
 
 from case_inputs import source_bytes
 from crate_graph import rustc_graph
-from course import ROOT, load_cases, run_case, case_environment
+from course import ROOT, case_edition, load_cases, run_case, case_environment
 from course_suites import run_released, suite_paths
 
 
@@ -48,6 +48,8 @@ def rustc_arguments(case, default_name):
             name = arguments[index + 1]
         else:
             extra.extend(arguments[index:index + 2])
+    if case.get("source_program"):
+        extra.extend(["--cfg", "rustc_oracle"])
     return ["--crate-name", name, *extra]
 
 
@@ -83,7 +85,7 @@ def independent_rustc(stage, mode, case, case_directory):
         source.write_bytes(expression_source(data, metadata))
     else:
         source.write_bytes(data)
-    command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
+    command = ["rustc", f"--edition={case_edition(case, stage)}", "--target", "x86_64-unknown-linux-gnu",
                "-C", "panic=abort", "-C", "debug-assertions=off",
                *rustc_arguments(case, "syntax_check"), str(source), "-o", str(binary)]
     if not metadata.get("default_lints", False):

@@ -17,7 +17,7 @@ import reference_batches
 from backend import digest, emit_object, load_tools, verify_object
 from case_inputs import source_bytes
 from crate_graph import candidate_graph, rustc_graph
-from course import ROOT, case_environment, library_arguments, load_cases, run_case
+from course import ROOT, case_edition, case_environment, library_arguments, load_cases, run_case
 from course_suites import run_released, suite_paths
 from check_syntax import rustc_arguments
 
@@ -97,8 +97,13 @@ def classification(case):
         if metadata["status"] != 0:
             raise ValueError("accepted native fixtures require successful rustc code generation")
         kind = native.get("kind", "execute")
-        if library != (kind == "object"):
-            raise ValueError("library native checks require object emission; programs require executables")
+        has_driver = "driver" in native
+        if has_driver and (not library or kind != "execute" or "providers" in native):
+            raise ValueError("host drivers execute library crates only and cannot combine with providers")
+        if library and not has_driver and kind != "object":
+            raise ValueError("library native checks require object emission or an explicit host driver")
+        if not library and kind == "object":
+            raise ValueError("programs require executable or codegen native checks, not object checks")
         if "lowir" in native and (kind != "object" or native["lowir"] != "empty"):
             raise ValueError("only a library object may declare an empty LowIR unit, as lowir: empty")
         if "providers" in native and (library or not native["providers"]):
@@ -303,10 +308,13 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
         if case["exit_status"] and (actual[0] or not actual[1]):
             raise ValueError("rejections require empty stdout and a diagnostic")
         library = case["rustc"]["kind"] == "library"
-        rustexe = folder / ("rustc-output.o" if library else "rustc-output")
-        command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
+        driver_path = case.get("native", {}).get("driver") if case["exit_status"] == 0 else None
+        library_exec = library and driver_path is not None
+        rustobj = folder / "rustc-output.o"
+        rustexe = rustobj if (library and not library_exec) else folder / "rustc-output"
+        command = ["rustc", f"--edition={case_edition(case, stage)}", "--target", "x86_64-unknown-linux-gnu",
                    *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
-                   "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
+                   "-C", "debug-assertions=off", str(source), "-o", str(rustobj if library else rustexe)]
         if not case["rustc"].get("default_lints", False):
             command += ["--cap-lints", "allow"]
         if library:
@@ -315,6 +323,15 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
             command += rustc_graph(ROOT, stage, case, folder / "rustc-crates", [
                 "-C", "panic=abort", "-C", "overflow-checks=yes", "-C", "debug-assertions=off"], env)
         providers = host_objects(stage, case, folder, run) if case["exit_status"] == 0 else []
+        driver_obj = None
+        if library_exec:
+            driver_obj = folder / "driver.o"
+            result = run(["cc", "-std=c11", "-O0", "-c", str(ROOT / stage / driver_path), "-o", str(driver_obj)],
+                         "driver")
+            if result.returncode:
+                raise ValueError(f"host driver failed to compile: {driver_path}: {result.stderr.decode(errors='replace')}")
+            verify_object(driver_obj)
+            evidence["driver"] = {driver_path: digest(ROOT / stage / driver_path)}
         command += [f"-Clink-arg={provider}" for provider in providers]
         if providers:
             evidence["providers"] = {name: digest(ROOT / stage / name) for name in case["native"]["providers"]}
@@ -324,21 +341,35 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
         if case["exit_status"] == 0:
             text = folder / "output.lowir"
             text.write_bytes(actual[0])
-            native = folder / ("native-output.o" if library else "native-output")
-            linked = bool(providers or graph is not None)
+            native = folder / ("native-output.o" if (library and not library_exec) else "native-output")
+            linked = bool(providers or graph is not None or library_exec)
 
             def object_run(command):
                 result = run(command, "backend-object")
                 if result.returncode:
                     raise ValueError(f"object backend failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
 
-            if library:
+            if library and not library_exec:
                 verify_object(rustexe)
                 # A declared empty unit still crosses the object bridge, proving the backend accepts it.
                 emit_object(text, native, tools, run=object_run)
                 if declares_empty_lowir(case):
                     empty_objects((("rustc", rustexe), ("cppgm", native)))
                 evidence["objects"] = {"rustc_sha256": digest(rustexe), "native_sha256": digest(native)}
+            elif library_exec:
+                verify_object(rustobj)
+                rlibs = sorted((folder / "rustc-crates").glob("*.rlib")) if graph is not None else []
+                result = run(["cc", str(driver_obj), str(rustobj), *map(str, rlibs), "-lm", "-o", str(rustexe)],
+                             "rustc-link")
+                if result.returncode:
+                    raise ValueError(f"rustc host link failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
+                units = []
+                for index, unit in enumerate([*(graph.units if graph is not None else []), text]):
+                    units.append(folder / f"native-unit-{index}.o")
+                    emit_object(unit, units[-1], tools, run=object_run)
+                result = run(["cc", str(driver_obj), *map(str, units), "-lm", "-o", str(native)], "link")
+                if result.returncode:
+                    raise ValueError(f"host link failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             elif linked:
                 # The standalone executable writer takes one unit and no host objects: emit every
                 # LowIR unit through the library object bridge and let the host linker join them.
@@ -358,7 +389,8 @@ def check_case(stage, mode, case, app, directory, tools, *, observed_warnings=Fa
                         raise ValueError(f"{label} failed ({result.returncode}): {result.stderr.decode(errors='replace')}")
             evidence["native"] = case["native"]
             run_executables(case["native"], rustexe, native, run, linked)
-        for executable in (rustexe, folder / "native-output", folder / "native-output.o", *providers,
+        for executable in (rustexe, rustobj, folder / "native-output", folder / "native-output.o",
+                           *([] if driver_obj is None else [driver_obj]), *providers,
                            *folder.glob("native-unit-*.o"), *folder.glob("rustc-crates/*.rlib")):
             executable.unlink(missing_ok=True)
         evidence["passed"] = True
@@ -376,7 +408,8 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
     identity = candidate_identity(app)
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
-    if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {}) or "crates" in c
+    if any(c.get("native", {}).get("kind") == "object" or "providers" in c.get("native", {})
+           or "driver" in c.get("native", {}) or "crates" in c
            for c in cases):
         required.add("cppgm")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
