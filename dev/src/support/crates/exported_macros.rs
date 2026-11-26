@@ -716,6 +716,11 @@ impl MacroDeprecation {
             .flatten()
     }
 
+    fn text_bytes(&self) -> usize {
+        self.text()
+            .fold(0usize, |total, text| total.saturating_add(text.len()))
+    }
+
     fn validate(&self) -> Result<(), &'static str> {
         if self.text().any(|text| text.len() > MAX_REASON_BYTES) {
             return Err("macro deprecation text exceeds transport limit");
@@ -1094,7 +1099,7 @@ impl Macros {
             1
         }
     }
-    /// Rows plus placement components, for the shared component budget.
+    /// Rows, placement components and notice text, for the shared component budget.
     pub(super) fn atoms(&self) -> usize {
         let scoped = self.scoped.iter().fold(self.rows.len(), |total, row| {
             total.saturating_add(1 + row.placement.len())
@@ -1105,10 +1110,12 @@ impl Macros {
         let reexports = self.reexports.iter().fold(builtins, |total, row| {
             total.saturating_add(1 + row.placement.len() + row.target_placement.len())
         });
-        self.globs.iter().fold(
-            reexports.saturating_add(self.deprecations.len()),
-            |total, row| total.saturating_add(1 + row.placement.len() + row.target.len()),
-        )
+        let globs = self.globs.iter().fold(reexports, |total, row| {
+            total.saturating_add(1 + row.placement.len() + row.target.len())
+        });
+        self.deprecations.iter().fold(globs, |total, row| {
+            total.saturating_add(1).saturating_add(row.text_bytes())
+        })
     }
     pub(super) fn bytes(&self) -> usize {
         let declarative = self
@@ -1133,10 +1140,7 @@ impl Macros {
             .fold(reexports, |total, row| total.saturating_add(row.bytes()));
         self.deprecations.iter().fold(
             globs.saturating_add(crate::support::retained::vector(&self.deprecations)),
-            |total, row| {
-                row.text()
-                    .fold(total, |bytes, text| bytes.saturating_add(text.len()))
-            },
+            |total, row| total.saturating_add(row.text_bytes()),
         )
     }
 }
