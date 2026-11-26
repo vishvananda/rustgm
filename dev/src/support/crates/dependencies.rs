@@ -64,6 +64,28 @@ pub struct Dependencies {
     artifacts: Vec<Interface>,
     aliases: Vec<Dependency>,
     edges: usize,
+    typed: Typed,
+}
+#[derive(Debug, Default)]
+struct Typed {
+    bytes: usize,
+    bootstrap: usize,
+    source: usize,
+}
+impl Typed {
+    fn observe(&mut self, artifact: &Interface) {
+        let Some(payload) = artifact.generic_payload() else {
+            return;
+        };
+        self.bytes = self.bytes.saturating_add(payload.retained_bytes());
+        if let Some(descriptor) = artifact.source_descriptor() {
+            if descriptor.profile().bootstrap_bindings() {
+                self.bootstrap += 1;
+            } else {
+                self.source += 1;
+            }
+        }
+    }
 }
 impl Dependencies {
     /// Select one actual supported source provider, independently of aliases.
@@ -137,9 +159,11 @@ impl Dependencies {
                 return Err("external alias has no metadata artifact");
             }
         }
+        let mut typed = Typed::default();
         let (atoms, names) = artifacts
             .iter()
             .fold((0usize, 0usize), |(atoms, names), artifact| {
+                typed.observe(artifact);
                 let (next_atoms, next_names) = artifact.budget();
                 (
                     atoms.saturating_add(next_atoms),
@@ -158,6 +182,7 @@ impl Dependencies {
             artifacts,
             aliases,
             edges,
+            typed,
         })
     }
     #[must_use]
@@ -167,6 +192,14 @@ impl Dependencies {
     #[must_use]
     pub fn aliases(&self) -> &[Dependency] {
         &self.aliases
+    }
+    /// Total retained generic payload bytes for the sealed graph.
+    pub(crate) const fn generic_bytes(&self) -> usize {
+        self.typed.bytes
+    }
+    pub(crate) const fn supports_typed_reservation(&self) -> bool {
+        (self.typed.source == 1 && self.typed.bootstrap == 0)
+            || (self.typed.source == 0 && self.typed.bootstrap != 0)
     }
     /// Number of graph edges checked and processed once during construction.
     #[must_use]

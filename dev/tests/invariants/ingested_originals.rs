@@ -168,6 +168,11 @@ fn mapped_graph(facts: &Declarations) -> Result<Rc<Graph>> {
     else {
         return Err("actual ordinary source graph".into());
     };
+    let mut graphs = graph.iter();
+    let graph = graphs.next().ok_or("expected one ordinary source graph")?;
+    if graphs.next().is_some() {
+        return Err("expected one ordinary source graph".into());
+    }
     Ok(Rc::clone(graph))
 }
 fn observed(graph: &Graph) -> Result<(usize, usize, usize)> {

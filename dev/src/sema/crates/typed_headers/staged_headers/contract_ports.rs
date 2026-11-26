@@ -82,22 +82,19 @@ pub(super) fn prepare(
     graph: &mapped_source::Graph,
     store: &Store,
     scopes: &mut [Scope],
+    contracts: &mut Contracts,
     budget: &mut Headers,
-) -> Result<(Contracts, Vec<(DefId, Predicate)>), Error> {
+) -> Result<Vec<(DefId, Predicate)>, Error> {
     let rows = context.descriptor.rows();
     budget.reserve(
-        size_of::<Contracts>()
-            .saturating_add(
-                rows.traits
-                    .len()
-                    .saturating_mul(size_of::<(DefId, Predicate)>()),
-            )
+        rows.traits
+            .len()
+            .saturating_mul(size_of::<(DefId, Predicate)>())
             .saturating_add(crate::support::retained::new_map::<DefId, Predicate>(
                 rows.traits.len(),
             )),
     )?;
     let mut associated_results = associated_results(scopes, budget)?;
-    let mut contracts = Contracts::default();
     let mut self_bounds = Vec::with_capacity(rows.traits.len());
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
         let Inputs::Trait(_) = &scope.inputs else {
@@ -176,12 +173,8 @@ pub(super) fn prepare(
             "associated result bounds have no actual canonical trait header",
         ));
     }
-    budget.observed.add(size_of::<Contracts>());
-    let allocation = contracts.header_table_allocation();
-    budget.charge(allocation.visits)?;
-    budget.observed.include(allocation);
     budget.charge(1)?;
-    Ok((contracts, self_bounds))
+    Ok(self_bounds)
 }
 
 pub(in crate::sema::crates::typed_headers) fn implicit_self(

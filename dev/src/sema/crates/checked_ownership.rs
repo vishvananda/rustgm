@@ -1,6 +1,6 @@
 //! Ordinary graphs and selected private mappings retain their actual owners.
 pub(in crate::sema) use super::typed_headers::mapped_source::ImportedTraitAlias;
-use super::typed_headers::{mapped_source::Graph, unpaid_provided::ProvidedOwners};
+use super::typed_headers::{mapped_source::Graphs, unpaid_provided::ProvidedOwners};
 use crate::{
     sema::{
         associated::{ImplPolarity, Owner, Schema},
@@ -18,21 +18,22 @@ pub(in crate::sema) fn import_trait_aliases(
     let Some(ImportedOwners::Ordinary(graph)) = facts.associated.imported_owner() else {
         return Ok(Vec::new());
     };
-    let count = graph.trait_alias_count().map_err(Error::unlocated)?;
-    if count == 0 {
-        return Ok(Vec::new());
+    let graphs = Rc::clone(graph);
+    let mut aliases = Vec::new();
+    for graph in graphs.iter() {
+        let count = graph.trait_alias_count().map_err(Error::unlocated)?;
+        super::charge_source_headers(
+            facts,
+            count.saturating_mul(16),
+            count.saturating_mul(size_of::<ImportedTraitAlias>()),
+        )?;
+        aliases.extend(graph.trait_aliases(facts).map_err(Error::unlocated)?);
     }
-    let graph = Rc::clone(graph);
-    super::charge_source_headers(
-        facts,
-        count.saturating_mul(16),
-        count.saturating_mul(size_of::<ImportedTraitAlias>()),
-    )?;
-    graph.trait_aliases(facts).map_err(Error::unlocated)
+    Ok(aliases)
 }
 
 pub(in crate::sema) enum ImportedOwners {
-    Ordinary(Rc<Graph>),
+    Ordinary(Rc<Graphs>),
     Provided(Rc<ProvidedOwners>),
 }
 impl ImportedOwners {
@@ -59,7 +60,11 @@ impl ImportedOwners {
         declaration: &crate::sema::opaque::Declaration,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.require_opaque(facts, id, declaration),
+            Self::Ordinary(graphs) => {
+                graphs
+                    .for_definition(declaration.owner)?
+                    .require_opaque(facts, id, declaration)
+            }
             Self::Provided(_) => {
                 Err("Provided profiles do not own deferred opaque operation contracts")
             }
@@ -67,13 +72,13 @@ impl ImportedOwners {
     }
     pub(in crate::sema) fn owner(&self, owner: Owner) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.owner(owner),
+            Self::Ordinary(graphs) => graphs.for_definition(owner.self_definition)?.owner(owner),
             Self::Provided(mapping) => mapping.owner(owner),
         }
     }
     pub(in crate::sema) fn associated_count(&self) -> Result<usize, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.associated_count(),
+            Self::Ordinary(graphs) => Ok(graphs.associated_count()),
             Self::Provided(_) => {
                 Err("selected imported owners require their explicit selected append")
             }
@@ -88,13 +93,15 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.associated_row(store, owner, schema, members, steps),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .associated_row(store, owner, schema, members, steps),
             Self::Provided(mapping) => mapping.associated_row(store, owner, schema, members, steps),
         }
     }
     pub(in crate::sema) fn role_origin(&self, role: Role) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.role_origin(role),
+            Self::Ordinary(graphs) => graphs.for_definition(role.definition)?.role_origin(role),
             Self::Provided(mapping) => mapping.role_origin(role),
         }
     }
@@ -106,7 +113,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.compiler_operation_role(facts, role, kind, steps),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(role.definition)?
+                .compiler_operation_role(facts, role, kind, steps),
             Self::Provided(_) => {
                 Err("private Provided profiles do not own declared compiler-operation roles")
             }
@@ -120,7 +129,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.declared_panic_role(facts, role, kind, steps),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(role.definition)?
+                .declared_panic_role(facts, role, kind, steps),
             Self::Provided(_) => Err("private Provided profiles do not own declared panic roles"),
         }
     }
@@ -132,7 +143,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.associated_language_role(facts, role, kind, steps),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(role.definition)?
+                .associated_language_role(facts, role, kind, steps),
             Self::Provided(_) => {
                 Err("private Provided profiles do not own these associated language roles")
             }
@@ -144,13 +157,17 @@ impl ImportedOwners {
         role: Role,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.conversion_role(store, role),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(role.definition)?
+                .conversion_role(store, role),
             Self::Provided(owner) => owner.conversion_role(store, role),
         }
     }
     pub(in crate::sema) fn empty_module_trait(&self, owner: Owner) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.empty_module_trait(owner),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .empty_module_trait(owner),
             Self::Provided(mapping) => {
                 mapping.owner(owner)?;
                 Ok(false)
@@ -162,7 +179,9 @@ impl ImportedOwners {
         owner: Owner,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.denies_implementation(owner),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .denies_implementation(owner),
             Self::Provided(mapping) => {
                 Ok(mapping.trait_flags(owner)? & s::TraitFlags::DENY_IMPL != 0)
             }
@@ -173,7 +192,9 @@ impl ImportedOwners {
         owner: Owner,
     ) -> Result<s::ImplementationDomain, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.implementation_domain(owner),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .implementation_domain(owner),
             Self::Provided(mapping) => {
                 if mapping.trait_flags(owner)? & s::TraitFlags::RESTRICTED_IMPL != 0 {
                     return Err(
@@ -190,13 +211,17 @@ impl ImportedOwners {
         owner: Owner,
     ) -> Result<Predicate, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.implementation_request(store, owner),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .implementation_request(store, owner),
             Self::Provided(mapping) => mapping.implementation_request(store, owner),
         }
     }
     pub(in crate::sema) fn automatic_trait(&self, owner: Owner) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.automatic_trait(owner),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .automatic_trait(owner),
             Self::Provided(_) => Err("Provided profiles do not own imported automatic traits"),
         }
     }
@@ -207,7 +232,9 @@ impl ImportedOwners {
         predicate: Predicate,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.automatic_implementation(store, owner, predicate),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .automatic_implementation(store, owner, predicate),
             Self::Provided(_) => Err("Provided profiles do not own imported automatic traits"),
         }
     }
@@ -218,7 +245,9 @@ impl ImportedOwners {
         predicate: Predicate,
     ) -> Result<(bool, ImplPolarity), &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.implementation(store, owner, predicate),
+            Self::Ordinary(graphs) => graphs
+                .for_definition(owner.self_definition)?
+                .implementation(store, owner, predicate),
             Self::Provided(mapping) => mapping.implementation(store, owner, predicate),
         }
     }

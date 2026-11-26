@@ -1,5 +1,6 @@
 //! Stage real source headers without installing roles, declarations or originals.
 mod commit_ports;
+pub(super) use commit_ports::Installation;
 pub(super) mod contract_ports;
 mod definition_cells;
 pub(super) mod environments;
@@ -37,7 +38,6 @@ pub(super) use template_ports::register as register_callable;
 pub(super) struct Stage {
     graph: std::rc::Rc<mapped_source::Graph>,
     scopes: Vec<Scope>,
-    aliases: Requirements,
 }
 struct Scope {
     definition: DefId,
@@ -102,6 +102,7 @@ impl Stage {
     pub(super) fn prepare(
         context: &mapped_source::Context<'_>,
         facts: &mut Declarations,
+        aliases: &mut Requirements,
         budget: &mut Headers,
     ) -> Result<Self, Error> {
         let mut graph = mapped_source::Graph::prepare(context, facts, budget)?;
@@ -128,7 +129,6 @@ impl Stage {
         )?;
         graph.finish_opaque_results(context, &mut remap, facts, budget)?;
         let mut scopes = Vec::with_capacity(rows.scopes.len());
-        let mut aliases = Requirements::default();
         let mut walk = Walk {
             context,
             graph: &graph,
@@ -146,7 +146,7 @@ impl Stage {
                     &graph,
                     (scope.definition, raw.owner),
                     default,
-                    &mut aliases,
+                    aliases,
                     budget,
                 )?;
             }
@@ -165,7 +165,6 @@ impl Stage {
         Ok(Self {
             graph: std::rc::Rc::new(graph),
             scopes,
-            aliases,
         })
     }
 }

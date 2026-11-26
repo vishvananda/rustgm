@@ -18,7 +18,9 @@ impl ImportedOwners {
         universals: u32,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.function(catalog, definition, body, universals),
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .function(catalog, definition, body, universals),
             Self::Provided(owner) => owner.function(catalog, definition, body, universals),
         }
     }
@@ -30,7 +32,9 @@ impl ImportedOwners {
         declared: bool,
     ) -> Result<Option<&'a [Input]>, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.declaration_inputs(catalog, definition, declared),
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .declaration_inputs(catalog, definition, declared),
             Self::Provided(owner) => {
                 owner.declaration_inputs(catalog, generics, definition, declared)
             }
@@ -43,18 +47,24 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.owns_original(catalog, definition, steps),
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .owns_original(catalog, definition, steps),
             Self::Provided(owner) => owner.owns_original(catalog, definition, steps),
         }
     }
     pub(super) fn owns_closure_original(
         &self,
         catalog: &Catalog,
+        facts: &Declarations,
         identity: crate::types::closure::ClosureId,
         steps: &mut usize,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.owns_closure_original(catalog, identity, steps),
+            Self::Ordinary(graphs) => match graphs.for_closure(facts, identity)? {
+                Some(graph) => graph.owns_closure_original(catalog, identity, steps),
+                None => Ok(false),
+            },
             Self::Provided(_) => Ok(false),
         }
     }
@@ -65,18 +75,23 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<bool, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.owns_anonymous_original(catalog, body, steps),
+            Self::Ordinary(graph) => graph
+                .for_body(body)?
+                .owns_anonymous_original(catalog, body, steps),
             Self::Provided(_) => Ok(false),
         }
     }
     pub(super) fn closure_identity_for_body(
         &self,
         catalog: &Catalog,
+        owner: &crate::support::crates::CrateIdentity,
         body: crate::support::crates::owner_catalog::BodyRef,
         steps: &mut usize,
     ) -> Result<Option<crate::types::closure::ClosureId>, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.closure_identity_for_body(catalog, body, steps),
+            Self::Ordinary(graph) => graph
+                .by_identity(owner)?
+                .closure_identity_for_body(catalog, body, steps),
             Self::Provided(_) => Ok(None),
         }
     }
@@ -89,9 +104,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
         match self {
-            Self::Ordinary(graph) => {
-                graph.source_original(catalog, facts, headers, definition, steps)
-            }
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .source_original(catalog, facts, headers, definition, steps),
             Self::Provided(owner) => {
                 owner.require_store(&facts.types)?;
                 owner.owns_original(catalog, definition, steps)?;
@@ -108,9 +123,12 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
         match self {
-            Self::Ordinary(graph) => {
-                graph.source_closure_original(catalog, facts, headers, identity, steps)
-            }
+            Self::Ordinary(graph) => match graph.for_closure(facts, identity)? {
+                Some(graph) => {
+                    graph.source_closure_original(catalog, facts, headers, identity, steps)
+                }
+                None => Ok(None),
+            },
             Self::Provided(_) => {
                 Err("selected original does not own ordinary source closure bodies")
             }
@@ -125,9 +143,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<Option<mapped_source::SourceOriginal<'a>>, &'static str> {
         match self {
-            Self::Ordinary(graph) => {
-                graph.source_anonymous_original(catalog, facts, headers, body, steps)
-            }
+            Self::Ordinary(graph) => graph
+                .for_body(body)?
+                .source_anonymous_original(catalog, facts, headers, body, steps),
             Self::Provided(_) => {
                 Err("selected original does not own ordinary source anonymous bodies")
             }
@@ -142,9 +160,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => {
-                graph.require_method_regions(catalog, definition, scheme, steps)
-            }
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .require_method_regions(catalog, definition, scheme, steps),
             Self::Provided(owner) => {
                 owner.require_method_regions(catalog, store, definition, scheme, steps)
             }
@@ -159,9 +177,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<(), &'static str> {
         match self {
-            Self::Ordinary(graph) => {
-                graph.require_method_environment(catalog, facts, definition, header, steps)
-            }
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .require_method_environment(catalog, facts, definition, header, steps),
             Self::Provided(owner) => {
                 owner.require_method_declaration(catalog, facts, definition, header, steps)
             }
@@ -175,7 +193,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<crate::sema::compiler_items::headers::Trait<'a>, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.trait_header(catalog, facts, role, steps),
+            Self::Ordinary(graph) => graph
+                .for_definition(role.definition)?
+                .trait_header(catalog, facts, role, steps),
             Self::Provided(owner) => owner.trait_header(catalog, facts, role, steps),
         }
     }
@@ -188,7 +208,9 @@ impl ImportedOwners {
         steps: &mut usize,
     ) -> Result<mapped_source::Readiness, &'static str> {
         match self {
-            Self::Ordinary(graph) => graph.readiness(catalog, facts, headers, definition, steps),
+            Self::Ordinary(graph) => graph
+                .for_definition(definition)?
+                .readiness(catalog, facts, headers, definition, steps),
             Self::Provided(_) => {
                 Err("selected declaration requires its actual pending readiness consumer")
             }
@@ -214,7 +236,10 @@ impl super::super::Linkage {
         headers
             .charge(6)
             .map_err(|_| "source constant lookup exceeds header work budget")?;
-        let Some(raw) = graph.constant_original(catalog, facts, definition)? else {
+        let Some(raw) = graph
+            .for_definition(definition)?
+            .constant_original(catalog, facts, definition)?
+        else {
             return Ok(None);
         };
         let (owner, _, _) = catalog.declaration_coordinate(catalog.declaration(definition)?)?;
@@ -244,7 +269,9 @@ impl super::super::Linkage {
         headers
             .charge(6)
             .map_err(|_| "source constant lookup exceeds header work budget")?;
-        graph.associated_constant(catalog, facts, definition)
+        graph
+            .for_definition(definition)?
+            .associated_constant(catalog, facts, definition)
     }
 
     pub(crate) fn selected_caller_tracking_absent(

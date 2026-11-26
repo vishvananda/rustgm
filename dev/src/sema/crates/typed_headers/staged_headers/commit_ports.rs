@@ -2,17 +2,126 @@
 use super::{Declarations, Error, Headers, Stage, error, mapped_source};
 use crate::{
     resolve::model::DefId,
-    sema::{generics::Parameter, lifetimes::FunctionRegions},
+    sema::{
+        alias_requirements::Requirements, associated::ImportedOwner, crates::ImportedOwners,
+        traits::Contracts,
+    },
     support::retained,
-    types::{ItemId, TypeId, outlives::Pair, parameters::environment::Environment},
+    types::{ItemId, callable::Templates, outlives::Pair},
 };
-use std::{rc::Rc, sync::Arc};
+use std::rc::Rc;
+
+/// One compilation installs the canonical tables for its complete import inventory.
+pub(in crate::sema::crates::typed_headers) struct Installation {
+    aliases: Requirements,
+    callables: Templates,
+    contracts: Contracts,
+    graphs: Vec<Rc<mapped_source::Graph>>,
+    owners: Vec<ImportedOwner>,
+    before: retained::Allocation,
+}
+
+impl Installation {
+    pub(in crate::sema::crates::typed_headers) fn new(
+        facts: &Declarations,
+        budget: &mut Headers,
+    ) -> Result<Self, Error> {
+        if facts.generics.traits.is_some()
+            || !facts.lifetimes.callables.is_empty()
+            || !facts.alias_requirements.is_empty()
+        {
+            return Err(error(
+                "source canonical installation cannot replace an existing header inventory",
+            ));
+        }
+        let before = table_allocation(facts, budget);
+        budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
+        budget.reserve(size_of::<Contracts>())?;
+        Ok(Self {
+            aliases: Requirements::default(),
+            callables: Templates::default(),
+            contracts: Contracts::default(),
+            graphs: Vec::new(),
+            owners: Vec::new(),
+            before,
+        })
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn add(
+        &mut self,
+        context: &mapped_source::Context<'_>,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        Stage::prepare(context, facts, &mut self.aliases, budget)?
+            .install(context, facts, self, budget)
+    }
+
+    fn reserve(&self, additional_owners: usize, budget: &mut Headers) -> Result<(), Error> {
+        let owner_growth = retained::Growth::vector::<ImportedOwner>(
+            self.owners.len(),
+            self.owners.capacity(),
+            additional_owners,
+        );
+        let graph_growth = retained::Growth::vector::<Rc<mapped_source::Graph>>(
+            self.graphs.len(),
+            self.graphs.capacity(),
+            1,
+        );
+        budget.reserve(owner_growth.bytes.saturating_add(graph_growth.bytes))?;
+        budget.charge(owner_growth.work.saturating_add(graph_growth.work))
+    }
+
+    pub(in crate::sema::crates::typed_headers) fn finish(
+        self,
+        facts: &mut Declarations,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        self.contracts
+            .check_cycles(&facts.types)
+            .map_err(|(_, message)| error(message))?;
+        budget.reserve(facts.associated.imported_allocation_bound(
+            self.owners.len(),
+            self.owners.iter().map(|row| row.members.len()).sum(),
+            self.owners.iter().map(|row| row.results.len()).sum(),
+        ))?;
+        let graphs = Rc::new(mapped_source::Graphs::new(
+            self.graphs,
+            &facts.types,
+            budget,
+        )?);
+        let mut allocation = self.callables.allocation();
+        allocation.include(self.contracts.header_table_allocation());
+        budget.charge(allocation.visits)?;
+        budget.observed.include(allocation);
+        budget.observed.add(size_of::<Contracts>());
+        let source = ImportedOwners::Ordinary(Rc::clone(&graphs));
+        let mut work = budget.work.get();
+        let installed =
+            facts
+                .associated
+                .install_imported(&facts.types, source, self.owners, &mut work);
+        budget.work.set(work);
+        installed.map_err(error)?;
+        facts.lifetimes.callables = self.callables;
+        facts.generics.traits = Some(Box::new(self.contracts));
+        facts.alias_requirements = self.aliases;
+        budget.source = Some(ImportedOwners::Ordinary(graphs));
+        let after = table_allocation(facts, budget);
+        budget.observed.include(retained::Allocation {
+            bytes: after.bytes.saturating_sub(self.before.bytes),
+            visits: self.before.visits.saturating_add(after.visits),
+        });
+        Ok(())
+    }
+}
 
 impl Stage {
-    pub(in crate::sema::crates::typed_headers) fn install(
+    fn install(
         mut self,
         context: &mapped_source::Context<'_>,
         facts: &mut Declarations,
+        installation: &mut Installation,
         budget: &mut Headers,
     ) -> Result<(), Error> {
         let constants = self.preflight(context, facts, budget)?;
@@ -22,13 +131,15 @@ impl Stage {
             prepare_effects(&self.scopes, facts, constants, budget)?
         };
         let owners = self.associated_rows(context, &facts.types, budget)?;
-        budget.reserve(facts.associated.imported_allocation_bound(
-            owners.len(),
-            owners.iter().map(|row| row.members.len()).sum(),
-            owners.iter().map(|row| row.results.len()).sum(),
-        ))?;
-        let (callables, functions) =
-            super::template_ports::prepare(context, &self.graph, facts, &self.scopes, budget)?;
+        installation.reserve(owners.len(), budget)?;
+        let functions = super::template_ports::prepare(
+            context,
+            &self.graph,
+            facts,
+            &self.scopes,
+            &mut installation.callables,
+            budget,
+        )?;
         let exact = super::verbatim_exports::prepare(context, facts, &functions, budget)?;
         let cells = super::definition_cells::prepare(
             context,
@@ -38,18 +149,16 @@ impl Stage {
             &functions,
             budget,
         )?;
-        let (contracts, self_bounds) = super::contract_ports::prepare(
+        let self_bounds = super::contract_ports::prepare(
             context,
             &self.graph,
             &facts.types,
             &mut self.scopes,
+            &mut installation.contracts,
             budget,
         )?;
         let rows = context.descriptor.rows();
         prepay_cycles(rows, budget)?;
-        contracts
-            .check_cycles(&facts.types)
-            .map_err(|(_, message)| error(message))?;
         let nominal_bounds = prepare_nominal_bounds(context, &self.graph, facts, budget)?;
         let nominals = super::nominal_ports::prepare(context, &self.graph, facts, budget)?;
         let nominal_count = nominals
@@ -57,11 +166,6 @@ impl Stage {
             .map_or(0, |nominals| nominals.owners.len());
         super::nominal_ports::reserve_owners(facts, nominal_count, budget)?;
         let generic = super::definition_cells::generic_nominals(rows, budget)?;
-        let before = table_allocation(facts, budget);
-        budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
-        // This shared work count is checked inside the owner installer BEFORE
-        // its first write; failure cannot leave a partially installed owner.
-        let mut work = budget.work.get();
         let exact = super::verbatim_exports::destination(exact, facts.foreign.as_deref_mut())?;
         let effects = effects
             .map(|plan| {
@@ -86,14 +190,6 @@ impl Stage {
         } else {
             (None, None, Vec::new())
         };
-        let installed = facts.associated.install_imported(
-            &facts.types,
-            crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
-            owners,
-            &mut work,
-        );
-        budget.work.set(work);
-        installed.map_err(error)?;
         if let Some(rows) = member_rows {
             rows.install();
         }
@@ -112,22 +208,8 @@ impl Stage {
             plan.install(catalog);
         }
         install_nominal_facts(facts, nominal_owners, nominal_bounds, generic);
-        facts.lifetimes.callables = callables;
-        if !self.aliases.is_empty() {
-            facts.alias_requirements = std::mem::take(&mut self.aliases);
-        }
-        self.publish(facts, budget, functions, contracts, self_bounds, before);
-        Ok(())
-    }
-    fn publish(
-        self,
-        facts: &mut Declarations,
-        budget: &mut Headers,
-        functions: Vec<super::template_ports::Callable>,
-        contracts: crate::sema::traits::Contracts,
-        self_bounds: Vec<(DefId, crate::types::parameters::predicates::Predicate)>,
-        before: retained::Allocation,
-    ) {
+        installation.owners.extend(owners);
+        installation.graphs.push(self.graph);
         publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
@@ -135,14 +217,8 @@ impl Stage {
                 linkage.symbols.insert(function.definition, symbol);
             }
         }
-        facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);
-        budget.source = Some(crate::sema::crates::ImportedOwners::Ordinary(self.graph));
-        let after = table_allocation(facts, budget);
-        budget.observed.include(retained::Allocation {
-            bytes: after.bytes.saturating_sub(before.bytes),
-            visits: before.visits.saturating_add(after.visits),
-        });
+        Ok(())
     }
 
     fn preflight(
@@ -169,37 +245,25 @@ impl Stage {
             ));
         }
         let rows = context.descriptor.rows();
-        if self.scopes.len() != rows.scopes.len()
-            || budget.source.is_some()
-            || !budget.entries.is_empty()
-            || facts.generics.traits.is_some()
-            || !facts.lifetimes.callables.is_empty()
-            || !self.aliases.is_empty() && !facts.alias_requirements.is_empty()
-        {
+        if self.scopes.len() != rows.scopes.len() {
             return Err(error(
-                "source canonical installation cannot replace a partial or existing header inventory",
+                "source canonical installation changed the scope inventory",
             ));
         }
         prepay_tables(facts, rows.scopes.len(), rows.functions.len(), budget)?;
-        budget.reserve(
-            retained::new_map::<DefId, crate::sema::associated::TypeContract>(
-                facts
-                    .associated
-                    .types
-                    .len()
-                    .saturating_add(rows.associated_types.len()),
-            )
-            .saturating_add(
-                self.scopes
-                    .iter()
-                    .filter_map(|scope| match &scope.inputs {
-                        super::Inputs::Associated { bounds, .. } => Some(bounds.len()),
-                        _ => None,
-                    })
-                    .sum::<usize>()
-                    .saturating_mul(size_of::<crate::types::parameters::clauses::Clause>()),
-            ),
-        )?;
+        let associated = map_growth(&facts.associated.types, rows.associated_types.len());
+        let bounds = self
+            .scopes
+            .iter()
+            .filter_map(|scope| match &scope.inputs {
+                super::Inputs::Associated { bounds, .. } => Some(bounds.len()),
+                _ => None,
+            })
+            .sum::<usize>();
+        budget.reserve(associated.bytes.saturating_add(
+            bounds.saturating_mul(size_of::<crate::types::parameters::clauses::Clause>()),
+        ))?;
+        budget.charge(associated.work)?;
         let mut constants = 0usize;
         let mut families = 0usize;
         for scope in &self.scopes {
@@ -289,29 +353,29 @@ fn prepay_tables(
     functions: usize,
     budget: &mut Headers,
 ) -> Result<(), Error> {
-    budget.reserve(retained::sum([
-        retained::new_map::<DefId, Vec<Parameter>>(
-            facts.generics.parameters.len().saturating_add(scopes),
-        ),
-        retained::new_map::<DefId, Arc<Environment>>(
-            facts.generics.environments.len().saturating_add(scopes),
-        ),
-        retained::new_map::<DefId, DefId>(facts.generics.parents.len().saturating_add(scopes)),
-        retained::new_map::<DefId, super::Header>(functions),
-        retained::new_map::<DefId, FunctionRegions>(
-            facts.lifetimes.functions.len().saturating_add(functions),
-        ),
-        retained::new_map::<DefId, String>(
-            facts
-                .crates
-                .as_ref()
-                .map_or(0, |l| l.symbols.len())
-                .saturating_add(functions),
-        ),
-        retained::new_map::<DefId, (TypeId, u32)>(
-            facts.methods.receivers.len().saturating_add(functions),
-        ),
-    ]))
+    let mut growth = retained::Growth::default();
+    for table in [
+        map_growth(&facts.generics.parameters, scopes),
+        map_growth(&facts.generics.environments, scopes),
+        map_growth(&facts.generics.parents, scopes),
+        map_growth(&budget.entries, functions),
+        map_growth(&facts.lifetimes.functions, functions),
+        map_growth(&facts.methods.receivers, functions),
+    ] {
+        growth.include(table);
+    }
+    if let Some(linkage) = &facts.crates {
+        growth.include(map_growth(&linkage.symbols, functions));
+    }
+    budget.charge(growth.work)?;
+    budget.reserve(growth.bytes)
+}
+
+fn map_growth<K, V, S>(
+    map: &std::collections::HashMap<K, V, S>,
+    additional: usize,
+) -> retained::Growth {
+    retained::Growth::map::<K, V>(map.len(), map.capacity(), additional)
 }
 
 fn install_nominal_facts(

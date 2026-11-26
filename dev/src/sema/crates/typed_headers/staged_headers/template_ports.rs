@@ -21,8 +21,9 @@ pub(super) fn prepare(
     graph: &mapped_source::Graph,
     facts: &mut Declarations,
     scopes: &[Scope],
+    callables: &mut Templates,
     budget: &mut Headers,
-) -> Result<(Templates, Vec<Callable>), Error> {
+) -> Result<Vec<Callable>, Error> {
     let rows = context.descriptor.rows();
     budget.reserve(
         scopes
@@ -34,7 +35,6 @@ pub(super) fn prepare(
     let mut active = Vec::<Active>::with_capacity(scopes.len());
     let mut owners = Vec::with_capacity(scopes.len());
     let mut parameters = Vec::with_capacity(rows.slots.len());
-    let mut callables = Templates::default();
     let mut result = Vec::with_capacity(rows.functions.len());
     let structs = super::definition_cells::struct_constructors(rows, budget)?;
     for (raw, scope) in rows.scopes.iter().zip(scopes) {
@@ -82,7 +82,7 @@ pub(super) fn prepare(
             )?;
             registration(
                 &mut facts.types,
-                &mut callables,
+                callables,
                 (&owners, &parameters),
                 callable,
                 context.descriptor.profile().declaration_policies(),
@@ -107,7 +107,7 @@ pub(super) fn prepare(
             context,
             graph,
             facts,
-            &mut callables,
+            callables,
             (raw.owner, scope.definition, &parameters[start..]),
             &structs,
             budget,
@@ -118,10 +118,7 @@ pub(super) fn prepare(
         });
     }
     budget.charge(1)?;
-    let allocation = callables.allocation();
-    budget.charge(allocation.visits)?;
-    budget.observed.include(allocation);
-    Ok((callables, result))
+    Ok(result)
 }
 
 /// Version thirteen: each tuple variant of an enum scope, and a tuple

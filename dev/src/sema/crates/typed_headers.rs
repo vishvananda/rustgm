@@ -392,7 +392,7 @@ impl super::Linkage {
             .as_deref()
             .and_then(|headers| headers.source.as_ref())
         {
-            source.require_input_parent(
+            source.for_definition(definition)?.require_input_parent(
                 self.origin_catalog()
                     .ok_or("source input scope lost its actual catalog")?,
                 generics,
@@ -474,7 +474,7 @@ pub(crate) fn is_source_closure_original(
     let catalog = linkage
         .origin_catalog()
         .ok_or("source closure classification lacks its actual catalog")?;
-    graph.owns_closure_original(catalog, identity, steps)
+    graph.owns_closure_original(catalog, facts, identity, steps)
 }
 
 pub(crate) fn is_source_anonymous_original(
@@ -502,6 +502,7 @@ pub(crate) fn is_source_anonymous_original(
 
 pub(crate) fn source_closure_identity(
     facts: &Declarations,
+    owner: &CrateIdentity,
     body: crate::support::crates::owner_catalog::BodyRef,
     steps: &mut usize,
 ) -> Result<Option<crate::types::closure::ClosureId>, &'static str> {
@@ -520,7 +521,7 @@ pub(crate) fn source_closure_identity(
     let catalog = linkage
         .origin_catalog()
         .ok_or("source closure lookup lacks its actual catalog")?;
-    graph.closure_identity_for_body(catalog, body, steps)
+    graph.closure_identity_for_body(catalog, owner, body, steps)
 }
 
 pub(crate) fn source_original<'a>(
@@ -728,16 +729,9 @@ fn import_legacy(imported: &Imported, facts: &mut Declarations) -> Result<(), Er
         .map_err(error)?
         .ok_or_else(|| error("generic original import lacks its completed resolver catalog"))?;
     let mut headers = Headers {
-        base: imported.dependencies().artifacts().iter().fold(
-            catalog.retained_bytes(),
-            |bytes, artifact| {
-                bytes.saturating_add(
-                    artifact
-                        .generic_payload()
-                        .map_or(0, crate::support::crates::generics::Payload::retained_bytes),
-                )
-            },
-        ),
+        base: catalog
+            .retained_bytes()
+            .saturating_add(imported.dependencies().generic_bytes()),
         ..Headers::default()
     };
     headers.reserve(size_of::<Headers>())?;
@@ -824,7 +818,7 @@ pub(in crate::sema) fn imported_member_plan(
     let Some(super::ImportedOwners::Ordinary(graph)) = facts.associated.imported_owner() else {
         return Ok(None);
     };
-    let graph = std::rc::Rc::clone(graph);
+    let graph = std::rc::Rc::clone(graph.for_definition(definition).map_err(error)?);
     let headers = facts
         .crates
         .as_mut()

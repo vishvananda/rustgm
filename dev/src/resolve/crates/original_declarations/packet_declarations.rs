@@ -356,23 +356,16 @@ fn preflight(
             size_of::<Vec<ScopeId>>() + size_of::<BodyBinding>() + size_of::<Option<u32>>(),
         ))
         .saturating_add(sites.saturating_mul(4 * size_of::<Option<Label>>()));
-    let mut base = imported
-        .origins
-        .get()
-        .map_or(0, crate::resolve::body_origin::Catalog::retained_bytes);
-    let mut providers = 0_usize;
-    for artifact in imported.dependencies.artifacts() {
-        work.charge(1)?;
-        if let Some(payload) = artifact.generic_payload() {
-            base = base.saturating_add(payload.retained_bytes());
-            providers += usize::from(matches!(payload.view(), g::PayloadView::Source(_)));
-        }
-    }
-    if providers != 1 {
+    if !imported.dependencies.supports_typed_reservation() {
         return Err(error(
             "source function profile requires one complete source binding provider",
         ));
     }
+    let base = imported
+        .origins
+        .get()
+        .map_or(0, crate::resolve::body_origin::Catalog::retained_bytes)
+        .saturating_add(imported.dependencies.generic_bytes());
     work.peak = work
         .peak
         .max(work.retained.saturating_add(base).saturating_add(scratch));

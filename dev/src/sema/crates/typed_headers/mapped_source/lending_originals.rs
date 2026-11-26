@@ -26,6 +26,7 @@ pub(crate) fn prepare(
         facts,
         extra_work,
         extra_bytes,
+        |graphs, _| graphs.for_definition(definition).map(Some),
         |graph, facts, work, allocation| {
             let headers = facts
                 .crates
@@ -87,6 +88,7 @@ pub(crate) fn prepare_closure(
         facts,
         extra_work,
         extra_bytes,
+        |graphs, facts| graphs.for_closure(facts, identity),
         |graph, facts, work, allocation| {
             let mut steps = work.steps;
             let closure = graph.closure_header(&graph.origins, facts, identity, &mut steps);
@@ -119,6 +121,7 @@ pub(crate) fn prepare_anonymous(
         facts,
         extra_work,
         extra_bytes,
+        |graphs, _| graphs.for_body(body).map(Some),
         |graph, facts, work, allocation| {
             let mut steps = work.steps;
             let anonymous = graph.anonymous_header(&graph.origins, facts, body, &mut steps);
@@ -144,6 +147,10 @@ fn prepare_lazy<T>(
     facts: &mut Declarations,
     extra_work: usize,
     extra_bytes: usize,
+    select: impl for<'a> FnOnce(
+        &'a super::Graphs,
+        &Declarations,
+    ) -> Result<Option<&'a Rc<Graph>>, &'static str>,
     action: impl FnOnce(
         &Graph,
         &mut Declarations,
@@ -158,7 +165,10 @@ fn prepare_lazy<T>(
     else {
         return Ok(None);
     };
-    let Some(ImportedOwners::Ordinary(graph)) = headers.source.as_ref() else {
+    let Some(ImportedOwners::Ordinary(graphs)) = headers.source.as_ref() else {
+        return Ok(None);
+    };
+    let Some(graph) = select(graphs, facts).map_err(error)? else {
         return Ok(None);
     };
     if !matches!(graph.canonical, Canonical::Lazy(_)) {
@@ -288,9 +298,14 @@ fn authenticate(
         .origin_catalog()
         .map_err(error)?
         .ok_or_else(|| error("ordinary original lost its actual origin catalog"))?;
+    let Some(ImportedOwners::Ordinary(graphs)) = facts.associated.imported_owner() else {
+        return Err(error(
+            "ordinary original lacks its actual installed graph inventory",
+        ));
+    };
     if !std::ptr::eq(catalog.as_ref(), graph.origins.as_ref())
         || !Arc::ptr_eq(&imported.shared_dependencies(), &graph.inventory)
-        || !matches!(facts.associated.imported_owner(), Some(ImportedOwners::Ordinary(actual)) if std::ptr::eq(actual.as_ref(), graph))
+        || !graphs.contains(graph).map_err(error)?
     {
         return Err(error(
             "ordinary original changed its actual namespace or mapping owner",

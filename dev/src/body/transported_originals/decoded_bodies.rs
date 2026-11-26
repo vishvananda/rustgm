@@ -128,14 +128,15 @@ fn prepare_target(
         .and_then(|closures| closures.header_for_body(raw.body))
         .is_some()
     {
-        let identity = crate::sema::crates::source_closure_identity(facts, raw.body, steps)
-            .map_err(|e| context.report.body_optional_error(None, e))?
-            .ok_or_else(|| {
-                context.report.body_optional_error(
-                    None,
-                    "source closure original lost its canonical identity",
-                )
-            })?;
+        let identity =
+            crate::sema::crates::source_closure_identity(facts, context.owner, raw.body, steps)
+                .map_err(|e| context.report.body_optional_error(None, e))?
+                .ok_or_else(|| {
+                    context.report.body_optional_error(
+                        None,
+                        "source closure original lost its canonical identity",
+                    )
+                })?;
         crate::sema::crates::prepare_source_closure_original(
             context.report,
             facts,

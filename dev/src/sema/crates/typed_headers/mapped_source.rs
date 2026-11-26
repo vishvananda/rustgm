@@ -1,6 +1,8 @@
 //! One private canonical graph is sealed to an actual immutable source inventory.
+mod artifact_graphs;
 pub(super) mod checked_rows;
 mod dag_recipes;
+pub(in crate::sema) use artifact_graphs::Graphs;
 mod ingest_roots;
 mod ingested_domains;
 mod lending_originals;

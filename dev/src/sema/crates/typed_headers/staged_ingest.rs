@@ -1,5 +1,5 @@
 //! An authenticated crate inventory installs neutral headers, never checked execution.
-use super::{Declarations, Error, Headers, error, mapped_source, staged_headers::Stage};
+use super::{Declarations, Error, Headers, error, mapped_source, staged_headers::Installation};
 use crate::resolve::{crates::Imported, expansion::Report};
 
 pub(super) fn import(
@@ -17,26 +17,7 @@ pub(super) fn import(
             "source headers changed their actual resolver inventory",
         ));
     }
-    let index = if let Some(client) = report.package.source_client() {
-        client
-            .require_inventory(imported.dependencies())
-            .map_err(error)?
-    } else {
-        let index = imported
-            .dependencies()
-            .artifacts()
-            .iter()
-            .position(|artifact| {
-                artifact
-                    .source_descriptor()
-                    .is_some_and(|descriptor| descriptor.profile().bootstrap_bindings())
-            })
-            .ok_or_else(|| {
-                error("source headers require their authenticated source client report")
-            })?;
-        u32::try_from(index).map_err(|_| error("bootstrap crate artifact index overflow"))?
-    };
-    authenticate_bindings(report, imported, facts, index)?;
+    let indices = active_indices(report, imported)?;
     let catalog = imported
         .origin_catalog()
         .map_err(error)?
@@ -50,45 +31,76 @@ pub(super) fn import(
             "source headers cannot replace an existing or absent semantic linkage",
         ));
     }
-    let artifact = imported
-        .dependencies()
-        .artifacts()
-        .get(index as usize)
-        .ok_or_else(|| error("source provider index is outside its authenticated inventory"))?;
-    let descriptor = artifact
-        .source_descriptor()
-        .ok_or_else(|| error("source headers require their complete actual descriptor"))?;
-    for (position, artifact) in imported.dependencies().artifacts().iter().enumerate() {
-        if position != index as usize && artifact.generic_payload().is_some() {
-            return Err(error(
-                "mixed generic source inventories require their wider complete import profile",
-            ));
-        }
-    }
+    let dependencies = imported.dependencies();
     let mut headers = Headers {
-        base: imported.dependencies().artifacts().iter().fold(
-            catalog.retained_bytes(),
-            |bytes, artifact| {
-                bytes.saturating_add(
-                    artifact
-                        .generic_payload()
-                        .map_or(0, crate::support::crates::generics::Payload::retained_bytes),
-                )
-            },
-        ),
+        base: catalog
+            .retained_bytes()
+            .saturating_add(dependencies.generic_bytes()),
         ..Headers::default()
     };
-    headers.reserve(size_of::<Headers>())?;
-    let context = mapped_source::Context {
-        imported,
-        catalog: &catalog,
-        descriptor,
-        provider_index: index,
-    };
-    Stage::prepare(&context, facts, &mut headers)?.install(&context, facts, &mut headers)?;
+    headers
+        .reserve(size_of::<Headers>().saturating_add(crate::support::retained::vector(&indices)))?;
+    let mut installation = Installation::new(facts, &mut headers)?;
+    for index in indices {
+        authenticate_bindings(report, imported, facts, index)?;
+        let descriptor = dependencies.artifacts()[index as usize]
+            .source_descriptor()
+            .ok_or_else(|| error("source headers require their complete actual descriptor"))?;
+        let context = mapped_source::Context {
+            imported,
+            catalog: &catalog,
+            descriptor,
+            provider_index: index,
+        };
+        installation.add(&context, facts, &mut headers)?;
+    }
+    installation.finish(facts, &mut headers)?;
     headers.observed.add(size_of::<Headers>());
     facts.crates.get_or_insert_default().originals = Some(Box::new(headers));
     Ok(())
+}
+
+fn active_indices(report: &Report, imported: &Imported) -> Result<Vec<u32>, Error> {
+    let dependencies = imported.dependencies();
+    let selected = report
+        .package
+        .source_client()
+        .map(|client| client.require_inventory(dependencies))
+        .transpose()
+        .map_err(error)?;
+    let mut indices = Vec::new();
+    for (position, artifact) in dependencies.artifacts().iter().enumerate() {
+        if artifact.generic_payload().is_none() {
+            continue;
+        }
+        let index =
+            u32::try_from(position).map_err(|_| error("typed crate artifact index overflow"))?;
+        let descriptor = artifact.source_descriptor();
+        let bootstrap =
+            descriptor.is_some_and(|descriptor| descriptor.profile().bootstrap_bindings());
+        match selected {
+            Some(actual) if actual == index && !bootstrap && descriptor.is_some() => {
+                indices.push(index);
+            }
+            None if bootstrap => indices.push(index),
+            None if indices.is_empty() && descriptor.is_some() => {
+                return Err(error(
+                    "source headers require their authenticated source client report",
+                ));
+            }
+            _ => {
+                return Err(error(
+                    "mixed generic source inventories require their wider complete import profile",
+                ));
+            }
+        }
+    }
+    if indices.is_empty() {
+        return Err(error(
+            "source headers require their complete actual descriptor",
+        ));
+    }
+    Ok(indices)
 }
 
 /// Keep binding verification constant per loan of an imported original.

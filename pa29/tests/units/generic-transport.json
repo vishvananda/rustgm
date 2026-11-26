@@ -180,7 +180,9 @@
     "tests/spec/generic-contracts/reject-trait.rs",
     "tests/spec/generic-contracts/reject-const-call.rs",
     "tests/spec/generic-contracts/reject-escape.rs",
-    "tests/spec/generic-contracts/reject-array.rs"
+    "tests/spec/generic-contracts/reject-array.rs",
+    "tests/spec/generic-contracts/pass-collisions.rs",
+    "tests/spec/generic-contracts/reject-foreign-trait.rs"
   ],
   "cases": [
     {
@@ -6501,6 +6503,84 @@
       ],
       "externs": {
         "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-collisions.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "base",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        },
+        {
+          "name": "other",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "other",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "base",
+        "other": "other"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-foreign-trait.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "base",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        },
+        {
+          "name": "other",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "other",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "base",
+        "other": "other"
       },
       "rustc": {
         "kind": "program",
