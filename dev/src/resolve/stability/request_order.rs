@@ -84,6 +84,7 @@ impl Library {
             &mut work,
             &mut 0,
             OrderingWork::charge,
+            |_, _| {},
             |left, right, work| {
                 compare(&self.requests[*left], &self.requests[*right], |amount| {
                     work.charge(amount)

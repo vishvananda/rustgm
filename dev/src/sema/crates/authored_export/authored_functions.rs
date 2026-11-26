@@ -412,7 +412,7 @@ impl Stage {
             return Ok(s::FunctionBody::Absent);
         };
         let body = self.reserve_original(function.definition, context, BodyKind::Function)?;
-        if self.compiler_operations
+        if self.compiler_operations()
             && let Some(recipe) = crate::sema::compiler_items::async_operation_recipe(
                 report,
                 facts,

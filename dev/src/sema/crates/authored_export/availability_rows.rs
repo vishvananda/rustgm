@@ -1,8 +1,8 @@
 //! Actual completed policy owners join the emitted declaration and binding census.
-use super::{Declarations, DefId, Report, Stage, g, s};
+use super::{AuthoredModules, Declarations, DefId, Report, Stage, g, s};
 use crate::{
     resolve::{
-        model::{DefKind, Namespace, Origin},
+        model::DefKind,
         stability::{Inventory, Level, Policy, PolicyKind, Since},
         unit::NodeKey,
     },
@@ -46,7 +46,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
-        modules: &s::ModuleContractRows,
+        modules: &AuthoredModules,
     ) -> Result<s::AvailabilityRows, &'static str> {
         let inventory = report
             .package
@@ -61,7 +61,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
-        modules: &s::ModuleContractRows,
+        modules: &AuthoredModules,
     ) -> Result<s::AvailabilityRows, &'static str> {
         let mut rows = if let Some(library) = report.package.library_policy() {
             let inventory = library
@@ -69,7 +69,7 @@ impl Stage {
                 .ok_or("conversion availability lacks its completed source inventory")?;
             self.availability_inventory(report, facts, modules, inventory)?
         } else {
-            self.unstaged_availability(report, facts, modules)?
+            self.unstaged_availability(report, facts, modules.rows())?
         };
         if self.declaration_policies() {
             rows.deprecations = self.deprecations(report, facts)?;
@@ -128,7 +128,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
-        modules: &s::ModuleContractRows,
+        modules: &AuthoredModules,
         inventory: &Inventory,
     ) -> Result<s::AvailabilityRows, &'static str> {
         self.require_attribute_context(report, facts)
@@ -139,12 +139,13 @@ impl Stage {
         if !self.declaration_policies() && inventory.has_relationships() {
             return Err("source feature relationships require complete wider policy transport");
         }
+        let namespace = &modules.rows().namespace;
         let census = self
             .rows
             .declarations
             .len()
             .saturating_mul(2)
-            .saturating_add(modules.namespace.bindings.len());
+            .saturating_add(namespace.bindings.len());
         self.charge(census)?;
         self.reserve(
             self.rows
@@ -152,14 +153,14 @@ impl Stage {
                 .len()
                 .saturating_mul(4 * size_of::<s::DeclarationAvailability>())
                 .saturating_add(
-                    modules
-                        .namespace
+                    namespace
                         .bindings
                         .len()
                         .saturating_mul(4 * size_of::<s::BindingAvailability>()),
                 ),
         )?;
-        let origins = self.availability_origins(report, modules, inventory.policies().len())?;
+        let origins =
+            self.availability_origins(report, modules.rows(), inventory.policies().len())?;
         let mut policies = Policies::default();
         let mut declarations = vec![None; self.rows.declarations.len()];
         for index in 0..self.definitions.len() {
@@ -178,8 +179,8 @@ impl Stage {
                 declaration,
             )?);
         }
-        let mut bindings = Vec::with_capacity(modules.namespace.bindings.len());
-        for (index, binding) in modules.namespace.bindings.iter().enumerate() {
+        let mut bindings = Vec::with_capacity(namespace.bindings.len());
+        for (index, binding) in namespace.bindings.iter().enumerate() {
             self.charge(1)?;
             let regular = if binding.source == s::BindingSource::Declaration {
                 if binding.target.artifact != self.rows.policy.provider {
@@ -192,7 +193,7 @@ impl Stage {
                     .ok_or("availability binding has no completed target declaration")?
                     .regular
             } else {
-                let policy = import_policy(report, self, &origins, binding, inventory)?;
+                let policy = modules.import_policy(index)?;
                 self.availability_policy(
                     report,
                     inventory,
@@ -638,73 +639,6 @@ impl Stage {
         Err("availability policy has no actual emitted declaration/import origin")
     }
 }
-fn import_policy(
-    report: &Report,
-    stage: &mut Stage,
-    origins: &Origins,
-    row: &s::ModuleBindingRow,
-    inventory: &Inventory,
-) -> Result<Option<usize>, &'static str> {
-    // The emitted binding retains actual scope/name/namespace; no target spelling is guessed.
-    stage.charge(1)?;
-    let actual = origins
-        .definitions
-        .get(row.module.0 as usize)
-        .copied()
-        .flatten()
-        .ok_or("availability module declaration is absent")?;
-    let scope = report.resolution.definitions[actual.0 as usize]
-        .members
-        .ok_or("availability module has no actual scope")?;
-    let name = report
-        .package
-        .names
-        .lookup_paid(&row.name, &mut |growth| {
-            stage.charge(growth.work)?;
-            stage.reserve(growth.bytes)
-        })?
-        .ok_or("availability binding name disappeared")?;
-    let namespace = match row.namespace {
-        crate::support::crates::Namespace::Type => Namespace::Type,
-        crate::support::crates::Namespace::Value => Namespace::Value,
-    };
-    let binding = report
-        .resolution
-        .bindings
-        .get(scope, name, namespace)
-        .ok_or("availability binding has no actual resolved source")?;
-    let (target, alias) = stage.module_binding_target(report, binding.target)?;
-    if target != row.target {
-        return Err("availability import changed its actual resolved target");
-    }
-    if let (Origin::Direct, s::BindingSource::Import, Some(source)) =
-        (binding.origin, row.source, alias)
-    {
-        let (regular, constant) = inventory.declaration_ids(binding.target)?;
-        if constant.is_some() || stage.known_site(row.module, source)? != Some(row.source_site) {
-            return Err("availability self alias changed its actual policy or source site");
-        }
-        return Ok(regular);
-    }
-    let index = match (binding.origin, row.source) {
-        (Origin::Import(index), s::BindingSource::Import)
-        | (Origin::Glob(index), s::BindingSource::Glob) => index as usize,
-        _ => return Err("availability import changed its actual binding kind"),
-    };
-    let import = report
-        .resolution
-        .imports
-        .get(index)
-        .filter(|import| {
-            import.scope == scope && import.glob == (row.source == s::BindingSource::Glob)
-        })
-        .ok_or("availability import changed its actual source owner")?;
-    if stage.known_site(row.module, import.node)? != Some(row.source_site) {
-        return Err("availability import changed its actual leaf site");
-    }
-    inventory.import_id(index)
-}
-
 fn since_value(since: Since) -> s::AvailabilitySince {
     match since {
         Since::Current => s::AvailabilitySince::Current,

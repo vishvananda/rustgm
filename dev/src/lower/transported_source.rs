@@ -19,7 +19,7 @@ use crate::{
     borrow::{incremental::Proved, templates::Checked},
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
     sema::{
-        crates::authored_export::{Context, Stage},
+        crates::authored_export::{AuthoredModules, Context, Stage},
         model::{BodyRegionOrigin, Declarations, InitializerKind},
     },
     support::{
@@ -121,7 +121,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_contracts(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -134,7 +134,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_availability(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -147,7 +147,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_feature_predicates(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -160,7 +160,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_definitions(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -173,7 +173,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_compatibility(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -186,7 +186,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_callables(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -199,7 +199,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_safety(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -212,7 +212,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_module_conversions(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -225,7 +225,7 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = Stage::begin_compiler_operations(report, facts, identity)?;
         let modules = stage.module_contract_rows(report, facts)?;
         Ok((
@@ -239,7 +239,7 @@ impl Source {
         checked: &Checked<'_>,
         identity: &CrateIdentity,
         profile: super::instances::SourcePublication,
-    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+    ) -> Result<(Self, AuthoredModules), &'static str> {
         let mut stage = match profile {
             super::instances::SourcePublication::BootstrapModuleBodies => {
                 Stage::begin_bootstrap_module_bodies(report, facts, identity)?
@@ -267,7 +267,7 @@ impl Source {
         checked: &Checked<'_>,
         identity: &CrateIdentity,
         profile: super::instances::SourcePublication,
-    ) -> Result<(Self, Option<s::ModuleContractRows>), crate::resolve::package::Error> {
+    ) -> Result<(Self, Option<AuthoredModules>), crate::resolve::package::Error> {
         let legacy_error = |message: &'static str| report.body_optional_error(None, message);
         facts.require_deprecated_safe_transport()?;
         match profile {
@@ -1042,7 +1042,7 @@ impl Source {
         report: &Report,
         facts: &Declarations,
         base: crate::support::crates::Interface,
-        modules: Option<s::ModuleContractRows>,
+        modules: Option<AuthoredModules>,
         profile: super::instances::SourcePublication,
     ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
         use super::instances::SourcePublication;
@@ -1084,7 +1084,7 @@ impl Source {
         &mut self,
         report: &Report,
         facts: &Declarations,
-        modules: &s::ModuleContractRows,
+        modules: &AuthoredModules,
         profile: super::instances::SourcePublication,
     ) -> Result<Option<s::AvailabilityRows>, crate::resolve::package::Error> {
         Ok(
@@ -1127,7 +1127,7 @@ impl Source {
     }
     pub(super) fn complete_module_policy_payload(
         mut self,
-        modules: s::ModuleContractRows,
+        modules: AuthoredModules,
         report: &Report,
         facts: &Declarations,
         base: crate::support::crates::Interface,
@@ -1154,6 +1154,9 @@ impl Source {
         // fence when defaultness syntax is integrated. No absence is invented.
         let attributes = self.collect_header_columns(report, facts)?;
         let availability = self.module_availability(report, facts, &modules, profile)?;
+        let modules = modules
+            .into_rows(&mut self.stage)
+            .map_err(crate::resolve::package::Error::unlocated)?;
         if self.numbering.is_some()
             && !matches!(
                 profile,

@@ -137,7 +137,11 @@ impl ModuleContractRows {
             .saturating_add(declarations.saturating_mul(3 * size_of::<u32>())))
     }
     /// Source producer only: decode requires an already canonical order.
-    pub(crate) fn canonicalize(&mut self, work: &mut Work) -> Result<(), &'static str> {
+    pub(crate) fn canonicalize(
+        &mut self,
+        work: &mut Work,
+        mut swap_alongside: impl FnMut(usize, usize),
+    ) -> Result<(), &'static str> {
         let base = self.storage_bytes(0, work)?;
         if base.saturating_add(
             self.namespace
@@ -154,16 +158,32 @@ impl ModuleContractRows {
             .windows(2)
             .all(|pair| pair[0].module.0 <= pair[1].module.0)
         {
+            let mut offset = 0;
             for group in self
                 .namespace
                 .bindings
                 .chunk_by_mut(|left, right| left.module == right.module)
             {
-                super::binding_order::sort(group, work, &mut 0, compare)?;
+                super::binding_order::sort_paid(
+                    group,
+                    work,
+                    &mut 0,
+                    Work::charge,
+                    |left, right| swap_alongside(offset + left, offset + right),
+                    compare,
+                )?;
+                offset += group.len();
             }
             return Ok(());
         }
-        super::binding_order::sort(&mut self.namespace.bindings, work, &mut 0, compare)
+        super::binding_order::sort_paid(
+            &mut self.namespace.bindings,
+            work,
+            &mut 0,
+            Work::charge,
+            swap_alongside,
+            compare,
+        )
     }
 }
 impl ModuleContractColumns {

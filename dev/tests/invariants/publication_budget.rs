@@ -43,10 +43,11 @@ fn alias_provenance() -> Result {
     assert_eq!(
         stage
             .module_contract_rows(&report, &facts)?
+            .rows()
             .namespace
             .bindings
             .len(),
-        rows.namespace.bindings.len()
+        rows.rows().namespace.bindings.len()
     );
     let identity = report
         .package
@@ -73,6 +74,7 @@ fn alias_scaling() -> Result {
     let (report, facts, mut ordinary) = alias_stage("")?;
     let ordinary_bindings = ordinary
         .module_contract_rows(&report, &facts)?
+        .rows()
         .namespace
         .bindings
         .len();
@@ -84,7 +86,7 @@ fn alias_scaling() -> Result {
         }
         let (report, facts, mut stage) = alias_stage(&source)?;
         let rows = stage.module_contract_rows(&report, &facts)?;
-        assert_eq!(rows.namespace.bindings.len(), ordinary_bindings);
+        assert_eq!(rows.rows().namespace.bindings.len(), ordinary_bindings);
         observations.push((width, stage.steps, stage.bytes));
         stage.steps = crates::MAX_COMPONENTS;
         assert!(stage.module_contract_rows(&report, &facts).is_err());

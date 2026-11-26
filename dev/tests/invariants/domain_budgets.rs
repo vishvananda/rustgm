@@ -110,8 +110,11 @@ fn growth() -> Result {
         let mut stage = Stage::begin_module_contracts(&report, &mut facts, &identity)?;
         let names = stage.module_contract_rows(&report, &facts)?;
         let observed = stage.work();
-        assert_eq!(names.namespace.bindings.len(), 9 + width);
-        assert!(observed.scratch_bytes >= 2 * names.namespace.bindings.len() * size_of::<usize>());
+        assert_eq!(names.rows().namespace.bindings.len(), 9 + width);
+        assert!(
+            observed.scratch_bytes
+                >= 2 * names.rows().namespace.bindings.len() * size_of::<usize>()
+        );
         let interface = test::exported(&source)?;
         let payload = interface.generic_payload().ok_or("payload")?;
         if let Some((declarations, steps, bytes)) = baseline {
@@ -320,7 +323,7 @@ fn per_module_canonicalize_scales_without_prefix_amplification() -> Result {
         }
     }
     let mut work = Work::default();
-    rows.canonicalize(&mut work)?;
+    rows.canonicalize(&mut work, |_, _| {})?;
     for pair in rows.namespace.bindings.windows(2) {
         assert_eq!(
             compare(&pair[0], &pair[1], &mut Work::default())?,
@@ -339,11 +342,15 @@ fn per_module_canonicalize_scales_without_prefix_amplification() -> Result {
         .namespace
         .bindings
         .push(duplicate.namespace.bindings[0].clone());
-    assert!(duplicate.canonicalize(&mut Work::default()).is_err());
+    assert!(
+        duplicate
+            .canonicalize(&mut Work::default(), |_, _| {})
+            .is_err()
+    );
 
     let mut scrambled = rows;
     scrambled.namespace.bindings.reverse();
-    scrambled.canonicalize(&mut Work::default())?;
+    scrambled.canonicalize(&mut Work::default(), |_, _| {})?;
     for pair in scrambled.namespace.bindings.windows(2) {
         assert_eq!(
             compare(&pair[0], &pair[1], &mut Work::default())?,

@@ -449,7 +449,7 @@ fn published_interface(
     facts: &mut Declarations,
     source: Option<(
         super::transported_source::Source,
-        Option<crate::support::crates::generics::source::ModuleContractRows>,
+        Option<crate::sema::crates::authored_export::AuthoredModules>,
     )>,
     base: crate::support::crates::Interface,
     profile: SourcePublication,

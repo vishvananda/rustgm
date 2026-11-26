@@ -7,7 +7,7 @@ pub(crate) fn sort<T>(
     swaps: &mut usize,
     compare: impl FnMut(&T, &T, &mut Work) -> Result<Ordering, &'static str>,
 ) -> Result<(), &'static str> {
-    sort_paid(bindings, work, swaps, Work::charge, compare)
+    sort_paid(bindings, work, swaps, Work::charge, |_, _| {}, compare)
 }
 
 /// The caller's actual finite owner pays every attempted step before work.
@@ -18,6 +18,7 @@ pub(crate) fn sort_paid<T, B>(
     work: &mut B,
     swaps: &mut usize,
     mut charge: impl FnMut(&mut B, usize) -> Result<(), &'static str>,
+    mut swap_alongside: impl FnMut(usize, usize),
     mut compare: impl FnMut(&T, &T, &mut B) -> Result<Ordering, &'static str>,
 ) -> Result<(), &'static str> {
     charge(work, 1)?;
@@ -69,6 +70,7 @@ pub(crate) fn sort_paid<T, B>(
             charge(work, 1)?;
             let other = scratch[index];
             bindings.swap(index, other);
+            swap_alongside(index, other);
             scratch.swap(index, other);
             *swaps = swaps.saturating_add(1);
         }

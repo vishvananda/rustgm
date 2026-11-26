@@ -24,6 +24,7 @@ mod exposed_bindings;
 mod implementation_headers;
 mod modifier_rows;
 mod namespace_emission;
+pub(crate) use namespace_emission::AuthoredModules;
 #[path = "authored_export/record_headers.rs"]
 mod nominal_headers;
 #[path = "authored_export/versioned_sources.rs"]
@@ -162,8 +163,7 @@ pub(crate) struct Stage {
     closures: transported_closures::Index,
     opaques: operation_exports::OpaqueQueue,
     role_installation_steps: usize,
-    nominal_transport: bool,
-    compiler_operations: bool,
+    mode: ExportMode,
     body_transport: BodyTransport,
     /// Version thirteen: each exported enum variant's constructor declaration,
     /// indexed by its local `VariantId`.
@@ -189,7 +189,13 @@ enum BodyTransport {
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
-        self.nominal_transport
+        matches!(
+            self.mode,
+            ExportMode::Nominals | ExportMode::CompilerOperations
+        )
+    }
+    const fn compiler_operations(&self) -> bool {
+        matches!(self.mode, ExportMode::CompilerOperations)
     }
     pub(crate) fn branch_transport(&self) -> bool {
         self.body_transport != BodyTransport::Ordinary
@@ -203,7 +209,7 @@ impl Stage {
         )
     }
     pub(crate) fn declaration_policies(&self) -> bool {
-        self.body_nodes() && self.compiler_operations
+        self.body_nodes() && self.compiler_operations()
     }
     fn bootstrap_bindings(&self) -> bool {
         self.body_transport == BodyTransport::BootstrapNodes
@@ -523,10 +529,10 @@ impl Stage {
         drop(order);
         stage.release_temporary(admission_rows::inventory_bytes(stage.definitions.len()))?;
         stage.traits(report, facts, mode != ExportMode::Legacy)?;
-        if stage.nominal_transport {
+        if stage.nominal_transport() {
             stage.nominals(report, facts)?;
         }
-        if stage.compiler_operations || stage.body_nodes() {
+        if stage.compiler_operations() || stage.body_nodes() {
             stage.associated_headers(report, facts)?;
         }
         let provided_constants = stage.provided_constants(report, facts)?;
@@ -588,11 +594,7 @@ impl Stage {
             functions: authored_functions::Index::default(),
             closures: transported_closures::Index::default(),
             opaques: operation_exports::OpaqueQueue::default(),
-            nominal_transport: matches!(
-                mode,
-                ExportMode::Nominals | ExportMode::CompilerOperations
-            ),
-            compiler_operations: mode == ExportMode::CompilerOperations,
+            mode,
             body_transport: if body_transport == BodyTransport::Nodes
                 && mode == ExportMode::CompilerOperations
                 && report.package.requested_const_precise_live_drops()?

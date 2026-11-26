@@ -7,11 +7,83 @@ use crate::{
     resolve::{
         impl_restrictions,
         model::{Access, Binding, Origin, Target},
+        stability::{Inventory, Library},
         unit::NodeKey,
     },
-    support::crates::{Namespace as WireNamespace, owner_catalog::DeclarationRef},
+    support::{
+        crates::{Namespace as WireNamespace, owner_catalog::DeclarationRef},
+        retained::Growth,
+    },
     syntax::ast::Kind,
 };
+use std::num::NonZeroU32;
+
+/// The namespace emitter's resolved policy indices follow the same permutation
+/// as their rows and live only until availability has been collected.
+pub(crate) struct AuthoredModules {
+    rows: s::ModuleContractRows,
+    policies: Vec<Option<NonZeroU32>>,
+    policy_bytes: usize,
+}
+impl AuthoredModules {
+    pub(crate) const fn rows(&self) -> &s::ModuleContractRows {
+        &self.rows
+    }
+    pub(super) fn import_policy(&self, index: usize) -> Result<Option<usize>, &'static str> {
+        self.policies
+            .get(index)
+            .map(|policy| policy.map(|id| id.get() as usize - 1))
+            .ok_or("availability binding has no resolved policy entry")
+    }
+    pub(crate) fn into_rows(
+        self,
+        stage: &mut Stage,
+    ) -> Result<s::ModuleContractRows, &'static str> {
+        drop(self.policies);
+        stage.release_temporary(self.policy_bytes)?;
+        Ok(self.rows)
+    }
+    fn record_policy(
+        &mut self,
+        stage: &mut Stage,
+        inventory: &Inventory,
+        binding: &Binding,
+        source: s::BindingSource,
+    ) -> Result<(), &'static str> {
+        stage.charge(1)?;
+        let regular = match binding.origin {
+            Origin::Direct if source == s::BindingSource::Import => {
+                let (regular, constant) = inventory.declaration_ids(binding.target)?;
+                if constant.is_some() {
+                    return Err("availability self alias changed its actual policy");
+                }
+                regular
+            }
+            Origin::Import(index) | Origin::Glob(index) => inventory.import_id(index as usize)?,
+            Origin::Direct => None,
+        };
+        let regular = regular.map(policy_coordinate).transpose()?;
+        if self.policies.len() == self.policies.capacity() {
+            let growth = Growth::vector::<Option<NonZeroU32>>(
+                self.policies.len(),
+                self.policies.capacity(),
+                1,
+            );
+            stage.charge(growth.work)?;
+            stage.reserve(growth.bytes)?;
+            self.policy_bytes = self.policy_bytes.saturating_add(growth.bytes);
+        }
+        self.policies.push(regular);
+        Ok(())
+    }
+}
+
+fn policy_coordinate(index: usize) -> Result<NonZeroU32, &'static str> {
+    u32::try_from(index.saturating_add(1))
+        .ok()
+        .and_then(NonZeroU32::new)
+        .ok_or("availability import policy ordinal overflow")
+}
 
 struct Modules {
     rows: Vec<Option<DeclarationRef>>,
@@ -34,7 +106,7 @@ impl Stage {
         &mut self,
         report: &Report,
         facts: &Declarations,
-    ) -> Result<s::ModuleContractRows, &'static str> {
+    ) -> Result<AuthoredModules, &'static str> {
         self.reserve(
             report
                 .package
@@ -66,13 +138,17 @@ impl Stage {
                 .crate_root
                 .ok_or("module policy has no actual source root")?,
         )?;
-        let mut result = s::ModuleContractRows {
-            namespace: s::ModuleNamespace {
-                root,
-                modules: Vec::new(),
-                bindings: Vec::new(),
+        let mut result = AuthoredModules {
+            rows: s::ModuleContractRows {
+                namespace: s::ModuleNamespace {
+                    root,
+                    modules: Vec::new(),
+                    bindings: Vec::new(),
+                },
+                domains: Vec::new(),
             },
-            domains: Vec::new(),
+            policies: Vec::new(),
+            policy_bytes: 0,
         };
         for (actual, row) in self.definitions.iter().enumerate() {
             if let Some(row) = row {
@@ -97,15 +173,16 @@ impl Stage {
             }
             let site = definition.node.map_or(Ok(0), |node| self.site(row, node))?;
             self.reserve(4 * size_of::<s::ModuleRow>())?;
-            result.namespace.modules.push(s::ModuleRow {
+            result.rows.namespace.modules.push(s::ModuleRow {
                 declaration: row,
                 declaration_site: site,
             });
         }
-        self.module_bindings(report, facts, &index, &mut result.namespace)?;
-        self.trait_domains(report, facts, &index, &mut result.domains)?;
+        self.module_bindings(report, facts, &index, &mut result)?;
+        self.trait_domains(report, facts, &index, &mut result.rows.domains)?;
         self.scratch(
             result
+                .rows
                 .namespace
                 .bindings
                 .len()
@@ -116,7 +193,11 @@ impl Stage {
             steps: self.work().steps,
             ..g::Work::default()
         };
-        let ordered = result.canonicalize(&mut work);
+        let ordered = result.rows.canonicalize(&mut work, |left, right| {
+            if !result.policies.is_empty() {
+                result.policies.swap(left, right);
+            }
+        });
         let delta = work.steps.saturating_sub(self.work().steps);
         self.charge(delta)?;
         ordered?;
@@ -127,9 +208,15 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         index: &Modules,
-        names: &mut s::ModuleNamespace,
+        modules: &mut AuthoredModules,
     ) -> Result<(), &'static str> {
-        for module in &names.modules {
+        let inventory = report
+            .package
+            .library_policy()
+            .and_then(Library::inventory)
+            .filter(|_| self.mode.availability());
+        for position in 0..modules.rows.namespace.modules.len() {
+            let module = modules.rows.namespace.modules[position];
             self.charge(1)?;
             let actual = index.declarations[module.declaration.0 as usize]
                 .ok_or("module declaration origin is absent")?;
@@ -164,10 +251,13 @@ impl Stage {
                 let (target, alias) = self.module_binding_target(report, binding.target)?;
                 let (source, node) = binding_origin(report, scope, binding, alias)?;
                 let source_site = self.site(module.declaration, node)?;
+                if let Some(inventory) = inventory {
+                    modules.record_policy(self, inventory, binding, source)?;
+                }
                 let name = report.package.names.get(name);
                 self.charge(name.len())?;
                 self.reserve(4 * (size_of::<s::ModuleBindingRow>() + name.len()))?;
-                names.bindings.push(s::ModuleBindingRow {
+                modules.rows.namespace.bindings.push(s::ModuleBindingRow {
                     module: module.declaration,
                     name: name.to_owned(),
                     namespace,
@@ -209,7 +299,7 @@ impl Stage {
             .ok_or("source self alias lost its actual root declaration")?;
         Ok((root, source))
     }
-    pub(super) fn module_binding_target(
+    fn module_binding_target(
         &mut self,
         report: &Report,
         actual: DefId,

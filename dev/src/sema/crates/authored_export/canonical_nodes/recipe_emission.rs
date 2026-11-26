@@ -362,10 +362,10 @@ impl Stage {
         context: Context,
     ) -> Result<s::Type, &'static str> {
         Ok(match kind {
-            Kind::Projection(application) if self.compiler_operations || self.body_nodes() => {
+            Kind::Projection(application) if self.compiler_operations() || self.body_nodes() => {
                 self.projection_recipe(facts, application, context)?
             }
-            Kind::Opaque(id, captures) if self.compiler_operations => {
+            Kind::Opaque(id, captures) if self.compiler_operations() => {
                 self.opaque_type(facts, id, captures, context)?
             }
             Kind::Adt(item, arguments) if self.nominal_transport() => s::Type::Nominal {
