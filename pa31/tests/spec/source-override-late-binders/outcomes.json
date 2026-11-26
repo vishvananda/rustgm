@@ -1,0 +1,18 @@
+{
+  "features": [
+    "auto_traits"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c"
+  ],
+  "stdout": "1 0 1 0 1 0 1 0\n",
+  "older_profile": "source function early/captured callable frame transport is not implemented",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "mismatched types",
+    "rustgm": "incompatible types"
+  }
+}

@@ -81,7 +81,8 @@ def main():
                                  "source-initializer-numbering",
                                  "source-wide-cast-transport",
                                  "source-selected-projection-calls",
-                                 "source-captured-callable-equalities"))
+                                 "source-captured-callable-equalities",
+                                 "source-override-late-binders"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

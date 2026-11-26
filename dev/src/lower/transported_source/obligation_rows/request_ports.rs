@@ -330,12 +330,7 @@ impl Ports<'_> {
             .values
             .get(callee.0 as usize)
             .ok_or("source Call has an unknown callee value")?;
-        let Some(Type::FunctionItem {
-            item,
-            arguments,
-            signature: declared,
-        }) = self.facts.types.kind(callable.ty)
-        else {
+        let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(callable.ty) else {
             return Err("source Call requires its actual direct function-item application");
         };
         let callable_type = callable.ty;
@@ -350,6 +345,15 @@ impl Ports<'_> {
         if check_method {
             self.method_target(key, item, callable_type)?;
         }
+        let callable_type = self.request_callable(key, callee, callable_type)?;
+        let Some(Type::FunctionItem {
+            item,
+            arguments,
+            signature: declared,
+        }) = self.facts.types.kind(callable_type)
+        else {
+            return Err("source request lost its complete function item");
+        };
         let target =
             self.source
                 .stage
@@ -383,6 +387,71 @@ impl Ports<'_> {
             safety,
         });
         Ok(())
+    }
+    /// Dispatch may select an override with a different late binder. Retain the
+    /// checked trait operand for that call so its actual opening stays exact;
+    /// every fresh consumer performs ordinary dispatch and its lifetime proof.
+    fn request_callable(
+        &mut self,
+        key: NodeKey,
+        callee: ir::ValueId,
+        selected: crate::types::TypeId,
+    ) -> Result<crate::types::TypeId, &'static str> {
+        if !self.source.stage.declaration_policies() {
+            return Ok(selected);
+        }
+        let Some(method) = self.facts.methods.calls.get(&key).copied() else {
+            return Ok(selected);
+        };
+        let count = |ty| match self.facts.types.kind(ty) {
+            Some(Type::FunctionItem { signature, .. }) => match self.facts.types.kind(signature) {
+                Some(Type::Function { bound_regions, .. }) => Some(bound_regions),
+                _ => None,
+            },
+            _ => None,
+        };
+        if count(selected) == count(method.callable) {
+            return Ok(selected);
+        }
+        if self
+            .facts
+            .methods
+            .dispatched(self.owner, key, method.callable)
+            != Some(selected)
+        {
+            return Err("source request changed its exact original dispatch");
+        }
+        let Some(Type::FunctionItem {
+            item, arguments, ..
+        }) = self.facts.types.kind(method.callable)
+        else {
+            return Err("source request original is not a function item");
+        };
+        let application =
+            self.source
+                .stage
+                .function_application(self.facts, item, arguments, self.context)?;
+        let ty = self
+            .source
+            .stage
+            .ty(self.facts, method.callable, self.context)?;
+        self.sites.function_formation(
+            &mut self.source.stage,
+            self.body.source.root_body_site(),
+            method.callable,
+            ty,
+        )?;
+        let row = self
+            .raw
+            .values
+            .get_mut(callee.0 as usize)
+            .ok_or("source request callee is absent")?;
+        if !matches!(row.kind, s::ValueKind::Function(_)) {
+            return Err("source request requires its direct function operand");
+        }
+        row.ty = ty;
+        row.kind = s::ValueKind::Function(application);
+        Ok(method.callable)
     }
     fn method_target(
         &mut self,
@@ -549,3 +618,7 @@ impl Ports<'_> {
         Ok(resolved)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/override_openings.rs"]
+mod tests;

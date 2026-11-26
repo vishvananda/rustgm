@@ -2019,3 +2019,13 @@ observe callback mutation, replacement and retention of the referenced value,
 and a free-function control. Assigning a borrowed local into a longer-lived
 reference slot remains a lifetime error. The source-artifact client driver checks
 the pinned compiler and the older-profile refusal.
+
+`source-override-late-binders` checks eight native observations from fresh
+clients of reference-forwarding equality implementations. The selected override
+binds three late lifetimes while its checked trait call opens two. Version 14
+publishes that call's exact original trait operand and opening, leaving selection
+and its lifetime obligations to each fresh consumer. Nested references, generic
+forwarding, equal and unequal values remain distinct. A wrong right-hand operand
+rejects for incompatible types in both compilers; version 13 refuses the callable
+frames. The private witness requires the actual binder difference and rejects
+foreign, incomplete and missing openings without weakening raw validation.
