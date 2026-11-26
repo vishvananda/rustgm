@@ -395,21 +395,19 @@ impl DomainIndex<'_, '_> {
                 .definition
                 .parent
                 .ok_or("source constant read lacks its actual inherent owner")?;
-            let closed_owner = match self.headers.header(parent, work)? {
-                Some(HeaderRef::Implementation(index)) => {
-                    rows.implementations[index as usize].inherent_constant_owner()
-                        && self.headers.scopes().complete_slots(parent, work)? == 0
-                }
-                Some(HeaderRef::Function(_)) => {
-                    self.headers.scopes().complete_slots(constant, work)? == 0
-                }
-                None => {
-                    rows.declarations
-                        .get(parent.0 as usize)
-                        .is_some_and(|row| row.definition.kind == s::DefinitionKind::Module)
-                        && self.headers.scopes().complete_slots(constant, work)? == 0
-                }
-                _ => false,
+            let closed_owner = if rows.declarations[parent.0 as usize]
+                .definition
+                .kind
+                .owns_free_constant()
+            {
+                self.headers.scopes().complete_slots(constant, work)? == 0
+            } else if let Some(HeaderRef::Implementation(index)) =
+                self.headers.header(parent, work)?
+            {
+                rows.implementations[index as usize].inherent_constant_owner()
+                    && self.headers.scopes().complete_slots(parent, work)? == 0
+            } else {
+                false
             };
             if closed_owner && ty == header.ty {
                 return Ok(());

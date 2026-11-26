@@ -215,34 +215,43 @@ impl BinderIndex<'_> {
         frame: &s::Binder,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        let count =
-            match owner {
-                Some(HeaderRef::Nominal(_)) => 0,
-                Some(HeaderRef::AssociatedType(_) | HeaderRef::AssociatedDefinition(_)) => {
-                    let scope = frame.owner;
-                    if matches!(owner, Some(HeaderRef::AssociatedDefinition(_))) {
-                        let own = headers.scopes().declared_slots(scope, work)?;
-                        if own.start == own.end {
-                            return Err("plain associated definition uses its actual impl binder");
-                        }
+        let count = match owner {
+            Some(HeaderRef::Nominal(_)) => 0,
+            Some(HeaderRef::AssociatedType(_) | HeaderRef::AssociatedDefinition(_)) => {
+                let scope = frame.owner;
+                if matches!(owner, Some(HeaderRef::AssociatedDefinition(_))) {
+                    let own = headers.scopes().declared_slots(scope, work)?;
+                    if own.start == own.end {
+                        return Err("plain associated definition uses its actual impl binder");
                     }
-                    headers
-                        .scopes()
-                        .complete_slots(scope, work)?
-                        .checked_sub(headers.scopes().complete_type_slots(scope, work)?)
-                        .ok_or("source associated header has an invalid bound region count")?
                 }
-                Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
-                Some(HeaderRef::Implementation(index)) => {
-                    self.rows.implementations[index as usize].region_captures
-                }
-                Some(HeaderRef::Constant(index))
-                    if !self.rows.constants()[index as usize].body.evaluated() =>
+                headers
+                    .scopes()
+                    .complete_slots(scope, work)?
+                    .checked_sub(headers.scopes().complete_type_slots(scope, work)?)
+                    .ok_or("source associated header has an invalid bound region count")?
+            }
+            Some(HeaderRef::Trait(index)) => self.rows.traits[index as usize].region_captures,
+            Some(HeaderRef::Implementation(index)) => {
+                self.rows.implementations[index as usize].region_captures
+            }
+            Some(HeaderRef::Constant(index))
+                if !self.rows.constants()[index as usize].body.evaluated() =>
+            {
+                let parent = self.rows.declarations[frame.owner.0 as usize]
+                    .definition
+                    .parent
+                    .ok_or("source associated constant binder lacks its actual owner")?;
+                if matches!(
+                    self.rows.constants()[index as usize].body,
+                    s::ConstantBody::Original(_)
+                ) && self.rows.declarations[parent.0 as usize]
+                    .definition
+                    .kind
+                    .owns_free_constant()
                 {
-                    let parent = self.rows.declarations[frame.owner.0 as usize]
-                        .definition
-                        .parent
-                        .ok_or("source associated constant binder lacks its actual owner")?;
+                    0
+                } else {
                     match headers.header(parent, work)? {
                         Some(HeaderRef::Trait(index)) => {
                             self.rows.traits[index as usize].region_captures
@@ -250,28 +259,12 @@ impl BinderIndex<'_> {
                         Some(HeaderRef::Implementation(index)) => {
                             self.rows.implementations[index as usize].region_captures
                         }
-                        Some(HeaderRef::Function(_))
-                            if matches!(
-                                self.rows.constants()[index as usize].body,
-                                s::ConstantBody::Original(_)
-                            ) =>
-                        {
-                            0
-                        }
-                        None if matches!(
-                            self.rows.constants()[index as usize].body,
-                            s::ConstantBody::Original(_)
-                        ) && self.rows.declarations.get(parent.0 as usize).is_some_and(
-                            |row| row.definition.kind == s::DefinitionKind::Module,
-                        ) =>
-                        {
-                            0
-                        }
                         _ => return Err("source associated constant binder has a foreign owner"),
                     }
                 }
-                _ => return Err("source declaration binder belongs to another header kind"),
-            };
+            }
+            _ => return Err("source declaration binder belongs to another header kind"),
+        };
         if frame.parent.is_some()
             || count != frame.count
             || self.declarations[frame.owner.0 as usize]

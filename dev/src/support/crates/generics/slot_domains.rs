@@ -37,6 +37,10 @@ pub enum DefinitionKind {
     Primitive,
 }
 impl DefinitionKind {
+    pub(crate) const fn owns_free_constant(self) -> bool {
+        matches!(self, Self::Module | Self::Function | Self::Constant)
+    }
+
     pub(crate) const fn leading_regions(self) -> bool {
         matches!(
             self,
@@ -461,12 +465,7 @@ fn valid_parent(
                     && definition
                         .parent
                         .and_then(|parent| definitions.get(parent.0 as usize))
-                        .is_some_and(|parent| {
-                            matches!(
-                                parent.kind,
-                                DefinitionKind::Module | DefinitionKind::Function
-                            )
-                        }))
+                        .is_some_and(|parent| parent.kind.owns_free_constant()))
         }
         DefinitionKind::Function => {
             match definition.parent {

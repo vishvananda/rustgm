@@ -106,8 +106,8 @@ pub(super) fn headers(
     Ok(())
 }
 
-/// A free constant has a module or function owner and a closed tag-0 value of
-/// exactly its declared type, canonical for that type.
+/// A free constant has no inherited declaration scope. Its initializer or
+/// closed value must match its exact declared type.
 pub(super) fn validate(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -282,6 +282,17 @@ fn associated_or_free_owner(
         .definition
         .parent
         .ok_or("associated constant has no owner")?;
+    if rows
+        .declarations
+        .get(parent.0 as usize)
+        .is_some_and(|owner| owner.definition.kind.owns_free_constant())
+    {
+        return if matches!(header.body, ConstantBody::Original(_)) {
+            Ok(true)
+        } else {
+            Err("source free constant requires its value")
+        };
+    }
     match headers.header(parent, work)? {
         Some(HeaderRef::Trait(_)) => Ok(false),
         Some(HeaderRef::Implementation(index))
@@ -296,18 +307,7 @@ fn associated_or_free_owner(
                 Err("source associated constant changed its actual implementation owner or result")
             }
         }
-        Some(HeaderRef::Function(_)) if matches!(header.body, ConstantBody::Original(_)) => {
-            Ok(true)
-        }
-        None if matches!(header.body, ConstantBody::Original(_))
-            && rows
-                .declarations
-                .get(parent.0 as usize)
-                .is_some_and(|owner| owner.definition.kind == DefinitionKind::Module) =>
-        {
-            Ok(true)
-        }
-        Some(HeaderRef::Function(_)) | None if header.body == ConstantBody::Required => {
+        None if header.body == ConstantBody::Required => {
             Err("source free constant requires its value")
         }
         _ => Err("source associated constant changed its actual trait or implementation owner"),
@@ -332,7 +332,7 @@ fn value_owner(
         .get(owner.0 as usize)
         .map(|parent| parent.definition.kind)
     {
-        Some(DefinitionKind::Module | DefinitionKind::Function) => return Ok(()),
+        Some(kind) if kind.owns_free_constant() => return Ok(()),
         Some(DefinitionKind::SelfType) if profile.declaration_policies() => {
             if let Some(HeaderRef::Implementation(index)) = headers.header(owner, work)?
                 && rows

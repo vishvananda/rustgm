@@ -51,10 +51,7 @@ impl Graph {
             .parent
             .and_then(|parent| rows.declarations.get(parent.0 as usize))
             .map(|parent| parent.definition.kind);
-        if !matches!(
-            parent,
-            Some(s::DefinitionKind::Module | s::DefinitionKind::Function)
-        ) {
+        if !parent.is_some_and(s::DefinitionKind::owns_free_constant) {
             return Err("source free constant changed its installed lexical owner");
         }
         let cell = facts

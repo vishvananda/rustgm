@@ -25,6 +25,9 @@ while remaining unpublished until integration:
   It also covers ordinary generic identity and private helper calls, a
   transitive generic re-export, and a v14 provider that combines nested inline
   consts, a generic borrow, a const array and dispatched trait calls.
+  `spec/nested-constant-owners/` keeps initializer-local constants under both
+  free and inherent constants. The fresh client observes the enclosing arrays
+  at compile time and at runtime, and a separate client rejects a hidden name.
   `spec/evaluated-array-count/` checks a const function used in both an array
   type and a repeat count. A fresh client evaluates the imported function
   at compile time and runs it with two byte values.

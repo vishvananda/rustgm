@@ -358,10 +358,7 @@ impl Walk<'_, '_> {
                                 .parent
                                 .and_then(|parent| rows.declarations.get(parent.0 as usize))
                                 .is_some_and(|parent| {
-                                    matches!(
-                                        parent.definition.kind,
-                                        s::DefinitionKind::Module | s::DefinitionKind::Function
-                                    )
+                                    parent.definition.kind.owns_free_constant()
                                 })) =>
             {
                 Ok(Inputs::Definition)

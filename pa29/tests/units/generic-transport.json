@@ -201,7 +201,10 @@
     "tests/spec/legacy-const-calls/runtime-const-denied.rs",
     "tests/spec/imported-legacy-const/provider.rs",
     "tests/spec/imported-legacy-const/client.rs",
-    "tests/spec/imported-legacy-const/reject-runtime.rs"
+    "tests/spec/imported-legacy-const/reject-runtime.rs",
+    "tests/spec/nested-constant-owners/provider.rs",
+    "tests/spec/nested-constant-owners/client.rs",
+    "tests/spec/nested-constant-owners/reject-private.rs"
   ],
   "cases": [
     {
@@ -7115,6 +7118,80 @@
           "path": "tests/spec/imported-legacy-const/provider.rs",
           "crate_name": "base",
           "disambiguator": "pa29_legacy",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/nested-constant-owners/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_nested_constant_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/nested-constant-owners/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_nested_constant",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/nested-constant-owners/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/nested-constant-owners/reject-private.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_nested_constant_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/nested-constant-owners/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_nested_constant",
           "externs": {},
           "source_profile": "bootstrap-bodies-v15",
           "cap_lints": "allow"

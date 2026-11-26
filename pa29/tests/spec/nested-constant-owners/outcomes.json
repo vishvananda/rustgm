@@ -1,0 +1,17 @@
+{
+  "provider": "provider.rs",
+  "inputs": ["client.rs", "reject-private.rs", "observe.c"],
+  "accepted": {
+    "client.rs": {
+      "array_lengths": [7, 13],
+      "native_values": [11, 17]
+    }
+  },
+  "rejected": {
+    "reject-private.rs": {
+      "reason": "The provider's initializer-local INNER is absent from its public module.",
+      "rustc_diagnostic": "cannot find value `INNER` in crate `base`",
+      "rustgm_diagnostic": "unresolved value name"
+    }
+  }
+}

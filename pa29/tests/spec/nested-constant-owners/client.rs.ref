@@ -1,0 +1,45 @@
+global @rgc$6_636c69656e74$27_706132395f6e65737465645f636f6e7374616e745f636c69656e74$internal$rg.data.0 : obj<2x1> [storage=readonly] = {
+  u8 7
+  u8 11
+}
+global @rgc$6_636c69656e74$27_706132395f6e65737465645f636f6e7374616e745f636c69656e74$internal$rg.data.1 : obj<2x1> [storage=readonly] = {
+  u8 13
+  u8 17
+}
+function @read_free() -> u8 {
+  slot $s0 : obj<2x1>
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$27_706132395f6e65737465645f636f6e7374616e745f636c69656e74$internal$rg.data.0
+    %t1 = addr $s0
+    copyobj 2x1 %t0, %t1
+    %t2 = cmp uge i64 1, 2
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary mul i64 1, 1
+    %t4 = addr $s0
+    %t5 = index u8 %t4, %t3
+    %t6 = load u8 %t5
+    return u8 %t6
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @read_associated() -> u8 {
+  slot $s0 : obj<2x1>
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$27_706132395f6e65737465645f636f6e7374616e745f636c69656e74$internal$rg.data.1
+    %t1 = addr $s0
+    copyobj 2x1 %t0, %t1
+    %t2 = cmp uge i64 1, 2
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = binary mul i64 1, 1
+    %t4 = addr $s0
+    %t5 = index u8 %t4, %t3
+    %t6 = load u8 %t5
+    return u8 %t6
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
