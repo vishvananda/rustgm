@@ -1,6 +1,7 @@
 //! Typed inherent candidate buckets and selected qualified source uses.
 mod adjusted_targets;
 pub(in crate::sema) mod buckets;
+mod dispatched;
 pub(in crate::sema) mod names;
 pub(super) mod overlap;
 pub(crate) mod pointers;
@@ -79,6 +80,8 @@ pub struct Call {
 pub(super) struct Operands {
     /// The borrowed type of a comparison's right operand.
     right: HashMap<NodeKey, TypeId>,
+    /// Exact source-original dispatch results, consumed after the body proof seals.
+    dispatched: Option<Box<dispatched::Targets>>,
     /// An index expression whose operand reaches its indexed place through
     /// Deref calls keeps their plan beside its own index selection. Only a
     /// source core that declares `Deref` and `Index` has any.

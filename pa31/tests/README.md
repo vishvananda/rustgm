@@ -1995,3 +1995,17 @@ generic functions. Invalid float-to-bool casts reject in both compilers and
 version thirteen refuses wide type rows. A separate dynamic runtime program is
 still an accepting, unqualified case in `pending_runtime`; constant evaluation
 does not close the native wide-lowering requirement.
+
+`source-selected-projection-calls` checks nine native observations from fresh
+clients of methods whose implementation signatures retain associated result
+projections. It covers distinct implementations, a borrowed result, generic
+forwarding and immutable/mutable indexing through a generic selector's associated
+output, matching core's Index/SliceIndex shape, plus implicit Deref calls with
+a projected Target. Version 14 consumes the exact
+completed original-body dispatch result, scoped by body, source site and full
+original callable. The fresh reader rebuilds ordinary call requests and reuses its dispatcher's
+completed override normalization. Self-contained query obligations are checked
+universally; caller-local debts retain their existing proof path.
+A local-reference escape rejects in both compilers. Version 13 refuses the
+fixture's early/captured callable frames. Run the source-artifact client driver
+with the prebuilt compilers.

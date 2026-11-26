@@ -1,0 +1,20 @@
+{
+  "prefix_marker": "#[rustc_diagnostic_item = \"Option\"]",
+  "features": [
+    "auto_traits"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c"
+  ],
+  "stdout": "11 22 33 44 55 66 77 88 99\n",
+  "older_profile": "source function early/captured callable frame transport is not implemented",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "cannot return value referencing local variable",
+    "rustgm": "lifetime"
+  },
+  "older_profile_cfg": "older_profile"
+}

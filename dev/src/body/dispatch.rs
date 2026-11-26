@@ -212,6 +212,7 @@ fn resolve_using(
         if let Some(scope) = scope.as_deref_mut() {
             scope.rewrite(facts, body, contract, &mut fold)?;
         }
+        copied_method_types::retain_source_targets(facts, body, &mut fold)?;
         rewrite(facts, body, contract, &mut fold)?;
         retain_initializer_targets(facts, body, &originals, &mut fold)?;
     }

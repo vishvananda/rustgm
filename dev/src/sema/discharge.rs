@@ -7,11 +7,27 @@ pub(crate) fn closed(
     proof: &Obligations,
     failure: &'static str,
 ) -> Result<(), String> {
+    quantified(facts, proof, 0, failure)
+}
+
+/// Discharge a query under only its declared root universals. No body-local
+/// assumptions or caller variables are supplied to this proof.
+pub(crate) fn quantified(
+    facts: &Declarations,
+    proof: &Obligations,
+    universals: u32,
+    failure: &'static str,
+) -> Result<(), String> {
     if proof.is_empty() {
         return Ok(());
     }
-    let mut constraints = Constraints::new(&facts.types, &facts.lifetimes.variances, 0, 1_000_000)
-        .map_err(|error| error.to_string())?;
+    let mut constraints = Constraints::new(
+        &facts.types,
+        &facts.lifetimes.variances,
+        universals,
+        1_000_000,
+    )
+    .map_err(|error| error.to_string())?;
     let mut queries = Queries::new(
         &facts.types,
         &facts.lifetimes.nominal_requirements,

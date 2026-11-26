@@ -301,6 +301,13 @@ impl Ports<'_> {
         if planned.callable == callable {
             return Ok(true);
         }
+        if let Some(selected) = self
+            .facts
+            .methods
+            .dispatched(self.owner, key, planned.callable)
+        {
+            return Ok(selected == callable);
+        }
         let selected = self.source.stage.paying(|pay| {
             crate::sema::dispatch::selected_callable_with_projections(
                 self.facts,
@@ -400,6 +407,18 @@ impl Ports<'_> {
             );
         }
         let allow_projections = self.source.stage.declaration_policies();
+        if allow_projections
+            && let Some(selected) = self
+                .facts
+                .methods
+                .dispatched(self.owner, key, method.callable)
+        {
+            return if selected == callable {
+                Ok(())
+            } else {
+                Err("source method Call changed its completed original dispatch target")
+            };
+        }
         let selected = self.source.stage.paying(|pay| {
             if allow_projections {
                 crate::sema::dispatch::selected_callable_with_projections(

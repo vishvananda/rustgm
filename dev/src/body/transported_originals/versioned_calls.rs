@@ -46,7 +46,10 @@ pub(super) struct Applied {
 }
 pub(super) enum Pending {
     Primitive(Vec<Primitive>),
-    Applied(Vec<Option<Applied>>),
+    Applied {
+        rows: Vec<Option<Applied>>,
+        normalize_projections: bool,
+    },
 }
 #[derive(Clone, Copy)]
 enum Operand {
@@ -57,19 +60,19 @@ impl Pending {
     fn is_empty(&self) -> bool {
         match self {
             Self::Primitive(rows) => rows.is_empty(),
-            Self::Applied(rows) => rows.is_empty(),
+            Self::Applied { rows, .. } => rows.is_empty(),
         }
     }
     fn len(&self) -> usize {
         match self {
             Self::Primitive(rows) => rows.len(),
-            Self::Applied(rows) => rows.len(),
+            Self::Applied { rows, .. } => rows.len(),
         }
     }
     fn operands(&self) -> impl Iterator<Item = Operand> + '_ {
         let (primitive, applied) = match self {
             Self::Primitive(rows) => (rows.as_slice(), &[][..]),
-            Self::Applied(rows) => (&[][..], rows.as_slice()),
+            Self::Applied { rows, .. } => (&[][..], rows.as_slice()),
         };
         primitive
             .iter()
@@ -167,7 +170,12 @@ impl<'a> Index<'a> {
             return Err("selected source member index belongs to another actual descriptor");
         }
         if self.rows.descriptor().profile().conversion_roles() {
-            return applied_members::prepare(self, view, facts, body, work).map(Pending::Applied);
+            return applied_members::prepare(self, view, facts, body, work).map(|rows| {
+                Pending::Applied {
+                    rows,
+                    normalize_projections: self.rows.descriptor().profile().declaration_policies(),
+                }
+            });
         }
         let mut pending = Vec::new();
         for (record, value) in view.raw().values.iter().zip(&body.values) {
@@ -230,7 +238,14 @@ pub(super) fn prove(
     }
     paying(work, allowance, |pay| {
         pay(pending.len(), 0)?;
-        let applied = matches!(pending, Pending::Applied(_));
+        let applied = matches!(pending, Pending::Applied { .. });
+        let normalize_projections = matches!(
+            pending,
+            Pending::Applied {
+                normalize_projections: true,
+                ..
+            }
+        );
         let (universals, first) = if applied {
             if contract.key != body.key() || contract.source != body.source {
                 return Err("selected source dispatch changed its actual body contract".into());
@@ -254,7 +269,16 @@ pub(super) fn prove(
             Dispatcher::in_body(&facts.types, universals, first, environment, &pay)?;
         for goal in pending.operands() {
             let (requested, selected) = request(facts, goal, &pay)?;
-            if dispatcher.select(facts, requested)? != selected {
+            let actual = dispatcher.select(facts, requested)?;
+            // The packet's function-item recipe reconstructs its written
+            // declaration signature. Reuse this dispatcher's exact completed
+            // normalization of that override before comparing full identities.
+            let selected = if normalize_projections {
+                dispatcher.select(facts, selected)?
+            } else {
+                selected
+            };
+            if actual != selected {
                 return Err(
                     "fresh source trait dispatch selected another implementation function".into(),
                 );
@@ -267,7 +291,20 @@ pub(super) fn prove(
                 && proof.outlives.is_empty()
                 && proof.types.is_empty()
                 && !proof.has_quantified();
-            if !alias_only {
+            if normalize_projections
+                && !alias_only
+                && proof.self_contained_in(&facts.types, universals)?
+            {
+                // A closed override's binder normalization is a fresh query
+                // proof. Discharge it universally here; it adds no caller-local
+                // debts to the immutable transported body contract.
+                crate::sema::discharge::quantified(
+                    facts,
+                    &proof,
+                    universals,
+                    "fresh source override normalization is not universally valid",
+                )?;
+            } else if !alias_only {
                 let extra = proof
                     .regions
                     .len()

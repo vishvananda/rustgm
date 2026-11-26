@@ -401,7 +401,7 @@ pub fn build_source_library_profile(
                     *source = None;
                     Ok(())
                 }
-                collected => collected.map_err(|e| diagnostic(report, None, e.into())),
+                collected => collected.map_err(|e| report.body_error(input.source, e)),
             }
         },
         |facts, assembled, roots, (source, base)| {

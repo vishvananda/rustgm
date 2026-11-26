@@ -40,12 +40,24 @@ pub struct Obligations {
 impl Obligations {
     /// Whether all debt identities belong to this proof rather than its caller.
     pub(crate) fn self_contained(&self, store: &super::Store) -> Result<bool, &'static str> {
+        self.self_contained_in(store, 0)
+    }
+
+    /// A query may also close over its declared root universals, never a
+    /// caller's private body variables or type-parameter premises.
+    pub(crate) fn self_contained_in(
+        &self,
+        store: &super::Store,
+        universals: u32,
+    ) -> Result<bool, &'static str> {
         for (scope, _, _, block) in self.blocks() {
             let depth = self.scope_depth(scope)?;
             let local = |region: RegionId| {
                 region == RegionId::STATIC
                     || self.owns_region(region)
-                    || region.bound_parts().is_some_and(|(level, _)| level < depth)
+                    || region.bound_parts().is_some_and(|(level, slot)| {
+                        level < depth || level == depth && u32::from(slot) < universals
+                    })
             };
             if block
                 .equalities
@@ -61,7 +73,7 @@ impl Obligations {
                         .contains_parameters(ty)
                         .ok_or("invalid quantified call type debt")?
                     || store
-                        .has_free_regions(ty, depth)
+                        .has_free_regions(ty, depth.saturating_add(u16::from(universals != 0)))
                         .ok_or("invalid quantified call type debt")?
                 {
                     return Ok(false);

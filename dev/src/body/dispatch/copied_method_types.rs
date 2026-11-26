@@ -98,3 +98,47 @@ pub(super) fn select(
     }
     Ok(())
 }
+
+/// Retain identities before the one fold rewrites the original CFG. Publication
+/// receives the successful body proof; this table grants no execution permission.
+pub(super) fn retain_source_targets(
+    facts: &mut Declarations,
+    body: &Body,
+    fold: &mut crate::types::substitute::Bound,
+) -> Result<(), &'static str> {
+    if body.instance.is_some()
+        || facts
+            .source_bindings
+            .as_deref()
+            .is_none_or(crate::sema::compiler_items::Catalog::uses_imported_roles)
+    {
+        return Ok(());
+    }
+    let Some(owner) = body.source.source() else {
+        return Ok(());
+    };
+    for statement in &body.statements {
+        let super::super::ir::Action::Evaluate(value) = statement.action else {
+            continue;
+        };
+        let value = body
+            .values
+            .get(value.0 as usize)
+            .ok_or("source dispatch value is absent")?;
+        if !matches!(value.kind, super::super::ir::Rvalue::Function(_)) {
+            continue;
+        }
+        let original = value.ty;
+        let selected = fold.apply(&mut facts.types, original)?;
+        if selected == original {
+            continue;
+        }
+        let source = body
+            .source
+            .proof_site(statement.source)?
+            .source()
+            .ok_or("source dispatch site is absent")?;
+        facts.retain_source_dispatch(owner, source, original, selected)?;
+    }
+    Ok(())
+}

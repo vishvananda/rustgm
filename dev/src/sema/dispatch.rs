@@ -395,7 +395,9 @@ impl Dispatcher {
             // Selecting an override can introduce its written projections after
             // the original operand was normalized. Keep their formation debts
             // in this dispatch proof, including nested callable scopes.
+            let written = result;
             result = self.normalize_override(facts, result)?;
+            self.selected.insert(written, result);
         }
         self.selected.insert(ty, result);
         Ok(result)
