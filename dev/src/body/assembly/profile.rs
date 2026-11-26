@@ -82,7 +82,10 @@ fn checked(
         if !(flags
             && matches!(
                 operand.register,
-                Register::Explicit { xmm: false, .. } | Register::Ymm | Register::Zmm
+                Register::Explicit { xmm: false, .. }
+                    | Register::Ymm
+                    | Register::Zmm
+                    | Register::Kreg
             ))
             && let Some(form) = class(operand.register)
         {
@@ -137,5 +140,14 @@ pub(crate) const fn integer_bytes(primitive: crate::types::Primitive) -> Option<
         Primitive::I32 | Primitive::U32 => Some(4),
         Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize => Some(8),
         _ => None,
+    }
+}
+
+pub(crate) const fn mask_bytes(primitive: crate::types::Primitive) -> Option<u8> {
+    use crate::types::Primitive;
+    match primitive {
+        Primitive::I8 | Primitive::U8 => Some(1),
+        Primitive::I16 | Primitive::U16 => Some(2),
+        _ => integer_bytes(primitive),
     }
 }

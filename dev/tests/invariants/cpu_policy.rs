@@ -816,6 +816,16 @@ fn imported_assembly_bodies_use_the_baseline_and_their_imported_closure() -> Tes
                 .is_err()
         );
     }
+    let avx512f = FeatureSet::imported(["avx512f"], pay, std::convert::identity)?;
+    let avx512bw = FeatureSet::imported(["avx512bw"], pay, std::convert::identity)?;
+    assert!(baseline.admit_imported_mask(without, 1).is_err());
+    for width in [1, 2] {
+        assert_eq!(baseline.admit_imported_mask(avx512f, width), Ok(()));
+    }
+    for width in [4, 8] {
+        assert!(baseline.admit_imported_mask(avx512f, width).is_err());
+        assert_eq!(baseline.admit_imported_mask(avx512bw, width), Ok(()));
+    }
     // Gated names resolve without the consumer's own crate gate.
     assert!(FeatureSet::imported(["x87"], pay, std::convert::identity).is_ok());
     for name in ["ssx", "soft-float", "retpoline-external-thunk", ""] {

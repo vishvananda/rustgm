@@ -157,6 +157,7 @@ pub const ASM_MEMORY_READ: u8 = 1;
 pub const ASM_MEMORY_READ_WRITE: u8 = 3;
 pub const ASM_BANK_GPR: u8 = 0;
 pub const ASM_BANK_VECTOR: u8 = 1;
+pub const ASM_BANK_MASK: u8 = 2;
 pub const ASM_LOCATION_REGISTER: u8 = 1;
 pub const ASM_OPERAND_READ: u8 = 1;
 pub const ASM_OPERAND_WRITE: u8 = 2;

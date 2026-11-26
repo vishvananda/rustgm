@@ -91,6 +91,7 @@ fn operand_write(out: &mut Writer, row: &s::AssemblyOperand) -> Result<(), &'sta
         s::AssemblyClass::Explicit { .. } => 4,
         s::AssemblyClass::Ymm => 5,
         s::AssemblyClass::Zmm => 6,
+        s::AssemblyClass::Kreg => 7,
     };
     out.u8(tag)?;
     if let s::AssemblyClass::Explicit { base, bytes, xmm } = row.class {
@@ -120,6 +121,7 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyOperand, &'static
         4 => return Err(profile::EXPLICIT),
         5 if read.profile.declaration_policies() => s::AssemblyClass::Ymm,
         6 if read.profile.declaration_policies() => s::AssemblyClass::Zmm,
+        7 if read.profile.declaration_policies() => s::AssemblyClass::Kreg,
         _ => return Err("unknown source assembly register class"),
     };
     let input = read.option()?;

@@ -7,14 +7,14 @@ use crate::{
     lower::context::Representation,
     lowir::{
         asm::{self as lowir, Draft, Gpr, Kind, Memory, Wide},
-        vocabulary::Type,
+        vocabulary::{Convert, Type},
     },
     syntax::assembly::{self as syntax, Register},
     types::Kind as TypeKind,
 };
 
 use crate::support::initial_assembly::OUTPUT;
-use crate::support::initial_assembly::{GENERAL, XMM};
+use crate::support::initial_assembly::{GENERAL, KREG, XMM};
 /// Status flags hold an undefined value on entry and DF is clear, so no
 /// status read is needed; the template may depend on rounding control.
 const READS: u8 = lowir::X87_CONTROL | lowir::MXCSR_CONTROL;
@@ -108,10 +108,17 @@ impl Lower<'_, '_, '_> {
         let ty = operand.ty.ok_or("assembly operand lost its type")?;
         let kind = self.assembly_kind(operand.register, ty, operand.output.is_some())?;
         if let Some(input) = operand.input {
-            let value = if matches!(kind, Kind::Integer(_)) {
-                self.value(input)?.runtime()?
-            } else {
-                self.assembly_input(operand.register, input)?
+            let value = match kind {
+                Kind::Integer(_) => self.value(input)?.runtime()?,
+                Kind::Mask(native) => {
+                    let value = self.value(input)?.runtime()?;
+                    if value.ty == native {
+                        value
+                    } else {
+                        self.builder.convert(Convert::Zext, native, value)?
+                    }
+                }
+                _ => self.assembly_input(operand.register, input)?,
             };
             self.arguments.push(value);
         }
@@ -145,6 +152,22 @@ impl Lower<'_, '_, '_> {
         ty: crate::types::TypeId,
         output: bool,
     ) -> Result<Kind, &'static str> {
+        if register == Register::Kreg {
+            if output {
+                return Err(OUTPUT);
+            }
+            let Some(TypeKind::Primitive(primitive)) = self.context.types.kind(ty) else {
+                return Err(KREG);
+            };
+            let width = assembly::profile::mask_bytes(primitive).ok_or(KREG)?;
+            if width == 1 {
+                return Ok(Kind::Mask(Type::U16));
+            }
+            let Representation::Scalar(native) = self.context.representation(ty)? else {
+                return Err(KREG);
+            };
+            return Ok(Kind::Mask(native));
+        }
         if let Some(maximum) = assembly::profile::vector_bytes(register) {
             let error = assembly::profile::class(register).unwrap_or(XMM);
             if !matches!(self.context.types.kind(ty), Some(TypeKind::Adt(..))) {

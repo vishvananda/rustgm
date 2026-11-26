@@ -14,7 +14,8 @@
     "runtime_load256.rs",
     "runtime_load512.rs",
     "missing-feature.rs",
-    "forged_client.rs"
+    "forged_client.rs",
+    "mask_client.rs"
   ],
   "originals": [
     {
@@ -72,6 +73,13 @@
       "end": 1601909,
       "sha256": "6e2e45ac55903c3fbcf5a7b5e446fd570bc45119dc2a19c8b26ffb2ab5e0f7dd",
       "marker": "// ORIGINAL__mm512_stream_load_si512"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx512f.rs",
+      "start": 1917842,
+      "end": 1918320,
+      "sha256": "fdb9b5634c8ea5135884cb9be34f71ee7b1aa5381af8416e298b888c967da234",
+      "marker": "// ORIGINAL__mm_mask_load_ss"
     }
   ],
   "stdout": "1 1 1 1 1 1 1 99\n",
@@ -100,6 +108,16 @@
       "required_lowir": [
         "operand v128",
         "256 0"
+      ]
+    },
+    {
+      "path": "mask_client.rs",
+      "reason": "The original AVX-512F masked scalar load qualifies by object generation on this host.",
+      "required_lowir": [
+        "operand u16 ",
+        "group (k1:0)",
+        "zext",
+        "vmovss"
       ]
     }
   ],

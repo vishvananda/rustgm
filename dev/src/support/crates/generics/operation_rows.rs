@@ -650,6 +650,7 @@ pub enum AssemblyClass {
     Vector,
     Ymm,
     Zmm,
+    Kreg,
     Explicit { base: u8, bytes: u8, xmm: bool },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

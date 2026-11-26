@@ -5,6 +5,20 @@ impl Clone for u32{fn clone(&self)->Self{*self}}impl Copy for u32{}
 impl Clone for i64{fn clone(&self)->Self{*self}}impl Copy for i64{}
 impl Clone for f64{fn clone(&self)->Self{*self}}impl Copy for f64{}
 impl Clone for usize{fn clone(&self)->Self{*self}}impl Copy for usize{}
+#[cfg(not(older_profile))]
+impl Clone for u8{fn clone(&self)->Self{*self}}
+#[cfg(not(older_profile))]
+impl Copy for u8{}
+#[cfg(not(older_profile))]
+use crate::arch::asm;
+#[cfg(not(older_profile))]
+pub type __mmask8 = u8;
+#[cfg(not(older_profile))]
+#[repr(simd)]pub struct __m128([f32;4]);
+#[cfg(not(older_profile))]
+impl Clone for __m128{fn clone(&self)->Self{*self}}
+#[cfg(not(older_profile))]
+impl Copy for __m128{}
 #[repr(simd)]pub struct Narrow128([u32;4]);
 impl Clone for Narrow128{fn clone(&self)->Self{*self}}impl Copy for Narrow128{}
 #[repr(simd)]pub struct __m256i([i64;4]);
@@ -36,6 +50,8 @@ macro_rules! vpl{($inst:expr)=>{concat!($inst,", [{p}]")};}
 // ORIGINAL__mm512_stream_si512
 #[cfg(not(older_profile))]
 // ORIGINAL__mm512_stream_load_si512
+#[cfg(not(older_profile))]
+// ORIGINAL__mm_mask_load_ss
 #[cfg(not(older_profile))]
 #[target_feature(enable="avx")]
 pub unsafe fn pass256<T>(value:__m256i)->__m256i{let result:__m256i;unsafe{crate::arch::asm!("vmovdqa {result}, {value}",result=out(ymm_reg)result,value=in(ymm_reg)value,options(pure,nomem,nostack,preserves_flags));}result}

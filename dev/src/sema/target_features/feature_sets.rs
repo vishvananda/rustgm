@@ -159,6 +159,18 @@ impl FeatureSet {
         };
         if supported { Ok(()) } else { Err(error) }
     }
+    pub(crate) fn admit_imported_mask(self, imported: Self, bytes: u8) -> Result<(), &'static str> {
+        let available = self.union(imported);
+        if !available.supports_zmm() {
+            return Err("assembly register class requires the avx512f target feature");
+        }
+        if bytes >= 4 && !available.supports_wide_masks() {
+            return Err(
+                "assembly kreg operand of 32 or 64 bits requires the avx512bw target feature",
+            );
+        }
+        Ok(())
+    }
     /// The explicitly named features in table order, which is strictly
     /// increasing byte order.
     pub(super) fn names(self) -> impl Iterator<Item = &'static str> {

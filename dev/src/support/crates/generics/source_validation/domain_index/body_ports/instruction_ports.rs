@@ -259,6 +259,29 @@ impl DomainIndex<'_, '_> {
                     Err(form)
                 }
             }
+            s::AssemblyClass::Kreg => {
+                if !self.declaration_policies {
+                    return Err(profile::KREG);
+                }
+                if operand.output.is_some() {
+                    return Err(profile::OUTPUT);
+                }
+                match ty(operand.ty) {
+                    Some(s::Type::Scalar(
+                        Scalar::I8
+                        | Scalar::U8
+                        | Scalar::I16
+                        | Scalar::U16
+                        | Scalar::I32
+                        | Scalar::U32
+                        | Scalar::I64
+                        | Scalar::U64
+                        | Scalar::Isize
+                        | Scalar::Usize,
+                    )) => Ok(()),
+                    _ => Err(profile::KREG),
+                }
+            }
             s::AssemblyClass::Abcd => Err(profile::ABCD),
             s::AssemblyClass::Byte => Err(profile::BYTE),
             s::AssemblyClass::Explicit { base, bytes, xmm } => {

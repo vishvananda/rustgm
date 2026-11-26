@@ -129,6 +129,7 @@ fn forged_store_columns_reject_by_profile_text_at_decode() -> Result {
         (4, None, profile::EXPLICIT),
         (5, None, "unknown source assembly register class"),
         (6, None, "unknown source assembly register class"),
+        (7, None, "unknown source assembly register class"),
     ] {
         let mut bytes = honest.clone();
         bytes[at] = tag;

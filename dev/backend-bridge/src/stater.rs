@@ -10,15 +10,16 @@ use crate::{
     Failure, Forms, ffi, instructions,
     literals::{self, Context},
     records::{
-        ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER, ASM_MEMORY_NONE,
-        ASM_MEMORY_READ, ASM_MEMORY_READ_WRITE, ASM_OPERAND_READ, ASM_OPERAND_WRITE,
-        ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand, AsmPiece,
-        AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY, CLASS_STATED,
-        DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER, EIGHTBYTE_NONE,
-        EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE, LINKAGE_DEFAULT,
-        Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT, STORAGE_READONLY,
-        STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16, TYPE_I32, TYPE_I64,
-        TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID, Type, object,
+        ARITY_VARIADIC, ASM_BANK_GPR, ASM_BANK_MASK, ASM_BANK_VECTOR, ASM_LOCATION_REGISTER,
+        ASM_MEMORY_NONE, ASM_MEMORY_READ, ASM_MEMORY_READ_WRITE, ASM_OPERAND_READ,
+        ASM_OPERAND_WRITE, ASM_PIECE_OPERAND, ASM_PIECE_TEXT, AsmAlternative, AsmGroup, AsmOperand,
+        AsmPiece, AsmRegister, BINDING_INTERNAL, BINDING_WEAK, Boundary, CLASS_MEMORY,
+        CLASS_STATED, DATA_ADDRESS, DATA_SCALAR, DATA_ZERO, DataItem, EIGHTBYTE_INTEGER,
+        EIGHTBYTE_NONE, EIGHTBYTE_SSE, EIGHTBYTE_SSEUP, KEY_BINDING, KEY_LINKAGE, KEY_ROLE,
+        LINKAGE_DEFAULT, Literal, NO_ID, Parameter, RETURN_NORETURN, ROLE_ENTRY, STORAGE_DEFAULT,
+        STORAGE_READONLY, STORAGE_THREAD_LOCAL, TYPE_F32, TYPE_F64, TYPE_I1, TYPE_I8, TYPE_I16,
+        TYPE_I32, TYPE_I64, TYPE_I128, TYPE_PTR, TYPE_U8, TYPE_U16, TYPE_U32, TYPE_V128, TYPE_VOID,
+        Type, object,
     },
 };
 use rustgm::lowir::{
@@ -90,15 +91,21 @@ fn register(name: &str) -> Option<AsmRegister> {
         "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12",
         "r13", "r14", "r15",
     ];
-    let (bank, number) = match GENERAL.iter().position(|known| *known == name) {
-        Some(number) => (ASM_BANK_GPR, u8::try_from(number).ok()?),
-        None => (
+    let (bank, number) = if let Some(number) = GENERAL.iter().position(|known| *known == name) {
+        (ASM_BANK_GPR, u8::try_from(number).ok()?)
+    } else if let Some(number) = name.strip_prefix("xmm") {
+        (
             ASM_BANK_VECTOR,
-            name.strip_prefix("xmm")?
+            number.parse::<u8>().ok().filter(|n| *n < 16)?,
+        )
+    } else {
+        (
+            ASM_BANK_MASK,
+            name.strip_prefix('k')?
                 .parse::<u8>()
                 .ok()
-                .filter(|n| *n < 16)?,
-        ),
+                .filter(|n| (1..=7).contains(n))?,
+        )
     };
     // `(name:0)`: the stated width is 0 and the offset absent.
     Some(AsmRegister {
@@ -358,7 +365,7 @@ impl<'p> Stater<'p> {
                         Kind::Vector => TYPE_V128,
                         Kind::WideVector(Wide::Ymm) => object(32, 5),
                         Kind::WideVector(Wide::Zmm) => object(64, 6),
-                        Kind::Integer(ty) => scalar(ty),
+                        Kind::Integer(ty) | Kind::Mask(ty) => scalar(ty),
                     },
                     input: binding.input.unwrap_or(NO_ID),
                     output: binding.output.unwrap_or(NO_ID),

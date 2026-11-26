@@ -7,7 +7,7 @@
 //! Writes `text.lowir`, the program as `RustGM`'s writer serializes it, and
 //! for each of `fixed` and `pic` the object `FORM.o` with the library's text
 //! view of the module, `FORM.lowir`. `tests/backend/library-observer.c` links
-//! each object and calls every function:
+//! each object and observes its executable cases:
 //!
 //! - `rg_library_seed`: a read-only global holding 40;
 //! - `rg_library_answer(x)`: the seed plus `x`, through pure readonly AT&T assembly;
@@ -18,6 +18,7 @@
 //! - `rg_library_tally(n, d)`: the variadic `rg_host_tally(1, {n, d})`, by
 //!   `arity=variadic` and a call-site `classes=1:`;
 //! - `rg_library_stream(d, s)`: a pure vector snapshot, then one `movntps`;
+//! - `rg_library_masked_load(s, d, k, p)`: an object check of a masked AVX-512F load;
 //! - `rg_library_turn(r)`: `{{f32, f32}, i64}` to `{i64, f32[2]}`, by the
 //!   `classes=` and `result_classes=` that `RustGM` states and that the
 //!   library derives for `library.c`'s record types;
@@ -422,6 +423,36 @@ fn weak_bindings(program: &mut Program) -> Result<(), &'static str> {
     program.define(accessor, body.finish()?)
 }
 
+fn masked_load(program: &mut Program) -> Result<(), &'static str> {
+    let mut draft = program.assembly()?;
+    draft.binding(Kind::Vector, None, true, true, false)?;
+    draft.operand(Kind::Mask(Type::U16))?;
+    draft.operand(Kind::Pointer)?;
+    draft.text("vmovss ")?;
+    draft.operand_use(0)?;
+    draft.text("{")?;
+    draft.operand_use(1)?;
+    draft.text("}, [")?;
+    draft.operand_use(2)?;
+    draft.text("]")?;
+    let template = draft.finish_memory(asm::DUPLICABLE, 0, 0, false, Memory::ReadOnly)?;
+    let arguments = [Type::Ptr, Type::Ptr, Type::U16, Type::Ptr];
+    let signature = program.signature(&arguments, Type::Void, false)?;
+    let symbol = program.declare("rg_library_masked_load".into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    let values = [
+        parameter(Type::Ptr, 0),
+        parameter(Type::Ptr, 1),
+        parameter(Type::U16, 2),
+        parameter(Type::Ptr, 3),
+    ];
+    body.asm(template, &values)?;
+    body.terminate(Terminator::Return(None))?;
+    program.define(symbol, body.finish()?)
+}
+
 fn module() -> Result<Program, &'static str> {
     let mut program = Program::default();
     answer(&mut program)?;
@@ -434,6 +465,7 @@ fn module() -> Result<Program, &'static str> {
     apply(&mut program, swapped)?;
     tally(&mut program)?;
     stream(&mut program)?;
+    masked_load(&mut program)?;
     vector_copy(
         &mut program,
         "rg_library_copy256",

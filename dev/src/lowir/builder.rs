@@ -509,11 +509,13 @@ impl Builder {
     /// # Errors
     /// Rejects unsupported argument types, exhausted identities and invalid state.
     pub fn asm(&mut self, template: AssemblyId, arguments: &[Value]) -> Result<(), &'static str> {
-        if arguments
-            .iter()
-            .any(|argument| !matches!(argument.ty, Type::Ptr | Type::I32 | Type::U32 | Type::I64))
-        {
-            return Err("LowIR assembly arguments require pointers or 32-/64-bit integers");
+        if arguments.iter().any(|argument| {
+            !matches!(
+                argument.ty,
+                Type::Ptr | Type::I16 | Type::U16 | Type::I32 | Type::U32 | Type::I64
+            )
+        }) {
+            return Err("LowIR assembly arguments require pointers or supported integers");
         }
         let arguments = self.arguments(arguments)?;
         self.emit(

@@ -82,3 +82,6 @@ SSE4.1 `movntdqa` runtime acceptance remains pending on pinned backend support.
 payloads independently of YMM/ZMM views. Original AVX stores and narrow YMM
 controls execute on AVX2; AVX-512 clients are object-only on this host. Original
 non-temporal load execution remains expected success pending backend support.
+The same suite checks the original `_mm_mask_load_ss` through a fresh client
+and an AVX-512F object. Its `u8` mask retains its source type and uses a
+16-bit backend transfer.

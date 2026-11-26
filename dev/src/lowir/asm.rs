@@ -37,6 +37,9 @@ pub enum Kind {
     Pointer,
     /// A signed/unsigned 32-bit or raw 64-bit integer in a general register.
     Integer(Type),
+    /// A scalar passed in the AVX-512 mask bank. Narrow values use a
+    /// 16-bit transfer, as supported by the AVX-512F baseline.
+    Mask(Type),
     /// A `v128` whose `ptr` arguments address its input/output snapshots,
     /// bound to one of xmm0 to xmm15.
     Vector,
@@ -60,7 +63,7 @@ impl Kind {
     pub(super) const fn type_name(self) -> &'static str {
         match self {
             Self::Pointer => "ptr",
-            Self::Integer(ty) => ty.name(),
+            Self::Integer(ty) | Self::Mask(ty) => ty.name(),
             Self::Vector => "v128",
             Self::WideVector(Wide::Ymm) => "obj<32x32>",
             Self::WideVector(Wide::Zmm) => "obj<64x64>",
@@ -70,7 +73,7 @@ impl Kind {
     #[must_use]
     pub const fn stored(self) -> u8 {
         match self {
-            Self::Pointer | Self::Integer(_) => 0,
+            Self::Pointer | Self::Integer(_) | Self::Mask(_) => 0,
             Self::Vector | Self::WideVector(_) => 1,
         }
     }
@@ -88,6 +91,7 @@ impl Kind {
                 "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", "xmm9",
                 "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
             ],
+            Self::Mask(_) => &["k1", "k2", "k3", "k4", "k5", "k6", "k7"],
         }
     }
 }
@@ -352,7 +356,8 @@ impl<'a> Draft<'a> {
             return Err("invalid LowIR assembly operand or order");
         }
         if matches!(kind, Kind::Integer(ty) if !matches!(ty, Type::I32 | Type::U32 | Type::I64))
-            || fixed.is_some() && kind.is_vector()
+            || matches!(kind, Kind::Mask(ty) if !matches!(ty, Type::I16 | Type::U16 | Type::I32 | Type::U32 | Type::I64))
+            || fixed.is_some() && (kind.is_vector() || matches!(kind, Kind::Mask(_)))
         {
             return Err("unsupported LowIR assembly register type");
         }
@@ -419,13 +424,10 @@ impl<'a> Draft<'a> {
             return Err("LowIR assembly use names an undeclared operand");
         }
         index(self.assemblies.pieces.len() + 1)?;
-        let vector = self.assemblies.operands[(self.operands + operand) as usize]
-            .kind
-            .is_vector();
-        let admitted = if vector {
-            matches!(bits, 0 | 128 | 256 | 512)
-        } else {
-            matches!(bits, 0 | 32 | 64)
+        let admitted = match self.assemblies.operands[(self.operands + operand) as usize].kind {
+            Kind::Mask(_) => bits == 0,
+            Kind::Vector | Kind::WideVector(_) => matches!(bits, 0 | 128 | 256 | 512),
+            Kind::Pointer | Kind::Integer(_) => matches!(bits, 0 | 32 | 64),
         };
         if !admitted {
             return Err("unsupported LowIR assembly operand view");

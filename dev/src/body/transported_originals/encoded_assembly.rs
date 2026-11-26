@@ -135,6 +135,7 @@ fn operand(
             s::AssemblyClass::Vector => Register::Xmm,
             s::AssemblyClass::Ymm => Register::Ymm,
             s::AssemblyClass::Zmm => Register::Zmm,
+            s::AssemblyClass::Kreg => Register::Kreg,
             s::AssemblyClass::Abcd => return Err(ABCD),
             s::AssemblyClass::Byte => return Err(BYTE),
             s::AssemblyClass::Explicit { base, bytes, xmm } => {
@@ -244,7 +245,7 @@ pub(super) fn validate(
     *steps = steps.saturating_add(rows.instructions.len().saturating_add(rows.operands.len()));
     Ok(())
 }
-/// Each vector operand is re-proved against the consumer's own lane and width
+/// Each vector or mask operand is re-proved against the consumer's own type
 /// facts, under its target baseline plus the owning function's imported
 /// declared feature closure. The register class and payload width stay distinct.
 pub(super) fn check(
@@ -259,16 +260,14 @@ pub(super) fn check(
     work.charge(data.operands.len())?;
     let mut available = None;
     for operand in &data.operands {
-        let check = match operand.register {
-            Register::Xmm => simd_operand,
-            Register::Ymm => ymm_operand,
-            Register::Zmm => zmm_operand,
-            _ => continue,
-        };
-        check(
-            facts,
-            operand.ty.ok_or("source assembly operand lost its type")?,
-        )?;
+        let register = operand.register;
+        if !matches!(
+            register,
+            Register::Xmm | Register::Ymm | Register::Zmm | Register::Kreg
+        ) {
+            continue;
+        }
+        let ty = operand.ty.ok_or("source assembly operand lost its type")?;
         let (baseline, imported) = match available {
             Some(features) => features,
             None => *available.insert((
@@ -277,7 +276,22 @@ pub(super) fn check(
                     .unwrap_or_default(),
             )),
         };
-        baseline.admit_imported_vector(imported, operand.register)?;
+        match register {
+            Register::Xmm => simd_operand(facts, ty),
+            Register::Ymm => ymm_operand(facts, ty),
+            Register::Zmm => zmm_operand(facts, ty),
+            Register::Kreg => {
+                let Some(crate::types::Kind::Primitive(primitive)) = facts.types.kind(ty) else {
+                    return Err(crate::support::initial_assembly::KREG);
+                };
+                let bytes = crate::body::assembly::profile::mask_bytes(primitive)
+                    .ok_or(crate::support::initial_assembly::KREG)?;
+                baseline.admit_imported_mask(imported, bytes)?;
+                continue;
+            }
+            _ => return Err("source assembly operand lost its checked register"),
+        }?;
+        baseline.admit_imported_vector(imported, register)?;
     }
     Ok(())
 }

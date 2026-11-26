@@ -84,6 +84,11 @@ fn input_type(facts: &Declarations, register: Register, ty: TypeId) -> Result<()
         }
         (Register::General, _) => Err(GENERAL),
         (Register::Xmm | Register::Ymm | Register::Zmm, Some(Kind::Adt(..))) => Ok(()),
+        (Register::Kreg, Some(Kind::Primitive(primitive)))
+            if assembly::profile::mask_bytes(primitive).is_some() =>
+        {
+            Ok(())
+        }
         (Register::Xmm, _) => Err(XMM),
         (register, _) => Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     }
@@ -195,6 +200,7 @@ fn operand_row(
         Register::Xmm => s::AssemblyClass::Vector,
         Register::Ymm => s::AssemblyClass::Ymm,
         Register::Zmm => s::AssemblyClass::Zmm,
+        Register::Kreg => s::AssemblyClass::Kreg,
         Register::Explicit { base, bytes, xmm } => s::AssemblyClass::Explicit { base, bytes, xmm },
         register => return Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     };
