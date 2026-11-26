@@ -230,9 +230,10 @@ impl Stage {
         })
     }
 
-    /// Body-local declarations travel only with their initializer. An evaluated
-    /// unnamed constant has no published body. Item scopes nested inside one
-    /// start a separate owner and can still contribute their own originals.
+    /// Body-local declarations travel only with their initializer. Statics
+    /// and evaluated constants publish their completed data, so their local
+    /// declarations have no body in the artifact. Nested items own separate
+    /// scopes and can still contribute their own originals.
     fn omitted_initializer_scopes(
         &mut self,
         report: &Report,
@@ -247,10 +248,7 @@ impl Stage {
             self.charge(1)?;
             let id = initializer.definition;
             let declaration = &report.resolution.definitions[id.0 as usize];
-            if initializer.kind != InitializerKind::Const
-                || report.package.names.get(declaration.name) != "_"
-                || !self.evaluated_initializer(facts, id)?
-            {
+            if self.transports_initializer_body(report, facts, id, initializer.kind) {
                 continue;
             }
             let module = scopes[declaration.scope.0 as usize].module;
@@ -259,7 +257,7 @@ impl Stage {
                 .node_scopes
                 .get(&(module, initializer.node.node))
                 .copied()
-                .ok_or("source unnamed initializer has no actual lexical scope")?;
+                .ok_or("source evaluated initializer has no actual lexical scope")?;
             if omitted.is_none() {
                 self.reserve(scopes.len())?;
             }
@@ -276,6 +274,19 @@ impl Stage {
             }
         }
         Ok(omitted)
+    }
+
+    fn transports_initializer_body(
+        &self,
+        report: &Report,
+        facts: &Declarations,
+        id: DefId,
+        kind: InitializerKind,
+    ) -> bool {
+        match kind {
+            InitializerKind::Const => self.provided_constant(report, facts, id),
+            InitializerKind::Static { .. } => !self.declaration_policies(),
+        }
     }
 
     fn declaration_inventory(

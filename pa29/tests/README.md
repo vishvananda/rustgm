@@ -27,6 +27,9 @@ while remaining unpublished until integration:
   consts, a generic borrow, a const array and dispatched trait calls.
   `spec/unnamed-const-closure/` checks a closure inside a provider's unnamed
   initializer, an imported const call, and a nested function executed at runtime.
+  `spec/static-initializer-closure/` checks an imported function-local
+  static whose closure is linked from the provider, the allocation's address
+  identity, and a constant initializer with a local binding.
   `spec/nested-constant-owners/` keeps initializer-local constants under both
   free and inherent constants. The fresh client observes the enclosing arrays
   at compile time and at runtime, and a separate client rejects a hidden name.

@@ -1,0 +1,7 @@
+{
+  "provider": "provider.rs",
+  "inputs": ["client.rs", "observe.c"],
+  "array_length": 6,
+  "native_values": [2, 8],
+  "native_storage": "Repeated calls return the address of the same static allocation."
+}

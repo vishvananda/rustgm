@@ -206,7 +206,9 @@
     "tests/spec/nested-constant-owners/client.rs",
     "tests/spec/nested-constant-owners/reject-private.rs",
     "tests/spec/unnamed-const-closure/provider.rs",
-    "tests/spec/unnamed-const-closure/client.rs"
+    "tests/spec/unnamed-const-closure/client.rs",
+    "tests/spec/static-initializer-closure/provider.rs",
+    "tests/spec/static-initializer-closure/client.rs"
   ],
   "cases": [
     {
@@ -7245,6 +7247,46 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/unnamed-const-closure/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/static-initializer-closure/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_static_init_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/static-initializer-closure/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_static_init",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/static-initializer-closure/observe.c"
       }
     }
   ]
