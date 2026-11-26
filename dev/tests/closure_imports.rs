@@ -144,10 +144,10 @@ fn scope(parent: Option<ScopeId>, closure: bool) -> Scope {
 
 #[test]
 fn forward_parent_links_are_supported_and_malformed_links_fail() -> Result<(), &'static str> {
-    let mut resolution = Resolution {
-        scopes: vec![scope(Some(ScopeId(1)), true), scope(None, false)],
-        ..Resolution::default()
-    };
+    let mut resolution = Resolution::default();
+    resolution
+        .scopes
+        .extend([scope(Some(ScopeId(1)), true), scope(None, false)]);
     let imports = Imports::collect(&resolution)?;
     assert!(imports.bindings(ScopeId(0)).is_empty());
     resolution.scopes[1].parent = Some(ScopeId(0));
@@ -160,17 +160,13 @@ fn forward_parent_links_are_supported_and_malformed_links_fail() -> Result<(), &
 #[test]
 fn deep_scope_storage_and_parent_resolution_are_iterative() -> Result<(), &'static str> {
     for count in [64_u32, 256, 1024, 16_384] {
-        let resolution = Resolution {
-            scopes: (0..count)
-                .map(|index| {
-                    scope(
-                        (index + 1 < count).then_some(ScopeId(index + 1)),
-                        index == 0,
-                    )
-                })
-                .collect(),
-            ..Resolution::default()
-        };
+        let mut resolution = Resolution::default();
+        resolution.scopes.extend((0..count).map(|index| {
+            scope(
+                (index + 1 < count).then_some(ScopeId(index + 1)),
+                index == 0,
+            )
+        }));
         let imports = Imports::collect(&resolution)?;
         assert!(imports.work() <= 4 * count as usize);
         assert!(imports.bindings(ScopeId(0)).is_empty());
