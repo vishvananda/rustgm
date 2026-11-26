@@ -352,8 +352,7 @@ impl DomainIndex<'_, '_> {
                     .checked_sub(1)
                     .ok_or("source universal aliases require their own scope")?;
                 let count = binders[scoped.scopes[scope_index as usize].frame.0 as usize].count;
-                if block.origin != 0
-                    || !block.equalities.is_empty()
+                if !block.equalities.is_empty()
                     || !block.outlives.is_empty()
                     || !block.types.is_empty()
                     || block.regions.end.saturating_sub(block.regions.start) != count

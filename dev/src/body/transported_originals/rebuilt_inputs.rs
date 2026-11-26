@@ -669,7 +669,9 @@ fn append_scoped(
             range
         };
         if block.universal_aliases {
+            let first = proof.source_checkpoint();
             proof.append_universals(block_range, scope)?;
+            proof.label_sources_since(first, block.origin)?;
         } else {
             let nested = normalization_relations(
                 view,

@@ -210,3 +210,79 @@ fn domain_budget_failure_consumes_work_without_a_returned_index_or_descriptor() 
     assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
     Ok(())
 }
+
+#[test]
+fn universal_aliases_keep_a_valid_normalization_source_label() -> Result {
+    let mut rows = actual()?;
+    let (body_index, input_index) = rows
+        .body_inputs
+        .iter()
+        .enumerate()
+        .find_map(|(body, inputs)| {
+            inputs
+                .normalizations
+                .iter()
+                .position(|input| {
+                    matches!(input.owned.as_slice(), [range] if range.start < range.end)
+                        && input.scoped.is_none()
+                })
+                .map(|input| (body, input))
+        })
+        .ok_or("actual normalization with owned variables")?;
+    let inputs = &mut rows.body_inputs[body_index];
+    let owner = rows
+        .originals
+        .iter()
+        .find(|original| original.body == inputs.body)
+        .ok_or("actual normalization original")?
+        .declaration;
+    let frame = super::super::BinderRef(u32::try_from(rows.binders.len())?);
+    rows.binders.push(s::Binder {
+        owner,
+        parent: Some(inputs.frame),
+        kind: s::BinderKind::Clause,
+        count: 1,
+    });
+    let input = &mut inputs.normalizations[input_index];
+    input.sources.push(input.site);
+    let start = input.owned[0].start;
+    input.scoped = Some(Box::new(s::ScopedNormalization {
+        scopes: vec![s::NormalizationScope {
+            parent: 0,
+            frame,
+            callable: false,
+        }],
+        blocks: vec![s::NormalizationBlock {
+            scope: 1,
+            universal_aliases: true,
+            origin: 1,
+            regions: super::super::Range {
+                start,
+                end: start + 1,
+            },
+            equalities: Vec::new(),
+            outlives: Vec::new(),
+            types: Vec::new(),
+        }],
+    }));
+    validate_alias_input(&rows)?;
+
+    rows.body_inputs[body_index].normalizations[input_index]
+        .scoped
+        .as_mut()
+        .ok_or("labelled normalization")?
+        .blocks[0]
+        .origin = 2;
+    assert_eq!(
+        validate_alias_input(&rows),
+        Err("source scoped normalization changed its actual binder, origin or allocation"),
+    );
+    Ok(())
+}
+
+fn validate_alias_input(rows: &s::SourceRows) -> std::result::Result<(), &'static str> {
+    let mut work = Work::default();
+    let headers = HeaderIndex::new(rows, 0, &mut work)?;
+    headers.domains(&mut work)?;
+    Ok(())
+}
