@@ -4,7 +4,13 @@
   "client": {
     "compile_status": 0,
     "native_exit": 0,
-    "observed_entry_result": 42
+    "observed_entry_result": 42,
+    "observations": {
+      "imported_inline_const": [13, 17, 29],
+      "borrowed_generic_return": 51,
+      "imported_const_array": [7, 7],
+      "dispatched_trait_result": 61
+    }
   },
   "wrong-type": {
     "compile_status": 1,

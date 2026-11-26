@@ -1,57 +1,155 @@
+global @rgc$6_636c69656e74$14_696e6c696e655f636f6e73745f30$internal$rg.data.0 : obj<2x1> [storage=readonly] = {
+  u8 7
+  u8 7
+}
 function @entry() -> i32 {
-  slot $s0 : i32
-  slot $s1 : obj<3x1>
+  slot $s0 : u8
+  slot $s1 : u8
+  slot $s2 : u8
+  slot $s3 : u8
+  slot $s4 : u8
+  slot $s5 : i32
+  slot $s6 : ptr
+  slot $s7 : ptr
+  slot $s8 : obj<2x1>
+  slot $s9 : obj<7x1>
   block ^b0:
-    %t0 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i2()
-    %t1 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i3()
-    store u8 13, $s1
-    %t2 = addr $s1
-    %t3 = index u8 %t2, 1
-    store u8 %t0, %t3
-    %t4 = addr $s1
-    %t5 = index u8 %t4, 2
-    store u8 %t1, %t5
-    %t6 = load u8 $s1
-    %t7 = cmp eq u8 %t6, 13
-    %t8 = convert trunc i1 i64 %t7
-    branch %t8, ^b4, ^b3
-  block ^b4:
-    %t9 = addr $s1
+    store u8 51, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s6
+    %t1 = load ptr $s6
+    %t2 = call ptr @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$8_7265626f72726f77$.i3(%t1)
+    store ptr %t2, $s7
+    %t3 = load ptr $s7
+    %t4 = load u8 %t3
+    store u8 %t4, $s1
+    %t5 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$6_696e766f6b65$.i4(61)
+    store u8 %t5, $s2
+    %t6 = addr @rgc$6_636c69656e74$14_696e6c696e655f636f6e73745f30$internal$rg.data.0
+    %t7 = addr $s8
+    copyobj 2x1 %t6, %t7
+    %t8 = load u8 $s8
+    store u8 %t8, $s3
+    %t9 = addr $s8
     %t10 = index u8 %t9, 1
     %t11 = load u8 %t10
-    %t12 = cmp eq u8 %t11, 17
-    %t13 = convert trunc i1 i64 %t12
-    branch %t13, ^b5, ^b3
+    store u8 %t11, $s4
+    %t12 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i6()
+    %t13 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i7()
+    %t14 = load u8 $s1
+    %t15 = load u8 $s3
+    %t16 = load u8 $s4
+    %t17 = load u8 $s2
+    store u8 13, $s9
+    %t18 = addr $s9
+    %t19 = index u8 %t18, 1
+    store u8 %t12, %t19
+    %t20 = addr $s9
+    %t21 = index u8 %t20, 2
+    store u8 %t13, %t21
+    %t22 = addr $s9
+    %t23 = index u8 %t22, 3
+    store u8 %t14, %t23
+    %t24 = addr $s9
+    %t25 = index u8 %t24, 4
+    store u8 %t15, %t25
+    %t26 = addr $s9
+    %t27 = index u8 %t26, 5
+    store u8 %t16, %t27
+    %t28 = addr $s9
+    %t29 = index u8 %t28, 6
+    store u8 %t17, %t29
+    %t30 = load u8 $s9
+    %t31 = cmp eq u8 %t30, 13
+    %t32 = convert trunc i1 i64 %t31
+    branch %t32, ^b4, ^b3
+  block ^b4:
+    %t33 = addr $s9
+    %t34 = index u8 %t33, 1
+    %t35 = load u8 %t34
+    %t36 = cmp eq u8 %t35, 17
+    %t37 = convert trunc i1 i64 %t36
+    branch %t37, ^b5, ^b3
   block ^b5:
-    %t14 = addr $s1
-    %t15 = index u8 %t14, 2
-    %t16 = load u8 %t15
-    %t17 = cmp eq u8 %t16, 29
-    %t18 = convert trunc i1 i64 %t17
-    branch %t18, ^b2, ^b3
-  block ^b3:
-    jump ^b6
+    %t38 = addr $s9
+    %t39 = index u8 %t38, 2
+    %t40 = load u8 %t39
+    %t41 = cmp eq u8 %t40, 29
+    %t42 = convert trunc i1 i64 %t41
+    branch %t42, ^b6, ^b3
   block ^b6:
-    jump ^b7
+    %t43 = addr $s9
+    %t44 = index u8 %t43, 3
+    %t45 = load u8 %t44
+    %t46 = cmp eq u8 %t45, 51
+    %t47 = convert trunc i1 i64 %t46
+    branch %t47, ^b7, ^b3
   block ^b7:
-    store i32 1, $s0
+    %t48 = addr $s9
+    %t49 = index u8 %t48, 4
+    %t50 = load u8 %t49
+    %t51 = cmp eq u8 %t50, 7
+    %t52 = convert trunc i1 i64 %t51
+    branch %t52, ^b8, ^b3
+  block ^b8:
+    %t53 = addr $s9
+    %t54 = index u8 %t53, 5
+    %t55 = load u8 %t54
+    %t56 = cmp eq u8 %t55, 7
+    %t57 = convert trunc i1 i64 %t56
+    branch %t57, ^b9, ^b3
+  block ^b9:
+    %t58 = addr $s9
+    %t59 = index u8 %t58, 6
+    %t60 = load u8 %t59
+    %t61 = cmp eq u8 %t60, 61
+    %t62 = convert trunc i1 i64 %t61
+    branch %t62, ^b2, ^b3
+  block ^b3:
+    jump ^b10
+  block ^b10:
+    jump ^b11
+  block ^b11:
+    store i32 1, $s5
     jump ^b1
   block ^b2:
-    store i32 42, $s0
+    store i32 42, $s5
     jump ^b1
   block ^b1:
-    %t19 = load i32 $s0
-    return i32 %t19
-  block ^b8:
+    %t63 = load i32 $s5
+    return i32 %t63
+  block ^b12:
     unreachable
-  block ^b9:
+  block ^b13:
     unreachable
 }
-function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i2() -> u8 {
+function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$8_7265626f72726f77$.i3(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    return ptr %t0
+}
+function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$6_696e766f6b65$.i4(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$b$4$d$25.i5(%t0)
+    return u8 %t1
+}
+function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i6() -> u8 {
   block ^b0:
     return u8 17
 }
-function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i3() -> u8 {
+function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$f$5_76616c7565$.i7() -> u8 {
   block ^b0:
     return u8 29
+}
+function @rgc$4_62617365$17_706132395f696e6c696e655f636f6e7374$b$4$d$25.i5(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    return u8 %t0
 }

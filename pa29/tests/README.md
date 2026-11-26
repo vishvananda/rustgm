@@ -23,8 +23,8 @@ while remaining unpublished until integration:
   `const-parameters`, `array-types`, `pointer-slices`, `transparent-records`,
   `record-variants`, `named-constants`, `macro-contexts`, `guarded-methods`).
   It also covers ordinary generic identity and private helper calls, a
-  transitive generic re-export, and a v14 nested inline const in runtime and
-  const consumers.
+  transitive generic re-export, and a v14 provider that combines nested inline
+  consts, a generic borrow, a const array and dispatched trait calls.
 
 The [student test plan](../../docs/pa29-student-test-plan.md) retains the wider
 ordinary generic matrix. Its full provider, const and lifetime binders, trait
