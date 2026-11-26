@@ -209,7 +209,7 @@ impl Stage {
             || slot.owner != owner
             || slot.ordinal as usize != ordinal
             || slot.index != actual.index
-            || !matches!(slot.kind, s::ParameterKind::Type { sized: expected } if expected.is_some() == sized)
+            || !matches!(slot.kind, s::ParameterKind::Type { sized: expected } if expected.required() == sized)
             || slot.definition
                 != Some(
                     self.declaration(parameter.binding)

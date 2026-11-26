@@ -33,6 +33,9 @@ pub(in crate::sema::crates::typed_headers) trait LeafClauses:
     fn callable_scopes(&self) -> bool {
         false
     }
+    fn bootstrap_bindings(&self) -> bool {
+        false
+    }
     fn regional_arguments(&self) -> bool {
         false
     }
@@ -48,6 +51,9 @@ impl LeafClauses for Ordinary<'_> {
     }
     fn callable_scopes(&self) -> bool {
         self.1.is_some_and(s::Profile::body_nodes)
+    }
+    fn bootstrap_bindings(&self) -> bool {
+        self.1.is_some_and(s::Profile::bootstrap_bindings)
     }
     fn regional_arguments(&self) -> bool {
         self.1.is_some_and(s::Profile::declaration_policies)
@@ -335,7 +341,10 @@ fn v14_assumption(
     predicate: crate::types::parameters::predicates::Predicate,
     budget: &mut impl Accounting,
 ) -> Result<usize, Error> {
-    if matches!(predicate.bound, Bound::Outlives(_)) {
+    if matches!(predicate.bound, Bound::Outlives(_))
+        || leaves.bootstrap_bindings()
+            && matches!(predicate.bound, Bound::Copy | Bound::Clone | Bound::Sized)
+    {
         return v14_roots(facts, predicate.ty, budget);
     }
     if let Bound::ProjectionEqual(value) = predicate.bound {

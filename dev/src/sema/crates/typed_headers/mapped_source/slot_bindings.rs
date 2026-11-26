@@ -45,7 +45,7 @@ pub(super) fn prepare(
                 // The bit retains a declared shape requirement only. The actual
                 // source Sized identity/full caller debt stays in the slot and
                 // header inputs; this must never become builtin call permission.
-                if let Some(address) = sized {
+                if let s::TypeSizing::Source(address) = sized {
                     if address.artifact != rows.policy.provider {
                         return Err(error("source Sized formal belongs to another provider"));
                     }
@@ -60,7 +60,7 @@ pub(super) fn prepare(
                     &mut facts.types,
                     owner,
                     type_index(&rows.declarations, slot),
-                    sized.is_some(),
+                    sized.required(),
                 )?
             }
             s::ParameterKind::Region => {

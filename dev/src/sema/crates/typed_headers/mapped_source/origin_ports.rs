@@ -242,7 +242,8 @@ impl Graph {
                 | s::Profile::Source2024ModuleCompilerOperations
                 | s::Profile::Source2024ModuleBranches
                 | s::Profile::Source2024ModuleBodies
-                | s::Profile::Source2024ModuleBodyOperations => {
+                | s::Profile::Source2024ModuleBodyOperations
+                | s::Profile::Bootstrap2024ModuleBodies => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),

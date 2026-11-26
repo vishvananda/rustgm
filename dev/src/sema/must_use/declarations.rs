@@ -708,6 +708,7 @@ fn bind_definitions(
             .is_some_and(Producer::has_impl_annotations)
         || !facts.associated.owners().is_empty()
         || report.package.source_core().is_some()
+        || report.package.bootstrap_metadata
         || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts
             .must_use_contracts

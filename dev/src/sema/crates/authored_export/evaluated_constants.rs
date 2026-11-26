@@ -138,18 +138,23 @@ pub(crate) fn prepare_inherent_constants(
     report: &Report,
     facts: &mut Declarations,
     identity: &crate::support::crates::CrateIdentity,
+    bootstrap: bool,
 ) -> Result<(), Error> {
     let count = facts.initializers.len();
     if count == 0 {
         return Ok(());
     }
-    super::require_provider_identity(report, identity).map_err(Error::unlocated)?;
-    facts
-        .source_bindings
-        .as_deref()
-        .ok_or_else(|| Error::unlocated("source export has no actual role catalog"))?
-        .require_provider_report(report)
-        .map_err(Error::unlocated)?;
+    if bootstrap {
+        super::require_bootstrap_identity(report, facts, identity).map_err(Error::unlocated)?;
+    } else {
+        super::require_provider_identity(report, identity).map_err(Error::unlocated)?;
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("source export has no actual role catalog"))?
+            .require_provider_report(report)
+            .map_err(Error::unlocated)?;
+    }
     crate::sema::header_attributes::reserve_source_contracts(facts, count, 0)?;
     let mut values = Evaluator::new(report, facts);
     for index in 0..count {

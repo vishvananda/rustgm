@@ -70,11 +70,14 @@ impl Coverage {
             for raw in &input.obligations {
                 result.obligation(domains, arena, context, raw, work)?;
             }
-            let copy = input
-                .builtins
-                .as_ref()
-                .and_then(|b| b.source_copy.as_ref())
-                .ok_or("source original lost its active Copy query carrier")?;
+            let copy = input.builtins.as_ref().and_then(|b| b.source_copy.as_ref());
+            if domains.bootstrap_bindings {
+                if copy.is_some() {
+                    return Err("bootstrap original cannot carry source-role Copy queries");
+                }
+                continue;
+            }
+            let copy = copy.ok_or("source original lost its active Copy query carrier")?;
             if copy.declaration != actual_copy {
                 return Err("source original Copy carrier changed its exact policy role binding");
             }

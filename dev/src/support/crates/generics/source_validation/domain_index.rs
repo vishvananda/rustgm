@@ -135,6 +135,7 @@ pub struct DomainIndex<'index, 'rows> {
     /// Version thirteen: branching snapshot bodies and plain reborrow inputs.
     bodies: bool,
     declaration_policies: bool,
+    bootstrap_bindings: bool,
     attributes: Option<&'index s::HeaderAttributeColumns>,
     metadata_member: Option<s::DeclarationAddress>,
 }
@@ -183,6 +184,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             used_traits: vec![false; traits],
             bodies,
             declaration_policies: profile.declaration_policies(),
+            bootstrap_bindings: profile.bootstrap_bindings(),
             attributes,
             metadata_member: slice_metadata_member(headers, profile, work)?,
         };

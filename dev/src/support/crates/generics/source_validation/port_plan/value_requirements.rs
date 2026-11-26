@@ -292,6 +292,11 @@ impl Builder<'_, '_, '_> {
         let OperationSite { port, site } = location;
         let expected = Ports::place_type(self.domains.headers, original, place, work)?;
         self.exact_relation(original, port, site, ty, expected, work)?;
+        if self.domains.bootstrap_bindings {
+            // The ordinary template proof classifies this read in its rebuilt
+            // environment, using the compiler's own Copy and move rules.
+            return Ok(());
+        }
         let node = self.node(original, ty, work)?;
         self.coverage.copy(original.body, node, work)?;
         let copy = self.domains.headers.rows().body_inputs

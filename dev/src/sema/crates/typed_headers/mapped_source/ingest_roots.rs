@@ -65,6 +65,7 @@ pub(super) fn prepare(
     }
     for clause in &rows.clauses {
         match &clause.requirement {
+            s::Requirement::Bootstrap { subject, .. } => demand(Root::Type(*subject))?,
             s::Requirement::Trait {
                 application: reference,
                 ..

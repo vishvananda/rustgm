@@ -288,10 +288,15 @@ impl<'a, 'b> Expected<'a, 'b> {
             .map(|builtins| builtins.environment)
         {
             None | Some(s::EnvironmentOrigin::Absent) => {
-                if self.associated.as_deref().is_none_or(<[_]>::is_empty) {
-                    Ok(None)
-                } else {
+                if self.view.rows().descriptor().profile().bootstrap_bindings()
+                    || self
+                        .associated
+                        .as_deref()
+                        .is_some_and(|goals| !goals.is_empty())
+                {
                     self.view.environment().map(Some)
+                } else {
+                    Ok(None)
                 }
             }
             Some(origin) if origin == record.environment => self.view.environment().map(Some),

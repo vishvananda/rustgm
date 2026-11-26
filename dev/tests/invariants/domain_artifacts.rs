@@ -35,6 +35,11 @@ fn bootstrap_body_rows_round_trip_without_granting_source_bindings() -> Result {
 
     raw.roles.clear();
     raw.policy.roles.end = 0;
+    for input in &mut raw.body_inputs {
+        if let Some(builtins) = &mut input.builtins {
+            builtins.source_copy = None;
+        }
+    }
     let owner = actual.identity();
     let payload = g::Payload::from_bootstrap_module_bodies(
         owner,

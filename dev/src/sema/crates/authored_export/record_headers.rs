@@ -65,7 +65,9 @@ impl Stage {
         let mut modules = vec![None; report.package.modules.len()];
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             self.charge(1)?;
-            if definition.kind == DefKind::Module {
+            if definition.kind == DefKind::Module
+                && let Some(declaration) = self.definitions[index]
+            {
                 let owner =
                     DefId(u32::try_from(index).map_err(|_| "source nominal module overflow")?);
                 let module = crate::resolve::impl_restrictions::module(
@@ -73,13 +75,14 @@ impl Stage {
                     &report.resolution,
                     owner,
                 )?;
-                modules[module.0 as usize] = Some(self.declaration(owner)?);
+                modules[module.0 as usize] = Some(declaration);
             }
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             self.charge(1)?;
-            if definition.kind != DefKind::Struct
-                && !(definition.kind == DefKind::Enum && self.body_nodes())
+            if self.definitions[index].is_none()
+                || (definition.kind != DefKind::Struct
+                    && !(definition.kind == DefKind::Enum && self.body_nodes()))
             {
                 continue;
             }

@@ -138,10 +138,22 @@ pub struct ParameterSlot {
     pub default: Option<TypeRef>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TypeSizing {
+    MaybeUnsized,
+    Source(DeclarationAddress),
+    Bootstrap,
+}
+impl TypeSizing {
+    #[must_use]
+    pub const fn required(self) -> bool {
+        !matches!(self, Self::MaybeUnsized)
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ParameterKind {
-    /// Some retains the actual sizing declaration; it grants no call permission.
+    /// A sizing requirement retains its binding mode and grants no call permission.
     Type {
-        sized: Option<DeclarationAddress>,
+        sized: TypeSizing,
     },
     Region,
     /// Version thirteen: a const slot of an integer, bool or char type. It
@@ -410,6 +422,12 @@ pub struct FunctionApplication {
     pub declaration: DeclarationAddress,
     pub arguments: Range,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BootstrapBound {
+    Sized,
+    Copy,
+    Clone,
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Requirement {
     /// Canonical spelling only; each importer owns its actual feature identity.
@@ -429,6 +447,10 @@ pub enum Requirement {
     ProjectionEqual {
         projection: TypeRef,
         value: TypeRef,
+    },
+    Bootstrap {
+        subject: TypeRef,
+        bound: BootstrapBound,
     },
 }
 #[derive(Clone, Debug, PartialEq, Eq)]

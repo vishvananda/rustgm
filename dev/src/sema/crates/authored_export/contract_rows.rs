@@ -69,6 +69,9 @@ impl Stage {
         let site = self.site(context.owner, source)?;
         let (predicate, binder, inner) = match input.value {
             Clause::UnstableFeature(id) => {
+                if self.bootstrap_bindings() {
+                    return Err("bootstrap crate cannot publish a source feature annotation");
+                }
                 if self_subject.is_some() {
                     return Err("feature requirement cannot claim a typed Self subject");
                 }
@@ -137,6 +140,16 @@ impl Stage {
                 shorter: self.region(region, context)?,
             }),
             Bound::Copy | Bound::Clone | Bound::Sized => {
+                if self.bootstrap_bindings() {
+                    return Ok(s::Requirement::Bootstrap {
+                        subject: self.ty(facts, predicate.ty, context)?,
+                        bound: match predicate.bound {
+                            Bound::Copy => s::BootstrapBound::Copy,
+                            Bound::Clone => s::BootstrapBound::Clone,
+                            _ => s::BootstrapBound::Sized,
+                        },
+                    });
+                }
                 let role = match predicate.bound {
                     Bound::Copy => LangItem::Copy,
                     Bound::Clone => LangItem::Clone,

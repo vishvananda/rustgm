@@ -349,7 +349,7 @@ fn metadata_signature(
         };
         rows.slots.get(slot.0 as usize).is_some_and(|slot| slot.owner == scope
             && slot.index as usize == index
-            && matches!(slot.kind, ParameterKind::Type { sized } if sized.is_some() == (index == 1)))
+            && matches!(slot.kind, ParameterKind::Type { sized } if sized.required() == (index == 1)))
     })
 }
 
@@ -384,7 +384,7 @@ fn bodyless_inputs(
             header,
             input,
             role(rows, LangItem::PointeeSized)?,
-            None,
+            super::TypeSizing::MaybeUnsized,
         ));
     }
     if operation == BodylessIntrinsic::FieldOffset {
@@ -397,9 +397,9 @@ fn bodyless_inputs(
         let sized = role(rows, LangItem::Sized)?;
         return Ok(header.declared_inputs > 0
             && inputs.iter().all(|input| input.owner == header.declaration)
-            && inputs
-                .iter()
-                .any(|input| sizing_input(rows, header, input, field, Some(sized))));
+            && inputs.iter().any(|input| {
+                sizing_input(rows, header, input, field, super::TypeSizing::Source(sized))
+            }));
     }
     if inputs.len() != 2 || header.declared_inputs != 1 {
         return Ok(false);
@@ -411,7 +411,15 @@ fn bodyless_inputs(
     Ok(inputs
         .iter()
         .zip([meta, pointee])
-        .all(|(clause, expected)| sizing_input(rows, header, clause, expected, Some(sized))))
+        .all(|(clause, expected)| {
+            sizing_input(
+                rows,
+                header,
+                clause,
+                expected,
+                super::TypeSizing::Source(sized),
+            )
+        }))
 }
 
 fn sizing_input(
@@ -419,7 +427,7 @@ fn sizing_input(
     header: &super::FunctionHeader,
     clause: &super::Clause,
     expected: super::DeclarationAddress,
-    sized: Option<super::DeclarationAddress>,
+    sized: super::TypeSizing,
 ) -> bool {
     let super::Requirement::Trait {
         application,
@@ -529,7 +537,12 @@ fn operation_contract(
     }
     let target = own
         .get(target_formal as usize)
-        .filter(|slot| slot.kind == ParameterKind::Type { sized: None })
+        .filter(|slot| {
+            slot.kind
+                == ParameterKind::Type {
+                    sized: super::TypeSizing::MaybeUnsized,
+                }
+        })
         .ok_or("async cleanup operation lost its actual unsized target formal")?;
     if role(rows, LangItem::AsyncDropInPlace)?.declaration != operation.declaration
         || operation.future != function.original.result

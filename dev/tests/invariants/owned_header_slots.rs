@@ -58,10 +58,14 @@ fn slot(owner: u32, ordinal: u32, definition: Option<u32>, sized: bool) -> Param
         index: ordinal,
         definition: definition.map(DeclarationRef),
         kind: ParameterKind::Type {
-            sized: sized.then_some(DeclarationAddress {
-                artifact: ArtifactRef(0),
-                declaration: DeclarationRef(0),
-            }),
+            sized: if sized {
+                TypeSizing::Source(DeclarationAddress {
+                    artifact: ArtifactRef(0),
+                    declaration: DeclarationRef(0),
+                })
+            } else {
+                TypeSizing::MaybeUnsized
+            },
         },
         default: None,
     }

@@ -95,53 +95,17 @@ impl Stage {
         facts: &Declarations,
         ordinary_traits: bool,
     ) -> Result<(), &'static str> {
-        let catalog = facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source header graph has no role catalog")?;
-        self.charge(1)?;
-        // Version thirteen re-proves UnsafeUnpin as an exact empty auto role.
-        if !self.body_nodes() && catalog.language(LangItem::UnsafeUnpin).is_some() {
-            return Err("source UnsafeUnpin contract transport is not implemented");
-        }
-        let reserved = report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .ok_or("source role reservations are absent")?;
-        let start =
-            u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?;
+        let reserved = report.resolution.source_bindings.as_deref();
         let mut emitted = if ordinary_traits {
             self.reserve(report.resolution.definitions.len())?;
             vec![false; report.resolution.definitions.len()]
         } else {
             Vec::new()
         };
-        for role in LangItem::ALL {
-            self.charge(1)?;
-            let Some(declaration) = self.admitted_role(report, facts, role)? else {
-                continue;
-            };
-            let address = self.address(declaration.definition)?;
-            self.reserve(4 * size_of::<s::RoleBinding>())?;
-            self.rows.roles.push(s::RoleBinding {
-                role,
-                declaration: address,
-            });
-            if report.resolution.definitions[declaration.definition.0 as usize].kind
-                == DefKind::Trait
-            {
-                let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
-                self.trait_header(report, facts, &header, reserved, literal)?;
-                if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
-                    *slot = true;
-                }
-            }
+        if !self.bootstrap_bindings() {
+            let reserved = reserved.ok_or("source role reservations are absent")?;
+            self.bound_traits(report, facts, reserved, &mut emitted)?;
         }
-        self.rows.policy.roles = g::Range {
-            start,
-            end: u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?,
-        };
         if ordinary_traits {
             for owner in facts.associated.owners() {
                 self.charge(1)?;
@@ -168,6 +132,52 @@ impl Stage {
         if self.rows.traits.len() != expected {
             return Err("source trait graph contains an unsupported unvalidated declaration");
         }
+        Ok(())
+    }
+
+    fn bound_traits(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        reserved: &Reservations,
+        emitted: &mut [bool],
+    ) -> Result<(), &'static str> {
+        let catalog = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source header graph has no role catalog")?;
+        self.charge(1)?;
+        // Version thirteen re-proves UnsafeUnpin as an exact empty auto role.
+        if !self.body_nodes() && catalog.language(LangItem::UnsafeUnpin).is_some() {
+            return Err("source UnsafeUnpin contract transport is not implemented");
+        }
+        let start =
+            u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?;
+        for role in LangItem::ALL {
+            self.charge(1)?;
+            let Some(declaration) = self.admitted_role(report, facts, role)? else {
+                continue;
+            };
+            let address = self.address(declaration.definition)?;
+            self.reserve(4 * size_of::<s::RoleBinding>())?;
+            self.rows.roles.push(s::RoleBinding {
+                role,
+                declaration: address,
+            });
+            if report.resolution.definitions[declaration.definition.0 as usize].kind
+                == DefKind::Trait
+            {
+                let (header, literal) = Trait::source_with_bounds(report, facts, declaration)?;
+                self.trait_header(report, facts, &header, Some(reserved), literal)?;
+                if let Some(slot) = emitted.get_mut(declaration.definition.0 as usize) {
+                    *slot = true;
+                }
+            }
+        }
+        self.rows.policy.roles = g::Range {
+            start,
+            end: u32::try_from(self.rows.roles.len()).map_err(|_| "source role table overflow")?,
+        };
         Ok(())
     }
 
@@ -444,7 +454,7 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
         header: &Trait<'_>,
-        reserved: &Reservations,
+        reserved: Option<&Reservations>,
         literal: &[crate::syntax::ast::NodeId],
     ) -> Result<(), &'static str> {
         self.charge(1)?;
@@ -598,7 +608,7 @@ fn trait_policy(
 
 fn flags(
     header: &Trait<'_>,
-    reserved: &Reservations,
+    reserved: Option<&Reservations>,
     policy: u16,
     declaration_policies: bool,
 ) -> Result<s::TraitFlags, &'static str> {
@@ -610,7 +620,8 @@ fn flags(
         | (u16::from(header.flags.unsafe_) * s::TraitFlags::UNSAFE)
         | (u16::from(header.flags.constant) * s::TraitFlags::CONST)
         | (u16::from(header.flags.auto_) * s::TraitFlags::AUTO)
-        | (u16::from(reserved.denies_implementation(header.definition)) * s::TraitFlags::DENY_IMPL);
+        | (u16::from(reserved.is_some_and(|roles| roles.denies_implementation(header.definition)))
+            * s::TraitFlags::DENY_IMPL);
     for (attribute, flag) in [
         (HeaderAttribute::Fundamental, s::TraitFlags::FUNDAMENTAL),
         (

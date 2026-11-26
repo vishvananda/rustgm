@@ -14,6 +14,10 @@ pub(super) fn map(
     raw: &s::Requirement,
 ) -> Result<Predicate, &'static str> {
     match raw {
+        s::Requirement::Bootstrap { subject, bound } => Ok(Predicate {
+            ty: mapping.ty(*subject)?,
+            bound: super::super::predicate_remap::bootstrap_bound(*bound),
+        }),
         s::Requirement::UnstableFeature(_) => {
             Err("non-type feature clause requires whole-Clause declaration translation")
         }

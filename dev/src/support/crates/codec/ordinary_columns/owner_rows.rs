@@ -131,9 +131,13 @@ pub(super) fn slot_write(out: &mut Writer, row: &s::ParameterSlot) -> Result<(),
         s::ParameterKind::Type { sized } => {
             // Tag 2 is version thirteen's defaulted type slot; tag 0 keeps its bytes.
             out.u8(if row.default.is_some() { 2 } else { 0 })?;
-            out.u8(u8::from(sized.is_some()))?;
-            if let Some(address) = sized {
-                address_write(out, address)?;
+            match sized {
+                s::TypeSizing::MaybeUnsized => out.u8(0)?,
+                s::TypeSizing::Source(address) => {
+                    out.u8(1)?;
+                    address_write(out, address)?;
+                }
+                s::TypeSizing::Bootstrap => out.u8(2)?,
             }
             if let Some(default) = row.default {
                 id(out, default.0)?;
@@ -158,10 +162,11 @@ pub(super) fn slot_read(read: &mut Input<'_, '_>) -> Result<s::ParameterSlot, &'
     let tag = read.reader.u8()?;
     let kind = match tag {
         0 | 2 if tag == 0 || read.profile.body_nodes() => s::ParameterKind::Type {
-            sized: if read.boolean()? {
-                Some(address_read(read)?)
-            } else {
-                None
+            sized: match read.reader.u8()? {
+                0 => s::TypeSizing::MaybeUnsized,
+                1 => s::TypeSizing::Source(address_read(read)?),
+                2 if read.profile.bootstrap_bindings() => s::TypeSizing::Bootstrap,
+                _ => return Err("invalid source boolean"),
             },
         },
         1 => s::ParameterKind::Region,

@@ -291,22 +291,30 @@ impl Stage {
         report: &Report,
         facts: &Declarations,
     ) -> Result<(), Error> {
-        let provider = report.package.source_core().ok_or_else(|| {
-            Error::unlocated("source attribute publication requires its actual own-provider report")
-        })?;
-        if provider.current != provider.provider {
-            return Err(Error::unlocated(
-                "source attribute publication belongs to another provider",
-            ));
+        if self.bootstrap_bindings() {
+            super::require_bootstrap_bindings(report, facts).map_err(Error::unlocated)?;
+        } else {
+            let provider = report.package.source_core().ok_or_else(|| {
+                Error::unlocated(
+                    "source attribute publication requires its actual own-provider report",
+                )
+            })?;
+            if provider.current != provider.provider {
+                return Err(Error::unlocated(
+                    "source attribute publication belongs to another provider",
+                ));
+            }
+            facts
+                .source_bindings
+                .as_deref()
+                .ok_or_else(|| {
+                    Error::unlocated(
+                        "source attribute publication lacks its actual provider catalog",
+                    )
+                })?
+                .require_provider_report(report)
+                .map_err(Error::unlocated)?;
         }
-        facts
-            .source_bindings
-            .as_deref()
-            .ok_or_else(|| {
-                Error::unlocated("source attribute publication lacks its actual provider catalog")
-            })?
-            .require_provider_report(report)
-            .map_err(Error::unlocated)?;
         if self.definitions.len() != report.resolution.definitions.len() {
             return Err(Error::unlocated(
                 "source attribute stage belongs to another declaration arena",

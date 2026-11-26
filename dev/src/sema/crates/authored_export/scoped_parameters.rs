@@ -341,19 +341,21 @@ impl Stage {
                 }
                 _ => return Err("source slot kind is not a type parameter"),
             };
-            let sized = if sized {
+            let sized = if !sized {
+                s::TypeSizing::MaybeUnsized
+            } else if self.bootstrap_bindings() {
+                s::TypeSizing::Bootstrap
+            } else {
                 let actual = facts
                     .source_bindings
                     .as_deref()
                     .ok_or("source slot has no role catalog")?
                     .header_role(LangItem::Sized)?
                     .ok_or("source Sized requirement has no actual declaration")?;
-                Some(s::DeclarationAddress {
+                s::TypeSizing::Source(s::DeclarationAddress {
                     artifact: s::ArtifactRef(0),
                     declaration: self.declaration(actual.definition)?,
                 })
-            } else {
-                None
             };
             self.push_slot(
                 parameter.binding,

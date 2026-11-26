@@ -43,6 +43,9 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
         // Even a ready application is data in this exact current body/domain.
         Port::require_context(&port.port, store, work)?;
         match requirement {
+            s::Requirement::Bootstrap { subject, .. } => {
+                port.ty(store, *subject, work)?;
+            }
             s::Requirement::Trait { application, .. } => {
                 translation::application(port, applications, *application, store, work)?;
             }

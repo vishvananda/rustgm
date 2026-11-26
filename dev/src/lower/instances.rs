@@ -316,6 +316,8 @@ pub enum SourcePublication {
     CompilerOperations,
     /// Version fourteen combines node bodies and authenticated symbolic operations.
     ModuleBodyOperations,
+    /// The shared typed declaration and body columns under bootstrap bindings.
+    BootstrapModuleBodies,
     /// Version twelve: version-ten rows plus explicit Branch/Panic CFG exits.
     ModuleBranches,
     /// Version thirteen: the version-twelve rows as stable generic body IR nodes.
@@ -338,7 +340,8 @@ pub fn build_source_library_profile(
     ),
     Error,
 > {
-    if report.package.source_core().is_none() {
+    if report.package.source_core().is_none() && profile != SourcePublication::BootstrapModuleBodies
+    {
         return Err(diagnostic(
             report,
             None,
@@ -412,7 +415,9 @@ pub fn build_source_library_profile(
         },
         if matches!(
             profile,
-            SourcePublication::CompilerOperations | SourcePublication::ModuleBodyOperations
+            SourcePublication::CompilerOperations
+                | SourcePublication::ModuleBodyOperations
+                | SourcePublication::BootstrapModuleBodies
         ) {
             Construction::CompilerOperations
         } else {

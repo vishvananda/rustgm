@@ -442,6 +442,9 @@ impl<'a, S: Sources> Engine<'a, S> {
         let guests = engine.loader.package.guest_slots().rev();
         engine.work.extend(guests.map(Work::Guest));
         let host = engine.root_visit(ModuleId(0), ScopeId(0));
+        if engine.loader.package.bootstrap_metadata {
+            engine.ensure_attribute_policy(Self::visit_key(host))?;
+        }
         engine
             .push_visit(host)
             .map_err(|error| engine.diagnostic(error))?;

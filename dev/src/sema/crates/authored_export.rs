@@ -183,6 +183,7 @@ enum BodyTransport {
     Nodes,
     /// Version fourteen: node bodies may retain their defining cleanup policy.
     PreciseLiveDropNodes,
+    BootstrapNodes,
 }
 impl Stage {
     pub(crate) const fn nominal_transport(&self) -> bool {
@@ -194,11 +195,16 @@ impl Stage {
     pub(crate) fn body_nodes(&self) -> bool {
         matches!(
             self.body_transport,
-            BodyTransport::Nodes | BodyTransport::PreciseLiveDropNodes
+            BodyTransport::Nodes
+                | BodyTransport::PreciseLiveDropNodes
+                | BodyTransport::BootstrapNodes
         )
     }
     pub(crate) fn declaration_policies(&self) -> bool {
         self.body_nodes() && self.compiler_operations
+    }
+    fn bootstrap_bindings(&self) -> bool {
+        self.body_transport == BodyTransport::BootstrapNodes
     }
     pub(crate) fn precise_live_drops(&self) -> bool {
         self.body_transport == BodyTransport::PreciseLiveDropNodes
@@ -475,6 +481,19 @@ impl Stage {
             BodyTransport::Nodes,
         )
     }
+    pub(crate) fn begin_bootstrap_module_bodies(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_with(
+            report,
+            facts,
+            identity,
+            ExportMode::CompilerOperations,
+            BodyTransport::BootstrapNodes,
+        )
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -497,7 +516,7 @@ impl Stage {
             stage.prepare_callable_arena(facts)?;
         }
         let admission_rows::CollectedDeclarations { leaves, order } =
-            stage.declarations(report, facts, mode)?;
+            stage.declarations(report, facts, mode, identity.name())?;
         stage.scopes(report, facts, &order)?;
         drop(order);
         stage.release_temporary(admission_rows::inventory_bytes(stage.definitions.len()))?;
@@ -540,7 +559,11 @@ impl Stage {
             facts,
             identity,
             mode,
-            body_transport == BodyTransport::Nodes,
+            matches!(
+                body_transport,
+                BodyTransport::Nodes | BodyTransport::BootstrapNodes
+            ),
+            body_transport == BodyTransport::BootstrapNodes,
         )?;
         let unit = report
             .package
@@ -1113,7 +1136,9 @@ fn complete_scope_owners(
     if stage.declaration_policies() {
         stage.constant_lexical_owners(report, facts, owners)?;
         stage.require_contextual_bindings(report, facts, owners)?;
-        authored_traits::require_role_transport(report, facts, true, true, true)?;
+        if !stage.bootstrap_bindings() {
+            authored_traits::require_role_transport(report, facts, true, true, true)?;
+        }
     }
     Ok(())
 }
@@ -1197,6 +1222,7 @@ fn require_export_mode(
     identity: &CrateIdentity,
     mode: ExportMode,
     languages: bool,
+    bootstrap: bool,
 ) -> Result<(), &'static str> {
     // The bring-up profile publishes without the facts these fences protect.
     waiving(facts.require_declaration_policy_transport(
@@ -1238,7 +1264,11 @@ fn require_export_mode(
                 .map_err(|error| error.message),
         )?;
     }
-    require_provider_identity(report, identity)?;
+    if bootstrap {
+        require_bootstrap_identity(report, facts, identity)?;
+    } else {
+        require_provider_identity(report, identity)?;
+    }
     if facts.members.has_contextual_fields() {
         return Err("contextual aggregate field metadata is not implemented");
     }
@@ -1264,6 +1294,9 @@ fn require_export_mode(
     if !languages || mode != ExportMode::CompilerOperations {
         require_legacy_name_provenance(report, languages)?;
     }
+    if bootstrap {
+        return Ok(());
+    }
     facts
         .source_bindings
         .as_deref()
@@ -1280,6 +1313,37 @@ fn require_export_mode(
             mode == ExportMode::CompilerOperations,
             languages,
         )?;
+    }
+    Ok(())
+}
+
+fn require_bootstrap_identity(
+    report: &Report,
+    facts: &Declarations,
+    identity: &CrateIdentity,
+) -> Result<(), &'static str> {
+    require_bootstrap_bindings(report, facts)?;
+    if !report.package.bootstrap_metadata
+        || report.package.crate_name != identity.name()
+        || facts
+            .crates
+            .as_deref()
+            .and_then(super::Linkage::identity)
+            .is_some_and(|actual| actual != identity)
+    {
+        return Err("bootstrap export identity differs from its actual crate");
+    }
+    Ok(())
+}
+
+fn require_bootstrap_bindings(report: &Report, facts: &Declarations) -> Result<(), &'static str> {
+    if report.package.source_core().is_some()
+        || report.package.source_client().is_some()
+        || report.package.staged_consumer().is_some()
+        || facts.source_bindings.is_some()
+        || report.resolution.source_bindings.is_some()
+    {
+        return Err("bootstrap export requires ordinary compiler bindings");
     }
     Ok(())
 }

@@ -29,9 +29,10 @@ ALIAS = re.compile(r"[A-Za-z_][A-Za-z_0-9]{0,63}")
 Graph = namedtuple("Graph", "arguments units artifacts")
 
 
-def validate_source_profile(stage, profile):
-    if not isinstance(profile, str) or profile not in SOURCE_PROFILES:
-        raise ValueError(f"{stage}: source_profile must be one of {SOURCE_PROFILES}")
+def validate_source_profile(stage, profile, *, source_core=True):
+    allowed = SOURCE_PROFILES if source_core else ("bootstrap-bodies-v15",)
+    if not isinstance(profile, str) or profile not in allowed:
+        raise ValueError(f"{stage}: source_profile must be one of {allowed}")
 
 
 def validate_forge(stage, case, known):
@@ -103,9 +104,7 @@ def validate(root, stage, case, mode, primaries=()):
         if not isinstance(source_core, bool):
             raise ValueError(f"{stage}: provider source_core must be an explicit boolean")
         if "source_profile" in provider:
-            if not source_core:
-                raise ValueError(f"{stage}: provider source_profile requires source_core")
-            validate_source_profile(stage, provider["source_profile"])
+            validate_source_profile(stage, provider["source_profile"], source_core=source_core)
         if source_core:
             source_cores.add(name)
         case_edition(provider, stage)

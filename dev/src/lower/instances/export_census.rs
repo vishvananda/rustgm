@@ -19,7 +19,7 @@ pub fn inspect_declaration_exports(
         prepared,
         |facts, _| {
             facts.require_deprecated_safe_transport()?;
-            authored_export::prepare_inherent_constants(report, facts, identity)?;
+            authored_export::prepare_inherent_constants(report, facts, identity, false)?;
             let census = DeclCensus::collect(report, facts, identity)
                 .map_err(|message| diagnostic(report, None, message.into()))?;
             Ok(ControlFlow::Break(census))

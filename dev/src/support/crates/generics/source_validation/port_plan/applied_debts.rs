@@ -111,6 +111,9 @@ impl Arena {
                     self.applied_root(domains, application, caller, *projection, work)?;
                     self.applied_root(domains, application, caller, *value, work)?;
                 }
+                s::Requirement::Bootstrap { subject, .. } => {
+                    self.applied_root(domains, application, caller, *subject, work)?;
+                }
                 s::Requirement::TypeOutlives { subject, .. } if domains.declaration_policies => {
                     self.applied_root(domains, application, caller, *subject, work)?;
                 }

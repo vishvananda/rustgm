@@ -217,6 +217,8 @@ impl<'a, S: Sources> Loader<'a, S> {
                 macro_features: prepared.macros,
                 runtime_checks: config.runtime_checks(),
                 lint_cap: config.lint_cap(),
+                bootstrap_metadata: context.artifacts
+                    == crate::support::crates::ArtifactContext::BootstrapLibrary,
                 admitted_source_bytes: root_bytes,
                 no_std,
                 file_paths: vec![root.path.components().collect()],

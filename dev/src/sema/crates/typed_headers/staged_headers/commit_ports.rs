@@ -16,7 +16,11 @@ impl Stage {
         budget: &mut Headers,
     ) -> Result<(), Error> {
         let constants = self.preflight(context, facts, budget)?;
-        let effects = prepare_effects(&self.scopes, facts, constants, budget)?;
+        let effects = if context.descriptor.profile().bootstrap_bindings() {
+            None
+        } else {
+            prepare_effects(&self.scopes, facts, constants, budget)?
+        };
         let owners = self.associated_rows(context, &facts.types, budget)?;
         budget.reserve(facts.associated.imported_allocation_bound(
             owners.len(),

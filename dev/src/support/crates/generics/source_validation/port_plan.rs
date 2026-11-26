@@ -88,7 +88,7 @@ pub enum RequiredKind {
     /// All actual type formals survive, including unused and inherited ones.
     Formal {
         slot: s::SlotRef,
-        sizing: Option<s::DeclarationAddress>,
+        sizing: s::TypeSizing,
     },
     /// A declaration premise remains a goal on actual substitution. Its exact
     /// owner, qualifier and quantifier remain in the borrowed clause row.

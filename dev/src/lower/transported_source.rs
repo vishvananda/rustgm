@@ -241,6 +241,9 @@ impl Source {
         profile: super::instances::SourcePublication,
     ) -> Result<(Self, s::ModuleContractRows), &'static str> {
         let mut stage = match profile {
+            super::instances::SourcePublication::BootstrapModuleBodies => {
+                Stage::begin_bootstrap_module_bodies(report, facts, identity)?
+            }
             super::instances::SourcePublication::ModuleBodyOperations => {
                 Stage::begin_module_body_operations(report, facts, identity)?
             }
@@ -322,10 +325,14 @@ impl Source {
             super::instances::SourcePublication::ModuleNominals
             | super::instances::SourcePublication::ModuleBranches
             | super::instances::SourcePublication::ModuleBodies
-            | super::instances::SourcePublication::ModuleBodyOperations => {
-                if profile == super::instances::SourcePublication::ModuleBodyOperations {
+            | super::instances::SourcePublication::ModuleBodyOperations
+            | super::instances::SourcePublication::BootstrapModuleBodies => {
+                let bootstrap =
+                    profile == super::instances::SourcePublication::BootstrapModuleBodies;
+                if bootstrap || profile == super::instances::SourcePublication::ModuleBodyOperations
+                {
                     crate::sema::crates::authored_export::prepare_inherent_constants(
-                        report, facts, identity,
+                        report, facts, identity, bootstrap,
                     )?;
                 }
                 let (source, modules) =
@@ -1055,6 +1062,7 @@ impl Source {
             | SourcePublication::ModuleBranches
             | SourcePublication::ModuleBodies
             | SourcePublication::ModuleBodyOperations
+            | SourcePublication::BootstrapModuleBodies
             | SourcePublication::CompilerOperations => self.complete_module_policy_payload(
                 modules.ok_or_else(|| {
                     crate::resolve::package::Error::unlocated(
@@ -1089,6 +1097,7 @@ impl Source {
                     | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::ModuleBodies
                     | super::instances::SourcePublication::ModuleBodyOperations
+                    | super::instances::SourcePublication::BootstrapModuleBodies
                     | super::instances::SourcePublication::CompilerOperations
             ) {
                 let available = if matches!(
@@ -1098,6 +1107,7 @@ impl Source {
                         | super::instances::SourcePublication::ModuleBranches
                         | super::instances::SourcePublication::ModuleBodies
                         | super::instances::SourcePublication::ModuleBodyOperations
+                        | super::instances::SourcePublication::BootstrapModuleBodies
                         | super::instances::SourcePublication::CompilerOperations
                 ) {
                     self.stage
@@ -1119,11 +1129,19 @@ impl Source {
         base: crate::support::crates::Interface,
         profile: super::instances::SourcePublication,
     ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
-        if report
-            .package
-            .source_core()
-            .is_none_or(|provider| &provider.provider != base.identity())
-        {
+        let bootstrap = profile == super::instances::SourcePublication::BootstrapModuleBodies;
+        let registered = if bootstrap {
+            facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::identity)
+        } else {
+            report
+                .package
+                .source_core()
+                .map(|provider| &provider.provider)
+        };
+        if registered != Some(base.identity()) {
             return Err(crate::resolve::package::Error::unlocated(
                 "module publication changed its actual provider",
             ));
@@ -1140,6 +1158,7 @@ impl Source {
                     | super::instances::SourcePublication::ModuleBranches
                     | super::instances::SourcePublication::ModuleBodies
                     | super::instances::SourcePublication::ModuleBodyOperations
+                    | super::instances::SourcePublication::BootstrapModuleBodies
                     | super::instances::SourcePublication::CompilerOperations
             )
         {
@@ -1168,30 +1187,23 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleBodyOperations {
-                g::Payload::from_source_module_body_operations
-            } else if profile == super::instances::SourcePublication::CompilerOperations {
-                g::Payload::from_source_compiler_operations
-            } else if profile == super::instances::SourcePublication::ModuleBodies {
-                g::Payload::from_source_module_bodies
-            } else if profile == super::instances::SourcePublication::ModuleBranches {
-                g::Payload::from_source_module_branches
-            } else if profile == super::instances::SourcePublication::ModuleNominals {
-                g::Payload::from_source_module_nominals
-            } else if profile == super::instances::SourcePublication::ModuleConversions {
-                g::Payload::from_source_module_conversions
-            } else if profile == super::instances::SourcePublication::ModuleSafety {
-                g::Payload::from_source_module_safety
-            } else if profile == super::instances::SourcePublication::ModuleCallables {
-                g::Payload::from_source_module_callables
-            } else if profile == super::instances::SourcePublication::ModuleCompatibility {
-                g::Payload::from_source_module_compatibility
-            } else if profile == super::instances::SourcePublication::ModuleDefinitions {
-                g::Payload::from_source_module_definitions
-            } else if profile == super::instances::SourcePublication::ModuleFeaturePredicates {
-                g::Payload::from_source_module_feature_predicates
-            } else {
-                g::Payload::from_source_module_availability
+            use super::instances::SourcePublication as Publication;
+            let publish = match profile {
+                Publication::BootstrapModuleBodies => g::Payload::from_bootstrap_module_bodies,
+                Publication::ModuleBodyOperations => g::Payload::from_source_module_body_operations,
+                Publication::CompilerOperations => g::Payload::from_source_compiler_operations,
+                Publication::ModuleBodies => g::Payload::from_source_module_bodies,
+                Publication::ModuleBranches => g::Payload::from_source_module_branches,
+                Publication::ModuleNominals => g::Payload::from_source_module_nominals,
+                Publication::ModuleConversions => g::Payload::from_source_module_conversions,
+                Publication::ModuleSafety => g::Payload::from_source_module_safety,
+                Publication::ModuleCallables => g::Payload::from_source_module_callables,
+                Publication::ModuleCompatibility => g::Payload::from_source_module_compatibility,
+                Publication::ModuleDefinitions => g::Payload::from_source_module_definitions,
+                Publication::ModuleFeaturePredicates => {
+                    g::Payload::from_source_module_feature_predicates
+                }
+                _ => g::Payload::from_source_module_availability,
             };
             publish(
                 base.identity(),

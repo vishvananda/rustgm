@@ -569,6 +569,15 @@ pub(super) fn requirement_write(
             id(out, projection.0)?;
             id(out, value.0)
         }
+        s::Requirement::Bootstrap { subject, bound } => {
+            out.u8(5)?;
+            id(out, subject.0)?;
+            out.u8(match bound {
+                s::BootstrapBound::Sized => 0,
+                s::BootstrapBound::Copy => 1,
+                s::BootstrapBound::Clone => 2,
+            })
+        }
     }
 }
 pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requirement, &'static str> {
@@ -598,6 +607,15 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
         4 if read.profile.body_nodes() => s::Requirement::ProjectionEqual {
             projection: g::TypeRef(read.id()?),
             value: g::TypeRef(read.id()?),
+        },
+        5 if read.profile.bootstrap_bindings() => s::Requirement::Bootstrap {
+            subject: g::TypeRef(read.id()?),
+            bound: match read.reader.u8()? {
+                0 => s::BootstrapBound::Sized,
+                1 => s::BootstrapBound::Copy,
+                2 => s::BootstrapBound::Clone,
+                _ => return Err("unknown bootstrap bound"),
+            },
         },
         _ => return Err("unknown source function requirement"),
     })

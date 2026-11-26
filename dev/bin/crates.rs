@@ -165,6 +165,10 @@ impl Options {
             return Err("duplicate --source-profile".into());
         }
         match value {
+            Some("bootstrap-bodies-v15") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::BootstrapModuleBodies);
+            }
             Some("module-body-operations-v14") => {
                 self.source_profile =
                     Some(rustgm::lower::instances::SourcePublication::ModuleBodyOperations);
@@ -219,7 +223,7 @@ impl Options {
             }
             _ => {
                 return Err(
-                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5, module-compatibility-v6, module-callables-v7, module-safety-v8, module-conversions-v9, module-nominals-v10, module-compiler-operations-v11, module-branches-v12, module-bodies-v13, module-body-operations-v14 or provided-contracts-v1".into(),
+                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5, module-compatibility-v6, module-callables-v7, module-safety-v8, module-conversions-v9, module-nominals-v10, module-compiler-operations-v11, module-branches-v12, module-bodies-v13, module-body-operations-v14, bootstrap-bodies-v15 or provided-contracts-v1".into(),
                 );
             }
         }
@@ -251,17 +255,7 @@ impl Options {
                 }
             }
         }
-        if self.source_profile.is_some()
-            && (self.source_core.is_none()
-                || self.source_client.is_some()
-                || !self.is_library()
-                || mode != "--emit-lowir"
-                || self.metadata.is_none() && self.export_census.is_none()
-                || count
-                || self.identity()?.is_none())
-        {
-            return Err("--source-profile requires SourceCore library LowIR and metadata output with full identity".into());
-        }
+        self.validate_source_profile(mode, count)?;
         if self.source_core.is_some() && self.source_client.is_some() {
             return Err("--source-core and --source-client are mutually exclusive".into());
         }
@@ -339,6 +333,26 @@ impl Options {
         }
         Ok(())
     }
+    fn validate_source_profile(&self, mode: &str, count: bool) -> Result<(), String> {
+        let bootstrap = self.source_profile
+            == Some(rustgm::lower::instances::SourcePublication::BootstrapModuleBodies);
+        if self.source_profile.is_some()
+            && (self.source_core.is_none() != bootstrap
+                || self.source_client.is_some()
+                || !self.is_library()
+                || mode != "--emit-lowir"
+                || self.metadata.is_none() && self.export_census.is_none()
+                || count
+                || self.identity()?.is_none())
+        {
+            if bootstrap {
+                return Err("bootstrap-bodies-v15 requires ordinary library LowIR and metadata output with full identity".into());
+            }
+            return Err("--source-profile requires SourceCore library LowIR and metadata output with full identity".into());
+        }
+        Ok(())
+    }
+
     fn validate_export_census(&self, mode: &str, output: Option<&str>) -> Result<(), String> {
         use rustgm::lower::instances::SourcePublication;
         if self.export_census.is_none() {
@@ -513,6 +527,10 @@ impl Options {
         let mode = self.bindings_mode()?;
         let artifacts = if !artifact {
             ArtifactContext::Inspection
+        } else if self.source_profile
+            == Some(rustgm::lower::instances::SourcePublication::BootstrapModuleBodies)
+        {
+            ArtifactContext::BootstrapLibrary
         } else if matches!(&mode, rustgm::support::bindings::Mode::Bootstrap) {
             ArtifactContext::Ordinary
         } else {

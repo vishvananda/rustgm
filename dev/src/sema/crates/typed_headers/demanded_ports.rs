@@ -261,7 +261,7 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
         if let Some(binding) = slot.definition {
             self.view.definition(binding, budget)?;
         }
-        if let Some(address) = sized {
+        if let s::TypeSizing::Source(address) = sized {
             if address.artifact != self.rows.policy.provider {
                 return Err(error("reserved Sized formal belongs to another provider"));
             }
@@ -278,7 +278,7 @@ impl<'rows> Port<'rows, ReservationWork> for Reserved<'rows, '_> {
             self.view.definition(address.declaration, budget)?;
         }
         let index = slot_bindings::type_index(&self.rows.declarations, slot);
-        let argument = slot_bindings::intern_type(store, owner, index, sized.is_some())?;
+        let argument = slot_bindings::intern_type(store, owner, index, sized.required())?;
         publish(memo, argument)?;
         Ok(argument)
     }

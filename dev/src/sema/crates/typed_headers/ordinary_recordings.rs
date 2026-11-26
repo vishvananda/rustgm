@@ -466,7 +466,7 @@ fn original_formals(
             .ok_or_else(|| error("ordinary recording lost its actual canonical formal"))?;
         let kind = match slot.kind {
             s::ParameterKind::Type { sized } => crate::types::parameters::ParameterKind::Type {
-                sized: sized.is_some(),
+                sized: sized.required(),
             },
             // Version thirteen: a const formal keeps its complete position.
             s::ParameterKind::Const { ty } => crate::types::parameters::ParameterKind::Const {

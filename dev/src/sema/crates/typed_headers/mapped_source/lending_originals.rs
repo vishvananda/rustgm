@@ -278,19 +278,17 @@ fn authenticate(
         .crates
         .as_deref()
         .ok_or_else(|| error("ordinary original requires its actual SourceClient imports"))?;
-    let client = report
-        .package
-        .source_client()
-        .ok_or_else(|| error("ordinary original requires its actual SourceClient report"))?;
-    let index = client
-        .require_inventory(imported.dependencies())
-        .map_err(error)?;
+    super::super::staged_ingest::authenticate_bindings(
+        report,
+        imported,
+        facts,
+        graph.provider_index,
+    )?;
     let catalog = imported
         .origin_catalog()
         .map_err(error)?
         .ok_or_else(|| error("ordinary original lost its actual origin catalog"))?;
-    if index != graph.provider_index
-        || !std::ptr::eq(catalog.as_ref(), graph.origins.as_ref())
+    if !std::ptr::eq(catalog.as_ref(), graph.origins.as_ref())
         || !Arc::ptr_eq(&imported.shared_dependencies(), &graph.inventory)
         || !matches!(facts.associated.imported_owner(), Some(ImportedOwners::Ordinary(actual)) if std::ptr::eq(actual.as_ref(), graph))
     {
@@ -298,12 +296,6 @@ fn authenticate(
             "ordinary original changed its actual namespace or mapping owner",
         ));
     }
-    facts
-        .source_bindings
-        .as_deref()
-        .ok_or_else(|| error("ordinary original lost its actual source role catalog"))?
-        .require_provider_report(report)
-        .map_err(error)?;
     graph.descriptor(&graph.origins).map_err(error)?;
     Ok(())
 }

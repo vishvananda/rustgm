@@ -574,19 +574,17 @@ fn validate_binding(
         .get(binding.0 as usize)
         .ok_or("source parameter definition is unknown")?;
     let valid = match slot.kind {
-        ParameterKind::Type { sized: None }
-            if binding == slot.owner && definition.kind == DefinitionKind::SelfType =>
-        {
-            definition
-                .parent
-                .and_then(|parent| definitions.get(parent.0 as usize))
-                .is_some_and(|parent| {
-                    matches!(
-                        parent.kind,
-                        DefinitionKind::Trait | DefinitionKind::TraitAlias
-                    )
-                })
-        }
+        ParameterKind::Type {
+            sized: super::TypeSizing::MaybeUnsized,
+        } if binding == slot.owner && definition.kind == DefinitionKind::SelfType => definition
+            .parent
+            .and_then(|parent| definitions.get(parent.0 as usize))
+            .is_some_and(|parent| {
+                matches!(
+                    parent.kind,
+                    DefinitionKind::Trait | DefinitionKind::TraitAlias
+                )
+            }),
         ParameterKind::Type { .. } => {
             definition.kind == DefinitionKind::TypeParameter
                 && definition.parent == Some(slot.owner)

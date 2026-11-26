@@ -15,6 +15,8 @@ pub enum ArtifactContext {
     Inspection,
     /// The adopted ordinary executable profile admits no source artifact selector.
     Ordinary,
+    /// Retain authenticated headers for an ordinary crate's typed artifact.
+    BootstrapLibrary,
     Source {
         selected: Option<OutputKind>,
     },

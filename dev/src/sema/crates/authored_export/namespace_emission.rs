@@ -87,9 +87,11 @@ impl Stage {
             if definition.kind != DefKind::Module {
                 continue;
             }
+            let Some(row) = self.definitions[actual] else {
+                continue;
+            };
             let actual = DefId(u32::try_from(actual).map_err(|_| "module declaration overflow")?);
             let module = impl_restrictions::module(&report.package, &report.resolution, actual)?;
-            let row = self.declaration(actual)?;
             if index.rows[module.0 as usize].replace(row).is_some() {
                 return Err("module policy has duplicate actual modules");
             }

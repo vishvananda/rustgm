@@ -1554,7 +1554,7 @@ fn bindings_with_policy(
     if !bootstrap && sizing.contains(&None) {
         return Err("source functions require the real complete sizing trio");
     }
-    slot_bindings(rows, headers, work, profile, sizing[0])?;
+    slot_bindings(rows, headers, work, profile, sizing[0], bootstrap)?;
     let languages = profile.languages();
     let callables = callable_roles::Roles(
         [
@@ -2351,6 +2351,7 @@ fn slot_bindings(
     work: &mut Work,
     profile: BindingProfile,
     sized_role: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    bootstrap: bool,
 ) -> Result<(), &'static str> {
     if profile == BindingProfile::BodyOperations {
         super::super::const_defaults::validate(headers, work)?;
@@ -2397,13 +2398,22 @@ fn slot_bindings(
                 _ => return Err("source parameter default belongs to a non-trait owner"),
             }
         }
-        if let super::super::ParameterKind::Type {
-            sized: Some(address),
-        } = slot.kind
-            && (address.artifact != super::super::ArtifactRef(0)
-                || Some(address.declaration) != sized_role)
-        {
-            return Err("source sized formal names a foreign or different actual Sized role");
+        if let super::super::ParameterKind::Type { sized } = slot.kind {
+            use super::super::TypeSizing;
+            match sized {
+                TypeSizing::Bootstrap if !bootstrap => {
+                    return Err("bootstrap sizing requires its crate body profile");
+                }
+                TypeSizing::Source(address)
+                    if address.artifact != super::super::ArtifactRef(0)
+                        || Some(address.declaration) != sized_role =>
+                {
+                    return Err(
+                        "source sized formal names a foreign or different actual Sized role",
+                    );
+                }
+                _ => {}
+            }
         }
     }
     Ok(())

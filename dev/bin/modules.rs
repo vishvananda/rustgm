@@ -511,7 +511,7 @@ fn emit_lowir(
             .identity()
             .map_err(|message| failure_message(&facts, message))?
             .ok_or_else(|| failure_message(&facts, "missing library identity".into()))?;
-        let built = if report.package.source_core().is_some() {
+        let built = if report.package.source_core().is_some() || crates.source_profile.is_some() {
             rustgm::lower::instances::build_source_library_profile(
                 &report,
                 &mut facts,

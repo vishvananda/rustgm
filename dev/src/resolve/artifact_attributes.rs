@@ -61,7 +61,7 @@ pub(super) fn root(unit: &Unit, file: FileId, context: ArtifactContext) -> Resul
         }
         match context {
             ArtifactContext::Inspection | ArtifactContext::Source { selected: Some(_) } => {}
-            ArtifactContext::Ordinary => {
+            ArtifactContext::Ordinary | ArtifactContext::BootstrapLibrary => {
                 return Err(error(ORDINARY));
             }
             ArtifactContext::Source { selected: None } if requested == Request::Binary => {}
@@ -85,7 +85,10 @@ pub(super) fn form(
     context: ArtifactContext,
 ) -> Result<(), Error> {
     request(unit, file, attribute, forest)?;
-    if context == ArtifactContext::Ordinary {
+    if matches!(
+        context,
+        ArtifactContext::Ordinary | ArtifactContext::BootstrapLibrary
+    ) {
         return Err(Error::at(file, attribute.span.start, ORDINARY));
     }
     Ok(())

@@ -7,15 +7,9 @@ pub(super) fn imported_self(
     index: usize,
 ) -> Result<bool, crate::resolve::package::Error> {
     use crate::resolve::{model::DefKind, package::Error};
-    let client = report.package.source_client().ok_or_else(|| {
-        Error::unlocated("imported Self declaration requires its authenticated source client")
-    })?;
     let imported = report.resolution.crates.as_deref().ok_or_else(|| {
         Error::unlocated("imported Self declaration lacks its complete inventory")
     })?;
-    let provider = client
-        .require_inventory(imported.dependencies())
-        .map_err(Error::unlocated)?;
     let catalog = imported
         .origin_catalog()
         .map_err(Error::unlocated)?
@@ -29,14 +23,25 @@ pub(super) fn imported_self(
     let (owner, ordinal, _) = catalog
         .declaration_coordinate(id)
         .map_err(Error::unlocated)?;
-    let descriptor = imported
-        .dependencies()
-        .artifacts()
-        .get(provider as usize)
-        .and_then(crate::support::crates::Interface::source_descriptor)
-        .ok_or_else(|| {
-            Error::unlocated("imported Self requires its actual complete source descriptor")
-        })?;
+    let dependencies = imported.dependencies();
+    let artifacts = dependencies.artifacts();
+    let descriptor = if let Some(client) = report.package.source_client() {
+        let provider = client
+            .require_inventory(dependencies)
+            .map_err(Error::unlocated)?;
+        artifacts
+            .get(provider as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+    } else {
+        artifacts
+            .binary_search_by(|artifact| artifact.identity().cmp(owner))
+            .ok()
+            .and_then(|position| artifacts[position].source_descriptor())
+            .filter(|descriptor| descriptor.profile().bootstrap_bindings())
+    }
+    .ok_or_else(|| {
+        Error::unlocated("imported Self requires its actual complete crate descriptor")
+    })?;
     if descriptor.identity() != owner
         || imported
             .generic_definition(owner, ordinal)

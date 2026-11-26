@@ -69,7 +69,12 @@ pub(super) fn destruct(
         || slot.definition != Some(header.self_definition)
         || slot.ordinal != 0
         || slot.index != 0
-        || !matches!(slot.kind, s::ParameterKind::Type { sized: None })
+        || !matches!(
+            slot.kind,
+            s::ParameterKind::Type {
+                sized: s::TypeSizing::MaybeUnsized
+            }
+        )
     {
         return Err("source Destruct changed its unsized, unqualified Self parameter");
     }
@@ -186,7 +191,12 @@ fn empty_auto(
         || slot.definition != Some(header.self_definition)
         || slot.ordinal != 0
         || slot.index != 0
-        || !matches!(slot.kind, s::ParameterKind::Type { sized: None })
+        || !matches!(
+            slot.kind,
+            s::ParameterKind::Type {
+                sized: s::TypeSizing::MaybeUnsized
+            }
+        )
     {
         return Err(texts.parameter);
     }

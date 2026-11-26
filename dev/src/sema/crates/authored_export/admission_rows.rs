@@ -145,6 +145,7 @@ impl Stage {
         report: &Report,
         facts: &mut Declarations,
         mode: ExportMode,
+        root_name: &str,
     ) -> Result<CollectedDeclarations, &'static str> {
         let definitions = report.resolution.definitions.len();
         let lexical_bytes = definitions.saturating_mul(size_of::<u32>()).saturating_add(
@@ -165,12 +166,6 @@ impl Stage {
             .get(root.0 as usize)
             .and_then(|definition| definition.members)
             .ok_or("source provider root has no actual scope")?;
-        let root_name = report
-            .package
-            .source_core()
-            .ok_or("source provider policy disappeared")?
-            .provider
-            .name();
         let mut owners = vec![None; report.resolution.scopes.len()];
         owners[root_scope.0 as usize] = Some(root);
         let admission =
@@ -253,6 +248,13 @@ impl Stage {
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             let definition = &report.resolution.definitions[index];
+            if self.bootstrap_bindings()
+                && id != root
+                && definition.node.is_none()
+                && definition.kind != DefKind::Primitive
+            {
+                continue;
+            }
             definition_scope_owner(report, facts, owners, id, self.declaration_policies())?;
             if let Some(kind) = self.exported_kind(report, facts, id, mode, &primitives)? {
                 let name = if id == root {

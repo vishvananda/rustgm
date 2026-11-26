@@ -80,9 +80,9 @@ pub(super) fn validate(
             work.charge(1)?;
             let valid = match input.requirement {
                 super::Requirement::TypeOutlives { .. } => input.binder.is_none(),
-                super::Requirement::Trait { .. } | super::Requirement::ProjectionEqual { .. } => {
-                    true
-                }
+                super::Requirement::Trait { .. }
+                | super::Requirement::ProjectionEqual { .. }
+                | super::Requirement::Bootstrap { .. } => true,
                 super::Requirement::Outlives(_) | super::Requirement::UnstableFeature(_) => false,
             };
             if !valid {

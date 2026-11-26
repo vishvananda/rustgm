@@ -484,7 +484,10 @@ impl DomainIndex<'_, '_> {
                 .ok_or("source trait alias Self slot is unknown")?;
             if actual.owner != alias.self_definition
                 || actual.definition != Some(alias.self_definition)
-                || actual.kind != (s::ParameterKind::Type { sized: None })
+                || actual.kind
+                    != (s::ParameterKind::Type {
+                        sized: s::TypeSizing::MaybeUnsized,
+                    })
                 || actual.default.is_some()
                 || self
                     .headers
@@ -606,7 +609,8 @@ impl DomainIndex<'_, '_> {
                     s::Requirement::Trait { application, .. } => {
                         rows.trait_applications[application.0 as usize].subject
                     }
-                    s::Requirement::TypeOutlives { subject, .. } => *subject,
+                    s::Requirement::TypeOutlives { subject, .. }
+                    | s::Requirement::Bootstrap { subject, .. } => *subject,
                     s::Requirement::Outlives(_)
                     | s::Requirement::UnstableFeature(_)
                     | s::Requirement::ProjectionEqual { .. } => {
@@ -639,6 +643,12 @@ impl DomainIndex<'_, '_> {
         work: &mut Work,
     ) -> Result<(), &'static str> {
         match requirement {
+            s::Requirement::Bootstrap { subject, .. } => {
+                if !self.bootstrap_bindings {
+                    return Err("bootstrap bound requires its crate body profile");
+                }
+                self.types.root(self.headers, context, *subject, work)
+            }
             s::Requirement::Trait { application, .. } => {
                 self.trait_use(context, *application, work)
             }

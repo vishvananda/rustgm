@@ -31,6 +31,7 @@ pub struct Package {
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     pub(super) lint_cap: crate::support::diagnostics::LintCap,
+    pub(crate) bootstrap_metadata: bool,
     /// Original bytes of the authenticated sources admitted so far, saturating.
     pub(super) admitted_source_bytes: u32,
     pub no_std: bool,

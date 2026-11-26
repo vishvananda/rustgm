@@ -172,7 +172,15 @@
     "tests/spec/inline-const-artifact/provider.rs",
     "tests/spec/inline-const-artifact/wrong-type.rs",
     "tests/spec/generic-contracts/pass-reexport.rs",
-    "tests/spec/generic-contracts/reexport.rs"
+    "tests/spec/generic-contracts/reexport.rs",
+    "tests/spec/generic-contracts/library.rs",
+    "tests/spec/generic-contracts/pass-reborrow.rs",
+    "tests/spec/generic-contracts/pass-const-array.rs",
+    "tests/spec/generic-contracts/pass-trait.rs",
+    "tests/spec/generic-contracts/reject-trait.rs",
+    "tests/spec/generic-contracts/reject-const-call.rs",
+    "tests/spec/generic-contracts/reject-escape.rs",
+    "tests/spec/generic-contracts/reject-array.rs"
   ],
   "cases": [
     {
@@ -5954,29 +5962,30 @@
     {
       "path": "tests/spec/generic-contracts/reject-copy.rs",
       "exit_status": 1,
-      "rustc": {
-        "kind": "program",
-        "status": 1
-      },
-      "crates": [
-        {
-          "name": "minimal-provider",
-          "path": "tests/spec/generic-contracts/minimal-id-library.rs",
-          "crate_name": "transport",
-          "disambiguator": "minimal_provider",
-          "externs": {}
-        }
-      ],
-      "externs": {
-        "base": "minimal-provider"
-      },
+      "input": "file",
       "work_units": [
         "generic-transport"
       ],
       "features": [
         "pa29.generic-transport"
       ],
-      "input": "file"
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     },
     {
       "path": "tests/spec/generic-contracts/reject-unused-source.rs",
@@ -6000,33 +6009,34 @@
     {
       "path": "tests/spec/generic-contracts/pass-helper-unused.rs",
       "exit_status": 0,
-      "rustc": {
-        "kind": "program",
-        "status": 0
-      },
-      "crates": [
-        {
-          "name": "calls-provider",
-          "path": "tests/spec/generic-contracts/call-library.rs",
-          "crate_name": "transport",
-          "disambiguator": "calls_provider",
-          "externs": {}
-        }
-      ],
-      "externs": {
-        "base": "calls-provider"
-      },
-      "native": {
-        "kind": "execute",
-        "outcome": "pass"
-      },
+      "input": "file",
       "work_units": [
         "generic-transport"
       ],
       "features": [
         "pa29.generic-transport"
       ],
-      "input": "file"
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/generic-contracts/call-const.rs",
@@ -6284,6 +6294,217 @@
       "native": {
         "kind": "execute",
         "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-reborrow.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-const-array.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-trait.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-trait.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-const-call.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-escape.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/reject-array.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "crates": [
+        {
+          "name": "ordinary-provider",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "base": "ordinary-provider"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 1
       }
     }
   ]

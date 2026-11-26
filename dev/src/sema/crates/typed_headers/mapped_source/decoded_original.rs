@@ -798,6 +798,9 @@ impl Original<'_> {
         use crate::{support::bindings::LangItem, types::parameters::predicates::Bound};
         charge(steps)?;
         self.require_facts(facts)?;
+        if self.rows().descriptor().profile().bootstrap_bindings() {
+            return Ok(Bound::Sized);
+        }
         let role = facts
             .source_bindings
             .as_deref()
@@ -836,6 +839,13 @@ impl Original<'_> {
     ) -> Result<Option<DefId>, &'static str> {
         charge(steps)?;
         self.require_facts(facts)?;
+        if self.rows().descriptor().profile().bootstrap_bindings() {
+            return if claimed.is_none() {
+                Ok(None)
+            } else {
+                Err("bootstrap Copy query cannot name a source role")
+            };
+        }
         let role = facts
             .source_bindings
             .as_deref()

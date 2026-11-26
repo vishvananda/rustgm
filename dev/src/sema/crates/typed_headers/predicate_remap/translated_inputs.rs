@@ -273,6 +273,10 @@ fn clause<'rows, B: Budget>(
     budget: &mut B,
 ) -> Result<Clause, Error> {
     let predicate = match &record.requirement {
+        s::Requirement::Bootstrap { subject, bound } => Predicate {
+            ty: port.ty(store, *subject, budget)?,
+            bound: super::bootstrap_bound(*bound),
+        },
         s::Requirement::UnstableFeature(name) => {
             if record.binder.is_some() || record.self_subject.is_some() {
                 return Err(error(

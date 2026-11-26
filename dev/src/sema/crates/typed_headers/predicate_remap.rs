@@ -323,3 +323,15 @@ impl<'a> Context<'a> {
         }
     }
 }
+pub(super) fn bootstrap_bound(
+    bound: s::BootstrapBound,
+) -> crate::types::parameters::predicates::Bound {
+    use crate::{
+        support::crates::generics::source::BootstrapBound, types::parameters::predicates::Bound,
+    };
+    match bound {
+        BootstrapBound::Sized => Bound::Sized,
+        BootstrapBound::Copy => Bound::Copy,
+        BootstrapBound::Clone => Bound::Clone,
+    }
+}
