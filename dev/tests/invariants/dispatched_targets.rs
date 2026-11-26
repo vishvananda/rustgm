@@ -3,7 +3,9 @@ use super::*;
 use crate::{lower::instances::SourcePublication, resolve::unit::FileId};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn source_originals() -> Result<(
+fn source_originals(
+    fixture: &str,
+) -> Result<(
     crate::sema::model::Declarations,
     crate::support::crates::Interface,
 )> {
@@ -13,9 +15,7 @@ fn source_originals() -> Result<(
         .split_once("#[rustc_diagnostic_item = \"Option\"]")
         .ok_or("actual foundation boundary")?
         .0;
-    let tail = crate::test_source::fixture(
-        "pa31/tests/spec/source-selected-projection-calls/provider.rs",
-    )?;
+    let tail = crate::test_source::fixture(&format!("pa31/tests/spec/{fixture}/provider.rs"))?;
     let report = crate::test_source::source_provider(
         &format!("#![feature(auto_traits)]\n{prefix}{tail}"),
         "retained_dispatch",
@@ -42,7 +42,7 @@ fn source_originals() -> Result<(
 
 #[test]
 fn original_dispatch_results_keep_owner_site_application_and_payment_boundaries() -> Result {
-    let (mut facts, artifact) = source_originals()?;
+    let (mut facts, artifact) = source_originals("source-selected-projection-calls")?;
     let rows = facts
         .methods
         .operands
@@ -66,12 +66,7 @@ fn original_dispatch_results_keep_owner_site_application_and_payment_boundaries(
         assert_eq!(facts.methods.dispatched(foreign, site, original), None);
         assert_eq!(facts.methods.dispatched(owner, foreign, original), None);
         assert_eq!(facts.methods.dispatched(owner, site, TypeId::UNIT), None);
-        let raw = crate::sema::dispatch::selected_callable_with_projections(
-            &mut facts,
-            site,
-            original,
-            &|_, _| Ok(()),
-        )?;
+        let raw = raw_callable(&mut facts, site, original, target)?;
         if let Some(raw) = raw
             && raw != target
             && facts.types.contains_projections(raw) == Some(true)
@@ -121,6 +116,32 @@ fn original_dispatch_results_keep_owner_site_application_and_payment_boundaries(
     Ok(())
 }
 
+fn raw_callable(
+    facts: &mut crate::sema::model::Declarations,
+    site: NodeKey,
+    original: TypeId,
+    target: TypeId,
+) -> Result<Option<TypeId>> {
+    Ok(match facts.types.kind(original) {
+        Some(crate::types::Kind::FunctionItem { .. }) => {
+            crate::sema::dispatch::selected_callable_with_projections(
+                facts,
+                site,
+                original,
+                &|_, _| Ok(()),
+            )?
+        }
+        Some(crate::types::Kind::Function { .. }) => {
+            assert!(matches!(
+                facts.types.kind(target),
+                Some(crate::types::Kind::Function { .. })
+            ));
+            None
+        }
+        _ => return Err("dispatch retention has an unrelated type kind".into()),
+    })
+}
+
 #[test]
 fn query_proofs_reject_foreign_variables_and_unproved_universal_relations() -> Result {
     use crate::types::{RegionId, lifetime_proof::Obligations};
@@ -143,5 +164,128 @@ fn query_proofs_reject_foreign_variables_and_unproved_universal_relations() -> R
     proof.outlives.clear();
     proof.outlives.push((RegionId(6), a));
     assert!(!proof.self_contained_in(&facts.types, 1)?);
+    Ok(())
+}
+
+#[test]
+fn completed_signatures_keep_exact_dispatch_identity_and_lexical_safety() -> Result {
+    use crate::support::crates;
+    let (mut facts, artifact) = source_originals("source-dispatched-call-signatures")?;
+    let signatures = facts
+        .methods
+        .operands
+        .as_deref()
+        .and_then(|rows| rows.dispatched.as_deref())
+        .ok_or("actual dispatch rows")?
+        .iter()
+        .filter(|((_, _, original), _)| {
+            matches!(
+                facts.types.kind(*original),
+                Some(crate::types::Kind::Function { .. })
+            )
+        })
+        .map(|(&key, &target)| (key, target))
+        .collect::<Vec<_>>();
+    assert!(
+        !signatures.is_empty(),
+        "the fixture must rewrite actual opened call signatures"
+    );
+    for ((owner, site, original), target) in signatures {
+        assert_ne!(original, target);
+        assert_eq!(facts.types.contains_function_items(original), Some(true));
+        assert_eq!(facts.types.contains_function_items(target), Some(true));
+        assert_eq!(
+            facts.methods.dispatched(owner, site, original),
+            Some(target)
+        );
+        let foreign = NodeKey {
+            file: FileId(u32::MAX),
+            ..owner
+        };
+        assert_eq!(facts.methods.dispatched(foreign, site, original), None);
+        assert_eq!(facts.methods.dispatched(owner, foreign, original), None);
+        assert_eq!(facts.methods.dispatched(owner, site, TypeId::UNIT), None);
+        assert!(
+            facts
+                .methods
+                .retain_dispatched(owner, site, original, TypeId::UNIT, &|_, _| Ok(()))
+                .is_err()
+        );
+    }
+    let fresh = crates::decode(&crates::encode(&artifact)?)?;
+    check_signature_rows(&fresh)?;
+    crate::source_packets::client_analysis(
+        fresh,
+        "#![feature(no_core)]#![no_core]extern crate base;pub fn observe()->u32{base::mapped(11)}",
+    )?;
+    Ok(())
+}
+
+fn check_signature_rows(artifact: &crate::support::crates::Interface) -> Result {
+    use crate::support::crates::generics::{self as g, source as s};
+    let (mut rows, attributes, modules) = crate::module_packets::raw(artifact)?;
+    for (name, safety) in [
+        ("explicit_unsafe", s::CallSafety::ExplicitUnsafeBlock),
+        ("unsafe_scope", s::CallSafety::UnsafeFunction),
+    ] {
+        let body = rows
+            .originals
+            .iter()
+            .find(|body| {
+                rows.declarations[body.declaration.0 as usize]
+                    .name
+                    .as_deref()
+                    == Some(name)
+            })
+            .ok_or("actual unsafe caller")?;
+        let call = body
+            .calls
+            .iter()
+            .find(|call| {
+                let target = rows.function_applications[call.target.0 as usize]
+                    .declaration
+                    .declaration;
+                rows.declarations[target.0 as usize].name.as_deref() == Some("unsafe_apply")
+            })
+            .ok_or("actual rewritten unsafe call")?;
+        assert_eq!(call.safety, safety, "{name}");
+    }
+    let body = |name| {
+        rows.originals.iter().position(|body| {
+            rows.declarations[body.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some(name)
+        })
+    };
+    let through = body("through").ok_or("actual first named-item caller")?;
+    let distinct = body("distinct").ok_or("actual distinct implementation caller")?;
+    let call = rows.originals[through].calls[0];
+    let wrong = rows.originals[distinct].calls[0].signature;
+    assert_ne!(call.signature, wrong);
+    rows.originals[through].calls[0].signature = wrong;
+    let s::ValueKind::Call { signature, .. } =
+        &mut rows.originals[through].values[call.value as usize].kind
+    else {
+        return Err("actual Call value".into());
+    };
+    *signature = wrong;
+    assert!(
+        g::Payload::from_source_module_body_operations(
+            artifact.identity(),
+            rows,
+            attributes,
+            modules,
+            artifact
+                .source_descriptor()
+                .ok_or("actual descriptor")?
+                .availability()?
+                .clone(),
+            0,
+            &mut g::Work::default(),
+        )
+        .is_err(),
+        "equal-arity function-item argument identity is mandatory"
+    );
     Ok(())
 }

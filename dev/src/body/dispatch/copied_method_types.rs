@@ -99,7 +99,7 @@ pub(super) fn select(
     Ok(())
 }
 
-/// Retain identities before the one fold rewrites the original CFG. Publication
+/// Retain item identities and opened call signatures before the one CFG fold. Publication
 /// receives the successful body proof; this table grants no execution permission.
 pub(super) fn retain_source_targets(
     facts: &mut Declarations,
@@ -125,10 +125,11 @@ pub(super) fn retain_source_targets(
             .values
             .get(value.0 as usize)
             .ok_or("source dispatch value is absent")?;
-        if !matches!(value.kind, super::super::ir::Rvalue::Function(_)) {
-            continue;
-        }
-        let original = value.ty;
+        let original = match value.kind {
+            super::super::ir::Rvalue::Function(_) => value.ty,
+            super::super::ir::Rvalue::Call { signature, .. } => signature,
+            _ => continue,
+        };
         let selected = fold.apply(&mut facts.types, original)?;
         if selected == original {
             continue;

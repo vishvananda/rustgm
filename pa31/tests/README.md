@@ -2038,3 +2038,14 @@ method's original binder only for that final call. A private witness requires
 several calls at one source site, distinct targets and complete one/two-lifetime
 openings. A wrong argument rejects semantically in both compilers; version 13
 refuses the Deref role form.
+
+`source-dispatched-call-signatures` qualifies nine native observations where
+an implementation-selected function item is an argument of a generic call,
+matching core's `Option::map(char::from)` shape. The original dispatch fold
+retains the complete rewritten call signature by body, source site and original
+type. Version 14 publication reads that exact result. Unsafe-call context stays
+keyed by its original semantic signature. Free/method calls, tuple/nominal/array
+containers, distinct implementations, forwarding and both lexical unsafe forms
+are checked in fresh clients. Missing unsafe context rejects in both compilers;
+v13 refuses nested callable arguments. The private witness checks exact retention
+boundaries and rejects a same-arity signature naming a different implementation.

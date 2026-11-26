@@ -63,6 +63,14 @@ pub(in super::super) fn emit(
     Ok(())
 }
 
+struct CompletedCall {
+    key: NodeKey,
+    source_use: crate::sema::model::SourceCallUse,
+    check_method: bool,
+    // Safety was discharged against the semantic signature before dispatch.
+    semantic_signature: crate::types::TypeId,
+}
+
 struct Ports<'a> {
     source: &'a mut Source,
     facts: &'a mut Declarations,
@@ -134,10 +142,15 @@ impl Ports<'_> {
         statement: &ir::Statement,
         callable: crate::types::TypeId,
         signature: crate::types::TypeId,
-    ) -> Result<(NodeKey, crate::sema::model::SourceCallUse, bool), &'static str> {
+    ) -> Result<CompletedCall, &'static str> {
         if !self.source.stage.declaration_policies() {
             let (key, source_use) = self.completed(statement, signature)?;
-            return Ok((key, source_use, true));
+            return Ok(CompletedCall {
+                key,
+                source_use,
+                check_method: true,
+                semantic_signature: signature,
+            });
         }
         let key = self
             .body
@@ -147,7 +160,12 @@ impl Ports<'_> {
             .ok_or("source Call has no actual source operation")?;
         self.source.stage.charge(2)?;
         if let Some(source_use) = self.conversion_or_index_step(key, callable, signature)? {
-            return Ok((key, source_use, false));
+            return Ok(CompletedCall {
+                key,
+                source_use,
+                check_method: false,
+                semantic_signature: signature,
+            });
         }
         let operation = self.facts.node(key).and_then(|facts| facts.operation);
         if let Some(Operation::Call {
@@ -155,13 +173,27 @@ impl Ports<'_> {
             source_use: Some(source_use),
         }) = operation
         {
-            if signature != retained {
+            if signature != retained
+                && self.facts.methods.dispatched(self.owner, key, retained) != Some(signature)
+            {
                 return Err("source Call changed its completed typed signature");
             }
             self.source.stage.charge(1)?;
-            return Ok((key, source_use, true));
+            return Ok(CompletedCall {
+                key,
+                source_use,
+                check_method: true,
+                semantic_signature: retained,
+            });
         }
-        self.protocol_plan_call(key, operation, callable, signature)
+        let (key, source_use, check_method) =
+            self.protocol_plan_call(key, operation, callable, signature)?;
+        Ok(CompletedCall {
+            key,
+            source_use,
+            check_method,
+            semantic_signature: signature,
+        })
     }
     fn protocol_plan_call(
         &mut self,
@@ -334,11 +366,16 @@ impl Ports<'_> {
             return Err("source Call requires its actual direct function-item application");
         };
         let callable_type = callable.ty;
-        let (key, source_use, check_method) =
-            self.completed_call(statement, callable_type, signature)?;
+        let CompletedCall {
+            key,
+            source_use,
+            check_method,
+            semantic_signature,
+        } = self.completed_call(statement, callable_type, signature)?;
         let effect = source_use.effect_for(self.facts, self.owner)?;
         self.source.stage.charge(32)?;
-        let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;
+        let safety =
+            source_use.call_safety(self.facts, self.owner, key.node, semantic_signature)?;
         if effect != self.raw.context.request() {
             return Err("source Call effect differs from its actual original defining context");
         }

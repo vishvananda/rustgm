@@ -1,4 +1,4 @@
-//! Source publication reads the exact result of ordinary original-body dispatch.
+//! Source publication reads exact item and call-signature results of original dispatch.
 use super::{HashMap, Methods, NodeKey, TypeId};
 use crate::support::retained;
 
