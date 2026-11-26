@@ -9,7 +9,7 @@ use crate::{
         expansion::Report,
         model::{Access, DefId, DefKind, Namespace},
     },
-    sema::model::Declarations,
+    sema::model::{Declarations, InitializerKind},
     syntax::item::Shape,
 };
 
@@ -230,6 +230,54 @@ impl Stage {
         })
     }
 
+    /// Body-local declarations travel only with their initializer. An evaluated
+    /// unnamed constant has no published body. Item scopes nested inside one
+    /// start a separate owner and can still contribute their own originals.
+    fn omitted_initializer_scopes(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+    ) -> Result<Option<Vec<bool>>, &'static str> {
+        if !self.body_nodes() {
+            return Ok(None);
+        }
+        let scopes = &report.resolution.scopes;
+        let mut omitted = None;
+        for initializer in &facts.initializers {
+            self.charge(1)?;
+            let id = initializer.definition;
+            let declaration = &report.resolution.definitions[id.0 as usize];
+            if initializer.kind != InitializerKind::Const
+                || report.package.names.get(declaration.name) != "_"
+                || !self.evaluated_initializer(facts, id)?
+            {
+                continue;
+            }
+            let module = scopes[declaration.scope.0 as usize].module;
+            let scope = report
+                .resolution
+                .node_scopes
+                .get(&(module, initializer.node.node))
+                .copied()
+                .ok_or("source unnamed initializer has no actual lexical scope")?;
+            if omitted.is_none() {
+                self.reserve(scopes.len())?;
+            }
+            omitted.get_or_insert_with(|| vec![false; scopes.len()])[scope.0 as usize] = true;
+        }
+        if let Some(omitted) = &mut omitted {
+            self.charge(scopes.len())?;
+            for (index, scope) in scopes.iter().enumerate() {
+                if !scope.barrier
+                    && let Some(parent) = scope.parent
+                {
+                    omitted[index] = omitted[parent.0 as usize];
+                }
+            }
+        }
+        Ok(omitted)
+    }
+
     fn declaration_inventory(
         &mut self,
         report: &Report,
@@ -241,6 +289,7 @@ impl Stage {
         let count = report.resolution.definitions.len();
         self.reserve(inventory_bytes(count))?;
         let primitives = self.referenced_primitives(report)?;
+        let omitted = self.omitted_initializer_scopes(report, facts)?;
         let mut admitted = Vec::with_capacity(count);
         let mut name_bytes = 0_usize;
         for index in 0..count {
@@ -252,6 +301,15 @@ impl Stage {
                 && id != root
                 && definition.node.is_none()
                 && definition.kind != DefKind::Primitive
+            {
+                continue;
+            }
+            if matches!(
+                definition.kind,
+                DefKind::Parameter | DefKind::Local | DefKind::Lifetime
+            ) && omitted
+                .as_ref()
+                .is_some_and(|scopes| scopes[definition.scope.0 as usize])
             {
                 continue;
             }
@@ -277,6 +335,11 @@ impl Stage {
                 .saturating_add(name_bytes),
         )?;
         self.rows.declarations.reserve_exact(admitted.len());
+        if let Some(omitted) = omitted {
+            let bytes = omitted.len();
+            drop(omitted);
+            self.release_temporary(bytes)?;
+        }
         Ok(admitted)
     }
 

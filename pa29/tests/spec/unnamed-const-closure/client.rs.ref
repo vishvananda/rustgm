@@ -1,0 +1,37 @@
+function @read_at_runtime(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$f$7_636f6e76657274$.i3(%t0)
+    return u8 %t1
+}
+function @read_nested() -> u8 {
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$f$5_6170706c79$.i4(10)
+    return u8 %t0
+}
+function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$f$7_636f6e76657274$.i3(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = binary xor u8 %t0, 4
+    return u8 %t1
+}
+function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$f$5_6170706c79$.i4(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = call u8 @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$3.i5(%t0)
+    return u8 %t1
+}
+function @rgc$4_62617365$18_706132395f756e6e616d65645f636f6e7374$b$2$d$3.i5(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = binary xor u8 %t0, 3
+    return u8 %t1
+}

@@ -25,6 +25,8 @@ while remaining unpublished until integration:
   It also covers ordinary generic identity and private helper calls, a
   transitive generic re-export, and a v14 provider that combines nested inline
   consts, a generic borrow, a const array and dispatched trait calls.
+  `spec/unnamed-const-closure/` checks a closure inside a provider's unnamed
+  initializer, an imported const call, and a nested function executed at runtime.
   `spec/nested-constant-owners/` keeps initializer-local constants under both
   free and inherent constants. The fresh client observes the enclosing arrays
   at compile time and at runtime, and a separate client rejects a hidden name.
