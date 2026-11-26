@@ -21,6 +21,7 @@ pub(super) fn method(
     function: &s::FunctionHeader,
     (trait_impls, effect): (bool, Constness),
     pin: Option<DeclarationRef>,
+    declaration_policies: bool,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     let Some(parent) = function.parent else {
@@ -70,15 +71,42 @@ pub(super) fn method(
         return Err("source captured method changed its impl's exact lifetime frame");
     }
     if let Some(receiver) = function.receiver {
-        work.charge(2)?;
-        if receiver.references > 1
-            || receiver.formal as usize >= function.formals.slice(&rows.formals)?.len()
-        {
-            return Err(SELF_MISMATCH);
-        }
+        receiver_input(rows, function, receiver, declaration_policies, work)?;
         same_receiver_self(rows, implementation, function, receiver, pin, work)?;
     }
     Ok(true)
+}
+
+pub(super) fn receiver_input(
+    rows: &SourceRows,
+    function: &s::FunctionHeader,
+    receiver: s::Receiver,
+    declaration_policies: bool,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(2)?;
+    if receiver.formal as usize >= function.formals.slice(&rows.formals)?.len() {
+        return Err(SELF_MISMATCH);
+    }
+    if receiver.references <= 1 {
+        return Ok(());
+    }
+    if !declaration_policies || receiver.formal != 0 {
+        return Err(SELF_MISMATCH);
+    }
+    let actual = function.original.parameters.slice(&rows.roots)?;
+    let mut base = *actual.first().ok_or(SELF_MISMATCH)?;
+    for _ in 0..receiver.references {
+        work.charge(1)?;
+        let Some(s::Type::Reference { referent, .. }) = rows.types.get(base.0 as usize) else {
+            return Err(SELF_MISMATCH);
+        };
+        base = *referent;
+    }
+    if base != receiver.base {
+        return Err(SELF_MISMATCH);
+    }
+    Ok(())
 }
 
 pub(super) fn require_profile(

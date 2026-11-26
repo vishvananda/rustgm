@@ -117,12 +117,7 @@ pub(super) fn method(
     // this declaration's original/public late region-slot permutation. It is
     // not an early or captured generic lifetime transport permission.
     if let Some(receiver) = function.receiver {
-        work.charge(2)?;
-        if receiver.references > 1
-            || receiver.formal as usize >= function.formals.slice(&rows.formals)?.len()
-        {
-            return Err("source method receiver differs from its actual implementation Self");
-        }
+        super::captured::receiver_input(rows, function, receiver, declaration_policies, work)?;
         super::captured::same_receiver_self(rows, implementation, function, receiver, pin, work)?;
     }
     Ok(true)

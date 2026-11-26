@@ -70,6 +70,7 @@ def main():
                                  "source-rust-call-impl-transport",
                                  "source-pinned-receiver-transport",
                                  "source-internal-c-transport",
+                                 "source-nested-receiver-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",

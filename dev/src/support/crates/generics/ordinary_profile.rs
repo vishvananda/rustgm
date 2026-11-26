@@ -531,6 +531,7 @@ fn associated_method(
     roles: &Bindings,
     bodies: bool,
 ) -> Result<bool, &'static str> {
+    let modern = roles.definition_policies != 0;
     let primitive = matches!(
         profile,
         NamespaceProfile::FeaturePredicates
@@ -546,7 +547,7 @@ fn associated_method(
                 rows,
                 headers,
                 header,
-                (roles.languages, roles.definition_policies != 0),
+                (roles.languages, modern),
                 Constness::Ordinary,
                 roles.pin,
                 work,
@@ -555,8 +556,9 @@ fn associated_method(
                     rows,
                     headers,
                     header,
-                    (roles.definition_policies != 0, Constness::Ordinary),
+                    (modern, Constness::Ordinary),
                     roles.pin,
+                    modern,
                     work,
                 )? || reservation_parent(rows, headers, header, work)?.is_some())))
 }
@@ -631,6 +633,7 @@ fn trait_const_method(
             header,
             (true, Constness::Const),
             roles.pin,
+            modern,
             work,
         )?)
 }

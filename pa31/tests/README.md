@@ -133,6 +133,9 @@ implementations' `Self` types already contain a distinct captured lifetime.
 `spec/source-internal-c-transport/outcomes.json` tests the PA30 calling
 convention in a source artifact. A fresh client instantiates a generic
 provider that calls a private, mangled C-ABI definition with a record.
+`spec/source-nested-receiver-transport/outcomes.json` calls methods whose
+receivers contain two reference layers. Fresh native clients observe a
+change to both a shared and a mutable reference through the outer borrow.
 `spec/source-deprecated-macro-transport/outcomes.json` covers direct and aliased
 macro calls through a separately compiled provider, caller lint policy,
 scheduled deprecation, and annotations on re-exports with current and

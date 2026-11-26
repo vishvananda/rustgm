@@ -1,0 +1,6 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "features": ["auto_traits"],
+  "stdout": "",
+  "older_reader": "source method receiver differs from its actual implementation Self"
+}
