@@ -24,6 +24,11 @@ pub(super) enum Opening {
         body: BodyRef,
         request: u32,
     },
+    /// The reader re-proves an opened result whose associated type was normalized.
+    CallResult {
+        body: BodyRef,
+        request: u32,
+    },
     /// Reifying an item with late-bound regions into a higher-ranked fn pointer.
     Reify {
         binder: g::BinderRef,
@@ -269,7 +274,9 @@ impl Arena {
                     arguments: bc,
                     family: bf,
                 },
-            ) if a == b => ((ac, bc), Some((af, bf))),
+            ) if a == b && !matches!(opening, Opening::CallResult { .. }) => {
+                ((ac, bc), Some((af, bf)))
+            }
             (Node::Closure { .. }, Node::Closure { .. }) => {
                 self.matched_closure_children(opening, nodes, pending, work)?
             }
@@ -284,15 +291,12 @@ impl Arena {
             }
         };
         for (expected, actual) in second.into_iter().chain([first]) {
-            self.push_pair(
-                pending,
-                Task::Enter(Pair {
-                    expected,
-                    actual,
-                    opening,
-                }),
-                work,
-            )?;
+            let child = Pair {
+                expected,
+                actual,
+                opening,
+            };
+            self.push_pair(pending, Task::Enter(child), work)?;
         }
         Ok(())
     }
@@ -632,7 +636,7 @@ impl Arena {
         if expected == actual {
             return Ok(true);
         }
-        if let Opening::Call { body, .. } = opening
+        if let Opening::Call { body, .. } | Opening::CallResult { body, .. } = opening
             && domains.declaration_policies
         {
             // Imported originals replay this caller-owned equality in their regional proof.
@@ -688,7 +692,7 @@ fn opened_region(
         }
         return Ok(Region::ObjectBound { depth, slot });
     }
-    let Opening::Call { body, request } = context else {
+    let (Opening::Call { body, request } | Opening::CallResult { body, request }) = context else {
         return Err("source callable late template has no actual Call opening");
     };
     let rows = domains.headers.rows();

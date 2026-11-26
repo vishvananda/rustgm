@@ -897,7 +897,7 @@ impl Engine {
                 }
                 contract
             };
-            let proof = body::transported_originals::prove_fields(
+            let proof = body::transported_originals::prove_original_types(
                 facts,
                 body,
                 &contract,
@@ -1174,7 +1174,7 @@ impl Engine {
             result.map_err(|e| report.body_error(body.source, e))?;
         }
         if input.purpose == ProofPurpose::Original && body.source.source().is_none() {
-            let proof = body::transported_originals::prove_fields(
+            let proof = body::transported_originals::prove_original_types(
                 facts,
                 body,
                 prepared.as_ref().unwrap_or(input.contract),

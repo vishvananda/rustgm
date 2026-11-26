@@ -229,7 +229,9 @@
     "tests/spec/call-lifetime-equalities/client.rs",
     "tests/spec/call-lifetime-equalities/reject-escape.rs",
     "tests/spec/normalized-field-construction/provider.rs",
-    "tests/spec/normalized-field-construction/client.rs"
+    "tests/spec/normalized-field-construction/client.rs",
+    "tests/spec/associated-call-results/provider.rs",
+    "tests/spec/associated-call-results/client.rs"
   ],
   "cases": [
     {
@@ -7767,6 +7769,45 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/normalized-field-construction/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/associated-call-results/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "associated_call_results_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/associated-call-results/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "associated_call_results",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/associated-call-results/observe.c"
       }
     }
   ]

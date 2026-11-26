@@ -287,6 +287,19 @@ impl<'a, 'b> Expected<'a, 'b> {
                 } else {
                     self.port(index - record.parameters.len(), steps)?
                 };
+                // Structural Sizedness is independent of formation. Each port's
+                // WellFormed request still checks its projected inputs and bounds.
+                if self
+                    .view
+                    .rows()
+                    .descriptor()
+                    .profile()
+                    .declaration_policies()
+                    && self.sized == Bound::Sized
+                    && self.facts.types.is_sized(ty) == Some(true)
+                {
+                    return Ok(None);
+                }
                 Ok(Some((
                     self.root,
                     Predicate {

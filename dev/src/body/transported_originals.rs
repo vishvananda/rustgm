@@ -12,8 +12,10 @@ mod interface_goals;
 mod invocations;
 mod non_type_calls;
 mod operations;
+mod remapped_call_results;
 mod remapped_field_types;
-pub(crate) use remapped_field_types::prove as prove_fields;
+pub(crate) use remapped_call_results::collect as collect_call_results;
+pub(crate) use remapped_field_types::prove as prove_types;
 mod rebuilt_inputs;
 mod rebuilt_operations;
 mod regional_records;
@@ -265,18 +267,31 @@ pub(crate) fn validate_source_parts(
     contract: &Contract,
     steps: &mut usize,
 ) -> Result<bool, &'static str> {
+    let Some(view) = source_view(facts, body, steps)? else {
+        return Ok(false);
+    };
+    rebuilt_operations::validate(facts, &view, body, steps)?;
+    rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
+    Ok(true)
+}
+
+fn source_view<'a>(
+    facts: &'a Declarations,
+    body: &crate::body::ir::Body,
+    steps: &mut usize,
+) -> Result<Option<crate::sema::crates::SourceOriginal<'a>>, &'static str> {
     use crate::body::ir::Owner;
     let view = match body.owner {
         Owner::Function { definition, .. } | Owner::Initializer { definition, .. } => {
             if !crate::sema::crates::is_source_original(facts, definition, steps)? {
-                return Ok(false);
+                return Ok(None);
             }
             crate::sema::crates::source_original(facts, definition, steps)?
                 .ok_or("source original cannot execute an absent required method")?
         }
         Owner::Closure { identity, .. } => {
             if !crate::sema::crates::is_source_closure_original(facts, identity, steps)? {
-                return Ok(false);
+                return Ok(None);
             }
             crate::sema::crates::source_closure_original(facts, identity, steps)?
                 .ok_or("source closure original cannot execute an absent closure body")?
@@ -286,16 +301,31 @@ pub(crate) fn validate_source_parts(
                 return Err("source anonymous original lost its imported body origin");
             };
             if !crate::sema::crates::is_source_anonymous_original(facts, origin.id(), steps)? {
-                return Ok(false);
+                return Ok(None);
             }
             crate::sema::crates::source_anonymous_original(facts, origin.id(), steps)?
                 .ok_or("source anonymous original cannot execute an absent anonymous body")?
         }
         _ => return Err("source original requires its actual imported declaration owner"),
     };
-    rebuilt_operations::validate(facts, &view, body, steps)?;
-    rebuilt_inputs::validate(facts, &view, body, contract, steps)?;
-    Ok(true)
+    Ok(Some(view))
+}
+
+pub(crate) fn prove_original_types(
+    facts: &mut Declarations,
+    body: &crate::body::ir::Body,
+    contract: &Contract,
+    environment: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+) -> Result<Option<crate::body::regions::Proof>, &'static str> {
+    let mut work = 0;
+    let calls = source_view(facts, body, &mut work).and_then(|view| {
+        view.map_or_else(
+            || Ok(Vec::new()),
+            |view| collect_call_results(facts, &view, body, &mut work),
+        )
+    });
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    prove_types(facts, body, contract, environment, calls?)
 }
 
 pub(crate) fn build(

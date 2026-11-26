@@ -71,9 +71,13 @@ impl Original {
             ));
         };
         let mut steps = 0;
+        let mut calls = Vec::new();
         let validated = preparation.with_original(facts, definition, &mut |facts, view| {
-            crate::body::transported_originals::validate_selected(facts, view, original, &mut steps)
-                .map_err(Error::unlocated)
+            use crate::body::transported_originals::{collect_call_results, validate_selected};
+            validate_selected(facts, view, original, &mut steps).map_err(Error::unlocated)?;
+            calls =
+                collect_call_results(facts, view, body, &mut steps).map_err(Error::unlocated)?;
+            Ok(())
         });
         let charged = preparation.prepay(facts, steps, 0);
         validated.and(charged)?;
@@ -91,11 +95,12 @@ impl Original {
             crate::sema::dispatch::Failure::Preparation(error) => error,
         })?;
         let before = facts.body_work.canonical_steps;
-        let proof = crate::body::transported_originals::prove_fields(
+        let proof = crate::body::transported_originals::prove_types(
             facts,
             body,
             &prepared,
             &original.template().environment,
+            calls,
         );
         let charged = preparation.prepay(
             facts,

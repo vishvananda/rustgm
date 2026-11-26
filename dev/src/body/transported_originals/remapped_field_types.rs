@@ -27,6 +27,7 @@ pub(crate) fn prove(
     body: &Body,
     contract: &Contract,
     environment: &Arc<Environment>,
+    calls: Vec<super::remapped_call_results::CallResult>,
 ) -> Result<Option<Proof>, &'static str> {
     let mut goals = Vec::new();
     facts.body_work.canonical_steps = facts
@@ -48,6 +49,10 @@ pub(crate) fn prove(
         if let Rvalue::Aggregate { variant, fields } = value.kind {
             aggregate_goals(facts, body, value.ty, variant, fields, &mut goals)?;
         }
+    }
+    for call in calls {
+        let (declared, actual) = call.open(facts)?;
+        add_goal(&mut goals, declared, actual)?;
     }
     if goals.is_empty() {
         return Ok(None);

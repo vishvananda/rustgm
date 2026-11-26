@@ -130,10 +130,11 @@ impl Arena {
                 if expected.len() != actuals.len() {
                     return Err("source opened signature changed its complete actual arity");
                 }
+                let request_index =
+                    u32::try_from(ordinal).map_err(|_| "source Call request ordinal overflow")?;
                 let opening = Opening::Call {
                     body: original.body,
-                    request: u32::try_from(ordinal)
-                        .map_err(|_| "source Call request ordinal overflow")?,
+                    request: request_index,
                 };
                 let context = Context {
                     frame: Some(actual.binder),
@@ -153,7 +154,15 @@ impl Arena {
                     work,
                 )?;
                 let actual = self.root(domains, key, work)?;
-                self.same(domains, template.result, actual, opening, work)?;
+                let result_opening = if domains.declaration_policies {
+                    Opening::CallResult {
+                        body: original.body,
+                        request: request_index,
+                    }
+                } else {
+                    opening
+                };
+                self.same(domains, template.result, actual, result_opening, work)?;
                 self.method_goal(domains, request, caller, opening, work)?;
             }
         }

@@ -12,7 +12,7 @@ with the provider's objects. PA32 uses this same path for pinned `core`.
 | `generic-transport` | Checked generic templates, including private helper bodies, traits and associated types, callable values, const expressions, regions, and the context that owns each declaration and body. Clients instantiate and evaluate them after reload. |
 
 1. Use all four unit manifests as the baseline. The current drafts contain
-   269 cases. Run their text oracles and independent Rust and native checks on
+   270 cases. Run their text oracles and independent Rust and native checks on
    one immutable compiler. Review disagreements at the first diagnostic or
    failed observation.
 2. Recover the ordinary Rust cases declared in
@@ -89,7 +89,7 @@ as explicit inputs to this remapping. Source-specific permissions retain their
 actual owner and provenance. Preserve the earlier wire profiles while adding
 coverage for the common model.
 
-The current student export passes all 263 cases. Independent Rust and native
+The last full local student export passes all 269 cases. Independent Rust and native
 checks pass across the four components. The initializer-scope regression
 includes native observations and separate rejections for a hidden function
 and type.
@@ -103,6 +103,7 @@ and type.
 | PA29 | Qualified. A provider constructs a record whose field type is an associated type. Fresh clients observe the fully generic constructor and a concrete specialization. |
 | PA29 | Qualified. A provider borrows a parameter and a tuple field as `ref mut` with a named callback parameter following each pattern. A fresh client observes both mutations. |
 | PA29 | Qualified. A provider calls a constructor with a retained caller lifetime equality. Fresh clients observe the empty and borrowed payloads and reject the escape of a local reference. |
+| PA29 | Qualified. A generic wrapper forwards an associated call result through a second receiver. A fresh client proves the two result types equal in the actual body environment and observes the borrowed payload. |
 | PA31 | Qualified. A source provider returns early through `?` with a lifetime-bearing result. Fresh clients observe both branches and reject extending a local borrow through the imported return. |
 | PA29 | Qualified. Cast an imported fieldless enum and observe its explicit and implicit discriminants. Reject a payload enum and the ineligible empty tuple form. |
 | PA29 | Qualified. Call a provider that declares legacy const argument positions through the direct path, with explicit const arguments, and through an alias. Check compile-time and native values, reject a runtime-valued const operand, and reject duplicate or out-of-range metadata positions. |
