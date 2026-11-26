@@ -116,19 +116,11 @@ pub(in crate::sema) fn argument(
 
 fn complete(queries: &mut Queries<'_>, key: NodeKey, ty: TypeId) -> Result<ConstId, Error> {
     let value = queries.value(Query::Node(key))?;
-    // Only a retained proof body needs its folded use recorded.
-    let facts = &mut *queries.typing.facts;
-    if facts.anonymous_constants.contains_key(&key) {
-        facts
-            .evaluated_arguments
-            .get_or_insert_default()
-            .insert(key);
-    }
     // Value graph work has its own finite phase budget; it is not bounded by AST size.
     let value_limit = queries
         .steps
         .saturating_add(crate::support::crates::MAX_COMPONENTS);
-    valtrees::canonicalize(
+    let result = valtrees::canonicalize(
         queries.typing.facts,
         queries.report.package.source_client().is_some()
             || queries.report.package.staged_consumer().is_some(),
@@ -137,5 +129,7 @@ fn complete(queries: &mut Queries<'_>, key: NodeKey, ty: TypeId) -> Result<Const
         ty,
         super::values::Constant(value),
     )
-    .map_err(|e| Declarations::error(queries.report, key, e))
+    .map_err(|e| Declarations::error(queries.report, key, e))?;
+    queries.typing.facts.record_folded_anonymous(key);
+    Ok(result)
 }

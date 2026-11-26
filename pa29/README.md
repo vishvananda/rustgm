@@ -22,8 +22,9 @@ consume the original `core` crate.
   name or fields accessible.
 - Export typed signatures, scalar bits, and the required nominal and array
   facts after checking the provider. Reconstruct those facts in a fresh
-  consumer. Preserve array lengths, field privacy, canonical type identities,
-  and the obligations that apply when a declaration is used.
+  consumer. Carry evaluated array lengths and enum discriminants with their
+  types and variant declarations. Preserve field privacy, canonical type
+  identities, and the obligations that apply when a declaration is used.
 - Validate metadata before using it. Preserve dependency identities and fail
   clearly on missing or incompatible metadata. Use deterministic artifact
   and LowIR output. Each provider retains its private executable instances.

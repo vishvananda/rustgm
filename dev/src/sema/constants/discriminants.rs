@@ -50,13 +50,18 @@ impl Pending {
             .copied()
             .ok_or("missing pending discriminant query")
     }
-    fn complete(&mut self, variant: VariantId, value: u128) -> Result<(), &'static str> {
+    fn complete(
+        &mut self,
+        variant: VariantId,
+        value: u128,
+    ) -> Result<Option<NodeKey>, &'static str> {
         let &index = self
             .index
             .get(&variant)
             .ok_or("missing discriminant query")?;
-        self.entries[index].value = Some(value);
-        Ok(())
+        let entry = &mut self.entries[index];
+        entry.value = Some(value);
+        Ok(entry.spec.value)
     }
 }
 
@@ -189,17 +194,19 @@ impl Queries<'_> {
         if let Query::Variant(variant) = query
             && let Some(pending) = &mut self.discriminants
         {
-            let result = value.integer().and_then(|bits| {
-                pending.complete(variant, bits)?;
-                Ok(bits)
-            });
-            let bits = result.map_err(|e| self.error(query, e))?;
+            let result = value
+                .integer()
+                .and_then(|bits| Ok((bits, pending.complete(variant, bits)?)));
+            let (bits, source) = result.map_err(|e| self.error(query, e))?;
             let member = self.typing.facts.members.variants[variant.0 as usize];
             self.typing
                 .facts
                 .aggregates
                 .set_discriminant(member.owner, member.ordinal, bits)
                 .map_err(|e| self.error(query, e))?;
+            if let Some(source) = source {
+                self.typing.facts.record_folded_anonymous(source);
+            }
         }
         self.states
             .insert(self.state_key(query), State::Ready(value));

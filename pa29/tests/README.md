@@ -16,7 +16,7 @@ while remaining unpublished until integration:
   `early-bound.rs` and `output-only.rs`), and `spec/foreign-value-metadata/`
   C-ABI callables, aggregates, extern statics, variadics, ABI/const-eval
   rejections, and corrupt version envelope.
-- `generic-transport` (`units/generic-transport.json`, 158 cases, 103 native
+- `generic-transport` (`units/generic-transport.json`, 159 cases, 104 native
   executables, 4 objects): 14 `module-bodies-v13` generic/body/const/nominal/
   callable/macro/guard transport packets (`language-roles`, `associated-results`,
   `callable-roles`, `enum-match`, `inherent-methods`, `const-methods`,
@@ -28,6 +28,9 @@ while remaining unpublished until integration:
   `spec/evaluated-array-count/` checks a const function used in both an array
   type and a repeat count. A fresh client evaluates the imported function
   at compile time and runs it with two byte values.
+  `spec/evaluated-discriminant/` checks a const function that sets an enum
+  discriminant. A fresh client reads the exact discriminants through the
+  provider's const function.
 
 The [student test plan](../../docs/pa29-student-test-plan.md) covers the
 ordinary provider, const and lifetime binders, trait dispatch, same-name

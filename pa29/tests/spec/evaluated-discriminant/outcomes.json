@@ -1,0 +1,10 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "profile": "module-body-operations-v14",
+  "client": {
+    "compile_status": 0,
+    "native_exit": 0,
+    "observed_discriminants": [16, 17],
+    "observed_entry_result": 42
+  }
+}

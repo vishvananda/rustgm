@@ -462,10 +462,8 @@ pub struct Declarations {
     pub inline_constants: Option<Box<super::inline_constants::Registry>>,
     pub nested_outputs: Option<Box<super::nested_outputs::Registry>>,
     pub(super) anonymous_constants: crate::support::hash::HashMap<NodeKey, TypeId>,
-    /// Retained anonymous bodies evaluated into a generic const argument or
-    /// an array length, allocated on first use. A type carries the value; the
-    /// body never executes.
-    pub(crate) evaluated_arguments: Option<Box<crate::support::hash::HashSet<NodeKey>>>,
+    /// Retained anonymous proof bodies whose evaluated values travel in crate metadata.
+    pub(crate) folded_anonymous_constants: Option<Box<crate::support::hash::HashSet<NodeKey>>>,
     /// Version thirteen: each inline assembly's lexical unsafe context in a
     /// source provider, allocated on first use. Export reads it by node.
     pub(crate) assembly_contexts: Option<
@@ -617,6 +615,13 @@ impl Declarations {
     }
     pub(crate) fn constant_body_type(&self, source: NodeKey) -> Option<TypeId> {
         self.anonymous_constants.get(&source).copied()
+    }
+    pub(super) fn record_folded_anonymous(&mut self, source: NodeKey) {
+        if self.anonymous_constants.contains_key(&source) {
+            self.folded_anonymous_constants
+                .get_or_insert_default()
+                .insert(source);
+        }
     }
     /// Constant expressions with lifetime obligations retain their own proof body.
     /// Sorting is confined to consumers that publish a deterministic body order.
@@ -790,7 +795,7 @@ impl Declarations {
             inline_constants: None,
             nested_outputs: None,
             anonymous_constants: crate::support::hash::HashMap::default(),
-            evaluated_arguments: None,
+            folded_anonymous_constants: None,
             assembly_contexts: None,
             constant_annotation_bodies: crate::support::hash::HashSet::default(),
             generics: super::generics::Generics::default(),

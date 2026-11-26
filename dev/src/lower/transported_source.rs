@@ -691,7 +691,7 @@ impl Source {
             }
         }
         if facts
-            .evaluated_arguments
+            .folded_anonymous_constants
             .as_ref()
             .is_some_and(|evaluated| evaluated.contains(&source))
             && !facts.array_lengths.contains_key(&source)
