@@ -31,16 +31,23 @@ pub struct Package {
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     pub(super) lint_cap: crate::support::diagnostics::LintCap,
-    pub(crate) bootstrap_metadata: bool,
+    pub(super) crate_flags: CrateFlags,
     /// Original bytes of the authenticated sources admitted so far, saturating.
     pub(super) admitted_source_bytes: u32,
-    pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
     pub crate_name: String,
     pub modules: Vec<Module>,
     pub names: Names,
     pub children: HashMap<(ModuleId, NodeKey), ModuleId>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct CrateFlags(u8);
+impl CrateFlags {
+    pub(super) const fn new(no_std: bool, bootstrap_metadata: bool) -> Self {
+        Self((no_std as u8) | ((bootstrap_metadata as u8) << 1))
+    }
 }
 #[derive(Debug)]
 pub struct ExpansionTrace {
@@ -212,6 +219,15 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    #[must_use]
+    pub const fn no_std(&self) -> bool {
+        self.crate_flags.0 & 1 != 0
+    }
+
+    pub(crate) const fn bootstrap_metadata(&self) -> bool {
+        self.crate_flags.0 & 2 != 0
+    }
+
     /// Borrow the compiler-controlled CPU baseline from the configuration owner.
     pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
         crate::expand::config::target_features()

@@ -18,6 +18,7 @@ pub(super) struct Relationship {
     pub policy: PolicyId,
     pub name: Box<str>,
     pub kind: Kind,
+    pub canonical: bool,
 }
 #[derive(Default)]
 pub(super) struct Pending {
@@ -54,7 +55,7 @@ impl Draft<'_> {
         let has_renames = self
             .relationships
             .iter()
-            .any(|edge| edge.kind == Kind::OldName);
+            .any(|edge| edge.kind == Kind::OldName && edge.canonical);
         if has_renames {
             self.charge(
                 requests
@@ -92,12 +93,15 @@ impl Draft<'_> {
                     && matches!(name.as_ref(), "min_adt_const_params" | "adt_const_params"))
                 || (async_destruction && name.as_ref() == "async_drop")
                 || (package.requested_named_opaque() && name.as_ref() == "type_alias_impl_trait");
-            if !known
-                && !imported
-                    .map(|imports| imports.has_feature(name))
-                    .transpose()?
-                    .unwrap_or(false)
-            {
+            if !known {
+                if let Some(imports) = imported {
+                    if let Some(message) = imports.renamed_message(name)? {
+                        return Err(Error::at(FileId(0), 0, message));
+                    }
+                    if imports.has_feature(name)? {
+                        continue;
+                    }
+                }
                 if let Some(message) = imported
                     .map(|imports| imports.removed_message(name))
                     .transpose()?
@@ -166,7 +170,7 @@ impl Draft<'_> {
                 Kind::OldName => {
                     // Rust checks sorted canonical local features before dependencies.
                     // A canonical request consumed earlier is not reinterpreted as old.
-                    if features.get(policy.feature.as_ref()) == Some(&edge.policy)
+                    if edge.canonical
                         && requests.contains(edge.name.as_ref())
                         && (!features.contains_key(edge.name.as_ref())
                             || policy.feature.as_ref() < edge.name.as_ref())
@@ -195,5 +199,30 @@ pub(super) fn release(level: &Level) -> Option<(u16, u16, u16)> {
 impl Inventory {
     pub(crate) fn has_relationships(&self) -> bool {
         !self.relationships.is_empty()
+    }
+
+    pub(crate) fn policy_relationships(
+        &self,
+        policy: usize,
+        steps: &mut usize,
+    ) -> (Option<&str>, Option<&str>) {
+        let start = self.relationships.partition_point(|row| {
+            *steps = steps.saturating_add(1);
+            row.policy.get() - 1 < policy
+        });
+        let mut implied_by = None;
+        let mut old_name = None;
+        for row in &self.relationships[start..] {
+            *steps = steps.saturating_add(1);
+            if row.policy.get() - 1 != policy {
+                break;
+            }
+            match row.kind {
+                Kind::ImpliedBy => implied_by = Some(row.name.as_ref()),
+                Kind::OldName if row.canonical => old_name = Some(row.name.as_ref()),
+                Kind::OldName => {}
+            }
+        }
+        (implied_by, old_name)
     }
 }

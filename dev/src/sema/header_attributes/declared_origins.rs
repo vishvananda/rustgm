@@ -250,7 +250,7 @@ fn observe_selected_owner(
     declaration: NodeKey,
     force: bool,
 ) -> Result<(), Error> {
-    if report.package.source_core().is_none() && !report.package.bootstrap_metadata && !force {
+    if report.package.source_core().is_none() && !report.package.bootstrap_metadata() && !force {
         return Ok(());
     }
     if !admitted(report, declaration) && !force {
@@ -374,7 +374,7 @@ pub(in crate::sema) fn bind_definition(
         && !incoherent_targets::marked(facts, declaration)
         && !definition_policy::marked(facts, declaration))
         || (report.package.source_core().is_none()
-            && !report.package.bootstrap_metadata
+            && !report.package.bootstrap_metadata()
             && !member
             && !facts
                 .must_use_contracts
@@ -439,7 +439,7 @@ pub(in crate::sema) fn bind_definition(
     legacy_indices::bind(report, facts, definition, declaration)
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    if report.package.source_core().is_some() || report.package.bootstrap_metadata {
+    if report.package.source_core().is_some() || report.package.bootstrap_metadata() {
         ledger(facts, 0)?.local.complete = true;
     }
     if let Some(headers) = facts

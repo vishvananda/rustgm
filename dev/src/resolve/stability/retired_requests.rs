@@ -1,4 +1,4 @@
-//! Imported removed data is a fallback index, disjoint from active feature definitions.
+//! Imported diagnostics for removed and renamed features share a cold owner.
 use super::availability_imports::Imports;
 use crate::{
     resolve::package::Error,
@@ -13,6 +13,7 @@ struct Entry {
 pub(super) struct Index {
     entries: HashMap<String, Entry>,
     spelling_bytes: usize,
+    pub(super) previous_names: Option<Box<super::availability_imports::previous_names::Index>>,
 }
 impl Imports {
     pub(super) fn collect_removed(
@@ -29,10 +30,7 @@ impl Imports {
             {
                 continue;
             }
-            if self.retirements.is_none() {
-                self.charge(1, size_of::<Index>())?;
-                self.retirements = Some(Box::default());
-            }
+            self.reserve_request_notices()?;
             let index = self
                 .retirements
                 .as_ref()
@@ -65,6 +63,13 @@ impl Imports {
             index
                 .entries
                 .insert(declaration.feature.clone(), Entry { artifact, row });
+        }
+        Ok(())
+    }
+    pub(super) fn reserve_request_notices(&mut self) -> Result<(), Error> {
+        if self.retirements.is_none() {
+            self.charge(1, size_of::<Index>())?;
+            self.retirements = Some(Box::default());
         }
         Ok(())
     }

@@ -61,7 +61,7 @@ pub use availability::{
     AvailabilityKind, AvailabilityLevel, AvailabilityOrigin, AvailabilityPolicy, AvailabilityRef,
     AvailabilityRows, AvailabilitySince, BindingAvailability, ConstBodyContracts, ConstBodyGrant,
     DeclarationAvailability, DeprecatedDeclaration, DeprecationColumns, DeprecationNotice,
-    DeprecationSince,
+    DeprecationSince, RelatedAvailability,
 };
 pub(crate) use bodies::ScalarType;
 pub use bodies::*;

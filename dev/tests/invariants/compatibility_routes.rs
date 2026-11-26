@@ -201,21 +201,22 @@ fn real_path_width_and_duplicate_feature_imports_keep_touched_cost_bounded() -> 
     }
     let mut report = report()?;
     let actual = imports_mut(&mut report)?;
-    let policy = actual
+    let (artifact, policy) = actual
         .inventory
         .artifacts()
         .iter()
-        .find_map(|a| {
+        .enumerate()
+        .find_map(|(artifact, a)| {
             a.source_descriptor()
                 .and_then(|d| d.availability().ok())
                 .and_then(|r| r.policies.first())
+                .map(|policy| (artifact, policy.clone()))
         })
-        .ok_or("actual policy")?
-        .clone();
+        .ok_or("actual policy")?;
     let before = actual.budget.get();
     let capacity = actual.features.capacity();
     for _ in 0..128 {
-        actual.features(std::slice::from_ref(&policy))?;
+        actual.features(artifact, std::slice::from_ref(&policy))?;
     }
     assert_eq!(actual.features.capacity(), capacity);
     assert_eq!(actual.budget.get().bytes, before.bytes);

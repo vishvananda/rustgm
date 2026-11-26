@@ -136,7 +136,7 @@ impl Stage {
         if !self.declaration_policies() && inventory.has_default_body_policies() {
             return Err("source default-body stability requires complete policy transport");
         }
-        if inventory.has_relationships() {
+        if !self.declaration_policies() && inventory.has_relationships() {
             return Err("source feature relationships require complete wider policy transport");
         }
         let census = self
@@ -528,12 +528,7 @@ impl Stage {
                 }
             }
             Level::Unstable { issue, reason } => {
-                self.charge(reason.as_deref().map_or(0, str::len))?;
-                self.reserve(reason.as_deref().map_or(0, str::len))?;
-                s::AvailabilityLevel::Unstable {
-                    issue: *issue,
-                    reason: reason.as_deref().map(str::to_owned),
-                }
+                self.unstable_availability(inventory, reference, *issue, reason.as_deref())?
             }
         };
         let id = s::AvailabilityRef(
@@ -552,6 +547,38 @@ impl Stage {
         });
         policies.index.insert((reference, origin), id);
         Ok(Some(id))
+    }
+
+    fn unstable_availability(
+        &mut self,
+        inventory: &Inventory,
+        reference: usize,
+        issue: Option<std::num::NonZeroU32>,
+        reason: Option<&str>,
+    ) -> Result<s::AvailabilityLevel, &'static str> {
+        let mut steps = reason.map_or(0, str::len);
+        let (implied_by, old_name) = inventory.policy_relationships(reference, &mut steps);
+        self.charge(steps)?;
+        self.reserve(reason.map_or(0, str::len))?;
+        if implied_by.is_none() && old_name.is_none() {
+            return Ok(s::AvailabilityLevel::Unstable {
+                issue,
+                reason: reason.map(str::to_owned),
+            });
+        }
+        let names = implied_by
+            .map_or(0, str::len)
+            .saturating_add(old_name.map_or(0, str::len));
+        self.charge(names)?;
+        self.reserve(size_of::<s::RelatedAvailability>().saturating_add(names))?;
+        Ok(s::AvailabilityLevel::RelatedUnstable(Box::new(
+            s::RelatedAvailability {
+                issue,
+                reason: reason.map(str::to_owned),
+                implied_by: implied_by.map(str::to_owned),
+                old_name: old_name.map(str::to_owned),
+            },
+        )))
     }
     fn policy_origin(
         &mut self,

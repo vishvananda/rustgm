@@ -86,14 +86,13 @@ fn policy_write(
         }
         s::AvailabilityLevel::Unstable { issue, reason } => {
             out.u8(1)?;
-            out.u8(u8::from(issue.is_some()))?;
-            if let Some(issue) = issue {
-                id(out, issue.get())?;
-            }
-            out.u8(u8::from(reason.is_some()))?;
-            if let Some(reason) = reason {
-                out.string(reason)?;
-            }
+            unstable_write(out, *issue, reason.as_deref())?;
+        }
+        s::AvailabilityLevel::RelatedUnstable(row) => {
+            out.u8(3)?;
+            unstable_write(out, row.issue, row.reason.as_deref())?;
+            optional_text(out, row.implied_by.as_deref())?;
+            optional_text(out, row.old_name.as_deref())?;
         }
     }
     match policy.origin {
@@ -110,6 +109,24 @@ fn policy_write(
     }
     Ok(())
 }
+fn unstable_write(
+    out: &mut Writer,
+    issue: Option<std::num::NonZeroU32>,
+    reason: Option<&str>,
+) -> Result<(), &'static str> {
+    out.u8(u8::from(issue.is_some()))?;
+    if let Some(issue) = issue {
+        id(out, issue.get())?;
+    }
+    optional_text(out, reason)
+}
+fn optional_text(out: &mut Writer, value: Option<&str>) -> Result<(), &'static str> {
+    out.u8(u8::from(value.is_some()))?;
+    if let Some(value) = value {
+        out.string(value)?;
+    }
+    Ok(())
+}
 fn policy_read(
     read: &mut Input<'_, '_>,
     compatibility: bool,
@@ -121,21 +138,28 @@ fn policy_read(
         _ => return Err("unknown API availability policy kind"),
     };
     let feature = text(read)?;
-    let level = match read.reader.u8()? {
+    let tag = read.reader.u8()?;
+    let level = match tag {
         0 => s::AvailabilityLevel::Stable(since_read(read)?),
-        1 => {
+        1 | 3 if tag == 1 || read.profile.declaration_policies() => {
             let issue = read
                 .option()?
                 .map(|issue| {
                     std::num::NonZeroU32::new(issue).ok_or("API availability issue must be nonzero")
                 })
                 .transpose()?;
-            let reason = if read.boolean()? {
-                Some(text(read)?)
+            let reason = read_optional_text(read)?;
+            if tag == 3 {
+                read.reserve(size_of::<s::RelatedAvailability>())?;
+                s::AvailabilityLevel::RelatedUnstable(Box::new(s::RelatedAvailability {
+                    issue,
+                    reason,
+                    implied_by: read_optional_text(read)?,
+                    old_name: read_optional_text(read)?,
+                }))
             } else {
-                None
-            };
-            s::AvailabilityLevel::Unstable { issue, reason }
+                s::AvailabilityLevel::Unstable { issue, reason }
+            }
         }
         2 if compatibility && kind == s::AvailabilityKind::Regular => {
             s::AvailabilityLevel::StableWithCompatibility {
@@ -162,6 +186,13 @@ fn policy_read(
         level,
         origin,
     })
+}
+fn read_optional_text(read: &mut Input<'_, '_>) -> Result<Option<String>, &'static str> {
+    if read.boolean()? {
+        Ok(Some(text(read)?))
+    } else {
+        Ok(None)
+    }
 }
 fn since_write(out: &mut Writer, since: s::AvailabilitySince) -> Result<(), &'static str> {
     match since {

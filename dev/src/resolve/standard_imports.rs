@@ -38,7 +38,7 @@ pub(super) fn inject_compiler_builtins(
     package: &Package,
     resolution: &Resolution,
 ) -> Result<(), Error> {
-    if package.source_client().is_none() || !package.no_std {
+    if package.source_client().is_none() || !package.no_std() {
         return Ok(());
     }
     let unit = package
@@ -93,7 +93,7 @@ impl Resolver<'_> {
         let no_core = unit
             .word_attribute(Some(unit.configured.ast.root), "no_core")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-        if no_core || !self.package.no_std {
+        if no_core || !self.package.no_std() {
             return Ok(());
         }
         let module = match unit.edition() {

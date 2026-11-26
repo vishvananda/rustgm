@@ -1330,7 +1330,7 @@ fn require_bootstrap_identity(
     identity: &CrateIdentity,
 ) -> Result<(), &'static str> {
     require_bootstrap_bindings(report, facts)?;
-    if !report.package.bootstrap_metadata
+    if !report.package.bootstrap_metadata()
         || report.package.crate_name != identity.name()
         || facts
             .crates

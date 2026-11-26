@@ -138,7 +138,7 @@ impl Imports {
             .ok_or_else(|| Error::unlocated("compatibility policy is absent"))?;
         Ok(match &policy.level {
             s::AvailabilityLevel::StableWithCompatibility { message, .. } => Some(message),
-            s::AvailabilityLevel::Stable(_) | s::AvailabilityLevel::Unstable { .. } => None,
+            _ => None,
         })
     }
     fn path(

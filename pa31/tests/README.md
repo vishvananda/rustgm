@@ -112,6 +112,10 @@ parent method.
 specialized calls for both specialization-trait policies. One fresh client
 also specializes using the imported trait. A client that implements the
 always-applicable trait without requesting specialization is rejected.
+`spec/source-feature-relationships/outcomes.json` checks that a fresh client
+can request the feature named directly by an imported API's `implied_by`.
+It checks reverse and chained implication, a missing request, and the
+diagnostic for the previous name of a feature.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

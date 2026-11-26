@@ -307,6 +307,11 @@ impl ValidatedRows {
                             super::AvailabilityLevel::Unstable { reason, .. } => {
                                 reason.as_ref().map_or(0, String::len)
                             }
+                            super::AvailabilityLevel::RelatedUnstable(row) => row
+                                .reason
+                                .as_ref()
+                                .map_or(0, String::len)
+                                .saturating_add(row.relationship_names().map(String::len).sum()),
                         }
                 })
                 .sum::<usize>(),

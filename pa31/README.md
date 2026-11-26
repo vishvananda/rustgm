@@ -17,6 +17,9 @@ the source bodies that use those declarations.
   eligibility, body policies, and unsafe permission distinct. Retain the
   exact macro expansion that grants an internal allowance. A declaration's
   name or an unrelated feature request cannot grant its permission.
+- Preserve checked library feature relationships on the availability policy.
+  A fresh client can request the feature named by `implied_by` to use that
+  API. A request using `old_name` diagnoses the replacement.
 - Check the stability and documentation attributes used by the pinned
   source. Distinguish current and scheduled deprecation and apply the
   scoped lint at the call, import or macro expansion. For unstable trait

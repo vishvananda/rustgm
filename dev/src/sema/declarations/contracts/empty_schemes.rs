@@ -24,7 +24,8 @@ pub(super) fn prepare(
     captures: u32,
     bounds: Vec<(crate::types::RegionId, crate::types::RegionId)>,
 ) -> Result<Option<CompletedEmpty>, Error> {
-    if !checker.report.package.uses_source_bindings() && !checker.report.package.bootstrap_metadata
+    if !checker.report.package.uses_source_bindings()
+        && !checker.report.package.bootstrap_metadata()
     {
         return Ok(None);
     }
@@ -79,7 +80,8 @@ impl Checker<'_> {
         if *steps > limit {
             return Err(error("source empty scheme completion work budget exceeded"));
         }
-        if (!self.report.package.uses_source_bindings() && !self.report.package.bootstrap_metadata)
+        if (!self.report.package.uses_source_bindings()
+            && !self.report.package.bootstrap_metadata())
             || self
                 .report
                 .resolution

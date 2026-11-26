@@ -423,7 +423,7 @@ impl Checker<'_> {
     pub(super) fn publish_calls(&mut self, solved: &Solved) -> Result<(), Error> {
         let effect = self.callee_use_effect()?;
         if self.facts.source_bindings.is_none()
-            && !self.report.package.bootstrap_metadata
+            && !self.report.package.bootstrap_metadata()
             && effect == Constness::Ordinary
         {
             return self.publish_ordinary_calls(solved);

@@ -1,5 +1,6 @@
 //! One imported owner maps immutable availability; each source use retains its binding route.
 mod path_compatibility;
+pub(super) mod previous_names;
 use crate::{
     expand::marks::ItemContext,
     resolve::{
@@ -17,7 +18,7 @@ use crate::{
             Dependencies, MAX_BYTES, MAX_COMPONENTS, generics::source as s,
             owner_catalog::DeclarationRef,
         },
-        hash::{HashMap, HashSet},
+        hash::HashMap,
         retained,
     },
 };
@@ -117,7 +118,7 @@ pub(in crate::resolve) struct Imports {
     pub(super) retirements: Option<Box<super::retired_requests::Index>>,
     declarations: HashMap<DefId, Option<Declaration>>,
     bindings: HashMap<BindingKey, Binding>,
-    features: HashSet<String>,
+    features: HashMap<String, usize>,
     entries: Vec<PathEntry>,
     paths: Vec<path_compatibility::PathUse>,
     paths_complete: bool,
@@ -178,7 +179,7 @@ impl Imports {
     }
     pub(in crate::resolve) fn has_feature(&self, name: &str) -> Result<bool, Error> {
         self.charge(name.len().saturating_add(1), 0)?;
-        Ok(self.features.contains(name))
+        Ok(self.features.contains_key(name))
     }
     fn policy_allowed(
         &self,
@@ -195,26 +196,23 @@ impl Imports {
             .policies
             .get(reference.0 as usize)
             .ok_or_else(|| Error::unlocated("availability use has a foreign policy index"))?;
-        self.charge(policy.feature.len().saturating_mul(4).saturating_add(1), 0)?;
-        if matches!(
-            policy.level,
-            s::AvailabilityLevel::Stable(_) | s::AvailabilityLevel::StableWithCompatibility { .. }
-        ) {
+        if policy.level.stable() {
             return Ok(true);
         }
-        let normalized;
-        let spelling = if policy.feature.is_ascii() {
-            policy.feature.as_str()
-        } else {
-            normalized = Names::normalize_paid(&policy.feature, &mut |growth| {
-                self.charge(growth.work, growth.bytes)
-                    .map_err(|_| "availability normalization budget exhausted")
-            })
-            .map_err(Error::unlocated)?;
-            &normalized
-        };
+        if self.requested(package, &policy.feature)? {
+            return Ok(true);
+        }
+        if let s::AvailabilityLevel::RelatedUnstable(row) = &policy.level
+            && let Some(implied_by) = row.implied_by.as_deref()
+        {
+            return self.requested(package, implied_by);
+        }
+        Ok(false)
+    }
+    fn requested(&self, package: &Package, written: &str) -> Result<bool, Error> {
+        let spelling = self.spelling(written)?;
         let feature =
-            crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
+            crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
         let requested = if let Some(library) = package.library_policy() {
             let mut steps = self.budget.get().steps;
             let result = library.requested_feature(&feature, &mut steps);
@@ -382,9 +380,18 @@ impl Imports {
             ..Observations::default()
         })
     }
-    fn features(&mut self, policies: &[s::AvailabilityPolicy]) -> Result<(), Error> {
+    fn features(
+        &mut self,
+        artifact: usize,
+        policies: &[s::AvailabilityPolicy],
+    ) -> Result<(), Error> {
         for policy in policies {
-            self.feature(&policy.feature)?;
+            self.feature(artifact, &policy.feature)?;
+            if let s::AvailabilityLevel::RelatedUnstable(row) = &policy.level
+                && let Some(old_name) = row.old_name.as_deref()
+            {
+                self.collect_previous_name(artifact, old_name, &policy.feature)?;
+            }
         }
         Ok(())
     }
@@ -392,6 +399,7 @@ impl Imports {
     /// consumer may request, like an availability row's.
     fn macro_features(
         &mut self,
+        artifact: usize,
         macros: &crate::support::crates::exported_macros::Macros,
     ) -> Result<(), Error> {
         let rows = macros.rows().iter().filter_map(|row| row.unstable());
@@ -401,7 +409,7 @@ impl Imports {
             .iter()
             .filter_map(|row| row.definition().unstable());
         for feature in rows.chain(builtins).chain(scoped) {
-            self.feature(feature)?;
+            self.feature(artifact, feature)?;
         }
         Ok(())
     }
@@ -424,20 +432,24 @@ impl Imports {
         crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
         Ok(spelling)
     }
-    fn feature(&mut self, written: &str) -> Result<(), Error> {
+    fn feature(&mut self, artifact: usize, written: &str) -> Result<(), Error> {
         let spelling = self.spelling(written)?;
         let feature =
             crate::resolve::bindings::FeatureName::new(&spelling).map_err(Error::unlocated)?;
-        if self.features.contains(feature.spelling()) {
+        if self.features.contains_key(feature.spelling()) {
             return Ok(());
         }
-        let growth =
-            retained::Growth::map::<String, ()>(self.features.len(), self.features.capacity(), 1);
+        let growth = retained::Growth::map::<String, usize>(
+            self.features.len(),
+            self.features.capacity(),
+            1,
+        );
         self.charge(
             growth.work.saturating_add(feature.spelling().len()),
             growth.bytes.saturating_add(feature.spelling().len()),
         )?;
-        self.features.insert(feature.spelling().to_owned());
+        self.features
+            .insert(feature.spelling().to_owned(), artifact);
         Ok(())
     }
     /// Record every declaration row of one source artifact by its canonical identity.
@@ -553,7 +565,7 @@ pub(in crate::resolve) fn prepare(
         retirements: None,
         declarations: HashMap::default(),
         bindings: HashMap::default(),
-        features: HashSet::default(),
+        features: HashMap::default(),
         entries: Vec::new(),
         paths: Vec::new(),
         paths_complete: false,
@@ -567,7 +579,7 @@ pub(in crate::resolve) fn prepare(
             result.collect_removed(index, table)?;
         }
         if let Some(macros) = artifact.macros() {
-            result.macro_features(macros)?;
+            result.macro_features(index, macros)?;
         }
         let Some(descriptor) = artifact.source_descriptor() else {
             continue;
@@ -578,7 +590,7 @@ pub(in crate::resolve) fn prepare(
         }
         let availability = descriptor.availability().map_err(Error::unlocated)?;
         result.has_deprecations |= availability.deprecations.is_some();
-        result.features(&availability.policies)?;
+        result.features(index, &availability.policies)?;
         for (ordinal, row) in descriptor
             .module_contracts()
             .map_err(Error::unlocated)?

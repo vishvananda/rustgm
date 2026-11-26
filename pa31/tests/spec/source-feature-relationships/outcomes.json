@@ -1,0 +1,48 @@
+{
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "observe.c",
+    "explicit.rs",
+    "reverse.rs",
+    "missing.rs",
+    "old-name.rs",
+    "chain.rs"
+  ],
+  "foundation": "pa31/tests/spec/source-availability-transport/provider.rs",
+  "prefix_marker": "#[stable(feature=\"identity_api\"",
+  "stdout": "",
+  "older_profile": "source feature relationships require complete wider policy transport",
+  "older_reader": "unknown API availability level",
+  "compile_only_clients": [
+    {
+      "path": "explicit.rs",
+      "required_lowir": [
+        "observed_explicit",
+        "observed_implied"
+      ]
+    }
+  ],
+  "restricted_clients": [
+    {
+      "path": "reverse.rs",
+      "rustc": "use of unstable library feature `controlling_api`",
+      "rustgm": "use of unstable library API requires feature `controlling_api`"
+    },
+    {
+      "path": "missing.rs",
+      "rustc": "use of unstable library feature `dependent_api`",
+      "rustgm": "use of unstable library API requires feature `dependent_api`"
+    },
+    {
+      "path": "chain.rs",
+      "rustc": "use of unstable library feature `chained_api`",
+      "rustgm": "use of unstable library API requires feature `chained_api`"
+    },
+    {
+      "path": "old-name.rs",
+      "rustc": "feature `former_api` has been renamed to `current_api`",
+      "rustgm": "library feature `former_api` has been renamed to `current_api`"
+    }
+  ]
+}

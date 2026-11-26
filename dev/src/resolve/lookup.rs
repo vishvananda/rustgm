@@ -58,7 +58,7 @@ impl Resolver<'_> {
     /// crate-root item; later editions keep that injected name unnameable. The
     /// compiling crate's own edition selects the injection, as for rustc.
     pub(super) fn injected_crate(&self, name: NameId) -> bool {
-        let injected = if self.package.no_std { "core" } else { "std" };
+        let injected = if self.package.no_std() { "core" } else { "std" };
         (!self.package.uses_source_bindings() || self.facts.introductions.injected_core().is_some())
             && self.package.units.first().map(super::unit::Unit::edition)
                 == Some(crate::support::edition::Edition::Rust2015)

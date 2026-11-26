@@ -131,6 +131,7 @@ fn publish_policy(
                     policy: id,
                     name,
                     kind,
+                    canonical: first.is_none(),
                 });
         }
     }

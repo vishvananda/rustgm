@@ -163,7 +163,7 @@ impl Checker<'_> {
             catalog
                 .require_provider_report(self.report)
                 .map_err(|e| self.error(node, e))?;
-        } else if !self.report.package.bootstrap_metadata
+        } else if !self.report.package.bootstrap_metadata()
             && self.callee_use_effect()? == crate::support::constness::Constness::Ordinary
         {
             return Ok(());

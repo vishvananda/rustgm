@@ -343,7 +343,7 @@ impl Resolver<'_> {
             Some(ops),
         )?;
         for name in ["core", "std"] {
-            if name == "std" && self.package.no_std {
+            if name == "std" && self.package.no_std() {
                 continue;
             }
             self.builtin_definition(

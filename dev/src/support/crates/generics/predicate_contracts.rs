@@ -2,8 +2,8 @@
 use crate::support::crates::generics::{
     Work,
     source::{
-        AvailabilityKind, AvailabilityLevel, AvailabilityOrigin, AvailabilityRows, Columns,
-        HeaderRef, Requirement, SourceRows,
+        AvailabilityKind, AvailabilityOrigin, AvailabilityRows, Columns, HeaderRef, Requirement,
+        SourceRows,
     },
 };
 
@@ -61,7 +61,7 @@ pub(super) fn complete(
             .and_then(|index| availability.policies.get(index.0 as usize))
             .ok_or("feature predicate requires its actual regular unstable owner")?;
         if regular.kind != AvailabilityKind::Regular
-            || !matches!(regular.level, AvailabilityLevel::Unstable { .. })
+            || regular.level.stable()
             || !matches!(regular.origin, AvailabilityOrigin::Declaration {owner,..} if owner == clause.owner)
         {
             return Err("feature predicate requires its directly attributed unstable owner");

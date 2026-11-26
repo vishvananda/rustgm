@@ -63,6 +63,7 @@ def main():
                                  "source-final-method-transport",
                                  "source-specialization-transport",
                                  "source-specialization-policies",
+                                 "source-feature-relationships",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
@@ -192,14 +193,18 @@ def main():
         forged.write_bytes(packet)
         check.run("foreign-role", [*importer, "--extern", f"base={forged}", client], 1,
                   [role["diagnostic"]], timeout=30)
+    restrictions = contract.get("restricted_clients", [])
     if restricted := contract.get("restricted_client"):
+        restrictions = [restricted, *restrictions]
+    for restricted in restrictions:
         negative = fixture / restricted["path"]
-        check.run("restricted-rustc", [args.rustc.resolve(strict=True), "--edition=2024",
+        label = negative.stem
+        check.run(f"restricted-rustc-{label}", [args.rustc.resolve(strict=True), "--edition=2024",
                   "--crate-type=lib", "--crate-name=client", "--emit=metadata",
                   "--extern", f"base={check.folder / 'libbase.rlib'}",
-                  "-o", check.folder / "restricted.rmeta", negative],
+                  "-o", check.folder / f"{label}.rmeta", negative],
                   1, [restricted["rustc"]], timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
-        check.run("restricted-client", [*importer, "--extern", f"base={artifact}", negative],
+        check.run(f"restricted-client-{label}", [*importer, "--extern", f"base={artifact}", negative],
                   1, [restricted["rustgm"]], timeout=30)
     if args.baseline is not None and (refusal := contract.get("older_reader")):
         check.run("older-reader", [args.baseline.resolve(strict=True), *importer[1:],

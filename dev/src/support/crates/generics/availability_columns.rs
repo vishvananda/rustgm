@@ -33,11 +33,59 @@ pub enum AvailabilityLevel {
         issue: Option<std::num::NonZeroU32>,
         reason: Option<String>,
     },
+    RelatedUnstable(Box<RelatedAvailability>),
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RelatedAvailability {
+    pub issue: Option<std::num::NonZeroU32>,
+    pub reason: Option<String>,
+    pub implied_by: Option<String>,
+    pub old_name: Option<String>,
 }
 impl AvailabilityLevel {
     pub(crate) const fn stable(&self) -> bool {
         matches!(self, Self::Stable(_) | Self::StableWithCompatibility { .. })
     }
+
+    pub(crate) fn reason(&self) -> Option<&String> {
+        match self {
+            Self::Unstable { reason, .. } => reason.as_ref(),
+            Self::RelatedUnstable(row) => row.reason.as_ref(),
+            _ => None,
+        }
+    }
+}
+impl RelatedAvailability {
+    pub(super) fn relationship_names(&self) -> impl Iterator<Item = &String> {
+        self.implied_by.iter().chain(&self.old_name)
+    }
+
+    fn storage_bytes(&self, work: &mut Work) -> Result<usize, &'static str> {
+        if self.implied_by.is_none() && self.old_name.is_none() {
+            return Err("empty library feature relationships");
+        }
+        let mut bytes = size_of::<Self>();
+        for name in self.relationship_names() {
+            work.charge(name.len().saturating_add(1))?;
+            if name.len() > super::MAX_REASON_BYTES {
+                return Err("library feature relationship exceeds transport limit");
+            }
+            bytes = bytes.saturating_add(name.capacity());
+        }
+        if let Some(name) = &self.implied_by
+            && !feature_identifier(name)
+        {
+            return Err("invalid implying library feature identifier");
+        }
+        Ok(bytes)
+    }
+}
+fn feature_identifier(name: &str) -> bool {
+    let mut letters = name.chars();
+    letters
+        .next()
+        .is_some_and(|first| first == '_' || unicode_ident::is_xid_start(first))
+        && letters.all(unicode_ident::is_xid_continue)
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AvailabilityRef(pub u32);
@@ -105,12 +153,7 @@ impl AvailabilityRows {
             .saturating_add(retained::vector(&self.bindings));
         for policy in &self.policies {
             work.charge(policy.feature.len().saturating_add(1))?;
-            let mut letters = policy.feature.chars();
-            if !letters
-                .next()
-                .is_some_and(|first| first == '_' || unicode_ident::is_xid_start(first))
-                || !letters.all(unicode_ident::is_xid_continue)
-            {
+            if !feature_identifier(&policy.feature) {
                 return Err("invalid availability feature identifier");
             }
             bytes = bytes.saturating_add(policy.feature.capacity());
@@ -124,16 +167,15 @@ impl AvailabilityRows {
                 }
                 bytes = bytes.saturating_add(message.capacity());
             }
-            if let AvailabilityLevel::Unstable {
-                reason: Some(reason),
-                ..
-            } = &policy.level
-            {
+            if let Some(reason) = policy.level.reason() {
                 work.charge(reason.len())?;
                 if reason.len() > super::MAX_REASON_BYTES {
                     return Err("availability reason exceeds transport limit");
                 }
                 bytes = bytes.saturating_add(reason.capacity());
+            }
+            if let AvailabilityLevel::RelatedUnstable(row) = &policy.level {
+                bytes = bytes.saturating_add(row.storage_bytes(work)?);
             }
             if bytes > MAX_BYTES {
                 return Err("availability columns exceed retained storage budget");
@@ -162,6 +204,14 @@ impl AvailabilityRows {
         let bytes = self.storage_bytes(work)?;
         if self.deprecations.is_some() && !profile.declaration_policies() {
             return Err("deprecation columns require the version-fourteen profile");
+        }
+        if !profile.declaration_policies()
+            && self
+                .policies
+                .iter()
+                .any(|row| matches!(row.level, AvailabilityLevel::RelatedUnstable(_)))
+        {
+            return Err("library feature relationships require the version-fourteen profile");
         }
         if let Some(contracts) = &self.const_bodies {
             contracts.validate(columns, headers, modules, &self, work)?;
@@ -401,9 +451,7 @@ impl AvailabilityRows {
             if policy.kind == AvailabilityKind::DefaultBody {
                 return Err("default-body policy cannot supply const API availability");
             }
-            if policy.kind == AvailabilityKind::Regular
-                && !matches!(policy.level, AvailabilityLevel::Unstable { .. })
-            {
+            if policy.kind == AvailabilityKind::Regular && policy.level.stable() {
                 return Err(
                     "implicit const availability requires its actual unstable regular origin",
                 );
@@ -576,7 +624,7 @@ impl Validation<'_> {
         };
         let function = &self.columns.functions[index as usize];
         if !self.declaration_policies
-            || !matches!(policy.level, AvailabilityLevel::Unstable { .. })
+            || policy.level.stable()
             || site >= declaration.sites
             || declaration.name.as_deref() != Some("drop")
             || function.constness != crate::support::constness::Constness::Conditional
