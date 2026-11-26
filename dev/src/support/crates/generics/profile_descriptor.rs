@@ -495,11 +495,8 @@ impl ValidatedRows {
             work,
         )?;
         let domains = indexed.profile_domains(profile, Some(&attributes), work)?;
-        let inputs = domains.original_inputs(work)?;
-        let peak = inputs
-            .peak_bytes()
-            .max(indexed.retained_bytes().saturating_add(module_peak));
-        drop(inputs);
+        let input_peak = module_input_peak(&domains, profile, work)?;
+        let peak = input_peak.max(indexed.retained_bytes().saturating_add(module_peak));
         drop(domains);
         let indexed = indexed.into_header_rows()?;
         let (owners, columns, headers, mut budget) =
@@ -1002,4 +999,22 @@ impl<'a> Descriptor<'a> {
     pub const fn profile(&self) -> Profile {
         self.source.profile
     }
+}
+
+/// Input planning shares the domain index's live storage. Modern profiles
+/// bound its scratch-only pass independently of the retained packet's ledger.
+fn module_input_peak(
+    domains: &super::DomainIndex<'_, '_>,
+    profile: Profile,
+    work: &mut Work,
+) -> Result<usize, &'static str> {
+    let mut planning = Work::default();
+    let inputs = if profile.declaration_policies() {
+        domains.original_inputs(&mut planning)?
+    } else {
+        domains.original_inputs(work)?
+    };
+    work.roots = work.roots.saturating_add(planning.roots);
+    work.operations = work.operations.saturating_add(planning.operations);
+    Ok(inputs.peak_bytes())
 }
