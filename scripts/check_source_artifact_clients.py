@@ -60,6 +60,7 @@ def main():
                                  "source-early-lifetime-transport",
                                  "source-private-c-import-transport",
                                  "source-pointer-lint-transport",
+                                 "source-final-method-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",

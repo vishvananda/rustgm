@@ -99,9 +99,8 @@ impl Stage {
             if !selected.header() {
                 continue;
             }
-            if !matches!(mode, Collection::ProvidedContracts) {
-                require_defaultness_transport(report, declaration)?;
-            }
+            let final_trait_method = !matches!(mode, Collection::ProvidedContracts)
+                && publication_method_policy(report, declaration, self.declaration_policies())?;
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
             let pointer_lint_marker = facts.publication_pointer_lint_marker(
@@ -136,6 +135,9 @@ impl Stage {
                     &mut contract,
                 )?;
             }
+            contract.advisories = contract
+                .advisories
+                .with_final_trait_method(final_trait_method);
             optimizations += usize::from(contract.optimization.is_some());
             if completed[row.0 as usize].replace(contract).is_some() {
                 return Err(Error::at(
@@ -526,15 +528,27 @@ pub(crate) fn require_defaultness_transport(
     report: &Report,
     declaration: NodeKey,
 ) -> Result<(), Error> {
+    publication_method_policy(report, declaration, false).map(|_| ())
+}
+
+fn publication_method_policy(
+    report: &Report,
+    declaration: NodeKey,
+    final_allowed: bool,
+) -> Result<bool, Error> {
     if let Some(modifier) = report.active_finalness(declaration)? {
-        return Err(report.diagnostic(Error::at(
-            declaration.file,
-            modifier.span.start,
-            "source final trait method contract transport is not implemented",
-        )));
+        return if final_allowed {
+            Ok(true)
+        } else {
+            Err(report.diagnostic(Error::at(
+                declaration.file,
+                modifier.span.start,
+                "source final trait method contract transport is not implemented",
+            )))
+        };
     }
     let Some(defaultness) = report.active_defaultness(declaration)? else {
-        return Ok(());
+        return Ok(false);
     };
     if defaultness.node != declaration.node {
         return Err(Error::at(

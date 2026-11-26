@@ -39,6 +39,16 @@ pub(in crate::sema) fn is_final_trait_method(
             if header.body.is_none() {
                 return Ok(false);
             }
+            match facts
+                .header_attribute_contracts(report, definition)?
+                .imported_final_trait_method
+            {
+                crate::sema::header_attributes::ContractKnowledge::KnownPresent(()) => {
+                    return Ok(true);
+                }
+                crate::sema::header_attributes::ContractKnowledge::KnownAbsent => return Ok(false),
+                crate::sema::header_attributes::ContractKnowledge::Unknown => {}
+            }
             // The v14 Drop profile checks these bodies and excludes written finalness.
             if crate::sema::header_attributes::has_plain_provided_function_policy(facts, definition)
                 .map_err(Error::unlocated)?

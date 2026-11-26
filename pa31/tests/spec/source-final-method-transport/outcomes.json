@@ -1,0 +1,12 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "final-override.rs"],
+  "features": ["auto_traits", "final_associated_functions"],
+  "stdout": "41 73\n",
+  "older_profile": "source final trait method contract transport is not implemented",
+  "older_reader": "invalid source boolean",
+  "restricted_client": {
+    "path": "final-override.rs",
+    "rustc": "already has a `final` definition in the trait",
+    "rustgm": "cannot override final trait method"
+  }
+}

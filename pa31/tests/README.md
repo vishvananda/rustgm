@@ -100,6 +100,9 @@ module access rejection in fresh clients.
 an inherent method carrying `#[rustc_as_ptr]` across a separate crate boundary.
 The free function also carries a `#[must_use]` reason. The client reads the
 returned pointers and a wrong-result client checks the regular type rule.
+`spec/source-final-method-transport/outcomes.json` checks a provided final
+trait method, an overridable sibling, and an attempted override of the final
+method in a fresh client.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

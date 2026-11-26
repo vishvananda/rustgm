@@ -117,12 +117,26 @@ fn pointer_lint_and_must_use_flags_share_the_diagnostic_byte() -> Result {
         );
         assert_eq!(read(&bytes, BODIES), Err("invalid source boolean"));
         let mut unknown = bytes;
-        unknown[8] |= 4;
+        unknown[8] |= 8;
         assert_eq!(
             read(&unknown, s::Profile::Source2024ModuleBodyOperations),
             Err("invalid source boolean")
         );
     }
+    Ok(())
+}
+
+#[test]
+fn final_trait_method_round_trips_only_in_the_extended_header_profile() -> Result {
+    let mut row = contract(None, None);
+    row.advisories = row.advisories.with_final_trait_method(true);
+    let bytes = written(&row)?;
+    assert_eq!(bytes[8], 4);
+    assert_eq!(
+        read(&bytes, s::Profile::Source2024ModuleBodyOperations)?,
+        row
+    );
+    assert_eq!(read(&bytes, BODIES), Err("invalid source boolean"));
     Ok(())
 }
 

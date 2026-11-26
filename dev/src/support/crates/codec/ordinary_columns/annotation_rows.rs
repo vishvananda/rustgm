@@ -24,9 +24,11 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<s::HeaderAttributeColum
 pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.declaration_site)?;
-    // The original must-use presence byte keeps bit 0. Version fourteen
-    // uses bit 1 for the pointer lint marker, with no additional payload.
-    out.u8(u8::from(row.must_use.is_some()) | u8::from(row.advisories.pointer_lint_marker()) << 1)?;
+    // Bit 0 retains the original must-use presence. Version fourteen adds
+    // the pointer diagnostic and final trait-method policy in bits 1 and 2.
+    out.u8(u8::from(row.must_use.is_some())
+        | u8::from(row.advisories.pointer_lint_marker()) << 1
+        | u8::from(row.advisories.final_trait_method()) << 2)?;
     if let Some(value) = &row.must_use {
         id(out, value.owner_site)?;
         out.u8(u8::from(value.reason.is_some()))?;
@@ -86,7 +88,7 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
     let declaration_site = read.id()?;
     let diagnostic_flags = read.reader.u8()?;
     let max_flags = if read.profile.declaration_policies() {
-        3
+        7
     } else {
         1
     };
@@ -142,7 +144,8 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         declaration_site,
         must_use,
         inline,
-        advisories: s::AdvisoryFlags::new(flags & 2 != 0, diagnostic_flags & 2 != 0),
+        advisories: s::AdvisoryFlags::new(flags & 2 != 0, diagnostic_flags & 2 != 0)
+            .with_final_trait_method(diagnostic_flags & 4 != 0),
         caller_tracking: flags & 4 != 0,
         target_features,
         optimization,

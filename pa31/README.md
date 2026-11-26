@@ -67,7 +67,9 @@ actual source signatures and selected bodies.
   and the construction and pattern rules for `#[non_exhaustive]` structs and
   enums. Fresh clients must be able to check these rules against the artifact.
   Retain the checked `#[rustc_as_ptr]` diagnostic marker on the function or
-  method that declares it.
+  method that declares it. Preserve a trait method's written `final` policy
+  through metadata so a separate client uses the provided body and rejects
+  an attempted override.
 
 ## Check your implementation
 

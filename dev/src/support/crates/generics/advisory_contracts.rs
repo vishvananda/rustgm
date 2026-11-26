@@ -72,6 +72,16 @@ impl AdvisoryFlags {
     pub const fn pointer_lint_marker(self) -> bool {
         self.0 & 2 != 0
     }
+
+    #[must_use]
+    pub const fn with_final_trait_method(self, written: bool) -> Self {
+        Self(self.0 | (written as u8) << 2)
+    }
+
+    #[must_use]
+    pub const fn final_trait_method(self) -> bool {
+        self.0 & 4 != 0
+    }
 }
 
 /// Within a complete row, None is positively checked absence. An older profile
@@ -82,7 +92,7 @@ pub struct HeaderContract {
     pub declaration_site: u32,
     pub must_use: Option<MustUseContract>,
     pub inline: Option<InlineContract>,
-    /// Written cold and pointer lint advisories on this function.
+    /// Written callable advisories and final trait-method policy.
     pub advisories: AdvisoryFlags,
     /// Version thirteen only, on function rows: the written caller ABI policy.
     pub caller_tracking: bool,
@@ -218,6 +228,7 @@ impl HeaderAttributeColumns {
                     return Err("source pointer lint marker requires a non-foreign function");
                 }
             }
+            check_final_trait_method(contract, header, declarations, profile)?;
             if contract.promotable.is_some()
                 && (!profile.declaration_policies()
                     || header.constness != crate::support::constness::Constness::Const
@@ -315,6 +326,25 @@ impl HeaderAttributeColumns {
         }
         Ok(())
     }
+}
+
+fn check_final_trait_method(
+    contract: &HeaderContract,
+    header: &super::FunctionHeader,
+    declarations: &[super::Declaration],
+    profile: super::Profile,
+) -> Result<(), &'static str> {
+    if contract.advisories.final_trait_method()
+        && (!profile.declaration_policies()
+            || !matches!(header.body, super::FunctionBody::Original(_))
+            || !header
+                .parent
+                .and_then(|owner| declarations.get(owner.0 as usize))
+                .is_some_and(|row| row.definition.kind == super::DefinitionKind::Trait))
+    {
+        return Err("source final trait method requires its actual trait owner and original body");
+    }
+    Ok(())
 }
 
 fn format_panics(
