@@ -90,6 +90,22 @@ impl Original {
             crate::sema::dispatch::Failure::Invalid(message) => Error::unlocated(message),
             crate::sema::dispatch::Failure::Preparation(error) => error,
         })?;
+        let before = facts.body_work.canonical_steps;
+        let proof = crate::body::transported_originals::prove_fields(
+            facts,
+            body,
+            &prepared,
+            &original.template().environment,
+        );
+        let charged = preparation.prepay(
+            facts,
+            facts.body_work.canonical_steps.saturating_sub(before),
+            0,
+        );
+        let proof = proof.map_err(Error::unlocated);
+        prepared
+            .proofs
+            .extend(proof.and_then(|proof| charged.map(|()| proof))?);
         prepared
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(Error::unlocated)?;

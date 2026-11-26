@@ -12,6 +12,8 @@ mod interface_goals;
 mod invocations;
 mod non_type_calls;
 mod operations;
+mod remapped_field_types;
+pub(crate) use remapped_field_types::prove as prove_fields;
 mod rebuilt_inputs;
 mod rebuilt_operations;
 mod regional_records;

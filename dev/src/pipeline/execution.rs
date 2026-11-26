@@ -877,7 +877,7 @@ impl Engine {
             let source = body.source;
             crate::borrow::storage::validate(body)
                 .map_err(|e| report.body_error(e.node, e.message))?;
-            let contract = if facts.uses_source_copy() {
+            let mut contract = if facts.uses_source_copy() {
                 super::original_contexts::Original::prepare_imported(facts, body, row.contract())
                     .map_err(|e| report.body_error(source, e))?
             } else {
@@ -897,6 +897,14 @@ impl Engine {
                 }
                 contract
             };
+            let proof = body::transported_originals::prove_fields(
+                facts,
+                body,
+                &contract,
+                &row.template().environment,
+            )
+            .map_err(|e| report.body_error(source, e))?;
+            contract.proofs.extend(proof);
             contract
                 .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
                 .map_err(|e| report.body_error(source, e))?;
@@ -1164,6 +1172,21 @@ impl Engine {
                 body::copy_requirements::prepare(facts, body, contract)
             };
             result.map_err(|e| report.body_error(body.source, e))?;
+        }
+        if input.purpose == ProofPurpose::Original && body.source.source().is_none() {
+            let proof = body::transported_originals::prove_fields(
+                facts,
+                body,
+                prepared.as_ref().unwrap_or(input.contract),
+                input.parameters,
+            )
+            .map_err(|e| report.body_error(body.source, e))?;
+            if let Some(proof) = proof {
+                prepared
+                    .get_or_insert_with(|| input.contract.clone())
+                    .proofs
+                    .push(proof);
+            }
         }
         let mut contract = prepared.take().map_or(
             std::borrow::Cow::Borrowed(input.contract),

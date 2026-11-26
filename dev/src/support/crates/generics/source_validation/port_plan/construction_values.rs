@@ -378,6 +378,7 @@ impl Builder<'_, '_, '_> {
         ordinal: u32,
         work: &mut Work,
     ) -> Result<(), &'static str> {
+        const FIELD: &str = "source projected field type differs after actual nominal substitution";
         let base = self.node(original, base, work)?;
         // A variant owner selects a downcast field of its enum base.
         let variant = matches!(
@@ -406,10 +407,25 @@ impl Builder<'_, '_, '_> {
             work,
         )?;
         let actual = self.node(original, result, work)?;
-        if actual != expected {
-            return Err("source projected field type differs after actual nominal substitution");
+        if actual == expected {
+            return Ok(());
         }
-        Ok(())
+        if !self.domains.declaration_policies {
+            return Err(FIELD);
+        }
+        // The consumer proves type equality for the substituted declaration,
+        // including normalization and any resulting lifetime obligations.
+        self.arena
+            .same(
+                self.domains,
+                expected,
+                actual,
+                super::matching::Opening::Relation {
+                    body: original.body,
+                },
+                work,
+            )
+            .map_err(|_| FIELD)
     }
     pub(super) fn union_projection(
         &mut self,
