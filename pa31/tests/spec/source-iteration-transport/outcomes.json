@@ -69,7 +69,7 @@
     "wrong_item_bound": "source last has an extra method premise"
   },
   "count": {
-    "features": ["pattern_types", "const_destruct", "const_closures", "const_precise_live_drops", "unboxed_closures"],
+    "features": ["pattern_types", "const_destruct", "const_closures", "const_precise_live_drops", "unboxed_closures", "stmt_expr_attributes"],
     "provider_extra": ["fold-callables.rs", "count-add.rs"],
     "provider_member": "count-member.rs",
     "provider_anchor": "    #[lang=\"next\"]",

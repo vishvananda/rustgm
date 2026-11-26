@@ -8,6 +8,7 @@ mod consteval_defaults;
 mod dependencies;
 mod effect_requirements;
 pub(crate) use consteval_defaults::check_const_default;
+pub(crate) use effect_requirements::check_closed_const_closure;
 mod observed_constants;
 mod proven_methods;
 mod reflected_constants;

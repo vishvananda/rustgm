@@ -1,7 +1,4 @@
-    // Reduced from the pinned core/src/iter/traits/iterator.rs; core's own
-    // non-capturing `const |accum, _elem| accum + 1` callback remains separate
-    // closure-body transport work, so this fixture exercises the count
-    // reduction header and const Add companion with a nested const fn helper.
+    // Reduced from the pinned core/src/iter/traits/iterator.rs.
     fn fold<B, F>(mut self, init: B, mut f: F) -> B
     where
         Self: Sized + [const] Destruct,
@@ -19,13 +16,9 @@
         Self: Sized + [const] Destruct,
         Self::Item: [const] Destruct,
     {
-        #[inline]
-        const fn add_one<T>(accum: usize, _: T) -> usize
-        where
-            T: [const] Destruct,
-        {
-            accum + 1
-        }
-
-        self.fold(0, add_one)
+        self.fold(
+            0,
+            #[rustc_inherit_overflow_checks]
+            const |accum, _elem| accum + 1,
+        )
     }

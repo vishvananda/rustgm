@@ -42,6 +42,12 @@ impl Engine {
             return Ok(true);
         }
         if origin.source().is_none() {
+            if body::constants::scoped_const_closure(facts, source.owner)
+                .map_err(|e| report.body_error(origin, e))?
+            {
+                crate::sema::dispatch::check_closed_const_closure(facts, instance)
+                    .map_err(|e| report.body_error(origin, e))?;
+            }
             self.imported_closure_body(report, facts, instance, identity, origin)?;
             return Ok(true);
         }

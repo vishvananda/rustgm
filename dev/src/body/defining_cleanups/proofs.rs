@@ -342,36 +342,62 @@ fn closure_definition(
     work: &mut Work,
 ) -> Result<super::Definition, &'static str> {
     work.charge(8)?;
-    let source = body
-        .source
-        .source()
-        .ok_or("const closure cleanup requires its actual source")?;
-    let closure = facts
-        .closures
-        .get(source)
-        .ok_or("const closure cleanup lost its actual source closure")?;
-    let expected = facts
-        .generics
-        .builtin_requirements
-        .get(&source)
-        .and_then(|inputs| inputs.environment.as_ref())
-        .ok_or("const closure cleanup lost its actual defining environment")?;
-    let execution = closure
-        .execution
-        .map_or(closure.signature, |execution| execution.signature);
-    if closure.constant.is_none()
+    let crate::body::ir::BodyKey::Closure(identity) = body.key() else {
+        return Err("const closure cleanup requires its actual closure identity");
+    };
+    let (owner, signature, execution, same_environment, constant, precise_imported_drops) =
+        if let Some(source) = body.source.source() {
+            let closure = facts
+                .closures
+                .get(source)
+                .ok_or("const closure cleanup lost its actual source closure")?;
+            let expected = facts
+                .generics
+                .builtin_requirements
+                .get(&source)
+                .and_then(|inputs| inputs.environment.as_ref())
+                .ok_or("const closure cleanup lost its actual defining environment")?;
+            (
+                closure.identity,
+                closure.signature,
+                closure.execution.map(|execution| execution.signature),
+                Arc::ptr_eq(expected, environment),
+                closure.constant.is_some(),
+                false,
+            )
+        } else {
+            let view =
+                crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)?
+                    .ok_or("const closure cleanup lost its actual imported original")?;
+            work.charge(0)?;
+            if view.source()? != body.source {
+                return Err("const closure cleanup changed its actual imported body");
+            }
+            let (owner, signature, execution) = view
+                .closure_owner()
+                .ok_or("const closure cleanup lost its actual imported closure")?;
+            (
+                owner,
+                signature,
+                execution,
+                Arc::ptr_eq(view.environment()?, environment),
+                view.const_context(),
+                view.raw().precise_live_drops,
+            )
+        };
+    if !constant
         || !body.const_context
-        || body.key() != crate::body::ir::BodyKey::Closure(closure.identity)
-        || body.owner.signatures() != Some((closure.signature, execution))
-        || !Arc::ptr_eq(expected, environment)
+        || owner != identity
+        || body.owner.signatures() != Some((signature, execution.unwrap_or(signature)))
+        || !same_environment
     {
         return Err("active const cleanup changed its actual closure or defining environment");
     }
     Ok(super::Definition {
-        body: super::DefiningBody::Closure(closure.identity),
+        body: super::DefiningBody::Closure(identity),
         context: super::FunctionContext::ConstFunction,
         source: body.source,
-        signature: closure.signature,
-        precise_imported_drops: false,
+        signature,
+        precise_imported_drops,
     })
 }

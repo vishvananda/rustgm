@@ -4,11 +4,53 @@ use crate::{
     sema::compiler_items::const_payments::{closed_clause, open_closed_clause},
     support::{call_traits::CallTrait, constness::Constness},
     types::{
-        Kind,
+        ItemId, Kind,
+        arguments::Argument,
         instance::Instance,
-        parameters::{clauses::Clause, predicates::Bound},
+        parameters::{
+            clauses::Clause,
+            predicates::{Bound, Predicate},
+        },
+        traits::Application,
     },
 };
+
+/// Pay the selected closure's own defining const requirements before it can
+/// receive an executable interpretation context.
+pub(crate) fn check_closed_const_closure(
+    facts: &mut Declarations,
+    instance: Instance,
+) -> Result<(), String> {
+    let ty = instance.ty();
+    let Some(Kind::Closure { signature, .. }) = facts.types.kind(ty) else {
+        return Err("const closure proof requires its actual complete Self".into());
+    };
+    let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
+        return Err("const closure proof requires its actual signature".into());
+    };
+    let role = crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
+    let tuple = facts.types.intern(Kind::Tuple(parameters))?;
+    let arguments = facts.types.intern_arguments(&[Argument::Type(tuple)])?;
+    let application = facts.types.intern_trait_application(Application {
+        item: ItemId(role.0),
+        arguments,
+    })?;
+    let mut dispatch = Dispatcher::new(0, 1)?;
+    let goal = Predicate {
+        ty,
+        bound: Bound::ConstTrait(application),
+    };
+    let evidence = dispatch.source_evidence(facts, goal, None);
+    facts.charge_caller_inputs(dispatch.context.steps, 0)?;
+    let evidence = evidence.map_err(super::Failure::message)?;
+    if dispatch.provisional_size
+        || !evidence.proof.is_empty()
+        || !matches!(evidence.source, super::selection::Source::Callable { .. })
+    {
+        return Err("const closure defining requirements need a closed callable proof".into());
+    }
+    Ok(())
+}
 
 pub(super) fn check(
     dispatch: &mut Dispatcher,

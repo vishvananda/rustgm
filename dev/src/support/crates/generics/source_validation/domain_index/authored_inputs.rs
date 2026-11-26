@@ -183,6 +183,21 @@ impl DomainIndex<'_, '_> {
             {
                 Ok(())
             }
+            (s::EnvironmentOrigin::Declaration(owner), Some(_))
+                if self.declaration_policies
+                    && owner == context.owner
+                    && context.body.is_some_and(|body| {
+                        self.headers
+                            .rows()
+                            .body_owners
+                            .get(body.0 as usize)
+                            .is_some_and(|row| {
+                                row.kind == crate::support::crates::owner_catalog::BodyKind::Closure
+                            })
+                    }) =>
+            {
+                Ok(())
+            }
             (_, Some(_)) => {
                 Err("source provided default lost its actual defining environment domain")
             }

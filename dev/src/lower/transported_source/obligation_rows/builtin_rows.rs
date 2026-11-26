@@ -97,6 +97,18 @@ pub(super) fn body_environment(
     if anonymous_contract(facts, cfg) {
         return Ok(s::EnvironmentOrigin::Contract);
     }
+    // A closure retains its own environment even when its declaration
+    // address is the enclosing const-trait default.
+    if matches!(cfg.owner, super::ir::Owner::Closure { .. })
+        && let Some(source) = cfg.source.source()
+        && let Some(environment) = facts
+            .generics
+            .builtin_requirements
+            .get(&source)
+            .and_then(|input| input.environment.as_ref())
+    {
+        return translated_environment(stage, facts, definition, Some(source), Some(environment));
+    }
     match facts.generics.body_environment(definition) {
         Some(environment) => {
             translated_environment(stage, facts, definition, None, Some(environment))

@@ -226,6 +226,12 @@ fn closure_inputs(
         .and_then(|function| function.body)
     {
         Some(source) => facts.default_self_clause(owner, source)?,
+        None if facts.imported_const_default(owner)? => {
+            let (_, premise) = facts
+                .imported_default_premise(owner)?
+                .ok_or("imported const closure lost its defining trait")?;
+            Some(premise)
+        }
         None => None,
     };
     Ok((owner, fold, premise))

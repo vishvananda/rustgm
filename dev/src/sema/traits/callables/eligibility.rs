@@ -99,7 +99,7 @@ fn const_trait_default(facts: &Declarations, owner: DefId) -> Result<bool, &'sta
         .and_then(|&index| facts.functions.get(index))
         .and_then(|function| function.body)
     else {
-        return Ok(false);
+        return facts.imported_const_default(owner);
     };
     Ok(matches!(
         facts.function_context(owner, body)?,

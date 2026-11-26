@@ -3,7 +3,9 @@ mod demands;
 mod extended_borrows;
 mod invocations;
 mod qualified_invocations;
-pub(crate) use qualified_invocations::source as const_closure_source;
+pub(crate) use qualified_invocations::{
+    scoped as scoped_const_closure, source as const_closure_source,
+};
 mod provided_calls;
 use super::ir::{Place, Program, Rvalue};
 use crate::support::hash::HashSet;

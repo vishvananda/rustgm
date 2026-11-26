@@ -153,22 +153,41 @@ pub(crate) fn source(
     {
         return Err("non-const closures cannot be called in a const context");
     }
-    if let Some(owner) = body.owner {
-        if facts.generics.parameters_in_scope(owner).next().is_some() {
-            return Err("const closure defining obligations require a scoped continuation");
-        }
-        if (facts.function_indices.contains_key(&owner)
-            || facts.constant_functions.contains(&owner))
-            && facts
-                .source_bindings
-                .as_deref()
-                .ok_or("const closure source catalog is absent")?
-                .requires_const_payment(owner)?
-        {
-            return Err("const closure defining obligations require a scoped continuation");
-        }
+    if scoped(facts, body.owner)?
+        && !(facts
+            .closures
+            .origin(identity)
+            .is_some_and(|origin| origin.source().is_none())
+            && facts.types.contains_parameters(instance.ty()) == Some(false)
+            && facts.types.contains_projections(instance.ty()) == Some(false))
+    {
+        return Err("const closure defining obligations require a scoped continuation");
     }
     Ok(body)
+}
+
+/// Imported closed instances can proceed to the ordinary const selection when
+/// reached. The execution path still proves their defining obligations.
+pub(crate) fn scoped(
+    facts: &Declarations,
+    owner: Option<crate::resolve::model::DefId>,
+) -> Result<bool, &'static str> {
+    let Some(owner) = owner else {
+        return Ok(false);
+    };
+    if facts.generics.parameters_in_scope(owner).next().is_some()
+        || facts.imported_const_default(owner)?
+    {
+        return Ok(true);
+    }
+    if facts.function_indices.contains_key(&owner) || facts.constant_functions.contains(&owner) {
+        let catalog = facts
+            .source_bindings
+            .as_deref()
+            .ok_or("const closure source catalog is absent")?;
+        return catalog.requires_const_payment(owner);
+    }
+    Ok(false)
 }
 
 fn source_site(
