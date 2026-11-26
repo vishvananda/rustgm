@@ -1185,3 +1185,4 @@ impl Queries<'_> {
 }
 
 mod interchange_arithmetic;
+mod interchange_casts;

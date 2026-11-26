@@ -102,12 +102,26 @@ fn scalar_cast_domains_rederive_kind_and_reject_nonprimitive_and_invalid_pairs()
         Scalar::Isize,
         Scalar::F32,
         Scalar::F64,
-    ];
-    for from in scalars {
-        for to in scalars {
-            let types = [s::Type::Scalar(from), s::Type::Scalar(to)];
+    ]
+    .map(s::ScalarType::Primitive)
+    .into_iter()
+    .chain([s::ScalarType::F16, s::ScalarType::F128])
+    .collect::<Vec<_>>();
+    let recipe = |ty| match ty {
+        s::ScalarType::Primitive(value) => s::Type::Scalar(value),
+        s::ScalarType::F16 => s::Type::F16,
+        s::ScalarType::F128 => s::Type::F128,
+    };
+    for &from in &scalars {
+        for &to in &scalars {
+            let types = [recipe(from), recipe(to)];
             let wire = value.scalar_cast_types(&original, &types);
-            let ordinary = crate::sema::crates::scalar_cast(from, to);
+            let ordinary = match (from, to) {
+                (s::ScalarType::Primitive(from), s::ScalarType::Primitive(to)) => {
+                    crate::sema::crates::scalar_cast(from, to)
+                }
+                _ => crate::sema::crates::source_scalar_cast(from, to),
+            };
             assert_eq!(wire.is_ok(), ordinary.is_some(), "{from:?} to {to:?}");
             if let Ok(pair) = wire {
                 assert_eq!(pair, (from, to));
@@ -117,7 +131,10 @@ fn scalar_cast_domains_rederive_kind_and_reject_nonprimitive_and_invalid_pairs()
     let types = [s::Type::Scalar(Scalar::F32), s::Type::Scalar(Scalar::U8)];
     assert_eq!(
         value.scalar_cast_types(&original, &types)?,
-        (Scalar::F32, Scalar::U8)
+        (
+            s::ScalarType::Primitive(Scalar::F32),
+            s::ScalarType::Primitive(Scalar::U8)
+        )
     );
     assert!(value.scalar_cast_types(&original, &types[..1]).is_err());
     let missing = s::Value {

@@ -82,7 +82,7 @@ fn binary_bits(
     };
     Ok(sign | magnitude)
 }
-fn significand(bits: u128, format: Format) -> Result<(u128, i64), Failure> {
+pub(super) fn significand(bits: u128, format: Format) -> Result<(u128, i64), Failure> {
     let fraction = format.precision - 1;
     let exponent =
         i64::try_from(bits >> fraction).map_err(|_| "wide arithmetic exponent overflow")?;

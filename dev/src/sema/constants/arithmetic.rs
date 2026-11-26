@@ -311,9 +311,7 @@ pub(super) fn cast(
     if matches!(source, Primitive::F16 | Primitive::F128)
         || matches!(target, Primitive::F16 | Primitive::F128)
     {
-        return Err(Failure::Invalid(
-            "wide floating constant casts are not implemented",
-        ));
+        return super::interchange_casts::cast(kind, source, target, value);
     }
     match (kind, value) {
         (Cast::IntegerToInteger, Scalar::Integer(value)) => {

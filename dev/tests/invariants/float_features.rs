@@ -60,14 +60,11 @@ fn active_wide_features_and_inactive_token_opponents_use_real_authority() -> Tes
 #[test]
 fn wide_values_keep_exact_shapes_and_unsupported_later_operations_closed() -> TestResult {
     checked("#![feature(f16,f128)] const A:f16=-0.0_f16; const B:f128=1.0_f128;")?;
+    checked("#![feature(f128)] const A:f32=1.0_f128 as f32;")?;
     for (source, message) in [
         (
             "#![feature(f128)] const A:f128=1.0_f128+2.0_f128;",
             "wide floating constant arithmetic",
-        ),
-        (
-            "#![feature(f128)] const A:f32=1.0_f128 as f32;",
-            "wide floating constant casts",
         ),
         (
             "#![feature(f128)] const A:f128=1e99999_f128;",

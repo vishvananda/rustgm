@@ -567,11 +567,11 @@ fn cast(
             _ => {}
         }
     }
-    let from = crate::sema::crates::export_scalar(facts, input.ty)
+    let from = crate::sema::crates::source_scalar_type(facts, input.ty, declaration_policies)
         .map_err(|_| "source cast operand requires a closed primitive type")?;
-    let to = crate::sema::crates::export_scalar(facts, result)
+    let to = crate::sema::crates::source_scalar_type(facts, result, declaration_policies)
         .map_err(|_| "source cast result requires a closed primitive type")?;
-    if crate::sema::crates::scalar_cast(from, to) != Some(kind) {
+    if crate::sema::crates::source_scalar_cast(from, to) != Some(kind) {
         return Err("source scalar cast changed its actual primitive conversion");
     }
     Ok(s::ValueKind::ScalarCast(operand.0))

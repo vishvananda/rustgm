@@ -451,7 +451,7 @@ fn cast(
         return Err("source cast reconstruction belongs to another operation");
     };
     let (from, to) = value.scalar_cast_types(view.raw(), &view.rows().types)?;
-    let kind = crate::sema::crates::scalar_cast(from, to)
+    let kind = crate::sema::crates::source_scalar_cast(from, to)
         .ok_or("source scalar cast has no ordinary primitive conversion")?;
     Ok((kind, ValueId(operand)))
 }

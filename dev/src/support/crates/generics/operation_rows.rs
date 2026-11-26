@@ -278,6 +278,23 @@ pub enum OperandForm {
     Right,
     Both,
 }
+/// Arithmetic type classes extend source rows without changing legacy scalar tags.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ScalarType {
+    Primitive(crate::support::crates::Scalar),
+    F16,
+    F128,
+}
+impl ScalarType {
+    fn of(recipe: &super::Type) -> Option<Self> {
+        Some(match *recipe {
+            super::Type::Scalar(value) => Self::Primitive(value),
+            super::Type::F16 => Self::F16,
+            super::Type::F128 => Self::F128,
+            _ => return None,
+        })
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Value {
     pub ty: TypeRef,
@@ -288,13 +305,7 @@ impl Value {
         self,
         original: &Original,
         types: &[super::Type],
-    ) -> Result<
-        (
-            crate::support::crates::Scalar,
-            crate::support::crates::Scalar,
-        ),
-        &'static str,
-    > {
+    ) -> Result<(ScalarType, ScalarType), &'static str> {
         use crate::support::crates::Scalar;
         let ValueKind::ScalarCast(operand) = self.kind else {
             return Err("source cast request belongs to another value operation");
@@ -303,17 +314,26 @@ impl Value {
             .values
             .get(operand as usize)
             .ok_or("source scalar cast lost its actual operand")?;
-        let (Some(&super::Type::Scalar(from)), Some(&super::Type::Scalar(to))) = (
-            types.get(operand.ty.0 as usize),
-            types.get(self.ty.0 as usize),
+        let (Some(from), Some(to)) = (
+            types.get(operand.ty.0 as usize).and_then(ScalarType::of),
+            types.get(self.ty.0 as usize).and_then(ScalarType::of),
         ) else {
             return Err("source scalar cast requires actual closed primitive types");
         };
-        let number = |ty| !matches!(ty, Scalar::Unit | Scalar::Bool | Scalar::Char);
-        let integer = |ty| number(ty) && !matches!(ty, Scalar::F32 | Scalar::F64);
+        let number = |ty| {
+            !matches!(
+                ty,
+                ScalarType::Primitive(Scalar::Unit | Scalar::Bool | Scalar::Char)
+            )
+        };
+        let integer = |ty| {
+            matches!(ty, ScalarType::Primitive(value)
+            if number(ty) && !matches!(value, Scalar::F32 | Scalar::F64))
+        };
         if !(number(from) && number(to)
-            || matches!(from, Scalar::Bool | Scalar::Char) && integer(to)
-            || from == Scalar::U8 && to == Scalar::Char)
+            || matches!(from, ScalarType::Primitive(Scalar::Bool | Scalar::Char)) && integer(to)
+            || from == ScalarType::Primitive(Scalar::U8)
+                && to == ScalarType::Primitive(Scalar::Char))
         {
             return Err("source scalar cast has an invalid primitive conversion");
         }

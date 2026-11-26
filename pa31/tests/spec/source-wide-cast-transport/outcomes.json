@@ -1,0 +1,34 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": [
+    "auto_traits",
+    "const_destruct",
+    "intrinsics",
+    "f16",
+    "f128"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c",
+    "runtime_client.rs",
+    "runtime_observe.c"
+  ],
+  "stdout": "3fc00000 3e70000000000000 3c00 3c01 3f800001 3ff0000000000000 0000000000000000 3fff800000000000 0000000000000000 3fff800000000000 3e00 -3 0 255 6800 0000000000000000 407e000000000000 0000000000000000 8000000000000000 3fc00000 2147483647 -2147483648 0 fc00 0000000000000000 8000000000000000 ffffffffffffffff ffffffffffffffff 0000 0001 be00 0000000000000000 8000000000000000\n",
+  "older_profile_cfg": "older_profile",
+  "older_profile": "source scalar type is outside the supported profile",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "cannot cast",
+    "rustgm": "invalid scalar cast"
+  },
+  "pending_runtime": {
+    "path": "runtime_client.rs",
+    "observer": "runtime_observe.c",
+    "expected_exit_status": 0,
+    "stdout": "3fc00000\n",
+    "state": "unqualified",
+    "last_observation": "wide floating runtime lowering is not implemented"
+  }
+}

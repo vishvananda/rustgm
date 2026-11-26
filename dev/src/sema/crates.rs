@@ -275,9 +275,40 @@ pub(super) const fn scalar(value: Scalar) -> TypeId {
     }
 }
 /// Re-derive a transported closed primitive cast through the ordinary classifier.
+#[cfg(test)]
 pub(crate) fn scalar_cast(from: Scalar, to: Scalar) -> Option<super::model::Cast> {
     super::scalar::cast(scalar_primitive(from)?, scalar_primitive(to)?)
 }
+/// Source arithmetic admits wide IEEE types only in the declaration-policy profile.
+pub(crate) fn source_scalar_type(
+    facts: &Declarations,
+    ty: TypeId,
+    wide: bool,
+) -> Result<crate::support::crates::generics::source::ScalarType, &'static str> {
+    use crate::support::crates::generics::source::ScalarType;
+    match facts.types.kind(ty) {
+        Some(Type::Primitive(Primitive::F16)) if wide => Ok(ScalarType::F16),
+        Some(Type::Primitive(Primitive::F128)) if wide => Ok(ScalarType::F128),
+        _ => export_scalar(facts, ty)
+            .map(ScalarType::Primitive)
+            .map_err(|_| "source arithmetic type requires a closed primitive"),
+    }
+}
+
+/// The ordinary frontend classifier decides the operation after typed row admission.
+pub(crate) fn source_scalar_cast(
+    from: crate::support::crates::generics::source::ScalarType,
+    to: crate::support::crates::generics::source::ScalarType,
+) -> Option<super::model::Cast> {
+    use crate::support::crates::generics::source::ScalarType;
+    let primitive = |ty| match ty {
+        ScalarType::Primitive(value) => scalar_primitive(value),
+        ScalarType::F16 => Some(Primitive::F16),
+        ScalarType::F128 => Some(Primitive::F128),
+    };
+    super::scalar::cast(primitive(from)?, primitive(to)?)
+}
+
 /// A transported pointer cast retains the pointee and can only weaken access.
 pub(crate) fn transportable_pointer_cast(
     types: &crate::types::Store,

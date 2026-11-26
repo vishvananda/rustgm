@@ -1985,3 +1985,13 @@ result, a block-rooted control, an unnamed compile-time closure check and a
 forwarder. The borrowed result must still reject a local reference escaping the
 client. Version thirteen refuses pointer constants; the v14 metadata does not
 include a nested closure's allocations in its initializer's allocation order.
+
+`source-wide-cast-transport` retains `f16`/`f128` numeric conversion kinds in
+version fourteen without changing legacy scalar or cast tags. Thirty-three independent
+constant-evaluated native integer observations cover float-width conversions,
+round-to-even at normal/subnormal boundaries, direct binary128-to-binary32
+rounding, integer limits, infinities, NaN-to-integer zero, signed conversion and
+generic functions. Invalid float-to-bool casts reject in both compilers and
+version thirteen refuses wide type rows. A separate dynamic runtime program is
+still an accepting, unqualified case in `pending_runtime`; constant evaluation
+does not close the native wide-lowering requirement.
