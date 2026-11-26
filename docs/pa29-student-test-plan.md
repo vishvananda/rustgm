@@ -12,7 +12,7 @@ with the provider's objects. PA32 uses this same path for pinned `core`.
 | `generic-transport` | Checked generic templates, including private helper bodies, traits and associated types, callable values, const expressions, regions, and the context that owns each declaration and body. Clients instantiate and evaluate them after reload. |
 
 1. Use all four unit manifests as the baseline. The current drafts contain
-   261 cases. Run their text oracles and independent Rust and native checks on
+   262 cases. Run their text oracles and independent Rust and native checks on
    one immutable compiler. Review disagreements at the first diagnostic or
    failed observation.
 2. Recover the ordinary Rust cases declared in
@@ -89,7 +89,7 @@ as explicit inputs to this remapping. Source-specific permissions retain their
 actual owner and provenance. Preserve the earlier wire profiles while adding
 coverage for the common model.
 
-The current student export passes all 261 cases. Independent Rust and native
+The current student export passes all 262 cases. Independent Rust and native
 checks pass across the four components. The initializer-scope regression
 includes native observations and separate rejections for a hidden function
 and type.
@@ -114,8 +114,8 @@ and type.
 | PA31 | Qualified. Compile methods whose `Self` captures a lifetime and whose `Pin<&mut Self>` or `Pin<&Self>` receiver introduces a separate borrow. A fresh native client reads through both. |
 | PA31 | Qualified. A fresh client instantiates a const generic function that calls a private fixed-arity C-ABI definition with a record. It exercises the call at compile time and in native code. PA30 owns the C calling convention. |
 | PA29 | Qualified. Compile a trait implementation with an elided lifetime and a const argument in `Self`. In a fresh client, call the method with two distinct const instantiations and observe their different results. |
-| PA29 | Open. An ordinary provider with a runtime closure now publishes. The fresh bootstrap client still needs to reconstruct the call operator using its own bindings. |
+| PA29 | Qualified. A fresh bootstrap client calls an ordinary provider's shared, mutable and consuming closures. The compiler rechecks the remapped closure's input and result types and actual receiver permission. |
 | PA31 | Qualified. Import methods with two receiver reference layers. Fresh native clients check replacement of both shared and mutable inner references. |
 | PA31 | Qualified. A closure borrows its captured reference binding and mutates through it. The fresh source client observes the result after the unique immutable borrow is rebuilt. |
 | PA29 | Qualified. Two evaluated `const _` blocks each declare a struct and function with the same names. A fresh client observes their distinct behavior and reads values from a named constant and a static with their own nested declarations. Two independent clients reject attempts to use the hidden function or type through the crate. |
-| PA32 | The original build cleared the receiver and body operation checks. Publication reaches the combined work limit. A separately metered analysis run exposes a namespace validation error. The original artifact and all 18 fresh consumers remain open. |
+| PA32 | The original build cleared the receiver, body operation, and namespace checks. The next failure is a labelled universal alias in a quantified lifetime proof. The original artifact and all 18 fresh consumers remain open. |

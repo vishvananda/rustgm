@@ -1,18 +1,20 @@
 //! A transported call operator carries only its call trait, its caller-side
-//! signature and its arguments. Every consumer re-derives the callee from the
-//! receiver, re-proves the callee's own call-trait obligation in the original's
-//! environment and checks that the signature's result is that callee's
-//! declared `FnOnce::Output`. No provider selection or proof is trusted.
+//! signature and its arguments. Source-bound calls re-prove the callee's
+//! call-trait obligation and its declared `FnOnce::Output`. A bootstrap
+//! closure call uses the remapped closure's own receiver permission and
+//! callable signature.
 use crate::{
     body::{
         ir::{Body, Rvalue, ValueList},
         regions::Contract,
     },
-    sema::model::Declarations,
+    sema::{closures::matching, model::Declarations},
     support::call_traits::CallTrait,
     types::{
         GenericArgs, Kind, TypeId,
         arguments::Argument,
+        callable::Convention,
+        closure::CallKind,
         parameters::{
             clauses::Clause,
             environment::Environment,
@@ -104,7 +106,7 @@ fn proved(
         collect_goals(
             facts,
             (body, environment),
-            (kind, signature, arguments),
+            (kind, signature, arguments, value.ty),
             (&mut trait_goals, &mut equality_goals),
             work,
         )?;
@@ -157,7 +159,7 @@ fn prove_batch(
 fn collect_goals(
     facts: &mut Declarations,
     (body, environment): (&Body, &Environment),
-    (kind, signature, arguments): (CallTrait, TypeId, ValueList),
+    (kind, signature, arguments, value_type): (CallTrait, TypeId, ValueList, TypeId),
     (trait_goals, equality_goals): (&mut Vec<Predicate>, &mut Vec<Predicate>),
     work: &mut usize,
 ) -> Result<(), &'static str> {
@@ -190,14 +192,17 @@ fn collect_goals(
     let inputs = facts
         .types
         .list(parameters)
-        .ok_or("source call operator lost its signature inputs")?
-        .to_vec();
+        .ok_or("source call operator lost its signature inputs")?;
     if inputs.len() != (arguments.end - arguments.start - 1) as usize {
         return Err("source call operator changed its actual untupled inputs");
     }
+    if facts.source_bindings.is_none() {
+        bootstrap_operands(body, arguments, inputs, (value_type, result), work)?;
+        return bootstrap_closure(facts, callee, signature, kind, work);
+    }
     let callable = Callable {
         callee,
-        inputs,
+        inputs: inputs.to_vec(),
         once: crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?,
         output: crate::sema::compiler_items::callable_output_role(facts)?,
     };
@@ -214,6 +219,70 @@ fn collect_goals(
     });
     if let Some(equality) = equality {
         equality_goals.push(equality);
+    }
+    Ok(())
+}
+
+fn bootstrap_operands(
+    body: &Body,
+    arguments: ValueList,
+    parameters: &[TypeId],
+    (value, result): (TypeId, TypeId),
+    work: &mut usize,
+) -> Result<(), &'static str> {
+    let actual = body
+        .arguments
+        .get((arguments.start as usize + 1)..arguments.end as usize)
+        .ok_or("bootstrap closure call lost its actual operands")?;
+    *work = work.saturating_add(actual.len());
+    if value != result
+        || actual.iter().zip(parameters).any(|(argument, &ty)| {
+            body.values
+                .get(argument.0 as usize)
+                .is_none_or(|arg| arg.ty != ty)
+        })
+    {
+        return Err("bootstrap closure call changed its actual operand or result type");
+    }
+    Ok(())
+}
+
+fn bootstrap_closure(
+    facts: &mut Declarations,
+    callee: TypeId,
+    signature: TypeId,
+    kind: CallTrait,
+    work: &mut usize,
+) -> Result<(), &'static str> {
+    let Some(Kind::Closure {
+        identity,
+        signature: declared,
+        ..
+    }) = facts.types.kind(callee)
+    else {
+        return Err("bootstrap call operator requires its actual closure receiver");
+    };
+    if facts.types.closure_kind(identity) != Some(CallKind::from_trait(kind)) {
+        return Err("bootstrap closure call changed its actual receiver permission");
+    }
+    let Some(Kind::Function {
+        bound_regions,
+        unsafe_: false,
+        convention: Convention::RUST,
+        ..
+    }) = facts.types.kind(declared)
+    else {
+        return Err("bootstrap closure lost its actual safe Rust signature");
+    };
+    if declared == signature {
+        return Ok(());
+    }
+    matching::prepare_heads(facts, declared, signature)?;
+    let (bindings, steps) =
+        matching::signature_bindings(&facts.types, declared, bound_regions, signature, 0)?;
+    *work = work.saturating_add(steps);
+    if !bindings.equalities.is_empty() {
+        return Err("bootstrap closure signature requires its regional proof");
     }
     Ok(())
 }
