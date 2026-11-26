@@ -184,7 +184,9 @@
     "tests/spec/generic-contracts/reject-escape.rs",
     "tests/spec/generic-contracts/reject-array.rs",
     "tests/spec/generic-contracts/pass-collisions.rs",
-    "tests/spec/generic-contracts/reject-foreign-trait.rs"
+    "tests/spec/generic-contracts/reject-foreign-trait.rs",
+    "tests/spec/evaluated-array-count/provider.rs",
+    "tests/spec/evaluated-array-count/client.rs"
   ],
   "cases": [
     {
@@ -6634,6 +6636,51 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/evaluated-array-count/client.rs",
+      "exit_status": 0,
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_array_count_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/evaluated-array-count/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_array_count",
+          "externs": {},
+          "source_core": true,
+          "source_profile": "module-body-operations-v14",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "source_client": "base",
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/evaluated-array-count/observe.c"
+      },
+      "work_units": [
+        "generic-transport"
+      ],
+      "input": "file"
     }
   ]
 }

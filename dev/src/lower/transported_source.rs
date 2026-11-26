@@ -677,6 +677,10 @@ impl Source {
             if self.stage.has_anonymous(source) {
                 return Ok(false);
             }
+            // A checked array length travels in its canonical array type.
+            if facts.array_lengths.contains_key(&source) {
+                return Ok(true);
+            }
             if facts
                 .inline_constants
                 .as_deref()

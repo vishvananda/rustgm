@@ -1,0 +1,13 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "profile": "module-body-operations-v14",
+  "client": {
+    "compile_status": 0,
+    "native_exit": 0,
+    "const_elements": [71, 71, 71],
+    "runtime_observations": [
+      {"input": 29, "elements": [29, 29, 29], "entry_result": 42},
+      {"input": 87, "elements": [87, 87, 87], "entry_result": 43}
+    ]
+  }
+}

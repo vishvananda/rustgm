@@ -16,7 +16,7 @@ while remaining unpublished until integration:
   `early-bound.rs` and `output-only.rs`), and `spec/foreign-value-metadata/`
   C-ABI callables, aggregates, extern statics, variadics, ABI/const-eval
   rejections, and corrupt version envelope.
-- `generic-transport` (`units/generic-transport.json`, 147 cases, 97 native
+- `generic-transport` (`units/generic-transport.json`, 158 cases, 103 native
   executables, 4 objects): 14 `module-bodies-v13` generic/body/const/nominal/
   callable/macro/guard transport packets (`language-roles`, `associated-results`,
   `callable-roles`, `enum-match`, `inherent-methods`, `const-methods`,
@@ -25,11 +25,13 @@ while remaining unpublished until integration:
   It also covers ordinary generic identity and private helper calls, a
   transitive generic re-export, and a v14 provider that combines nested inline
   consts, a generic borrow, a const array and dispatched trait calls.
+  `spec/evaluated-array-count/` checks a const function used in both an array
+  type and a repeat count. A fresh client evaluates the imported function
+  at compile time and runs it with two byte values.
 
-The [student test plan](../../docs/pa29-student-test-plan.md) retains the wider
-ordinary generic matrix. Its full provider, const and lifetime binders, trait
-dispatch, and generic relay body still need transport before their clients can
-be graded.
+The [student test plan](../../docs/pa29-student-test-plan.md) covers the
+ordinary provider, const and lifetime binders, trait dispatch, same-name
+providers, re-exports, and the relay's own checked bodies.
 
 Every other family here is unpublished.
 
