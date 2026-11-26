@@ -47,6 +47,7 @@ def main():
                                  "source-offset-intrinsic-transport", "source-slice-length-transport",
                                  "source-range-transport", "source-promotion-transport",
                                  "source-transmute-options-transport",
+                                 "source-transmute-trait-transport",
                                  "source-contract-helper-transport",
                                  "source-fn-pointer-transport", "source-receiver-transport",
                                  "source-poll-transport", "source-cstr-transport",

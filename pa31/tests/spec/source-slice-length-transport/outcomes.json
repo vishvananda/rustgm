@@ -22,7 +22,13 @@
       "marker": "// ORIGINAL_SLICE_LENGTH"
     }
   ],
+  "inputs": ["provider.rs", "client.rs", "reject-explicit-impl.rs", "observe.c"],
   "stdout": "3 5\n",
+  "restricted_client": {
+    "path": "reject-explicit-impl.rs",
+    "rustc": "explicit impls for the `Pointee` trait are not permitted",
+    "rustgm": "explicit implementation is prohibited by its source trait declaration"
+  },
   "older_profile": "source const/lifetime generic argument is not a type slot",
   "older_reader": "invalid source required/provided body tag"
 }

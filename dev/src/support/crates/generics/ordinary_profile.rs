@@ -306,8 +306,12 @@ fn trait_headers(
             require_unsize_header(header)?;
             continue;
         }
-        if let Some(restricted) = roles.restricted_trait(header.declaration) {
+        if let Some(restricted) = roles.restricted_trait(header.declaration, flags) {
             require_restricted_header(rows, header, restricted)?;
+            continue;
+        }
+        if roles.transmute == Some(header.declaration) {
+            require_transmute_header(header)?;
             continue;
         }
         if roles.no_drop == Some(header.declaration) {
@@ -352,30 +356,10 @@ fn trait_headers(
             );
         }
         let conversion = profile.conversions() && roles.conversion == Some(header.declaration);
-        let operator = roles.const_operator(header.declaration);
-        let range = roles
-            .range
-            .is_some_and(|family| family.owner == header.declaration);
         if conversion {
             conversions::trait_header(rows, headers, header, work)?;
         }
-        let drop = roles.drop == Some(header.declaration);
-        let protocol_trait = roles.try_traits.contains(&Some(header.declaration))
-            || roles.for_traits.contains(&Some(header.declaration))
-            || [roles.clone, roles.trivial_clone].contains(&Some(header.declaration));
-        // Version thirteen also admits an unsafe trait that is not auto.
-        if flags & TraitFlags::AUTO != 0
-            || flags & TraitFlags::UNSAFE != 0 && !roles.languages
-            || flags & TraitFlags::CONST != 0
-                && roles.definition_policies == 0
-                && !conversion
-                && !operator
-                && !range
-                && !drop
-                && !protocol_trait
-        {
-            return Err("source const/auto/unsafe traits require a wider explicit profile");
-        }
+        require_ordinary_trait_flags(roles, header.declaration, flags, conversion)?;
         // The sealed discriminator role owns its exact deny-impl and dyn
         // restrictions independently of the sizing declarations.
         if roles.discriminant != Some(header.declaration) {
@@ -384,6 +368,31 @@ fn trait_headers(
     }
     Ok(())
 }
+
+fn require_ordinary_trait_flags(
+    roles: &Bindings,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    flags: u16,
+    conversion: bool,
+) -> Result<(), &'static str> {
+    let const_role = conversion
+        || roles.const_operator(declaration)
+        || roles
+            .range
+            .is_some_and(|family| family.owner == declaration)
+        || roles.try_traits.contains(&Some(declaration))
+        || roles.for_traits.contains(&Some(declaration))
+        || [roles.drop, roles.clone, roles.trivial_clone].contains(&Some(declaration));
+    // Version thirteen also admits an unsafe trait that is not auto.
+    if flags & TraitFlags::AUTO != 0
+        || flags & TraitFlags::UNSAFE != 0 && !roles.languages
+        || flags & TraitFlags::CONST != 0 && roles.definition_policies == 0 && !const_role
+    {
+        return Err("source const/auto/unsafe traits require a wider explicit profile");
+    }
+    Ok(())
+}
+
 fn trait_profile_flags(
     header: &super::super::TraitHeader,
     roles: &Bindings,
@@ -460,6 +469,21 @@ fn require_no_drop_header(header: &super::super::TraitHeader) -> Result<(), &'st
         || header.written_supertraits.start != header.written_supertraits.end
     {
         return Err("source NoDrop requires its exact empty deny-impl declaration");
+    }
+    Ok(())
+}
+
+fn require_transmute_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {
+    let flags = TraitFlags::UNSAFE
+        | TraitFlags::DENY_IMPL
+        | TraitFlags::COINDUCTIVE
+        | TraitFlags::DYN_INCOMPATIBLE;
+    if header.flags.bits() != flags
+        || header.written_parameters != 2
+        || header.region_captures != 0
+        || header.written_supertraits.start != header.written_supertraits.end
+    {
+        return Err("source transmute_trait requires its actual restricted two-parameter trait");
     }
     Ok(())
 }
@@ -1105,6 +1129,8 @@ pub(super) struct Bindings {
     freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     no_drop: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     unsize: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    pointee: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    transmute: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     discriminant: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     fn_pointer: Option<crate::support::crates::owner_catalog::DeclarationRef>,
     field: Option<crate::support::crates::owner_catalog::DeclarationRef>,
@@ -1146,12 +1172,15 @@ impl Bindings {
     fn restricted_trait(
         &self,
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
+        flags: u16,
     ) -> Option<(u16, usize, usize)> {
         let restricted = TraitFlags::DENY_IMPL | TraitFlags::DYN_INCOMPATIBLE;
         if self.fn_pointer == Some(declaration) {
             Some((restricted, 1, 2))
         } else if self.field == Some(declaration) {
             Some((restricted | TraitFlags::UNSAFE, 3, 3))
+        } else if self.pointee == Some(declaration) && flags & TraitFlags::DENY_IMPL != 0 {
+            Some((restricted, 1, 1))
         } else {
             None
         }
@@ -1402,6 +1431,7 @@ fn body_operation_role(role: LangItem) -> bool {
         role,
         LangItem::TypeInfo
             | LangItem::TransmuteOpts
+            | LangItem::TransmuteTrait
             | LangItem::FnPtrTrait
             | LangItem::CStr
             | LangItem::Context
@@ -1633,16 +1663,13 @@ fn bindings_with_policy(
         comparisons: LangItem::COMPARISON_TRAITS.map(bound),
         pin: bound(LangItem::Pin),
         definition_policies: profile.definition_policies(),
-        markers: if languages {
-            [
-                bound(LangItem::Send),
-                bound(LangItem::Sync),
-                bound(LangItem::Unpin),
-                bound(LangItem::UnsafeUnpin),
-            ]
-        } else {
-            [None; 4]
-        },
+        markers: [
+            LangItem::Send,
+            LangItem::Sync,
+            LangItem::Unpin,
+            LangItem::UnsafeUnpin,
+        ]
+        .map(|role| bound(role).filter(|_| languages)),
         conversion: (matches!(
             profile,
             BindingProfile::Conversions
@@ -1658,6 +1685,8 @@ fn bindings_with_policy(
         destruct: marker_traits.then_some(bound(LangItem::Destruct)).flatten(),
         no_drop: bound(LangItem::BikeshedGuaranteedNoDrop),
         unsize: body_role(LangItem::Unsize),
+        pointee: body_role(LangItem::PointeeTrait),
+        transmute: body_role(LangItem::TransmuteTrait),
         discriminant: bound(LangItem::DiscriminantKind),
         fn_pointer: bound(LangItem::FnPtrTrait),
         field: bound(LangItem::Field),

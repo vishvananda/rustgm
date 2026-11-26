@@ -43,13 +43,17 @@ marker trait and native calls with provider and client implementations.
 record type through one imported generic wrapper.
 `spec/source-slice-length-transport/outcomes.json` runs the pinned slice
 `len` body in a constant and at runtime. Both calls cross the crate boundary
-and use the provider’s pointer metadata operation.
+and use the provider’s pointer metadata operation. A fresh client also
+checks that the provider's `Pointee` declaration prohibits explicit impls.
 `spec/source-range-transport/outcomes.json` checks half-open and inclusive
 range syntax in a fresh client using the provider’s pinned declarations.
 `spec/source-promotion-transport/outcomes.json` checks a static borrow of an
 imported promotable call and rejects the same borrow when the marker is absent.
 `spec/source-transmute-options-transport/outcomes.json` checks construction
 and field reads of the provider’s four Boolean `Assume` settings.
+`spec/source-transmute-trait-transport/outcomes.json` imports the restricted
+`TransmuteFrom` trait with its unsized source and typed `Assume` parameter.
+The native client observes the imported options.
 `spec/source-contract-helper-transport/outcomes.json` calls the pinned
 `build_check_ensures` in a fresh crate and rejects a predicate limited to
 `'static` borrows.

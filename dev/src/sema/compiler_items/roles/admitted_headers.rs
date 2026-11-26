@@ -4,7 +4,7 @@ use crate::{
     sema::{
         compiler_items::{
             headers::{Flags, Method, Trait, clone_method},
-            sizing,
+            sizing, transmutability,
         },
         crates,
     },
@@ -309,6 +309,10 @@ fn trait_headers(
                 tuple_marker(report, facts, declaration, steps)?;
                 complete.insert(role);
             }
+            LangItem::TransmuteTrait => {
+                transmutability::imported_trait(report, facts, catalog, declaration, steps)?;
+                complete.insert(role);
+            }
             LangItem::SliceLen => {
                 *steps = steps.saturating_add(4);
                 super::slice_len_header(facts, declaration)?;
@@ -412,9 +416,7 @@ fn check_nominal_role(
         LangItem::Context | LangItem::ResumeTy => {
             super::super::role_values::imported_resumable(facts, declaration, role, steps)
         }
-        LangItem::TransmuteOpts => {
-            super::super::transmutability::imported_options(facts, declaration, steps)
-        }
+        LangItem::TransmuteOpts => transmutability::imported_options(facts, declaration, steps),
         LangItem::PhantomData => {
             super::super::phantom::imported(facts, catalog, declaration, steps)
         }

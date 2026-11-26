@@ -20,7 +20,10 @@ impl Clone for usize{fn clone(&self)->Self{*self}}
 impl Copy for usize{}
 impl Clone for u8{fn clone(&self)->Self{*self}}
 impl Copy for u8{}
-#[lang="pointee_trait"]pub trait Pointee:PointeeSized{
+#[lang="pointee_trait"]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+pub trait Pointee:PointeeSized{
  #[lang="metadata_type"]type Metadata:Sized;
 }
 #[unstable(feature="core_intrinsics",issue="none")]

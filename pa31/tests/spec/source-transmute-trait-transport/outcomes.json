@@ -1,0 +1,7 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "features": ["adt_const_params", "transmutability"],
+  "foundation": "pa31/tests/spec/feature-bound-const-parameters/bound-trait.rs",
+  "prefix_marker": "use crate::marker::ConstParamTy_;",
+  "stdout": "41\n"
+}
