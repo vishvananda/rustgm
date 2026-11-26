@@ -840,6 +840,18 @@ pub struct CallerSiteColumns {
     pub files: Vec<Box<str>>,
     pub rows: Vec<CallerSiteRow>,
 }
+/// A checked immediate specialization parent. The substitution is in the
+/// child's declaration frame, in the parent's canonical argument order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SpecializationParent {
+    pub child: DeclarationRef,
+    pub parent: DeclarationRef,
+    pub arguments: Range,
+}
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SpecializationColumns {
+    pub parents: Vec<SpecializationParent>,
+}
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ColdColumns {
     pub associated_definitions: Vec<AssociatedDefinition>,
@@ -868,6 +880,7 @@ pub struct ColdColumns {
     pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
     pub caller_sites: Option<Box<CallerSiteColumns>>,
+    pub specialization: Option<Box<SpecializationColumns>>,
     pub closures: Option<Box<ClosureColumns>>,
     pub(crate) bodies: Option<std::sync::Arc<bodymap::Lookup>>,
 }
@@ -904,6 +917,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     },
     statics: None,
     caller_sites: None,
+    specialization: None,
     closures: None,
     bodies: None,
 };
@@ -941,6 +955,7 @@ impl ColdColumns {
             && self.opaques.is_empty()
             && self.statics.is_none()
             && self.caller_sites.is_none()
+            && self.specialization.is_none()
             && self.closures.is_none()
             && self.bodies.is_none()
     }

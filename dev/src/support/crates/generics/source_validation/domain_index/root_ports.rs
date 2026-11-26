@@ -191,6 +191,7 @@ impl DomainIndex<'_, '_> {
             self.requirements(context, header.inputs, work)?;
             self.bounds(context, header.region_bounds, work)?;
         }
+        self.specialization_roots(work)?;
         for header in &rows.associated_types {
             let context = Context {
                 owner: header.scope,

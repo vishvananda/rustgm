@@ -5,7 +5,9 @@ mod annotation_store;
 mod applicable_rules;
 mod argument_closure;
 mod candidate_order;
+mod exported_parents;
 mod forest_edges;
+pub(in crate::sema) use exported_parents::immediate_parent;
 mod forest_order;
 mod graph_closure;
 #[path = "specialization/overlap_attempts.rs"]

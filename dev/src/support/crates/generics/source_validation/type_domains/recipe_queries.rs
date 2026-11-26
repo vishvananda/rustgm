@@ -18,6 +18,39 @@ impl Types {
     ) -> Result<(), &'static str> {
         Self::check(headers, context, self.summary(ty, work)?, work)
     }
+    pub(in super::super) fn const_parameter_root(
+        &self,
+        headers: &HeaderIndex<'_>,
+        context: Context,
+        term: s::ConstRef,
+        formal: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let (actual, parameter) = super::node_rows::const_argument_domain(
+            headers,
+            self.declaration_policies,
+            term,
+            work,
+        )?;
+        let types = &headers.rows().types;
+        if s::const_formal_type(types, actual)? != s::const_formal_type(types, formal)? {
+            return Err("source const argument changed its parameter type");
+        }
+        if let Some(slot) = parameter {
+            Self::check(
+                headers,
+                context,
+                Summary {
+                    parameter: Some(slot),
+                    ..Summary::default()
+                },
+                work,
+            )
+        } else {
+            self.root(headers, context, actual, work)
+        }
+    }
+
     pub(in super::super) fn default_root(
         &self,
         headers: &HeaderIndex<'_>,

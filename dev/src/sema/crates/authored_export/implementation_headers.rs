@@ -1,5 +1,5 @@
 //! Canonical conformance keeps actual trait/member links and typed impl Self.
-use super::{Declarations, DefId, OwnerKind, Report, Stage, g, s};
+use super::{DeclarationRef, Declarations, DefId, OwnerKind, Report, Stage, g, s};
 use crate::{
     support::constness::Constness,
     types::{Kind, TypeId},
@@ -60,6 +60,16 @@ impl Stage {
             count = count
                 .checked_add(1)
                 .ok_or("source implementation count overflow")?;
+        }
+        if let Some(graph) = self
+            .rows
+            .cold
+            .as_mut()
+            .and_then(|cold| cold.specialization.as_deref_mut())
+        {
+            let count = graph.parents.len();
+            graph.parents.sort_unstable_by_key(|edge| edge.child.0);
+            self.charge(count.saturating_mul(count.max(1).ilog2() as usize + 1))?;
         }
         if self.body_nodes() {
             count = count
@@ -262,6 +272,7 @@ impl Stage {
             schema.captures,
         )?;
         let self_type = self.ty(facts, schema.self_type, context)?;
+        self.specialization_parent(facts, owner.self_definition, declaration, context)?;
         let (application, effect) = predicate
             .bound
             .trait_parts()
@@ -324,6 +335,38 @@ impl Stage {
         });
         Ok(())
     }
+    fn specialization_parent(
+        &mut self,
+        facts: &Declarations,
+        owner: DefId,
+        declaration: DeclarationRef,
+        context: super::Context,
+    ) -> Result<(), &'static str> {
+        if let Some((parent, arguments)) =
+            crate::sema::specialization::immediate_parent(facts, owner)?
+        {
+            if !self.declaration_policies() {
+                return Err("source specialization parent requires the extended profile");
+            }
+            let parent = self.declaration(parent)?;
+            let arguments = self.arguments(facts, arguments, context)?;
+            self.reserve(4 * size_of::<s::SpecializationParent>())?;
+            if self.rows.cold().specialization.is_none() {
+                self.reserve(size_of::<s::SpecializationColumns>())?;
+            }
+            self.cold()?
+                .specialization
+                .get_or_insert_with(Box::default)
+                .parents
+                .push(s::SpecializationParent {
+                    child: declaration,
+                    parent,
+                    arguments,
+                });
+        }
+        Ok(())
+    }
+
     /// Link each checked type definition to its declared result. Version
     /// fourteen also retains the member's own lifetime frame when present.
     fn implementation_results(

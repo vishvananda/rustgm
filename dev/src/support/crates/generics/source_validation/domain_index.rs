@@ -9,6 +9,8 @@ mod input_ports;
 mod root_ports;
 #[path = "domain_index/ssa_ports.rs"]
 mod snapshots;
+#[path = "domain_index/ancestry_arguments.rs"]
+mod specialization_roots;
 use super::{
     HeaderIndex, HeaderRef, Work,
     binder_domains::BinderIndex,

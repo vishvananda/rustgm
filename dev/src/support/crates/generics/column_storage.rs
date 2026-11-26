@@ -82,7 +82,8 @@ impl Columns {
             || !cold.opaques.is_empty()
             || cold.statics.is_some()
             || cold.caller_sites.is_some()
-            || cold.closures.is_some())
+            || cold.closures.is_some()
+            || cold.specialization.is_some())
         .then(|| {
             Box::new(super::super::ColdColumns {
                 associated_definitions: cold.associated_definitions.clone(),
@@ -106,6 +107,7 @@ impl Columns {
                 statics: cold.statics.clone(),
                 caller_sites: cold.caller_sites.clone(),
                 closures: cold.closures.clone(),
+                specialization: cold.specialization.clone(),
                 bodies: None,
             })
         })

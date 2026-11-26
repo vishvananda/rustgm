@@ -19,8 +19,8 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // Declared intrinsics and comptime functions add two cold Vecs.
 // Opaque result applications and declarations add two more cold Vecs.
 // Non-tracked body caller sites live out of line in one Option<Box<...>>.
-// Version-fourteen source closure columns live out of line in one Option<Box<...>>.
-const _: [(); 608] = [(); size_of::<s::ColdColumns>()];
+// Source closures and specialization parents each use an optional boxed column.
+const _: [(); 616] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
@@ -243,5 +243,31 @@ fn const_terms_reject_every_unknown_tag_by_name() -> Result {
             "term tag {tag}"
         );
     }
+    Ok(())
+}
+
+#[test]
+fn specialization_parent_wire_preserves_endpoints_and_argument_range() -> Result {
+    let parent = s::SpecializationParent {
+        child: DeclarationRef(5),
+        parent: DeclarationRef(2),
+        arguments: g::Range { start: 7, end: 9 },
+    };
+    let profile = s::Profile::Source2024ModuleBodyOperations;
+    let bytes = written(|out| {
+        out.u32(1)?;
+        id(out, parent.child.0)?;
+        id(out, parent.parent.0)?;
+        range(out, parent.arguments)
+    })?;
+    assert_eq!(
+        read(&bytes, profile, decode_specialization)?.parents,
+        [parent]
+    );
+    assert!(matches!(
+        read(&[0, 0, 0, 0], profile, decode_specialization),
+        Err("source specialization trailer requires checked parents")
+    ));
+    assert!(read(&bytes[..bytes.len() - 1], profile, decode_specialization).is_err());
     Ok(())
 }

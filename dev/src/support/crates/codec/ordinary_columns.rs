@@ -181,21 +181,7 @@ pub(super) fn encode_module_availability(
             } else if !opaques.declarations.is_empty() {
                 return Err("source opaque declaration lacks its canonical application recipe");
             }
-            let caller_sites = rows.cold().caller_sites.as_deref();
-            let closures = rows.closures().filter(|c| !c.headers.is_empty());
-            let anonymous = rows.closures().filter(|c| !c.anonymous.is_empty());
-            out.u8(u8::from(caller_sites.is_some())
-                | (u8::from(closures.is_some()) << 1)
-                | (u8::from(anonymous.is_some()) << 2))?;
-            if let Some(sites) = caller_sites {
-                encode_caller_sites(out, sites)?;
-            }
-            if let Some(closures) = closures {
-                child_closure_wire::encode(out, closures)?;
-            }
-            if let Some(anonymous) = anonymous {
-                child_closure_wire::encode_anonymous(out, anonymous)?;
-            }
+            encode_body_trailer(out, rows, profile)?;
         } else {
             compiler_wire::encode(out, rows)?;
         }
@@ -347,35 +333,7 @@ fn decode_availability_profile(
             if !rows.cold().opaques.applications.is_empty() {
                 compiler_wire::decode_opaque_declarations(&mut read, &mut rows)?;
             }
-            let body_flags = read.reader.u8()?;
-            if body_flags > 7 {
-                return Err("unknown v14 body extension trailer flag");
-            }
-            if body_flags & 1 != 0 {
-                let sites = decode_caller_sites(&mut read)?;
-                read.cold(&mut rows)?.caller_sites = Some(sites);
-            }
-            if body_flags & 2 != 0 {
-                let types = rows
-                    .cold
-                    .as_mut()
-                    .and_then(|cold| cold.closures.as_mut())
-                    .map(|closures| std::mem::take(&mut closures.types))
-                    .unwrap_or_default();
-                let closures = child_closure_wire::decode(&mut read, types)?;
-                read.cold(&mut rows)?.closures = Some(closures);
-            }
-            if body_flags & 4 != 0 {
-                let cold = read.cold(&mut rows)?;
-                if cold.closures.is_none() {
-                    read.reserve(size_of::<s::ClosureColumns>())?;
-                }
-                let closures = read
-                    .cold(&mut rows)?
-                    .closures
-                    .get_or_insert_with(|| Box::new(s::ClosureColumns::default()));
-                child_closure_wire::decode_anonymous(&mut read, closures)?;
-            }
+            decode_body_trailer(&mut read, &mut rows)?;
         } else {
             compiler_wire::decode(&mut read, &mut rows)?;
         }
@@ -386,6 +344,105 @@ fn decode_availability_profile(
         modules,
         availability,
     })
+}
+
+fn encode_body_trailer(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+    profile: s::Profile,
+) -> Result<(), &'static str> {
+    let caller_sites = rows.cold().caller_sites.as_deref();
+    let closures = rows.closures().filter(|c| !c.headers.is_empty());
+    let anonymous = rows.closures().filter(|c| !c.anonymous.is_empty());
+    let specialization = rows.cold().specialization.as_deref();
+    out.u8(u8::from(caller_sites.is_some())
+        | (u8::from(closures.is_some()) << 1)
+        | (u8::from(anonymous.is_some()) << 2)
+        | (u8::from(specialization.is_some()) << 3))?;
+    if let Some(sites) = caller_sites {
+        encode_caller_sites(out, sites)?;
+    }
+    if let Some(closures) = closures {
+        child_closure_wire::encode(out, closures)?;
+    }
+    if let Some(anonymous) = anonymous {
+        child_closure_wire::encode_anonymous(out, anonymous)?;
+    }
+    if let Some(graph) = specialization {
+        if !profile.declaration_policies() || graph.parents.is_empty() {
+            return Err(
+                "source specialization trailer requires checked parents and the extended profile",
+            );
+        }
+        write(out, &graph.parents, |out, edge| {
+            id(out, edge.child.0)?;
+            id(out, edge.parent.0)?;
+            range(out, edge.arguments)
+        })?;
+    }
+    Ok(())
+}
+
+fn decode_body_trailer(
+    read: &mut Input<'_, '_>,
+    rows: &mut s::SourceRows,
+) -> Result<(), &'static str> {
+    let body_flags = read.reader.u8()?;
+    let max_flags = if read.profile.declaration_policies() {
+        15
+    } else {
+        7
+    };
+    if body_flags > max_flags {
+        return Err("unknown v14 body extension trailer flag");
+    }
+    if body_flags & 1 != 0 {
+        let sites = decode_caller_sites(read)?;
+        read.cold(rows)?.caller_sites = Some(sites);
+    }
+    if body_flags & 2 != 0 {
+        let types = rows
+            .cold
+            .as_mut()
+            .and_then(|cold| cold.closures.as_mut())
+            .map(|closures| std::mem::take(&mut closures.types))
+            .unwrap_or_default();
+        let closures = child_closure_wire::decode(read, types)?;
+        read.cold(rows)?.closures = Some(closures);
+    }
+    if body_flags & 4 != 0 {
+        let cold = read.cold(rows)?;
+        if cold.closures.is_none() {
+            read.reserve(size_of::<s::ClosureColumns>())?;
+        }
+        let closures = read
+            .cold(rows)?
+            .closures
+            .get_or_insert_with(|| Box::new(s::ClosureColumns::default()));
+        child_closure_wire::decode_anonymous(read, closures)?;
+    }
+    if body_flags & 8 != 0 {
+        let parents = decode_specialization(read)?;
+        read.cold(rows)?.specialization = Some(parents);
+    }
+    Ok(())
+}
+
+fn decode_specialization(
+    read: &mut Input<'_, '_>,
+) -> Result<Box<s::SpecializationColumns>, &'static str> {
+    let parents = read.list(crates::MAX_COMPONENTS, 16, |read| {
+        Ok(s::SpecializationParent {
+            child: DeclarationRef(read.id()?),
+            parent: DeclarationRef(read.id()?),
+            arguments: read.range()?,
+        })
+    })?;
+    if parents.is_empty() {
+        return Err("source specialization trailer requires checked parents");
+    }
+    read.reserve(size_of::<s::SpecializationColumns>())?;
+    Ok(Box::new(s::SpecializationColumns { parents }))
 }
 
 fn decode_availability_trailers(

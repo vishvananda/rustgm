@@ -167,73 +167,89 @@ fn columns(rows: &SourceRows, count: &mut Count, work: &mut Work) -> Result<(), 
     count.vector(&rows.body_inputs, work)?;
     count.vector(&rows.body_units, work)?;
     if let Some(cold) = &rows.cold {
-        // The out-of-line cold groups are retained exactly like inline columns.
+        cold_columns(cold, count, work)?;
+    }
+    Ok(())
+}
+
+fn cold_columns(
+    cold: &super::super::ColdColumns,
+    count: &mut Count,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    // The out-of-line cold groups are retained exactly like inline columns.
+    count.bytes = count
+        .bytes
+        .saturating_add(size_of::<super::super::ColdColumns>());
+    count.vector(&cold.associated_definitions, work)?;
+    count.vector(&cold.associated_definition_inputs, work)?;
+    count.vector(&cold.enums.headers, work)?;
+    count.vector(&cold.enums.variants, work)?;
+    count.vector(&cold.enums.fields, work)?;
+    count.vector(&cold.enums.names, work)?;
+    count.vector(&cold.pattern_ranges, work)?;
+    count.vector(&cold.dynamics.objects, work)?;
+    count.vector(&cold.dynamics.bindings, work)?;
+    count.vector(&cold.dynamics.markers, work)?;
+    count.vector(&cold.diagnostics, work)?;
+    count.vector(&cold.consts, work)?;
+    count.vector(&cold.array_lengths, work)?;
+    count.vector(&cold.constants, work)?;
+    count.vector(&cold.promoted_handlers, work)?;
+    count.vector(&cold.type_aliases, work)?;
+    count.vector(&cold.alias_normalizations, work)?;
+    count.vector(&cold.nominal_region_bounds, work)?;
+    count.vector(&cold.const_defaults, work)?;
+    for default in &cold.const_defaults {
+        work.charge(1)?;
+        if let super::super::ConstDefaultValue::Record(fields) = &default.value {
+            count.vector(fields, work)?;
+        }
+    }
+    count.vector(&cold.trait_aliases, work)?;
+    count.vector(&cold.declared_intrinsics, work)?;
+    count.vector(&cold.function_policies, work)?;
+    count.vector(&cold.opaques.applications, work)?;
+    count.vector(&cold.opaques.declarations, work)?;
+    if let Some(statics) = &cold.statics {
+        work.charge(1)?;
         count.bytes = count
             .bytes
-            .saturating_add(size_of::<super::super::ColdColumns>());
-        count.vector(&cold.associated_definitions, work)?;
-        count.vector(&cold.associated_definition_inputs, work)?;
-        count.vector(&cold.enums.headers, work)?;
-        count.vector(&cold.enums.variants, work)?;
-        count.vector(&cold.enums.fields, work)?;
-        count.vector(&cold.enums.names, work)?;
-        count.vector(&cold.pattern_ranges, work)?;
-        count.vector(&cold.dynamics.objects, work)?;
-        count.vector(&cold.dynamics.bindings, work)?;
-        count.vector(&cold.dynamics.markers, work)?;
-        count.vector(&cold.diagnostics, work)?;
-        count.vector(&cold.consts, work)?;
-        count.vector(&cold.array_lengths, work)?;
-        count.vector(&cold.constants, work)?;
-        count.vector(&cold.promoted_handlers, work)?;
-        count.vector(&cold.type_aliases, work)?;
-        count.vector(&cold.alias_normalizations, work)?;
-        count.vector(&cold.nominal_region_bounds, work)?;
-        count.vector(&cold.const_defaults, work)?;
-        for default in &cold.const_defaults {
-            work.charge(1)?;
-            if let super::super::ConstDefaultValue::Record(fields) = &default.value {
-                count.vector(fields, work)?;
-            }
+            .saturating_add(size_of::<super::super::StaticColumns>());
+        count.vector(&statics.headers, work)?;
+        count.vector(&statics.values, work)?;
+    }
+    if let Some(graph) = &cold.specialization {
+        work.charge(1)?;
+        count.bytes = count
+            .bytes
+            .saturating_add(size_of::<super::super::SpecializationColumns>());
+        count.vector(&graph.parents, work)?;
+    }
+    if let Some(sites) = &cold.caller_sites {
+        work.charge(1)?;
+        count.bytes = count
+            .bytes
+            .saturating_add(size_of::<super::super::CallerSiteColumns>());
+        count.vector(&sites.files, work)?;
+        for file in &sites.files {
+            work.charge(file.len().saturating_add(1))?;
+            count.bytes = count.bytes.saturating_add(file.len());
         }
-        count.vector(&cold.trait_aliases, work)?;
-        count.vector(&cold.declared_intrinsics, work)?;
-        count.vector(&cold.function_policies, work)?;
-        count.vector(&cold.opaques.applications, work)?;
-        count.vector(&cold.opaques.declarations, work)?;
-        if let Some(statics) = &cold.statics {
-            work.charge(1)?;
-            count.bytes = count
-                .bytes
-                .saturating_add(size_of::<super::super::StaticColumns>());
-            count.vector(&statics.headers, work)?;
-            count.vector(&statics.values, work)?;
-        }
-        if let Some(sites) = &cold.caller_sites {
-            work.charge(1)?;
-            count.bytes = count
-                .bytes
-                .saturating_add(size_of::<super::super::CallerSiteColumns>());
-            count.vector(&sites.files, work)?;
-            for file in &sites.files {
-                work.charge(file.len().saturating_add(1))?;
-                count.bytes = count.bytes.saturating_add(file.len());
-            }
-            count.vector(&sites.rows, work)?;
-        }
-        if let Some(closures) = &cold.closures {
-            work.charge(1)?;
-            count.bytes = count
-                .bytes
-                .saturating_add(size_of::<super::super::ClosureColumns>());
-            count.vector(&closures.types, work)?;
-            count.vector(&closures.headers, work)?;
-            count.vector(&closures.bridges, work)?;
-            count.vector(&closures.formation_inputs, work)?;
-            count.vector(&closures.callable_slots, work)?;
-            count.vector(&closures.anonymous, work)?;
-            count.vector(&closures.anonymous_bridges, work)?;
-        }
+        count.vector(&sites.rows, work)?;
+    }
+    if let Some(closures) = &cold.closures {
+        work.charge(1)?;
+        count.bytes = count
+            .bytes
+            .saturating_add(size_of::<super::super::ClosureColumns>());
+        count.vector(&closures.types, work)?;
+        count.vector(&closures.headers, work)?;
+        count.vector(&closures.bridges, work)?;
+        count.vector(&closures.formation_inputs, work)?;
+        count.vector(&closures.callable_slots, work)?;
+        count.vector(&closures.anonymous, work)?;
+        count.vector(&closures.anonymous_bridges, work)?;
     }
     Ok(())
 }

@@ -426,63 +426,22 @@ impl Builder<'_, '_> {
         term: s::ConstRef,
         work: &mut Work,
     ) -> Result<(s::ConstFormalType, Summary), &'static str> {
-        work.charge(1)?;
-        let rows = self.headers.rows();
-        let parameter_type = |ty| s::const_formal_type(&rows.types, ty);
-        let (ty, summary) = match rows.consts().get(term.0 as usize) {
-            Some(&s::ConstTerm::Value(value)) => {
-                self.child(value.ty, work)?;
-                crate::support::crates::generics::source::const_value(&rows.types, value)?;
-                (parameter_type(value.ty)?, Summary::default())
-            }
-            Some(&s::ConstTerm::Parameter(slot)) => {
-                let Some(s::ParameterKind::Const { ty }) =
-                    rows.slots.get(slot.0 as usize).map(|row| row.kind)
-                else {
-                    return Err("source const term names a non-const slot");
-                };
-                let summary = Summary {
-                    parameter: Some(slot),
-                    ..Summary::default()
-                };
-                (parameter_type(ty)?, summary)
-            }
-            Some(&s::ConstTerm::Variant(value)) => {
-                self.child(value.ty, work)?;
-                self.check_variant_const(value, work)?;
-                (parameter_type(value.ty)?, Summary::default())
-            }
-            None => return Err("source const argument has no term row"),
-        };
-        Ok((ty, summary))
-    }
-    fn check_variant_const(
-        &self,
-        value: s::ConstVariant,
-        work: &mut Work,
-    ) -> Result<(), &'static str> {
-        if !self.profile.declaration_policies() {
-            return Err("source enum const argument requires body operations");
+        let (ty, parameter) = const_argument_domain(
+            self.headers,
+            self.profile.declaration_policies(),
+            term,
+            work,
+        )?;
+        if parameter.is_none() {
+            self.child(ty, work)?;
         }
-        let rows = self.headers.rows();
-        let s::ConstFormalType::Nominal(owner) = s::const_formal_type(&rows.types, value.ty)?
-        else {
-            return Err("source enum const argument has a non-nominal type");
-        };
-        let Some(HeaderRef::Variant(index)) = self.headers.header(value.declaration, work)? else {
-            return Err("source enum const argument has no actual variant");
-        };
-        let enums = rows.enums();
-        work.charge(enums.headers.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
-        let header = enums.owner(index)?;
-        let variant = &enums.variants[index as usize];
-        if header.declaration != owner
-            || variant.shape != s::VariantShape::Unit
-            || variant.fields.start != variant.fields.end
-        {
-            return Err("source enum const argument changed its owner or has a payload");
-        }
-        Ok(())
+        Ok((
+            s::const_formal_type(&self.headers.rows().types, ty)?,
+            Summary {
+                parameter,
+                ..Summary::default()
+            },
+        ))
     }
 
     fn projection_summary(
@@ -968,4 +927,62 @@ fn nominal_region(headers: &super::HeaderIndex<'_>, slot: s::SlotRef) -> bool {
                 .get(row.owner.0 as usize)
                 .is_some_and(|owner| s::nominal_kind(owner.definition.kind))
     })
+}
+
+pub(super) fn const_argument_domain(
+    headers: &super::HeaderIndex<'_>,
+    declaration_policies: bool,
+    term: s::ConstRef,
+    work: &mut Work,
+) -> Result<(g::TypeRef, Option<s::SlotRef>), &'static str> {
+    work.charge(1)?;
+    let rows = headers.rows();
+    match rows.consts().get(term.0 as usize) {
+        Some(&s::ConstTerm::Value(value)) => {
+            s::const_value(&rows.types, value)?;
+            Ok((value.ty, None))
+        }
+        Some(&s::ConstTerm::Parameter(slot)) => {
+            let Some(s::ParameterKind::Const { ty }) =
+                rows.slots.get(slot.0 as usize).map(|row| row.kind)
+            else {
+                return Err("source const term names a non-const slot");
+            };
+            Ok((ty, Some(slot)))
+        }
+        Some(&s::ConstTerm::Variant(value)) => {
+            check_variant_const(headers, declaration_policies, value, work)?;
+            Ok((value.ty, None))
+        }
+        None => Err("source const argument has no term row"),
+    }
+}
+
+fn check_variant_const(
+    headers: &super::HeaderIndex<'_>,
+    declaration_policies: bool,
+    value: s::ConstVariant,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    if !declaration_policies {
+        return Err("source enum const argument requires body operations");
+    }
+    let rows = headers.rows();
+    let s::ConstFormalType::Nominal(owner) = s::const_formal_type(&rows.types, value.ty)? else {
+        return Err("source enum const argument has a non-nominal type");
+    };
+    let Some(HeaderRef::Variant(index)) = headers.header(value.declaration, work)? else {
+        return Err("source enum const argument has no actual variant");
+    };
+    let enums = rows.enums();
+    work.charge(enums.headers.len().checked_ilog2().unwrap_or(0) as usize + 1)?;
+    let header = enums.owner(index)?;
+    let variant = &enums.variants[index as usize];
+    if header.declaration != owner
+        || variant.shape != s::VariantShape::Unit
+        || variant.fields.start != variant.fields.end
+    {
+        return Err("source enum const argument changed its owner or has a payload");
+    }
+    Ok(())
 }
