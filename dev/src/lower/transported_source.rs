@@ -1189,10 +1189,7 @@ impl Source {
                 "module publication exceeds combined collection storage",
             ));
         }
-        let mut work = g::Work {
-            steps: observed.steps,
-            ..g::Work::default()
-        };
+        let mut work = module_seal_work(profile, observed.steps);
         let payload = if let Some(availability) = availability {
             use super::instances::SourcePublication as Publication;
             let publish = match profile {
@@ -1271,5 +1268,22 @@ impl Source {
             g::Payload::from_source(base.identity(), rows, base_bytes, &mut validation)?
         };
         base.with_generic_payload(payload)
+    }
+}
+
+/// Collection prepays its own work and releases scratch before sealing.
+/// Validate the completed body packet with an independent work allowance.
+fn module_seal_work(
+    profile: super::instances::SourcePublication,
+    collection_steps: usize,
+) -> g::Work {
+    use super::instances::SourcePublication::{BootstrapModuleBodies, ModuleBodyOperations};
+    let steps = match profile {
+        ModuleBodyOperations | BootstrapModuleBodies => 0,
+        _ => collection_steps,
+    };
+    g::Work {
+        steps,
+        ..g::Work::default()
     }
 }
