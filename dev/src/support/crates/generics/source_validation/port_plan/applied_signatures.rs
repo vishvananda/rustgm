@@ -107,15 +107,24 @@ impl Arena {
             };
             for (ordinal, request) in original.calls.iter().enumerate() {
                 work.charge(1)?;
-                let template = self.template(domains, request.target, caller, work)?;
                 let Some(s::Type::Function(actual)) = rows.types.get(request.signature.0 as usize)
                 else {
                     return Err("source Call has no actual function signature");
                 };
-                same_flags(template.flags, Flags::of(*actual))?;
                 if rows.binders[actual.binder.0 as usize].count != 0 {
                     return Err("source opened Call retained an uninstantiated outer binder");
                 }
+                if rows.function_applications[request.target.0 as usize]
+                    .declaration
+                    .artifact
+                    .0
+                    != 0
+                {
+                    // Import checks the opening against the real applied dependency signature.
+                    continue;
+                }
+                let template = self.template(domains, request.target, caller, work)?;
+                same_flags(template.flags, Flags::of(*actual))?;
                 let expected = template.roots.slice(&self.signature_roots)?;
                 let actuals = actual.parameters.slice(&rows.roots)?;
                 if expected.len() != actuals.len() {
@@ -255,6 +264,9 @@ impl Arena {
             .function_applications
             .get(application.0 as usize)
             .ok_or("source applied signature has no actual application")?;
+        if raw.declaration.artifact.0 != 0 {
+            return Err("source dependency application requires its actual callable signature");
+        }
         // A called constructor's inputs are its payload and its result is its
         // enum or struct, both in that nominal's own frame.
         let (parameters, result, flags) = match domains.target(raw.declaration.declaration, work)? {

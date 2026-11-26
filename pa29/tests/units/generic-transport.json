@@ -173,6 +173,8 @@
     "tests/spec/inline-const-artifact/wrong-type.rs",
     "tests/spec/generic-contracts/pass-reexport.rs",
     "tests/spec/generic-contracts/reexport.rs",
+    "tests/spec/generic-contracts/pass-relay.rs",
+    "tests/spec/generic-contracts/relay.rs",
     "tests/spec/generic-contracts/library.rs",
     "tests/spec/generic-contracts/pass-reborrow.rs",
     "tests/spec/generic-contracts/pass-const-array.rs",
@@ -6290,6 +6292,50 @@
       ],
       "externs": {
         "relay": "relay"
+      },
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/generic-contracts/pass-relay.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/generic-contracts/library.rs",
+          "crate_name": "transport",
+          "disambiguator": "ordinary",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15"
+        },
+        {
+          "name": "relay",
+          "path": "tests/spec/generic-contracts/relay.rs",
+          "crate_name": "relay",
+          "disambiguator": "relay_body",
+          "externs": {
+            "base": "base"
+          },
+          "source_profile": "bootstrap-bodies-v15"
+        }
+      ],
+      "externs": {
+        "relay": "relay",
+        "base": "base"
       },
       "rustc": {
         "kind": "program",

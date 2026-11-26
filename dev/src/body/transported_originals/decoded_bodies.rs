@@ -189,7 +189,7 @@ fn build(
     allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (rebuilt, mut contract, environment, pending) = {
+    let (rebuilt, mut contract, environment, pending, dependency_inputs) = {
         let view = match target {
             Target::Declaration(definition) => {
                 crate::sema::crates::source_original(facts, definition, &mut work.steps)
@@ -218,6 +218,8 @@ fn build(
         let pending = selected
             .prepare(&view, facts, &body, work)
             .map_err(|e| report.body_error(source, e))?;
+        let dependency_inputs = super::external_call_premises::prepare(&view, &body, work)
+            .map_err(|e| report.body_error(source, e))?;
         let texts =
             super::encoded_texts::copy(&view, work).map_err(|e| report.body_error(source, e))?;
         let caller_sites = super::callsite_coordinates::copy(&view, work)
@@ -235,6 +237,7 @@ fn build(
                     .map_err(|e| report.body_error(source, e))?,
             ),
             pending,
+            dependency_inputs,
         )
     };
     super::versioned_calls::prove(
@@ -247,6 +250,8 @@ fn build(
         allowance,
     )
     .map_err(|e| report.body_error(rebuilt.body.source, e))?;
+    super::external_call_premises::check(facts, &dependency_inputs, &contract, work)
+        .map_err(|e| report.body_error(rebuilt.body.source, e))?;
     finish(report, facts, scratch, rebuilt, contract, environment)
 }
 pub(super) fn finish(

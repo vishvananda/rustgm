@@ -85,14 +85,17 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
     }
     fn trait_definition(
         &self,
-        owner: DeclarationRef,
+        address: s::DeclarationAddress,
         work: &mut ReservationWork,
     ) -> Result<DefId, Error> {
         work.charge(1)?;
-        if !matches!(
-            self.port.rows().header(owner).map_err(error)?,
-            Some(s::HeaderRef::Trait(_))
-        ) {
+        let owner = address.declaration;
+        if address.artifact != self.port.rows().policy.provider
+            || !matches!(
+                self.port.rows().header(owner).map_err(error)?,
+                Some(s::HeaderRef::Trait(_))
+            )
+        {
             return Err(error(
                 "private assumption lost its actual trait declaration",
             ));

@@ -415,10 +415,20 @@ impl Builder<'_, '_> {
         formal: g::TypeRef,
         work: &mut Work,
     ) -> Result<Summary, &'static str> {
+        let (actual, summary) = self.const_argument_summary(term, work)?;
+        if s::const_formal_type(&self.headers.rows().types, formal)? != actual {
+            return Err("source const argument changed its parameter type");
+        }
+        Ok(summary)
+    }
+    fn const_argument_summary(
+        &self,
+        term: s::ConstRef,
+        work: &mut Work,
+    ) -> Result<(s::ConstFormalType, Summary), &'static str> {
         work.charge(1)?;
         let rows = self.headers.rows();
         let parameter_type = |ty| s::const_formal_type(&rows.types, ty);
-        let formal = parameter_type(formal)?;
         let (ty, summary) = match rows.consts().get(term.0 as usize) {
             Some(&s::ConstTerm::Value(value)) => {
                 self.child(value.ty, work)?;
@@ -444,10 +454,7 @@ impl Builder<'_, '_> {
             }
             None => return Err("source const argument has no term row"),
         };
-        if formal != ty {
-            return Err("source const argument changed its parameter type");
-        }
-        Ok(summary)
+        Ok((ty, summary))
     }
     fn check_variant_const(
         &self,
@@ -670,6 +677,9 @@ impl Builder<'_, '_> {
         let application = &rows.function_applications[node];
         work.charge(1)?;
         if application.declaration.artifact != s::ArtifactRef(0) {
+            if self.profile.bootstrap_bindings() {
+                return self.dependency_arguments(application.arguments, Summary::default(), work);
+            }
             return Err(
                 "source function application requires authenticated wider artifact transport",
             );
@@ -775,7 +785,11 @@ impl Builder<'_, '_> {
         let rows = self.headers.rows();
         let application = &rows.trait_applications[node];
         work.charge(1)?;
+        let subject = self.child(application.subject, work)?;
         if application.declaration.artifact != s::ArtifactRef(0) {
+            if self.profile.bootstrap_bindings() {
+                return self.dependency_arguments(application.arguments, subject, work);
+            }
             return Err("source trait application requires authenticated wider artifact transport");
         }
         let Some(HeaderRef::Trait(index)) = self
@@ -786,12 +800,27 @@ impl Builder<'_, '_> {
         };
         let header = &rows.traits[index as usize];
         let arguments = application.arguments.slice(&rows.arguments)?;
-        self.trait_arguments(
-            header.scope,
-            arguments,
-            self.child(application.subject, work)?,
-            work,
-        )
+        self.trait_arguments(header.scope, arguments, subject, work)
+    }
+    /// Summarize the caller's roots before the dependency graph supplies the
+    /// defining header and its formal parameters.
+    fn dependency_arguments(
+        &self,
+        arguments: g::Range,
+        mut summary: Summary,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let rows = self.headers.rows();
+        for argument in arguments.slice(&rows.arguments)? {
+            work.charge(1)?;
+            let child = match *argument {
+                s::Argument::Type(ty) => self.child(ty, work)?,
+                s::Argument::Region(region) => self.region(region, work)?,
+                s::Argument::Const(term) => self.const_argument_summary(term, work)?.1,
+            };
+            summary = self.merge(summary, child, work)?;
+        }
+        Ok(summary)
     }
     pub(super) fn trait_arguments(
         &self,

@@ -236,6 +236,20 @@ impl DomainIndex<'_, '_> {
         };
         let frame = &rows.binders[signature.binder.0 as usize];
         self.signature_frame(original, frame, work)?;
+        if application.declaration.artifact.0 != 0 {
+            if !self.bootstrap_bindings
+                || request.method.is_some()
+                || signature.parameters.slice(&rows.roots)?.len()
+                    != arguments.slice(&original.arguments)?.len()
+            {
+                return Err("source dependency Call requires an actual free callable signature");
+            }
+            self.call_safety(original, (signature.unsafe_, request.safety), false, work)?;
+            if let Some(opening) = request.opening {
+                self.opening_allocations(context, original, opening.regions, work)?;
+            }
+            return Ok(());
+        }
         if let Some(constructor) = s::Constructor::of(
             (rows.enums(), &rows.declarations),
             application.declaration.declaration,
@@ -314,20 +328,29 @@ impl DomainIndex<'_, '_> {
                 if opened.len() != count as usize {
                     return Err("source Call opening omitted actual late-bound formals");
                 }
-                for &region in opened {
-                    self.types
-                        .region(self.headers, &self.binders, context, region, work)?;
-                    if !matches!(rows.regions[region.0 as usize], s::Region::Variable { body, .. } if body == original.body)
-                    {
-                        return Err(
-                            "source Call opening did not retain its actual fresh original allocation",
-                        );
-                    }
-                }
-                Ok(())
+                self.opening_allocations(context, original, opening.regions, work)
             }
             _ => Err("source Call opening changed its exact target binder identity"),
         }
+    }
+    fn opening_allocations(
+        &self,
+        context: Context,
+        original: &s::Original,
+        range: g::Range,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        for &region in range.slice(&original.openings)? {
+            self.types
+                .region(self.headers, &self.binders, context, region, work)?;
+            if !matches!(self.headers.rows().regions[region.0 as usize], s::Region::Variable { body, .. } if body == original.body)
+            {
+                return Err(
+                    "source Call opening did not retain its actual fresh original allocation",
+                );
+            }
+        }
+        Ok(())
     }
     fn method(
         &mut self,

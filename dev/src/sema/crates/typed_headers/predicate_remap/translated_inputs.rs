@@ -38,7 +38,11 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows, B: Budget>:
         name: &str,
         budget: &mut B,
     ) -> Result<crate::types::parameters::features::FeatureId, Error>;
-    fn trait_definition(&self, row: DeclarationRef, budget: &mut B) -> Result<DefId, Error>;
+    fn trait_definition(
+        &self,
+        address: s::DeclarationAddress,
+        budget: &mut B,
+    ) -> Result<DefId, Error>;
     fn trait_declaration(
         &self,
         row: DeclarationRef,
@@ -93,10 +97,18 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
     fn rows(&self) -> s::ValidatedView<'rows> {
         self.descriptor.rows()
     }
-    fn trait_definition(&self, row: DeclarationRef, _: &mut Headers) -> Result<DefId, Error> {
+    fn trait_definition(
+        &self,
+        address: s::DeclarationAddress,
+        budget: &mut Headers,
+    ) -> Result<DefId, Error> {
+        if address.artifact != self.rows().policy.provider {
+            budget.charge(4)?;
+            return self.graph.dependency_trait(address).map_err(error);
+        }
         let definition = self
             .imported
-            .generic_definition(self.descriptor.identity(), row)
+            .generic_definition(self.descriptor.identity(), address.declaration)
             .map_err(error)?;
         let declaration = self.catalog.declaration(definition).map_err(error)?;
         self.catalog
@@ -228,12 +240,7 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
     }
     let rows = port.rows();
     let application = &rows.trait_applications[index];
-    if application.declaration.artifact != rows.policy.provider {
-        return Err(error(
-            "source clause trait belongs to an unsupported dependency",
-        ));
-    }
-    let definition = port.trait_definition(application.declaration.declaration, budget)?;
+    let definition = port.trait_definition(application.declaration, budget)?;
     let record = application
         .arguments
         .slice(&rows.arguments)

@@ -181,6 +181,30 @@ impl Context<'_> {
     }
 }
 impl Graph {
+    fn dependency_descriptor(
+        &self,
+        reference: s::ArtifactRef,
+    ) -> Result<SourceDescriptor<'_>, &'static str> {
+        self.inventory
+            .declaration_artifact(self.provider_index, reference)?
+            .source_descriptor()
+            .filter(|descriptor| descriptor.profile().bootstrap_bindings())
+            .ok_or("source dependency requires its actual ordinary typed artifact")
+    }
+
+    pub(super) fn dependency_trait(
+        &self,
+        address: s::DeclarationAddress,
+    ) -> Result<DefId, &'static str> {
+        let descriptor = self.dependency_descriptor(address.artifact)?;
+        let definition = self
+            .origins
+            .definition_at(descriptor.identity(), address.declaration)?;
+        let declaration = self.origins.declaration(definition)?;
+        self.origins
+            .validate_declaration(declaration, definition, DefKind::Trait)?;
+        Ok(definition)
+    }
     pub(super) fn prepare(
         context: &Context<'_>,
         facts: &mut Declarations,

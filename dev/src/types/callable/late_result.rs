@@ -54,7 +54,16 @@ pub(crate) fn signature_opening<'a>(
     opened: TypeId,
     payment: retained::Payment<'a>,
 ) -> Result<bool, &'static str> {
-    match_signature(types, declared, opened, false, payment).map(|regions| regions.is_some())
+    rigid_opening_regions(types, declared, opened, payment).map(|regions| regions.is_some())
+}
+
+pub(crate) fn rigid_opening_regions<'a>(
+    types: &'a Store,
+    declared: TypeId,
+    opened: TypeId,
+    payment: retained::Payment<'a>,
+) -> Result<Option<Vec<Option<RegionId>>>, &'static str> {
+    match_signature(types, declared, opened, false, payment)
 }
 
 /// Extract the opened late-bound lifetime arguments for a call whose declared

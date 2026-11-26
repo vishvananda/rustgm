@@ -4,6 +4,7 @@ mod decoded_bodies;
 mod encoded_assembly;
 mod encoded_literals;
 mod encoded_texts;
+mod external_call_premises;
 #[path = "transported_originals/reconstruction.rs"]
 mod selected_original;
 pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};

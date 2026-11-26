@@ -15,14 +15,17 @@ impl Arena {
     ) -> Result<(), &'static str> {
         let rows = domains.headers.rows();
         let applied = &rows.function_applications[application.0 as usize];
-        let target = domains.target(applied.declaration.declaration, work)?;
+        let local = applied.declaration.artifact.0 == 0;
+        let target = local
+            .then(|| domains.target(applied.declaration.declaration, work))
+            .transpose()?;
         // DomainIndex already checked exact full arity and the actual caller's
         // scope. Visiting every argument retains unused formal formation debts.
         // Captured and early region arguments lead the type/const arguments.
         let regions = match target {
-            super::super::Target::Function(header) => (header.regions.captures as usize)
+            Some(super::super::Target::Function(header)) => (header.regions.captures as usize)
                 .saturating_add(header.regions.early.slice(&rows.region_slots)?.len()),
-            super::super::Target::Constructor { .. } => 0,
+            _ => usize::MAX,
         };
         for (index, argument) in applied.arguments.slice(&rows.arguments)?.iter().enumerate() {
             work.charge(1)?;
@@ -30,12 +33,7 @@ impl Arena {
                 s::Argument::Type(root) => root,
                 // Leading lifetime arguments have no formation root; their
                 // domain was checked with the caller.
-                s::Argument::Region(_)
-                    if matches!(target, super::super::Target::Constructor { .. })
-                        || index < regions =>
-                {
-                    continue;
-                }
+                s::Argument::Region(_) if index < regions => continue,
                 s::Argument::Region(_) => {
                     return Err(
                         "source regional application debts require a complete wider profile",
@@ -50,6 +48,10 @@ impl Arena {
                 work,
             )?;
         }
+        let Some(target) = target else {
+            // The declaration's premises come from its installed registration.
+            return Ok(());
+        };
         self.applied_clauses(domains, application, caller, target.inputs(), work)?;
         if let Some(parent) = target.parent() {
             let range = match domains.headers.header(parent, work)? {

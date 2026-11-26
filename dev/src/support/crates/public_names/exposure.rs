@@ -4,6 +4,8 @@ use super::{
 };
 use crate::support::crates::CrateIdentity;
 use crate::support::hash::{HashMap, HashSet};
+mod dependency_applications;
+use crate::support::crates::generics::{self as g, source as s};
 
 struct Exposed<'a> {
     definitions: HashSet<&'a ExternalDef>,
@@ -81,8 +83,12 @@ pub(crate) fn validate_typed(
     artifacts: &[Interface],
     indices: &HashMap<&CrateIdentity, usize>,
 ) -> Result<(), &'static str> {
-    use crate::support::crates::{Namespace, generics::source::ArtifactRef};
-    let mut exposed = HashMap::default();
+    use crate::support::crates::Namespace;
+    let mut targets = TypedTargets {
+        artifacts,
+        indices,
+        exposed: HashMap::default(),
+    };
     for artifact in artifacts {
         let Some(descriptor) = artifact
             .source_descriptor()
@@ -91,37 +97,62 @@ pub(crate) fn validate_typed(
             continue;
         };
         for binding in &descriptor.module_contracts()?.rows().namespace.bindings {
-            if binding.target.artifact == ArtifactRef(0) {
+            if binding.target.artifact.0 == 0 {
                 continue;
             }
-            let target = artifact.declaration_owner(binding.target.artifact)?;
-            let &index = indices
-                .get(target)
-                .ok_or("typed namespace target has no dependency artifact")?;
-            let permitted = match exposed.entry(index) {
-                std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
-                std::collections::hash_map::Entry::Vacant(entry) => {
-                    entry.insert(typed_exports(&artifacts[index])?)
-                }
-            };
             let flag = match binding.namespace {
                 Namespace::Type => 1,
                 Namespace::Value => 2,
             };
-            if permitted
-                .get(binding.target.declaration.0 as usize)
-                .is_none_or(|namespaces| namespaces & flag == 0)
-            {
-                return Err(
-                    "typed namespace dependency target is private, absent or in another namespace",
-                );
-            }
+            targets.target(artifact, binding.target, flag)?;
         }
+        dependency_applications::check(&mut targets, artifact, descriptor.rows())?;
     }
     Ok(())
 }
 
-fn typed_exports(artifact: &Interface) -> Result<Vec<u8>, &'static str> {
+struct TypedTargets<'a> {
+    artifacts: &'a [Interface],
+    indices: &'a HashMap<&'a CrateIdentity, usize>,
+    exposed: HashMap<usize, TypedExports<'a>>,
+}
+struct TypedExports<'a> {
+    names: Vec<u8>,
+    rows: s::ValidatedView<'a>,
+    slots: HashMap<crate::support::crates::owner_catalog::DeclarationRef, g::Range>,
+}
+impl<'a> TypedTargets<'a> {
+    fn target(
+        &mut self,
+        artifact: &Interface,
+        address: s::DeclarationAddress,
+        flag: u8,
+    ) -> Result<&TypedExports<'a>, &'static str> {
+        let identity = artifact.declaration_owner(address.artifact)?;
+        let &index = self
+            .indices
+            .get(identity)
+            .ok_or("typed namespace target has no dependency artifact")?;
+        let exports = match self.exposed.entry(index) {
+            std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(typed_exports(&self.artifacts[index])?)
+            }
+        };
+        if exports
+            .names
+            .get(address.declaration.0 as usize)
+            .is_none_or(|namespaces| namespaces & flag == 0)
+        {
+            return Err(
+                "typed namespace dependency target is private, absent or in another namespace",
+            );
+        }
+        Ok(exports)
+    }
+}
+
+fn typed_exports(artifact: &Interface) -> Result<TypedExports<'_>, &'static str> {
     use crate::support::crates::{
         Namespace,
         generics::source::{
@@ -170,5 +201,13 @@ fn typed_exports(artifact: &Interface) -> Result<Vec<u8>, &'static str> {
             *exposed |= flag;
         }
     }
-    Ok(exposed)
+    Ok(TypedExports {
+        names: exposed,
+        rows,
+        slots: rows
+            .scopes
+            .iter()
+            .map(|scope| (scope.owner, scope.declared))
+            .collect(),
+    })
 }

@@ -48,6 +48,21 @@ pub(super) fn check(
         if !(literal || typed) {
             return Err("source call safety changed its actual selected declaration");
         }
+        if view.rows().function_applications[request.target.0 as usize]
+            .declaration
+            .artifact
+            .0
+            != 0
+        {
+            let Some(Kind::FunctionItem {
+                signature: declared,
+                ..
+            }) = facts.types.kind(callee.ty)
+            else {
+                return Err("source dependency call has no applied signature");
+            };
+            dependency_opening(facts, view, request, (declared, signature), work)?;
+        }
         if !safe_target_call(facts, caller_policy, target, unsafe_, request.safety)? {
             matching(unsafe_, request.safety, caller_unsafe)?;
         }
@@ -91,6 +106,51 @@ pub(super) fn check(
     }
     work.charge(0)
 }
+
+fn dependency_opening(
+    facts: &Declarations,
+    view: &SourceOriginal<'_>,
+    request: &s::CallRequest,
+    (declared, opened): (crate::types::TypeId, crate::types::TypeId),
+    work: &mut ImportedOriginals,
+) -> Result<(), &'static str> {
+    use std::cell::Cell;
+    let steps = Cell::new(0_usize);
+    let bytes = Cell::new(0_usize);
+    let base = work.retained_bytes();
+    let actual = crate::types::callable::late_result::rigid_opening_regions(
+        &facts.types,
+        declared,
+        opened,
+        &|steps_used, allocated| {
+            steps.set(steps.get().saturating_add(steps_used));
+            bytes.set(bytes.get().saturating_add(allocated));
+            if work.steps.saturating_add(steps.get()) > crate::support::crates::MAX_COMPONENTS
+                || base.saturating_add(bytes.get()) > crate::support::crates::MAX_BYTES
+            {
+                return Err("source dependency call opening exceeds its work/storage budget");
+            }
+            Ok(())
+        },
+    )?;
+    work.charge(steps.get())?;
+    let actual = actual.ok_or("source dependency call changed its applied signature")?;
+    let regions = request.opening.map_or(Ok(&[][..]), |opening| {
+        opening.regions.slice(&view.raw().openings)
+    })?;
+    if actual.len() != regions.len() {
+        return Err("source dependency call changed its actual late-region count");
+    }
+    for (actual, &recorded) in actual.into_iter().zip(regions) {
+        if let Some(actual) = actual
+            && actual != view.region(recorded, &mut work.steps)?
+        {
+            return Err("source dependency call changed its actual opened region");
+        }
+    }
+    Ok(())
+}
+
 type CallerPolicy = Option<(crate::sema::target_features::FeatureSet, bool)>;
 
 fn caller_context(

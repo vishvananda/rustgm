@@ -20,41 +20,46 @@ pub(super) struct Index {
     pub(super) conversions: bool,
 }
 
+pub(super) fn opening_binder(
+    header: &s::FunctionHeader,
+    binders: &[s::Binder],
+) -> Result<(g::BinderRef, u32), &'static str> {
+    let binder = header.callable.binder;
+    // Captured and early slots come from the application; a Call opens
+    // only the callable's late-bound slots.
+    let frame = binders
+        .get(binder.0 as usize)
+        .ok_or("source callable frame is unknown")?;
+    if header.regions.captures > frame.count {
+        return Err("source callable captures exceed its public frame");
+    }
+    let count = header
+        .regions
+        .late
+        .end
+        .checked_sub(header.regions.late.start)
+        .ok_or("source callable late slot range is invalid")?;
+    Ok((binder, count))
+}
+
 impl Stage {
     pub(crate) fn callable_binder(
         &mut self,
         item: crate::types::ItemId,
     ) -> Result<(g::BinderRef, u32), &'static str> {
         self.charge(3)?;
-        let index = self
-            .functions
-            .headers
-            .get(&item)
-            .copied()
-            .ok_or("source call target has no staged actual function header")?;
+        let Some(&index) = self.functions.headers.get(&item) else {
+            if self.bootstrap_bindings() {
+                return self.dependency_callable_binder(DefId(item.0));
+            }
+            return Err("source call target has no staged actual function header");
+        };
         let header = self
             .rows
             .functions
             .get(index as usize)
             .ok_or("source callable header index is stale")?;
-        let binder = header.callable.binder;
-        // Captured and early slots come from the application; a Call opens
-        // only the callable's late-bound slots.
-        let frame = self
-            .rows
-            .binders
-            .get(binder.0 as usize)
-            .ok_or("source callable frame is unknown")?;
-        if header.regions.captures > frame.count {
-            return Err("source callable captures exceed its public frame");
-        }
-        let count = header
-            .regions
-            .late
-            .end
-            .checked_sub(header.regions.late.start)
-            .ok_or("source callable late slot range is invalid")?;
-        Ok((binder, count))
+        opening_binder(header, &self.rows.binders)
     }
     pub(super) fn functions(
         &mut self,

@@ -362,11 +362,29 @@ impl<'a> RecipeView<'a> {
         row: crate::support::crates::owner_catalog::DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<crate::resolve::model::DefId, Error> {
+        use crate::support::crates::generics::source::{ArtifactRef, DeclarationAddress};
+        self.addressed_definition(
+            DeclarationAddress {
+                artifact: ArtifactRef(0),
+                declaration: row,
+            },
+            work,
+        )
+    }
+    pub(crate) fn addressed_definition(
+        &self,
+        address: crate::support::crates::generics::source::DeclarationAddress,
+        work: &mut ReservationWork,
+    ) -> Result<crate::resolve::model::DefId, Error> {
         work.charge(4)?;
-        let artifact = &self.owner.inventory.artifacts()[self.owner.provider_index as usize];
+        let artifact = self
+            .owner
+            .inventory
+            .declaration_artifact(self.owner.provider_index, address.artifact)
+            .map_err(error)?;
         self.owner
             .catalog
-            .definition_at(artifact.identity(), row)
+            .definition_at(artifact.identity(), address.declaration)
             .map_err(error)
     }
     pub(crate) fn declaration(

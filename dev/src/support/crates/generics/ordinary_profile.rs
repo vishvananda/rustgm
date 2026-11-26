@@ -220,7 +220,15 @@ fn validate_with(
             || roles.conditional_iterator_input(rows, headers, clause, work)?;
         ordinary(&clause.requirement, qualified, modern)?;
     }
-    originals(rows, headers, work, profile, binding, features, &roles)?;
+    originals(
+        rows,
+        headers,
+        work,
+        profile,
+        (binding, bootstrap),
+        features,
+        &roles,
+    )?;
     body_inputs(
         rows,
         headers,
@@ -838,7 +846,7 @@ fn originals(
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: NamespaceProfile,
-    binding: BindingProfile,
+    (binding, bootstrap): (BindingProfile, bool),
     features: bool,
     roles: &Bindings,
 ) -> Result<(), &'static str> {
@@ -852,7 +860,7 @@ fn originals(
                 headers,
                 original,
                 work,
-                constant_initializers,
+                (constant_initializers, bootstrap),
                 roles.runtime_format_bodies,
                 roles.default_traits(),
             )?

@@ -28,12 +28,19 @@ pub(super) fn map(
         .function_applications
         .get(reference.0 as usize)
         .ok_or_else(|| error("ordinary application lost its actual row"))?;
-    if raw.declaration.artifact != rows.policy.provider {
+    if raw.declaration.artifact != rows.policy.provider
+        && !rows.descriptor().profile().bootstrap_bindings()
+    {
         return Err(error(
             "ordinary application belongs to another actual provider",
         ));
     }
-    let item = ItemId(port.definition(raw.declaration.declaration, work)?.0);
+    let item = ItemId(
+        port.port
+            .recipe_view()
+            .addressed_definition(raw.declaration, work)?
+            .0,
+    );
     let callables = port.callables;
     let (template, parameters) = callables
         .registration(item)

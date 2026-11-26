@@ -739,9 +739,17 @@ impl Original<'_> {
             .function_applications
             .get(reference.0 as usize)
             .ok_or("source original has an unknown actual callable application")?;
-        if !self.rows.descriptor().profile().feature_predicates()
-            || row.declaration.artifact != s::ArtifactRef(0)
-        {
+        if row.declaration.artifact.0 != 0 {
+            let (descriptor, _) = self.dependency_function(row.declaration)?;
+            let definition = self
+                .catalog
+                .definition_at(descriptor.identity(), row.declaration.declaration)?;
+            let declaration = self.catalog.declaration(definition)?;
+            self.catalog
+                .validate_declaration(declaration, definition, DefKind::Function)?;
+            return Ok(definition);
+        }
+        if !self.rows.descriptor().profile().feature_predicates() {
             return Err("source call requires its actual v4 defining artifact");
         }
         let definition = self.declaration(row.declaration.declaration, steps)?;
@@ -766,6 +774,26 @@ impl Original<'_> {
         self.catalog
             .validate_declaration(declaration, definition, kind)?;
         Ok(definition)
+    }
+    pub(crate) fn dependency_function(
+        &self,
+        address: s::DeclarationAddress,
+    ) -> Result<
+        (
+            crate::support::crates::SourceDescriptor<'_>,
+            s::FunctionHeader,
+        ),
+        &'static str,
+    > {
+        let Mapping::Ordinary { graph, .. } = &self.mapping else {
+            return Err("selected original requires a local definition");
+        };
+        let descriptor = graph.dependency_descriptor(address.artifact)?;
+        let rows = descriptor.rows();
+        let Some(s::HeaderRef::Function(index)) = rows.header(address.declaration)? else {
+            return Err("source dependency application has no actual callable header");
+        };
+        Ok((descriptor, rows.functions[index as usize]))
     }
     pub(crate) fn site(&self, index: u32, steps: &mut usize) -> Result<BodySite, &'static str> {
         charge(steps)?;

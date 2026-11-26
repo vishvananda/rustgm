@@ -22,9 +22,11 @@ impl Original<'_> {
                 .get(request.target.0 as usize)
                 .ok_or("const body policy lost its actual call application")?;
             if application.declaration.artifact != s::ArtifactRef(0) {
-                return Err(
-                    "foreign source const body policy requires its complete defining origin",
-                );
+                let (descriptor, header) = self.dependency_function(application.declaration)?;
+                if safe(descriptor.rows().availability()?, header.declaration, steps)? {
+                    continue;
+                }
+                return Err("source const-stable body requires an actual const-safe dependency");
             }
             if !safe(rows, application.declaration.declaration, steps)?
                 && !exempt(

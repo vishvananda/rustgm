@@ -247,7 +247,7 @@ pub(super) fn original_context(
     headers: &HeaderIndex<'_>,
     body: &s::Original,
     work: &mut Work,
-    constant_initializers: bool,
+    (constant_initializers, bootstrap): (bool, bool),
     runtime_format_bodies: [Option<DeclarationRef>; LangItem::RUNTIME_FORMAT_BODIES.len()],
     default_traits: DefaultTraits,
 ) -> Result<s::CallContext, &'static str> {
@@ -305,7 +305,7 @@ pub(super) fn original_context(
             headers,
             body,
             work,
-            constant_initializers,
+            (constant_initializers, bootstrap),
             defining_default.map(|owner| (owner, default_traits.drop == Some(owner))),
         )?;
     }
@@ -318,7 +318,7 @@ fn constant_calls(
     headers: &HeaderIndex<'_>,
     body: &s::Original,
     work: &mut Work,
-    constructors: bool,
+    (constructors, bootstrap): (bool, bool),
     default: Option<(DeclarationRef, bool)>,
 ) -> Result<(), &'static str> {
     for request in &body.calls {
@@ -328,6 +328,10 @@ fn constant_calls(
             .get(request.target.0 as usize)
             .ok_or("source const call target application is absent")?;
         if application.declaration.artifact != s::ArtifactRef(0) {
+            if bootstrap {
+                // Graph admission checks the actual dependency header's constness.
+                continue;
+            }
             return Err("source const call requires its complete defining target artifact");
         }
         let declaration = application.declaration.declaration;

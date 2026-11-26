@@ -201,6 +201,25 @@ impl Dependencies {
     pub fn artifacts(&self) -> &[Interface] {
         &self.artifacts
     }
+    pub(crate) fn declaration_artifact(
+        &self,
+        source: u32,
+        reference: super::generics::source::ArtifactRef,
+    ) -> Result<&Interface, &'static str> {
+        let owner = self
+            .artifacts
+            .get(source as usize)
+            .ok_or("source declaration is outside its actual dependency inventory")?;
+        if reference.0 == 0 {
+            return Ok(owner);
+        }
+        let identity = owner.declaration_owner(reference)?;
+        let index = self
+            .artifacts
+            .binary_search_by(|artifact| artifact.identity().cmp(identity))
+            .map_err(|_| "source declaration's dependency artifact is missing")?;
+        Ok(&self.artifacts[index])
+    }
     #[must_use]
     pub fn aliases(&self) -> &[Dependency] {
         &self.aliases

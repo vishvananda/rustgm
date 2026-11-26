@@ -20,9 +20,11 @@ pub(super) fn prepare(
         let s::ValueKind::Function(application) = raw.kind else {
             continue;
         };
-        let target = index.rows.function_applications[application.0 as usize]
-            .declaration
-            .declaration;
+        let target = index.rows.function_applications[application.0 as usize].declaration;
+        if target.artifact.0 != 0 {
+            continue;
+        }
+        let target = target.declaration;
         let Some(member) = index.members.get(&target) else {
             continue;
         };
