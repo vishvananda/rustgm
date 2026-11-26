@@ -2587,55 +2587,44 @@ fn original_value(
     kind: ValueKind,
     features: bool,
     regional: bool,
-    constant_initializers: bool,
+    declaration_policies: bool,
 ) -> bool {
-    matches!(
-        kind,
-        ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_)
-    ) || features
-        && matches!(
-            kind,
-            ValueKind::Function(_)
-                | ValueKind::Call { .. }
-                | ValueKind::Scalar(_)
-                | ValueKind::Aggregate { .. }
-        )
-        || regional
-            && matches!(
-                kind,
-                ValueKind::Borrow(_)
-                    | ValueKind::TwoPhaseBorrow(_)
-                    | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
-                    | ValueKind::ScalarCast(_)
-                    | ValueKind::Binary { .. }
-                    | ValueKind::Invoke { .. }
-                    | ValueKind::VariantAggregate { .. }
-                    | ValueKind::IsVariant { .. }
-                    | ValueKind::EnumCast(_)
-                    | ValueKind::Text(_)
-                    | ValueKind::Reify(_)
-                    | ValueKind::PointerCall { .. }
-                    | ValueKind::Assembly { .. }
-                    | ValueKind::Constant(_)
-                    | ValueKind::AssociatedConstant { .. }
-            )
-        || constant_initializers
-            && matches!(
-                kind,
-                ValueKind::Read(Place::Static(_))
-                    | ValueKind::AssemblyOutput { .. }
-                    | ValueKind::ConstArgument(_)
-                    | ValueKind::PointerCast(_)
-                    | ValueKind::DirectEnumCast(_)
-                    | ValueKind::AddressCast { .. }
-                    | ValueKind::Unary { .. }
-                    | ValueKind::Address(_)
-                    | ValueKind::Length(_)
-                    | ValueKind::Validate(_)
-                    | ValueKind::TextEquals { .. }
-                    | ValueKind::Union { .. }
-                    | ValueKind::Repeat { .. }
-                    | ValueKind::Unsize { .. }
-                    | ValueKind::InlineConstant(_)
-            )
+    match kind {
+        ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_) => true,
+        ValueKind::Function(_)
+        | ValueKind::Call { .. }
+        | ValueKind::Scalar(_)
+        | ValueKind::Aggregate { .. } => features,
+        ValueKind::Borrow(_)
+        | ValueKind::TwoPhaseBorrow(_)
+        | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
+        | ValueKind::ScalarCast(_)
+        | ValueKind::Binary { .. }
+        | ValueKind::Invoke { .. }
+        | ValueKind::VariantAggregate { .. }
+        | ValueKind::IsVariant { .. }
+        | ValueKind::EnumCast(_)
+        | ValueKind::Text(_)
+        | ValueKind::Reify(_)
+        | ValueKind::PointerCall { .. }
+        | ValueKind::Assembly { .. }
+        | ValueKind::Constant(_)
+        | ValueKind::AssociatedConstant { .. } => regional,
+        ValueKind::Read(Place::Static(_))
+        | ValueKind::AssemblyOutput { .. }
+        | ValueKind::ConstArgument(_)
+        | ValueKind::PointerCast(_)
+        | ValueKind::DirectEnumCast(_)
+        | ValueKind::AddressCast { .. }
+        | ValueKind::Unary { .. }
+        | ValueKind::Address(_)
+        | ValueKind::Length(_)
+        | ValueKind::Validate(_)
+        | ValueKind::TextEquals { .. }
+        | ValueKind::Union { .. }
+        | ValueKind::Repeat { .. }
+        | ValueKind::Unsize { .. }
+        | ValueKind::InlineConstant(_)
+        | ValueKind::UniqueBorrow(_) => declaration_policies,
+    }
 }
