@@ -8,7 +8,9 @@ use crate::{
         ir::{Body, Rvalue, ValueId, ValueList},
     },
     sema::{
-        bodies::assembly_values::simd_operand, crates::SourceOriginal, model::Declarations,
+        bodies::assembly_values::{simd_operand, ymm_operand, zmm_operand},
+        crates::SourceOriginal,
+        model::Declarations,
         target_features::FeatureSet,
     },
     support::{
@@ -131,6 +133,8 @@ fn operand(
         register: match row.class {
             s::AssemblyClass::General => Register::General,
             s::AssemblyClass::Vector => Register::Xmm,
+            s::AssemblyClass::Ymm => Register::Ymm,
+            s::AssemblyClass::Zmm => Register::Zmm,
             s::AssemblyClass::Abcd => return Err(ABCD),
             s::AssemblyClass::Byte => return Err(BYTE),
             s::AssemblyClass::Explicit { base, bytes, xmm } => {
@@ -240,9 +244,9 @@ pub(super) fn validate(
     *steps = steps.saturating_add(rows.instructions.len().saturating_add(rows.operands.len()));
     Ok(())
 }
-/// Each `xmm_reg` input is re-proved against the consumer's own facts: a
-/// 128-bit vector, under the consumer's target baseline plus the closure of
-/// the owning function's imported declared target features, if any.
+/// Each vector operand is re-proved against the consumer's own lane and width
+/// facts, under its target baseline plus the owning function's imported
+/// declared feature closure. The register class and payload width stay distinct.
 pub(super) fn check(
     facts: &Declarations,
     view: &SourceOriginal<'_>,
@@ -255,10 +259,13 @@ pub(super) fn check(
     work.charge(data.operands.len())?;
     let mut available = None;
     for operand in &data.operands {
-        if operand.register != Register::Xmm {
-            continue;
-        }
-        simd_operand(
+        let check = match operand.register {
+            Register::Xmm => simd_operand,
+            Register::Ymm => ymm_operand,
+            Register::Zmm => zmm_operand,
+            _ => continue,
+        };
+        check(
             facts,
             operand.ty.ok_or("source assembly operand lost its type")?,
         )?;
@@ -270,7 +277,7 @@ pub(super) fn check(
                     .unwrap_or_default(),
             )),
         };
-        baseline.admit_imported_xmm(imported)?;
+        baseline.admit_imported_vector(imported, operand.register)?;
     }
     Ok(())
 }

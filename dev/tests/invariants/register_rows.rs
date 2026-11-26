@@ -644,3 +644,100 @@ fn pure_vector_outputs_require_their_exact_memory_and_result_contract() -> Resul
     }
     Ok(())
 }
+
+fn wide_provider() -> Result<crates::Interface> {
+    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
+    let mut body =
+        crate::test_source::fixture("pa41/tests/spec/source-wide-registers/provider.rs")?;
+    let files: [(&str, &[&str]); 3] = [
+        (
+            "avx.rs",
+            &[
+                "_mm256_stream_si256",
+                "_mm256_stream_pd",
+                "_mm256_stream_ps",
+            ],
+        ),
+        ("avx2.rs", &["_mm256_stream_load_si256"]),
+        (
+            "avx512f.rs",
+            &[
+                "_mm512_stream_ps",
+                "_mm512_stream_pd",
+                "_mm512_stream_si512",
+                "_mm512_stream_load_si512",
+            ],
+        ),
+    ];
+    for (file, names) in files {
+        let original = crate::test_source::fixture(&format!("pa41/tests/upstream/rust/{file}"))?;
+        for name in names {
+            let at = original
+                .find(&format!("pub unsafe fn {name}("))
+                .ok_or("original function")?;
+            let start = original[..at].rfind("#[inline]").ok_or("original header")?;
+            let end = at + original[at..].find("\n}").ok_or("original end")? + 2;
+            body = body.replace(&format!("// ORIGINAL_{name}"), &original[start..end]);
+        }
+    }
+    exported_profile(
+        &format!("#![feature(auto_traits)]\n{foundation}{body}"),
+        SourcePublication::ModuleBodyOperations,
+        "wide_assembly",
+    )
+}
+
+#[test]
+fn wider_register_classes_round_trip_without_erasing_narrow_payload_types() -> Result {
+    let interface = wide_provider()?;
+    let bytes = crates::encode(&interface)?;
+    let decoded = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&decoded)?, bytes);
+    let (rows, _, _) = raw(&decoded)?;
+    let mut seen = [0_usize; 4];
+    let mut payloads = [
+        std::collections::BTreeSet::new(),
+        std::collections::BTreeSet::new(),
+    ];
+    for body in &rows.originals {
+        let Some(assembly) = body.assembly.as_deref() else {
+            continue;
+        };
+        for operand in &assembly.operands {
+            let class = match operand.class {
+                s::AssemblyClass::Ymm => 0,
+                s::AssemblyClass::Zmm => 1,
+                _ => continue,
+            };
+            seen[class] += 1;
+            seen[2 + class] += usize::from(operand.output.is_some());
+            let Some(s::Type::Nominal { declaration, .. }) = rows.types.get(operand.ty.0 as usize)
+            else {
+                return Err("vector payload lost its nominal type".into());
+            };
+            assert_eq!(declaration.artifact.0, 0);
+            let name = rows
+                .declarations
+                .get(declaration.declaration.0 as usize)
+                .and_then(|declaration| declaration.name.as_deref())
+                .ok_or("payload name")?;
+            payloads[class].insert(name);
+        }
+        assert!(assembly.pieces.iter().all(|piece| piece.modifier == 0));
+    }
+    assert!(seen.into_iter().all(|count| count > 0), "{seen:?}");
+    for (class, names) in [
+        (0, &["Narrow128", "__m256i"][..]),
+        (1, &["Narrow128", "__m256i", "__m512i"][..]),
+    ] {
+        for name in names {
+            assert!(
+                payloads[class].contains(name),
+                "{name}: {:?}",
+                payloads[class]
+            );
+        }
+    }
+    Ok(())
+}

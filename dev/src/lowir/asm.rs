@@ -40,13 +40,30 @@ pub enum Kind {
     /// A `v128` whose `ptr` arguments address its input/output snapshots,
     /// bound to one of xmm0 to xmm15.
     Vector,
+    /// A wider vector whose `ptr` arguments address its actual payload bytes.
+    WideVector(Wide),
+}
+/// The backend stores wider vectors as aligned objects, not scalar types.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Wide {
+    /// A 256-bit payload, `obj<32x32>`.
+    Ymm,
+    /// A 512-bit payload, `obj<64x64>`.
+    Zmm,
 }
 impl Kind {
+    /// Whether the value occupies the shared physical vector-register bank.
+    #[must_use]
+    pub const fn is_vector(self) -> bool {
+        matches!(self, Self::Vector | Self::WideVector(_))
+    }
     pub(super) const fn type_name(self) -> &'static str {
         match self {
             Self::Pointer => "ptr",
             Self::Integer(ty) => ty.name(),
             Self::Vector => "v128",
+            Self::WideVector(Wide::Ymm) => "obj<32x32>",
+            Self::WideVector(Wide::Zmm) => "obj<64x64>",
         }
     }
     /// The input-storage flag: whether the argument is a pointer to the value.
@@ -54,7 +71,7 @@ impl Kind {
     pub const fn stored(self) -> u8 {
         match self {
             Self::Pointer | Self::Integer(_) => 0,
-            Self::Vector => 1,
+            Self::Vector | Self::WideVector(_) => 1,
         }
     }
     /// The registers the backend may bind, each a single-register group.
@@ -65,7 +82,9 @@ impl Kind {
                 "rax", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14",
                 "r15",
             ],
-            Self::Vector => &[
+            // Every group has width zero: these names identify whole physical
+            // vector registers. Payload types and template uses supply views.
+            Self::Vector | Self::WideVector(_) => &[
                 "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", "xmm9",
                 "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
             ],
@@ -333,7 +352,7 @@ impl<'a> Draft<'a> {
             return Err("invalid LowIR assembly operand or order");
         }
         if matches!(kind, Kind::Integer(ty) if !matches!(ty, Type::I32 | Type::U32 | Type::I64))
-            || fixed.is_some() && kind == Kind::Vector
+            || fixed.is_some() && kind.is_vector()
         {
             return Err("unsupported LowIR assembly register type");
         }
@@ -390,19 +409,25 @@ impl<'a> Draft<'a> {
     pub fn operand_use(&mut self, operand: u32) -> Result<(), &'static str> {
         self.operand_use_view(operand, 0)
     }
-    /// Use the default register view or an explicit 32-/64-bit general view.
+    /// Use the default view, a 32-/64-bit general view, or a vector bank view.
     /// # Errors
-    /// Refuses stale operands, unsupported views and vector widening.
+    /// Refuses stale operands and views from another register bank. A wider
+    /// vector view never widens the operand's captured storage type.
     pub fn operand_use_view(&mut self, operand: u32, bits: u16) -> Result<(), &'static str> {
         let declared = index(self.assemblies.operands.len())? - self.operands;
         if operand >= declared {
             return Err("LowIR assembly use names an undeclared operand");
         }
         index(self.assemblies.pieces.len() + 1)?;
-        if !matches!(bits, 0 | 32 | 64)
-            || bits != 0
-                && self.assemblies.operands[(self.operands + operand) as usize].kind == Kind::Vector
-        {
+        let vector = self.assemblies.operands[(self.operands + operand) as usize]
+            .kind
+            .is_vector();
+        let admitted = if vector {
+            matches!(bits, 0 | 128 | 256 | 512)
+        } else {
+            matches!(bits, 0 | 32 | 64)
+        };
+        if !admitted {
             return Err("unsupported LowIR assembly operand view");
         }
         self.assemblies.pieces.push(Piece::Use { operand, bits });

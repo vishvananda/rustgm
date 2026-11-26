@@ -22,7 +22,7 @@ use crate::{
     },
 };
 use rustgm::lowir::{
-    asm::{Kind, Memory, Part},
+    asm::{Kind, Memory, Part, Wide},
     boundary::{self, Class, Classes},
     data::{GlobalId, GlobalKind, GlobalStorage, Item, Target},
     program::{
@@ -356,6 +356,8 @@ impl<'p> Stater<'p> {
                     ty: match kind {
                         Kind::Pointer => TYPE_PTR,
                         Kind::Vector => TYPE_V128,
+                        Kind::WideVector(Wide::Ymm) => object(32, 5),
+                        Kind::WideVector(Wide::Zmm) => object(64, 6),
                         Kind::Integer(ty) => scalar(ty),
                     },
                     input: binding.input.unwrap_or(NO_ID),

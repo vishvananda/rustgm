@@ -86,14 +86,14 @@ def main():
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
                                  "source-captured-protocol-requests",
-                                 "source-integer-assembly", "source-fixed-registers", "source-memory-assembly"))
+                                 "source-integer-assembly", "source-fixed-registers", "source-memory-assembly", "source-wide-registers"))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers", "source-memory-assembly") else FIXTURES
+    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers", "source-memory-assembly", "source-wide-registers") else FIXTURES
     fixture = fixture_root / args.case
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")
@@ -114,10 +114,29 @@ def main():
     importer = [*common, "--crate-name", "client", "--crate-disambiguator", f"{disambiguator}_client",
                 "--source-client", identity]
     check.run("client", [*importer, "--extern", f"base={artifact}", "-o", consumer, client], timeout=30)
+    if any(fragment not in consumer.read_text() for fragment in contract.get("required_lowir", ())):
+        raise ValueError("required original/vector body was not emitted")
     native = check.folder / "observe"
     backend.build_many([provider, consumer], native, native_objects=[observer])
     if check.run("execute", [native], timeout=15).stdout != expected:
         raise ValueError("the fresh native client differed from the declared stdout")
+    for compiled in contract.get("compile_only_clients", ()):
+        path = fixture / compiled["path"]
+        label = path.stem.replace("-", "_")
+        check.run(f"rustc-compile-only-{label}", [args.rustc.resolve(strict=True),
+                  "--edition=2024", "-C", "panic=abort", "--crate-type=lib", "--crate-name", label,
+                  "--extern", f"base={check.folder / 'libbase.rlib'}", "--emit=obj",
+                  "-o", check.folder / f"pinned-{label}.o", path],
+                  timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
+        lowir = check.folder / f"{label}.lowir"
+        check.run(f"compile-only-{label}", [*importer, "--extern", f"base={artifact}",
+                  "-o", lowir, path], timeout=30)
+        text = lowir.read_text()
+        if any(fragment not in text for fragment in compiled["required_lowir"]):
+            raise ValueError(f"{label}: required original/vector body was not emitted")
+        output = check.folder / f"{label}.o"
+        backend.emit_object(lowir, output, backend.load_tools(("cppgm",)))
+        (check.folder / f"{label}.object.sha256").write_text(sha256(output.read_bytes()).hexdigest() + "\n")
     if refusal := contract.get("older_profile"):
         old = check.folder / "old.rgcrate"
         older_options = ["--cfg", contract["older_profile_cfg"]] if "older_profile_cfg" in contract else []
@@ -136,7 +155,7 @@ def main():
             fenced.write_bytes(prefix + (fixture / name).read_bytes())
             check.run(f"fence-rustc-{stem}", [args.rustc.resolve(strict=True), "--edition=2024",
                       "--crate-type=lib", "--crate-name=base", "--emit=metadata", "-o",
-                      check.folder / f"{stem}.rmeta", fenced], fences["rustc_status"],
+                      check.folder / f"{stem}.rmeta", fenced], fences["rustc_status"], fences.get("rustc", ()),
                       timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
             for profile in fences["profiles"]:
                 rejected = check.folder / f"{stem}-{profile}.rgcrate"
@@ -144,7 +163,7 @@ def main():
                           "--metadata-output", rejected, "-o", check.folder / f"{stem}.lowir",
                           fenced], fences["rustgm_status"], [fences["rustgm"]], timeout=30)
                 if rejected.exists():
-                    raise ValueError("unsupported profile published discarded writes")
+                    raise ValueError("rejected assembly control published metadata")
     if error := contract.get("unmarked_error"):
         marker = b"#[rustc_promotable]\n"
         text = source.read_bytes()

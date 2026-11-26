@@ -366,5 +366,16 @@
       "readonly.rs": "accept"
     },
     "pending": "Original movntdqa acceptance remains expected success pending pinned backend opcode support."
+  },
+  "wider_vector_extension": {
+    "classes": [
+      "ymm_reg",
+      "zmm_reg"
+    ],
+    "payloads": "Actual 128/256/512-bit value storage, separately from the class register view; a wider view never widens captured memory.",
+    "transport": "v14 class tags 5 and 6; v13 keeps its class fences and unknown-tag rejections.",
+    "native": "source-wide-registers/outcomes.json; 256-bit original stores, copies and ordinary loads execute on AVX2.",
+    "compile_only": "512-bit original stores, copies, narrow views and ordinary loads produce objects; current host lacks AVX-512.",
+    "pending": "Original vmovntdqa runtime acceptance and AVX-512 runtime remain expected successes, not passing rejections."
   }
 }

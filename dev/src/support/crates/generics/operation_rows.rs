@@ -648,6 +648,8 @@ pub enum AssemblyClass {
     Abcd,
     Byte,
     Vector,
+    Ymm,
+    Zmm,
     Explicit { base: u8, bytes: u8, xmm: bool },
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

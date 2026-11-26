@@ -28,7 +28,7 @@
 //! - `rg_library_tick()`: its thread's instance of the thread-local
 //!   `rg_library_ticks`, which starts at 10, incremented.
 use rustgm::lowir::{
-    asm::{self, Gpr, Kind, Memory},
+    asm::{self, Gpr, Kind, Memory, Wide},
     boundary::{self, Class, Classes, ObjectValue, ResultValue},
     data::{GlobalStorage, Item, Target},
     program::{MemorySpan, Operand, Program, SignatureId, Terminator, Value},
@@ -274,6 +274,38 @@ fn stream(program: &mut Program) -> Result<(), &'static str> {
     program.define(symbol, body.finish()?)
 }
 
+/// Vector payload storage and register views are independent: the narrow
+/// case captures only 128 bits while its invocation names a YMM register.
+fn vector_copy(
+    program: &mut Program,
+    name: &str,
+    kind: Kind,
+    view: u16,
+) -> Result<(), &'static str> {
+    let mut draft = program.assembly()?;
+    draft.binding(kind, None, true, true, false)?;
+    draft.text(if view == 512 {
+        "vmovdqa32 "
+    } else {
+        "vmovdqa "
+    })?;
+    draft.operand_use_view(0, view)?;
+    draft.text(", ")?;
+    draft.operand_use_view(0, view)?;
+    let template = draft.finish_memory(asm::DUPLICABLE, 0, 0, false, Memory::None)?;
+    let signature = program.signature(&[Type::Ptr, Type::Ptr], Type::Void, false)?;
+    let symbol = program.declare(name.into(), signature, false)?;
+    let mut body = program.body_builder();
+    let entry = body.block()?;
+    body.enter(entry)?;
+    body.asm(
+        template,
+        &[parameter(Type::Ptr, 1), parameter(Type::Ptr, 0)],
+    )?;
+    body.terminate(Terminator::Return(None))?;
+    program.define(symbol, body.finish()?)
+}
+
 /// `rg_library_turn`: the two floats after the integer. The floats share the
 /// first eightbyte of the parameter, which C passes in an SSE register.
 fn turn(program: &mut Program) -> Result<(), &'static str> {
@@ -402,6 +434,19 @@ fn module() -> Result<Program, &'static str> {
     apply(&mut program, swapped)?;
     tally(&mut program)?;
     stream(&mut program)?;
+    vector_copy(
+        &mut program,
+        "rg_library_copy256",
+        Kind::WideVector(Wide::Ymm),
+        256,
+    )?;
+    vector_copy(&mut program, "rg_library_narrow_ymm", Kind::Vector, 256)?;
+    vector_copy(
+        &mut program,
+        "rg_library_copy512",
+        Kind::WideVector(Wide::Zmm),
+        512,
+    )?;
     turn(&mut program)?;
     stop(&mut program)?;
     matched(&mut program)?;

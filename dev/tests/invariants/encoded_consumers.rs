@@ -223,3 +223,73 @@ fn encoded_calls_reject_real_wrong_type_arity_trait_and_dead_borrow() -> Result 
     }
     Ok(())
 }
+
+#[test]
+fn wider_register_body_uses_its_owner_features_even_for_a_stronger_caller() -> Result {
+    use crate::support::crates::generics::{self as g, source as s};
+    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
+    // These authored companions do not call the original streaming functions:
+    // their unsubstituted original markers are comments in this isolated test.
+    let body = crate::test_source::fixture("pa41/tests/spec/source-wide-registers/provider.rs")?;
+    let artifact = module_packets::exported_profile(
+        &format!("#![feature(auto_traits)]\n{foundation}{body}"),
+        SourcePublication::ModuleBodyOperations,
+        "wide_owner",
+    )?;
+    let source =
+        crate::test_source::fixture("pa41/tests/spec/source-wide-registers/forged_client.rs")?;
+    let program =
+        crate::source_packets::client(crates::decode(&crates::encode(&artifact)?)?, &source)?;
+    assert!(program.assembly_templates().is_some());
+    let descriptor = artifact.source_descriptor().ok_or("source descriptor")?;
+    let (mut rows, attributes, modules) = module_packets::raw(&artifact)?;
+    let declarations = &rows.declarations;
+    let body = rows
+        .originals
+        .iter_mut()
+        .find(|body| {
+            declarations[body.declaration.0 as usize].name.as_deref() == Some("narrow128_ymm")
+        })
+        .ok_or("narrow original")?;
+    let assembly = body.assembly.as_deref_mut().ok_or("actual assembly")?;
+    assert!(
+        assembly
+            .operands
+            .iter()
+            .all(|operand| operand.class == s::AssemblyClass::Ymm)
+    );
+    for operand in &mut assembly.operands {
+        operand.class = s::AssemblyClass::Zmm;
+    }
+    let payload = g::Payload::from_source_module_body_operations(
+        artifact.identity(),
+        rows,
+        attributes,
+        modules,
+        descriptor.availability()?.clone(),
+        0,
+        &mut g::Work::default(),
+    )?;
+    let mut forged = crates::Interface::new(
+        artifact.identity().clone(),
+        artifact.dependencies().to_vec(),
+        Vec::new(),
+    )?
+    .with_generic_payload(payload)?
+    .with_loader_flags(artifact.loader_flags())?;
+    if let Some(macros) = artifact.macros() {
+        forged = forged.with_macros(macros.clone())?;
+    }
+    let decoded = crates::decode(&crates::encode(&forged)?)?;
+    let error = crate::source_packets::client(decoded, &source)
+        .err()
+        .ok_or("forged body was admitted")?;
+    assert!(
+        error
+            .to_string()
+            .contains("assembly register class requires the avx512f target feature"),
+        "{error}"
+    );
+    Ok(())
+}

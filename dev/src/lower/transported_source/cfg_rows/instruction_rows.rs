@@ -45,7 +45,9 @@ pub(super) fn preflight(
                             Err("assembly fixed register width differs from its integer operand")
                         }
                     }
-                    Register::Xmm => input_type(facts, operand.register, ty),
+                    Register::Xmm | Register::Ymm | Register::Zmm => {
+                        input_type(facts, operand.register, ty)
+                    }
                     _ if operand.output.is_some() => Err(OUTPUT),
                     _ => input_type(facts, operand.register, ty),
                 }
@@ -68,8 +70,9 @@ fn text_bytes(data: &assembly::Payload) -> usize {
         .map(|template| template.text.len())
         .fold(0_usize, usize::saturating_add)
 }
-/// A `reg` input is a thin raw pointer and an `xmm_reg` input a nominal,
-/// which only a 128-bit vector can be once lowering checks its layout.
+/// A `reg` input is a thin raw pointer. Vector operands keep their actual
+/// nominal type; semantic checking and each imported body prove its lanes,
+/// width and target features.
 fn input_type(facts: &Declarations, register: Register, ty: TypeId) -> Result<(), &'static str> {
     match (register, facts.types.kind(ty)) {
         (Register::General, Some(Kind::Pointer { pointee, .. })) => {
@@ -80,7 +83,7 @@ fn input_type(facts: &Declarations, register: Register, ty: TypeId) -> Result<()
             }
         }
         (Register::General, _) => Err(GENERAL),
-        (Register::Xmm, Some(Kind::Adt(..))) => Ok(()),
+        (Register::Xmm | Register::Ymm | Register::Zmm, Some(Kind::Adt(..))) => Ok(()),
         (Register::Xmm, _) => Err(XMM),
         (register, _) => Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     }
@@ -190,6 +193,8 @@ fn operand_row(
     let class = match operand.register {
         Register::General => s::AssemblyClass::General,
         Register::Xmm => s::AssemblyClass::Vector,
+        Register::Ymm => s::AssemblyClass::Ymm,
+        Register::Zmm => s::AssemblyClass::Zmm,
         Register::Explicit { base, bytes, xmm } => s::AssemblyClass::Explicit { base, bytes, xmm },
         register => return Err(assembly::profile::class(register).unwrap_or(GENERAL)),
     };

@@ -1,0 +1,156 @@
+{
+  "foundation": "pa41/tests/spec/asm-native/native.rs",
+  "prefix_marker": "#[repr(simd)]",
+  "features": [
+    "auto_traits"
+  ],
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "client512.rs",
+    "invalid.rs",
+    "observe.c",
+    "observe512.c",
+    "runtime_load256.rs",
+    "runtime_load512.rs",
+    "missing-feature.rs",
+    "forged_client.rs"
+  ],
+  "originals": [
+    {
+      "path": "pa41/tests/upstream/rust/avx.rs",
+      "start": 79363,
+      "end": 79826,
+      "sha256": "c3b8ce5dd7f8867372c34414a1dc2826843d4011a3f96fb714e926feaa107447",
+      "marker": "// ORIGINAL__mm256_stream_si256"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx.rs",
+      "start": 80553,
+      "end": 81046,
+      "sha256": "1f0d58e594c83ba33762280f573ef7473e840e6ba7ea4a24e17c0f6089b3760c",
+      "marker": "// ORIGINAL__mm256_stream_pd"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx.rs",
+      "start": 81791,
+      "end": 82283,
+      "sha256": "4fb17ea4b4a61c573f733cbd731630cf36a9d7f8aa4cec8fc5a2343a2d626ef7",
+      "marker": "// ORIGINAL__mm256_stream_ps"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx2.rs",
+      "start": 134809,
+      "end": 135244,
+      "sha256": "d6cc9c96a34bc57ab48c5de6f7984ebc23a063304eceffb03bb74ccbf3c2a0a8",
+      "marker": "// ORIGINAL__mm256_stream_load_si256"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx512f.rs",
+      "start": 1598079,
+      "end": 1598583,
+      "sha256": "9e5146cdb005794fd2b315288a08ccc6d0ccb172bc17b8cda409b242f90dfd64",
+      "marker": "// ORIGINAL__mm512_stream_ps"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx512f.rs",
+      "start": 1599355,
+      "end": 1599860,
+      "sha256": "2546ca7d20809f3780016d5f98079589c46ccf7840573cf5cfa1449d73790919",
+      "marker": "// ORIGINAL__mm512_stream_pd"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx512f.rs",
+      "start": 1600578,
+      "end": 1601090,
+      "sha256": "c5503b95f539615dd5c936211b587de6f7080ec2e61e442e92e9c2b1ff3b4713",
+      "marker": "// ORIGINAL__mm512_stream_si512"
+    },
+    {
+      "path": "pa41/tests/upstream/rust/avx512f.rs",
+      "start": 1601514,
+      "end": 1601909,
+      "sha256": "6e2e45ac55903c3fbcf5a7b5e446fd570bc45119dc2a19c8b26ffb2ab5e0f7dd",
+      "marker": "// ORIGINAL__mm512_stream_load_si512"
+    }
+  ],
+  "stdout": "1 1 1 1 1 1 1 99\n",
+  "older_profile": "inline assembly ymm_reg operand is outside the initial assembly profile",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "mismatched types",
+    "rustgm": "incompatible types"
+  },
+  "compile_only_clients": [
+    {
+      "path": "client512.rs",
+      "reason": "AVX-512 execution requires compatible hardware; current host has AVX2 only.",
+      "required_lowir": [
+        "obj<64x64>",
+        "512 0",
+        "vmovntdq",
+        "vmovntpd",
+        "vmovntps",
+        "vmovdqa32"
+      ]
+    },
+    {
+      "path": "forged_client.rs",
+      "reason": "Honest control under a stronger caller for a separately forged-metadata test; no execution.",
+      "required_lowir": [
+        "operand v128",
+        "256 0"
+      ]
+    }
+  ],
+  "pending_runtime": {
+    "original_256_load": {
+      "client": "runtime_load256.rs",
+      "observer": "observe.c",
+      "expected_status": 0,
+      "stdout": "1 1 1 1 1 1 1 99\n",
+      "blocker": "Pinned CPPGM does not implement vmovntdqa; original template stays intact."
+    },
+    "avx512": {
+      "client": "client512.rs",
+      "observer": "observe512.c",
+      "expected_status": 0,
+      "stdout": "1 1 1 1 1 1 1 1 99\n",
+      "blocker": "Current host lacks AVX-512; object generation alone is not execution qualification."
+    },
+    "original_512_load": {
+      "client": "runtime_load512.rs",
+      "observer": "observe512.c",
+      "expected_status": 0,
+      "stdout": "1 1 1 1 1 1 1 1 99\n",
+      "blocker": "Pinned CPPGM lacks vmovntdqa and this host lacks AVX-512."
+    }
+  },
+  "older_profile_cfg": "older_profile",
+  "required_lowir": [
+    "operand obj<32x32>",
+    "operand v128",
+    "256 0",
+    "vmovntdq",
+    "vmovntpd",
+    "vmovntps"
+  ],
+  "profile_fences": {
+    "prefix_marker": "#[repr(simd)]",
+    "cases": [
+      "missing-feature.rs"
+    ],
+    "profiles": [
+      "module-body-operations-v14",
+      "module-bodies-v13"
+    ],
+    "rustc_status": 1,
+    "rustgm_status": 1,
+    "rustc": [
+      "requires the `avx` target feature"
+    ],
+    "rustgm": "assembly register class requires the avx target feature",
+    "kind": "Invalid source: missing AVX on the owning function, independent of metadata version."
+  },
+  "forgery": "A caller with AVX-512 cannot pay a forged ZMM requirement of an AVX-only defining body. The honest packet must first compile and instantiate actual assembly."
+}

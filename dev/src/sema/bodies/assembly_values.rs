@@ -298,18 +298,24 @@ pub(crate) fn simd_operand(
         Err("assembly xmm vector requires exactly 128 bits of supported numeric lanes")
     }
 }
-/// A `ymm_reg` vector: 128 or 256 bits of supported numeric lanes. No
-/// imported body carries one, since the initial assembly profile rejects it.
-fn ymm_operand(facts: &crate::sema::model::Declarations, ty: TypeId) -> Result<(), &'static str> {
+/// A `ymm_reg` vector: 128 or 256 bits of supported numeric lanes, re-proved
+/// for both local and imported bodies.
+pub(crate) fn ymm_operand(
+    facts: &crate::sema::model::Declarations,
+    ty: TypeId,
+) -> Result<(), &'static str> {
     if matches!(simd_bits(facts, ty)?, Some(128 | 256)) {
         Ok(())
     } else {
         Err("assembly ymm vector requires 128 or 256 bits of supported numeric lanes")
     }
 }
-/// A `zmm_reg` vector: 128, 256 or 512 bits of supported numeric lanes. No
-/// imported body carries one, since the initial assembly profile rejects it.
-fn zmm_operand(facts: &crate::sema::model::Declarations, ty: TypeId) -> Result<(), &'static str> {
+/// A `zmm_reg` vector: 128, 256 or 512 bits of supported numeric lanes,
+/// re-proved for both local and imported bodies.
+pub(crate) fn zmm_operand(
+    facts: &crate::sema::model::Declarations,
+    ty: TypeId,
+) -> Result<(), &'static str> {
     if matches!(simd_bits(facts, ty)?, Some(128 | 256 | 512)) {
         Ok(())
     } else {

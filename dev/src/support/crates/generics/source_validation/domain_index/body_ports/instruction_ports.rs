@@ -245,6 +245,20 @@ impl DomainIndex<'_, '_> {
                 }
                 _ => Err(profile::XMM),
             },
+            s::AssemblyClass::Ymm | s::AssemblyClass::Zmm => {
+                let form = if operand.class == s::AssemblyClass::Ymm {
+                    profile::YMM
+                } else {
+                    profile::ZMM
+                };
+                if self.declaration_policies
+                    && matches!(ty(operand.ty), Some(s::Type::Nominal { .. }))
+                {
+                    Ok(())
+                } else {
+                    Err(form)
+                }
+            }
             s::AssemblyClass::Abcd => Err(profile::ABCD),
             s::AssemblyClass::Byte => Err(profile::BYTE),
             s::AssemblyClass::Explicit { base, bytes, xmm } => {

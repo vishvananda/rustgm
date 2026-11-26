@@ -6,7 +6,7 @@ use crate::{
     body::assembly::{self, Piece, Template},
     lower::context::Representation,
     lowir::{
-        asm::{self as lowir, Draft, Gpr, Kind, Memory},
+        asm::{self as lowir, Draft, Gpr, Kind, Memory, Wide},
         vocabulary::Type,
     },
     syntax::assembly::{self as syntax, Register},
@@ -50,6 +50,10 @@ impl Lower<'_, '_, '_> {
             .templates
             .get(instruction.templates.start as usize..instruction.templates.end as usize)
             .ok_or("assembly template range is invalid")?;
+        let operands = data
+            .operands
+            .get(instruction.operands.start as usize..instruction.operands.end as usize)
+            .ok_or("assembly operand range is invalid")?;
         let mut draft = self.context.output.assembly()?;
         for (kind, fixed, input, output, late) in bindings {
             draft.binding(kind, fixed, input, output, late)?;
@@ -58,7 +62,12 @@ impl Lower<'_, '_, '_> {
             if index != 0 {
                 draft.text("\n")?;
             }
-            text(&mut draft, template, pieces(&data.pieces, template)?)?;
+            text(
+                &mut draft,
+                template,
+                pieces(&data.pieces, template)?,
+                operands,
+            )?;
         }
         let mut properties = if instruction.options & syntax::PURE == 0 {
             lowir::SIDE_EFFECT
@@ -109,7 +118,7 @@ impl Lower<'_, '_, '_> {
         if operand.output.is_some() {
             let slot = match self.context.representation(ty)? {
                 Representation::Scalar(native) => self.builder.slot(native)?,
-                Representation::Object(span) if kind == Kind::Vector => {
+                Representation::Object(span) if kind.is_vector() => {
                     self.builder.object_slot(span)?
                 }
                 _ => return Err(OUTPUT),
@@ -136,13 +145,22 @@ impl Lower<'_, '_, '_> {
         ty: crate::types::TypeId,
         output: bool,
     ) -> Result<Kind, &'static str> {
-        if register == Register::Xmm {
-            return if matches!(self.context.types.kind(ty), Some(TypeKind::Adt(..)))
-                && matches!(self.context.representation(ty)?, Representation::Object(span) if span.bytes == 16)
-            {
-                Ok(Kind::Vector)
-            } else {
-                Err(XMM)
+        if let Some(maximum) = assembly::profile::vector_bytes(register) {
+            let error = assembly::profile::class(register).unwrap_or(XMM);
+            if !matches!(self.context.types.kind(ty), Some(TypeKind::Adt(..))) {
+                return Err(error);
+            }
+            let Representation::Object(span) = self.context.representation(ty)? else {
+                return Err(error);
+            };
+            if span.bytes > u64::from(maximum) {
+                return Err(error);
+            }
+            return match span.bytes {
+                16 => Ok(Kind::Vector),
+                32 => Ok(Kind::WideVector(Wide::Ymm)),
+                64 => Ok(Kind::WideVector(Wide::Zmm)),
+                _ => Err(error),
             };
         }
         if matches!(
@@ -220,23 +238,19 @@ impl Lower<'_, '_, '_> {
                     Err("assembly pointer input lost its scalar representation")
                 }
             }
-            Register::Xmm => {
+            Register::Xmm | Register::Ymm | Register::Zmm => {
+                let maximum = assembly::profile::vector_bytes(register).ok_or(XMM)?;
                 if !matches!(self.context.types.kind(ty), Some(TypeKind::Adt(..)))
-                    || !matches!(representation, Representation::Object(span) if span.bytes == 16)
+                    || !matches!(representation, Representation::Object(span) if span.bytes <= u64::from(maximum) && matches!(span.bytes, 16 | 32 | 64))
                 {
-                    return Err(XMM);
+                    return Err(assembly::profile::class(register).unwrap_or(XMM));
                 }
                 let Selected::Object(snapshot) = self.value(input)? else {
                     return Err("assembly vector input lacks its snapshot storage");
                 };
                 self.pointer(snapshot)
             }
-            Register::Abcd
-            | Register::Byte
-            | Register::Ymm
-            | Register::Zmm
-            | Register::Kreg
-            | Register::Explicit { .. } => {
+            Register::Abcd | Register::Byte | Register::Kreg | Register::Explicit { .. } => {
                 Err(assembly::profile::class(register).unwrap_or(GENERAL))
             }
         }
@@ -247,7 +261,12 @@ fn pieces<'a>(all: &'a [Piece], template: &Template) -> Result<&'a [Piece], &'st
         .ok_or("assembly piece range is invalid")
 }
 /// The template's literal text, with `{{` and `}}` unescaped, around its uses.
-fn text(draft: &mut Draft<'_>, template: &Template, pieces: &[Piece]) -> Result<(), &'static str> {
+fn text(
+    draft: &mut Draft<'_>,
+    template: &Template,
+    pieces: &[Piece],
+    operands: &[assembly::Operand],
+) -> Result<(), &'static str> {
     let mut cursor = 0;
     for piece in pieces {
         let start = piece.start as usize;
@@ -258,7 +277,15 @@ fn text(draft: &mut Draft<'_>, template: &Template, pieces: &[Piece]) -> Result<
         let bits = match piece.modifier {
             b'e' => 32,
             b'r' => 64,
-            _ => 0,
+            _ => match operands
+                .get(piece.operand as usize)
+                .map(|operand| operand.register)
+            {
+                Some(Register::Ymm) => 256,
+                Some(Register::Zmm) => 512,
+                Some(_) => 0,
+                None => return Err("assembly placeholder names a stale operand"),
+            },
         };
         draft.operand_use_view(piece.operand, bits)?;
         cursor = piece.end as usize;

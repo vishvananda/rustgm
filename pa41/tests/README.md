@@ -77,3 +77,8 @@ pinned CPPGM opcode support.
 assembly, full 128-bit output snapshots, aliased stores and memory dependencies.
 Run `check_source_artifact_clients.py --case source-memory-assembly`. Original
 SSE4.1 `movntdqa` runtime acceptance remains pending on pinned backend support.
+
+`spec/source-wide-registers/outcomes.json` declares actual 128/256/512-bit
+payloads independently of YMM/ZMM views. Original AVX stores and narrow YMM
+controls execute on AVX2; AVX-512 clients are object-only on this host. Original
+non-temporal load execution remains expected success pending backend support.

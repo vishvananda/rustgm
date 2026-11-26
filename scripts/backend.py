@@ -47,6 +47,9 @@ BRIDGE_TEXT = (
     " intel readwrite 1 0 0 2 {",
     " att read 2 0 1 3 {",
     " intel none 2 0 0 2 {",
+    "operand obj<32x32>",
+    "operand obj<64x64>",
+    "use 0 0 512 0",
     "    asm @",
 )
 # The bridge crate builds apart from the frontend's Cargo cache.
@@ -540,7 +543,7 @@ def test_bridge():
         require_bridge_weak_bindings(module, stated)
         require_instruction(module, "movntps", "0f 2b", ("rg_library_stream",))
         observer = folder / (form + "-observer")
-        invoke([*strict, str(ROOT / "tests" / "backend" / "library-observer.c"), str(module), "-o", str(observer)])
+        invoke([*strict, "-DRUSTGM_BRIDGE_WIDE", str(ROOT / "tests" / "backend" / "library-observer.c"), str(module), "-o", str(observer)])
         result = subprocess.run([str(observer)], capture_output=True, timeout=5)
         if result.returncode or result.stdout or result.stderr:
             raise ValueError(f"object the bridge compiled did not link and compute its declared results ({form})")

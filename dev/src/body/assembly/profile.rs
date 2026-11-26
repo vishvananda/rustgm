@@ -79,7 +79,11 @@ fn checked(
     }
     for operand in operands {
         check(operand)?;
-        if !(flags && matches!(operand.register, Register::Explicit { xmm: false, .. }))
+        if !(flags
+            && matches!(
+                operand.register,
+                Register::Explicit { xmm: false, .. } | Register::Ymm | Register::Zmm
+            ))
             && let Some(form) = class(operand.register)
         {
             return Err(form);
@@ -114,6 +118,16 @@ fn checked(
         comments.template(&template.text, spans)?;
     }
     Ok(())
+}
+
+/// The register class's maximum vector payload width in bytes.
+pub(crate) const fn vector_bytes(register: Register) -> Option<u8> {
+    match register {
+        Register::Xmm => Some(16),
+        Register::Ymm => Some(32),
+        Register::Zmm => Some(64),
+        _ => None,
+    }
 }
 
 /// Widths admitted by the integer-register extension, on the course target.

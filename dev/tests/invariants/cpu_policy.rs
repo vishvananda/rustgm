@@ -779,16 +779,43 @@ fn imported_assembly_bodies_use_the_baseline_and_their_imported_closure() -> Tes
     let pay = |_| Ok::<_, &'static str>(());
     let without = FeatureSet::default();
     let sse = FeatureSet::imported(["sse"], pay, std::convert::identity)?;
-    assert_eq!(without.admit_imported_xmm(sse), Ok(()));
     assert_eq!(
-        without.admit_imported_xmm(FeatureSet::default()),
+        without.admit_imported_vector(sse, crate::syntax::assembly::Register::Xmm),
+        Ok(())
+    );
+    assert_eq!(
+        without.admit_imported_vector(
+            FeatureSet::default(),
+            crate::syntax::assembly::Register::Xmm
+        ),
         Err("assembly register class requires the sse target feature")
     );
     let sse2 = FeatureSet::imported(["sse2"], pay, std::convert::identity)?;
     assert!(sse2.covers(sse), "the consumer closes sse2 itself");
-    assert_eq!(without.admit_imported_xmm(sse2), Ok(()));
+    assert_eq!(
+        without.admit_imported_vector(sse2, crate::syntax::assembly::Register::Xmm),
+        Ok(())
+    );
     let baseline = FeatureSet::target_baseline(pay, std::convert::identity)?;
-    assert_eq!(baseline.admit_imported_xmm(FeatureSet::default()), Ok(()));
+    assert_eq!(
+        baseline.admit_imported_vector(
+            FeatureSet::default(),
+            crate::syntax::assembly::Register::Xmm
+        ),
+        Ok(())
+    );
+    for (name, register) in [
+        ("avx", crate::syntax::assembly::Register::Ymm),
+        ("avx512f", crate::syntax::assembly::Register::Zmm),
+    ] {
+        let imported = FeatureSet::imported([name], pay, std::convert::identity)?;
+        assert_eq!(without.admit_imported_vector(imported, register), Ok(()));
+        assert!(
+            baseline
+                .admit_imported_vector(FeatureSet::default(), register)
+                .is_err()
+        );
+    }
     // Gated names resolve without the consumer's own crate gate.
     assert!(FeatureSet::imported(["x87"], pay, std::convert::identity).is_ok());
     for name in ["ssx", "soft-float", "retpoline-external-thunk", ""] {

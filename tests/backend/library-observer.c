@@ -109,6 +109,38 @@ static int ticked(void)
 	return first == 11 && second == 12 && other == 11 && rg_library_tick() == 13;
 }
 
+#ifdef RUSTGM_BRIDGE_WIDE
+/* The C-library module retains its original surface. The Rust bridge adds
+ * wider object payloads; execute them only when this host supports the ISA. */
+void rg_library_copy256(void*, const void*);
+void rg_library_narrow_ymm(void*, const void*);
+void rg_library_copy512(void*, const void*);
+static int copied(void (*copy)(void*, const void*), unsigned bytes)
+{
+	_Alignas(64) unsigned char input[64], buffer[192], saved[64];
+	for (unsigned i = 0; i < 64; ++i)
+		input[i] = (unsigned char)(i * 73 + 11);
+	memcpy(saved, input, 64);
+	memset(buffer, 77, sizeof buffer);
+	copy(buffer + 64, input);
+	if (memcmp(input, saved, 64))
+		return 0;
+	for (unsigned i = 0; i < 192; ++i)
+		if (buffer[i] != (i >= 64 && i < 64 + bytes ? input[i - 64] : 77))
+			return 0;
+	return 1;
+}
+static int wider(void)
+{
+	if (__builtin_cpu_supports("avx") &&
+		(!copied(rg_library_copy256, 32) || !copied(rg_library_narrow_ymm, 16)))
+		return 0;
+	if (__builtin_cpu_supports("avx512f") && !copied(rg_library_copy512, 64))
+		return 0;
+	return 1;
+}
+#endif
+
 int main(void)
 {
 	if (rg_library_seed != 40)
@@ -134,6 +166,10 @@ int main(void)
 		return 10;
 	if (!ticked())
 		return 11;
+#ifdef RUSTGM_BRIDGE_WIDE
+	if (!wider())
+		return 12;
+#endif
 	struct rg_floats floats = { { 1.5f, -2.25f }, 9 };
 	struct rg_tail tail = rg_library_turn(floats);
 	if (tail.n != 9 || tail.f[0] != 1.5f || tail.f[1] != -2.25f)

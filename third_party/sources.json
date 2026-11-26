@@ -1263,6 +1263,33 @@
       "adaptation": "none; original bytes retained; complete _mm_stream_load_si128 declaration and body inserted verbatim into a source provider",
       "oracle": "source-memory-assembly/outcomes.json",
       "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/avx.rs",
+      "destination": "pa41/tests/upstream/rust/avx.rs",
+      "sha256": "c50244e9e20413e5044d101b5ba63792dd730afcb31c0338f213092c69968e00",
+      "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
+      "oracle": "source-wide-registers/outcomes.json",
+      "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/avx2.rs",
+      "destination": "pa41/tests/upstream/rust/avx2.rs",
+      "sha256": "658c474f8b9a798c190095562504727e1a4ece787dd6798b85a3bcbfacb6b172",
+      "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
+      "oracle": "source-wide-registers/outcomes.json",
+      "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/avx512f.rs",
+      "destination": "pa41/tests/upstream/rust/avx512f.rs",
+      "sha256": "4af745549c5b2767a496732d06fd8325b1ad46705f648aebc0656a330e0e28c1",
+      "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
+      "oracle": "source-wide-registers/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

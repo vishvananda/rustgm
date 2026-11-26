@@ -135,12 +135,29 @@ impl FeatureSet {
     }
     /// An imported asm body may use the consumer's baseline plus its owner's
     /// imported closure, rustc's rule for a target-feature function's body.
-    pub(crate) fn admit_imported_xmm(self, imported: Self) -> Result<(), &'static str> {
-        if self.union(imported).supports_xmm() {
-            Ok(())
-        } else {
-            Err("assembly register class requires the sse target feature")
-        }
+    pub(crate) fn admit_imported_vector(
+        self,
+        imported: Self,
+        register: crate::syntax::assembly::Register,
+    ) -> Result<(), &'static str> {
+        use crate::syntax::assembly::Register;
+        let available = self.union(imported);
+        let (supported, error) = match register {
+            Register::Xmm => (
+                available.supports_xmm(),
+                "assembly register class requires the sse target feature",
+            ),
+            Register::Ymm => (
+                available.supports_ymm(),
+                "assembly register class requires the avx target feature",
+            ),
+            Register::Zmm => (
+                available.supports_zmm(),
+                "assembly register class requires the avx512f target feature",
+            ),
+            _ => return Err("imported vector has an unsupported assembly register class"),
+        };
+        if supported { Ok(()) } else { Err(error) }
     }
     /// The explicitly named features in table order, which is strictly
     /// increasing byte order.
