@@ -1290,6 +1290,24 @@
       "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
       "oracle": "source-wide-registers/outcomes.json",
       "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86/bt.rs",
+      "destination": "pa41/tests/upstream/rust/x86_bt.rs",
+      "sha256": "af67a510f27a4db2f62658d055e004f390429bd1e1a23c273796ac8bf586777a",
+      "adaptation": "none; the original 64-bit pointer macro and four functions are used verbatim",
+      "oracle": "source-byte-registers/outcomes.json",
+      "owning_assignment": "pa41"
+    },
+    {
+      "repository": "rust",
+      "path": "library/stdarch/crates/core_arch/src/x86_64/bt.rs",
+      "destination": "pa41/tests/upstream/rust/x86_64_bt.rs",
+      "sha256": "5be7e08dc0b9eb3227790e33731b8052ca901790692f5dc76a3a2bd657c6ed72",
+      "adaptation": "none; the original 64-bit pointer macro and four functions are used verbatim",
+      "oracle": "source-byte-registers/outcomes.json",
+      "owning_assignment": "pa41"
     }
   ]
 }

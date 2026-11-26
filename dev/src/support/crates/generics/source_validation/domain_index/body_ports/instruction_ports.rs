@@ -283,7 +283,18 @@ impl DomainIndex<'_, '_> {
                 }
             }
             s::AssemblyClass::Abcd => Err(profile::ABCD),
-            s::AssemblyClass::Byte => Err(profile::BYTE),
+            s::AssemblyClass::Byte => {
+                if self.declaration_policies
+                    && matches!(
+                        ty(operand.ty),
+                        Some(s::Type::Scalar(Scalar::I8 | Scalar::U8))
+                    )
+                {
+                    Ok(())
+                } else {
+                    Err(profile::BYTE)
+                }
+            }
             s::AssemblyClass::Explicit { base, bytes, xmm } => {
                 if !self.declaration_policies {
                     return Err(profile::EXPLICIT);

@@ -13,6 +13,10 @@ from crate_qualification import Check
 
 
 FOUNDATION = "pa31/tests/spec/source-enum-role-transport/provider.rs"
+ASSEMBLY_CASES = (
+    "source-integer-assembly", "source-fixed-registers", "source-memory-assembly",
+    "source-wide-registers", "source-byte-registers",
+)
 
 
 def assemble_provider(check, fixture, contract):
@@ -85,15 +89,14 @@ def main():
                                  "source-override-late-binders",
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
-                                 "source-captured-protocol-requests",
-                                 "source-integer-assembly", "source-fixed-registers", "source-memory-assembly", "source-wide-registers"))
+                                 "source-captured-protocol-requests", *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    fixture_root = ROOT / "pa41/tests/spec" if args.case in ("source-integer-assembly", "source-fixed-registers", "source-memory-assembly", "source-wide-registers") else FIXTURES
+    fixture_root = ROOT / "pa41/tests/spec" if args.case in ASSEMBLY_CASES else FIXTURES
     fixture = fixture_root / args.case
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")
@@ -115,7 +118,7 @@ def main():
                 "--source-client", identity]
     check.run("client", [*importer, "--extern", f"base={artifact}", "-o", consumer, client], timeout=30)
     if any(fragment not in consumer.read_text() for fragment in contract.get("required_lowir", ())):
-        raise ValueError("required original/vector body was not emitted")
+        raise ValueError("required LowIR was not emitted")
     native = check.folder / "observe"
     backend.build_many([provider, consumer], native, native_objects=[observer])
     if check.run("execute", [native], timeout=15).stdout != expected:

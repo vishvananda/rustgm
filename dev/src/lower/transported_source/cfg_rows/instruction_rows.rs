@@ -4,7 +4,7 @@
 use super::{Body, Context, Declarations, Stage, g, ir, s};
 use crate::{
     body::assembly,
-    support::initial_assembly::{GENERAL, OUTPUT, XMM},
+    support::initial_assembly::{ABCD, GENERAL, OUTPUT, XMM},
     syntax::{assembly::Register, ast::List},
     types::{Kind, Primitive, TypeId},
 };
@@ -32,11 +32,13 @@ pub(super) fn preflight(
             assembly::profile::flags(data, instruction, |operand| {
                 let ty = operand.ty.ok_or("source assembly operand lost its type")?;
                 let integer = match facts.types.kind(ty) {
-                    Some(Kind::Primitive(primitive)) => assembly::profile::integer_bytes(primitive),
+                    Some(Kind::Primitive(primitive)) => {
+                        assembly::profile::register_integer_bytes(operand.register, primitive)
+                    }
                     _ => None,
                 };
                 match operand.register {
-                    Register::General if integer.is_some() => Ok(()),
+                    Register::General | Register::Byte if integer.is_some() => Ok(()),
                     Register::Explicit { base, bytes, xmm } => {
                         crate::support::initial_assembly::fixed_register(base, bytes, xmm)?;
                         if integer == Some(bytes) {
@@ -197,12 +199,13 @@ fn operand_row(
 ) -> Result<s::AssemblyOperand, &'static str> {
     let class = match operand.register {
         Register::General => s::AssemblyClass::General,
+        Register::Byte => s::AssemblyClass::Byte,
         Register::Xmm => s::AssemblyClass::Vector,
         Register::Ymm => s::AssemblyClass::Ymm,
         Register::Zmm => s::AssemblyClass::Zmm,
         Register::Kreg => s::AssemblyClass::Kreg,
         Register::Explicit { base, bytes, xmm } => s::AssemblyClass::Explicit { base, bytes, xmm },
-        register => return Err(assembly::profile::class(register).unwrap_or(GENERAL)),
+        Register::Abcd => return Err(ABCD),
     };
     let ty = operand.ty.ok_or("source assembly operand lost its type")?;
     stage.prepare_type_arena(facts, ty)?;

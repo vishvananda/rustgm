@@ -40,7 +40,7 @@ fn columns(original: &s::Original) -> Result<s::Assembly> {
 }
 fn written(rows: &s::Assembly) -> Result<Vec<u8>> {
     let mut out = Writer::default();
-    instruction_columns::assembly_write(&mut out, rows)?;
+    instruction_columns::assembly_write(&mut out, rows, false)?;
     Ok(out.finish())
 }
 fn read(bytes: &[u8]) -> Row<s::Assembly> {

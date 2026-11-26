@@ -1,4 +1,4 @@
-//! Checked pointer inputs, vector inputs/outputs and 32-/64-bit general registers.
+//! Checked pointer inputs, scalar register operands and vector inputs/outputs.
 //! Output snapshots precede the CFG's ordered destination writes; dialect and
 //! memory effects remain explicit in each backend template.
 use super::{Address, Lower, Selected};
@@ -186,11 +186,8 @@ impl Lower<'_, '_, '_> {
                 _ => Err(error),
             };
         }
-        if matches!(
-            register,
-            Register::General | Register::Explicit { xmm: false, .. }
-        ) && let Some(TypeKind::Primitive(primitive)) = self.context.types.kind(ty)
-            && let Some(bytes) = assembly::profile::integer_bytes(primitive)
+        if let Some(TypeKind::Primitive(primitive)) = self.context.types.kind(ty)
+            && let Some(bytes) = assembly::profile::register_integer_bytes(register, primitive)
         {
             if matches!(register, Register::Explicit { bytes: declared, .. } if declared != bytes) {
                 return Err("assembly fixed register width differs from its integer operand");

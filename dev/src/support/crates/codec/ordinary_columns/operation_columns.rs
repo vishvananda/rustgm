@@ -117,9 +117,11 @@ fn original_profile(
     // Assembly columns follow exactly when a value is assembly.
     match (&row.assembly, has_assembly(&row.values)) {
         (None, false) => Ok(()),
-        (Some(assembly), true) if bodies => {
-            super::instruction_columns::assembly_write(out, assembly)
-        }
+        (Some(assembly), true) if bodies => super::instruction_columns::assembly_write(
+            out,
+            assembly,
+            generation == Generation::BodyPolicies,
+        ),
         (Some(_), true) => {
             Err("source inline assembly requires the version-thirteen body IR profile")
         }

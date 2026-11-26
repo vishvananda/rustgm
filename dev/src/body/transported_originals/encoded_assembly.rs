@@ -15,7 +15,7 @@ use crate::{
     },
     support::{
         crates::generics::source as s,
-        initial_assembly::{ABCD, BYTE, CONSTANT},
+        initial_assembly::{ABCD, CONSTANT},
     },
     syntax::{assembly::Register, ast::List},
 };
@@ -137,7 +137,7 @@ fn operand(
             s::AssemblyClass::Zmm => Register::Zmm,
             s::AssemblyClass::Kreg => Register::Kreg,
             s::AssemblyClass::Abcd => return Err(ABCD),
-            s::AssemblyClass::Byte => return Err(BYTE),
+            s::AssemblyClass::Byte => Register::Byte,
             s::AssemblyClass::Explicit { base, bytes, xmm } => {
                 Register::Explicit { base, bytes, xmm }
             }

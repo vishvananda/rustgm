@@ -512,7 +512,14 @@ impl Builder {
         if arguments.iter().any(|argument| {
             !matches!(
                 argument.ty,
-                Type::Ptr | Type::I16 | Type::U16 | Type::I32 | Type::U32 | Type::I64
+                Type::Ptr
+                    | Type::I8
+                    | Type::U8
+                    | Type::I16
+                    | Type::U16
+                    | Type::I32
+                    | Type::U32
+                    | Type::I64
             )
         }) {
             return Err("LowIR assembly arguments require pointers or supported integers");

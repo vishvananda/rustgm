@@ -83,6 +83,7 @@ fn checked(
             && matches!(
                 operand.register,
                 Register::Explicit { xmm: false, .. }
+                    | Register::Byte
                     | Register::Ymm
                     | Register::Zmm
                     | Register::Kreg
@@ -134,11 +135,23 @@ pub(crate) const fn vector_bytes(register: Register) -> Option<u8> {
 }
 
 /// Widths admitted by the integer-register extension, on the course target.
-pub(crate) const fn integer_bytes(primitive: crate::types::Primitive) -> Option<u8> {
+const fn integer_bytes(primitive: crate::types::Primitive) -> Option<u8> {
     use crate::types::Primitive;
     match primitive {
         Primitive::I32 | Primitive::U32 => Some(4),
         Primitive::I64 | Primitive::U64 | Primitive::Isize | Primitive::Usize => Some(8),
+        _ => None,
+    }
+}
+
+pub(crate) const fn register_integer_bytes(
+    register: Register,
+    primitive: crate::types::Primitive,
+) -> Option<u8> {
+    use crate::types::Primitive;
+    match register {
+        Register::Byte if matches!(primitive, Primitive::I8 | Primitive::U8) => Some(1),
+        Register::General | Register::Explicit { xmm: false, .. } => integer_bytes(primitive),
         _ => None,
     }
 }

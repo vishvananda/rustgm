@@ -3,7 +3,11 @@
 use super::{Input, Writer, crates, id, option, range, s, write};
 use crate::support::initial_assembly as profile;
 
-pub(super) fn assembly_write(out: &mut Writer, rows: &s::Assembly) -> Result<(), &'static str> {
+pub(super) fn assembly_write(
+    out: &mut Writer,
+    rows: &s::Assembly,
+    policies: bool,
+) -> Result<(), &'static str> {
     write(out, &rows.instructions, instruction_write)?;
     write(out, &rows.templates, |out, row| {
         out.string(&row.text)?;
@@ -15,7 +19,15 @@ pub(super) fn assembly_write(out: &mut Writer, rows: &s::Assembly) -> Result<(),
         }
         out.u8(row.modifier)
     })?;
-    write(out, &rows.operands, operand_write)
+    write(
+        out,
+        &rows.operands,
+        if policies {
+            |out, row| operand_write(out, row, true)
+        } else {
+            |out, row| operand_write(out, row, false)
+        },
+    )
 }
 pub(super) fn assembly_read(read: &mut Input<'_, '_>) -> Result<s::Assembly, &'static str> {
     Ok(s::Assembly {
@@ -81,11 +93,16 @@ fn piece_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyPiece, &'static str
         modifier,
     })
 }
-fn operand_write(out: &mut Writer, row: &s::AssemblyOperand) -> Result<(), &'static str> {
+fn operand_write(
+    out: &mut Writer,
+    row: &s::AssemblyOperand,
+    policies: bool,
+) -> Result<(), &'static str> {
     // Tag four has an exact fixed-register payload only in version fourteen.
     let tag = match row.class {
         s::AssemblyClass::General => 0,
         s::AssemblyClass::Abcd => return Err(profile::ABCD),
+        s::AssemblyClass::Byte if policies => 2,
         s::AssemblyClass::Byte => return Err(profile::BYTE),
         s::AssemblyClass::Vector => 3,
         s::AssemblyClass::Explicit { .. } => 4,
@@ -111,6 +128,7 @@ fn operand_read(read: &mut Input<'_, '_>) -> Result<s::AssemblyOperand, &'static
     let class = match read.reader.u8()? {
         0 => s::AssemblyClass::General,
         1 => return Err(profile::ABCD),
+        2 if read.profile.declaration_policies() => s::AssemblyClass::Byte,
         2 => return Err(profile::BYTE),
         3 => s::AssemblyClass::Vector,
         4 if read.profile.declaration_policies() => s::AssemblyClass::Explicit {

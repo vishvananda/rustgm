@@ -85,3 +85,9 @@ non-temporal load execution remains expected success pending backend support.
 The same suite checks the original `_mm_mask_load_ss` through a fresh client
 and an AVX-512F object. Its `u8` mask retains its source type and uses a
 16-bit backend transfer.
+
+`spec/source-byte-registers/outcomes.json` covers the eight original x86
+bit-test functions. A fresh client observes the carry bit through a one-byte
+output, with signed offsets across words. The observer checks both read-only
+and modifying forms and the surrounding guard bytes. Run
+`check_source_artifact_clients.py --case source-byte-registers`.

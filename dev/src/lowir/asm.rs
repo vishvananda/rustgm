@@ -35,7 +35,7 @@ const STATE: u8 = 63;
 pub enum Kind {
     /// A captured `ptr` bound to a general register other than rbx, rbp and rsp.
     Pointer,
-    /// A signed/unsigned 32-bit or raw 64-bit integer in a general register.
+    /// An 8-bit, 32-bit or 64-bit integer in a general register.
     Integer(Type),
     /// A scalar passed in the AVX-512 mask bank. Narrow values use a
     /// 16-bit transfer, as supported by the AVX-512F baseline.
@@ -355,7 +355,7 @@ impl<'a> Draft<'a> {
         if index(self.assemblies.pieces.len())? != self.pieces || (!input && !output) {
             return Err("invalid LowIR assembly operand or order");
         }
-        if matches!(kind, Kind::Integer(ty) if !matches!(ty, Type::I32 | Type::U32 | Type::I64))
+        if matches!(kind, Kind::Integer(ty) if !matches!(ty, Type::I8 | Type::U8 | Type::I32 | Type::U32 | Type::I64))
             || matches!(kind, Kind::Mask(ty) if !matches!(ty, Type::I16 | Type::U16 | Type::I32 | Type::U32 | Type::I64))
             || fixed.is_some() && (kind.is_vector() || matches!(kind, Kind::Mask(_)))
         {
@@ -425,7 +425,7 @@ impl<'a> Draft<'a> {
         }
         index(self.assemblies.pieces.len() + 1)?;
         let admitted = match self.assemblies.operands[(self.operands + operand) as usize].kind {
-            Kind::Mask(_) => bits == 0,
+            Kind::Mask(_) | Kind::Integer(Type::I8 | Type::U8) => bits == 0,
             Kind::Vector | Kind::WideVector(_) => matches!(bits, 0 | 128 | 256 | 512),
             Kind::Pointer | Kind::Integer(_) => matches!(bits, 0 | 32 | 64),
         };

@@ -80,7 +80,10 @@ fn every_form_outside_the_profile_keeps_its_declared_fence() -> Result {
         }
         let expected = if matches!(
             path,
-            "opponents/nomem.rs" | "opponents/reg-integer.rs" | "opponents/modifier.rs"
+            "opponents/nomem.rs"
+                | "opponents/reg-integer.rs"
+                | "opponents/reg-byte.rs"
+                | "opponents/modifier.rs"
         ) {
             crate::support::initial_assembly::COMMENT
         } else {
