@@ -75,17 +75,24 @@ impl Builder<'_, '_, '_> {
                 self.boolean(original, value.ty, work)?;
             }
             if let g::Terminator::Return(value) = block.terminator {
-                self.exact_relation(
-                    original,
-                    OperationPort::Terminator {
-                        body: original.body,
-                        block: u32::try_from(index).map_err(|_| "source block ordinal overflow")?,
-                    },
-                    block.site,
-                    original.values[value as usize].ty,
-                    original.result,
-                    work,
-                )?;
+                let port = OperationPort::Terminator {
+                    body: original.body,
+                    block: u32::try_from(index).map_err(|_| "source block ordinal overflow")?,
+                };
+                let actual = original.values[value as usize].ty;
+                if self.domains.declaration_policies {
+                    // The reader derives its own return coercion from this edge.
+                    self.normalized_relation(
+                        original,
+                        port,
+                        s::InputSite::Body(block.site),
+                        actual,
+                        original.result,
+                        work,
+                    )?;
+                } else {
+                    self.exact_relation(original, port, block.site, actual, original.result, work)?;
+                }
             }
         }
         Ok(())

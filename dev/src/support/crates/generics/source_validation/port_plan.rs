@@ -15,6 +15,8 @@ mod nominal_values;
 mod operations;
 #[path = "port_plan/evaluation_ports.rs"]
 mod ports;
+#[path = "port_plan/regional_equalities.rs"]
+mod region_equations;
 #[path = "port_plan/semantic_requests.rs"]
 mod requests;
 #[path = "port_plan/rewritten_roots.rs"]

@@ -264,21 +264,24 @@ impl Ports {
         &self,
         original: &s::Original,
         place: s::Place,
-        allow_temporary: bool,
+        allow_unnamed_storage: bool,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
         work.charge(1)?;
         match place {
             s::Place::Static(_) => Some(false),
-            s::Place::Local(index) => original
-                .locals
-                .get(index as usize)
-                .map(|local| local.mutable),
+            s::Place::Local(index) => original.locals.get(index as usize).map(|local| {
+                // An unnamed parameter owns the input storage for its checked pattern.
+                local.mutable
+                    || allow_unnamed_storage
+                        && local.definition.is_none()
+                        && matches!(local.kind, g::LocalKind::Parameter(_))
+            }),
             s::Place::Projection(index) => self
                 .access
                 .get(index as usize)
                 .map(|access| access.writable),
-            s::Place::Temporary(index) if allow_temporary => {
+            s::Place::Temporary(index) if allow_unnamed_storage => {
                 ((index as usize) < original.values.len()).then_some(true)
             }
             s::Place::Temporary(_) => {

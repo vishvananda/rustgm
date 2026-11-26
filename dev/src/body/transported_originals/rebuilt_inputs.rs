@@ -114,8 +114,21 @@ impl<'a, 'b> Expected<'a, 'b> {
     }
     fn obligations<'s>(
         &'s self,
+        body: &'s Body,
         steps: &'s mut usize,
     ) -> impl Iterator<Item = Result<Obligation, &'static str>> + 's {
+        let returns = if self
+            .view
+            .rows()
+            .descriptor()
+            .profile()
+            .declaration_policies()
+        {
+            *steps = steps.saturating_add(body.blocks.len());
+            body.blocks.as_slice()
+        } else {
+            &[]
+        };
         let record = self.view.inputs();
         let count = record
             .obligations
@@ -146,6 +159,11 @@ impl<'a, 'b> Expected<'a, 'b> {
             })
             .filter_map(Result::transpose)
             .chain(self.result.map(Ok))
+            .chain(
+                returns
+                    .iter()
+                    .filter_map(|block| return_relation(body, block)),
+            )
     }
     /// A declared result binding and a whole quantified trait clause stay in
     /// the defining environment. Each caller re-proves the same header inputs.
@@ -346,7 +364,7 @@ pub(super) fn build(
         type_assumptions.push(Clause::Predicate(predicate));
     }
     let obligations = expected
-        .obligations(&mut work.steps)
+        .obligations(body, &mut work.steps)
         .collect::<Result<_, _>>()?;
     let predicates = expected
         .predicates(&mut work.steps)
@@ -433,6 +451,31 @@ fn declared_result(
         },
     }))
 }
+fn return_relation(
+    body: &Body,
+    block: &crate::body::ir::Block,
+) -> Option<Result<Obligation, &'static str>> {
+    let crate::body::ir::Terminator::Return(value) = block.terminator else {
+        return None;
+    };
+    let Some(actual) = body.values.get(value.0 as usize).map(|value| value.ty) else {
+        return Some(Err("source return has no actual reconstructed value"));
+    };
+    (actual != body.result).then(|| {
+        body.source
+            .proof_site(block.source)
+            .map(|source| Obligation {
+                source,
+                kind: Kind::Coercion {
+                    actual,
+                    expected: body.result,
+                    unsize: false,
+                    reference: None,
+                },
+            })
+    })
+}
+
 fn parameter_order(
     facts: &Declarations,
     view: &SourceOriginal<'_>,
@@ -800,7 +843,7 @@ pub(super) fn validate(
             return Err("source original changed a record regional assumption");
         }
     }
-    let mut obligations = expected.obligations(steps);
+    let mut obligations = expected.obligations(body, steps);
     for actual in &contract.obligations {
         let wanted = obligations
             .next()

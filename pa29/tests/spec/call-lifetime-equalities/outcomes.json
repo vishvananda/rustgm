@@ -1,0 +1,6 @@
+{
+  "provider": "provider.rs",
+  "inputs": ["client.rs", "observe.c", "reject-escape.rs"],
+  "native_values": [7, 26, 43],
+  "rejects": ["reject-escape.rs"]
+}

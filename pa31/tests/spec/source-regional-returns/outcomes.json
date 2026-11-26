@@ -1,0 +1,11 @@
+{
+  "foundation": "pa31/tests/spec/source-try-protocol-transport/provider.rs",
+  "prefix_marker": "pub enum Outcome<T>",
+  "inputs": ["provider.rs", "client.rs", "invalid.rs", "observe.c"],
+  "stdout": "25 18 35 76\n",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "cannot return value referencing local variable",
+    "rustgm": "lifetime"
+  }
+}

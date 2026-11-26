@@ -101,7 +101,8 @@ def main():
                                  "source-override-late-binders",
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
-                                 "source-captured-protocol-requests", *ASSEMBLY_CASES))
+                                 "source-captured-protocol-requests",
+                                 "source-regional-returns", *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

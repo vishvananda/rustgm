@@ -151,7 +151,7 @@ impl Arena {
     /// A trait object keeps its outer lifetime in the enclosing frame; its
     /// bounds compare declaration identities before their inner-binder inputs.
     fn dynamic_children(
-        &self,
+        &mut self,
         domains: &DomainIndex<'_, '_>,
         pair: Pair,
         nodes: (Node, Node),
@@ -336,7 +336,7 @@ impl Arena {
         Ok(((aa, ba), Some((aenv, benv))))
     }
     fn matched_nominal_children(
-        &self,
+        &mut self,
         domains: &DomainIndex<'_, '_>,
         pair: Pair,
         nodes: (Node, Node),
@@ -615,17 +615,30 @@ impl Arena {
     }
 
     pub(super) fn same_region(
-        &self,
+        &mut self,
         domains: &DomainIndex<'_, '_>,
         (expected, actual): (Region, Region),
         opening: Opening,
         work: &mut Work,
     ) -> Result<bool, &'static str> {
-        Ok(matches!(
+        if matches!(
             opening,
             Opening::Relation { .. } | Opening::DefiningResult { .. }
-        ) || opened_region(domains, self, expected, opening, work)?
-            == opened_region(domains, self, actual, opening, work)?)
+        ) {
+            return Ok(true);
+        }
+        let expected = opened_region(domains, self, expected, opening, work)?;
+        let actual = opened_region(domains, self, actual, opening, work)?;
+        if expected == actual {
+            return Ok(true);
+        }
+        if let Opening::Call { body, .. } = opening
+            && domains.declaration_policies
+        {
+            // Imported originals replay this caller-owned equality in their regional proof.
+            return self.same_call_region(domains, body, (expected, actual), work);
+        }
+        Ok(false)
     }
     fn push_pair(
         &mut self,

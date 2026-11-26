@@ -207,6 +207,7 @@ pub(super) struct Arena {
     interned: HashMap<Node, NodeId>,
     pub completed: HashMap<Key, NodeId>,
     pub matched: HashSet<Pair>,
+    pub regional_equalities: super::region_equations::Equations,
     pub templates: HashMap<signatures::Key, signatures::Template>,
     pub signature_roots: Vec<NodeId>,
     pub reserved: usize,
@@ -245,6 +246,7 @@ impl Arena {
             interned: HashMap::default(),
             completed: HashMap::default(),
             matched: HashSet::default(),
+            regional_equalities: super::region_equations::Equations::default(),
             templates: HashMap::default(),
             signature_roots: Vec::new(),
             reserved,
@@ -596,6 +598,7 @@ impl Arena {
             retained::map(&self.templates),
             retained::vector(&self.signature_roots),
             self.matched.capacity().saturating_mul(size_of::<Pair>()),
+            self.regional_equalities.retained_bytes(),
         ])
     }
 }

@@ -289,11 +289,12 @@ impl Builder<'_, '_, '_> {
                 work,
             )?;
             let actual = self.node(original, original.values[value as usize].ty, work)?;
-            if actual != expected {
-                return Err(
-                    "source aggregate field type differs after actual nominal substitution",
-                );
-            }
+            self.nominal_type_matches(
+                original.body,
+                (expected, actual),
+                "source aggregate field type differs after actual nominal substitution",
+                work,
+            )?;
         }
         Ok(())
     }
@@ -378,7 +379,6 @@ impl Builder<'_, '_, '_> {
         ordinal: u32,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        const FIELD: &str = "source projected field type differs after actual nominal substitution";
         let base = self.node(original, base, work)?;
         // A variant owner selects a downcast field of its enum base.
         let variant = matches!(
@@ -407,11 +407,25 @@ impl Builder<'_, '_, '_> {
             work,
         )?;
         let actual = self.node(original, result, work)?;
+        self.nominal_type_matches(
+            original.body,
+            (expected, actual),
+            "source projected field type differs after actual nominal substitution",
+            work,
+        )
+    }
+    fn nominal_type_matches(
+        &mut self,
+        body: crate::support::crates::owner_catalog::BodyRef,
+        (expected, actual): (NodeId, NodeId),
+        mismatch: &'static str,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
         if actual == expected {
             return Ok(());
         }
         if !self.domains.declaration_policies {
-            return Err(FIELD);
+            return Err(mismatch);
         }
         // The consumer proves type equality for the substituted declaration,
         // including normalization and any resulting lifetime obligations.
@@ -420,12 +434,10 @@ impl Builder<'_, '_, '_> {
                 self.domains,
                 expected,
                 actual,
-                super::matching::Opening::Relation {
-                    body: original.body,
-                },
+                super::matching::Opening::Relation { body },
                 work,
             )
-            .map_err(|_| FIELD)
+            .map_err(|_| mismatch)
     }
     pub(super) fn union_projection(
         &mut self,

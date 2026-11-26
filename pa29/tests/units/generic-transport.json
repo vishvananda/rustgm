@@ -222,7 +222,14 @@
     "tests/spec/array-slice-receivers/provider.rs",
     "tests/spec/array-slice-receivers/client.rs",
     "tests/spec/normalized-field-storage/provider.rs",
-    "tests/spec/normalized-field-storage/client.rs"
+    "tests/spec/normalized-field-storage/client.rs",
+    "tests/spec/borrowed-parameter-patterns/provider.rs",
+    "tests/spec/borrowed-parameter-patterns/client.rs",
+    "tests/spec/call-lifetime-equalities/provider.rs",
+    "tests/spec/call-lifetime-equalities/client.rs",
+    "tests/spec/call-lifetime-equalities/reject-escape.rs",
+    "tests/spec/normalized-field-construction/provider.rs",
+    "tests/spec/normalized-field-construction/client.rs"
   ],
   "cases": [
     {
@@ -7609,6 +7616,157 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/normalized-field-storage/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/borrowed-parameter-patterns/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "parameter_patterns_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/borrowed-parameter-patterns/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "parameter_patterns",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/borrowed-parameter-patterns/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/call-lifetime-equalities/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "call_regions_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/call-lifetime-equalities/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "call_regions",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/call-lifetime-equalities/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/call-lifetime-equalities/reject-escape.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "call_regions_reject_escape"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/call-lifetime-equalities/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "call_regions",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/normalized-field-construction/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "projected_construction_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/normalized-field-construction/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "projected_construction",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/normalized-field-construction/observe.c"
       }
     }
   ]

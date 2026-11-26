@@ -1,0 +1,170 @@
+function @absent() -> u8 {
+  slot $s0 : obj<8x8>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$0$d$7.i2(%t0)
+    %t1 = addr $s0
+    %t2 = call u8 @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$1$d$8.i4(%t1)
+    return u8 %t2
+}
+function @present(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  slot $s1 : ptr
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    %t2 = addr $s2
+    call void @rgc$4_62617365$12_63616c6c5f726567696f6e73$f$8_66726f6d5f726566$.i5(%t2, %t1)
+    %t3 = addr $s2
+    %t4 = call u8 @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$1$d$8.i8(%t3)
+    return u8 %t4
+}
+function @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$0$d$7.i2(%p0 : ptr) -> void {
+  slot $s0 : obj<8x8>
+  slot $s1 : obj<8x8>
+  block ^b0:
+    store ptr nullptr, $s0
+    %t0 = addr $s1
+    %t1 = load ptr $s0
+    call void @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.18.i3(%t0, %t1)
+    %t2 = addr $s1
+    copyobj 8x8 %t2, %p0
+    return void
+}
+function @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$1$d$8.i4(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : u8
+  slot $s2 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = cmp eq ptr %t1, nullptr
+    branch %t2, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    %t3 = load ptr %t0
+    %t4 = cmp ne ptr %t3, nullptr
+    branch %t4, ^b8, ^b7
+  block ^b7:
+    jump ^b9
+  block ^b9:
+    unreachable
+  block ^b8:
+    jump ^b6
+  block ^b6:
+    %t5 = load ptr %t0
+    store ptr %t5, $s2
+    %t6 = load ptr $s2
+    %t7 = load u8 %t6
+    store u8 %t7, $s1
+    jump ^b1
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    store u8 7, $s1
+    jump ^b1
+  block ^b1:
+    %t8 = load u8 $s1
+    return u8 %t8
+}
+function @rgc$4_62617365$12_63616c6c5f726567696f6e73$f$8_66726f6d5f726566$.i5(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : ptr
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = load ptr $s0
+    %t1 = call ptr @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.16.i6(%t0)
+    store ptr %t1, $s1
+    %t2 = addr $s2
+    %t3 = load ptr $s1
+    call void @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.18.i7(%t2, %t3)
+    %t4 = addr $s2
+    copyobj 8x8 %t4, %p0
+    return void
+}
+function @rgc$4_62617365$12_63616c6c5f726567696f6e73$b$1$d$8.i8(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  slot $s1 : u8
+  slot $s2 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load ptr %t0
+    %t2 = cmp eq ptr %t1, nullptr
+    branch %t2, ^b4, ^b3
+  block ^b3:
+    jump ^b5
+  block ^b5:
+    %t3 = load ptr %t0
+    %t4 = cmp ne ptr %t3, nullptr
+    branch %t4, ^b8, ^b7
+  block ^b7:
+    jump ^b9
+  block ^b9:
+    unreachable
+  block ^b8:
+    jump ^b6
+  block ^b6:
+    %t5 = load ptr %t0
+    store ptr %t5, $s2
+    %t6 = load ptr $s2
+    %t7 = load u8 %t6
+    store u8 %t7, $s1
+    jump ^b1
+  block ^b4:
+    jump ^b2
+  block ^b2:
+    store u8 7, $s1
+    jump ^b1
+  block ^b1:
+    %t8 = load u8 $s1
+    return u8 %t8
+}
+function @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.18.i3(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<8x8>
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = addr $s0
+    %t1 = addr $s1
+    copyobj 8x8 %t0, %t1
+    %t2 = addr $s1
+    %t3 = addr $s2
+    copyobj 8x8 %t2, %t3
+    %t4 = addr $s2
+    copyobj 8x8 %t4, %p0
+    return void
+}
+function @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.16.i6(%p0 : ptr) -> ptr {
+  slot $s0 : ptr
+  slot $s1 : obj<8x8>
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    return ptr %t1
+}
+function @rgc$6_636c69656e74$21_63616c6c5f726567696f6e735f636f6e73756d6572$internal$rg.18.i7(%p0 : ptr, %p1 : ptr) -> void {
+  slot $s0 : obj<8x8>
+  slot $s1 : obj<8x8>
+  slot $s2 : obj<8x8>
+  block ^b0:
+    store ptr %p1, $s0
+    %t0 = addr $s0
+    %t1 = addr $s1
+    copyobj 8x8 %t0, %t1
+    %t2 = addr $s1
+    %t3 = addr $s2
+    copyobj 8x8 %t2, %t3
+    %t4 = addr $s2
+    copyobj 8x8 %t4, %p0
+    return void
+}

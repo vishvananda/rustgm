@@ -1,10 +1,17 @@
-//! Imported field projections prove their types after interpreting the declaration.
+//! Imported nominal fields prove their types after interpreting the declaration.
 use crate::{
     body::{
-        ir::{Body, Projection, ProjectionKind},
+        ir::{Body, Projection, ProjectionKind, Rvalue, ValueList},
         regions::{Contract, Proof},
     },
-    sema::{members::Selection, model::Declarations},
+    sema::{
+        members::{Selection, VariantId},
+        model::Declarations,
+    },
+    support::{
+        crates::MAX_BYTES,
+        retained::{self, Growth},
+    },
     types::{
         Kind, TypeId,
         parameters::{
@@ -31,19 +38,15 @@ pub(crate) fn prove(
             continue;
         };
         let declared = field_type(facts, body, projection, field)?;
-        if declared != projection.ty {
-            use crate::support::{crates::MAX_BYTES, retained::Growth};
-            let growth = Growth::vector::<Predicate>(goals.len(), goals.capacity(), 1);
-            if crate::support::retained::vector(&goals).saturating_add(growth.bytes) > MAX_BYTES {
-                return Err("source field relation storage budget exceeded");
-            }
-            goals
-                .try_reserve(1)
-                .map_err(|_| "source field relation allocation failed")?;
-            goals.push(Predicate {
-                ty: declared,
-                bound: Bound::ProjectionEqual(projection.ty),
-            });
+        add_goal(&mut goals, declared, projection.ty)?;
+    }
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(body.values.len());
+    for value in &body.values {
+        if let Rvalue::Aggregate { variant, fields } = value.kind {
+            aggregate_goals(facts, body, value.ty, variant, fields, &mut goals)?;
         }
     }
     if goals.is_empty() {
@@ -58,6 +61,75 @@ pub(crate) fn prove(
         goals.into_iter(),
     )?;
     Ok((!proof.is_empty()).then(|| Proof::new(body.source, proof)))
+}
+
+fn add_goal(
+    goals: &mut Vec<Predicate>,
+    declared: TypeId,
+    actual: TypeId,
+) -> Result<(), &'static str> {
+    if declared != actual {
+        let growth = Growth::vector::<Predicate>(goals.len(), goals.capacity(), 1);
+        if retained::vector(goals).saturating_add(growth.bytes) > MAX_BYTES {
+            return Err("source field relation storage budget exceeded");
+        }
+        goals
+            .try_reserve(1)
+            .map_err(|_| "source field relation allocation failed")?;
+        goals.push(Predicate {
+            ty: declared,
+            bound: Bound::ProjectionEqual(actual),
+        });
+    }
+    Ok(())
+}
+
+fn aggregate_goals(
+    facts: &mut Declarations,
+    body: &Body,
+    ty: TypeId,
+    variant: Option<VariantId>,
+    fields: ValueList,
+    goals: &mut Vec<Predicate>,
+) -> Result<(), &'static str> {
+    let Some(Kind::Adt(owner, _)) = facts.types.kind(ty) else {
+        return Ok(());
+    };
+    let variant = if let Some(variant) = variant {
+        let declared = facts
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .filter(|entry| entry.owner == owner)
+            .ok_or("source aggregate proof changed its actual variant owner")?;
+        declared.ordinal as usize
+    } else {
+        0
+    };
+    let declared = facts
+        .aggregates
+        .raw_shape(&facts.types, ty)?
+        .variant(variant)
+        .and_then(|variant| facts.types.list(variant.fields))
+        .ok_or("source aggregate proof has no actual declared fields")?;
+    let actual = body
+        .arguments
+        .get(fields.start as usize..fields.end as usize)
+        .filter(|actual| actual.len() == declared.len())
+        .ok_or("source aggregate proof changed its complete field count")?;
+    facts.body_work.canonical_steps = facts
+        .body_work
+        .canonical_steps
+        .saturating_add(declared.len());
+    for (&declared, &value) in declared.iter().zip(actual) {
+        let actual = body
+            .values
+            .get(value.0 as usize)
+            .ok_or("source aggregate proof has no actual field value")?
+            .ty;
+        add_goal(goals, declared, actual)?;
+    }
+    Ok(())
 }
 
 fn field_type(

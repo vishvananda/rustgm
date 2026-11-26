@@ -287,18 +287,15 @@ fn locals(
             .map(|definition| stage.declaration(definition))
             .transpose()?;
         if let Some(declaration) = definition {
-            stage.local_declaration(
-                declaration,
-                context,
-                local.scope.0,
-                u32::try_from(index).map_err(|_| "source local ordinal overflow")?,
-            )?;
-            if let ir::LocalKind::Parameter(input) = local.kind {
+            let local_index = u32::try_from(index).map_err(|_| "source local ordinal overflow")?;
+            stage.local_declaration(declaration, context, local.scope.0, local_index)?;
+            if matches!(local.kind, ir::LocalKind::Parameter(_)) {
+                // A parameter pattern can create binding locals before the next input.
                 stage.reserve(4 * size_of::<g::ParameterBinding>())?;
                 raw.parameter_bindings.push(g::ParameterBinding {
                     declaration,
-                    input,
-                    local: u32::try_from(index).map_err(|_| "source formal local overflow")?,
+                    input: local_index,
+                    local: local_index,
                 });
             }
         }
