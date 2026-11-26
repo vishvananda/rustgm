@@ -60,10 +60,40 @@ pub(crate) struct SourceDeprecation<'a> {
     pub key: NodeKey,
     pub declaration: NodeKey,
     pub tail: Tail,
-    pub release: super::deprecated_since::Since,
+    release: super::deprecated_since::Since,
+    pub staged: bool,
     pub since: Option<&'a str>,
     pub note: Option<&'a str>,
     pub suggestion: Option<&'a str>,
+}
+impl SourceDeprecation<'_> {
+    pub(crate) fn transport_since(
+        &self,
+    ) -> Result<crate::support::crates::generics::source::DeprecationSince, &'static str> {
+        use super::deprecated_since::Since;
+        use crate::resolve::stability;
+        use crate::support::crates::generics::source::{AvailabilitySince, DeprecationSince};
+        Ok(match self.release {
+            Since::Unspecified => DeprecationSince::Unspecified,
+            Since::Future => DeprecationSince::Future,
+            Since::NonStandard => DeprecationSince::Nonstandard(Box::from(
+                self.since
+                    .ok_or("nonstandard deprecation release lost its text")?,
+            )),
+            Since::Version(version) => DeprecationSince::Version(match version {
+                stability::Since::Current => AvailabilitySince::Current,
+                stability::Since::Version {
+                    major,
+                    minor,
+                    patch,
+                } => AvailabilitySince::Version {
+                    major,
+                    minor,
+                    patch,
+                },
+            }),
+        })
+    }
 }
 pub(crate) struct PendingExpectation<'a> {
     pub id: ExpectationId,
@@ -344,10 +374,31 @@ impl Producer {
     }
 }
 
+#[derive(Clone, Copy)]
+pub(crate) enum EarlyDeprecation {
+    Local(NodeKey, Tail),
+    Imported(usize),
+}
+
+impl EarlyDeprecation {
+    pub(crate) fn notice<'a>(
+        self,
+        key: NodeKey,
+        producer: &'a Producer,
+        package: &Package,
+        imported: impl Fn(usize) -> Option<DeprecationNotice<'a>>,
+    ) -> Result<DeprecationNotice<'a>, Violation> {
+        match self {
+            Self::Local(target, origin) => producer.deprecation_notice(package, origin, target),
+            Self::Imported(index) => imported(index)
+                .ok_or_else(|| invalid(key, "imported macro deprecation lost its definition")),
+        }
+    }
+}
+
 pub(super) struct Early {
     pub key: NodeKey,
-    pub target: NodeKey,
-    pub origin: Tail,
+    pub target: EarlyDeprecation,
     pub offset: u32,
     pub introduction: crate::expand::marks::ExpansionId,
 }
@@ -355,7 +406,7 @@ impl Producer {
     pub(crate) fn early_warning(
         &mut self,
         key: NodeKey,
-        target: (NodeKey, Tail),
+        target: EarlyDeprecation,
         offset: u32,
         introduction: crate::expand::marks::ExpansionId,
     ) -> Result<(), Violation> {
@@ -368,21 +419,21 @@ impl Producer {
         self.attribute_read(key, 1 + growth.work)?;
         self.early.push(Early {
             key,
-            target: target.0,
-            origin: target.1,
+            target,
             offset,
             introduction,
         });
         Ok(())
     }
-    pub(crate) fn early_warnings(
-        &self,
+    pub(crate) fn early_warnings<'a>(
+        &'a self,
         package: &Package,
+        imported: impl Fn(usize) -> Option<DeprecationNotice<'a>>,
         project: impl Fn(crate::resolve::package::Error) -> crate::resolve::package::Error,
     ) -> Result<Vec<(NodeKey, crate::resolve::package::Warning)>, Violation> {
         let mut result = Vec::new();
         for event in &self.early {
-            let notice = self.deprecation_notice(package, event.origin, event.target)?;
+            let notice = event.target.notice(event.key, self, package, &imported)?;
             self.diagnostic_read(
                 event.key,
                 notice
@@ -438,12 +489,24 @@ impl Producer {
         &'a self,
         package: &Package,
         key: NodeKey,
-        mut module: crate::resolve::package::ModuleId,
+        module: crate::resolve::package::ModuleId,
     ) -> Result<Option<(Tail, DeprecationNotice<'a>)>, Violation> {
+        self.deprecation_tail_in(package, key, module)?
+            .map(|tail| {
+                self.deprecation_notice(package, tail, key)
+                    .map(|notice| (tail, notice))
+            })
+            .transpose()
+    }
+
+    fn deprecation_tail_in(
+        &self,
+        package: &Package,
+        key: NodeKey,
+        mut module: crate::resolve::package::ModuleId,
+    ) -> Result<Option<Tail>, Violation> {
         if let Some(tail) = self.deprecation_owner(package, key)? {
-            return self
-                .deprecation_notice(package, tail, key)
-                .map(|notice| Some((tail, notice)));
+            return Ok(Some(tail));
         }
         for _ in 0..package.modules.len() {
             self.attribute_read(key, 1)?;
@@ -462,9 +525,7 @@ impl Producer {
             .flatten()
             {
                 if let Some(tail) = self.deprecation_owner(package, source)? {
-                    return self
-                        .deprecation_notice(package, tail, key)
-                        .map(|notice| Some((tail, notice)));
+                    return Ok(Some(tail));
                 }
             }
             let Some(parent) = entry.parent else {
@@ -502,6 +563,44 @@ impl Producer {
 }
 
 impl Producer {
+    fn source_deprecation<'a>(
+        &self,
+        package: &Package,
+        owner: &'a super::producer::Owner,
+        tail: Tail,
+    ) -> Result<SourceDeprecation<'a>, Violation> {
+        self.authenticate(package, owner)?;
+        let row = owner
+            .parsed
+            .deprecated
+            .as_ref()
+            .ok_or_else(|| invalid(owner.key, "source deprecation annotation is missing"))?;
+        row.validate_staged(package, owner.key)?;
+        Ok(SourceDeprecation {
+            key: owner.key,
+            declaration: deprecation_declaration(package, owner.key, |source| {
+                self.attribute_read(source, 1)
+            })?,
+            tail,
+            staged: package.staged_crate(owner.key.file),
+            release: row.release,
+            since: row.since.as_deref(),
+            note: row.note.as_deref(),
+            suggestion: row.suggestion.as_ref().map(|(text, _)| text.as_ref()),
+        })
+    }
+
+    pub(crate) fn source_deprecation_in(
+        &self,
+        package: &Package,
+        key: NodeKey,
+        module: crate::resolve::package::ModuleId,
+    ) -> Result<Option<SourceDeprecation<'_>>, Violation> {
+        self.deprecation_tail_in(package, key, module)?
+            .map(|tail| self.source_deprecation(package, self.record(tail, key)?, tail))
+            .transpose()
+    }
+
     pub(crate) fn source_deprecations<'a>(
         &'a self,
         package: &'a Package,
@@ -510,25 +609,13 @@ impl Producer {
             if let Err(error) = self.attribute_read(owner.key, 1) {
                 return Some(Err(error));
             }
-            let row = owner.parsed.deprecated.as_ref()?;
+            owner.parsed.deprecated.as_ref()?;
             Some((|| {
-                self.authenticate(package, owner)?;
-                row.validate_staged(package, owner.key)?;
                 let tail =
                     self.index.get(&owner.key).copied().ok_or_else(|| {
                         invalid(owner.key, "source deprecation owner lost its index")
                     })?;
-                Ok(SourceDeprecation {
-                    key: owner.key,
-                    declaration: deprecation_declaration(package, owner.key, |source| {
-                        self.attribute_read(source, 1)
-                    })?,
-                    tail,
-                    release: row.release,
-                    since: row.since.as_deref(),
-                    note: row.note.as_deref(),
-                    suggestion: row.suggestion.as_ref().map(|(text, _)| text.as_ref()),
-                })
+                self.source_deprecation(package, owner, tail)
             })())
         })
     }

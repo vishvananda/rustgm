@@ -25,7 +25,10 @@
 //! Version five adds glob re-export rows, `pub use dependency::module::*`:
 //! each binds at its placement every name that the dependency's module makes
 //! visible outside its crate, unless this crate binds that name there itself.
-use crate::support::edition::Edition;
+use crate::support::{
+    crates::generics::source::{DeprecationSince, MAX_REASON_BYTES},
+    edition::Edition,
+};
 
 /// Exported macros in one artifact.
 pub const MAX_MACROS: usize = 4096;
@@ -685,11 +688,49 @@ impl GlobReexport {
 }
 
 /// Which definition row of one table a placement and name identify.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum DefinitionRow {
     Declarative(usize),
     Builtin(usize),
     Scoped(usize),
+}
+
+/// A checked deprecation policy attached to an actual exported definition.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MacroDeprecation {
+    pub definition: DefinitionRow,
+    pub since: DeprecationSince,
+    pub note: Option<Box<str>>,
+    pub suggestion: Option<Box<str>>,
+    pub staged: bool,
+}
+
+impl MacroDeprecation {
+    fn text(&self) -> impl Iterator<Item = &str> {
+        let release = match &self.since {
+            DeprecationSince::Nonstandard(text) => Some(text.as_ref()),
+            _ => None,
+        };
+        [self.note.as_deref(), self.suggestion.as_deref(), release]
+            .into_iter()
+            .flatten()
+    }
+
+    fn validate(&self) -> Result<(), &'static str> {
+        if self.text().any(|text| text.len() > MAX_REASON_BYTES) {
+            return Err("macro deprecation text exceeds transport limit");
+        }
+        if self.staged
+            && (self.note.is_none()
+                || matches!(
+                    self.since,
+                    DeprecationSince::Unspecified | DeprecationSince::Nonstandard(_)
+                ))
+        {
+            return Err("staged macro deprecation requires its release and note");
+        }
+        Ok(())
+    }
 }
 
 /// The body is one root group laid out as [`ImageBuilder`] spells it: pieces
@@ -768,6 +809,7 @@ pub struct Macros {
     reexports: Vec<ReexportMacro>,
     scoped: Vec<ScopedMacro>,
     globs: Vec<GlobReexport>,
+    deprecations: Vec<MacroDeprecation>,
 }
 impl Macros {
     /// # Errors
@@ -856,6 +898,7 @@ impl Macros {
             reexports,
             scoped,
             globs,
+            deprecations: Vec::new(),
         };
         if table.reexports.iter().any(|row| {
             row.owner == 0
@@ -867,6 +910,44 @@ impl Macros {
         }
         Ok(table)
     }
+    /// Attach checked notices in strictly increasing definition order.
+    /// # Errors
+    /// Rejects duplicate attachments, unknown definitions and malformed notices.
+    pub(crate) fn with_deprecations(
+        mut self,
+        deprecations: Vec<MacroDeprecation>,
+    ) -> Result<Self, &'static str> {
+        if !self.deprecations.is_empty()
+            || deprecations.len() > MAX_MACROS
+            || deprecations
+                .windows(2)
+                .any(|pair| pair[0].definition >= pair[1].definition)
+        {
+            return Err("macro deprecation definitions must be unique and sorted");
+        }
+        for notice in &deprecations {
+            if self.unstable(notice.definition).is_none() {
+                return Err("macro deprecation names an unknown definition");
+            }
+            notice.validate()?;
+        }
+        self.deprecations = deprecations;
+        Ok(self)
+    }
+
+    #[must_use]
+    pub fn deprecation(&self, definition: DefinitionRow) -> Option<&MacroDeprecation> {
+        let index = self
+            .deprecations
+            .binary_search_by_key(&definition, |notice| notice.definition)
+            .ok()?;
+        self.deprecations.get(index)
+    }
+
+    pub(super) fn deprecations(&self) -> &[MacroDeprecation] {
+        &self.deprecations
+    }
+
     /// The declarative root rows.
     #[must_use]
     pub fn rows(&self) -> &[Macro] {
@@ -976,7 +1057,8 @@ impl Macros {
             .max()
             .unwrap_or(0)
     }
-    /// The least envelope version that holds every row: 5 for a glob row, 4
+    /// The least envelope version that holds every row: 6 for a deprecation,
+    /// 5 for a glob row, 4
     /// for a semiopaque row or any `allow_internal_unsafe` row, 3 for a
     /// builtin allowance list
     /// or any `#[unstable]` row, 2 for a builtin row, a re-export row or a
@@ -984,7 +1066,9 @@ impl Macros {
     /// as before.
     #[must_use]
     pub fn version(&self) -> u8 {
-        if !self.globs.is_empty() {
+        if !self.deprecations.is_empty() {
+            6
+        } else if !self.globs.is_empty() {
             5
         } else if !self.scoped.is_empty()
             || self.rows.iter().any(|row| row.internal_unsafe)
@@ -1021,9 +1105,10 @@ impl Macros {
         let reexports = self.reexports.iter().fold(builtins, |total, row| {
             total.saturating_add(1 + row.placement.len() + row.target_placement.len())
         });
-        self.globs.iter().fold(reexports, |total, row| {
-            total.saturating_add(1 + row.placement.len() + row.target.len())
-        })
+        self.globs.iter().fold(
+            reexports.saturating_add(self.deprecations.len()),
+            |total, row| total.saturating_add(1 + row.placement.len() + row.target.len()),
+        )
     }
     pub(super) fn bytes(&self) -> usize {
         let declarative = self
@@ -1042,8 +1127,16 @@ impl Macros {
             .reexports
             .iter()
             .fold(builtins, |total, row| total.saturating_add(row.bytes()));
-        self.globs
+        let globs = self
+            .globs
             .iter()
-            .fold(reexports, |total, row| total.saturating_add(row.bytes()))
+            .fold(reexports, |total, row| total.saturating_add(row.bytes()));
+        self.deprecations.iter().fold(
+            globs.saturating_add(crate::support::retained::vector(&self.deprecations)),
+            |total, row| {
+                row.text()
+                    .fold(total, |bytes, text| bytes.saturating_add(text.len()))
+            },
+        )
     }
 }

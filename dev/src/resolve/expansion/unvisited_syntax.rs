@@ -213,7 +213,11 @@ impl<S: Sources> Engine<'_, S> {
             .as_deref()
             .and_then(|effects| effects.policy.as_ref())
             .map(|producer| {
-                producer.early_warnings(&self.loader.package, |error| self.diagnostic(error))
+                producer.early_warnings(
+                    &self.loader.package,
+                    |index| super::deprecation::imported_notice(&self.paths.state.facts, index),
+                    |error| self.diagnostic(error),
+                )
             })
             .transpose()
         {

@@ -116,6 +116,10 @@ always-applicable trait without requesting specialization is rejected.
 can request the feature named directly by an imported API's `implied_by`.
 It checks reverse and chained implication, a missing request, and the
 diagnostic for the previous name of a feature.
+`spec/source-deprecated-macro-transport/outcomes.json` covers direct and aliased
+macro calls through a separately compiled provider, caller lint policy,
+scheduled deprecation, and annotations on re-exports with current and
+deprecated targets. The native observer checks the results of all five calls.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

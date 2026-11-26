@@ -51,3 +51,24 @@ impl Deprecation {
         self.release.active(package.staged_crate(key.file))
     }
 }
+
+pub(crate) fn transported_active(
+    since: &crate::support::crates::generics::source::DeprecationSince,
+    staged: bool,
+) -> bool {
+    use crate::support::crates::generics::source::{AvailabilitySince, DeprecationSince};
+    let release = match since {
+        DeprecationSince::Future => Since::Future,
+        DeprecationSince::Version(AvailabilitySince::Version {
+            major,
+            minor,
+            patch,
+        }) => Since::Version(stability::Since::Version {
+            major: *major,
+            minor: *minor,
+            patch: *patch,
+        }),
+        _ => Since::Unspecified,
+    };
+    release.active(staged)
+}

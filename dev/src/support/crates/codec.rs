@@ -2,6 +2,7 @@
 mod declarative_envelope;
 mod link_envelope;
 mod nominals;
+mod notice_fields;
 mod ordinary_columns;
 mod originals;
 mod packet_envelope;

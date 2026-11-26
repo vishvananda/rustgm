@@ -851,6 +851,14 @@ struct Input<'a, 'b> {
     base: usize,
     profile: s::Profile,
 }
+fn reserve_decoded(base: usize, retained: &mut usize, bytes: usize) -> Result<(), &'static str> {
+    *retained = retained.saturating_add(bytes);
+    if base.saturating_add(*retained) > crates::MAX_BYTES {
+        return Err("source decoded columns exceed aggregate retained storage budget");
+    }
+    Ok(())
+}
+
 impl Input<'_, '_> {
     fn provided(&self) -> bool {
         matches!(
@@ -911,11 +919,7 @@ impl Input<'_, '_> {
         }
     }
     fn reserve(&mut self, bytes: usize) -> Result<(), &'static str> {
-        self.bytes = self.bytes.saturating_add(bytes);
-        if self.base.saturating_add(self.bytes) > crates::MAX_BYTES {
-            return Err("source decoded columns exceed aggregate retained storage budget");
-        }
-        Ok(())
+        reserve_decoded(self.base, &mut self.bytes, bytes)
     }
     /// The cold groups of `rows`, allocated and paid on first write.
     fn cold<'r>(

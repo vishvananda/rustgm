@@ -11,6 +11,7 @@ use super::{DefKind, Error, Report, dependency_globs, error};
 use crate::{
     resolve::{
         expansion::{Body, Definition},
+        lint_policy::SourceDeprecation,
         model::{Access, Binding, DefId, Namespace, Origin, ScopeId},
         package::ModuleId,
         unit::NodeKey,
@@ -19,8 +20,8 @@ use crate::{
         crates::{
             CrateIdentity,
             exported_macros::{
-                BuiltinMacro, DefinitionRow, GlobReexport, Macro, Macros, ReexportMacro,
-                ScopedMacro, Syntax,
+                BuiltinMacro, DefinitionRow, GlobReexport, Macro, MacroDeprecation, Macros,
+                ReexportMacro, ScopedMacro, Syntax,
             },
         },
         hash::{HashMap, HashSet},
@@ -238,26 +239,33 @@ fn unstable(report: &Report) -> Unstable<'_> {
         .collect()
 }
 
+struct Deprecation<'a> {
+    placement: Rc<[String]>,
+    name: &'a str,
+    source: SourceDeprecation<'a>,
+}
+
 /// The rows of one table under construction.
 #[derive(Default)]
-struct Table {
+struct Table<'a> {
     rows: Vec<Macro>,
     builtins: Vec<BuiltinMacro>,
     reexports: Vec<ReexportMacro>,
     scoped: Vec<ScopedMacro>,
     globs: Vec<GlobReexport>,
+    deprecations: Vec<Deprecation<'a>>,
 }
-impl Table {
+impl<'a> Table<'a> {
     /// Publish one local definition and its other public bindings. Its row
     /// sits at its own direct binding when that is public, and otherwise at
     /// its least re-export key; every other binding re-exports that row.
     fn define(
         &mut self,
-        report: &Report,
+        report: &'a Report,
         sites: &HashMap<NodeKey, usize>,
         unstable: &Unstable<'_>,
         target: DefId,
-        entries: &[&Bound<'_>],
+        entries: &[&Bound<'a>],
     ) -> Result<(), Error> {
         let canonical = entries
             .iter()
@@ -320,6 +328,7 @@ impl Table {
                     .map_err(error)?,
             );
         }
+        self.deprecate(report, definition, node, canonical)?;
         for entry in entries
             .iter()
             .filter(|entry| !std::ptr::eq(**entry, canonical))
@@ -337,6 +346,39 @@ impl Table {
         }
         Ok(())
     }
+    fn deprecate(
+        &mut self,
+        report: &'a Report,
+        definition: &Definition,
+        node: NodeKey,
+        canonical: &Bound<'a>,
+    ) -> Result<(), Error> {
+        let Some(producer) = report.lint_producer() else {
+            return Ok(());
+        };
+        if let Some(source) =
+            producer.source_deprecation_in(&report.package, node, definition.module)?
+        {
+            let bytes = [source.since, source.note, source.suggestion]
+                .into_iter()
+                .flatten()
+                .map(str::len)
+                .sum::<usize>();
+            producer.diagnostic_read(
+                node,
+                bytes.saturating_add(
+                    4 * (size_of::<Deprecation<'_>>() + size_of::<MacroDeprecation>()),
+                ),
+            )?;
+            self.deprecations.push(Deprecation {
+                placement: Rc::clone(&canonical.placement),
+                name: canonical.name,
+                source,
+            });
+        }
+        Ok(())
+    }
+
     fn finish(mut self) -> Result<Macros, Error> {
         self.rows
             .sort_unstable_by(|left, right| left.name().cmp(right.name()));
@@ -349,14 +391,29 @@ impl Table {
         self.scoped.sort_unstable_by(|left, right| {
             (left.placement(), left.name()).cmp(&(right.placement(), right.name()))
         });
-        Macros::with_globs(
+        let macros = Macros::with_globs(
             self.rows,
             self.builtins,
             self.reexports,
             self.scoped,
             self.globs,
         )
-        .map_err(error)
+        .map_err(error)?;
+        let mut notices = Vec::with_capacity(self.deprecations.len());
+        for row in self.deprecations {
+            let definition = macros
+                .definition(&row.placement, row.name)
+                .ok_or_else(|| error("macro deprecation lost its definition row"))?;
+            notices.push(MacroDeprecation {
+                definition,
+                since: row.source.transport_since().map_err(error)?,
+                note: row.source.note.map(Box::from),
+                suggestion: row.source.suggestion.map(Box::from),
+                staged: row.source.staged,
+            });
+        }
+        notices.sort_unstable_by_key(|row| row.definition);
+        macros.with_deprecations(notices).map_err(error)
     }
 }
 

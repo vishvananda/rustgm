@@ -364,17 +364,7 @@ impl Imports {
             .ok_or_else(|| Error::unlocated("imported deprecation root is missing"))?
             .regular
             .is_some();
-        let active = match notice.since {
-            s::DeprecationSince::Future => false,
-            s::DeprecationSince::Version(s::AvailabilitySince::Version {
-                major,
-                minor,
-                patch,
-            }) if staged => {
-                (major, minor, patch) <= crate::resolve::stability::Since::Current.release()
-            }
-            _ => true,
-        };
+        let active = crate::resolve::lint_policy::transported_active(&notice.since, staged);
         let note = notice
             .note
             .as_deref()

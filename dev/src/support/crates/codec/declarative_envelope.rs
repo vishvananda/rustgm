@@ -23,7 +23,11 @@
 //! owner. A glob row has no name; it sorts before every named row of its
 //! placement, and glob rows of one placement sort by owner and target. Only
 //! a table with a glob row writes version five.
-use super::{Interface, MAGIC, Reader, SCHEMA, Writer};
+//!
+//! Version six adds a sparse notice table after the placed rows. Each notice
+//! names a canonical definition row and carries its checked release and text.
+use super::{Interface, MAGIC, Reader, SCHEMA, Writer, notice_fields};
+mod notices;
 use crate::support::{
     crates::exported_macros::{
         BuiltinMacro, Delimiter, GlobReexport, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES,
@@ -38,6 +42,7 @@ const VERSION_TWO: u8 = 2;
 const VERSION_THREE: u8 = 3;
 const VERSION_FOUR: u8 = 4;
 const VERSION_FIVE: u8 = 5;
+const VERSION_SIX: u8 = 6;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
@@ -151,6 +156,9 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
             encode_macro(&mut output, row)?;
         }
     }
+    if version == VERSION_SIX {
+        notices::encode(&mut output, macros)?;
+    }
     output.u32(inner.len())?;
     output.bytes(&inner)?;
     Ok(output.finish())
@@ -230,7 +238,7 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
             }
             Macros::new(rows)?
         }
-        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR | VERSION_FIVE) => {
+        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR | VERSION_FIVE | VERSION_SIX) => {
             decode_placed(input, version)?
         }
         _ => return Err("unknown exported macro metadata version"),
@@ -314,7 +322,7 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 reexports.push(row);
                 key
             }
-            GLOB if version == VERSION_FIVE => {
+            GLOB if version >= VERSION_FIVE => {
                 let owner = u32::try_from(input.u32()?)
                     .map_err(|_| "exported glob re-export names an unknown owner")?;
                 let row = GlobReexport::new(placement, owner, input.module_path()?)?;
@@ -335,6 +343,9 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
         previous = Some(key);
     }
     let macros = Macros::with_globs(rows, builtins, reexports, scoped, globs)?;
+    if version == VERSION_SIX {
+        return notices::decode(input, macros);
+    }
     if macros.version() != version {
         return Err(match version {
             VERSION_FIVE => "version-five exported macro table has no glob re-export row",

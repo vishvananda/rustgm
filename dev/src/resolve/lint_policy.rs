@@ -4,9 +4,10 @@ mod deprecated_since;
 mod expectations;
 mod ineffective_headers;
 mod suggestions;
-pub(crate) use deprecated_since::Since as DeprecationRelease;
+pub(crate) use deprecated_since::transported_active;
 pub(crate) use expectations::{
-    DeprecationNotice, ExpectationId, PendingExpectation, Progress, SourceDeprecation,
+    DeprecationNotice, EarlyDeprecation, ExpectationId, PendingExpectation, Progress,
+    SourceDeprecation,
 };
 pub(crate) use ineffective_headers::{DeclarationAnnotation, ImplAnnotation};
 pub(crate) mod producer;

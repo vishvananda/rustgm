@@ -248,12 +248,18 @@ fn forged_glob_rows_and_relabelled_tables_are_rejected_by_name() -> Result {
         &respelled(&bytes, row, &owner(2))?,
         "exported glob re-export names an unknown owner",
     )?;
-    // A version-four reader has no kind 4; a version-six table is unknown.
+    // Version four has no kind 4. Version six requires a nonempty notice table.
     let mut relabelled = bytes.clone();
     relabelled[13] = 4;
     rejected(&relabelled, "unknown exported macro row kind")?;
-    relabelled[13] = 6;
+    relabelled[13] = 7;
     rejected(&relabelled, "unknown exported macro metadata version")?;
+    relabelled[13] = 6;
+    relabelled.splice(14 + row.len()..14 + row.len(), [0; 4]);
+    rejected(
+        &relabelled,
+        "version-six exported macro table requires a deprecation notice",
+    )?;
     for end in 0..bytes.len() {
         assert!(crates::decode(&bytes[..end]).is_err(), "prefix {end}");
     }

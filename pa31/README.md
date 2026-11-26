@@ -22,7 +22,10 @@ the source bodies that use those declarations.
   API. A request using `old_name` diagnoses the replacement.
 - Check the stability and documentation attributes used by the pinned
   source. Distinguish current and scheduled deprecation and apply the
-  scoped lint at the call, import or macro expansion. For unstable trait
+  scoped lint at the call, import or macro expansion. Preserve the exported
+  macro definition's deprecation for fresh clients, including through aliases.
+  A deprecation attribute on a re-export leaves the target's policy in force.
+  For unstable trait
   implementations, use the stability of the types and traits named in
   the checked header. Validate `doc(cfg)`, `doc(auto_cfg)` and
   `doc(notable_trait)` where the source uses them. Check the placement, options,

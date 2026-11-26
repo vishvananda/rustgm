@@ -2,12 +2,12 @@
 use super::{Declarations, Report, Stage, s};
 use crate::{
     resolve::{
-        lint_policy::{DeprecationRelease, SourceDeprecation, producer::Tail},
+        lint_policy::{SourceDeprecation, producer::Tail},
         model::{DefId, DefKind},
-        stability,
         unit::NodeKey,
     },
     support::{crates::owner_catalog::DeclarationRef, hash::HashMap},
+    syntax::{ast::Kind, item::ItemKind},
 };
 
 struct Origin<'a> {
@@ -27,6 +27,19 @@ impl Stage {
         let mut origins = HashMap::default();
         for source in producer.source_deprecations(&report.package) {
             let source = source.map_err(|error| error.message)?;
+            let key = source.declaration;
+            let ast = &report.package.unit(key.file).configured.ast;
+            if let Kind::Item(index) = ast.node(key.node).kind
+                && matches!(
+                    ast.items[index as usize].kind,
+                    ItemKind::Use(_)
+                        | ItemKind::MacroRules { .. }
+                        | ItemKind::DeclarativeMacro { .. }
+                )
+            {
+                // A use binding keeps the target's notice. Macro definitions own a separate table.
+                continue;
+            }
             self.reserve(4 * size_of::<(Tail, Origin<'_>)>())?;
             if origins
                 .insert(
@@ -120,31 +133,10 @@ impl Stage {
             .sum::<usize>();
         self.charge(bytes.saturating_add(1))?;
         self.reserve(bytes.saturating_add(4 * size_of::<s::DeprecationNotice>()))?;
-        let since = match source.release {
-            DeprecationRelease::Unspecified => s::DeprecationSince::Unspecified,
-            DeprecationRelease::Future => s::DeprecationSince::Future,
-            DeprecationRelease::NonStandard => s::DeprecationSince::Nonstandard(Box::from(
-                source
-                    .since
-                    .ok_or("nonstandard deprecation release lost its text")?,
-            )),
-            DeprecationRelease::Version(version) => s::DeprecationSince::Version(match version {
-                stability::Since::Current => s::AvailabilitySince::Current,
-                stability::Since::Version {
-                    major,
-                    minor,
-                    patch,
-                } => s::AvailabilitySince::Version {
-                    major,
-                    minor,
-                    patch,
-                },
-            }),
-        };
         Ok(s::DeprecationNotice {
             owner,
             site: self.site(owner, source.key)?,
-            since,
+            since: source.transport_since()?,
             note: source.note.map(Box::from),
             suggestion: source.suggestion.map(Box::from),
         })

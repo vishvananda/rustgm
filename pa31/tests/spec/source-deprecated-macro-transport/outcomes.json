@@ -1,0 +1,36 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "deny-alias.rs", "deny-target.rs", "policies.rs"],
+  "foundation": "pa31/tests/spec/source-availability-transport/provider.rs",
+  "prefix_marker": "#[stable(feature=\"identity_api\"",
+  "stdout": "",
+  "older_profile": "deprecation declaration transport is not implemented for this metadata profile",
+  "older_reader": "unknown exported macro metadata version",
+  "diagnostic_clients": [
+    {
+      "path": "client.rs",
+      "status": 0,
+      "rustc": ["prefer the replacement macro", "prefer the target replacement"],
+      "rustgm": ["prefer the replacement macro", "prefer the target replacement"],
+      "absent": ["binding-only annotation", "scheduled macro replacement"]
+    },
+    {
+      "path": "deny-alias.rs",
+      "status": 1,
+      "rustc": ["prefer the replacement macro"],
+      "rustgm": ["use of deprecated macro: prefer the replacement macro"],
+      "absent": ["binding-only annotation"]
+    },
+    {
+      "path": "deny-target.rs",
+      "status": 1,
+      "rustc": ["prefer the target replacement"],
+      "rustgm": ["prefer the target replacement"],
+      "absent": ["binding-only annotation"]
+    },
+    {
+      "path": "policies.rs",
+      "status": 0,
+      "absent": ["prefer the replacement macro", "binding-only annotation", "unfulfilled lint expectation", "scheduled macro replacement"]
+    }
+  ]
+}

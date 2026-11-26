@@ -64,6 +64,7 @@ def main():
                                  "source-specialization-transport",
                                  "source-specialization-policies",
                                  "source-feature-relationships",
+                                 "source-deprecated-macro-transport",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",
@@ -206,6 +207,27 @@ def main():
                   1, [restricted["rustc"]], timeout=30, environment={"RUSTC_BOOTSTRAP": "1"})
         check.run(f"restricted-client-{label}", [*importer, "--extern", f"base={artifact}", negative],
                   1, [restricted["rustgm"]], timeout=30)
+    for diagnostic in contract.get("diagnostic_clients", ()):
+        path = fixture / diagnostic["path"]
+        label = path.stem
+        expected_status = diagnostic["status"]
+        rustc = check.run(
+            f"diagnostic-rustc-{label}", [args.rustc.resolve(strict=True), "--edition=2024",
+            "--crate-type=lib", "--crate-name=client", "--emit=metadata",
+            "--extern", f"base={check.folder / 'libbase.rlib'}",
+            "-o", check.folder / f"{label}.rmeta", path],
+            expected_status, diagnostic.get("rustc", ()), timeout=30,
+            environment={"RUSTC_BOOTSTRAP": "1"},
+        )
+        uncapped = [command for command in importer if command != "--cap-lints=allow"]
+        rustgm = check.run(
+            f"diagnostic-rustgm-{label}", [*uncapped, "--extern", f"base={artifact}",
+            "-o", check.folder / f"{label}.lowir", path],
+            expected_status, diagnostic.get("rustgm", ()), timeout=30,
+        )
+        for spelling in diagnostic.get("absent", ()):
+            if spelling.encode() in rustc.stderr or spelling.encode() in rustgm.stderr:
+                raise ValueError(f"{label}: unexpected diagnostic {spelling}")
     if args.baseline is not None and (refusal := contract.get("older_reader")):
         check.run("older-reader", [args.baseline.resolve(strict=True), *importer[1:],
                   "--extern", f"base={artifact}", client], 1, [refusal], timeout=30)

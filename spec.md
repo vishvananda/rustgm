@@ -877,10 +877,12 @@ actual source origin. Macro, early-warning and semantic consumers share this
 result; nearest-annotation identity and explicit metadata fences remain intact.
 See the [release checkpoint](docs/parallel/source-deprecation-release.md).
 
-Legacy imported admission asserts no deprecation absence, and local deprecated
-exports stay closed until explicit transport exists. The
-[finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
-and remaining producer, transport and release obligations.
+Source metadata carries notices on the originating declaration and its
+affected declarations. The exported macro envelope carries a sparse notice on
+the selected definition, so direct and aliased calls share the notice. A
+deprecation attribute on a use binding leaves diagnostics governed by the
+target declaration. Legacy profiles without deprecation transport reject
+publication of deprecated source.
 
 Retain a deprecation's decoded replacement suggestion and exact argument span
 in its existing cold annotation. The actual `deprecated_suggestion` crate feature
@@ -7857,6 +7859,15 @@ future-incompatible lint `ambiguous_glob_imports` and, when that lint is
 allowed, selects one glob's target; RustGM keeps the use an error. Each row is
 charged one unit and one per binding of its target module that it visits,
 within a fixed budget. Older readers reject version 5 by name.
+
+Version 6 adds a nonempty deprecation notice table after the placed rows
+and before the wrapped artifact length. Each notice contains the definition
+kind and its zero-based index in that kind's canonical row order, a staging
+flag, and the release, optional note and optional replacement suggestion.
+Notices are unique and ordered by definition kind and index. The reader
+validates each index against its actual definition table. A re-export uses
+the same definition identity as a direct binding. Artifacts with no macro
+notices keep their earlier envelope versions.
 
 A crate's loader attributes travel in one flags byte that leads only the
 outermost artifact: `[15][flags]` follows the 12-byte header, and the rest
