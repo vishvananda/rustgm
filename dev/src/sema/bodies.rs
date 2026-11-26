@@ -1832,7 +1832,7 @@ impl Checker<'_> {
                         | DefKind::Variant
                 ) && !self.facts.generics.constants.contains_key(&id)
                 {
-                    return Err(self.error(node, "unsupported value declaration"));
+                    return Err(self.unavailable_value(node, definition.kind));
                 }
                 let ty = self.facts.definitions[id.0 as usize]
                     .ok_or_else(|| self.error(node, "missing value type"))?;

@@ -12,13 +12,11 @@ Same-crate calls retain ordinary const-generic syntax and are NEVER rewritten;
 local aliases and function pointers receive no legacy calling privilege.
 Explicit generic arguments likewise select the ordinary call path.
 
-The pinned compiler only rewrites a directly resolved external function path
-without explicit generic arguments. Actual external argument extraction,
-anonymous-constant ownership/evaluation and metadata index transport remain
-required. Existing metadata exports fence the real source word rather than lose
-that contract. `pa29/tests/legacy-const-call-outcomes.json` preserves required
-Rust-positive external calls and their source hashes; it is not a language
-negative or a fake imported provider.
+The pinned compiler rewrites a directly resolved external function path
+without explicit generic arguments. PA29 covers metadata index transport and
+evaluation of the extracted const operands in fresh clients.
+`pa29/tests/legacy-const-call-outcomes.json` records the independent outcomes
+and source hashes.
 
 `contract.json` freezes independent outcomes before execution. The ordinary
 module-provider fixture preserves the qualified NoCore/stable API foundation;

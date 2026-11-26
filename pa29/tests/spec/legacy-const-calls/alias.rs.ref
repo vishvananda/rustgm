@@ -1,0 +1,20 @@
+function @rgc$6_636c69656e74$18_706132395f6c65676163795f636c69656e74$f$5_76616c7565$() -> i64 {
+  block ^b0:
+    %t0 = call i64 @rgc$15_6c65676163795f70726f7669646572$11_6c65676163795f63616c6c$f$1_66$.i1(3)
+    return i64 %t0
+}
+function @rgc$15_6c65676163795f70726f7669646572$11_6c65676163795f63616c6c$f$1_66$.i1(%p0 : i64) -> i64 {
+  slot $s0 : i64
+  block ^b0:
+    store i64 %p0, $s0
+    %t0 = load i64 $s0
+    %t1 = binary add i64 %t0, 4
+    %t2 = cmp ult i64 %t1, %t0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    return i64 %t1
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

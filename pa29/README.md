@@ -48,6 +48,10 @@ to instantiate an imported body and check obligations that depend on the
 client's use. The client has the artifact and the provider's native output.
 It can instantiate the body without reopening the provider's Rust source.
 
+When an imported function declares legacy const argument positions, a direct
+call without explicit generic arguments evaluates the marked operands as
+const arguments. Runtime operands evaluate in source order.
+
 Start with small crate graphs that combine features already implemented in
 earlier assignments. Check a generic call at multiple concrete types, a
 provided trait method and an imported const call. Link and run the runtime

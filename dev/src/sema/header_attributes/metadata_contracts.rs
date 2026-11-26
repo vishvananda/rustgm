@@ -290,7 +290,7 @@ fn callable_advisories(
             validate_promotion_availability(descriptor, contract.declaration)
                 .map_err(Error::unlocated)?;
         }
-        if contract.target_features.is_none() {
+        if contract.target_features().is_none() {
             continue;
         }
         headers.charge(1)?;
@@ -385,7 +385,7 @@ pub(in crate::sema) fn target_feature_policy(
     let Some(declared) = descriptor
         .rows()
         .header_contract(header.declaration)?
-        .and_then(|contract| contract.target_features.as_deref())
+        .and_then(s::HeaderContract::target_features)
     else {
         return Ok(None);
     };

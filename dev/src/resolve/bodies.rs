@@ -1,4 +1,5 @@
 //! Lexical traversal resolves uses in evaluation order and introduces local bindings.
+mod positional_const_arguments;
 mod qualification_segments;
 use super::{
     index::{Context, Resolver},
@@ -398,6 +399,9 @@ impl Resolver<'_> {
             | Kind::Pattern { .. }
             | Kind::StructPattern { .. }
             | Kind::ReferencePattern { .. } => self.bind_pattern(c, node, DefKind::Local),
+            Kind::Call { callee, arguments } if self.legacy_call_candidate(c, callee) => {
+                self.resolve_legacy_call(c, node, callee, arguments)
+            }
             _ => {
                 let mark = self.scratch.len();
                 self.package

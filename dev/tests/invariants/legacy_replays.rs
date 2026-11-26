@@ -33,6 +33,12 @@ fn queries_reject_foreign_images_changed_signatures_store_and_lost_marker_export
             .reject_function_advisory_transport(&report, id)
             .is_err()
     );
+    assert!(
+        analysis
+            .facts
+            .publication_source_advisories(&report, id, true, true)
+            .is_err()
+    );
     analysis
         .facts
         .must_use_contracts

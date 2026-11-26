@@ -1,5 +1,6 @@
 //! External metadata keeps its origin while local scopes receive canonical IDs.
 mod bound_macro_rows;
+mod indexed_const_calls;
 mod original_declarations;
 mod public_names;
 mod shim_globs;
@@ -60,6 +61,7 @@ struct ColdImports {
     work: original_declarations::Work,
     macros: bound_macro_rows::MacroImports,
     globs: shim_globs::GlobImports,
+    legacy: Option<Box<indexed_const_calls::Calls>>,
 }
 impl Imported {
     pub(crate) fn has_availability(&self) -> bool {

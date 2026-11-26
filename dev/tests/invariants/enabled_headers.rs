@@ -38,7 +38,12 @@ fn contract(inline: Option<s::InlineHint>, names: Option<&[&str]>) -> s::HeaderC
         caller_tracking: false,
         format_panic: false,
         promotable: None,
-        target_features: names.map(|names| Box::new(declared(names))),
+        callable: names.map(|names| {
+            Box::new(s::CallableAttributes {
+                target_features: Some(declared(names)),
+                ..s::CallableAttributes::default()
+            })
+        }),
         optimization: None,
     }
 }
@@ -190,7 +195,11 @@ fn declared_feature_rows_write_bit_three_and_read_only_under_body_nodes() -> Res
     assert_eq!(bytes, expected);
     assert_eq!(read(&bytes, BODIES)?, stream);
     let mut safe_keep = contract(None, Some(&["sse", "sse2"]));
-    if let Some(features) = safe_keep.target_features.as_deref_mut() {
+    if let Some(features) = safe_keep
+        .callable
+        .as_deref_mut()
+        .and_then(|attributes| attributes.target_features.as_mut())
+    {
         features.safe = true;
     }
     let safe_bytes = written(&safe_keep)?;
@@ -270,7 +279,7 @@ fn feature_rows(interface: &crates::Interface) -> Result<Vec<(String, Vec<String
             .declarations
             .get(contract.declaration.0 as usize)
             .ok_or("function declaration")?;
-        if let Some(features) = &contract.target_features {
+        if let Some(features) = contract.target_features() {
             found.push((
                 declaration.name.clone().unwrap_or_default(),
                 features.names.iter().map(ToString::to_string).collect(),
@@ -304,7 +313,9 @@ fn exported_rows_carry_declared_names_and_validation_owns_their_bodies() -> Resu
         .traits
         .first_mut()
         .ok_or("a foundation trait row")?
-        .target_features = Some(Box::new(declared(&["sse"])));
+        .callable
+        .get_or_insert_with(Box::default)
+        .target_features = Some(declared(&["sse"]));
     assert_eq!(
         forged
             .validate(&rows, 0, BODIES, &mut g::Work::default())
@@ -318,7 +329,10 @@ fn exported_rows_carry_declared_names_and_validation_owns_their_bodies() -> Resu
         .position(|header| header.body == s::FunctionBody::Absent)
         .ok_or("a required trait method row")?;
     let mut forged = attributes.clone();
-    forged.functions[required].target_features = Some(Box::new(declared(&["sse"])));
+    forged.functions[required]
+        .callable
+        .get_or_insert_with(Box::default)
+        .target_features = Some(declared(&["sse"]));
     assert_eq!(
         forged
             .validate(&rows, 0, BODIES, &mut g::Work::default())
@@ -454,7 +468,9 @@ fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
     ];
     for (index, names, diagnostic) in cases {
         let interface = forged(&genuine, index, |row| {
-            row.target_features = Some(Box::new(declared(names)));
+            row.callable
+                .get_or_insert_with(Box::default)
+                .target_features = Some(declared(names));
         })?;
         let error = source_packets::client_analysis(interface, &call)
             .err()
@@ -464,7 +480,9 @@ fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
     }
     // The bit-3 limit: neither forgery is distinguishable on this target.
     let bare = forged(&genuine, only(&genuine, "bare")?, |row| {
-        row.target_features = Some(Box::new(declared(&["avx"])));
+        row.callable
+            .get_or_insert_with(Box::default)
+            .target_features = Some(declared(&["avx"]));
     })?;
     assert_eq!(
         lowir(bare, &call)?,
@@ -472,7 +490,7 @@ fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
     );
     let generic = fixture("generic")?;
     let stripped = forged(&genuine, only(&genuine, "keep")?, |row| {
-        row.target_features = None;
+        row.callable = None;
     })?;
     assert_eq!(lowir(stripped, &generic)?, lowir(genuine, &generic)?);
     Ok(())
@@ -487,7 +505,9 @@ fn forged_rows_on_inherent_functions_pass_the_member_check_and_fail_as_safe() ->
     let lane = "pub struct Lane;\nimpl Lane {\n    pub fn get(value: u32) -> u32 { value }\n}\n";
     let genuine = provider(&format!("{}{lane}", fixture("provider")?))?;
     let interface = forged(&genuine, only(&genuine, "get")?, |row| {
-        row.target_features = Some(Box::new(declared(&["sse"])));
+        row.callable
+            .get_or_insert_with(Box::default)
+            .target_features = Some(declared(&["sse"]));
     })?;
     let error = source_packets::client_analysis(interface, &fixture("call")?)
         .err()

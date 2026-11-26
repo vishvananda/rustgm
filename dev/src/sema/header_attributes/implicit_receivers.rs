@@ -225,17 +225,17 @@ impl Declarations {
         report: &Report,
         definition: DefId,
     ) -> Result<(), Error> {
-        self.publication_pointer_lint_marker(report, definition, false, false)
+        self.publication_source_advisories(report, definition, false, false)
             .map(|_| ())
     }
-    /// Check callable advisory compatibility while reading the checked marker.
-    pub(crate) fn publication_pointer_lint_marker(
+    /// Match written callable advisories to the actual checked header.
+    pub(crate) fn publication_source_advisories(
         &self,
         report: &Report,
         definition: DefId,
         cold_rows: bool,
         declaration_policies: bool,
-    ) -> Result<bool, Error> {
+    ) -> Result<(bool, &[usize]), Error> {
         let actual = report
             .resolution
             .definitions
@@ -244,9 +244,8 @@ impl Declarations {
                 Error::unlocated("function advisory publication lost its declaration")
             })?;
         if actual.kind != DefKind::Function {
-            return Ok(false);
+            return Ok((false, &[]));
         }
-        self.reject_legacy_indices_transport(report, definition)?;
         if !declaration_policies
             && matches!(
                 self.source_comptime_contract(report, definition)?,
@@ -273,12 +272,11 @@ impl Declarations {
         }
         let mut required = None;
         let mut pointer_lint_marker = false;
+        let mut written_legacy = false;
         if !visit_words(self, report, definition, |name| {
             pointer_lint_marker |= name == Some("rustc_as_ptr");
+            written_legacy |= name == Some("rustc_legacy_const_generics");
             let message = match name {
-                Some("rustc_legacy_const_generics") => Some(
-                    "legacy const generic indices require their cross-crate transport and argument protocol",
-                ),
                 Some("rustc_as_ptr") if !declaration_policies => {
                     Some("source rustc_as_ptr diagnostic marker transport is not implemented")
                 }
@@ -295,10 +293,17 @@ impl Declarations {
                 "function advisory publication requires completed actual source headers",
             ));
         }
-        match required {
-            Some(message) => Err(Error::unlocated(message)),
-            None => Ok(pointer_lint_marker),
+        if let Some(message) = required {
+            return Err(Error::unlocated(message));
         }
+        let positions =
+            self.legacy_const_positions_for_publication(report, definition, declaration_policies)?;
+        if written_legacy == positions.is_empty() {
+            return Err(Error::unlocated(
+                "written legacy const positions lack the actual checked header",
+            ));
+        }
+        Ok((pointer_lint_marker, positions))
     }
 
     /// The written cold advisory of a completed current function header. It

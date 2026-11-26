@@ -61,7 +61,7 @@ impl Stage {
             caller_tracking: false,
             format_panic: false,
             promotable: None,
-            target_features: None,
+            callable: None,
             optimization: None,
         })
     }

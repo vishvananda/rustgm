@@ -135,7 +135,7 @@ impl Stage {
     ) -> Result<s::HeaderContract, Error> {
         let definition = selected.definition();
         let declaration = selected.source();
-        let pointer_lint_marker = facts.publication_pointer_lint_marker(
+        let (pointer_lint_marker, legacy_const_positions) = facts.publication_source_advisories(
             report,
             definition,
             self.body_nodes(),
@@ -166,6 +166,24 @@ impl Stage {
                 pointer_lint_marker,
                 &mut contract,
             )?;
+        }
+        if !legacy_const_positions.is_empty() {
+            self.charge(legacy_const_positions.len())
+                .map_err(Error::unlocated)?;
+            self.reserve(
+                legacy_const_positions
+                    .len()
+                    .saturating_mul(size_of::<u32>()),
+            )
+            .map_err(Error::unlocated)?;
+            self.callable_attributes(&mut contract)?
+                .legacy_const_positions = legacy_const_positions
+                .iter()
+                .map(|&position| {
+                    u32::try_from(position)
+                        .map_err(|_| Error::unlocated("legacy const argument position overflow"))
+                })
+                .collect::<Result<_, _>>()?;
         }
         contract.advisories = contract
             .advisories
@@ -298,7 +316,7 @@ impl Stage {
             caller_tracking: false,
             format_panic: false,
             promotable: None,
-            target_features: None,
+            callable: None,
             optimization: if self.declaration_policies() {
                 match view.optimization {
                     ContractKnowledge::KnownPresent(preference) => Some(preference),
@@ -475,13 +493,23 @@ impl Stage {
             let bytes = names.iter().map(|name| name.len()).sum::<usize>();
             self.charge(1 + names.len() + bytes)
                 .map_err(Error::unlocated)?;
-            self.reserve(
-                size_of::<s::DeclaredFeatures>() + names.len() * size_of::<Box<str>>() + bytes,
-            )
-            .map_err(Error::unlocated)?;
-            contract.target_features = Some(Box::new(s::DeclaredFeatures { names, safe }));
+            self.reserve(names.len() * size_of::<Box<str>>() + bytes)
+                .map_err(Error::unlocated)?;
+            self.callable_attributes(contract)?.target_features =
+                Some(s::DeclaredFeatures { names, safe });
         }
         Ok(())
+    }
+
+    fn callable_attributes<'a>(
+        &mut self,
+        contract: &'a mut s::HeaderContract,
+    ) -> Result<&'a mut s::CallableAttributes, Error> {
+        if contract.callable.is_none() {
+            self.reserve(size_of::<s::CallableAttributes>())
+                .map_err(Error::unlocated)?;
+        }
+        Ok(contract.callable.get_or_insert_with(Box::default))
     }
 }
 

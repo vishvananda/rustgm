@@ -77,10 +77,11 @@ clients: bare imported dyn formation succeeds, while a foreign inherent impl
 rejects after actual trait resolution. It preserves the ModuleContracts-v2
 provider foundation and grants no foreign permission.
 
-`legacy-const-call-outcomes.json` retains genuine external direct-path legacy
-const-argument positives. The local header phase fences their metadata until the
-real index list and anonymous-constant call protocol are transported; source
-expectations are preserved as required work rather than rejection cases.
+`legacy-const-call-outcomes.json` records the independent outcomes for
+separate crates using legacy const operands, explicit generic arguments, and
+an instantiated function alias. The generic-transport suite checks those
+cases and uses `spec/imported-legacy-const/` to observe the resulting native
+and compile-time values with two interleaved const arguments.
 
 `source-nominal-outcomes.json` freezes the actual source nominal constructor and
 fresh generic consumer packet under `spec/source-nominals/`, including move,

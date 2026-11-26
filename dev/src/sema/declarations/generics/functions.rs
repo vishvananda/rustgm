@@ -51,6 +51,15 @@ impl Checker<'_> {
         key: NodeKey,
         owner: DefId,
     ) -> Result<(Option<List>, Option<List>), Error> {
+        if let Some(arguments) = self
+            .report
+            .resolution
+            .crates
+            .as_deref()
+            .and_then(|imports| imports.legacy_const_arguments(key))
+        {
+            return Ok((None, Some(arguments)));
+        }
         let (lifetimes, supplied) = crate::sema::arguments::groups(
             self.report,
             key,

@@ -192,7 +192,16 @@
     "tests/spec/imported-enum-casts/provider.rs",
     "tests/spec/imported-enum-casts/client.rs",
     "tests/spec/imported-enum-casts/reject-payload.rs",
-    "tests/spec/imported-enum-casts/reject-explicit-empty.rs"
+    "tests/spec/imported-enum-casts/reject-explicit-empty.rs",
+    "tests/spec/legacy-const-calls/provider.rs",
+    "tests/spec/legacy-const-calls/legacy.rs",
+    "tests/spec/legacy-const-calls/modern.rs",
+    "tests/spec/legacy-const-calls/alias.rs",
+    "tests/spec/legacy-const-calls/explicit-wrong.rs",
+    "tests/spec/legacy-const-calls/runtime-const-denied.rs",
+    "tests/spec/imported-legacy-const/provider.rs",
+    "tests/spec/imported-legacy-const/client.rs",
+    "tests/spec/imported-legacy-const/reject-runtime.rs"
   ],
   "cases": [
     {
@@ -6826,6 +6835,286 @@
           "path": "tests/spec/imported-enum-casts/provider.rs",
           "crate_name": "base",
           "disambiguator": "pa29_imported_enum_casts",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/legacy-const-calls/legacy.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/legacy-const-calls/provider.rs",
+          "crate_name": "legacy_provider",
+          "disambiguator": "legacy_call",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "The frozen Rust library has no C ABI entry point."
+      }
+    },
+    {
+      "path": "tests/spec/legacy-const-calls/modern.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/legacy-const-calls/provider.rs",
+          "crate_name": "legacy_provider",
+          "disambiguator": "legacy_call",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "The frozen Rust library has no C ABI entry point."
+      }
+    },
+    {
+      "path": "tests/spec/legacy-const-calls/alias.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/legacy-const-calls/provider.rs",
+          "crate_name": "legacy_provider",
+          "disambiguator": "legacy_call",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "The frozen Rust library has no C ABI entry point."
+      }
+    },
+    {
+      "path": "tests/spec/legacy-const-calls/explicit-wrong.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/legacy-const-calls/provider.rs",
+          "crate_name": "legacy_provider",
+          "disambiguator": "legacy_call",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/legacy-const-calls/runtime-const-denied.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/legacy-const-calls/provider.rs",
+          "crate_name": "legacy_provider",
+          "disambiguator": "legacy_call",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/imported-legacy-const/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/imported-legacy-const/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_legacy",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/imported-legacy-const/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/imported-legacy-const/reject-runtime.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport",
+        "pa25.const-machine"
+      ],
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "pa29_legacy_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/imported-legacy-const/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "pa29_legacy",
           "externs": {},
           "source_profile": "bootstrap-bodies-v15",
           "cap_lints": "allow"

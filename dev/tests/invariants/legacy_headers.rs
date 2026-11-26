@@ -130,7 +130,7 @@ fn same_crate_legacy_alias_pointer_const_and_unsafe_calls_get_no_new_permission(
     Ok(())
 }
 #[test]
-fn legacy_indices_are_fenced_before_any_current_source_function_publication() -> TestResult {
+fn legacy_indices_are_fenced_in_older_source_profiles() -> TestResult {
     let report = test_source::source_provider(&input("module-provider")?, "legacy_header_fence")?;
     let analysis = pipeline::analyze_source(&report)?;
     let id = function(&report, "marked_legacy")?;
@@ -148,6 +148,7 @@ fn legacy_indices_are_fenced_before_any_current_source_function_publication() ->
         crate::lower::instances::SourcePublication::ModuleAvailability,
         crate::lower::instances::SourcePublication::ModuleDefinitions,
         crate::lower::instances::SourcePublication::ModuleCallables,
+        crate::lower::instances::SourcePublication::ModuleBodies,
     ] {
         assert!(
             crate::module_packets::exported_profile(

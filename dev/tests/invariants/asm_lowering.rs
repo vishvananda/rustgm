@@ -246,7 +246,7 @@ fn inline_asm_bodies_join_v13_module_body_transport() -> Result {
     let targeted: Vec<&s::HeaderContract> = attributes
         .functions
         .iter()
-        .filter(|row| row.target_features.is_some())
+        .filter(|row| row.target_features().is_some())
         .collect();
     let [row] = *targeted.as_slice() else {
         return Err(format!("target-feature rows {targeted:?}").into());
@@ -265,10 +265,7 @@ fn inline_asm_bodies_join_v13_module_body_transport() -> Result {
         Some((s::InlineHint::Hint, s::InlineApplicability::FunctionBody))
     );
     assert!(!row.advisories.cold() && !row.caller_tracking);
-    let names = row
-        .target_features
-        .as_deref()
-        .map(|features| &features.names[..]);
+    let names = row.target_features().map(|features| &features.names[..]);
     assert_eq!(names, Some(&["sse".into()][..]));
     Ok(())
 }

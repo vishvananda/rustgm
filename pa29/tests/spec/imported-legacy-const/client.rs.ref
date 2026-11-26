@@ -1,0 +1,98 @@
+function @legacy() -> i64 {
+  block ^b0:
+    return i64 113
+}
+function @legacy_runtime(%p0 : i64, %p1 : i64) -> i64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  block ^b0:
+    store i64 %p0, $s0
+    store i64 %p1, $s1
+    %t0 = load i64 $s0
+    %t1 = load i64 $s1
+    %t2 = call i64 @rgc$4_62617365$11_706132395f6c6567616379$f$6_73656c656374$.i5(%t0, %t1)
+    return i64 %t2
+}
+function @modern() -> i64 {
+  block ^b0:
+    %t0 = call i64 @rgc$4_62617365$11_706132395f6c6567616379$f$6_73656c656374$.i6(7, 4)
+    return i64 %t0
+}
+function @alias() -> i64 {
+  block ^b0:
+    %t0 = call i64 @rgc$4_62617365$11_706132395f6c6567616379$f$6_73656c656374$.i5(4, 7)
+    return i64 %t0
+}
+function @rgc$4_62617365$11_706132395f6c6567616379$f$6_73656c656374$.i5(%p0 : i64, %p1 : i64) -> i64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : i64
+  slot $s3 : i64
+  block ^b0:
+    store i64 %p0, $s0
+    store i64 %p1, $s1
+    %t0 = load i64 $s0
+    %t1 = cmp uge i32 4, 64
+    branch %t1, ^b4, ^b5
+  block ^b5:
+    %t2 = convert zext i64 i32 4
+    %t3 = binary shl i64 %t0, %t2
+    %t4 = load i64 $s1
+    %t5 = binary or i64 %t3, %t4
+    store i64 %t5, $s2
+    branch 1, ^b1, ^b2
+  block ^b2:
+    %t6 = load i64 $s2
+    %t7 = unary bitnot i64 5
+    %t8 = binary and i64 %t6, %t7
+    store i64 %t8, $s3
+    jump ^b3
+  block ^b1:
+    %t9 = load i64 $s2
+    %t10 = binary xor i64 %t9, 5
+    store i64 %t10, $s3
+    jump ^b3
+  block ^b3:
+    %t11 = load i64 $s3
+    return i64 %t11
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+function @rgc$4_62617365$11_706132395f6c6567616379$f$6_73656c656374$.i6(%p0 : i64, %p1 : i64) -> i64 {
+  slot $s0 : i64
+  slot $s1 : i64
+  slot $s2 : i64
+  slot $s3 : i64
+  block ^b0:
+    store i64 %p0, $s0
+    store i64 %p1, $s1
+    %t0 = load i64 $s0
+    %t1 = cmp uge i32 4, 64
+    branch %t1, ^b4, ^b5
+  block ^b5:
+    %t2 = convert zext i64 i32 4
+    %t3 = binary shl i64 %t0, %t2
+    %t4 = load i64 $s1
+    %t5 = binary or i64 %t3, %t4
+    store i64 %t5, $s2
+    branch 0, ^b1, ^b2
+  block ^b2:
+    %t6 = load i64 $s2
+    %t7 = unary bitnot i64 5
+    %t8 = binary and i64 %t6, %t7
+    store i64 %t8, $s3
+    jump ^b3
+  block ^b1:
+    %t9 = load i64 $s2
+    %t10 = binary xor i64 %t9, 5
+    store i64 %t10, $s3
+    jump ^b3
+  block ^b3:
+    %t11 = load i64 $s3
+    return i64 %t11
+  block ^b4:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]

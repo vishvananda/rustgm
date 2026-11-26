@@ -65,6 +65,7 @@ fn staged(
         ..
     } = *context;
     let definitions = reserve_definitions(resolver, scope, artifact, rows, imported, work)?;
+    let legacy = imported.prepare_legacy_const_calls(rows, &definitions, work)?;
     let pending = installed_bindings::prepare(
         resolver,
         scope,
@@ -77,7 +78,9 @@ fn staged(
     let input = catalog_input(context, definitions, work)?;
     // Binding insertion can fail before catalog installation. The pending owner
     // rolls back those exact fresh keys; Catalog::install itself is transactional.
-    pending.install(resolver, imported, input)
+    pending.install(resolver, imported, input)?;
+    imported.install_legacy_const_calls(legacy);
+    Ok(())
 }
 fn catalog_input(
     context: &Reservation<'_>,

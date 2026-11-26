@@ -24,18 +24,24 @@ pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<s::HeaderAttributeColum
 pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.declaration_site)?;
+    let positions = row.legacy_const_positions();
+    let features = row.target_features();
     // Bit 0 retains the original must-use presence. Version fourteen adds
-    // the pointer diagnostic, final trait method and default impl method in bits 1 through 3.
+    // the pointer diagnostic, method policies and legacy const positions.
     out.u8(u8::from(row.must_use.is_some())
         | u8::from(row.advisories.pointer_lint_marker()) << 1
         | u8::from(row.advisories.final_trait_method()) << 2
-        | u8::from(row.advisories.default_impl_method()) << 3)?;
+        | u8::from(row.advisories.default_impl_method()) << 3
+        | u8::from(!positions.is_empty()) << 4)?;
     if let Some(value) = &row.must_use {
         id(out, value.owner_site)?;
         out.u8(u8::from(value.reason.is_some()))?;
         if let Some(reason) = &value.reason {
             out.string(reason)?;
         }
+    }
+    if !positions.is_empty() {
+        write(out, positions, |out, position| id(out, *position))?;
     }
     // Version thirteen widens the inline presence byte into a flag set: bit 0
     // is the inline hint, bit 1 the cold advisory, bit 2 caller tracking and
@@ -45,7 +51,7 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
     out.u8(u8::from(row.inline.is_some())
         | u8::from(row.advisories.cold()) << 1
         | u8::from(row.caller_tracking) << 2
-        | u8::from(row.target_features.is_some()) << 3
+        | u8::from(features.is_some()) << 3
         | optimization_bits(row.optimization) << 4
         | u8::from(row.format_panic) << 6
         | u8::from(row.promotable.is_some()) << 7)?;
@@ -65,7 +71,7 @@ pub(super) fn row_write(out: &mut Writer, row: &s::HeaderContract) -> Result<(),
         id(out, site)?;
     }
     // Written as declared: the reader, not the writer, owns canonical form.
-    if let Some(features) = &row.target_features {
+    if let Some(features) = features {
         let count = u32::try_from(features.names.len())
             .map_err(|_| "source target-feature set exceeds transport profile limit")?;
         if count & SAFE_TARGET_FEATURE_FLAG != 0 {
@@ -89,7 +95,7 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
     let declaration_site = read.id()?;
     let diagnostic_flags = read.reader.u8()?;
     let max_flags = if read.profile.declaration_policies() {
-        15
+        31
     } else {
         1
     };
@@ -110,6 +116,15 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         })
     } else {
         None
+    };
+    let legacy_const_positions = if diagnostic_flags & 16 == 0 {
+        Box::default()
+    } else {
+        let positions = read.list(MAX_FUNCTIONS, 4, Input::id)?;
+        if positions.is_empty() {
+            return Err("empty legacy const argument positions");
+        }
+        positions.into_boxed_slice()
     };
     let flags = read.reader.u8()?;
     if flags > 15 && !read.profile.declaration_policies() {
@@ -141,7 +156,16 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
         if inline.is_some_and(|value| value.hint == s::InlineHint::Always) {
             return Err("source target-feature function cannot use an always-inline hint");
         }
-        Some(Box::new(features_read(read)?))
+        Some(features_read(read)?)
+    };
+    let callable = if target_features.is_some() || !legacy_const_positions.is_empty() {
+        read.reserve(size_of::<s::CallableAttributes>())?;
+        Some(Box::new(s::CallableAttributes {
+            target_features,
+            legacy_const_positions,
+        }))
+    } else {
+        None
     };
     Ok(s::HeaderContract {
         declaration,
@@ -152,7 +176,7 @@ pub(super) fn row_read(read: &mut Input<'_, '_>) -> Result<s::HeaderContract, &'
             .with_final_trait_method(diagnostic_flags & 4 != 0)
             .with_default_impl_method(diagnostic_flags & 8 != 0),
         caller_tracking: flags & 4 != 0,
-        target_features,
+        callable,
         optimization,
         format_panic: flags & 64 != 0,
         promotable,
@@ -201,7 +225,7 @@ fn features_read(read: &mut Input<'_, '_>) -> Result<s::DeclaredFeatures, &'stat
         return Err("source target-feature set exceeds transport profile limit");
     }
     read.reader.atoms(count)?;
-    read.reserve(size_of::<s::DeclaredFeatures>() + count * size_of::<Box<str>>())?;
+    read.reserve(count * size_of::<Box<str>>())?;
     let mut names: Vec<Box<str>> = Vec::with_capacity(count);
     for _ in 0..count {
         let length = read.reader.u32()?;

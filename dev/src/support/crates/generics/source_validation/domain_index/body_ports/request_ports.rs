@@ -166,7 +166,7 @@ impl DomainIndex<'_, '_> {
         Ok(attributes
             .functions
             .get(index as usize)
-            .and_then(|contract| contract.target_features.as_deref()))
+            .and_then(s::HeaderContract::target_features))
     }
     /// A call's lexical context discharges exactly its callee's unsafety.
     /// Below version thirteen, an unsafe call inside or to an associated

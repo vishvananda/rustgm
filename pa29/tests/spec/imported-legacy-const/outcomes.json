@@ -1,0 +1,14 @@
+{
+  "profile": "bootstrap-bodies-v15",
+  "client": {
+    "compile_status": 0,
+    "native_exit": 0,
+    "observed_values": [113, 150, 112, 66]
+  },
+  "rejection": {
+    "path": "reject-runtime.rs",
+    "compile_status": 1,
+    "rustgm_diagnostic": "legacy const argument cannot use a runtime value",
+    "rustc_diagnostic": "attempt to use a non-constant value in a constant"
+  }
+}

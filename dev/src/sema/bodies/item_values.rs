@@ -17,6 +17,28 @@ pub(super) struct Pending {
     pub arguments: Vec<Argument>,
 }
 impl Checker<'_> {
+    pub(super) fn unavailable_value(
+        &self,
+        node: NodeId,
+        kind: crate::resolve::model::DefKind,
+    ) -> Error {
+        use crate::resolve::model::DefKind;
+        let message = if matches!(kind, DefKind::Local | DefKind::Parameter)
+            && self
+                .report
+                .resolution
+                .crates
+                .as_deref()
+                .is_some_and(|imports| {
+                    imports.is_legacy_const_operand(&self.report.package, self.state.body)
+                }) {
+            "legacy const argument cannot use a runtime value"
+        } else {
+            "unsupported value declaration"
+        };
+        self.error(node, message)
+    }
+
     pub(in crate::sema) fn constant_instances(&self) -> Result<Vec<Instance>, Error> {
         self.state
             .call_types

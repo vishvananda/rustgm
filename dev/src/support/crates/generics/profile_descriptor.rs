@@ -443,6 +443,9 @@ impl ValidatedRows {
         let extension = attribute_bytes.saturating_add(module_bytes);
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
+        if profile.declaration_policies() {
+            attributes.validate_legacy_const_slots(&rows, &indexed, work)?;
+        }
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, profile, work)?;
             if profile.body_nodes() {

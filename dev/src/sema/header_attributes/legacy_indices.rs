@@ -316,26 +316,30 @@ impl Declarations {
         row.completed = Some((function.definition, function.signature, identity));
         Ok(())
     }
-    pub(crate) fn reject_legacy_indices_transport(
+    pub(crate) fn legacy_const_positions_for_publication(
         &self,
         report: &Report,
         id: DefId,
-    ) -> Result<(), Error> {
+        declaration_policies: bool,
+    ) -> Result<&[usize], Error> {
         let Some(key) = report
             .resolution
             .definitions
             .get(id.0 as usize)
             .and_then(|d| d.node)
         else {
-            return Ok(());
+            return Ok(&[]);
         };
         if marker(self, key).is_none() {
-            return Ok(());
+            return Ok(&[]);
         }
-        self.legacy_const_positions(report, id)?;
-        Err(Error::unlocated(
-            "legacy const generic indices require their cross-crate transport and argument protocol",
-        ))
+        let positions = self.legacy_const_positions(report, id)?;
+        if !declaration_policies {
+            return Err(Error::unlocated(
+                "legacy const generic indices require their cross-crate transport and argument protocol",
+            ));
+        }
+        Ok(positions)
     }
     pub(crate) fn legacy_const_positions(
         &self,

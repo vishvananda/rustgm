@@ -106,9 +106,8 @@ pub struct HeaderContract {
     pub advisories: AdvisoryFlags,
     /// Version thirteen only, on function rows: the written caller ABI policy.
     pub caller_tracking: bool,
-    /// Version thirteen only, on function rows with an original body: the
-    /// declared target features.
-    pub target_features: Option<Box<DeclaredFeatures>>,
+    /// Optional declaration attributes carried only by functions.
+    pub callable: Option<Box<CallableAttributes>>,
     /// Version fourteen only, on function rows with a checked body.
     pub optimization: Option<Optimization>,
     /// Version fourteen only, on the two checked formatting panic declarations.
@@ -116,6 +115,15 @@ pub struct HeaderContract {
     /// Version fourteen retains the actual source owner site of a const promotion promise.
     pub promotable: Option<NonZeroU32>,
 }
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct CallableAttributes {
+    /// Declared target features of a function that owns an original body.
+    pub target_features: Option<DeclaredFeatures>,
+    /// Positions in the written operand list, in formal declaration order.
+    pub legacy_const_positions: Box<[u32]>,
+}
+
 impl HeaderContract {
     pub(crate) fn pack_promotion_site(site: u32) -> Result<NonZeroU32, &'static str> {
         NonZeroU32::new(site.wrapping_add(1))
@@ -127,10 +135,22 @@ impl HeaderContract {
     }
 
     #[must_use]
+    pub fn target_features(&self) -> Option<&DeclaredFeatures> {
+        self.callable.as_deref()?.target_features.as_ref()
+    }
+
+    #[must_use]
+    pub fn legacy_const_positions(&self) -> &[u32] {
+        self.callable
+            .as_deref()
+            .map_or(&[], |attributes| &attributes.legacy_const_positions)
+    }
+
+    #[must_use]
     pub const fn callable_advisories(&self) -> bool {
         self.advisories.0 != 0
             || self.caller_tracking
-            || self.target_features.is_some()
+            || self.callable.is_some()
             || self.optimization.is_some()
             || self.format_panic
             || self.promotable.is_some()
@@ -142,6 +162,32 @@ pub struct HeaderAttributeColumns {
     pub traits: Vec<HeaderContract>,
 }
 impl HeaderAttributeColumns {
+    pub(super) fn validate_legacy_const_slots(
+        &self,
+        rows: &SourceRows,
+        index: &super::HeaderIndex<'_>,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        work.charge(self.functions.len())?;
+        for (contract, header) in self.functions.iter().zip(&rows.functions) {
+            let positions = contract.legacy_const_positions();
+            if positions.is_empty() {
+                continue;
+            }
+            let slots = index.scopes().declared_slots(header.scope, work)?;
+            let slots = slots.slice(&rows.slots)?;
+            work.charge(slots.len())?;
+            if slots.len() != positions.len()
+                || slots
+                    .iter()
+                    .any(|slot| !matches!(slot.kind, super::ParameterKind::Const { .. }))
+            {
+                return Err("legacy const positions must cover the actual const formals");
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn validate(
         &self,
         rows: &SourceRows,
@@ -220,7 +266,7 @@ impl HeaderAttributeColumns {
             }) {
                 return Err("source inline applicability differs from its actual function body");
             }
-            if contract.target_features.is_some() && !profile.body_nodes() {
+            if contract.target_features().is_some() && !profile.body_nodes() {
                 return Err(
                     "source target-feature rows require the version-thirteen header profile",
                 );
@@ -239,6 +285,13 @@ impl HeaderAttributeColumns {
                 }
             }
             check_final_trait_method(contract, header, declarations, profile)?;
+            bytes = bytes.saturating_add(legacy_const_positions(
+                contract,
+                header,
+                exact_callables,
+                profile,
+                work,
+            )?);
             if contract.promotable.is_some()
                 && (!profile.declaration_policies()
                     || header.constness != crate::support::constness::Constness::Const
@@ -264,7 +317,7 @@ impl HeaderAttributeColumns {
             {
                 return Err("source caller tracking requires an exported original body");
             }
-            if let Some(features) = &contract.target_features {
+            if let Some(features) = contract.target_features() {
                 // Only a defined body has an enabled feature set; consumers
                 // re-prove its shape and names on their installed header.
                 if !matches!(header.body, super::FunctionBody::Original(_)) {
@@ -277,7 +330,6 @@ impl HeaderAttributeColumns {
                 }
                 work.charge(features.names.len())?;
                 bytes = bytes
-                    .saturating_add(size_of::<DeclaredFeatures>())
                     .saturating_add(features.names.len().saturating_mul(size_of::<Box<str>>()))
                     .saturating_add(features.names.iter().map(|name| name.len()).sum());
             }
@@ -334,8 +386,51 @@ impl HeaderAttributeColumns {
             }
             *bytes = bytes.saturating_add(reason.capacity());
         }
+        if let Some(callable) = &contract.callable {
+            if callable.target_features.is_none() && callable.legacy_const_positions.is_empty() {
+                return Err("source callable attribute data is empty");
+            }
+            *bytes = bytes.saturating_add(size_of::<CallableAttributes>());
+        }
         Ok(())
     }
+}
+
+fn legacy_const_positions(
+    contract: &HeaderContract,
+    header: &super::FunctionHeader,
+    exact: &[super::ExactCallable],
+    profile: super::Profile,
+    work: &mut Work,
+) -> Result<usize, &'static str> {
+    let positions = contract.legacy_const_positions();
+    if positions.is_empty() {
+        return Ok(0);
+    }
+    if !profile.declaration_policies() {
+        return Err("legacy const argument positions require the declaration policy profile");
+    }
+    let parameters = header.callable.parameters;
+    let operands = parameters
+        .end
+        .checked_sub(parameters.start)
+        .and_then(|runtime| runtime.checked_add(u32::try_from(positions.len()).ok()?))
+        .ok_or("legacy const argument arity overflow")?;
+    work.charge(positions.len().saturating_add(4))?;
+    if header.parent.is_some()
+        || header.receiver.is_some()
+        || header.callable.variadic
+        || exact
+            .binary_search_by_key(&header.declaration.0, |row| row.declaration.0)
+            .is_ok_and(|index| exact[index].body.is_none())
+        || positions
+            .last()
+            .is_some_and(|position| *position >= operands)
+        || positions.windows(2).any(|pair| pair[0] >= pair[1])
+    {
+        return Err("invalid legacy const argument positions for the actual function");
+    }
+    Ok(std::mem::size_of_val(positions))
 }
 
 fn check_final_trait_method(
