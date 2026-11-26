@@ -521,6 +521,7 @@ impl AvailabilityRows {
                     | DefinitionKind::Static
             )
             && !view.associated_type(origin)
+            && !view.module_constant(origin)
             && !view.inherent_constant(origin)
             && !view.trait_constant(origin)
         {
@@ -701,6 +702,23 @@ impl Validation<'_> {
                 | super::HeaderRef::Constructor(_),
             ) => false,
         }
+    }
+
+    /// A named module constant has regular API availability at its own header.
+    fn module_constant(&self, owner: DeclarationRef) -> bool {
+        let Some(declaration) = self.columns.declarations.get(owner.0 as usize) else {
+            return false;
+        };
+        declaration.definition.kind == DefinitionKind::Constant
+            && matches!(
+                self.headers.get(owner.0 as usize),
+                Some(Some(super::HeaderRef::Constant(_)))
+            )
+            && declaration
+                .definition
+                .parent
+                .and_then(|parent| self.columns.declarations.get(parent.0 as usize))
+                .is_some_and(|parent| parent.definition.kind == DefinitionKind::Module)
     }
 
     fn inherent_constant(&self, owner: DeclarationRef) -> bool {

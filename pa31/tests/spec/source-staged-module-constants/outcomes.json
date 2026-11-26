@@ -1,0 +1,11 @@
+{
+  "inputs": ["provider.rs", "client.rs", "invalid.rs", "observe.c"],
+  "foundation": "pa31/tests/spec/source-availability-transport/provider.rs",
+  "prefix_marker": "#[stable(feature=\"identity_api\"",
+  "stdout": "42 57 83\n",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "use of unstable library feature `experimental_constant`",
+    "rustgm": "use of unstable library API requires feature `experimental_constant`"
+  }
+}

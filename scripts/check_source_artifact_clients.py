@@ -102,7 +102,8 @@ def main():
                                  "source-shared-method-sites",
                                  "source-dispatched-call-signatures",
                                  "source-captured-protocol-requests",
-                                 "source-regional-returns", *ASSEMBLY_CASES))
+                                 "source-regional-returns",
+                                 "source-staged-module-constants", *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)
