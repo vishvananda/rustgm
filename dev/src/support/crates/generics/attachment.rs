@@ -143,7 +143,35 @@ impl Payload {
             rows,
             attributes,
             modules,
-            availability,
+            (
+                availability,
+                source::Profile::Source2024ModuleBodyOperations,
+            ),
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// Seal checked declaration and body rows for a crate under bootstrap bindings.
+    ///
+    /// # Errors
+    /// Rejects malformed rows and any claim to supply source compiler bindings.
+    pub fn from_bootstrap_module_bodies(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_module_body_operations(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, source::Profile::Bootstrap2024ModuleBodies),
             base.saturating_add(overhead),
             work,
         )

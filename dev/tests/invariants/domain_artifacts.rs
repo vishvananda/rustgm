@@ -8,6 +8,60 @@ use crate::{
     },
 };
 use test::Result;
+
+#[test]
+fn bootstrap_body_rows_round_trip_without_granting_source_bindings() -> Result {
+    // Use checked declarations from the existing producer to exercise the
+    // wire reader before adding the ordinary crate producer.
+    let source = "#![feature(no_core,lang_items)]\n#![no_core]\n#![allow(internal_features)]\n\
+        #[lang = \"pointee_sized\"] pub trait PointeeSized {}\n\
+        #[lang = \"meta_sized\"] pub trait MetaSized: PointeeSized {}\n\
+        #[lang = \"sized\"] pub trait Sized: MetaSized {}\n\
+        pub fn value() -> u8 { 7 }";
+    let actual = test::exported_profile(
+        source,
+        SourcePublication::ModuleBodyOperations,
+        "bootstrap_body_rows",
+    )?;
+    let descriptor = actual.source_descriptor().ok_or("actual descriptor")?;
+    let (mut raw, attributes, modules) = test::raw(&actual)?;
+    let mut source_bytes = crates::encode(&actual)?;
+    assert_eq!(source_bytes[13..15], 14_u16.to_le_bytes());
+    source_bytes[13..15].copy_from_slice(&15_u16.to_le_bytes());
+    assert!(matches!(
+        crates::decode(&source_bytes),
+        Err("bootstrap crate metadata cannot grant source compiler bindings")
+    ));
+
+    raw.roles.clear();
+    raw.policy.roles.end = 0;
+    let owner = actual.identity();
+    let payload = g::Payload::from_bootstrap_module_bodies(
+        owner,
+        raw,
+        attributes,
+        modules,
+        descriptor.availability()?.clone(),
+        0,
+        &mut g::Work::default(),
+    )?;
+    let packet = crates::Interface::new(owner.clone(), Vec::new(), Vec::new())?
+        .with_generic_payload(payload)?;
+    let bytes = crates::encode(&packet)?;
+    assert_eq!(bytes[13..15], 15_u16.to_le_bytes());
+    let read = crates::decode(&bytes)?;
+    assert_eq!(bytes, crates::encode(&read)?);
+    let decoded = read
+        .source_descriptor()
+        .ok_or("actual decoded descriptor")?;
+    assert!(decoded.profile().bootstrap_bindings());
+    assert!(decoded.compiler_operations().is_err());
+    assert_eq!(decoded.rows().originals, descriptor.rows().originals);
+    let dependencies = crates::Dependencies::new(vec![read], Vec::new())?;
+    assert!(dependencies.source_provider_index(owner).is_err());
+    Ok(())
+}
+
 #[test]
 fn complete_domains_namespace_advisories_and_old_bytes_are_versioned() -> Result {
     old_bytes()?;

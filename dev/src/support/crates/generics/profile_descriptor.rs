@@ -86,43 +86,49 @@ pub enum Profile {
     Source2024ModuleBodies,
     /// Version fourteen: body nodes plus authenticated symbolic compiler operations.
     Source2024ModuleBodyOperations,
+    /// Checked crate bodies under the bootstrap language bindings.
+    Bootstrap2024ModuleBodies,
 }
 impl Profile {
     #[must_use]
+    pub const fn bootstrap_bindings(self) -> bool {
+        matches!(self, Self::Bootstrap2024ModuleBodies)
+    }
+    #[must_use]
     pub const fn feature_predicates(self) -> bool {
-        matches!(
-            self,
-            Self::Source2024ModuleFeaturePredicates
-                | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility
-                | Self::Source2024ModuleCallables
-                | Self::Source2024ModuleSafety
-                | Self::Source2024ModuleConversions
-                | Self::Source2024ModuleNominals
-                | Self::Source2024ModuleCompilerOperations
-                | Self::Source2024ModuleBranches
-                | Self::Source2024ModuleBodies
-                | Self::Source2024ModuleBodyOperations
-        )
+        self.declaration_policies()
+            || matches!(
+                self,
+                Self::Source2024ModuleFeaturePredicates
+                    | Self::Source2024ModuleDefinitions
+                    | Self::Source2024ModuleCompatibility
+                    | Self::Source2024ModuleCallables
+                    | Self::Source2024ModuleSafety
+                    | Self::Source2024ModuleConversions
+                    | Self::Source2024ModuleNominals
+                    | Self::Source2024ModuleCompilerOperations
+                    | Self::Source2024ModuleBranches
+                    | Self::Source2024ModuleBodies
+            )
     }
     #[must_use]
     pub const fn module_contracts(self) -> bool {
-        matches!(
-            self,
-            Self::Source2024ModuleContracts
-                | Self::Source2024ModuleAvailability
-                | Self::Source2024ModuleFeaturePredicates
-                | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility
-                | Self::Source2024ModuleCallables
-                | Self::Source2024ModuleSafety
-                | Self::Source2024ModuleConversions
-                | Self::Source2024ModuleNominals
-                | Self::Source2024ModuleCompilerOperations
-                | Self::Source2024ModuleBranches
-                | Self::Source2024ModuleBodies
-                | Self::Source2024ModuleBodyOperations
-        )
+        self.declaration_policies()
+            || matches!(
+                self,
+                Self::Source2024ModuleContracts
+                    | Self::Source2024ModuleAvailability
+                    | Self::Source2024ModuleFeaturePredicates
+                    | Self::Source2024ModuleDefinitions
+                    | Self::Source2024ModuleCompatibility
+                    | Self::Source2024ModuleCallables
+                    | Self::Source2024ModuleSafety
+                    | Self::Source2024ModuleConversions
+                    | Self::Source2024ModuleNominals
+                    | Self::Source2024ModuleCompilerOperations
+                    | Self::Source2024ModuleBranches
+                    | Self::Source2024ModuleBodies
+            )
     }
     #[must_use]
     pub const fn ordinary_functions(self) -> bool {
@@ -133,21 +139,21 @@ impl Profile {
     }
     #[must_use]
     pub const fn availability(self) -> bool {
-        matches!(
-            self,
-            Self::Source2024ModuleAvailability
-                | Self::Source2024ModuleFeaturePredicates
-                | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility
-                | Self::Source2024ModuleCallables
-                | Self::Source2024ModuleSafety
-                | Self::Source2024ModuleConversions
-                | Self::Source2024ModuleNominals
-                | Self::Source2024ModuleCompilerOperations
-                | Self::Source2024ModuleBranches
-                | Self::Source2024ModuleBodies
-                | Self::Source2024ModuleBodyOperations
-        )
+        self.declaration_policies()
+            || matches!(
+                self,
+                Self::Source2024ModuleAvailability
+                    | Self::Source2024ModuleFeaturePredicates
+                    | Self::Source2024ModuleDefinitions
+                    | Self::Source2024ModuleCompatibility
+                    | Self::Source2024ModuleCallables
+                    | Self::Source2024ModuleSafety
+                    | Self::Source2024ModuleConversions
+                    | Self::Source2024ModuleNominals
+                    | Self::Source2024ModuleCompilerOperations
+                    | Self::Source2024ModuleBranches
+                    | Self::Source2024ModuleBodies
+            )
     }
 }
 #[derive(Clone, Copy, Debug)]
@@ -440,14 +446,14 @@ impl ValidatedRows {
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, profile, work)?;
             if profile.body_nodes() {
-                if profile.compiler_operations() {
-                    functions::validate_body_operations(&rows, &indexed, work)?;
+                if profile.declaration_policies() {
+                    functions::validate_body_operations(&rows, &indexed, work, profile)?;
                 } else {
                     functions::validate_module_bodies(&rows, &indexed, work)?;
                 }
                 super::results_contract::validate(&rows, &indexed, profile, work)?;
                 super::free_constants::validate(&rows, &indexed, profile, work)?;
-                if profile.compiler_operations() {
+                if profile.declaration_policies() {
                     super::operation_contracts::validate_operations(
                         &rows,
                         &indexed,
@@ -584,7 +590,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleCompilerOperations
             | Profile::Source2024ModuleBranches
             | Profile::Source2024ModuleBodies
-            | Profile::Source2024ModuleBodyOperations => {
+            | Profile::Source2024ModuleBodyOperations
+            | Profile::Bootstrap2024ModuleBodies => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -659,6 +666,9 @@ fn require_source_profile(
     profile: Profile,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    if profile.bootstrap_bindings() {
+        super::operation_contracts::require_bootstrap_rows(rows, work)?;
+    }
     super::nominal_contracts::require_profile(rows, profile, work)?;
     super::sum_contracts::require_profile(rows, profile, work)?;
     super::free_constants::require_profile(rows, profile, work)?;

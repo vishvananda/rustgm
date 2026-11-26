@@ -12,6 +12,30 @@ use crate::support::{
     },
 };
 
+// These tables can install the authority of a source sysroot. An ordinary
+// crate still carries its own declarations, type facts and operation bodies.
+pub(super) fn require_bootstrap_rows(
+    rows: &SourceRows,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    work.charge(rows.functions.len().saturating_add(1))?;
+    if !rows.roles.is_empty()
+        || !rows.diagnostics().is_empty()
+        || !rows.compiler_operations.is_empty()
+        || !rows.opaque_futures.is_empty()
+        || !rows.cold().declared_intrinsics.is_empty()
+        || rows.functions.iter().any(|header| {
+            matches!(
+                header.body,
+                FunctionBody::Intrinsic(_) | FunctionBody::CompilerOperation(_)
+            )
+        })
+    {
+        return Err("bootstrap crate metadata cannot grant source compiler bindings");
+    }
+    Ok(())
+}
+
 pub(super) fn require_profile(
     rows: &SourceRows,
     profile: Profile,

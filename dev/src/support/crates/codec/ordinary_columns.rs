@@ -126,7 +126,7 @@ pub(super) fn encode_module_availability(
     let trait_aliases = rows.trait_aliases();
     let alias_normalizations = &rows.cold().alias_normalizations;
     let statics = rows.statics();
-    if profile.compiler_operations() {
+    if profile.extended_columns() {
         out.u8(u8::from(const_bodies.is_some())
             | (u8::from(availability.deprecations.is_some()) << 1)
             | (u8::from(!aliases.is_empty()) << 2)
@@ -172,7 +172,7 @@ pub(super) fn encode_module_availability(
     if !rows.cold().const_defaults.is_empty() {
         sparse_defaults_wire::encode(out, &rows.cold().const_defaults)?;
     }
-    if profile.compiler_operations() {
+    if profile.extended_columns() {
         if profile.body_nodes() {
             compiler_wire::encode_operations(out, rows)?;
             let opaques = &rows.cold().opaques;
@@ -291,8 +291,9 @@ pub(super) fn decode_module_branches(
 pub(super) fn decode_module_body_operations(
     reader: &mut Reader<'_>,
     base: usize,
+    profile: s::Profile,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, s::Profile::Source2024ModuleBodyOperations)
+    decode_availability_profile(reader, base, profile)
 }
 pub(super) fn decode_module_bodies(
     reader: &mut Reader<'_>,
@@ -340,7 +341,7 @@ fn decode_availability_profile(
         free_constants_wire::decode(&mut read, &mut rows)?;
     }
     decode_availability_trailers(&mut read, &mut rows, &mut availability)?;
-    if profile.compiler_operations() {
+    if profile.extended_columns() {
         if profile.body_nodes() {
             compiler_wire::decode_operations(&mut read, &mut rows)?;
             if !rows.cold().opaques.applications.is_empty() {
@@ -392,7 +393,7 @@ fn decode_availability_trailers(
     rows: &mut s::SourceRows,
     availability: &mut s::AvailabilityRows,
 ) -> Result<(), &'static str> {
-    if !read.profile.compiler_operations() {
+    if !read.profile.extended_columns() {
         availability.const_bodies = exemption_wire::decode(read)?;
         return Ok(());
     }

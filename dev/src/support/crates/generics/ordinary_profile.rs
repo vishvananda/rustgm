@@ -119,20 +119,21 @@ pub(super) fn validate_module_bodies(
         headers,
         work,
         NamespaceProfile::Conversions,
-        BindingProfile::Languages,
+        (BindingProfile::Languages, false),
     )
 }
 pub(super) fn validate_body_operations(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
+    profile: Profile,
 ) -> Result<(), &'static str> {
     validate_with(
         rows,
         headers,
         work,
         NamespaceProfile::CompilerOperations,
-        BindingProfile::BodyOperations,
+        (BindingProfile::BodyOperations, profile.bootstrap_bindings()),
     )
 }
 fn validate_mode(
@@ -152,14 +153,14 @@ fn validate_mode(
     } else {
         BindingProfile::Ordinary
     };
-    validate_with(rows, headers, work, profile, roles)
+    validate_with(rows, headers, work, profile, (roles, false))
 }
 fn validate_with(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
     profile: NamespaceProfile,
-    binding: BindingProfile,
+    (binding, bootstrap): (BindingProfile, bool),
 ) -> Result<(), &'static str> {
     work.charge(1)?;
     if !profile.conversions() && !rows.body_units.is_empty() {
@@ -168,7 +169,7 @@ fn validate_with(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
-    let roles = bindings(rows, headers, work, binding)?;
+    let roles = bindings_with_policy(rows, headers, work, binding, bootstrap)?;
     let features = matches!(
         profile,
         NamespaceProfile::FeaturePredicates
@@ -1536,12 +1537,21 @@ pub(super) fn bindings(
     work: &mut Work,
     profile: BindingProfile,
 ) -> Result<Bindings, &'static str> {
+    bindings_with_policy(rows, headers, work, profile, false)
+}
+fn bindings_with_policy(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: BindingProfile,
+    bootstrap: bool,
+) -> Result<Bindings, &'static str> {
     let declarations = binding_declarations(rows, headers, work, profile)?;
     let send = diagnostic_bindings(rows, headers, work, profile, &declarations)?;
     owned_role_members(rows, headers, work, &declarations)?;
     let bound = |role: LangItem| declarations[role.index()];
     let sizing = [LangItem::Sized, LangItem::MetaSized, LangItem::PointeeSized].map(bound);
-    if sizing.contains(&None) {
+    if !bootstrap && sizing.contains(&None) {
         return Err("source functions require the real complete sizing trio");
     }
     slot_bindings(rows, headers, work, profile, sizing[0])?;
