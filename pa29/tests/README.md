@@ -16,8 +16,8 @@ while remaining unpublished until integration:
   `early-bound.rs` and `output-only.rs`), and `spec/foreign-value-metadata/`
   C-ABI callables, aggregates, extern statics, variadics, ABI/const-eval
   rejections, and corrupt version envelope.
-- `generic-transport` (`units/generic-transport.json`, 159 cases, 104 native
-  executables, 4 objects): 14 `module-bodies-v13` generic/body/const/nominal/
+- `generic-transport` (`units/generic-transport.json`, 174 cases, 110 native
+  executables, 7 objects): 14 `module-bodies-v13` generic/body/const/nominal/
   callable/macro/guard transport packets (`language-roles`, `associated-results`,
   `callable-roles`, `enum-match`, `inherent-methods`, `const-methods`,
   `const-parameters`, `array-types`, `pointer-slices`, `transparent-records`,
@@ -30,6 +30,8 @@ while remaining unpublished until integration:
   `spec/static-initializer-closure/` checks an imported function-local
   static whose closure is linked from the provider, the allocation's address
   identity, and a constant initializer with a local binding.
+  `spec/captured-receiver-const/` checks two const instantiations of an
+  imported method whose receiver captures an implementation lifetime.
   `spec/nested-constant-owners/` keeps initializer-local constants under both
   free and inherent constants. The fresh client observes the enclosing arrays
   at compile time and at runtime, and a separate client rejects a hidden name.

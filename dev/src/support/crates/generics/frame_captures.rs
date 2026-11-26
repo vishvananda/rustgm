@@ -406,7 +406,9 @@ fn same_nominal(
             (s::Argument::Region(left), s::Argument::Region(right)) => {
                 same_region_in(rows, frames, inner, (left, right))?;
             }
-            (s::Argument::Const(left), s::Argument::Const(right)) if left == right => {}
+            (s::Argument::Const(left), s::Argument::Const(right)) => {
+                same_const_argument(rows, left, right)?;
+            }
             _ => return Err(SELF_MISMATCH),
         }
     }
@@ -465,9 +467,29 @@ fn same_dynamic(
             (s::Argument::Region(a), s::Argument::Region(b)) => {
                 same_region_in(rows, frames, inner, (a, b))?;
             }
-            (s::Argument::Const(a), s::Argument::Const(b)) if a == b => {}
+            (s::Argument::Const(a), s::Argument::Const(b)) => {
+                same_const_argument(rows, a, b)?;
+            }
             _ => return Err(SELF_MISMATCH),
         }
+    }
+    Ok(())
+}
+
+fn same_const_argument(
+    rows: &SourceRows,
+    expected: s::ConstRef,
+    actual: s::ConstRef,
+) -> Result<(), &'static str> {
+    // A term can have separate rows in the impl header and the original function.
+    let terms = rows.consts();
+    let (Some(expected), Some(actual)) =
+        (terms.get(expected.0 as usize), terms.get(actual.0 as usize))
+    else {
+        return Err("source captured method receiver names an unknown const argument");
+    };
+    if expected != actual {
+        return Err(SELF_MISMATCH);
     }
     Ok(())
 }
