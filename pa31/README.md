@@ -72,6 +72,9 @@ actual source signatures and selected bodies.
   an attempted override. Carry a specializing impl's parent, generic
   substitution and written method defaultness. Fresh clients use inherited
   methods and associated types through the provider's checked impls.
+  Preserve both specialization-trait policies on their defining trait
+  headers. Check the client's feature request when it supplies a new
+  implementation of an imported always-applicable trait.
 
 ## Check your implementation
 

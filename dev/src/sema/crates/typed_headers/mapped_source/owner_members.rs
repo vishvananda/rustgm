@@ -110,7 +110,12 @@ impl Graph {
         // Version thirteen admits an unsafe trait: `implementation` re-proves
         // each impl's safety against it.
         let admitted = if descriptor.profile().declaration_policies() {
-            s::TraitFlags::RESTRICTED_IMPL | s::TraitFlags::UNSAFE | s::TraitFlags::MARKER
+            s::TraitFlags::RESTRICTED_IMPL
+                | s::TraitFlags::UNSAFE
+                | s::TraitFlags::CONST
+                | s::TraitFlags::MARKER
+                | s::TraitFlags::SPECIALIZATION
+                | s::TraitFlags::UNSAFE_SPECIALIZATION
         } else if descriptor.profile().body_nodes() {
             s::TraitFlags::RESTRICTED_IMPL | s::TraitFlags::UNSAFE
         } else {
@@ -126,12 +131,29 @@ impl Graph {
         &self,
         owner: Owner,
     ) -> Result<bool, &'static str> {
+        // Deny-explicit-impl remains independent of module implementation domains.
+        Ok(self.trait_flags(owner)? & s::TraitFlags::DENY_IMPL != 0)
+    }
+
+    pub(in crate::sema) fn specialization_policy(
+        &self,
+        owner: Owner,
+    ) -> Result<Option<u16>, &'static str> {
+        if !self
+            .descriptor(&self.origins)?
+            .profile()
+            .declaration_policies()
+        {
+            return Ok(None);
+        }
+        self.trait_flags(owner).map(Some)
+    }
+
+    fn trait_flags(&self, owner: Owner) -> Result<u16, &'static str> {
         self.owner(owner)?;
         let OwnerKind::Trait { definition, .. } = owner.kind else {
             return Err("imported implementation policy requires its actual trait owner");
         };
-        // Deny-explicit-impl remains independent of module implementation domains.
-        // A restricted provider-owned implementation can still be a valid candidate.
         let descriptor = self.descriptor(&self.origins)?;
         let id = self.origins.declaration(definition)?;
         let (_, row, _) = self.origins.declaration_coordinate(id)?;
@@ -139,8 +161,9 @@ impl Graph {
         let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
             return Err("imported implementation policy lacks its completed actual trait header");
         };
-        Ok(rows.traits[index as usize].flags.bits() & s::TraitFlags::DENY_IMPL != 0)
+        Ok(rows.traits[index as usize].flags.bits())
     }
+
     pub(in crate::sema) fn implementation_request(
         &self,
         store: &crate::types::Store,

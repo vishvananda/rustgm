@@ -602,12 +602,12 @@ fn trait_policy(
     facts: &Declarations,
     definition: crate::resolve::model::DefId,
 ) -> Result<u16, &'static str> {
-    let unsafe_specialization = facts
-        .publication_unsafe_specialization(report, definition)
-        .map_err(|_| "source unsafe specialization marker lost its checked declaration")?;
+    let specialization = facts
+        .publication_specialization_policy(report, definition)
+        .map_err(|_| "source specialization policy lost its checked declaration")?;
     Ok(facts.authored_definition_policy(definition)?
         | facts.authored_dispatch_bits(definition)?
-        | (u16::from(unsafe_specialization) * s::TraitFlags::UNSAFE_SPECIALIZATION)
+        | specialization
         | (u16::from(facts.authored_incoherent_target(definition)?)
             * s::TraitFlags::INCOHERENT_INHERENT))
 }

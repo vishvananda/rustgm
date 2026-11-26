@@ -51,22 +51,23 @@ impl Checker<'_> {
             .trait_application(application)
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
+        let empty = member_plan.is_none()
+            && self
+                .facts
+                .associated
+                .imported_empty_module_trait(trait_definition)
+                .map_err(Error::unlocated)?;
         if effect != Constness::Ordinary {
             self.require_imported_const_impl(
                 trait_definition,
                 effect,
-                member_plan.is_some_and(|plan| plan.declaration_policies),
+                empty || member_plan.is_some_and(|plan| plan.declaration_policies),
             )?;
         }
         if let Some(plan) = member_plan {
             plan.require(&self.facts, definition, predicate)
                 .map_err(Error::unlocated)?;
-        } else if !self
-            .facts
-            .associated
-            .imported_empty_module_trait(trait_definition)
-            .map_err(Error::unlocated)?
-        {
+        } else if !empty {
             self.require_imported_receiver_trait(trait_definition)?;
         }
         self.facts
@@ -85,7 +86,7 @@ impl Checker<'_> {
         effect: Constness,
         declaration_policies: bool,
     ) -> Result<(), Error> {
-        if self.facts.source_bindings.is_none() {
+        if self.facts.source_bindings.is_none() && !declaration_policies {
             return Err(Error::unlocated(
                 "imported const impl lacks its actual role catalog",
             ));

@@ -108,6 +108,10 @@ impl and a specializing impl in one provider. The fresh client observes the
 default and overriding methods, the inherited const argument and the
 inherited associated type. The rejection checks an override of a final
 parent method.
+`spec/source-specialization-policies/outcomes.json` checks the blanket and
+specialized calls for both specialization-trait policies. One fresh client
+also specializes using the imported trait. A client that implements the
+always-applicable trait without requesting specialization is rejected.
 `spec/source-const-trait-transport/outcomes.json` checks general v14 non-role
 `const trait` and `const unsafe trait` declarations, `const impl` and
 `const unsafe impl` unwritten-const methods (including lifetime-capturing

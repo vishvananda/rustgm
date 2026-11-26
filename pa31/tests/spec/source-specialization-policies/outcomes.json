@@ -1,0 +1,17 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "restricted-client.rs", "local-policy-client.rs"],
+  "features": ["min_specialization"],
+  "stdout": "",
+  "older_reader": "source sizing attributes require exact sizing role and deny-impl ownership",
+  "restricted_client": {
+    "path": "restricted-client.rs",
+    "rustc": "implementing `rustc_specialization_trait` traits is unstable",
+    "rustgm": "implementing an always-applicable trait requires specialization or min_specialization"
+  },
+  "compile_only_clients": [
+    {
+      "path": "local-policy-client.rs",
+      "required_lowir": ["specialize_locally"]
+    }
+  ]
+}

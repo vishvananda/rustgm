@@ -1,6 +1,6 @@
 //! Missing or imported trait state is Unknown, never a local marker absence.
 use super::annotation_store::{self as store, Marker, Policy};
-use crate::support::bindings::LangItem;
+use crate::support::{bindings::LangItem, crates::generics::source::TraitFlags};
 use crate::{
     resolve::{
         expansion::Report,
@@ -36,6 +36,9 @@ pub(in crate::sema) fn marker(
             .map_err(Error::unlocated)?
             .contains(crate::resolve::bindings::HeaderAttribute::UnsafeSpecialization));
     }
+    if let Some(flags) = imported_policy(facts, definition)? {
+        return Ok(flags & TraitFlags::UNSAFE_SPECIALIZATION != 0);
+    }
     Ok(read(facts, report, definition)?.0.is_some())
 }
 pub(in crate::sema) fn applicable(
@@ -68,9 +71,46 @@ pub(in crate::sema) fn applicable(
             .attributes
             .contains(crate::resolve::bindings::HeaderAttribute::Specialization));
     }
+    if let Some(flags) = imported_policy(facts, definition)? {
+        return Ok(applicable_flag(flags));
+    }
     let (marker, applicable) = read(facts, report, definition)?;
     Ok(applicable.is_some() && marker.is_none())
 }
+pub(super) fn imported_policy(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<Option<u16>, Error> {
+    use crate::sema::{associated::OwnerKind, crates::ImportedOwners};
+    let Some(ImportedOwners::Ordinary(graphs)) = facts.associated.imported_owner() else {
+        return Ok(None);
+    };
+    let Some(owner) = facts
+        .associated
+        .owner(definition)
+        .and_then(|owner| facts.associated.get(owner))
+        .copied()
+        .filter(|owner| {
+            owner.source.is_none()
+                && matches!(owner.kind, OwnerKind::Trait { definition: id, .. } if id == definition)
+        })
+    else {
+        return Ok(None);
+    };
+    crate::sema::crates::charge_source_header_query(facts, 8)?;
+    let graph = graphs
+        .for_definition(definition)
+        .map_err(Error::unlocated)?;
+    graph
+        .require_store(&facts.types)
+        .map_err(Error::unlocated)?;
+    graph.specialization_policy(owner).map_err(Error::unlocated)
+}
+
+pub(super) const fn applicable_flag(flags: u16) -> bool {
+    flags & TraitFlags::SPECIALIZATION != 0 && flags & TraitFlags::UNSAFE_SPECIALIZATION == 0
+}
+
 fn read(
     facts: &Declarations,
     report: &Report,
@@ -206,37 +246,23 @@ fn validate_marker(report: &Report, marker: Marker, policy: Policy) -> Result<()
 }
 
 impl Declarations {
-    pub(in crate::sema) fn publication_unsafe_specialization(
+    pub(in crate::sema) fn publication_specialization_policy(
         &self,
         report: &Report,
         definition: DefId,
-    ) -> Result<bool, Error> {
-        if !self.checked_trivial_clone(definition)?
-            || self
-                .must_use_contracts
-                .as_deref()
-                .is_none_or(|owner| owner.specialization.is_none())
+    ) -> Result<u16, Error> {
+        if self
+            .must_use_contracts
+            .as_deref()
+            .is_none_or(|owner| owner.specialization.is_none())
         {
-            return Ok(false);
+            return Ok(0);
         }
-        let (unsafe_, applicable) = read(self, report, definition)?;
-        Ok(unsafe_.is_some() && applicable.is_none())
-    }
-
-    fn checked_trivial_clone(&self, definition: DefId) -> Result<bool, Error> {
-        let Some(catalog) = self.source_bindings.as_deref() else {
-            return Ok(false);
-        };
-        if catalog
-            .language(LangItem::TrivialClone)
-            .is_none_or(|role| role.definition != definition)
-        {
-            return Ok(false);
-        }
-        Ok(catalog
-            .validated_language(LangItem::TrivialClone)
-            .map_err(Error::unlocated)?
-            .is_some())
+        let (marker, applicable) = read(self, report, definition)?;
+        Ok(
+            (u16::from(marker.is_some()) * TraitFlags::UNSAFE_SPECIALIZATION)
+                | (u16::from(applicable.is_some()) * TraitFlags::SPECIALIZATION),
+        )
     }
 
     pub(crate) fn publication_header_contracts<'a>(
@@ -271,21 +297,16 @@ impl Declarations {
                 "specialization publication requires completed source attribute producers",
             ));
         }
-        // Completion is produced after the shared marker consumer finishes.
-        // The wire admits only those flags owned by the actual profiled role.
+        if declaration_policies {
+            // The typed trait header carries the completed policy.
+            return Ok(view);
+        }
         if self
             .must_use_contracts
             .as_deref()
             .is_some_and(|owner| owner.specialization.is_some())
         {
             let (unsafe_, applicable) = read(self, report, definition)?;
-            if declaration_policies
-                && unsafe_.is_some()
-                && applicable.is_none()
-                && self.checked_trivial_clone(definition)?
-            {
-                return Ok(view);
-            }
             // The sizing profile owns the applicable flag and exact deny-impl contract.
             if unsafe_.is_none()
                 && applicable.is_some()

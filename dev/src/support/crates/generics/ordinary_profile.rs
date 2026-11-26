@@ -390,10 +390,13 @@ fn trait_profile_flags(
 ) -> Result<TraitFlags, &'static str> {
     let flags = header.flags.bits();
     let policies = roles.definition_policies;
-    if flags & TraitFlags::UNSAFE_SPECIALIZATION != 0
-        && (roles.trivial_clone != Some(header.declaration) || flags & TraitFlags::MARKER == 0)
-    {
-        return Err("source unsafe specialization requires its actual TrivialClone marker");
+    if flags & TraitFlags::UNSAFE_SPECIALIZATION != 0 {
+        if policies == 0 {
+            return Err("source unsafe specialization requires the declaration policy profile");
+        }
+        if roles.trivial_clone == Some(header.declaration) && flags & TraitFlags::MARKER == 0 {
+            return Err("source unsafe specialization requires its actual TrivialClone marker");
+        }
     }
     if header.region_captures != 0 && policies == 0 {
         return Err("source trait lifetimes require the declaration policy profile");
@@ -409,7 +412,13 @@ fn trait_profile_flags(
     {
         return Err("source marker trait requires its actual empty declaration profile");
     }
-    TraitFlags::from_bits(flags & !policies)
+    let general_specialization =
+        if policies != 0 && !roles.sizing.contains(&Some(header.declaration)) {
+            TraitFlags::SPECIALIZATION
+        } else {
+            0
+        };
+    TraitFlags::from_bits(flags & !(policies | general_specialization))
 }
 
 fn require_unsize_header(header: &super::super::TraitHeader) -> Result<(), &'static str> {

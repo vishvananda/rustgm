@@ -62,6 +62,7 @@ def main():
                                  "source-pointer-lint-transport",
                                  "source-final-method-transport",
                                  "source-specialization-transport",
+                                 "source-specialization-policies",
                                  "source-const-trait-transport",
                                  "source-declared-intrinsic-transport",
                                  "source-async-drop-transport",

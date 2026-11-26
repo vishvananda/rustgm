@@ -478,6 +478,7 @@ impl TraitFlags {
     pub const AUTO: u16 = 4;
     pub const DENY_IMPL: u16 = 8;
     pub const FUNDAMENTAL: u16 = 16;
+    /// Checked always-applicable specialization policy.
     pub const SPECIALIZATION: u16 = 32;
     pub const COINDUCTIVE: u16 = 64;
     pub const DYN_INCOMPATIBLE: u16 = 128;
@@ -489,7 +490,7 @@ impl TraitFlags {
     pub const SKIP_BOXED_SLICE_DISPATCH: u16 = 2048;
     /// An empty marker declaration verified during metadata validation.
     pub const MARKER: u16 = 4096;
-    /// The checked unsafe specialization policy on the actual `TrivialClone` declaration.
+    /// Checked unsafe specialization policy.
     pub const UNSAFE_SPECIALIZATION: u16 = 8192;
     pub(crate) const DISPATCH_POLICIES: u16 =
         Self::SKIP_ARRAY_DISPATCH | Self::SKIP_BOXED_SLICE_DISPATCH;

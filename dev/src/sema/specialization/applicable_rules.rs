@@ -1,5 +1,11 @@
 //! Always-applicable traits extend Min's predicate basis only with checked impls.
-use super::{header_conditions, minimal_admission, predicate_basis::Basis, retention_work::Budget};
+use super::{
+    annotation_reads::{applicable_flag, imported_policy},
+    annotation_store::LocalMarkers,
+    header_conditions, minimal_admission,
+    predicate_basis::Basis,
+    retention_work::Budget,
+};
 use crate::{
     resolve::{expansion::Report, model::DefId, specialization_authority::Requests, unit::NodeKey},
     sema::model::Declarations,
@@ -27,7 +33,7 @@ fn policy(facts: &Declarations, report: &Report, clause: Clause) -> Result<bool,
             return Ok(true);
         };
         let role = catalog
-            .language(LangItem::Sized)
+            .role(LangItem::Sized)?
             .ok_or("missing actual source Sized")?;
         return super::applicable(facts, report, role.definition).map_err(|e| e.to_string());
     }
@@ -63,22 +69,28 @@ pub(in crate::sema) fn verify(
     report: &Report,
     headers: &[(DefId, Option<NodeKey>, Predicate)],
 ) -> Result<(), String> {
-    let Some(table) = facts
+    let local = facts
         .must_use_contracts
         .as_deref()
         .and_then(|owner| owner.specialization.as_deref())
-        .filter(|table| table.has_applicable)
-    else {
+        .filter(|table| table.has_applicable);
+    let imported = facts.associated.imported_owner().is_some();
+    if local.is_none() && !imported {
         return Ok(());
-    };
-    if !table.complete {
+    }
+    if local.is_some_and(|table| !table.complete) {
         return Err("applicable trait policy inventory is unfinished".into());
     }
-    let budget = table.budget()?;
+    let local_policies = local.is_some();
+    let budget = local.map_or_else(|| Budget::new(0), LocalMarkers::budget)?;
     let requests = Requests::new(report).map_err(|e| e.to_string())?;
     let mut allowances = report.macro_allowances();
     for &(owner, source, predicate) in headers {
         budget.charge(1, 0)?;
+        // A provider-owned implementation was admitted in its producer.
+        if source.is_none() {
+            continue;
+        }
         let Some((application, _)) = predicate.bound.trait_parts() else {
             continue;
         };
@@ -87,13 +99,8 @@ pub(in crate::sema) fn verify(
             .trait_application(application)
             .ok_or("applicable implementation lost its trait")?
             .item;
-        if !super::applicable(facts, report, DefId(definition.0)).map_err(|e| e.to_string())? {
+        if !implemented_trait_policy(facts, report, DefId(definition.0), local_policies)? {
             continue;
-        }
-        if source.is_none() {
-            return Err(
-                "always-applicable implementation policy transport is not implemented".into(),
-            );
         }
         let admission = requests
             .capture(report, &mut allowances, owner, |steps, bytes| {
@@ -113,6 +120,29 @@ pub(in crate::sema) fn verify(
             .map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+fn implemented_trait_policy(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+    local_policies: bool,
+) -> Result<bool, String> {
+    let actual = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .ok_or("applicable implementation lost its actual declaration")?;
+    if actual.node.is_some() {
+        return local_policies
+            .then(|| super::applicable(facts, report, definition))
+            .transpose()
+            .map(|allowed| allowed.unwrap_or(false))
+            .map_err(|error| error.to_string());
+    }
+    imported_policy(facts, definition)
+        .map(|flags| flags.is_some_and(applicable_flag))
+        .map_err(|error| error.to_string())
 }
 
 fn implementation(
