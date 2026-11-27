@@ -552,6 +552,7 @@ impl Checker<'_> {
         predicate: Predicate,
         environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
     ) -> Result<(), Error> {
+        let environment = self.reprove_imported_premises(definition, environment)?;
         let mut proof = self.declaration_proof(definition, Some(environment));
         let requirements = super::impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(Error::unlocated)?;

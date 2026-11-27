@@ -6,5 +6,6 @@
     "path": "reject-bound.rs",
     "rustc": "E0277",
     "reason": "The imported Read impl requires ReverseSearcher for the selected Pattern::Searcher."
-  }
+  },
+  "provider_contract": "An imported Fused impl proves its Read supertrait under the same lifetime-bearing projected bound."
 }

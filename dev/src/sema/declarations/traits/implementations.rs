@@ -9,6 +9,7 @@ mod methods;
 mod negative;
 mod orphans;
 mod portable_impls;
+mod portable_premises;
 mod readiness;
 mod reborrowing;
 pub(in crate::sema) use reborrowing::structure::{

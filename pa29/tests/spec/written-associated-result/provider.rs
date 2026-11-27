@@ -24,6 +24,10 @@ where
     }
 }
 
+pub trait Fused: Read {}
+
+impl<'a, P> Fused for Cursor<'a, P> where P: Pattern<Searcher<'a>: ReverseSearcher<'a>> {}
+
 impl<'a> Searcher<'a> for &'a u8 {}
 impl<'a> ReverseSearcher<'a> for &'a u8 {}
 

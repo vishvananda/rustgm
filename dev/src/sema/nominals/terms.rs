@@ -163,6 +163,32 @@ impl Proof {
             .normalize_term(facts, ty, count, owner)
     }
 
+    /// Reprove the projected roots before treating a reconstructed premise
+    /// as a normal form. Preserve the owner's binder and scoped obligations.
+    pub(in crate::sema) fn reprove_normal_term(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        locals: Option<u32>,
+    ) -> Result<bool, &'static str> {
+        if facts.types.contains_projections(ty) != Some(true) {
+            return Ok(true);
+        }
+        crate::sema::callee_premises::Inputs::prepare_type(facts, ty)?;
+        let result = if let Some(count) = locals {
+            self.normalize_clause_term(facts, ty, count)
+        } else {
+            self.normalize(facts, ty)
+        };
+        match result {
+            Ok(value) => Ok(value == ty),
+            // The conformance walk may still be preparing a dependency.
+            // An unresolved query supplies no normal-form certificate.
+            Err(crate::sema::projections::MISSING_IMPLEMENTATION) => Ok(false),
+            Err(error) => Err(error),
+        }
+    }
+
     pub(in crate::sema) fn formation_steps(&self) -> usize {
         self.checked.steps()
             + self.shapes.as_ref().map_or(0, |shapes| shapes.steps())

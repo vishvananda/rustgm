@@ -395,6 +395,30 @@ impl Environment {
         Ok(())
     }
 
+    /// Copy the trait assumptions for a separate proof of these same inputs.
+    /// Other holders keep the original environment and its clause index.
+    pub(crate) fn with_reproved_normal_premises(
+        &self,
+        types: &Store,
+        clauses: &[Clause],
+        pay: &mut impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        let mut result = self.clone();
+        let traits = result
+            .traits
+            .as_mut()
+            .ok_or("normal premise proof has no trait environment")?;
+        let copy = traits.allocation();
+        let added = crate::support::retained::new_map::<Clause, ()>(clauses.len())
+            .saturating_add(size_of::<TraitAssumptions>() + size_of::<Self>());
+        pay(
+            copy.visits.saturating_add(clauses.len()),
+            copy.bytes.saturating_add(added),
+        )?;
+        Arc::make_mut(traits).certify(types, clauses)?;
+        Ok(result)
+    }
+
     /// Whether this exact, unopened environment certified `clause` normal.
     #[must_use]
     pub fn certified_normal_premise(&self, clause: Clause) -> bool {
