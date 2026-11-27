@@ -185,6 +185,7 @@ fn sized(facts: &Declarations, item: DefId, self_type: TypeId) -> Result<bool, E
     let Some(role) = facts
         .source_bindings
         .as_deref()
+        .filter(|catalog| catalog.uses_imported_roles())
         .map(|catalog| catalog.validated_role(crate::support::bindings::LangItem::Sized))
         .transpose()
         .map_err(Error::from)?

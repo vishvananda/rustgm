@@ -583,6 +583,7 @@ pub(in crate::sema) fn sized_bound(facts: &mut Declarations) -> Result<Bound, &'
     let Some(role) = facts
         .source_bindings
         .as_deref()
+        .filter(|catalog| catalog.uses_imported_roles())
         .map(|catalog| catalog.validated_role(crate::support::bindings::LangItem::Sized))
         .transpose()?
         .flatten()
