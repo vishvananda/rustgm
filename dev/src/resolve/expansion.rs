@@ -331,8 +331,6 @@ pub(in crate::resolve) fn analyze_staged(
 fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Error> {
     let result = engine.run();
     result.map_err(|error| engine.retain_expansion_warnings(engine.diagnostic(error)))?;
-    super::bindings::validate_features(&engine.loader.package)
-        .map_err(|error| engine.retain_expansion_warnings(engine.diagnostic(error)))?;
     if let Some(producer) = engine
         .attribute_effects
         .as_deref_mut()
@@ -353,8 +351,12 @@ fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Erro
         names_resolved: false,
         attribute_effects: engine.attribute_effects,
     };
-    let validation = super::bindings::validate_crate_options(&report)
+    let validation = super::bindings::validate_expanded_features(&report)
         .map_err(|error| report.diagnostic(error))
+        .and_then(|()| {
+            super::bindings::validate_crate_options(&report)
+                .map_err(|error| report.diagnostic(error))
+        })
         .and_then(|()| cfg_gates::validate_attributes(&report))
         .and_then(|()| {
             super::default_items::validate(&report).map_err(|error| report.diagnostic(error))

@@ -28,12 +28,11 @@ impl<S: Sources> Engine<'_, S> {
             ));
         }
         let source = package
-            .source_core()
-            .ok_or_else(|| Error::at(file, anchor.start, "missing formatting capture provider"))?;
+            .require_format_contracts()
+            .map_err(|message| Error::at(file, anchor.start, message))?;
         let count = draft.captured.len().saturating_mul(2).saturating_add(1);
         let growth = Growth::vector::<Origin>(unit.origins.len(), unit.origins.capacity(), count);
         source
-            .macros
             .charge(
                 count.saturating_add(growth.work),
                 count
@@ -45,7 +44,7 @@ impl<S: Sources> Engine<'_, S> {
             &package.units,
             file,
             anchor.start,
-            |steps, _, _| source.macros.charge(steps, 0),
+            |steps, _, _| source.charge(steps, 0),
         )?;
         let edition = crate::resolve::unit::editions::at(Location { file, span: anchor }, |id| {
             package.units.get(id.0 as usize)
@@ -95,8 +94,8 @@ fn validate_names(
     draft: &builtin::format_arguments::Draft,
 ) -> Result<(), Error> {
     let source = package
-        .source_core()
-        .ok_or_else(|| Error::at(file, anchor.start, "missing formatting capture provider"))?;
+        .require_format_contracts()
+        .map_err(|message| Error::at(file, anchor.start, message))?;
     let mut end = 0;
     // Validate every interval and canonical symbol before allocation or install.
     for &node in &draft.captured {
@@ -121,7 +120,6 @@ fn validate_names(
             .filter(|_| span == actual.span && span.start >= end && span.start < span.end)
             .ok_or_else(|| Error::at(file, anchor.start, "formatting capture interval changed"))?;
         source
-            .macros
             .charge(spelling.len().saturating_add(1), 0)
             .map_err(|message| Error::at(file, anchor.start, message))?;
         if name.0 as usize >= package.names.len() || package.names.get(name) != spelling {

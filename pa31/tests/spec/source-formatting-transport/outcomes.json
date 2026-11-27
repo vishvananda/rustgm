@@ -1,0 +1,17 @@
+{
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "captured-attribute.rs",
+    "observe.c"
+  ],
+  "foundation": "pa31/tests/spec/source-enum-role-transport/provider.rs",
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "features": ["allow_internal_unsafe", "allow_internal_unstable", "auto_traits", "const_destruct"],
+  "stdout": "plain\nline\nconstant\n",
+  "restricted_client": {
+    "path": "captured-attribute.rs",
+    "rustc": "attributes on expressions are experimental",
+    "rustgm": "source expression attributes require stmt_expr_attributes"
+  }
+}

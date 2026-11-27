@@ -154,11 +154,12 @@ impl<S: Sources> Engine<'_, S> {
                 role.unavailable_message(),
             ));
         }
-        // An imported builtin row runs only an expander that needs no defining
-        // source declaration, exactly the set the bootstrap prelude binds, or
-        // a panic role, which delegates to its provider's rows by crate id.
-        if super::transported_macros::imported(&self.paths.state.facts, definition).is_some()
-            && matches!(actual.body, Body::Builtin(role) if !role.context_free() && !role.imported_delegation())
+        if let Some(imported) =
+            super::transported_macros::imported(&self.paths.state.facts, definition)
+            && let Body::Builtin(role) = actual.body
+            && !role.context_free()
+            && !role.imported_delegation()
+            && !self.imported_formatter(imported, role)
         {
             return Err(self.unavailable_error(
                 definition,

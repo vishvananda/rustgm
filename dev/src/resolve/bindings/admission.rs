@@ -1,16 +1,18 @@
 //! Source feature uses are checked once over each phase's actual configured tree.
 use super::{
+    FeatureName,
     policy::Feature,
     positions::{self, Position},
 };
 use crate::{
     resolve::{
+        expansion::{MacroAllowanceSession, Report},
         package::{Error, Package},
-        unit::{FileId, Unit},
+        unit::{FileId, NodeKey, Unit},
     },
     syntax::{
         ast::{Kind, NodeId},
-        attribute::Style,
+        attribute::{Input, Style},
     },
 };
 
@@ -57,10 +59,23 @@ impl Use {
 /// Ordinary programs return before allocating or inspecting any syntax.
 /// Loading and final expansion publish different trees; each calls this once.
 pub(in crate::resolve) fn validate(package: &Package) -> Result<(), Error> {
-    inspect(package, &mut Work::default())
+    inspect(package, &mut Work::default(), None)
 }
 
-fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
+pub(in crate::resolve) fn validate_expanded(report: &Report) -> Result<(), Error> {
+    let mut allowances = report
+        .package
+        .macro_context()
+        .map_err(Error::unlocated)?
+        .map(|_| report.macro_allowances());
+    inspect(&report.package, &mut Work::default(), allowances.as_mut())
+}
+
+fn inspect(
+    package: &Package,
+    work: &mut Work,
+    mut allowances: Option<&mut MacroAllowanceSession<'_>>,
+) -> Result<(), Error> {
     let Some(source) = package.source_features() else {
         return Ok(());
     };
@@ -109,7 +124,15 @@ fn inspect(package: &Package, work: &mut Work) -> Result<(), Error> {
                     _ => {}
                 }
             }
-            attributes(source, unit, file, node, position, work)?;
+            attributes(
+                source,
+                unit,
+                file,
+                node,
+                position,
+                work,
+                allowances.as_deref_mut(),
+            )?;
             children.clear();
             unit.configured.ast.push_children(node, &mut children);
             work.edges += children.len();
@@ -160,6 +183,7 @@ fn attributes(
     node: NodeId,
     position: Position,
     work: &mut Work,
+    mut allowances: Option<&mut MacroAllowanceSession<'_>>,
 ) -> Result<(), Error> {
     let Kind::Attributed { .. } = unit.configured.ast.node(node).kind else {
         return Ok(());
@@ -179,7 +203,7 @@ fn attributes(
             "source attribute has a different configured owner",
         ));
     }
-    for (attribute, _) in unit.retained_attributes(owner.attributes.clone()) {
+    for (effect, attribute, _) in unit.retained_indexed_attributes(owner.attributes.clone()) {
         work.attributes += 1;
         if position == Position::IfBody && attribute.style == Style::Inner {
             return Err(Error::at(
@@ -190,7 +214,20 @@ fn attributes(
         }
         // The root policy alone reads requests. Misplaced feature attributes
         // remain inert, as in Rust; they cannot change this owner's capabilities.
-        if position == Position::Expression {
+        if position == Position::Expression && !source.has(Feature::ExpressionAttributes) {
+            if let Some(allowances) = allowances.as_deref_mut()
+                && !matches!(attribute.input, Input::Doc(_))
+                && unit.configured.effects[effect].attribute.effect
+                    == crate::expand::configured::Effect::Keep
+                && allowances.allows_attribute(
+                    NodeKey { file, node },
+                    effect,
+                    attribute,
+                    &FeatureName::new("stmt_expr_attributes").map_err(Error::unlocated)?,
+                )?
+            {
+                continue;
+            }
             require(source, Use::ExpressionAttribute, unit, file, node)?;
         }
     }

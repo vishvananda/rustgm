@@ -1,10 +1,6 @@
-//! A literal result is tied to its actual local formatter declaration and call.
+//! A literal result is tied to its authenticated formatter declaration and call.
 use super::{Body, Builtin, Engine, Error, NodeId, Report, Sources};
-use crate::{
-    expand::builtin,
-    resolve::{bindings::Source, unit::NodeKey},
-    syntax::ast::Kind,
-};
+use crate::{expand::builtin, resolve::unit::NodeKey, syntax::ast::Kind};
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn format_literal_value(
         &mut self,
@@ -26,13 +22,11 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|message| call.diagnostic(message))?,
         );
         let config = self.loader.package.crate_config(self.config, file).1;
-        let Some(Source::Core(source)) = self.loader.package.source.as_deref() else {
-            return Err(Error::at(
-                file,
-                0,
-                "formatting requires its local source provider",
-            ));
-        };
+        let source = self
+            .loader
+            .package
+            .require_format_contracts()
+            .map_err(|message| Error::at(file, 0, message))?;
         let unit = &self.loader.package.units[file.0 as usize];
         let Kind::Expansion {
             children,
@@ -66,7 +60,6 @@ impl<S: Sources> Engine<'_, S> {
             ));
         };
         source
-            .macros
             .charge(
                 bytes.len().saturating_mul(3).saturating_add(1),
                 bytes
@@ -101,9 +94,8 @@ impl Report {
     pub(crate) fn prepare_formatting_value(&self, key: NodeKey, bytes: usize) -> Result<(), Error> {
         self.formatting_value(key)?;
         self.package
-            .source_core()
-            .ok_or_else(|| Error::at(key.file, 0, "missing actual formatting provider"))?
-            .macros
+            .require_format_contracts()
+            .map_err(|message| Error::at(key.file, 0, message))?
             .charge(1, bytes)
             .map_err(|message| Error::at(key.file, 0, message))
     }
@@ -142,15 +134,12 @@ impl Report {
         {
             return Err(failure("formatting changed its actual result tag"));
         }
-        let source = self
-            .package
-            .source_core()
-            .ok_or_else(|| failure("missing actual formatting provider"))?;
+        let source = self.package.require_format_contracts().map_err(failure)?;
         let raw = crate::resolve::unit::contexts::at_counted(
             &self.package.units,
             key.file,
             actual.span.start,
-            |steps, _, _| source.macros.charge(steps, 0),
+            |steps, _, _| source.charge(steps, 0),
         )?;
         let context = self
             .package

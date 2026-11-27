@@ -70,7 +70,7 @@ fn expanded(source: &str) -> Result<Package> {
 }
 fn counted(package: &Package) -> Result<Work> {
     let mut work = Work::default();
-    inspect(package, &mut work)?;
+    inspect(package, &mut work, None)?;
     Ok(work)
 }
 fn unique_nodes(package: &Package) -> usize {

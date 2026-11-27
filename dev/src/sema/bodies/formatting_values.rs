@@ -50,12 +50,13 @@ impl Checker<'_> {
                 size_of::<Pending>() + size_of::<Box<Pending>>(),
             )?;
             let owner = self.formatting_owner(node, constructor)?;
-            if self.facts.aggregates.get(owner).is_none()
-                || !self
-                    .facts
-                    .lifetimes
-                    .parameters
-                    .contains_key(&DefId(owner.0))
+            if self.report.package.source_core().is_some()
+                && (self.facts.aggregates.get(owner).is_none()
+                    || !self
+                        .facts
+                        .lifetimes
+                        .parameters
+                        .contains_key(&DefId(owner.0)))
             {
                 return Ok(Some(Requirement::Nominal(owner)));
             }
@@ -82,17 +83,20 @@ impl Checker<'_> {
                 "formatting changed its canonical constructor selector",
             ));
         }
-        let declaration = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(role))
-            .ok_or_else(|| {
-                self.error(
-                    node,
-                    "formatting requires the actual format_arguments owner",
-                )
-            })?;
+        let missing = || {
+            self.error(
+                node,
+                "formatting requires the actual format_arguments owner",
+            )
+        };
+        let catalog = self.facts.source_bindings.as_deref().ok_or_else(missing)?;
+        let declaration = if catalog.uses_imported_roles() {
+            catalog.validated_role(role)
+        } else {
+            catalog.role(role)
+        }
+        .map_err(|message| self.error(node, message))?
+        .ok_or_else(missing)?;
         Ok(ItemId(declaration.definition.0))
     }
     fn formatting_prefix(
@@ -101,15 +105,17 @@ impl Checker<'_> {
         owner: ItemId,
         constructor: NameId,
     ) -> Result<Pending, Error> {
-        let declaration = crate::sema::compiler_items::formatting::declaration(
-            self.report,
-            self.facts,
-            self.formatting_selector(node)?.0,
-        )
-        .map_err(|message| self.error(node, message))?
-        .ok_or_else(|| self.error(node, "missing actual formatting nominal"))?;
-        if declaration.definition.0 != owner.0 {
-            return Err(self.error(node, "formatting nominal changed its actual owner"));
+        if self.report.package.source_core().is_some() {
+            let declaration = crate::sema::compiler_items::formatting::declaration(
+                self.report,
+                self.facts,
+                self.formatting_selector(node)?.0,
+            )
+            .map_err(|message| self.error(node, message))?
+            .ok_or_else(|| self.error(node, "missing actual formatting nominal"))?;
+            if declaration.definition.0 != owner.0 {
+                return Err(self.error(node, "formatting nominal changed its actual owner"));
+            }
         }
         let region = self.body_region(node, BodyRegionOrigin::ItemArgument)?;
         let arguments = self

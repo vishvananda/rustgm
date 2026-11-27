@@ -31,7 +31,9 @@ use crate::support::{
     bindings::Mode,
     crates::{CrateIdentity, Dependencies},
 };
-pub(super) use admission::validate as validate_features;
+pub(super) use admission::{
+    validate as validate_features, validate_expanded as validate_expanded_features,
+};
 pub use allowances::{FeatureName, KnownFeature};
 pub use client::SourceClient;
 use macro_context::LocalMacros;

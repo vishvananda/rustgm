@@ -52,6 +52,14 @@ impl SourceClient {
     pub const fn provider(&self) -> &CrateIdentity {
         &self.provider
     }
+    /// The formatting expander uses this client's admitted provider's roles.
+    pub(in crate::resolve) fn owns_formatter(&self, artifact: usize) -> bool {
+        artifact == self.provider_index as usize
+            && self.dependencies.artifacts()[artifact]
+                .source_descriptor()
+                .is_some_and(|source| source.profile().declaration_policies())
+    }
+
     /// Reuse the initial search only with its same immutable validated inventory.
     /// This checks provenance, not imported role or executable-body authority.
     /// # Errors
@@ -104,7 +112,17 @@ pub(super) fn prepare(
         .source_provider_index(provider)
         .map_err(error)?;
     let macros = features.macros();
-    let allowances = if super::policy::imports_allowances(context) {
+    let formatter = dependencies.artifacts()[provider_index as usize]
+        .macros()
+        .is_some_and(|macros| {
+            macros.builtins().iter().any(|row| {
+                matches!(
+                    row.identity(),
+                    "format_args" | "const_format_args" | "format_args_nl"
+                )
+            })
+        });
+    let allowances = if formatter || super::policy::imports_allowances(context) {
         Some(super::LocalMacros::new(
             unit,
             features.clone(),

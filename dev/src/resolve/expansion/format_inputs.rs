@@ -42,9 +42,8 @@ impl<S: Sources> Engine<'_, S> {
         };
         self.loader
             .package
-            .source_core()
-            .ok_or_else(|| call.diagnostic("missing formatting source provider"))?
-            .macros
+            .require_format_contracts()
+            .map_err(|message| call.diagnostic(message))?
             .charge(text.len().saturating_add(1), 0)
             .map_err(|message| call.diagnostic(message))?;
         // This route discriminator does not parse arguments or resolve names. The
@@ -169,12 +168,13 @@ impl<S: Sources> Engine<'_, S> {
         else {
             return Err(call.diagnostic("formatting requires an actual string literal"));
         };
-        let Some(crate::resolve::bindings::Source::Core(source)) = package.source.as_deref() else {
-            return Err(call.diagnostic("missing formatting source provider"));
-        };
+        let source = package
+            .source
+            .as_deref()
+            .and_then(crate::resolve::bindings::Source::formatter_contracts)
+            .ok_or_else(|| call.diagnostic("missing formatting work owner"))?;
         let payer = |steps, bytes| {
             source
-                .macros
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
@@ -194,7 +194,7 @@ impl<S: Sources> Engine<'_, S> {
             names[slot] = package
                 .names
                 .intern_exact_paid(constructor.name(), &mut |growth| {
-                    source.macros.charge(growth.work, growth.bytes)
+                    source.charge(growth.work, growth.bytes)
                 })
                 .map_err(|message| Error::at(file, original.start, message))?;
         }
@@ -227,10 +227,9 @@ impl<S: Sources> Engine<'_, S> {
         let source = self
             .loader
             .package
-            .source_core()
-            .ok_or_else(|| Error::at(file, original.start, "missing formatting provider"))?;
+            .require_format_contracts()
+            .map_err(|message| Error::at(file, original.start, message))?;
         source
-            .macros
             .charge(
                 count.saturating_add(12),
                 count.saturating_mul(size_of::<(NodeId, NodeId)>()),
@@ -248,7 +247,6 @@ impl<S: Sources> Engine<'_, S> {
         }
         for (ordinal, &captured) in draft.captured.iter().enumerate() {
             source
-                .macros
                 .charge(3, 0)
                 .map_err(|message| Error::at(file, original.start, message))?;
             let site = sites.get(count + ordinal).copied().ok_or_else(|| {

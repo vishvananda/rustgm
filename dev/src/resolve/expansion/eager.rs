@@ -34,6 +34,19 @@ impl Parent {
 }
 
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn imported_formatter(
+        &self,
+        imported: &crate::resolve::crates::ImportedMacro,
+        role: Builtin,
+    ) -> bool {
+        role.formatting()
+            && self
+                .loader
+                .package
+                .source_client()
+                .is_some_and(|client| client.owns_formatter(imported.artifact))
+    }
+
     pub(super) fn source_eager_definition(&self, index: usize) -> Result<Builtin, Error> {
         let definition = self
             .definitions
@@ -48,6 +61,16 @@ impl<S: Sources> Engine<'_, S> {
             return Err(Error::unlocated(
                 "source eager builtin changed its actual role",
             ));
+        }
+        if let Some(imported) = super::transported_macros::imported(&self.paths.state.facts, index)
+        {
+            return if self.imported_formatter(imported, role) {
+                Ok(role)
+            } else {
+                Err(Error::unlocated(
+                    "source eager builtin lost its actual provider",
+                ))
+            };
         }
         let key = self
             .paths
@@ -73,29 +96,26 @@ impl<S: Sources> Engine<'_, S> {
         }
         self.source_eager_definition(definition)?;
         let forest = &self.loader.package.unit(file).configured.ast.captures[capture as usize];
-        let source = self.loader.package.source_core().ok_or_else(|| {
-            Error::at(
-                file,
-                0,
-                "source eager builtin requires its local source provider",
-            )
-        })?;
+        let payer = self
+            .loader
+            .package
+            .source_contract_payer()
+            .map_err(|message| Error::at(file, 0, message))?
+            .ok_or_else(|| Error::at(file, 0, "source eager builtin has no work owner"))?;
         // Preflight before flattening/parsing the real argument forest. Actual
         // opaque payload copies are separately paid through their registry view.
         if matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Asm)
         ) {
-            source
-                .macros
+            payer
                 .charge(
                     forest.nodes().len(),
                     forest.nodes().len().saturating_mul(512),
                 )
                 .map_err(|message| Error::at(file, 0, message))?;
         }
-        source
-            .macros
+        payer
             .charge(
                 forest.nodes().len(),
                 forest.payload_bytes().saturating_mul(20),
@@ -111,11 +131,12 @@ impl<S: Sources> Engine<'_, S> {
         if !matches!(self.definitions[definition].body,Body::Builtin(role)if role.source_eager()) {
             return Ok(());
         }
-        let source = self
+        let payer = self
             .loader
             .package
-            .source_core()
-            .ok_or_else(|| Error::at(file, 0, "missing source eager builtin provider"))?;
+            .source_contract_payer()
+            .map_err(|message| Error::at(file, 0, message))?
+            .ok_or_else(|| Error::at(file, 0, "source eager builtin has no work owner"))?;
         let view = self.captures.view(|id| {
             self.loader
                 .package
@@ -124,8 +145,7 @@ impl<S: Sources> Engine<'_, S> {
                 .map(|unit| unit.source.text())
         });
         let charge = |steps, bytes| {
-            source
-                .macros
+            payer
                 .charge(steps, bytes)
                 .map_err(|message| error(0, message))
         };

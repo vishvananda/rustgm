@@ -125,12 +125,32 @@ impl Source {
         matches!(self, Self::Core(_) | Self::Client(_) | Self::Staged(_))
     }
 }
+impl Source {
+    /// Budget only, for an already admitted eager formatter.
+    pub(in crate::resolve) fn formatter_contracts(&self) -> Option<&panic_contracts::Contracts> {
+        match self {
+            Self::Core(source) => Some(&source.macros),
+            Self::Client(client) => client.allowances.as_ref().map(|owner| &owner.contracts),
+            Self::Staged(_) | Self::LocalMacros(_) => None,
+        }
+    }
+}
+
 impl Package {
     /// The authenticated cost owner grants no feature, macro or library permission.
     pub(in crate::resolve) fn source_contract_payer(
         &self,
     ) -> Result<Option<&panic_contracts::Contracts>, &'static str> {
         Ok(self.macro_context()?.map(MacroContext::contracts))
+    }
+
+    pub(in crate::resolve) fn require_format_contracts(
+        &self,
+    ) -> Result<&panic_contracts::Contracts, &'static str> {
+        self.source
+            .as_deref()
+            .and_then(Source::formatter_contracts)
+            .ok_or("missing formatting work owner")
     }
 
     pub(in crate::resolve) fn macro_context(
@@ -147,8 +167,8 @@ impl Package {
                 local.validate(self)?;
                 Some(MacroContext::Local(local))
             }
-            // Source clients and staged consumers own a ledger only for the
-            // imported allowance lists their dependencies carry.
+            // Source clients also use the ledger for admitted formatting.
+            // Staged consumers pay for imported allowance lists.
             Some(Source::Client(client)) => match &client.allowances {
                 Some(local) => {
                     local.validate(self)?;

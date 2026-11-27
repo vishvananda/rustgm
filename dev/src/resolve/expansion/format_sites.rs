@@ -17,12 +17,9 @@ impl Report {
     ) -> Result<(), Error> {
         let unit = self.package.unit(key.file);
         let error = |message| Error::at(key.file, 0, message);
-        let source = self
-            .package
-            .source_core()
-            .ok_or_else(|| error("missing formatting provider"))?;
+        let source = self.package.require_format_contracts().map_err(error)?;
         let kind = |node: NodeId| {
-            source.macros.charge(1, 0).map_err(error)?;
+            source.charge(1, 0).map_err(error)?;
             unit.configured
                 .ast
                 .nodes
@@ -36,7 +33,7 @@ impl Report {
                 .ok_or_else(|| error("formatting lost an actual active child"))
         };
         let at = |list: List, index: usize| {
-            source.macros.charge(1, 0).map_err(error)?;
+            source.charge(1, 0).map_err(error)?;
             let values = unit
                 .configured
                 .ast
@@ -77,7 +74,6 @@ impl Report {
                 value: None,
             } => {
                 source
-                    .macros
                     .charge(constructor.name().len().saturating_mul(2), 0)
                     .map_err(error)?;
                 if at(sites, slot as usize)? != key.node
