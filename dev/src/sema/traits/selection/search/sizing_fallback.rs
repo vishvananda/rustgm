@@ -146,14 +146,30 @@ impl Search<'_> {
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let valid = if kind == LangItem::Sized || shape.sized {
-            shape.sized
+        let valid = if shape.sized {
+            true
         } else {
             match facts
                 .types
                 .kind(goal.ty)
                 .ok_or("missing source sizing subject")?
             {
+                Kind::Adt(..) | Kind::Tuple(_) => {
+                    match facts
+                        .aggregates
+                        .prepare_physical_metadata(&mut facts.types, goal.ty)?
+                    {
+                        MetadataPreparation::Fields(item) => {
+                            return Ok(Some(Action::Wait(super::Dependency::Fields(item))));
+                        }
+                        MetadataPreparation::Unresolved(_) | MetadataPreparation::Ready => {}
+                    }
+                    match self.source_tail_sizing(facts, frame, goal, kind)? {
+                        ControlFlow::Break(action) => return Ok(Some(action)),
+                        ControlFlow::Continue(valid) => valid,
+                    }
+                }
+                _ if kind == LangItem::Sized => false,
                 Kind::Never
                 | Kind::Primitive(_)
                 | Kind::Reference { .. }
@@ -190,29 +206,15 @@ impl Search<'_> {
                         "source sizing requires a proved normalized or declared subject".into(),
                     );
                 }
-                Kind::Adt(..) | Kind::Tuple(_) => {
-                    match facts
-                        .aggregates
-                        .prepare_physical_metadata(&mut facts.types, goal.ty)?
-                    {
-                        MetadataPreparation::Fields(item) => {
-                            return Ok(Some(Action::Wait(super::Dependency::Fields(item))));
-                        }
-                        MetadataPreparation::Unresolved(_) | MetadataPreparation::Ready => {}
-                    }
-                    match self.source_tail_sizing(facts, frame, goal, kind)? {
-                        ControlFlow::Break(action) => return Ok(Some(action)),
-                        ControlFlow::Continue(valid) => valid,
-                    }
-                }
             }
         };
         if !valid {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
+        let sized = kind == LangItem::Sized || shape.sized;
         match kind {
             LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
-                self.complete_source_sizing(facts, frame, goal, (shape.sized, false))
+                self.complete_source_sizing(facts, frame, goal, (sized, false))
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
@@ -406,7 +408,7 @@ impl Search<'_> {
                     ));
                 }
                 crate::abi::metadata::Step::Complete(Metadata::Length | Metadata::VTable(_)) => {
-                    return Ok(ControlFlow::Continue(true));
+                    return Ok(ControlFlow::Continue(requested != LangItem::Sized));
                 }
                 crate::abi::metadata::Step::Complete(Metadata::Unknown(_)) => {
                     return Self::source_tail_condition(frame, tail, goal.bound);

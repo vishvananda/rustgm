@@ -110,6 +110,7 @@ def main():
                                  "source-associated-constant-default",
                                  "source-associated-result-lifetimes",
                                  "source-dyn-incompatible-marker",
+                                 "source-derived-sizing-transport",
                                  "source-written-override-signatures",
                                  "source-written-family-lifetimes",
                                  "source-imported-test-removal",

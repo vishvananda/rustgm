@@ -38,6 +38,10 @@ reference-to-pointer cast in a fresh client, both in a constant and
 as a runtime call.
 `spec/source-marker-trait-transport/outcomes.json` checks an empty unsafe
 marker trait and native calls with provider and client implementations.
+`spec/source-derived-sizing-transport/outcomes.json` checks derived `Clone`
+on pointer-transparent wrappers declared with `T: ?Sized`. A fresh client
+uses sizing bounds derived from `T: Clone` and rejects a slice instantiation
+that requires `Sized`.
 `spec/source-offset-intrinsic-transport/outcomes.json` uses the pinned
 `offset_of` intrinsic. A fresh client evaluates two fields of the same
 record type through one imported generic wrapper.
