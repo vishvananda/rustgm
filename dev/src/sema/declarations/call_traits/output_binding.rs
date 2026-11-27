@@ -113,6 +113,20 @@ impl Checker<'_> {
         source: NodeKey,
         parent: crate::resolve::model::DefId,
     ) -> Result<(crate::resolve::model::DefId, crate::resolve::model::DefId), Error> {
+        if self
+            .facts
+            .source_bindings
+            .as_deref()
+            .is_some_and(crate::sema::compiler_items::Catalog::uses_imported_roles)
+            && self.facts.associated.callable(parent).is_some()
+        {
+            use crate::sema::compiler_items::{callable_output_role, callable_role};
+            let error = |message| self.error(source, message);
+            return Ok((
+                callable_role(&self.facts, CallTrait::FnOnce).map_err(error)?,
+                callable_output_role(&self.facts).map_err(error)?,
+            ));
+        }
         Ok(
             if let Some(reserved) = self.report.resolution.source_bindings.as_deref() {
                 use crate::support::bindings::LangItem;

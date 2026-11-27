@@ -133,12 +133,13 @@ impl Checker<'_> {
         matches!(
             self.report.resolution.builtin_traits.identify(definition),
             Some(crate::resolve::model::BuiltinTrait::Callable(_))
-        ) || self
-            .report
-            .resolution
-            .source_bindings
-            .as_deref()
-            .is_some_and(|r| r.callable(definition).is_some())
+        ) || self.facts.associated.callable(definition).is_some()
+            || self
+                .report
+                .resolution
+                .source_bindings
+                .as_deref()
+                .is_some_and(|r| r.callable(definition).is_some())
             || self.declared_async_callable(definition)
     }
 

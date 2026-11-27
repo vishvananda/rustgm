@@ -16,5 +16,15 @@ impl Child for Item { type Other = Extra; }
 fn inspect<T: Child>(value: &T, extra: &T::Other) -> u8 {
     match value.produce() { 1 => extra.score(), other => other }
 }
+
+trait Local { type Value: Marker; }
+impl Local for Item { type Value = Extra; }
+fn score<T: Local>(value: &T::Value) -> u8 { value.score() }
+
 #[unsafe(no_mangle)]
-pub extern "C" fn observed() -> u8 { inspect(&Item(1), &Extra(41)) }
+pub extern "C" fn observed() -> u8 {
+    match inspect(&Item(1), &Extra(41)) {
+        41 => score::<Item>(&Extra(41)),
+        other => other,
+    }
+}

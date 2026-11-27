@@ -1,6 +1,6 @@
 //! Close builtin Self promises before projection identities acquire cached properties.
 use super::super::generics::bounds::Written;
-use super::super::{Checker, DefId, Error, NodeKey};
+use super::super::{Checker, DefId, Error};
 use crate::support::hash::HashMap;
 pub(super) use crate::types::projection::Builtins;
 use crate::{
@@ -141,7 +141,9 @@ impl Checker<'_> {
                 if matches!(predicate, Clause::UnstableFeature(_)) {
                     continue;
                 }
-                let bound = self.promise_bound(key, *predicate)?;
+                let bound = self
+                    .promise_bound(*predicate)
+                    .map_err(|e| self.error(key, e))?;
                 let properties = if let Bound::Trait(id) = bound {
                     let application = self
                         .facts
@@ -179,40 +181,33 @@ impl Checker<'_> {
             let definition = DefId(item.0);
             let key = self.report.resolution.definitions[item.0 as usize]
                 .node
-                .or_else(|| self.facts.associated.language_origin(definition))
-                .ok_or_else(|| {
-                    Error::at(
-                        crate::resolve::unit::FileId(0),
-                        0,
-                        "missing trait declaration source",
-                    )
-                })?;
-            let predicates = &header
-                .source_inputs()
-                .map_err(|e| self.error(key, e))?
-                .predicates;
+                .or_else(|| self.facts.associated.language_origin(definition));
+            let error = |message| {
+                key.map_or_else(|| Error::unlocated(message), |key| self.error(key, message))
+            };
+            let predicates = header.inputs.view();
             steps = steps.saturating_add(1 + predicates.len());
             if steps > 1_000_000 {
-                return Err(self.error(key, "typed builtin promise work budget exceeded"));
+                return Err(error("typed builtin promise work budget exceeded"));
             }
             let mut result = Builtins::default();
-            for predicate in predicates {
+            for (index, predicate) in predicates.iter().enumerate() {
                 if !header
-                    .implies_self(&self.facts.types, predicate)
-                    .map_err(|e| self.error(key, e))?
+                    .implies_input(&self.facts.types, index, predicate)
+                    .map_err(error)?
                 {
                     continue;
                 }
                 if matches!(predicate.value, Clause::UnstableFeature(_)) {
                     continue;
                 }
-                let bound = self.promise_bound(key, predicate.value)?;
+                let bound = self.promise_bound(predicate.value).map_err(error)?;
                 if let Bound::Trait(id) = bound {
                     let parent = self
                         .facts
                         .types
                         .trait_application(id)
-                        .ok_or_else(|| self.error(key, "missing typed Self application"))?;
+                        .ok_or_else(|| error("missing typed Self application"))?;
                     dependents
                         .entry(DefId(parent.item.0))
                         .or_default()
@@ -231,10 +226,10 @@ impl Checker<'_> {
 
     /// Classify uniform builtin properties only. The complete clause remains
     /// required for implementation validation and never becomes unbound evidence.
-    fn promise_bound(&self, key: NodeKey, clause: Clause) -> Result<Bound, Error> {
+    fn promise_bound(&self, clause: Clause) -> Result<Bound, &'static str> {
         match clause {
             Clause::UnstableFeature(_) => {
-                Err(self.error(key, "non-type requirement cannot become a builtin promise"))
+                Err("non-type requirement cannot become a builtin promise")
             }
             Clause::Predicate(predicate) => Ok(predicate.bound),
             Clause::ForAll(id) => self
@@ -242,7 +237,7 @@ impl Checker<'_> {
                 .types
                 .quantified(id)
                 .map(|value| value.predicate.bound)
-                .ok_or_else(|| self.error(key, "invalid builtin promise clause")),
+                .ok_or("invalid builtin promise clause"),
         }
     }
 }
