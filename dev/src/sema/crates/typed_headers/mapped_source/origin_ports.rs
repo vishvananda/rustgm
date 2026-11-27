@@ -162,7 +162,7 @@ impl Graph {
         {
             return Err("imported inherent impl changed its actual Self or modifiers");
         }
-        if raw.core_primitive_inherent {
+        if raw.provenance == s::ImplProvenance::CorePrimitiveInherent {
             use crate::types::Kind;
             let actual = matches!(
                 store.kind(self_type),

@@ -122,6 +122,17 @@ impl<'a> Members<'a> {
                     .ok_or("source implementation trait application is unknown")
             })
             .transpose()?;
+        if implementation.provenance == s::ImplProvenance::BuiltinDerived
+            && (trait_.is_none()
+                || implementation.polarity != crate::support::polarity::ImplPolarity::Positive
+                || !matches!(
+                    self.rows.types.get(implementation.self_type.0 as usize),
+                    Some(s::Type::Nominal { declaration, .. })
+                        if declaration.artifact == self.rows.policy.provider
+                ))
+        {
+            return Err("built-in derive requires an actual local nominal trait implementation");
+        }
         if let Some(trait_) = trait_ {
             let target = if trait_.declaration.artifact == s::ArtifactRef(0) {
                 self.headers

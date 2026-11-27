@@ -10,6 +10,9 @@ pub use exemption_columns::{ConstBodyContracts, ConstBodyGrant};
 #[path = "availability_columns/notices.rs"]
 mod notices;
 pub use notices::{DeprecatedDeclaration, DeprecationColumns, DeprecationNotice, DeprecationSince};
+#[path = "availability_columns/reachability.rs"]
+mod reachability;
+use reachability::Reachability;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum AvailabilityKind {
@@ -265,11 +268,15 @@ impl AvailabilityRows {
         }
         let origins =
             retained::new_map::<(AvailabilityOrigin, AvailabilityKind), ()>(self.policies.len());
+        let exported = declaration_policies
+            .then(|| Reachability::new(columns, &modules.namespace, base, work))
+            .transpose()?;
         let ancestry = AvailabilityAncestry::new(
             &columns.declarations,
             modules.namespace.root,
             base.saturating_add(self.policies.len())
-                .saturating_add(origins),
+                .saturating_add(origins)
+                .saturating_add(exported.as_ref().map_or(0, |_| columns.declarations.len())),
             work,
         )?;
         if let Some(deprecations) = &self.deprecations {
@@ -281,6 +288,7 @@ impl AvailabilityRows {
             modules,
             ancestry,
             declaration_policies,
+            exported,
         };
         let mut used = self.policy_origins(&view, work)?;
         for (index, row) in self.declarations.iter().enumerate() {
@@ -303,7 +311,8 @@ impl AvailabilityRows {
                 continue;
             }
             if row.regular.is_none()
-                && (declaration.public || view.trait_implementation(row.declaration))
+                && (declaration.public
+                    || view.implementation_requires_policy(row.declaration, work)?)
             {
                 return Err(
                     "API or trait implementation availability lacks its actual regular policy",
@@ -485,24 +494,17 @@ impl AvailabilityRows {
                     | DefinitionKind::Enum
                     | DefinitionKind::SelfType
             )
+            && !view.lexical_body(origin)
         {
             return Err("availability inherited from a non-scope declaration");
         }
-        if origin != owner && policy.level.stable() {
+        if origin != owner && policy.level.stable() && !view.stable_member(owner, origin) {
             return Err("stable declaration policy cannot be inherited");
         }
-        if constant
-            && !view.constant(owner)
-            && !(policy.kind == AvailabilityKind::Const
-                && view.associated_type(owner)
-                && view.columns.declarations[owner.0 as usize]
-                    .definition
-                    .parent
-                    == Some(origin))
-        {
+        if constant && !view.const_policy_applies(policy.kind, owner, origin) {
             return Err("const availability requires its actual const declaration kind");
         }
-        if policy.kind == AvailabilityKind::Const && !view.constant(origin) {
+        if policy.kind == AvailabilityKind::Const && !view.const_policy_origin(origin) {
             return Err("const policy origin is not its actual const header");
         }
         if policy.kind == AvailabilityKind::Regular
@@ -519,6 +521,7 @@ impl AvailabilityRows {
                     | DefinitionKind::Function
                     | DefinitionKind::TypeAlias
                     | DefinitionKind::Static
+                    | DefinitionKind::AnonymousConstant
             )
             && !view.associated_type(origin)
             && !view.module_constant(origin)
@@ -541,14 +544,17 @@ impl AvailabilityRows {
         let modules = view.modules;
         let ancestry = &view.ancestry;
         let binding = &modules.namespace.bindings[index];
-        if binding.source == super::BindingSource::Declaration
-            && (binding.target.artifact != columns.policy.provider
+        if binding.source == super::BindingSource::Declaration {
+            if binding.target.artifact != columns.policy.provider
                 || self
                     .declarations
                     .get(binding.target.declaration.0 as usize)
-                    .is_none_or(|row| row.regular != reference))
-        {
-            return Err("direct binding differs from its actual declaration policy");
+                    .is_none_or(|row| row.regular != reference)
+            {
+                return Err("direct binding differs from its actual declaration policy");
+            }
+            // The declaration's exact policy and its origin were checked above.
+            return Ok(());
         }
         let Some(reference) = reference else {
             return Ok(());
@@ -563,15 +569,12 @@ impl AvailabilityRows {
                     .declarations
                     .get(owner.0 as usize)
                     .ok_or("binding availability origin is foreign")?;
-                let direct = binding.source == super::BindingSource::Declaration
-                    && owner == binding.target.declaration;
-                if !direct && policy.level.stable() {
+                if policy.level.stable() {
                     return Err("stable module policy cannot supply an import policy");
                 }
                 if site >= origin.sites
-                    || (!direct
-                        && (!ancestry.contains(owner, binding.module)
-                            || origin.definition.kind != DefinitionKind::Module))
+                    || !ancestry.contains(owner, binding.module)
+                    || origin.definition.kind != DefinitionKind::Module
                 {
                     return Err("binding availability origin has a foreign site or ancestry");
                 }
@@ -604,6 +607,7 @@ struct Validation<'a> {
     modules: &'a ModuleContractRows,
     ancestry: AvailabilityAncestry,
     declaration_policies: bool,
+    exported: Option<Reachability>,
 }
 impl Validation<'_> {
     fn default_body_policy(
@@ -645,16 +649,81 @@ impl Validation<'_> {
         Ok(())
     }
 
-    fn trait_implementation(&self, owner: DeclarationRef) -> bool {
+    fn lexical_body(&self, owner: DeclarationRef) -> bool {
         match self.headers.get(owner.0 as usize).copied().flatten() {
-            Some(super::HeaderRef::Implementation(index)) => self
+            Some(super::HeaderRef::Function(index)) => self
                 .columns
-                .implementations
+                .functions
                 .get(index as usize)
-                .is_some_and(|row| row.trait_application.is_some()),
+                .is_some_and(|header| matches!(header.body, super::FunctionBody::Original(_))),
+            Some(super::HeaderRef::Constant(_) | super::HeaderRef::Static(_)) => true,
             _ => false,
         }
     }
+
+    fn stable_member(&self, owner: DeclarationRef, origin: DeclarationRef) -> bool {
+        if matches!(
+            self.headers[owner.0 as usize],
+            Some(super::HeaderRef::Variant(_))
+        ) {
+            // The sealed variant header already checked its exact enum parent.
+            return self.columns.declarations[owner.0 as usize]
+                .definition
+                .parent
+                == Some(origin);
+        }
+        matches!(
+            (self.headers.get(owner.0 as usize), self.headers.get(origin.0 as usize)),
+            (Some(Some(super::HeaderRef::Constructor(owner))), Some(Some(super::HeaderRef::Nominal(origin))))
+                if owner == origin
+        )
+    }
+
+    fn implementation_requires_policy(
+        &self,
+        owner: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<bool, &'static str> {
+        let Some(super::HeaderRef::Implementation(index)) = self.headers[owner.0 as usize] else {
+            return Ok(false);
+        };
+        let implementation = &self.columns.implementations[index as usize];
+        let Some(application) = implementation.trait_application else {
+            return Ok(false);
+        };
+        let Some(exported) = &self.exported else {
+            return Ok(true);
+        };
+        let trait_ = self.columns.trait_applications[application.0 as usize].declaration;
+        if implementation.provenance == super::ImplProvenance::BuiltinDerived
+            || !exported.declaration(self.columns, trait_)
+        {
+            return Ok(false);
+        }
+        exported.subject(self.columns, implementation.self_type, work)
+    }
+
+    fn const_policy_origin(&self, owner: DeclarationRef) -> bool {
+        self.constant(owner)
+            || self.declaration_policies
+                && matches!(
+                    self.headers[owner.0 as usize],
+                    Some(super::HeaderRef::Implementation(_))
+                )
+    }
+
+    fn const_policy_applies(
+        &self,
+        kind: AvailabilityKind,
+        owner: DeclarationRef,
+        origin: DeclarationRef,
+    ) -> bool {
+        self.constant(owner)
+            || kind == AvailabilityKind::Const
+                && (owner == origin && self.const_policy_origin(owner)
+                    || self.inherited_const_member(owner, origin))
+    }
+
     /// Associated type headers and definitions may own their API policy.
     fn associated_type(&self, owner: DeclarationRef) -> bool {
         self.declaration_policies
@@ -664,6 +733,21 @@ impl Validation<'_> {
                     super::HeaderRef::AssociatedType(_) | super::HeaderRef::AssociatedDefinition(_)
                 )
             )
+    }
+
+    fn inherited_const_member(&self, owner: DeclarationRef, origin: DeclarationRef) -> bool {
+        self.columns.declarations[owner.0 as usize]
+            .definition
+            .parent
+            == Some(origin)
+            && (self.associated_type(owner)
+                || matches!(
+                    self.headers[owner.0 as usize],
+                    Some(super::HeaderRef::Function(_))
+                ) && matches!(
+                    self.headers[origin.0 as usize],
+                    Some(super::HeaderRef::Trait(_) | super::HeaderRef::Implementation(_))
+                ))
     }
 
     fn constant(&self, owner: DeclarationRef) -> bool {

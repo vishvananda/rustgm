@@ -1,0 +1,45 @@
+{
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "invalid.rs",
+    "observe.c",
+    "invalid-const.rs",
+    "missing-impl.rs"
+  ],
+  "features": [
+    "const_trait_impl",
+    "decl_macro",
+    "auto_traits"
+  ],
+  "foundation": "pa31/tests/spec/source-availability-transport/provider.rs",
+  "prefix_marker": "#[stable(feature=\"identity_api\"",
+  "stdout": "29 34 58 41 72 63 37 91\n",
+  "restricted_client": {
+    "path": "invalid.rs",
+    "rustc": "use of unstable library feature `lexical_function`",
+    "rustgm": "use of unstable library API requires feature `lexical_function`"
+  },
+  "restricted_clients": [
+    {
+      "path": "invalid-const.rs",
+      "rustc": "cannot call non-const",
+      "rustgm": "non-const trait methods cannot be called in const contexts"
+    }
+  ],
+  "profile_fences": {
+    "prefix_marker": "#[unstable(feature = \"lexical_function\"",
+    "cases": [
+      "missing-impl.rs"
+    ],
+    "rustc_status": 1,
+    "rustc": [
+      "implementation has missing stability attribute"
+    ],
+    "profiles": [
+      "module-body-operations-v14"
+    ],
+    "rustgm_status": 1,
+    "rustgm": "implementation availability lacks its actual regular policy"
+  }
+}

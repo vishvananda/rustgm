@@ -218,7 +218,11 @@ impl Stage {
             self_type,
             trait_application: None,
             unsafe_: false,
-            core_primitive_inherent,
+            provenance: if core_primitive_inherent {
+                s::ImplProvenance::CorePrimitiveInherent
+            } else {
+                s::ImplProvenance::Ordinary
+            },
             constant,
             polarity: crate::sema::associated::ImplPolarity::Positive,
             region_captures: schema.captures,
@@ -323,7 +327,7 @@ impl Stage {
             self_type,
             trait_application,
             unsafe_,
-            core_primitive_inherent: false,
+            provenance: self.staged_impl_provenance(report, owner)?,
             constant,
             polarity,
             region_captures: schema.captures,
@@ -340,6 +344,30 @@ impl Stage {
         });
         Ok(())
     }
+    fn staged_impl_provenance(
+        &self,
+        report: &Report,
+        owner: &crate::sema::associated::SourceOwner,
+    ) -> Result<s::ImplProvenance, &'static str> {
+        if !self.declaration_policies()
+            || report
+                .package
+                .library_policy()
+                .and_then(crate::resolve::stability::Library::staged_inventory)
+                .is_none_or(|inventory| inventory.declaration(owner.self_definition).is_some())
+        {
+            return Ok(s::ImplProvenance::Ordinary);
+        }
+        let derived = report
+            .builtin_derived_impl(owner.source)
+            .map_err(|_| "source implementation lost its checked built-in derive")?;
+        Ok(if derived {
+            s::ImplProvenance::BuiltinDerived
+        } else {
+            s::ImplProvenance::Ordinary
+        })
+    }
+
     fn specialization_parent(
         &mut self,
         facts: &Declarations,

@@ -678,6 +678,16 @@ fn require_source_profile(
     super::nominal_contracts::require_profile(rows, profile, work)?;
     super::sum_contracts::require_profile(rows, profile, work)?;
     super::free_constants::require_profile(rows, profile, work)?;
+    if !profile.declaration_policies() {
+        work.charge(rows.implementations.len())?;
+        if rows
+            .implementations
+            .iter()
+            .any(|row| row.provenance == super::ImplProvenance::BuiltinDerived)
+        {
+            return Err("built-in derive availability requires the declaration policies profile");
+        }
+    }
     if !profile.declaration_policies() && !rows.type_aliases().is_empty() {
         return Err("named type alias rows require the declaration policies profile");
     }

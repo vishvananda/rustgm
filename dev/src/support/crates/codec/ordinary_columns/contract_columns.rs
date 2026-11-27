@@ -60,8 +60,13 @@ pub(super) fn implementation_write(
         id(out, value)?;
     }
     option(out, row.trait_application.map(|r| r.0))?;
+    let provenance = match row.provenance {
+        s::ImplProvenance::Ordinary => 0,
+        s::ImplProvenance::CorePrimitiveInherent => 2,
+        s::ImplProvenance::BuiltinDerived => 4,
+    };
     out.bytes(&[
-        u8::from(row.unsafe_) | (u8::from(row.core_primitive_inherent) << 1),
+        u8::from(row.unsafe_) | provenance,
         u8::from(row.constant),
         row.polarity as u8,
     ])?;
@@ -76,19 +81,20 @@ pub(super) fn implementation_read(read: &mut Input<'_, '_>) -> Result<s::ImplHea
     let scope = DeclarationRef(read.id()?);
     let self_type = g::TypeRef(read.id()?);
     let trait_application = read.option()?.map(s::TraitApplicationRef);
-    let (unsafe_, core_primitive_inherent) = match read.reader.u8()? {
-        0 => (false, false),
-        1 => (true, false),
-        2 if read.profile.declaration_policies() => (false, true),
-        _ => return Err("invalid source boolean"),
+    let flags = read.reader.u8()?;
+    let provenance = match flags {
+        0 | 1 => s::ImplProvenance::Ordinary,
+        2 if read.profile.declaration_policies() => s::ImplProvenance::CorePrimitiveInherent,
+        4 | 5 if read.profile.declaration_policies() => s::ImplProvenance::BuiltinDerived,
+        _ => return Err("invalid source implementation flags"),
     };
     Ok(s::ImplHeader {
         self_definition,
         scope,
         self_type,
         trait_application,
-        unsafe_,
-        core_primitive_inherent,
+        unsafe_: flags & 1 != 0,
+        provenance,
         constant: read.boolean()?,
         polarity: match read.reader.u8()? {
             0 => ImplPolarity::Positive,

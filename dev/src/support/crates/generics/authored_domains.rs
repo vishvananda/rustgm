@@ -154,7 +154,7 @@ impl<'a> HeaderIndex<'a> {
         }
         for header in &rows.implementations {
             let slots = scopes.complete_slots(header.scope, work)?;
-            if header.core_primitive_inherent
+            if header.provenance == super::ImplProvenance::CorePrimitiveInherent
                 && matches!(
                     rows.types.get(header.self_type.0 as usize),
                     Some(

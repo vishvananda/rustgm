@@ -11,12 +11,22 @@ use crate::{
 impl Report {
     /// Data about an authenticated generated member, never trait/const permission.
     pub(crate) fn derived_const_parameter_impl(&self, site: NodeKey) -> Result<bool, Error> {
-        self.derived_builtin_impl(site, Builtin::ConstParamTy)
+        self.derived_builtin_impl(site, |role| role == Builtin::ConstParamTy)
     }
     pub(crate) fn derived_coerce_pointee_impl(&self, site: NodeKey) -> Result<bool, Error> {
-        self.derived_builtin_impl(site, Builtin::CoercePointee)
+        self.derived_builtin_impl(site, |role| role == Builtin::CoercePointee)
     }
-    fn derived_builtin_impl(&self, site: NodeKey, role: Builtin) -> Result<bool, Error> {
+    /// The completed built-in derive generated this actual implementation.
+    pub(crate) fn builtin_derived_impl(&self, site: NodeKey) -> Result<bool, Error> {
+        self.derived_builtin_impl(site, |role| {
+            crate::expand::builtin::derive_output::MEMBERS.contains(&role)
+        })
+    }
+    fn derived_builtin_impl(
+        &self,
+        site: NodeKey,
+        accepts: impl FnOnce(Builtin) -> bool,
+    ) -> Result<bool, Error> {
         let error = |message| Error::at(site.file, 0, message);
         let Some(ledger) = super::derive_ledger(&self.package).map_err(error)? else {
             return Ok(false);
@@ -59,7 +69,7 @@ impl Report {
             .definitions
             .get(member.definition)
             .ok_or_else(|| error("derived impl lost its actual definition"))?;
-        if !matches!(definition.body, Body::Builtin(actual) if actual == role) {
+        if !matches!(definition.body, Body::Builtin(actual) if accepts(actual)) {
             return Ok(false);
         }
         let entry = self.literal_transaction(index)?;

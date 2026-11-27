@@ -25,7 +25,7 @@ impl ImplHeader {
             && self.region_bounds.start == self.region_bounds.end
             && self.inputs.start == self.inputs.end
             && self.declared_inputs == 0
-            && (self.core_primitive_inherent
+            && (self.provenance == super::ImplProvenance::CorePrimitiveInherent
                 || matches!(types.get(self.self_type.0 as usize), Some(Type::Nominal { declaration, .. })
                     if declaration.artifact == ArtifactRef(0)))
     }
@@ -40,7 +40,7 @@ pub(super) fn require_profile(
     let _ = slice_owner(rows, profile, work)?;
     for implementation in &rows.implementations {
         work.charge(1)?;
-        if implementation.core_primitive_inherent {
+        if implementation.provenance == super::ImplProvenance::CorePrimitiveInherent {
             let builtin = matches!(
                 rows.types.get(implementation.self_type.0 as usize),
                 Some(

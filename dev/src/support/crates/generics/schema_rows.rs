@@ -548,14 +548,21 @@ pub struct TraitHeader {
     pub members: Range,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ImplProvenance {
+    Ordinary,
+    /// The provider holds Core authorization for this primitive inherent impl.
+    CorePrimitiveInherent,
+    /// The source producer authenticated a built-in derive for this trait impl.
+    BuiltinDerived,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ImplHeader {
     pub self_definition: DeclarationRef,
     pub scope: DeclarationRef,
     pub self_type: TypeRef,
     pub trait_application: Option<TraitApplicationRef>,
     pub unsafe_: bool,
-    /// Version fourteen retains the provider's checked Core authorization for this owner.
-    pub core_primitive_inherent: bool,
+    pub provenance: ImplProvenance,
     pub constant: bool,
     pub polarity: crate::support::polarity::ImplPolarity,
     pub region_captures: u32,
