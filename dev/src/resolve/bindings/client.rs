@@ -23,6 +23,7 @@ pub struct SourceClient {
     dependencies: Arc<Dependencies>,
     provider_index: u32,
     derive_lists: bool,
+    pub(super) local_panic_handler: Option<super::Declaration>,
     /// The imported macro allowance and source expansion ledger.
     pub(super) allowances: Option<super::LocalMacros>,
 }
@@ -62,6 +63,10 @@ impl SourceClient {
 
     pub(in crate::resolve) const fn imports_derive_lists(&self) -> bool {
         self.derive_lists
+    }
+
+    pub(crate) const fn local_panic_handler(&self) -> Option<super::Declaration> {
+        self.local_panic_handler
     }
 
     /// Reuse the initial search only with its same immutable validated inventory.
@@ -149,6 +154,7 @@ pub(super) fn prepare(
             dependencies: Arc::clone(dependencies),
             provider_index,
             derive_lists,
+            local_panic_handler: None,
             allowances,
         }))),
         library,

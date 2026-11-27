@@ -1,6 +1,6 @@
 //! Completed configured owners reserve source identities before semantic queries.
 use super::{
-    SourceCore,
+    Source, SourceCore,
     policy::Feature,
     role_attributes::{HeaderAttribute, HeaderAttributes},
 };
@@ -181,7 +181,9 @@ pub(in crate::resolve) fn finish(
         result.map_err(|error| Error::at(FileId(0), 0, error))?;
     }
     facts.source_bindings = reserved;
-    facts.local_panic_handler = local_handler;
+    if let Some(Source::Client(client)) = package.source.as_deref_mut() {
+        client.local_panic_handler = local_handler;
+    }
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
         library.publish(inventory);
     }

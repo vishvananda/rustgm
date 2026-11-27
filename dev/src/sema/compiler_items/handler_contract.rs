@@ -81,7 +81,11 @@ pub(crate) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), 
 }
 
 fn complete_client(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    let Some(local) = report.resolution.local_panic_handler else {
+    let Some(local) = report
+        .package
+        .source_client()
+        .and_then(crate::resolve::bindings::SourceClient::local_panic_handler)
+    else {
         return Ok(());
     };
     let catalog = facts

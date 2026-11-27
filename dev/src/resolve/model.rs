@@ -388,8 +388,6 @@ pub struct AssociatedBinding {
 #[derive(Default)]
 pub struct Resolution {
     pub source_bindings: Option<Box<super::bindings::Reservations>>,
-    /// A fresh consumer may define its own panic handler against imported types.
-    pub(crate) local_panic_handler: Option<super::bindings::Declaration>,
     /// Source-free external identities and their explicit local remapping.
     pub crates: Option<Box<super::crates::Imported>>,
     /// Actual external-block ownership, retained through expansion by declaration identity.
