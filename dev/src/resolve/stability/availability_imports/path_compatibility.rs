@@ -26,6 +26,59 @@ pub(crate) struct Warning<'a> {
     pub message: &'a str,
 }
 impl Imports {
+    /// A derived path's generic arguments can be copied from the caller.
+    /// The availability policy belongs to the generated path spelling.
+    pub(super) fn expanded_api_span(
+        &self,
+        package: &Package,
+        site: NodeKey,
+    ) -> Result<crate::syntax::token_tree::Span, Error> {
+        use crate::{expand::stream::OriginKind, syntax::ast::Kind};
+        let ast = &package.unit(site.file).configured.ast;
+        let span = ast.node(site.node).span;
+        if !matches!(
+            ast.node(site.node).kind,
+            Kind::Path { .. } | Kind::Applied { .. }
+        ) {
+            return Ok(span);
+        }
+        self.charge(
+            1 + package
+                .unit(site.file)
+                .origins
+                .len()
+                .checked_ilog2()
+                .unwrap_or(0) as usize,
+            0,
+        )?;
+        let Some(origin) = package.origin(site.file, span.start) else {
+            return Ok(span);
+        };
+        if !matches!(origin.kind, OriginKind::Synthetic(_)) || span.end <= origin.generated.end {
+            return Ok(span);
+        }
+        let mut node = site.node;
+        loop {
+            self.charge(1, 0)?;
+            match ast.node(node).kind {
+                Kind::Path { segments, .. } => {
+                    let Some(&last) = ast.list(segments).last() else {
+                        return Ok(span);
+                    };
+                    node = last;
+                }
+                Kind::Applied { base, .. } => node = base,
+                Kind::Name(name, _) => {
+                    return Ok(crate::syntax::token_tree::Span {
+                        start: span.start,
+                        end: name.end,
+                    });
+                }
+                _ => return Ok(span),
+            }
+        }
+    }
+
     pub(in crate::resolve) fn record(
         &mut self,
         site: NodeKey,

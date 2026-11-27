@@ -222,7 +222,7 @@ fn failing_uses_are_counted_and_cfg_disabled_owners_have_no_authority() -> Resul
     ] {
         let package = original(&format!("{HEADER}{tail}"))?;
         let mut work = Work::default();
-        assert!(inspect(&package, &mut work).is_err());
+        assert!(inspect(&package, &mut work, None).is_err());
         assert!(work.nodes > 0 && work.nodes <= unique_nodes(&package));
         assert_eq!(work.units, 1);
     }
@@ -250,7 +250,7 @@ fn an_attribute_index_cannot_substitute_another_configured_owner() -> Result {
         .ok_or("nonroot attribute owner")?;
     unit.configured.owners[index].node = unit.configured.ast.root;
     let mut work = Work::default();
-    let error = inspect(&package, &mut work)
+    let error = inspect(&package, &mut work, None)
         .err()
         .ok_or("forged owner accepted")?;
     assert!(error.message.contains("different configured owner"));
@@ -264,7 +264,7 @@ fn a_callable_bound_result_is_not_a_stable_function_result_position() -> Result 
     // It does not assert that this provider already supplies the Fn lang item.
     let package = original(&format!("{HEADER}fn f<F:Fn()->!>(){{}}"))?;
     let mut work = Work::default();
-    let error = inspect(&package, &mut work)
+    let error = inspect(&package, &mut work, None)
         .err()
         .ok_or("ungated callable output")?;
     assert!(error.message.contains("never_type"));

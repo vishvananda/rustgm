@@ -317,13 +317,14 @@ impl<S: Sources> Engine<'_, S> {
         if count == 0 {
             return Ok(());
         }
-        let Some(crate::resolve::bindings::Source::Core(source)) =
-            self.loader.package.source.as_deref()
-        else {
-            return Err(Error::unlocated("derive installation lost its provider"));
-        };
+        let source = self
+            .loader
+            .package
+            .source
+            .as_deref()
+            .and_then(crate::resolve::bindings::Source::source_expansion_contracts)
+            .ok_or_else(|| Error::unlocated("derive installation lost its provider"))?;
         source
-            .macros
             .charge(
                 count,
                 count.saturating_mul(8 * size_of::<(super::super::NodeId, super::super::NodeId)>()),
@@ -343,7 +344,6 @@ impl<S: Sources> Engine<'_, S> {
             )
             .collect::<Result<_, _>>()?;
         source
-            .macros
             .charge(
                 outputs
                     .len()
@@ -362,7 +362,6 @@ impl<S: Sources> Engine<'_, S> {
                 .collect();
             let charge = |steps, bytes| {
                 source
-                    .macros
                     .charge(steps, bytes)
                     .map_err(|message| error(0, message))
             };

@@ -252,7 +252,10 @@ impl<S: Sources> Engine<'_, S> {
             || name == Some("default") && self.default_helper(owner, effect)?
             || name.and_then(Consumer::named).is_some()
                 && !(matches!(name, Some("derive" | "derive_const"))
-                    && self.loader.package.source_core().is_some()))
+                    && (self.loader.package.source_core().is_some()
+                        || self.loader.package.source_client().is_some_and(
+                            super::super::bindings::SourceClient::imports_derive_lists,
+                        ))))
     }
 }
 

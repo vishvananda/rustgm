@@ -47,7 +47,9 @@ impl Package {
     }
 
     pub(crate) fn pay_named_opaque(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
-        super::derive_lists::required_ledger(self, "named opaques require the source-core profile")?
+        self.source_core()
+            .ok_or("named opaques require the source-core profile")?
+            .macros
             .charge(steps, bytes)
     }
     /// Only the declaration's own crate root can admit this language feature.

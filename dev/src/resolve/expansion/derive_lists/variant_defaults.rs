@@ -139,7 +139,7 @@ pub(super) fn requires_choice(package: &Package, owner: NodeKey) -> Result<bool,
 pub(super) fn replay(
     report: &crate::resolve::expansion::Report,
     entry: &super::Transaction,
-    definition: &crate::resolve::expansion::Definition,
+    index: usize,
 ) -> Result<(), Error> {
     let failure = || {
         Error::at(
@@ -148,28 +148,46 @@ pub(super) fn replay(
             "source Default choice or helper receipt changed",
         )
     };
+    let definition = report.definitions.get(index).ok_or_else(&failure)?;
     if !matches!(definition.body, super::Body::Builtin(Builtin::Default))
         || requires_choice(&report.package, entry.owner)? != entry.enum_default.is_some()
     {
         return Err(failure());
     }
-    if entry.enum_default.is_some() {
-        let helpers = definition
-            .header
-            .as_ref()
-            .ok_or_else(failure)?
-            .derive_helpers(Builtin::Default)?;
-        charge(
+    if entry.enum_default.is_some()
+        && !declares_default(
             &report.package,
+            &report.resolution,
             entry.owner,
-            helpers.len().saturating_mul(8),
-            0,
-        )?;
-        if !helpers.iter().any(|helper| helper.name() == "default") {
-            return Err(failure());
-        }
+            index,
+            definition,
+        )?
+    {
+        return Err(failure());
     }
     Ok(())
+}
+
+fn declares_default(
+    package: &Package,
+    facts: &crate::resolve::model::Resolution,
+    owner: NodeKey,
+    index: usize,
+    definition: &super::super::Definition,
+) -> Result<bool, Error> {
+    if let Some(row) =
+        super::super::transported_macros::source_builtin(package, facts, index, Builtin::Default)
+    {
+        charge(package, owner, row.helpers().len().saturating_mul(8), 0)?;
+        return Ok(row.helpers().iter().any(|name| name == "default"));
+    }
+    let helpers = definition
+        .header
+        .as_ref()
+        .ok_or_else(|| Error::at(owner.file, 0, "Default helper declaration is missing"))?
+        .derive_helpers(Builtin::Default)?;
+    charge(package, owner, helpers.len().saturating_mul(8), 0)?;
+    Ok(helpers.iter().any(|helper| helper.name() == "default"))
 }
 
 /// Walk only this actual item, retaining no second owner map or source parse.
@@ -317,24 +335,17 @@ impl<S: Sources> Engine<'_, S> {
         self.checked_source_builtin(definition, Builtin::Default)?;
         let entry = self.derive_entry(index)?;
         let choice = select(&self.loader.package, entry.owner)?;
-        if choice.is_some() {
-            let header = self.definitions[definition]
-                .header
-                .as_ref()
-                .ok_or_else(|| {
-                    self.calls[index].diagnostic("Default helper declaration is missing")
-                })?;
-            let helpers = header.derive_helpers(Builtin::Default)?;
-            charge(
+        if choice.is_some()
+            && !declares_default(
                 &self.loader.package,
+                &self.paths.state.facts,
                 entry.owner,
-                helpers.len().saturating_mul(8),
-                0,
-            )?;
-            if !helpers.iter().any(|helper| helper.name() == "default") {
-                return Err(self.calls[index]
-                    .diagnostic("selected Default does not declare the default helper"));
-            }
+                definition,
+                &self.definitions[definition],
+            )?
+        {
+            return Err(self.calls[index]
+                .diagnostic("selected Default does not declare the default helper"));
         }
         Ok(choice)
     }

@@ -126,8 +126,10 @@ impl Source {
     }
 }
 impl Source {
-    /// Budget only, for an already admitted eager formatter.
-    pub(in crate::resolve) fn formatter_contracts(&self) -> Option<&panic_contracts::Contracts> {
+    /// Budget only, for an already admitted source expander.
+    pub(in crate::resolve) fn source_expansion_contracts(
+        &self,
+    ) -> Option<&panic_contracts::Contracts> {
         match self {
             Self::Core(source) => Some(&source.macros),
             Self::Client(client) => client.allowances.as_ref().map(|owner| &owner.contracts),
@@ -149,7 +151,7 @@ impl Package {
     ) -> Result<&panic_contracts::Contracts, &'static str> {
         self.source
             .as_deref()
-            .and_then(Source::formatter_contracts)
+            .and_then(Source::source_expansion_contracts)
             .ok_or("missing formatting work owner")
     }
 

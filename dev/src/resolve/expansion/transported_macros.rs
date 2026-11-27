@@ -29,6 +29,32 @@ pub(super) fn imported(facts: &Resolution, index: usize) -> Option<&ImportedMacr
     facts.crates.as_deref()?.installed_macros().get(index)
 }
 
+pub(super) fn source_builtin<'a>(
+    package: &super::Package,
+    facts: &'a Resolution,
+    index: usize,
+    role: Builtin,
+) -> Option<&'a BuiltinMacro> {
+    let imported = imported(facts, index)?;
+    let client = package.source_client()?;
+    if !client.owns_builtin_provider(imported.artifact) {
+        return None;
+    }
+    let ImportedRow::Builtin(index) = imported.row else {
+        return None;
+    };
+    let row = facts
+        .crates
+        .as_deref()?
+        .dependencies()
+        .artifacts()
+        .get(imported.artifact)?
+        .macros()?
+        .builtins()
+        .get(index)?;
+    (row.identity() == role.name()).then_some(row)
+}
+
 impl Definition {
     /// The scope where this definition (number `index`) was written.
     pub(super) fn site_scope(&self, index: usize, facts: &Resolution) -> Option<ScopeId> {

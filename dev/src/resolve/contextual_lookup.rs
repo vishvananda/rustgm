@@ -2,10 +2,10 @@
 use super::{
     index::{Context, Resolver},
     lookup::{BindingKey, Observations},
-    model::{Binding, ItemAdjustment, Namespace, ScopeId},
+    model::{Access, Binding, DefKind, ItemAdjustment, Namespace, ScopeId},
     names::NameId,
 };
-use crate::expand::marks::ItemContext;
+use crate::{expand::marks::ItemContext, syntax::ast::NodeId};
 
 pub(super) struct Selected {
     pub key: BindingKey,
@@ -18,6 +18,35 @@ pub(super) struct Selected {
 mod tests;
 
 impl Resolver<'_> {
+    /// A hidden provider module with the same name contributes no type to a
+    /// synthetic primitive reference, such as the return of derived equality.
+    pub(super) fn generated_primitive(
+        &self,
+        c: Context,
+        node: NodeId,
+        name: NameId,
+        binding: Binding,
+    ) -> Option<Selected> {
+        if binding.access != Access::ExternalPrivate
+            || binding.ambiguous
+            || self.facts.definitions[binding.target.0 as usize].kind != DefKind::Module
+        {
+            return None;
+        }
+        let (scope, primitive) = self.lexical_prelude(c.module, name, Namespace::Type)?;
+        if self.facts.definitions[primitive.target.0 as usize].kind != DefKind::Primitive {
+            return None;
+        }
+        let offset =
+            super::hygiene::name_offset(self.package, super::unit::NodeKey { file: c.file, node });
+        let origin = self.package.origin(c.file, offset)?;
+        matches!(origin.kind, crate::expand::stream::OriginKind::Synthetic(_)).then_some(Selected {
+            key: (scope, name, Namespace::Type, ItemContext::ROOT),
+            binding: primitive,
+            privacy: c.module,
+        })
+    }
+
     /// `self` and each `super` identifier follow their own retained context.
     pub(super) fn self_module(
         &self,

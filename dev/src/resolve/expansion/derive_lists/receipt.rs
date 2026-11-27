@@ -124,15 +124,14 @@ impl Report {
             .definitions
             .get(invocation.definition)
             .ok_or_else(failure)?;
-        let node = definition.node.ok_or_else(failure)?;
-        let header =
-            panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
+        let Body::Builtin(role @ (Builtin::Derive | Builtin::DeriveConst)) = definition.body else {
+            return Err(failure());
+        };
+        self.require_derive_header(invocation.definition, definition, role, &failure)?;
         if invocation.parent != entry.placement.introduction
             || invocation.node != owner
             || invocation.original != entry.attribute.attribute.span
             || invocation.parser_calls != 1
-            || !matches!(definition.body, Body::Builtin(role @ (Builtin::Derive | Builtin::DeriveConst)) if header.builtin == Some(role))
-            || header.edition != definition.edition
         {
             return Err(failure());
         }
@@ -188,19 +187,33 @@ impl Report {
             if !crate::expand::builtin::derive_output::MEMBERS.contains(&role) {
                 return Err(failure());
             }
-            let node = definition.node.ok_or_else(&failure)?;
-            let header =
-                panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
-            if header.builtin != Some(role)
-                || header.edition != definition.edition
-                || !view.executed(member.context, member.definition, definition)
-            {
+            self.require_derive_header(member.definition, definition, role, &failure)?;
+            if !view.executed(member.context, member.definition, definition) {
                 return Err(failure());
             }
             if role == Builtin::Default {
-                super::variant_defaults::replay(self, entry, definition)?;
+                super::variant_defaults::replay(self, entry, member.definition)?;
             }
             // No non-Bang allowance frame or feature grant is created here.
+        }
+        Ok(())
+    }
+
+    fn require_derive_header(
+        &self,
+        index: usize,
+        definition: &super::super::Definition,
+        role: Builtin,
+        failure: &impl Fn() -> Error,
+    ) -> Result<(), Error> {
+        if super::supported_role(role, &self.package, &self.resolution, index) {
+            return Ok(());
+        }
+        let node = definition.node.ok_or_else(failure)?;
+        let header =
+            panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
+        if header.builtin != Some(role) || header.edition != definition.edition {
+            return Err(failure());
         }
         Ok(())
     }

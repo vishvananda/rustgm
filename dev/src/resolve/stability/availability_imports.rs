@@ -285,13 +285,7 @@ impl Imports {
         let mut session = report.macro_allowances();
         for entry in deferred {
             self.charge(1, 0)?;
-            let span = report
-                .package
-                .unit(entry.site.file)
-                .configured
-                .ast
-                .node(entry.site.node)
-                .span;
+            let span = self.expanded_api_span(&report.package, entry.site)?;
             let feature = crate::resolve::bindings::FeatureName::new(&entry.feature)
                 .map_err(Error::unlocated)?;
             let site = crate::expand::stream::Location {

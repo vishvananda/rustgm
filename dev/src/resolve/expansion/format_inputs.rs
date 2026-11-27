@@ -171,7 +171,7 @@ impl<S: Sources> Engine<'_, S> {
         let source = package
             .source
             .as_deref()
-            .and_then(crate::resolve::bindings::Source::formatter_contracts)
+            .and_then(crate::resolve::bindings::Source::source_expansion_contracts)
             .ok_or_else(|| call.diagnostic("missing formatting work owner"))?;
         let payer = |steps, bytes| {
             source

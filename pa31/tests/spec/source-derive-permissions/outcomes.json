@@ -1,0 +1,11 @@
+{
+  "inputs": ["provider.rs", "client.rs", "caller.rs", "observe.c"],
+  "foundation": "pa31/tests/spec/derive-array-fields/foundation.rs",
+  "prefix_marker": "pub mod location {",
+  "stdout": "53\n",
+  "restricted_client": {
+    "path": "caller.rs",
+    "rustc": "derive_clone_copy_internals",
+    "rustgm": "use of unstable library API requires feature `derive_clone_copy_internals`"
+  }
+}

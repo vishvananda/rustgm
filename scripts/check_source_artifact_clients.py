@@ -106,7 +106,8 @@ def main():
                                  "source-staged-module-constants",
                                  "source-availability-inheritance",
                                  "source-macro-module-aliases", "source-formatting-transport",
-                                 "source-canonical-trait-headers", *ASSEMBLY_CASES))
+                                 "source-canonical-trait-headers", "source-derive-permissions",
+                                 *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

@@ -160,6 +160,12 @@ impl<S: Sources> Engine<'_, S> {
             && !role.context_free()
             && !role.imported_delegation()
             && !self.imported_formatter(imported, role)
+            && !super::derive_lists::supported_role(
+                role,
+                &self.loader.package,
+                &self.paths.state.facts,
+                definition,
+            )
         {
             return Err(self.unavailable_error(
                 definition,

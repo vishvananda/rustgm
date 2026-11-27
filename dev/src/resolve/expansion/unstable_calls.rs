@@ -148,6 +148,10 @@ pub(in crate::resolve) fn validate(report: &Report) -> Result<(), Error> {
         source_names: HashMap::default(),
     };
     for invocation in &report.invocations {
+        if super::transported_macros::imported(&report.resolution, invocation.definition).is_some()
+        {
+            continue;
+        }
         let definition = report
             .definitions
             .get(invocation.definition)

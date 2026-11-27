@@ -445,6 +445,12 @@ impl Resolver<'_> {
                 }
                 None => return Ok(Lookup::Missing),
             };
+            let selected = if !absolute && path.len() == 1 && ns == Namespace::Type {
+                self.generated_primitive(c, node, name, selected.binding)
+                    .unwrap_or(selected)
+            } else {
+                selected
+            };
             let found_scope = selected.key.0;
             let binding = selected.binding;
             if let Some(trace) = observed.as_mut().and_then(|o| o.selected.as_mut()) {

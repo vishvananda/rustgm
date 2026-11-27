@@ -143,6 +143,22 @@ impl Report {
         }
         let entry = self.literal_transaction(member_index)?;
         self.expanded_derive_receipt(entry.owner, entry.effect, Some(memo))?;
+        if let Some(row) = super::super::transported_macros::source_builtin(
+            &self.package,
+            &self.resolution,
+            member.definition,
+            role,
+        ) {
+            let features = row.internal_unstable();
+            ledger
+                .charge(feature.spelling().len() + features.len() + 1, 0)
+                .map_err(error)?;
+            return Ok(Some(
+                features
+                    .binary_search_by(|allowed| allowed.as_str().cmp(feature.spelling()))
+                    .is_ok(),
+            ));
+        }
         let node = definition
             .node
             .ok_or_else(|| error("derive grant lost its source declaration"))?;

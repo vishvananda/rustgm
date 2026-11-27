@@ -32,17 +32,24 @@ use crate::{
 };
 use std::{ops::Range, sync::Arc};
 
-/// The ledger each derive charge pays: the package's macro-context contracts.
-/// Only the source core expands derives, and its context's contracts are its
-/// own `source.macros`, so local charges are unchanged. Any other package has
-/// no derive ledger yet; imported derive rows need Lane C trait/impl transport.
 fn derive_ledger(
     package: &super::Package,
 ) -> Result<Option<&panic_contracts::Contracts>, &'static str> {
-    if package.source_core().is_none() {
+    if package.source_core().is_none() && package.source_client().is_none() {
         return Ok(None);
     }
     package.source_contract_payer()
+}
+
+pub(super) fn supported_role(
+    role: Builtin,
+    package: &super::Package,
+    facts: &crate::resolve::model::Resolution,
+    definition: usize,
+) -> bool {
+    (matches!(role, Builtin::Derive | Builtin::DeriveConst)
+        || crate::expand::builtin::derive_output::MEMBERS.contains(&role))
+        && super::transported_macros::source_builtin(package, facts, definition, role).is_some()
 }
 /// The derive ledger a step requires, or `missing` by name.
 pub(super) fn required_ledger<'a>(
@@ -358,6 +365,14 @@ impl<S: Sources> Engine<'_, S> {
             return Err(Error::unlocated(
                 "derive changed its actual selected source role",
             ));
+        }
+        if supported_role(
+            expected,
+            &self.loader.package,
+            &self.paths.state.facts,
+            definition,
+        ) {
+            return Ok(());
         }
         let key = self
             .paths

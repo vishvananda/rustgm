@@ -44,7 +44,7 @@ impl<S: Sources> Engine<'_, S> {
                 .loader
                 .package
                 .source_client()
-                .is_some_and(|client| client.owns_formatter(imported.artifact))
+                .is_some_and(|client| client.owns_builtin_provider(imported.artifact))
     }
 
     pub(super) fn source_eager_definition(&self, index: usize) -> Result<Builtin, Error> {
