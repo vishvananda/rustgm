@@ -23,9 +23,13 @@ pub(super) fn encode(out: &mut Writer, macros: &Macros) -> Result<(), &'static s
     Ok(())
 }
 
-pub(super) fn decode(input: &mut Reader<'_>, macros: Macros) -> Result<Macros, &'static str> {
+pub(super) fn decode(
+    input: &mut Reader<'_>,
+    macros: Macros,
+    required: bool,
+) -> Result<Macros, &'static str> {
     let count = input.count(MAX_MACROS, 9)?;
-    if count == 0 {
+    if count == 0 && required {
         return Err("version-six exported macro table requires a deprecation notice");
     }
     input.atoms(count)?;

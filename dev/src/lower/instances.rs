@@ -482,7 +482,7 @@ fn published_interface(
     };
     // A generated exported definition is located in expanded text;
     // project it to the tokens that produced it.
-    let table = crate::sema::crates::macro_table(report, interface.dependencies())
+    let table = crate::sema::crates::macro_table(report, &interface)
         .map_err(|error| report.diagnostic(error))?;
     let interface = match table {
         Some(macros) if interface.macros().is_none() && interface.native_links().is_none() => {

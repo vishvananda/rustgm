@@ -167,9 +167,12 @@ pub(crate) fn export_with_originals(
 /// Rejects macro exports outside the macro metadata profile by name.
 pub(crate) fn macro_table(
     report: &Report,
-    dependencies: &[CrateIdentity],
+    interface: &Interface,
 ) -> Result<Option<crate::support::crates::exported_macros::Macros>, Error> {
-    declarative_rows::collect(report, dependencies)
+    let source_modules = interface
+        .source_descriptor()
+        .is_some_and(|source| source.profile().declaration_policies());
+    declarative_rows::collect(report, interface.dependencies(), source_modules)
 }
 /// Macro rows and native links wrap the completed core table.
 fn with_envelopes(
@@ -180,8 +183,7 @@ fn with_envelopes(
     // A generated exported definition is located in expanded text; project
     // it to the tokens that produced it. The source-core publication reads
     // this table through `macro_table` and projects it there instead.
-    let table = declarative_rows::collect(report, interface.dependencies())
-        .map_err(|e| report.diagnostic(e))?;
+    let table = macro_table(report, &interface).map_err(|e| report.diagnostic(e))?;
     let interface = if let Some(macros) = table {
         interface.with_macros(macros).map_err(error)?
     } else {

@@ -20,15 +20,15 @@ use crate::{
         crates::{
             CrateIdentity,
             exported_macros::{
-                BuiltinMacro, DefinitionRow, GlobReexport, Macro, MacroDeprecation, Macros,
-                ReexportMacro, ScopedMacro, Syntax,
+                BuiltinMacro, DefinitionRow, GlobReexport, Macro, MacroDefinitionSite,
+                MacroDeprecation, Macros, ReexportMacro, ScopedMacro, Syntax,
             },
         },
         hash::{HashMap, HashSet},
     },
     syntax::{ast::Kind as AstKind, item::ItemKind},
 };
-use std::rc::Rc;
+use std::{cmp::Reverse, collections::BinaryHeap, rc::Rc};
 
 /// Every public macro binding travels in the macro table, never in the scalar
 /// public-name table; the macro table rejects unsupported ones by name.
@@ -56,8 +56,7 @@ fn module_path(report: &Report, mut module: ModuleId) -> Result<Vec<String>, Err
     Ok(names)
 }
 
-/// One public macro binding in a module reachable from the root through
-/// public direct module declarations.
+/// One public macro binding in its provider's reachable module.
 struct Bound<'a> {
     placement: Rc<[String]>,
     name: &'a str,
@@ -71,95 +70,132 @@ impl Bound<'_> {
     }
 }
 
-/// The public macro bindings of a crate, and the placement of every module
-/// reachable through public direct module declarations.
+/// The public macro bindings of a crate and each reachable placement.
+#[derive(Default)]
 struct Placed<'a> {
     bound: Vec<Bound<'a>>,
     placements: HashMap<ScopeId, Rc<[String]>>,
     /// Modules that only public re-exports reach.
     aliased: HashSet<ScopeId>,
 }
+impl<'a> Placed<'a> {
+    fn binding(
+        &mut self,
+        scope: ScopeId,
+        placement: &Rc<[String]>,
+        name: &'a str,
+        binding: &Binding,
+    ) -> Result<(), Error> {
+        if binding.ambiguous {
+            return Err(error(
+                "ambiguous public macro bindings are outside the macro metadata profile",
+            ));
+        }
+        self.bound.push(Bound {
+            placement: Rc::clone(placement),
+            name,
+            scope,
+            target: binding.target,
+            direct: binding.origin == Origin::Direct,
+        });
+        Ok(())
+    }
+}
 
-/// Visit every module reachable through public direct module declarations
-/// once, and gather its public macro bindings. A module that a public
-/// re-export alone reaches has no public placement, so a public macro binding
-/// there is rejected by name rather than dropped. Names a glob row carries
-/// are left out.
-fn bindings<'a>(report: &'a Report, globs: &dependency_globs::Globs) -> Result<Placed<'a>, Error> {
+/// Direct module paths keep their canonical spelling. For modules reached
+/// only by aliases, visit the shortest public paths in lexical order.
+type AliasPaths = BinaryHeap<Reverse<(usize, Rc<[String]>, u32)>>;
+
+fn alias_path(aliases: &mut AliasPaths, parent: &[String], name: &str, scope: ScopeId) {
+    let mut path = parent.to_vec();
+    path.push(name.to_owned());
+    aliases.push(Reverse((path.len(), path.into(), scope.0)));
+}
+
+fn bindings<'a>(
+    report: &'a Report,
+    globs: &dependency_globs::Globs,
+    source_modules: bool,
+) -> Result<Placed<'a>, Error> {
     let resolution = &report.resolution;
     let root = resolution.module_scopes[0];
-    let mut bound = Vec::new();
-    let mut aliased = Vec::new();
+    let mut placed = Placed::default();
+    let mut aliases = AliasPaths::new();
     let mut work = vec![root];
     let mut seen = HashSet::from_iter([root]);
-    let mut placements = HashMap::default();
     while let Some(scope) = work.pop() {
         let module = resolution.scopes[scope.0 as usize].module;
         let placement: Rc<[String]> = module_path(report, module)?.into();
-        placements.insert(scope, Rc::clone(&placement));
+        placed.placements.insert(scope, Rc::clone(&placement));
         for (name, namespace, binding) in resolution.bindings.scope(scope) {
             if binding.access != Access::Public || globs.covered(scope, binding) {
                 continue;
             }
+            let name = report.package.names.get(name);
             let target = &resolution.definitions[binding.target.0 as usize];
             if namespace == Namespace::Type && target.kind == DefKind::Module {
                 let Some(members) = target.members.filter(|_| target.node.is_some()) else {
                     continue;
                 };
                 if binding.origin != Origin::Direct {
-                    aliased.push(members);
+                    alias_path(&mut aliases, &placement, name, members);
                 } else if seen.insert(members) {
                     work.push(members);
                 }
-                continue;
+            } else if namespace == Namespace::Macro {
+                placed.binding(scope, &placement, name, binding)?;
             }
-            if namespace != Namespace::Macro {
-                continue;
-            }
-            if binding.ambiguous {
-                return Err(error(
-                    "ambiguous public macro bindings are outside the macro metadata profile",
-                ));
-            }
-            bound.push(Bound {
-                placement: Rc::clone(&placement),
-                name: report.package.names.get(name),
-                scope,
-                target: binding.target,
-                direct: binding.origin == Origin::Direct,
-            });
         }
     }
-    // Modules reached only through public aliases, and their public children.
-    let mut only_aliased = HashSet::default();
-    while let Some(scope) = aliased.pop() {
+    alias_bindings(report, globs, source_modules, aliases, seen, &mut placed)?;
+    Ok(placed)
+}
+
+fn alias_bindings<'a>(
+    report: &'a Report,
+    globs: &dependency_globs::Globs,
+    source_modules: bool,
+    mut aliases: AliasPaths,
+    mut seen: HashSet<ScopeId>,
+    placed: &mut Placed<'a>,
+) -> Result<(), Error> {
+    let resolution = &report.resolution;
+    while let Some(Reverse((depth, placement, scope))) = aliases.pop() {
+        let scope = ScopeId(scope);
         if !seen.insert(scope) {
             continue;
         }
-        only_aliased.insert(scope);
-        for (_, namespace, binding) in resolution.bindings.scope(scope) {
+        placed.aliased.insert(scope);
+        if source_modules {
+            if depth > crate::support::crates::exported_macros::MAX_PLACEMENT_DEPTH {
+                return Err(error("exported macro placement exceeds profile budget"));
+            }
+            placed.placements.insert(scope, Rc::clone(&placement));
+        }
+        for (name, namespace, binding) in resolution.bindings.scope(scope) {
             if binding.access != Access::Public || globs.covered(scope, binding) {
                 continue;
             }
+            let name = report.package.names.get(name);
             let target = &resolution.definitions[binding.target.0 as usize];
             if namespace == Namespace::Macro {
-                return Err(error(
-                    "macro bindings in a module reached only through a re-export are outside the macro metadata profile",
-                ));
+                if !source_modules {
+                    return Err(error(
+                        "macro bindings in a module reached only through a re-export are outside the macro metadata profile",
+                    ));
+                }
+                placed.binding(scope, &placement, name, binding)?;
             }
             if namespace == Namespace::Type
                 && target.kind == DefKind::Module
                 && let Some(members) = target.members.filter(|_| target.node.is_some())
+                && !seen.contains(&members)
             {
-                aliased.push(members);
+                alias_path(&mut aliases, &placement, name, members);
             }
         }
     }
-    Ok(Placed {
-        bound,
-        placements,
-        aliased: only_aliased,
-    })
+    Ok(())
 }
 
 /// Imported macro definitions by their binding identity: the owning
@@ -254,6 +290,7 @@ struct Table<'a> {
     scoped: Vec<ScopedMacro>,
     globs: Vec<GlobReexport>,
     deprecations: Vec<Deprecation<'a>>,
+    source_modules: bool,
 }
 impl<'a> Table<'a> {
     /// Publish one local definition and its other public bindings. Its row
@@ -314,12 +351,14 @@ impl<'a> Table<'a> {
                 .with_internal_unsafe(definition.exported_internal_unsafe()),
             );
         } else if matches!(definition.body, Body::Scoped { .. }) {
-            let body = scoped_body(report, definition, node)?;
-            let image = image_row(report, canonical.name, definition, node, body)?
-                .with_unstable(feature)
-                .map_err(error)?;
-            self.scoped
-                .push(ScopedMacro::new(canonical.placement.to_vec(), image).map_err(error)?);
+            self.scoped.push(scoped_row(
+                report,
+                canonical,
+                definition,
+                node,
+                feature,
+                self.source_modules,
+            )?);
         } else {
             let root = canonical.direct && canonical.scope == report.resolution.module_scopes[0];
             self.rows.push(
@@ -425,15 +464,17 @@ impl<'a> Table<'a> {
 pub(super) fn collect(
     report: &Report,
     dependencies: &[CrateIdentity],
+    source_modules: bool,
 ) -> Result<Option<Macros>, Error> {
     let globs = dependency_globs::Globs::new(report);
     let Placed {
         bound,
         placements,
         aliased,
-    } = bindings(report, &globs)?;
+    } = bindings(report, &globs, source_modules)?;
     let mut table = Table {
         globs: dependency_globs::rows(report, &placements, &aliased, dependencies)?,
+        source_modules,
         ..Table::default()
     };
     if bound.is_empty() && table.globs.is_empty() {
@@ -483,27 +524,51 @@ fn syntax(report: &Report, node: NodeKey) -> Result<Syntax, Error> {
     }
 }
 
-/// The body capture of a semiopaque `pub macro` in its comma-separated rule
-/// form. Opaque and transparent definitions, and the single-rule form with a
-/// parameter list, are rejected by name.
-fn scoped_body(report: &Report, definition: &Definition, node: NodeKey) -> Result<u32, Error> {
-    definition.exported_semiopaque().map_err(error)?;
+fn scoped_row(
+    report: &Report,
+    canonical: &Bound<'_>,
+    definition: &Definition,
+    node: NodeKey,
+    feature: Option<String>,
+    source_modules: bool,
+) -> Result<ScopedMacro, Error> {
+    if !source_modules {
+        definition.exported_semiopaque().map_err(error)?;
+    }
     let unit = report.package.unit(node.file);
     let AstKind::Item(index) = unit.configured.ast.node(node.node).kind else {
         return Err(error("exported macro definition is not an item"));
     };
-    match unit.configured.ast.items[index as usize].kind {
-        ItemKind::DeclarativeMacro {
-            parameters: None,
-            capture,
-        } => Ok(capture),
-        ItemKind::DeclarativeMacro { .. } => Err(error(
+    let ItemKind::DeclarativeMacro {
+        parameters,
+        capture,
+    } = unit.configured.ast.items[index as usize].kind
+    else {
+        return Err(error("exported macro definition is not a scoped macro"));
+    };
+    if parameters.is_some() && !source_modules {
+        return Err(error(
             "macros 2.0 parameter lists are outside the macro metadata profile",
-        )),
-        _ => Err(error(
-            "exported macro definition is not a macro declaration",
-        )),
+        ));
     }
+    let image = image_row(
+        report,
+        canonical.name,
+        definition,
+        node,
+        (parameters, capture),
+    )?
+    .with_unstable(feature)
+    .map_err(error)?;
+    let row = ScopedMacro::new(canonical.placement.to_vec(), image).map_err(error)?;
+    if !source_modules {
+        return Ok(row);
+    }
+    row.with_definition_site(MacroDefinitionSite {
+        hygiene: definition.exported_scoped_hygiene().map_err(error)?,
+        module: module_path(report, definition.module)?,
+    })
+    .map_err(error)
 }
 
 fn row(
@@ -532,17 +597,16 @@ fn row(
     let ItemKind::MacroRules { capture } = unit.configured.ast.items[index as usize].kind else {
         return Err(error("exported macro definition is not macro_rules"));
     };
-    image_row(report, name, definition, node, capture)
+    image_row(report, name, definition, node, (None, capture))
 }
 
-/// The canonical image, rule count, list and unsafe flag of one declarative
-/// or semiopaque body capture.
+/// The canonical image, rule count and permissions of one macro body.
 fn image_row(
     report: &Report,
     name: &str,
     definition: &Definition,
     node: NodeKey,
-    capture: u32,
+    (parameters, capture): (Option<u32>, u32),
 ) -> Result<Macro, Error> {
     let compiled = match &definition.body {
         Body::Declarative(compiled) => compiled,
@@ -551,9 +615,18 @@ fn image_row(
     };
     let internal_unstable = definition.exported_internal_unstable().map_err(error)?;
     let unit = report.package.unit(node.file);
-    let forest = &unit.configured.ast.captures[capture as usize];
-    let (image, trees) =
-        crate::resolve::crates::macro_image(unit.source.text(), forest).map_err(error)?;
+    let captures = &unit.configured.ast.captures;
+    let forest = &captures[capture as usize];
+    let source = unit.source.text();
+    let (image, trees) = match parameters {
+        Some(parameters) => crate::resolve::crates::concise_macro_image(
+            source,
+            &captures[parameters as usize],
+            forest,
+        ),
+        None => crate::resolve::crates::macro_image(source, forest),
+    }
+    .map_err(error)?;
     let rules = u32::try_from(compiled.definition.rules.len())
         .map_err(|_| error("exported macro has too many rules"))?;
     Macro::new(

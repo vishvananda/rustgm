@@ -25,6 +25,8 @@
 //! Version five adds glob re-export rows, `pub use dependency::module::*`:
 //! each binds at its placement every name that the dependency's module makes
 //! visible outside its crate, unless this crate binds that name there itself.
+//! Version six adds deprecation notices. Version seven adds scoped macro
+//! definition sites, keeping lexical module identity and hygiene together.
 use crate::support::{
     crates::generics::source::{DeprecationSince, MAX_REASON_BYTES},
     edition::Edition,
@@ -508,12 +510,27 @@ impl BuiltinMacro {
     }
 }
 
-/// One semiopaque `pub macro` definition: a placed declarative image whose
-/// rules are comma-separated and whose hygiene is that of `macro_rules!`.
+/// The defining macro's treatment of literal token hygiene.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum ScopedHygiene {
+    SemiOpaque,
+    Opaque,
+    Transparent,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MacroDefinitionSite {
+    pub hygiene: ScopedHygiene,
+    pub module: Vec<String>,
+}
+
+/// One placed `pub macro` body with an optional defining-module contract.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ScopedMacro {
     placement: Vec<String>,
     definition: Macro,
+    site: Option<Box<MacroDefinitionSite>>,
 }
 impl ScopedMacro {
     /// # Errors
@@ -526,7 +543,23 @@ impl ScopedMacro {
         Ok(Self {
             placement,
             definition,
+            site: None,
         })
+    }
+    /// # Errors
+    /// Rejects an invalid or duplicate defining module.
+    pub(crate) fn with_definition_site(
+        mut self,
+        site: MacroDefinitionSite,
+    ) -> Result<Self, &'static str> {
+        validate_placement(&site.module)?;
+        if self.site.replace(Box::new(site)).is_some() {
+            return Err("duplicate scoped macro definition site");
+        }
+        Ok(self)
+    }
+    pub(crate) fn definition_site(&self) -> Option<&MacroDefinitionSite> {
+        self.site.as_deref()
     }
     /// The module path of the scope that binds this row.
     #[must_use]
@@ -549,6 +582,9 @@ impl ScopedMacro {
         self.definition
             .bytes()
             .saturating_add(names_bytes(&self.placement))
+            .saturating_add(self.site.as_ref().map_or(0, |site| {
+                size_of::<MacroDefinitionSite>().saturating_add(names_bytes(&site.module))
+            }))
     }
 }
 
@@ -1062,7 +1098,8 @@ impl Macros {
             .max()
             .unwrap_or(0)
     }
-    /// The least envelope version that holds every row: 6 for a deprecation,
+    /// The least envelope version that holds every row: 7 for a scoped
+    /// definition site, 6 for a deprecation,
     /// 5 for a glob row, 4
     /// for a semiopaque row or any `allow_internal_unsafe` row, 3 for a
     /// builtin allowance list
@@ -1071,7 +1108,9 @@ impl Macros {
     /// as before.
     #[must_use]
     pub fn version(&self) -> u8 {
-        if !self.deprecations.is_empty() {
+        if self.scoped.iter().any(|row| row.site.is_some()) {
+            7
+        } else if !self.deprecations.is_empty() {
             6
         } else if !self.globs.is_empty() {
             5
@@ -1102,7 +1141,9 @@ impl Macros {
     /// Rows, placement components and notice text, for the shared component budget.
     pub(super) fn atoms(&self) -> usize {
         let scoped = self.scoped.iter().fold(self.rows.len(), |total, row| {
-            total.saturating_add(1 + row.placement.len())
+            total
+                .saturating_add(1 + row.placement.len())
+                .saturating_add(row.site.as_ref().map_or(0, |site| 1 + site.module.len()))
         });
         let builtins = self.builtins.iter().fold(scoped, |total, row| {
             total.saturating_add(1 + row.placement.len())

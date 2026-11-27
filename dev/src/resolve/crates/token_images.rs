@@ -18,6 +18,28 @@ mod tests;
 /// Rejects doc trees, generated tokens and budget overflow by name.
 pub(crate) fn canonical(source: &str, forest: &Forest) -> Result<(String, Vec<Row>), &'static str> {
     let mut builder = ImageBuilder::default();
+    append(&mut builder, source, forest)?;
+    builder.finish()
+}
+
+/// Spell a concise declaration as its one equivalent matcher/template rule.
+/// # Errors
+/// Rejects a malformed or unrepresentable matcher or template token tree.
+pub(crate) fn concise(
+    source: &str,
+    parameters: &Forest,
+    template: &Forest,
+) -> Result<(String, Vec<Row>), &'static str> {
+    let mut builder = ImageBuilder::default();
+    builder.open(Wire::Brace, false)?;
+    append(&mut builder, source, parameters)?;
+    builder.token(TokenClass::Punctuation, "=>", false)?;
+    append(&mut builder, source, template)?;
+    builder.close(false)?;
+    builder.finish()
+}
+
+fn append(builder: &mut ImageBuilder, source: &str, forest: &Forest) -> Result<(), &'static str> {
     let mut previous = None;
     // Each open group keeps its first following row and its close delimiter's start.
     let mut closes: Vec<(u32, u32)> = Vec::new();
@@ -66,7 +88,7 @@ pub(crate) fn canonical(source: &str, forest: &Forest) -> Result<(String, Vec<Ro
     while let Some((_, close)) = closes.pop() {
         builder.close(separated(&mut previous, close, close + 1)?)?;
     }
-    builder.finish()
+    Ok(())
 }
 
 /// Whether the source left a gap before the piece at `start..end`, which then

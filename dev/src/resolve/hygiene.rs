@@ -97,18 +97,23 @@ impl Hygiene {
     ) -> Result<Option<ScopeId>, &'static str> {
         let site = self.site(expansion)?;
         let item = marks.local_item(parent)?;
-        if item != query.item {
+        let scope = if item == query.item {
+            site.scope
+        } else {
             let scope = facts.introductions.definition_scope(expansion)?;
             query.privacy = facts
                 .scopes
                 .get(scope.0 as usize)
                 .ok_or("invalid macro definition privacy")?
                 .module;
-        }
+            // Imported opaque macros have a checked definition scope and no
+            // local source snapshot.
+            site.scope.or(Some(scope))
+        };
         query.context = parent;
         query.item = item;
         query.visible = query.visible.min(site.visible);
-        Ok(site.scope)
+        Ok(scope)
     }
     pub fn lookup(
         &self,

@@ -234,6 +234,16 @@ impl Interface {
         if self.macros.is_some() {
             return Err("duplicate exported macro metadata");
         }
+        if macros
+            .scoped()
+            .iter()
+            .any(|row| row.definition_site().is_some())
+            && self
+                .source_descriptor()
+                .is_none_or(|source| !source.profile().declaration_policies())
+        {
+            return Err("scoped macro definition sites require the declaration policies profile");
+        }
         // A re-export owner is this crate or one of its own dependencies.
         if macros.max_owner() as usize > self.dependencies.len() {
             return Err("exported macro re-export names an unknown owner");

@@ -16,7 +16,7 @@ pub(crate) use bound_macro_rows::{
     )
 )]
 pub(crate) use original_declarations::{OwnedNamespaceCatalog, PendingNamespace};
-pub(crate) use token_images::canonical as macro_image;
+pub(crate) use token_images::{canonical as macro_image, concise as concise_macro_image};
 mod consumer_inputs;
 #[path = "crates/dormant_catalog.rs"]
 pub(crate) mod unpaid_provided;

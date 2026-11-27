@@ -26,13 +26,14 @@
 //!
 //! Version six adds a sparse notice table after the placed rows. Each notice
 //! names a canonical definition row and carries its checked release and text.
+//! Version seven adds a scoped row kind with defining module and hygiene.
 use super::{Interface, MAGIC, Reader, SCHEMA, Writer, notice_fields};
 mod notices;
 use crate::support::{
     crates::exported_macros::{
         BuiltinMacro, Delimiter, GlobReexport, MAX_FEATURES, MAX_IDENTITY_BYTES, MAX_IMAGE_BYTES,
-        MAX_MACROS, MAX_NAME_BYTES, MAX_ROWS, Macro, MacroKind, Macros, ReexportMacro, Row,
-        ScopedMacro, Syntax, TokenClass,
+        MAX_MACROS, MAX_NAME_BYTES, MAX_ROWS, Macro, MacroDefinitionSite, MacroKind, Macros,
+        ReexportMacro, Row, ScopedHygiene, ScopedMacro, Syntax, TokenClass,
     },
     edition::Edition,
 };
@@ -43,12 +44,14 @@ const VERSION_THREE: u8 = 3;
 const VERSION_FOUR: u8 = 4;
 const VERSION_FIVE: u8 = 5;
 const VERSION_SIX: u8 = 6;
+const VERSION_SEVEN: u8 = 7;
 const GROUP: u8 = 0x80;
 const DECLARATIVE: u8 = 0;
 const BUILTIN: u8 = 1;
 const REEXPORT: u8 = 2;
 const SCOPED: u8 = 3;
 const GLOB: u8 = 4;
+const SCOPED_WITH_SITE: u8 = 5;
 const INTERNAL_UNSAFE: u8 = 1;
 const EDITIONS: [Edition; 4] = [
     Edition::Rust2015,
@@ -115,9 +118,18 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
                     encode_lists(&mut output, row, three, four)?;
                 }
                 Entry::Scoped(row) => {
-                    output.u8(SCOPED)?;
+                    let site = row.definition_site();
+                    output.u8(if site.is_some() {
+                        SCOPED_WITH_SITE
+                    } else {
+                        SCOPED
+                    })?;
                     output.path(row.placement())?;
                     encode_lists(&mut output, row.definition(), three, four)?;
+                    if let Some(site) = site {
+                        output.u8(site.hygiene as u8)?;
+                        output.path(&site.module)?;
+                    }
                 }
                 Entry::Builtin(row) => {
                     encode_builtin(&mut output, row)?;
@@ -156,7 +168,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
             encode_macro(&mut output, row)?;
         }
     }
-    if version == VERSION_SIX {
+    if version >= VERSION_SIX {
         notices::encode(&mut output, macros)?;
     }
     output.u32(inner.len())?;
@@ -238,9 +250,8 @@ pub(super) fn decode(input: &mut Reader<'_>) -> Result<Interface, &'static str> 
             }
             Macros::new(rows)?
         }
-        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR | VERSION_FIVE | VERSION_SIX) => {
-            decode_placed(input, version)?
-        }
+        version @ (VERSION_TWO | VERSION_THREE | VERSION_FOUR | VERSION_FIVE | VERSION_SIX
+        | VERSION_SEVEN) => decode_placed(input, version)?,
         _ => return Err("unknown exported macro metadata version"),
     };
     let length = input.u32()?;
@@ -275,8 +286,8 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
                 rows.push(row);
                 (placement, name, 0, Vec::new())
             }
-            SCOPED if four => {
-                let row = ScopedMacro::new(placement, decode_lists(input, three, four)?)?;
+            SCOPED | SCOPED_WITH_SITE if four && (kind == SCOPED || version == VERSION_SEVEN) => {
+                let row = decode_scoped(input, placement, three, four, kind == SCOPED_WITH_SITE)?;
                 let key = (
                     row.placement().to_vec(),
                     row.name().to_owned(),
@@ -342,12 +353,13 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
         }
         previous = Some(key);
     }
-    let macros = Macros::with_globs(rows, builtins, reexports, scoped, globs)?;
-    if version == VERSION_SIX {
-        return notices::decode(input, macros);
+    let mut macros = Macros::with_globs(rows, builtins, reexports, scoped, globs)?;
+    if version >= VERSION_SIX {
+        macros = notices::decode(input, macros, version == VERSION_SIX)?;
     }
     if macros.version() != version {
         return Err(match version {
+            VERSION_SEVEN => "version-seven exported macro table has no definition site",
             VERSION_FIVE => "version-five exported macro table has no glob re-export row",
             VERSION_FOUR => "version-four exported macro table has only version-three rows",
             VERSION_THREE => "version-three exported macro table has only version-two rows",
@@ -356,6 +368,29 @@ fn decode_placed(input: &mut Reader<'_>, version: u8) -> Result<Macros, &'static
     }
     Ok(macros)
 }
+fn decode_scoped(
+    input: &mut Reader<'_>,
+    placement: Vec<String>,
+    three: bool,
+    four: bool,
+    with_site: bool,
+) -> Result<ScopedMacro, &'static str> {
+    let row = ScopedMacro::new(placement, decode_lists(input, three, four)?)?;
+    if !with_site {
+        return Ok(row);
+    }
+    let hygiene = match input.u8()? {
+        0 => ScopedHygiene::SemiOpaque,
+        1 => ScopedHygiene::Opaque,
+        2 => ScopedHygiene::Transparent,
+        _ => return Err("unknown scoped macro hygiene"),
+    };
+    row.with_definition_site(MacroDefinitionSite {
+        hygiene,
+        module: input.module_path()?,
+    })
+}
+
 /// The declarative fields of a kind-0 or kind-3 row and their trailing lists.
 fn decode_lists(input: &mut Reader<'_>, three: bool, four: bool) -> Result<Macro, &'static str> {
     let mut row = decode_macro(input)?.with_internal_unstable(decode_names(input)?)?;

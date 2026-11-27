@@ -80,6 +80,42 @@ impl<'a> ModuleContractView<'a> {
     pub const fn rows(self) -> &'a ModuleContractRows {
         &self.columns.rows
     }
+    /// Follow the provider's public type bindings, including its module aliases.
+    pub(crate) fn public_module_path(self, path: &[String]) -> Option<DeclarationRef> {
+        self.module_path(path, |binding| {
+            binding.visibility == ModuleVisibility::Public
+        })
+    }
+
+    /// Follow physical declarations to a macro's defining module.
+    pub(crate) fn lexical_module_path(self, path: &[String]) -> Option<DeclarationRef> {
+        self.module_path(path, |binding| binding.source == BindingSource::Declaration)
+    }
+
+    fn module_path(
+        self,
+        path: &[String],
+        allowed: impl Fn(&ModuleBindingRow) -> bool,
+    ) -> Option<DeclarationRef> {
+        let namespace = &self.columns.rows.namespace;
+        let mut module = namespace.root;
+        for component in path {
+            let key = (module.0, component.as_str(), Namespace::Type);
+            let index = namespace
+                .bindings
+                .binary_search_by(|binding| {
+                    (binding.module.0, binding.name.as_str(), binding.namespace).cmp(&key)
+                })
+                .ok()?;
+            let binding = &namespace.bindings[index];
+            if !allowed(binding) || binding.target.artifact != s::ArtifactRef(0) {
+                return None;
+            }
+            module = binding.target.declaration;
+            self.require_module(module).ok()?;
+        }
+        Some(module)
+    }
     /// # Errors
     /// Rejects an unknown actual declaration coordinate.
     pub fn defining_module(self, row: DeclarationRef) -> Result<DeclarationRef, &'static str> {

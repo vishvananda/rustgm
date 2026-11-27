@@ -104,7 +104,8 @@ def main():
                                  "source-captured-protocol-requests",
                                  "source-regional-returns",
                                  "source-staged-module-constants",
-                                 "source-availability-inheritance", *ASSEMBLY_CASES))
+                                 "source-availability-inheritance",
+                                 "source-macro-module-aliases", *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
     parser.add_argument("--baseline", type=Path)

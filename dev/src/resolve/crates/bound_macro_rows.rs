@@ -1,6 +1,7 @@
 //! Exported macro rows become public macro definitions at their placement in
 //! their provider's imported module tree. Placements resolve through the
-//! provider's own module identities, never through a binding name or alias.
+//! provider's own public module bindings. Source aliases resolve to the same
+//! canonical declaration as their defining path.
 //! `$crate` in their expansions names that root through the dependency-indexed
 //! crate id, never through a name or alias. A re-export row binds the very
 //! definition its owner's row identity names, so every path to one macro
@@ -130,8 +131,8 @@ fn source_modules(rows: &[s::Declaration]) -> Result<SourceModules, Error> {
 
 impl Resolver<'_> {
     /// The member scope of the provider's public module at `path`, found by
-    /// the module's own identity in the artifact's tables. A path that names
-    /// no public module is rejected with `missing`.
+    /// the module's own identity in the artifact's tables. The completed
+    /// source namespace resolves public aliases to their actual modules.
     pub(super) fn placement_scope(
         &self,
         root: ScopeId,
@@ -145,23 +146,31 @@ impl Resolver<'_> {
             return Ok(root);
         }
         let definition = if let Some(descriptor) = artifact.source_descriptor() {
-            let rows = &descriptor.rows().declarations;
-            let modules = match modules {
-                Some(modules) => modules,
-                None => modules.insert(source_modules(rows)?),
+            let row = if descriptor.profile().declaration_policies() {
+                let namespace = descriptor.module_contracts().map_err(error)?;
+                namespace
+                    .public_module_path(path)
+                    .ok_or_else(|| error(missing))?
+            } else {
+                let rows = &descriptor.rows().declarations;
+                let modules = match modules {
+                    Some(modules) => modules,
+                    None => modules.insert(source_modules(rows)?),
+                };
+                let mut row = DeclarationRef(
+                    rows.iter()
+                        .position(|row| row.definition.parent.is_none())
+                        .and_then(|index| u32::try_from(index).ok())
+                        .ok_or_else(|| error("source artifact has no root declaration"))?,
+                );
+                for component in path {
+                    row = *modules
+                        .get(&(row, component.clone()))
+                        .filter(|&&child| rows[child.0 as usize].public)
+                        .ok_or_else(|| error(missing))?;
+                }
+                row
             };
-            let mut row = DeclarationRef(
-                rows.iter()
-                    .position(|row| row.definition.parent.is_none())
-                    .and_then(|index| u32::try_from(index).ok())
-                    .ok_or_else(|| error("source artifact has no root declaration"))?,
-            );
-            for component in path {
-                row = *modules
-                    .get(&(row, component.clone()))
-                    .filter(|&&child| rows[child.0 as usize].public)
-                    .ok_or_else(|| error(missing))?;
-            }
             imported
                 .origins
                 .get()
@@ -185,6 +194,29 @@ impl Resolver<'_> {
         }
         module.members.ok_or_else(|| error(missing))
     }
+    fn lexical_macro_scope(
+        &self,
+        artifact: &Interface,
+        imported: &Imported,
+        path: &[String],
+    ) -> Result<ScopeId, Error> {
+        let missing = || error("scoped macro has no actual defining module");
+        let row = artifact
+            .source_descriptor()
+            .and_then(|source| source.module_contracts().ok())
+            .and_then(|modules| modules.lexical_module_path(path))
+            .ok_or_else(missing)?;
+        let definition = imported
+            .origins
+            .get()
+            .ok_or_else(missing)?
+            .definition_at(artifact.identity(), row)
+            .map_err(error)?;
+        self.facts.definitions[definition.0 as usize]
+            .members
+            .ok_or_else(missing)
+    }
+
     /// Bind every exported macro definition row of one artifact publicly at
     /// its placement, and register its `$crate` root by the artifact's crate
     /// identity.
@@ -224,7 +256,7 @@ impl Resolver<'_> {
             .rows()
             .iter()
             .enumerate()
-            .map(|(row, entry)| (scope, entry.name(), ImportedRow::Declarative(row)));
+            .map(|(row, entry)| (scope, scope, entry.name(), ImportedRow::Declarative(row)));
         let mut modules = None;
         let mut placed = Vec::with_capacity(
             macros
@@ -241,7 +273,7 @@ impl Resolver<'_> {
                 entry.placement(),
                 PLACEMENT,
             )?;
-            placed.push((scope, entry.name(), ImportedRow::Builtin(row)));
+            placed.push((scope, scope, entry.name(), ImportedRow::Builtin(row)));
         }
         for (row, entry) in macros.scoped().iter().enumerate() {
             let scope = self.placement_scope(
@@ -252,9 +284,17 @@ impl Resolver<'_> {
                 entry.placement(),
                 PLACEMENT,
             )?;
-            placed.push((scope, entry.name(), ImportedRow::Scoped(row)));
+            let defining_scope = entry.definition_site().map_or(Ok(scope), |site| {
+                self.lexical_macro_scope(artifact, imported, &site.module)
+            })?;
+            placed.push((
+                scope,
+                defining_scope,
+                entry.name(),
+                ImportedRow::Scoped(row),
+            ));
         }
-        for (scope, name, row) in declarative.chain(placed) {
+        for (scope, defining_scope, name, row) in declarative.chain(placed) {
             let spelling = self.package.names.intern(name).map_err(error)?;
             let definition = DefId(
                 u32::try_from(self.facts.definitions.len())
@@ -264,7 +304,7 @@ impl Resolver<'_> {
                 name: spelling,
                 namespace: Namespace::Macro,
                 kind: DefKind::Macro,
-                scope,
+                scope: defining_scope,
                 node: None,
                 access: Access::Public,
                 members: None,

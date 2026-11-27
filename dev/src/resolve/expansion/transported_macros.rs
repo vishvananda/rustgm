@@ -1,6 +1,6 @@
 //! Imported `macro_rules!` rows are authenticated once and become ordinary
-//! declarative definitions spelled in their own image unit; semiopaque
-//! `pub macro` rows become scoped definitions with `macro_rules!` hygiene.
+//! declarative definitions spelled in their own image unit. A scoped
+//! `pub macro` body retains the defining module and the chosen hygiene.
 //! Imported builtin rows bind this consumer's own expander of their identity.
 //! Every imported row's edition-panic contract is the `edition_panic` member
 //! of its re-authenticated allowance list, as a local header derives it.
@@ -16,7 +16,7 @@ use crate::{
     },
     support::crates::{
         Interface,
-        exported_macros::{BuiltinMacro, Macro, MacroKind},
+        exported_macros::{BuiltinMacro, Macro, MacroKind, ScopedHygiene},
     },
     syntax::token_tree::Forest,
 };
@@ -260,15 +260,12 @@ impl<S: Sources> Engine<'_, S> {
         let row = macros
             .image_row(index)
             .ok_or_else(|| Error::at(FileId(0), 0, "missing imported macro row"))?;
-        let placement = match index {
-            ImportedRow::Scoped(scoped) => macros
-                .scoped()
-                .get(scoped)
-                .map(|row| row.placement().join("::") + "::")
-                .unwrap_or_default(),
-            _ => String::new(),
+        let scoped = if let ImportedRow::Scoped(index) = index {
+            macros.scoped().get(index)
+        } else {
+            None
         };
-        let scoped = matches!(index, ImportedRow::Scoped(_));
+        let placement = scoped.map_or_else(String::new, |row| row.placement().join("::") + "::");
         let forest = authenticate(row).map_err(|message| Error::at(FileId(0), 0, message))?;
         let identity = artifact.identity();
         let label = format!(
@@ -281,7 +278,7 @@ impl<S: Sources> Engine<'_, S> {
             .loader
             .macro_image(label.into(), row.image(), row.edition())?;
         let names = &mut self.loader.package.names;
-        let compiled = if scoped {
+        let compiled = if scoped.is_some() {
             compile::declarative_in_edition(row.image(), None, &forest, names, row.edition())
         } else {
             compile::in_edition(row.image(), &forest, names, row.edition())
@@ -298,7 +295,7 @@ impl<S: Sources> Engine<'_, S> {
             .names
             .intern(row.name())
             .map_err(|e| Error::at(file, 0, e))?;
-        let body = if scoped {
+        let body = if let Some(scoped) = scoped {
             // An imported scoped body pays for its cold allocation, as a
             // local scoped declaration does.
             if let Some(context) = self
@@ -314,7 +311,11 @@ impl<S: Sources> Engine<'_, S> {
             }
             Body::Scoped {
                 compiled: Box::new(Compiled::new(compiled)),
-                mode: Transparency::SemiOpaque,
+                mode: match scoped.definition_site().map(|site| site.hygiene) {
+                    Some(ScopedHygiene::Opaque) => Transparency::Opaque,
+                    Some(ScopedHygiene::Transparent) => Transparency::Transparent,
+                    None | Some(ScopedHygiene::SemiOpaque) => Transparency::SemiOpaque,
+                },
             }
         } else {
             Body::Declarative(Compiled::new(compiled))

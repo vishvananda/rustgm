@@ -7,7 +7,7 @@ use super::{Body, Definition};
 use crate::{
     expand::{builtin::BuiltinKind, marks::Transparency},
     resolve::bindings::KnownFeature,
-    support::crates::exported_macros::MacroKind,
+    support::crates::exported_macros::{MacroKind, ScopedHygiene},
 };
 
 /// A `#[rustc_builtin_macro]` definition as macro metadata spells it.
@@ -79,6 +79,17 @@ impl Definition {
         }
         Ok(features)
     }
+    pub(crate) fn exported_scoped_hygiene(&self) -> Result<ScopedHygiene, &'static str> {
+        let Body::Scoped { mode, .. } = self.body else {
+            return Err("exported scoped macro lost its checked hygiene");
+        };
+        Ok(match mode {
+            Transparency::SemiOpaque => ScopedHygiene::SemiOpaque,
+            Transparency::Opaque => ScopedHygiene::Opaque,
+            Transparency::Transparent => ScopedHygiene::Transparent,
+        })
+    }
+
     /// Accept a scoped definition only with semiopaque transparency, which
     /// has `macro_rules!` hygiene; opaque and transparent ones are rejected.
     /// # Errors
