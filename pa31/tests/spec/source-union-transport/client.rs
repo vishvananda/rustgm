@@ -6,6 +6,20 @@ extern crate base;
 fn main() {}
 
 #[cfg(accepted)]
+#[repr(C)]
+union LocalPacket {
+    whole: u64,
+    first: u8,
+}
+
+#[cfg(accepted)]
+#[unsafe(no_mangle)]
+pub extern "C" fn local_read(x: u64) -> u64 {
+    let word = LocalPacket { whole: x };
+    unsafe { word.whole }
+}
+
+#[cfg(accepted)]
 #[unsafe(no_mangle)]
 pub extern "C" fn read(x: u64) -> u64 {
     let word = base::Packet { whole: x };

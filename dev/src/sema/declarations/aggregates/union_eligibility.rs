@@ -44,8 +44,9 @@ impl Checker<'_> {
             ));
         }
         let growth = Growth::map::<TypeId, ()>(proved.len(), proved.capacity(), 1);
-        crate::sema::header_attributes::charge_source_retention(
-            &self.facts,
+        // Nominal completion can run before the local source headers are sealed.
+        crate::sema::header_attributes::reserve_source_contracts(
+            &mut self.facts,
             1 + growth.work,
             growth.bytes,
         )?;
