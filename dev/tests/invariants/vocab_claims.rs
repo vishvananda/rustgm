@@ -361,7 +361,7 @@ fn profiling_hooks_execute_actual_ordinary_bodies_and_fence_unencoded_transport(
     let catalog = facts.source_bindings.as_deref().ok_or("catalog")?;
     for role in [LangItem::CompilerMove, LangItem::CompilerCopy] {
         assert!(catalog.language(role).is_some());
-        assert!(catalog.validated_language(role).is_err());
+        assert!(catalog.validated_language(role).is_ok());
     }
     let program = crate::lower::instances::build_roots_prepared(
         &report,

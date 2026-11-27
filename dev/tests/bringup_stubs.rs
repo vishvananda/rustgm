@@ -769,7 +769,7 @@ struct Lowering {
     trapped: Option<&'static str>,
 }
 const SCALAR: &[&str] = &["binary ushr", "index u8", "load u32"];
-const STORED: &[&str] = &["volatile_load", "assert_zero_valid"];
+const STORED: &[&str] = &["assert_zero_valid"];
 /// Transfers and comparisons call one shim each; the rest is emitted in place.
 const SHIMS: &[&str] = &[
     "rg.source.copy_nonoverlapping.t",

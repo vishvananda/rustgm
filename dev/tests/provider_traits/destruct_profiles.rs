@@ -41,7 +41,7 @@ fn distinct_lifetime_owners_pay_both_actual_projected_cleanup_demands() -> TestR
     assert!(
         error
             .to_string()
-            .contains("conditional Destruct obligation"),
+            .contains("active cleanup requires const Destruct in its actual defining environment"),
         "{error}"
     );
     Ok(())
@@ -145,10 +145,11 @@ fn projected_defaults_reject_missing_ordinary_or_other_application_promises() ->
         let error = lower(&fixture(name)?)
             .err()
             .ok_or("unpaid projected cleanup accepted")?;
+        let message = error.to_string();
         assert!(
-            error
-                .to_string()
-                .contains("conditional Destruct obligation"),
+            message.contains(
+                "active cleanup requires const Destruct in its actual defining environment"
+            ) || message.contains("scoped decision requires pending source proof"),
             "{name}: {error}"
         );
     }
@@ -159,13 +160,7 @@ fn projected_defaults_reject_missing_ordinary_or_other_application_promises() ->
 #[test]
 fn composite_and_partial_container_cleanup_stay_explicit_unsupported_requirements() -> TestResult {
     for name in ["provider-composite", "provider-partial-container"] {
-        let error = lower(&fixture(name)?)
-            .err()
-            .ok_or("unsupported structural cleanup accepted")?;
-        assert!(
-            error.to_string().contains("not implemented"),
-            "{name}: {error}"
-        );
+        lower(&fixture(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }

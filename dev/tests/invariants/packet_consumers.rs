@@ -12,6 +12,7 @@ fn fixture(name: &str) -> Result<String> {
 }
 #[test]
 fn prepared_imported_contracts_preserve_raw_requests_and_reject_foreign_owner_arena() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let bytes = crates::encode(&exported(&fixture("minimal-provider")?)?)?;
     let (_, analysis, _) = client_analysis(crates::decode(&bytes)?, &fixture("runtime-client")?)?;
     let mut facts = analysis.facts;
@@ -94,6 +95,7 @@ fn prepared_imported_contracts_preserve_raw_requests_and_reject_foreign_owner_ar
 }
 #[test]
 fn prepared_imported_contracts_scale_with_originals_and_borrow_repeatedly() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let mut previous = None;
     for count in [1, 8, 32] {
         let mut source = fixture("minimal-provider")?;

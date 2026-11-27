@@ -114,7 +114,7 @@ fn invalid_typed_payloads_and_cross_kind_names_are_rejected()
         .is_err()
     );
     assert_eq!(
-        Interface::with_constants(owner, vec![], vec![function], vec![value; 100_000]).err(),
+        Interface::with_constants(owner, vec![], vec![function], vec![value; 1_048_577]).err(),
         Some("metadata table exceeds profile budget")
     );
     Ok(())

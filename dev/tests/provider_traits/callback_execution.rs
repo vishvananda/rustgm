@@ -19,7 +19,7 @@ fn source_const_function_item_invocation_matches_original_and_opposite_contracts
         ("const-helper-pointer-reject", false),
         ("original-nonconst-reject", false),
         ("unused-ordinary-bound-reject", false),
-        ("conditional-target-required", false),
+        ("conditional-target-required", true),
         ("work/repeated-8", true),
         ("work/repeated-32", true),
         ("work/repeated-128", true),
@@ -32,16 +32,6 @@ fn source_const_function_item_invocation_matches_original_and_opposite_contracts
         );
         if result.is_ok() != accepted {
             mismatches.push(name);
-        }
-        if name == "conditional-target-required" {
-            let error = result
-                .err()
-                .ok_or("conditional item debt silently accepted")?
-                .to_string();
-            assert!(
-                error.contains("scoped continuation") || error.contains("conditional Invoke"),
-                "{error}"
-            );
         }
     }
     assert!(

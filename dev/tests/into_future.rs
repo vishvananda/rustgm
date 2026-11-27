@@ -191,14 +191,6 @@ fn native_program(name: &str, observer: &str, expected: &[u8]) -> Result {
 fn uncapped_original_documentation_is_a_separate_rust_positive_required_gap() -> Result {
     let text = source::fixture("pa31/tests/spec/into-future-source/whole.rs")?;
     let report = source::source_provider(&text, "uncapped_into_future")?;
-    let error = pipeline::analyze_source(&report)
-        .err()
-        .ok_or("uncapped doc boundary changed; qualify diagnostics")?;
-    assert!(
-        error
-            .to_string()
-            .contains("uncapped documentation option diagnostics are not implemented"),
-        "{error}"
-    );
+    pipeline::analyze_source(&report)?;
     Ok(())
 }

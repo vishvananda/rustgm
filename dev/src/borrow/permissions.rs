@@ -32,9 +32,6 @@ pub(super) fn check<S: BuildHasher>(
             ))
         })
         .transpose()?;
-    if proof.source.source().is_none() && !crate::support::sealed::self_check() {
-        return Ok(parameters);
-    }
     let mut copies = parameters
         .as_ref()
         .map_or_else(Copies::default, |e| Copies::in_environment(Arc::clone(e)));
@@ -73,6 +70,9 @@ pub(super) fn check<S: BuildHasher>(
                         .ok_or_else(|| error("invalid builtin requirement subject"))?
                 };
                 (sized, "generic argument must be sized")
+            }
+            _ if proof.source.source().is_none() && !crate::support::sealed::self_check() => {
+                continue;
             }
             _ => return Err(error("deferred permission is not a builtin requirement")),
         };

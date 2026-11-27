@@ -234,6 +234,7 @@ fn rejected(bytes: &[u8], message: &str) -> Result {
 
 #[test]
 fn forged_glob_rows_and_relabelled_tables_are_rejected_by_name() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let provider = provider(SPLIT)?;
     let shim = shim(&provider, "pub use base::*;")?;
     let bytes = crates::encode(&shim)?;
@@ -252,7 +253,7 @@ fn forged_glob_rows_and_relabelled_tables_are_rejected_by_name() -> Result {
     let mut relabelled = bytes.clone();
     relabelled[13] = 4;
     rejected(&relabelled, "unknown exported macro row kind")?;
-    relabelled[13] = 7;
+    relabelled[13] = 8;
     rejected(&relabelled, "unknown exported macro metadata version")?;
     relabelled[13] = 6;
     relabelled.splice(14 + row.len()..14 + row.len(), [0; 4]);

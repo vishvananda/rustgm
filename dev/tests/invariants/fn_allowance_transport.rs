@@ -170,6 +170,7 @@ fn malformed_body_contracts_reject_forged_targets_features_and_wire_versions() -
 }
 #[test]
 fn body_policy_wire_preserves_older_packets_and_rejects_unknown_versions() -> TestResult {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let (_, interface) = provider()?;
     let bytes = crates::encode(&interface)?;
     let trailer = bytes

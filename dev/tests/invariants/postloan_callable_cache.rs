@@ -65,6 +65,7 @@ fn observe_solved_targets(text: &str) -> Result {
 
 #[test]
 fn solved_original_targets_stay_out_of_fresh_raw_bodies() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let text = source()?;
     observe_solved_targets(&text)?;
     let artifact = crate::module_packets::exported_profile(

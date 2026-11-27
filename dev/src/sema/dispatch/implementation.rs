@@ -40,7 +40,11 @@ pub(super) fn select_using(
     )?;
     let evidence = if matches!(evidence.source, selection::Source::Implementation { .. }) {
         evidence
-    } else {
+    } else if facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(crate::sema::compiler_items::Catalog::uses_imported_roles)
+    {
         let empty = super::Assumptions::default();
         let concrete = selection::Caller {
             assumptions: &empty,
@@ -63,6 +67,8 @@ pub(super) fn select_using(
         } else {
             return Err("concrete dispatch cannot use a symbolic assumption".into());
         }
+    } else {
+        return Err("concrete dispatch cannot use a symbolic assumption".into());
     };
     let selection::Source::Implementation { owner, arguments } = evidence.source else {
         return Err("concrete dispatch cannot use a symbolic assumption".into());

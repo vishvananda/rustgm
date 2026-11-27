@@ -459,7 +459,8 @@ impl<'a> Evaluator<'a> {
                     )
                 });
         }
-        if self.queries.typing.facts.initializer_index(id).is_none()
+        if self.queries.typing.facts.crates.is_some()
+            && self.queries.typing.facts.initializer_index(id).is_none()
             && crate::sema::crates::imported_constant_initializer(
                 self.queries.report,
                 self.queries.typing.facts,

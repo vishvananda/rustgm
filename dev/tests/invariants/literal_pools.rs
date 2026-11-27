@@ -54,6 +54,7 @@ fn fresh_scalar_storage_rejects_changed_missing_extra_and_foreign_slots() -> Res
 #[test]
 fn fresh_wide_scalar_storage_keeps_exact_bits_and_rejects_kind_changes() -> Result {
     use crate::literal::value::FloatBits;
+    let _check = crate::support::sealed::SelfCheck::hold();
     let artifact = crate::encoded_literals::wide_provider()?;
     let fresh = crates::decode(&crates::encode(&artifact)?)?;
     let (report, analysis, _) = crate::source_packets::client_analysis(
@@ -125,6 +126,7 @@ fn fresh_wide_scalar_storage_keeps_exact_bits_and_rejects_kind_changes() -> Resu
 #[test]
 fn fresh_wide_casts_rederive_their_kinds_and_reject_edited_operators() -> Result {
     use crate::{lower::instances::SourcePublication, sema::model::Cast};
+    let _check = crate::support::sealed::SelfCheck::hold();
     let foundation =
         crate::test_source::fixture("pa31/tests/spec/source-enum-role-transport/provider.rs")?;
     let prefix = foundation

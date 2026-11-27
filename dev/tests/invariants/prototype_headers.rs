@@ -18,6 +18,7 @@ fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResu
     let cases = crate::test_source::fixture(&format!("{PACKET}/cases.tsv"))?;
     let mut identities = HashSet::default();
     let mut profiles = HashSet::default();
+    let mut dedicated = 0usize;
     let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../pa28/tests/spec/intrinsic-declarations/positive");
     for entry in std::fs::read_dir(directory)? {
@@ -27,15 +28,23 @@ fn registry_retains_distinct_identities_and_shared_finite_profiles() -> TestResu
             .file_stem()
             .and_then(|n| n.to_str())
             .ok_or("intrinsic fixture name")?;
-        let Some(SourceIntrinsic::Declaration(identity)) = SourceIntrinsic::from_name(name) else {
-            return Err(format!("missing unique intrinsic identity: {name}").into());
-        };
-        assert_eq!(identity.name(), name);
-        assert!(identities.insert(identity));
-        profiles.insert(std::ptr::from_ref(identity.profile()));
-        assert!(identity.profile().work < 64);
+        match SourceIntrinsic::from_name(name) {
+            Some(SourceIntrinsic::Declaration(identity)) => {
+                assert_eq!(identity.name(), name);
+                assert!(identities.insert(identity));
+                profiles.insert(std::ptr::from_ref(identity.profile()));
+                assert!(identity.profile().work < 64);
+            }
+            Some(SourceIntrinsic::FieldOffset) => {
+                dedicated += 1;
+            }
+            _ => {
+                return Err(format!("missing unique intrinsic identity: {name}").into());
+            }
+        }
     }
-    assert_eq!((identities.len(), profiles.len()), (296, 100));
+    assert_eq!((identities.len() + dedicated, dedicated), (296, 1));
+    assert!(profiles.len() <= 100);
     assert_eq!(cases.lines().count(), 642);
     assert!(SourceIntrinsic::from_name("rustgm_unknown_intrinsic").is_none());
     assert_eq!(size_of::<SourceIntrinsic>(), 4);

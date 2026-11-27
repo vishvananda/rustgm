@@ -29,6 +29,7 @@ fn demanded(provider: &str, client: &str) -> Result<Vec<String>> {
 }
 #[test]
 fn demanded_conformance_pays_each_imported_owner_once() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     for (client, expected) in [("four", 14), ("eight", 14), ("local-placed", 1)] {
         let rows = demanded("primitives-provider", client)?;
         assert_eq!(rows.len(), expected, "{client}: {rows:?}");

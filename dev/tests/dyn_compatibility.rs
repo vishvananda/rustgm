@@ -394,22 +394,37 @@ fn source_unwind_marker_preserves_declaration_and_wire_boundaries()
         .ok_or("actual Source owner")?
         .provider
         .clone();
+    let marker = b"ref_unwind_safe_trait";
+    let has_ref_unwind_wire_binding =
+        |interface: &rustgm::support::crates::Interface| -> Result<bool, Box<dyn std::error::Error>> {
+            let bytes = rustgm::support::crates::encode(interface)?;
+            Ok(bytes.windows(marker.len()).any(|window| window == marker))
+        };
     let analysis = rustgm::pipeline::analyze_source(&report)?;
     let mut facts = analysis.facts;
-    let error = build_source_library_profile(
+    let (_, older) = build_source_library_profile(
+        &report,
+        &mut facts,
+        identity.clone(),
+        analysis.prepared,
+        SourcePublication::ModuleBodies,
+    )?;
+    assert!(
+        !has_ref_unwind_wire_binding(&older)?,
+        "older profile should omit unwind-safety diagnostic binding"
+    );
+    let analysis = rustgm::pipeline::analyze_source(&report)?;
+    let mut facts = analysis.facts;
+    let (_, current) = build_source_library_profile(
         &report,
         &mut facts,
         identity,
         analysis.prepared,
         SourcePublication::ModuleBodyOperations,
-    )
-    .err()
-    .ok_or("source metadata lost its unwind-safety role")?;
+    )?;
     assert!(
-        error
-            .to_string()
-            .contains("source role requires a wider explicit source profile"),
-        "{error}"
+        has_ref_unwind_wire_binding(&current)?,
+        "current profile should emit unwind-safety diagnostic binding"
     );
     Ok(())
 }

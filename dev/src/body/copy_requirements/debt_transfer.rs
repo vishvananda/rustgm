@@ -66,7 +66,12 @@ pub(super) fn prepare(
             return Err("body trait requirements belong to another callable instance".into());
         }
     }
-    if body.source.source().is_some() || crate::support::sealed::self_check() {
+    let imported_source_client = body.source.source().is_none()
+        && facts
+            .source_bindings
+            .as_deref()
+            .is_some_and(crate::sema::compiler_items::Catalog::uses_imported_roles);
+    if !imported_source_client || crate::support::sealed::self_check() {
         let first = crate::body::dispatch::copy_frontier(facts, contract)?;
         let environment = pending.environment.clone();
         let goals = pending

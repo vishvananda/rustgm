@@ -118,7 +118,11 @@ fn inherited_slots_keep_self_and_method_owners_distinct() -> Result<(), &'static
         TraitFlags::from_bits(TraitFlags::MARKER)?.bits(),
         TraitFlags::MARKER
     );
-    for unknown in [8192, 8192 | TraitFlags::CONST, u16::MAX] {
+    assert_eq!(
+        TraitFlags::from_bits(TraitFlags::UNSAFE_SPECIALIZATION)?.bits(),
+        TraitFlags::UNSAFE_SPECIALIZATION
+    );
+    for unknown in [16384, 16384 | TraitFlags::CONST, u16::MAX] {
         assert!(TraitFlags::from_bits(unknown).is_err());
     }
     assert_eq!(TraitFlags::from_bits(255)?.bits(), 255);

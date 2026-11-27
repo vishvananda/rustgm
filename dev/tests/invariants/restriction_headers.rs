@@ -229,8 +229,8 @@ fn observe_layouts() {
     // The cold policy's largest variant is the source client, whose imported
     // allowance ledger holds a local macro context and its own contracts
     // inline; every variant keeps the immutable source-contract limit snapshot.
-    assert_eq!(size_of::<crate::resolve::bindings::SourceClient>(), 296);
-    assert_eq!(size_of::<crate::resolve::bindings::Source>(), 296);
+    assert_eq!(size_of::<crate::resolve::bindings::SourceClient>(), 320);
+    assert_eq!(size_of::<crate::resolve::bindings::Source>(), 320);
     assert_eq!(size_of::<Package>(), 256);
     // Inline import work adds one lineage pointer and nine usize counters,
     // plus the lineage ledger's admitted-byte grant (census batch 3).

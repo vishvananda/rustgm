@@ -69,7 +69,7 @@ fn actual_source_probe_exhaustion_is_sticky_and_ordinary_cap_stays_fixed() -> Re
     )?;
     let mut facts = crate::sema::declarations::analyze(&report)?;
     assert!(facts.source_bindings.is_none());
-    facts.methods.selection_steps = 1_000_000;
+    facts.methods.selection_steps = crate::support::crates::MAX_COMPONENTS;
     assert_eq!(
         account_probe(&mut facts, 1),
         Err("method selection work budget exceeded")

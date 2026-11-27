@@ -173,7 +173,7 @@ fn defining_drop_promises_reject_missing_bounds_and_keep_scoped_copy() -> TestRe
     assert!(
         error
             .to_string()
-            .contains("conditional Destruct obligation"),
+            .contains("active cleanup requires const Destruct in its actual defining environment"),
         "{error}"
     );
     Ok(())
