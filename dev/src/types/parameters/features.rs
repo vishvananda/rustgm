@@ -84,6 +84,15 @@ impl Store {
         })
     }
 
+    /// Feature clauses can arrive through admitted dependency metadata.
+    pub(crate) fn has_feature_names(&self) -> bool {
+        self.arguments
+            .as_ref()
+            .and_then(|storage| storage.clauses.as_ref())
+            .and_then(|storage| storage.features.as_ref())
+            .is_some_and(|features| !features.names.is_empty())
+    }
+
     /// Borrow the exact current-store spelling. Foreign IDs never alias a slot.
     #[must_use]
     pub fn feature_name(&self, id: FeatureId) -> Option<&str> {

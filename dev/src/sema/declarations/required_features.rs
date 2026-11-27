@@ -238,10 +238,13 @@ impl Checker<'_> {
         result.map_err(|e| self.error(key, e))
     }
     pub(super) fn prepare_feature_policy(&mut self) -> Result<(), Error> {
-        let Some(library) = self.report.package.library_policy() else {
-            return Ok(());
+        let requests = match self.report.package.library_policy() {
+            Some(library) => library.predicate_requests().map_err(Error::unlocated)?,
+            // Imported clauses may need proof even when the client requests
+            // no features. Only its actual caller premises can satisfy them.
+            None if self.facts.types.has_feature_names() => &[],
+            None => return Ok(()),
         };
-        let requests = library.predicate_requests().map_err(Error::unlocated)?;
         let root = &self.report.package.modules[0];
         let key = crate::resolve::unit::NodeKey {
             file: root.file,

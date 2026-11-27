@@ -42,6 +42,10 @@ marker trait and native calls with provider and client implementations.
 on pointer-transparent wrappers declared with `T: ?Sized`. A fresh client
 uses sizing bounds derived from `T: Clone` and rejects a slice instantiation
 that requires `Sized`.
+`spec/source-empty-feature-policy/outcomes.json` checks an imported provider
+with guarded impls and a fresh client that requests no library features. The
+client calls its stable API. Requesting a guarded function's API feature alone
+still leaves its separate feature predicate unsatisfied.
 `spec/source-offset-intrinsic-transport/outcomes.json` uses the pinned
 `offset_of` intrinsic. A fresh client evaluates two fields of the same
 record type through one imported generic wrapper.

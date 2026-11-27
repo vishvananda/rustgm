@@ -1,0 +1,12 @@
+{
+  "inputs": ["provider.rs", "client.rs", "reject-api-only.rs", "observe.c"],
+  "foundation": "pa31/tests/spec/feature-predicate-metadata-v4/method-provider.rs",
+  "prefix_marker": "#[unstable(feature=\"dispatch_api\",issue=\"none\")]",
+  "stdout": "37 73\n",
+  "restricted_client": {
+    "path": "reject-api-only.rs",
+    "rustc": "error[E0658]: use of unstable library feature `predicate_probe`",
+    "rustgm": "non-type feature requirement is not satisfied by this caller"
+  },
+  "older_reader": "non-type feature proof requires its authenticated immutable policy"
+}
