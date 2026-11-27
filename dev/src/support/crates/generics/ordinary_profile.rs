@@ -1578,11 +1578,11 @@ fn binding_declarations(
         {
             return Err("source role binding is duplicated or belongs to a foreign provider");
         }
-        let header = headers.header(address.declaration, work)?;
         let declaration = rows
             .declarations
             .get(address.declaration.0 as usize)
             .ok_or("source role binding names an unknown declaration")?;
+        let header = headers.header(address.declaration, work)?;
         role_header(
             profile,
             rows,

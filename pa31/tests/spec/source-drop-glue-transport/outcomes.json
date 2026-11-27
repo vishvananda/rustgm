@@ -35,7 +35,7 @@
   "old_reader": "source role has a different actual declaration/header kind",
   "foreign": "source role binding is duplicated or belongs to a foreign provider",
   "unknown": "source role binding names an unknown declaration",
-  "wrong-condition": "source qualified body request requires a wider source profile",
+  "wrong-condition": "source drop_glue requires actual PointeeSized and Conditional Destruct",
   "rustgm_explicit": "explicit destructor calls or function values are forbidden",
   "rustc_explicit": "explicit use of destructor method"
 }
