@@ -113,6 +113,7 @@ pub(super) fn header(
         raw.original,
         budget,
     )?;
+    install_written_signature(context, graph, facts, (owner, definition), budget)?;
     let callable = graph.signature(
         context,
         facts,
@@ -176,4 +177,46 @@ pub(super) fn header(
         regions,
         receiver,
     }))
+}
+
+fn install_written_signature(
+    context: &mapped_source::Context<'_>,
+    graph: &mapped_source::Graph,
+    facts: &mut Declarations,
+    (owner, definition): (
+        crate::support::crates::owner_catalog::DeclarationRef,
+        crate::resolve::model::DefId,
+    ),
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    let rows = context.descriptor.rows();
+    budget.charge(
+        rows.cold()
+            .written_signatures
+            .len()
+            .checked_ilog2()
+            .unwrap_or(0) as usize,
+    )?;
+    if let Some(written) = rows.written_signature(owner) {
+        let written = graph.signature(
+            context,
+            facts,
+            owner,
+            s::BinderKind::OriginalFunction,
+            written,
+            budget,
+        )?;
+        budget.reserve(crate::support::retained::new_map::<
+            crate::resolve::model::DefId,
+            crate::types::TypeId,
+        >(1))?;
+        if budget
+            .written_signatures
+            .insert(definition, written)
+            .is_some()
+        {
+            return Err(error("duplicate installed written signature"));
+        }
+    }
+    Ok(())
 }

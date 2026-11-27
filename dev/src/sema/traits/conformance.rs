@@ -17,6 +17,7 @@ use crate::{
     },
     types::{
         RegionId, TypeId,
+        lifetime_proof::Obligations,
         parameters::{
             ParameterId, clauses::Clause, environment::Environment, predicates::Predicate,
         },
@@ -61,6 +62,32 @@ pub(in crate::sema) fn check(
     check_methods(facts, owner, predicate, expected, actual, definitions)
 }
 
+/// Only the actual defining premises can connect the written override to its
+/// executable signature. The separate trait comparison uses the trait's inputs.
+pub(in crate::sema) fn check_written_signature(
+    facts: &mut Declarations,
+    method: Method,
+) -> Result<Obligations, &'static str> {
+    let environment = facts
+        .generics
+        .environments
+        .get(&method.definition)
+        .cloned()
+        .ok_or("written override has no actual defining environment")?;
+    let mut proof = Obligations::new(1);
+    let normalized = projections::normalize_signature(
+        facts,
+        Some(environment),
+        &mut proof,
+        method.written_signature,
+        |_, _| Ok(None),
+    )?;
+    if normalized != method.signature {
+        return Err("written override does not normalize to its executable signature");
+    }
+    Ok(proof)
+}
+
 pub(in crate::sema) fn check_methods(
     facts: &mut Declarations,
     owner: DefId,
@@ -78,7 +105,7 @@ pub(in crate::sema) fn check_methods(
         .unwrap_or(0)
         .checked_add(1)
         .ok_or("method conformance region identity space exhausted")?;
-    let mut evidence = crate::types::lifetime_proof::Obligations::new(first);
+    let mut evidence = Obligations::new(first);
     definitions.clauses(facts, &mut contract, &mut evidence)?;
     let mut implied = implied::Formation::default();
     contract.expected = definitions.signature(

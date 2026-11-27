@@ -38,12 +38,12 @@ pub(super) fn prepare(
             demand(Root::Type(header.ty))?;
         }
     }
+    for written in &rows.cold().written_signatures {
+        signature_roots(rows, written.signature, demand)?;
+    }
     for header in &rows.functions {
         for signature in [header.original, header.callable] {
-            for &root in signature.parameters.slice(&rows.roots).map_err(error)? {
-                demand(Root::Type(root))?;
-            }
-            demand(Root::Type(signature.result))?;
+            signature_roots(rows, signature, demand)?;
         }
         if let Some(receiver) = header.receiver {
             demand(Root::Type(receiver.base))?;
@@ -115,6 +115,17 @@ pub(super) fn prepare(
     }
     Ok(())
 }
+fn signature_roots(
+    rows: s::ValidatedView<'_>,
+    signature: crate::support::crates::generics::Signature,
+    demand: &mut impl FnMut(Root) -> Result<(), Error>,
+) -> Result<(), Error> {
+    for &root in signature.parameters.slice(&rows.roots).map_err(error)? {
+        demand(Root::Type(root))?;
+    }
+    demand(Root::Type(signature.result))
+}
+
 fn application(
     rows: s::ValidatedView<'_>,
     reference: s::TraitApplicationRef,

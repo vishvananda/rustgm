@@ -208,6 +208,15 @@ impl DomainIndex<'_, '_> {
         for projection in &rows.projections {
             self.used_traits[projection.trait_application.0 as usize] = true;
         }
+        self.function_roots(work)?;
+        self.opaque_declaration_roots(work)?;
+        self.closure_header_roots(work)?;
+        Ok(())
+    }
+
+    fn function_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {
+        let rows = self.headers.rows();
+        let mut written = rows.cold().written_signatures.iter().peekable();
         for (index, header) in rows.functions.iter().enumerate() {
             self.default_impl_method(index, header, work)?;
             let context = Context {
@@ -216,6 +225,9 @@ impl DomainIndex<'_, '_> {
                 body: None,
             };
             self.signature(context, header.original, work)?;
+            if let Some(written) = written.next_if(|row| row.declaration == header.declaration) {
+                self.written_signature(context, header, written.signature, work)?;
+            }
             self.signature(
                 Context {
                     frame: Some(header.callable.binder),
@@ -234,9 +246,40 @@ impl DomainIndex<'_, '_> {
                 }
             }
         }
-        self.opaque_declaration_roots(work)?;
-        self.closure_header_roots(work)?;
+        if written.next().is_some() {
+            return Err("source written signature has no function header in order");
+        }
         Ok(())
+    }
+
+    fn written_signature(
+        &mut self,
+        context: Context,
+        header: &s::FunctionHeader,
+        written: g::Signature,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        let parent = header
+            .parent
+            .ok_or("source written signature requires an override")?;
+        let Some(HeaderRef::Implementation(index)) = self.headers.header(parent, work)? else {
+            return Err("source written signature requires an override");
+        };
+        let original = header.original;
+        let rows = self.headers.rows();
+        if rows.implementations[index as usize]
+            .trait_application
+            .is_none()
+            || written.binder != original.binder
+            || written.unsafe_ != original.unsafe_
+            || written.convention != original.convention
+            || written.variadic != original.variadic
+            || written.parameters.slice(&rows.roots)?.len()
+                != original.parameters.slice(&rows.roots)?.len()
+        {
+            return Err("source written signature changed its actual override shape");
+        }
+        self.signature(context, written, work)
     }
 
     fn closure_header_roots(&mut self, work: &mut Work) -> Result<(), &'static str> {

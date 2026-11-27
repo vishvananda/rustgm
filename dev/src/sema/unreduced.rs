@@ -64,6 +64,19 @@ impl Types {
     pub fn fields(&self, owner: ItemId, variant: u32) -> Option<ListId> {
         self.data.as_ref()?.fields.get(&(owner, variant)).copied()
     }
+    pub(in crate::sema) fn written_signature(
+        &self,
+        types: &crate::types::Store,
+        function: &super::model::Function,
+    ) -> TypeId {
+        match self.node(function.node).and_then(|ty| types.kind(ty)) {
+            Some(crate::types::Kind::FunctionItem {
+                item, signature, ..
+            }) if item.0 == function.definition.0 => signature,
+            _ => function.signature,
+        }
+    }
+
     pub(super) fn retain_fields(&mut self, owner: ItemId, variant: u32, fields: ListId) {
         self.data
             .get_or_insert_with(Default::default)

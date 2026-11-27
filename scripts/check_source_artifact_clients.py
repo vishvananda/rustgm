@@ -110,6 +110,7 @@ def main():
                                  "source-associated-constant-default",
                                  "source-associated-result-lifetimes",
                                  "source-dyn-incompatible-marker",
+                                 "source-written-override-signatures",
                                  "source-imported-test-removal",
                                  *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)

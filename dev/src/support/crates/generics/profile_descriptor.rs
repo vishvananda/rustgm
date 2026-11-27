@@ -715,6 +715,9 @@ fn require_source_profile(
             }
         });
     }
+    if !profile.declaration_policies() && !rows.cold().written_signatures.is_empty() {
+        return Err("written override signatures require the version-fourteen declaration profile");
+    }
     if !profile.declaration_policies() && !rows.cold().opaques.is_empty() {
         return Err("source return-position opaque transport requires version fourteen");
     }

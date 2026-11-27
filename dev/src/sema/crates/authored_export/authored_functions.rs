@@ -262,7 +262,45 @@ impl Stage {
             return Err("source function header has duplicate actual identity");
         }
         self.record_function_policies(report, facts, function, declaration, body)?;
+        self.record_written_override(facts, function, context)?;
         self.rows.functions.push(header);
+        Ok(())
+    }
+
+    fn record_written_override(
+        &mut self,
+        facts: &Declarations,
+        function: &crate::sema::model::Function,
+        context: Context,
+    ) -> Result<(), &'static str> {
+        if !self.declaration_policies() {
+            return Ok(());
+        }
+        let Some(owner) = facts
+            .associated
+            .owner(function.definition)
+            .and_then(|owner| facts.associated.get(owner))
+        else {
+            return Ok(());
+        };
+        if !matches!(
+            owner.kind,
+            OwnerKind::Impl {
+                trait_type: Some(_),
+                ..
+            }
+        ) {
+            return Ok(());
+        }
+        let written = facts.unreduced.written_signature(&facts.types, function);
+        if written != function.signature {
+            let signature = self.written_signature(facts, written, context)?;
+            self.reserve(4 * size_of::<s::WrittenSignature>())?;
+            self.cold()?.written_signatures.push(s::WrittenSignature {
+                declaration: context.owner,
+                signature,
+            });
+        }
         Ok(())
     }
 

@@ -76,6 +76,15 @@ impl Stage {
         )
     }
 
+    pub(in super::super) fn written_signature(
+        &mut self,
+        facts: &Declarations,
+        ty: TypeId,
+        context: Context,
+    ) -> Result<g::Signature, &'static str> {
+        self.signature_roots(facts, Parts::actual(facts, ty)?, context, Roots::Demand)
+    }
+
     pub(crate) fn call_signature(
         &mut self,
         facts: &Declarations,

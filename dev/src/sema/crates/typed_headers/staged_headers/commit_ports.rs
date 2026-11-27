@@ -499,6 +499,7 @@ fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Alloca
         result.add(bytes);
     }
     result.map(&headers.entries);
+    result.map(&headers.written_signatures);
     if let Some(linkage) = &facts.crates {
         result.map(&linkage.symbols);
     }

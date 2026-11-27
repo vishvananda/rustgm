@@ -109,37 +109,45 @@ pub(super) fn implementation_read(read: &mut Input<'_, '_>) -> Result<s::ImplHea
         members: read.range()?,
     })
 }
+const HAS_RECEIVER: u8 = 1;
+const HAS_WRITTEN_SIGNATURE: u8 = 2;
+
+#[derive(Default)]
+pub(super) struct FunctionExtras {
+    pub intrinsics: Vec<s::DeclaredIntrinsic>,
+    pub policies: Vec<s::FunctionPolicy>,
+    pub written: Vec<s::WrittenSignature>,
+}
+
 pub(super) fn functions_write(
     out: &mut Writer,
     rows: &[s::FunctionHeader],
-    declared_intrinsics: &[s::DeclaredIntrinsic],
-    function_policies: &[s::FunctionPolicy],
+    cold: &s::ColdColumns,
 ) -> Result<(), &'static str> {
     out.u32(rows.len())?;
-    let mut intrinsic_index = 0_usize;
-    let mut policy_index = 0_usize;
+    let mut intrinsics = cold.declared_intrinsics.iter().peekable();
+    let mut policies = cold.function_policies.iter().peekable();
+    let mut written = cold.written_signatures.iter().peekable();
     for row in rows {
-        let intrinsic = declared_intrinsics
-            .get(intrinsic_index)
-            .filter(|entry| entry.declaration == row.declaration)
+        let intrinsic = intrinsics
+            .next_if(|entry| entry.declaration == row.declaration)
             .copied();
-        if intrinsic.is_some() {
-            intrinsic_index += 1;
-        }
-        let policy = function_policies
-            .get(policy_index)
-            .filter(|entry| entry.declaration == row.declaration)
+        let policy = policies
+            .next_if(|entry| entry.declaration == row.declaration)
             .map(|entry| entry.kind);
-        if policy.is_some() {
-            policy_index += 1;
-        }
-        function_write(out, row, intrinsic, policy)?;
+        let signature = written
+            .next_if(|entry| entry.declaration == row.declaration)
+            .map(|entry| entry.signature);
+        function_write(out, row, intrinsic, policy, signature)?;
     }
-    if intrinsic_index != declared_intrinsics.len() {
+    if intrinsics.next().is_some() {
         return Err("source declared intrinsic has no function header in order");
     }
-    if policy_index != function_policies.len() {
+    if policies.next().is_some() {
         return Err("source function policy declaration has no function header in order");
+    }
+    if written.next().is_some() {
+        return Err("source written signature has no function header in order");
     }
     Ok(())
 }
@@ -148,6 +156,7 @@ fn function_write(
     row: &s::FunctionHeader,
     intrinsic: Option<s::DeclaredIntrinsic>,
     policy: Option<s::FunctionPolicyKind>,
+    written: Option<g::Signature>,
 ) -> Result<(), &'static str> {
     id(out, row.declaration.0)?;
     id(out, row.scope.0)?;
@@ -166,12 +175,17 @@ fn function_write(
     }
     id(out, row.declared_inputs)?;
     range(out, row.formals)?;
-    out.u8(u8::from(row.receiver.is_some()))?;
+    let flags = (u8::from(row.receiver.is_some()) * HAS_RECEIVER)
+        | (u8::from(written.is_some()) * HAS_WRITTEN_SIGNATURE);
+    out.u8(flags)?;
     if let Some(receiver) = row.receiver {
         for value in [receiver.formal, receiver.base.0, receiver.references] {
             id(out, value)?;
         }
         out.u8(u8::from(receiver.mutable_binding))?;
+    }
+    if let Some(written) = written {
+        super::recipe_columns::signature_write(out, written)?;
     }
     match policy {
         Some(s::FunctionPolicyKind::Comptime) => {
@@ -217,8 +231,7 @@ fn function_write(
 }
 pub(super) fn function_read(
     read: &mut Input<'_, '_>,
-    declared_intrinsics: &mut Vec<s::DeclaredIntrinsic>,
-    function_policies: &mut Vec<s::FunctionPolicy>,
+    extras: &mut FunctionExtras,
 ) -> Result<s::FunctionHeader, &'static str> {
     let declaration = DeclarationRef(read.id()?);
     let scope = DeclarationRef(read.id()?);
@@ -235,7 +248,16 @@ pub(super) fn function_read(
     let inputs = read.range()?;
     let declared_inputs = read.id()?;
     let formals = read.range()?;
-    let receiver = if read.boolean()? {
+    let flags = read.reader.u8()?;
+    let admitted = if read.profile.declaration_policies() {
+        HAS_RECEIVER | HAS_WRITTEN_SIGNATURE
+    } else {
+        HAS_RECEIVER
+    };
+    if flags & !admitted != 0 {
+        return Err("invalid source function header flags");
+    }
+    let receiver = if flags & HAS_RECEIVER != 0 {
         Some(s::Receiver {
             formal: read.id()?,
             base: g::TypeRef(read.id()?),
@@ -245,13 +267,23 @@ pub(super) fn function_read(
     } else {
         None
     };
+    if flags & HAS_WRITTEN_SIGNATURE != 0 {
+        let signature = super::recipe_columns::signature_read(read)?;
+        read.reserve(size_of::<s::WrittenSignature>())?;
+        extras.written.push(s::WrittenSignature {
+            declaration,
+            signature,
+        });
+    }
     let (constness, policy) = super::recipe_columns::function_effect_read(
         read,
         "source callable effect requires a wider source profile",
     )?;
     if let Some(kind) = policy {
         read.reserve(size_of::<s::FunctionPolicy>())?;
-        function_policies.push(s::FunctionPolicy { declaration, kind });
+        extras
+            .policies
+            .push(s::FunctionPolicy { declaration, kind });
     }
     let body = match read.reader.u8()? {
         2 if read.profile.compiler_operations() => {
@@ -264,7 +296,7 @@ pub(super) fn function_read(
         }
         9 if read.profile.declaration_policies() => {
             read.reserve(size_of::<s::DeclaredIntrinsic>())?;
-            declared_intrinsics.push(s::DeclaredIntrinsic {
+            extras.intrinsics.push(s::DeclaredIntrinsic {
                 declaration,
                 source_fallback: false,
             });
@@ -273,7 +305,7 @@ pub(super) fn function_read(
         tag @ (10 | 11) if read.profile.declaration_policies() => {
             let body = BodyRef(read.id()?);
             read.reserve(size_of::<s::DeclaredIntrinsic>())?;
-            declared_intrinsics.push(s::DeclaredIntrinsic {
+            extras.intrinsics.push(s::DeclaredIntrinsic {
                 declaration,
                 source_fallback: tag == 11,
             });

@@ -69,6 +69,7 @@ pub(super) struct Header {
 #[derive(Default)]
 pub(in crate::sema) struct Headers {
     entries: HashMap<DefId, Header>,
+    written_signatures: HashMap<DefId, TypeId>,
     graphs: HashMap<CrateIdentity, Vec<TypeId>>,
     applications: HashMap<CrateIdentity, Vec<applications::Application>>,
     source: Option<super::ImportedOwners>,
@@ -380,6 +381,13 @@ impl super::Linkage {
         self.original_declaration_header(row.target)?
             .ok_or("application target header disappeared")?;
         Ok(row)
+    }
+    pub(in crate::sema) fn original_written_signature(&self, definition: DefId) -> Option<TypeId> {
+        self.originals
+            .as_deref()?
+            .written_signatures
+            .get(&definition)
+            .copied()
     }
     pub(crate) fn original_inputs(
         &self,

@@ -209,6 +209,7 @@ fn cold_columns(
     count.vector(&cold.trait_aliases, work)?;
     count.vector(&cold.declared_intrinsics, work)?;
     count.vector(&cold.function_policies, work)?;
+    count.vector(&cold.written_signatures, work)?;
     count.vector(&cold.opaques.applications, work)?;
     count.vector(&cold.opaques.declarations, work)?;
     if let Some(statics) = &cold.statics {

@@ -593,12 +593,7 @@ fn encode_profile(
         &rows.implementations,
         contract_columns::implementation_write,
     )?;
-    contract_columns::functions_write(
-        out,
-        &rows.functions,
-        &rows.cold().declared_intrinsics,
-        &rows.cold().function_policies,
-    )?;
+    contract_columns::functions_write(out, &rows.functions, rows.cold())?;
     write(out, &rows.formals, contract_columns::formal_write)?;
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
@@ -723,8 +718,7 @@ fn decode_profile_with(
     let mut tables = recipe_columns::TypeTables::default();
     let mut diagnostics = Vec::new();
     let mut consts = Vec::new();
-    let mut declared_intrinsics = Vec::new();
-    let mut function_policies = Vec::new();
+    let mut function_extras = contract_columns::FunctionExtras::default();
     let mut rows = s::SourceRows {
         associated_types: Vec::new(),
         cold: None,
@@ -773,7 +767,7 @@ fn decode_profile_with(
             contract_columns::implementation_read,
         )?,
         functions: read.list(crates::MAX_FUNCTIONS, 98, |read| {
-            contract_columns::function_read(read, &mut declared_intrinsics, &mut function_policies)
+            contract_columns::function_read(read, &mut function_extras)
         })?,
         formals: read.list(crates::MAX_COMPONENTS, 5, contract_columns::formal_read)?,
         members: read.list(crates::MAX_COMPONENTS, 4, owner_rows::declaration_ref_read)?,
@@ -797,8 +791,7 @@ fn decode_profile_with(
         tables,
         diagnostics,
         consts,
-        declared_intrinsics,
-        function_policies,
+        function_extras,
     )?;
     Ok((rows, read.bytes))
 }
@@ -809,8 +802,7 @@ fn attach_cold_tables(
     tables: recipe_columns::TypeTables,
     diagnostics: Vec<s::DiagnosticBinding>,
     consts: Vec<s::ConstTerm>,
-    declared_intrinsics: Vec<s::DeclaredIntrinsic>,
-    function_policies: Vec<s::FunctionPolicy>,
+    function_extras: contract_columns::FunctionExtras,
 ) -> Result<(), &'static str> {
     if tables.ranges.is_empty()
         && tables.lengths.is_empty()
@@ -819,8 +811,9 @@ fn attach_cold_tables(
         && tables.closures.is_empty()
         && diagnostics.is_empty()
         && consts.is_empty()
-        && declared_intrinsics.is_empty()
-        && function_policies.is_empty()
+        && function_extras.intrinsics.is_empty()
+        && function_extras.policies.is_empty()
+        && function_extras.written.is_empty()
     {
         return Ok(());
     }
@@ -840,8 +833,9 @@ fn attach_cold_tables(
     }
     cold.diagnostics = diagnostics;
     cold.consts = consts;
-    cold.declared_intrinsics = declared_intrinsics;
-    cold.function_policies = function_policies;
+    cold.declared_intrinsics = function_extras.intrinsics;
+    cold.function_policies = function_extras.policies;
+    cold.written_signatures = function_extras.written;
     Ok(())
 }
 

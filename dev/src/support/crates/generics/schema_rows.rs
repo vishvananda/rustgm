@@ -682,6 +682,11 @@ pub struct ExactCallable {
     pub symbol: Box<str>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct WrittenSignature {
+    pub declaration: DeclarationRef,
+    pub signature: Signature,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FunctionHeader {
     pub declaration: DeclarationRef,
     pub scope: DeclarationRef,
@@ -930,6 +935,7 @@ pub struct ColdColumns {
     pub trait_aliases: Vec<TraitAliasHeader>,
     pub declared_intrinsics: Vec<DeclaredIntrinsic>,
     pub function_policies: Vec<FunctionPolicy>,
+    pub written_signatures: Vec<WrittenSignature>,
     pub opaques: OpaqueColumns,
     pub statics: Option<Box<StaticColumns>>,
     pub caller_sites: Option<Box<CallerSiteColumns>>,
@@ -964,6 +970,7 @@ static EMPTY_COLD: ColdColumns = ColdColumns {
     trait_aliases: Vec::new(),
     declared_intrinsics: Vec::new(),
     function_policies: Vec::new(),
+    written_signatures: Vec::new(),
     opaques: OpaqueColumns {
         applications: Vec::new(),
         declarations: Vec::new(),
@@ -1005,6 +1012,7 @@ impl ColdColumns {
             && self.trait_aliases.is_empty()
             && self.declared_intrinsics.is_empty()
             && self.function_policies.is_empty()
+            && self.written_signatures.is_empty()
             && self.opaques.is_empty()
             && self.statics.is_none()
             && self.caller_sites.is_none()

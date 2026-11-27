@@ -132,49 +132,64 @@ impl Definitions {
         ty: TypeId,
         mut implied: Option<&mut super::implied::Formation>,
     ) -> Result<TypeId, &'static str> {
-        if facts.types.contains_projections(ty) == Some(false) {
-            return Ok(ty);
-        }
-        let Some(Kind::Function {
-            parameters,
-            result,
-            bound_regions,
-            unsafe_,
-            convention,
-        }) = facts.types.kind(ty)
-        else {
-            return Err("missing conformance signature");
-        };
-        let mut parameters = facts
-            .types
-            .list(parameters)
-            .ok_or("missing conformance parameters")?
-            .to_vec();
-        // The outer signature was already opened by mapping::contract. Only its
-        // components start normalization roots; nested callables retain binders.
-        let mut session = crate::sema::projections::Session::new(
+        normalize_signature(
+            facts,
             Some(std::sync::Arc::clone(&contract.environment)),
             proof,
-            ScopeId::ROOT,
-            crate::sema::traits::implementations::Availability::Declarations,
+            ty,
             |facts, request| {
                 if let Some(implied) = &mut implied {
                     implied.record(facts, request)?;
                 }
                 self.resolve(facts, request)
             },
-        )?;
-        for ty in &mut parameters {
-            *ty = session.normalize(facts, *ty)?.0;
-        }
-        let result = session.normalize(facts, result)?.0;
-        let parameters = facts.types.intern_list(&parameters)?;
-        facts.types.intern(Kind::Function {
-            parameters,
-            result,
-            bound_regions,
-            unsafe_,
-            convention,
-        })
+        )
     }
+}
+
+/// The caller owns the outer binder. Nested callables open their own scopes.
+pub(super) fn normalize_signature(
+    facts: &mut Declarations,
+    environment: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
+    proof: &mut Obligations,
+    ty: TypeId,
+    local: impl FnMut(&mut Declarations, Request) -> Result<Option<TypeId>, &'static str>,
+) -> Result<TypeId, &'static str> {
+    if facts.types.contains_projections(ty) == Some(false) {
+        return Ok(ty);
+    }
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions,
+        unsafe_,
+        convention,
+    }) = facts.types.kind(ty)
+    else {
+        return Err("missing conformance signature");
+    };
+    let mut parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("missing conformance parameters")?
+        .to_vec();
+    let mut session = crate::sema::projections::Session::new(
+        environment,
+        proof,
+        ScopeId::ROOT,
+        crate::sema::traits::implementations::Availability::Declarations,
+        local,
+    )?;
+    for ty in &mut parameters {
+        *ty = session.normalize(facts, *ty)?.0;
+    }
+    let result = session.normalize(facts, result)?.0;
+    let parameters = facts.types.intern_list(&parameters)?;
+    facts.types.intern(Kind::Function {
+        parameters,
+        result,
+        bound_regions,
+        unsafe_,
+        convention,
+    })
 }

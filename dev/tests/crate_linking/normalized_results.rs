@@ -249,3 +249,60 @@ fn declared_result_instances_execute_natively() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn written_override_cannot_change_the_executable_signature() -> Result {
+    const FIXTURE: &str = "pa31/tests/spec/source-written-override-signatures";
+    let packet = Packet::new("written-overrides", FIXTURE, "written", "base")?;
+    let foundation = std::fs::read_to_string(
+        packet
+            .root
+            .join("pa31/tests/spec/source-enum-role-transport/provider.rs"),
+    )?;
+    let (prefix, _) = foundation
+        .split_once("#[lang=\"tuple_trait\"]")
+        .ok_or("signature fixture foundation")?;
+    let tail = std::fs::read_to_string(packet.fixture("provider"))?;
+    let source = packet.folder.join("provider.rs");
+    std::fs::write(
+        &source,
+        format!("#![feature(auto_traits, min_specialization)]\n{prefix}{tail}"),
+    )?;
+    super::artifacts::checked(
+        "provider",
+        &packet.folder,
+        &mut packet.export("module-body-operations-v14", &source, &packet.metadata),
+    )?;
+    super::artifacts::checked("client", &packet.folder, &mut packet.client("client"))?;
+    let bytes = std::fs::read(&packet.metadata)?;
+    let interface = crates::decode(&bytes)?;
+    assert_eq!(crates::encode(&interface)?, bytes);
+    // These methods have a parent, a receiver and a written signature.
+    // Anchor the cold row to the original function frame and calling flags.
+    let written_rows: Vec<_> = bytes
+        .windows(136)
+        .enumerate()
+        .filter(|(_, row)| {
+            row[..4] == row[4..8]
+                && row[8] == 1
+                && row[103] == 3
+                && row[117..121] == row[32..36]
+                && row[133..136] == row[48..51]
+        })
+        .collect();
+    assert_eq!(written_rows.len(), 3);
+    for (index, (start, row)) in written_rows.into_iter().enumerate() {
+        // The original receiver base is a valid type in this very impl scope.
+        // It cannot be the result of any of the fixture's tuple methods.
+        let receiver_base = count(row, 108).ok_or("written override receiver base")?;
+        let name = format!("forged-written-result-{index}");
+        let forged = with_id(&bytes, start + 129, u32::try_from(receiver_base)?);
+        let mut consumer = packet.forged(&name, forged, "client")?;
+        packet.rejected(
+            &name,
+            &mut consumer,
+            "written override does not normalize to its executable signature",
+        )?;
+    }
+    Ok(())
+}

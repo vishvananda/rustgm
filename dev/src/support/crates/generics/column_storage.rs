@@ -79,6 +79,7 @@ impl Columns {
             || !cold.trait_aliases.is_empty()
             || !cold.declared_intrinsics.is_empty()
             || !cold.function_policies.is_empty()
+            || !cold.written_signatures.is_empty()
             || !cold.opaques.is_empty()
             || cold.statics.is_some()
             || cold.caller_sites.is_some()
@@ -103,6 +104,7 @@ impl Columns {
                 trait_aliases: cold.trait_aliases.clone(),
                 declared_intrinsics: cold.declared_intrinsics.clone(),
                 function_policies: cold.function_policies.clone(),
+                written_signatures: cold.written_signatures.clone(),
                 opaques: cold.opaques.clone(),
                 statics: cold.statics.clone(),
                 caller_sites: cold.caller_sites.clone(),
@@ -358,6 +360,16 @@ impl<'a> ValidatedView<'a> {
         rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
             .ok()
             .map(|index| rows[index])
+    }
+
+    pub(crate) fn written_signature(
+        self,
+        declaration: DeclarationRef,
+    ) -> Option<crate::support::crates::generics::Signature> {
+        let rows = &self.cold().written_signatures;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .ok()
+            .map(|index| rows[index].signature)
     }
 
     pub(crate) fn is_comptime(self, declaration: DeclarationRef) -> bool {

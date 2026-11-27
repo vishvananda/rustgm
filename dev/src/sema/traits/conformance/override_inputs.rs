@@ -1,9 +1,6 @@
 //! Borrow real source functions or authenticate an installed source-free method.
 use super::{Declarations, DefId, Function};
-use crate::{
-    resolve::body_origin::DeclarationOrigin,
-    types::{Kind, TypeId},
-};
+use crate::{resolve::body_origin::DeclarationOrigin, types::TypeId};
 
 /// No syntax or body classification is inferred from a signature.
 #[derive(Clone, Copy)]
@@ -14,18 +11,7 @@ pub(in crate::sema) struct Method {
 }
 impl Method {
     pub(in crate::sema) fn source(facts: &Declarations, function: Function) -> Self {
-        let written_signature = if facts.associated.families.is_empty() {
-            function.signature
-        } else {
-            match facts
-                .unreduced
-                .node(function.node)
-                .and_then(|ty| facts.types.kind(ty))
-            {
-                Some(Kind::FunctionItem { signature, .. }) => signature,
-                _ => function.signature,
-            }
-        };
+        let written_signature = facts.unreduced.written_signature(&facts.types, &function);
         Self {
             definition: function.definition,
             signature: function.signature,
@@ -86,7 +72,9 @@ impl Method {
         Ok(Self {
             definition,
             signature: header.signature,
-            written_signature: header.signature,
+            written_signature: linkage
+                .original_written_signature(definition)
+                .unwrap_or(header.signature),
         })
     }
 }

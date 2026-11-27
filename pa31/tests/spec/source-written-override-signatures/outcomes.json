@@ -1,0 +1,16 @@
+{
+  "features": ["auto_traits", "min_specialization"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "inputs": ["provider.rs", "client.rs", "explicit-tuple.rs", "observe.c"],
+  "stdout": "37\n",
+  "older_reader": "invalid source boolean",
+  "profile_fences": {
+    "prefix_marker": "pub trait Iter",
+    "cases": ["explicit-tuple.rs"],
+    "profiles": ["module-body-operations-v14"],
+    "rustc_status": 1,
+    "rustc": ["method `read` has an incompatible type for trait"],
+    "rustgm_status": 1,
+    "rustgm": "implementation method signature does not match its trait declaration"
+  }
+}

@@ -287,6 +287,7 @@ impl Checker<'_> {
             let actual =
                 crate::sema::traits::conformance::Method::imported(&mut self.facts, actual)
                     .map_err(Error::unlocated)?;
+            self.validate_imported_written_override(actual)?;
             crate::sema::traits::conformance::check_methods(
                 &mut self.facts,
                 owner,
@@ -299,6 +300,58 @@ impl Checker<'_> {
         }
         self.check_imported_constant_links(owner, predicate, &members.constants, &definitions)
     }
+    fn validate_imported_written_override(
+        &mut self,
+        method: crate::sema::traits::conformance::Method,
+    ) -> Result<(), Error> {
+        if method.signature == method.written_signature {
+            return Ok(());
+        }
+        let evidence =
+            crate::sema::traits::conformance::check_written_signature(&mut self.facts, method)
+                .map_err(Error::unlocated)?;
+        if evidence.is_empty() {
+            return Ok(());
+        }
+        let mut queries = Queries::new(
+            &self.facts.types,
+            &self.facts.lifetimes.nominal_requirements,
+            &self.facts.lifetimes.callables,
+        );
+        let mut constraints = self
+            .trait_region_declared_environment(method.definition, &mut queries)
+            .map_err(Error::unlocated)?;
+        let mut scratch_bytes = 0_usize;
+        let inputs = crate::sema::declaration_inputs::collect_inherited(
+            &self.facts.generics,
+            self.facts.crates.as_deref(),
+            method.definition,
+            |steps, bytes| {
+                crate::sema::header_attributes::charge_source_contract_query(&self.facts, steps)
+                    .map_err(|error| error.message.clone())?;
+                scratch_bytes = scratch_bytes.saturating_add(bytes);
+                if scratch_bytes > 64 * 1024 * 1024 {
+                    return Err("written override input scratch exceeds 64 MiB".into());
+                }
+                Ok(())
+            },
+        )
+        .map_err(Error::unlocated)?;
+        constraints
+            .assume_outlives_clauses(&mut queries, inputs.iter().map(|input| input.value))
+            .map_err(Error::unlocated)?;
+        constraints
+            .assume_signature(&mut queries, method.written_signature)
+            .map_err(Error::unlocated)?;
+        evidence
+            .require(&mut constraints, &mut queries)
+            .map_err(Error::unlocated)?;
+        constraints
+            .solve()
+            .map_err(|error| Error::unlocated(error.to_string()))?;
+        Ok(())
+    }
+
     /// Re-prove every imported declared-result definition in the impl's own
     /// rebuilt environment. A v14 result promise is instantiated with the
     /// actual impl's Self and trait inputs before it is proved.
