@@ -1,0 +1,7 @@
+{
+  "features": ["auto_traits", "min_specialization"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "stdout": "37\n",
+  "older_reader": "family input lifetime requirements were not prepared"
+}

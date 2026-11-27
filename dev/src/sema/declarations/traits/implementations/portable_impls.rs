@@ -313,6 +313,12 @@ impl Checker<'_> {
         if evidence.is_empty() {
             return Ok(());
         }
+        for ty in
+            std::iter::once(method.written_signature).chain(evidence.type_roots().map(|(_, ty)| ty))
+        {
+            crate::sema::callee_premises::Inputs::prepare_type(&mut self.facts, ty)
+                .map_err(Error::unlocated)?;
+        }
         let mut queries = Queries::new(
             &self.facts.types,
             &self.facts.lifetimes.nominal_requirements,
