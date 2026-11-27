@@ -88,7 +88,7 @@ impl Builder<'_, '_> {
                 ) {
                     return Err("source slice element requires a sized type");
                 }
-                self.child(element, work)?
+                self.collection_element(element, work)?
             }
             s::Type::Pattern { base, constraint } => {
                 self.pattern_summary(base, constraint, work)?
@@ -120,6 +120,20 @@ impl Builder<'_, '_> {
                 return Err("source application signature recipe is unsupported");
             }
         })
+    }
+    fn collection_element(
+        &self,
+        element: g::TypeRef,
+        work: &mut Work,
+    ) -> Result<Summary, &'static str> {
+        let mut summary = self.child(element, work)?;
+        let rows = self.headers.rows();
+        if self.profile.declaration_policies()
+            && let Some(slot) = s::contextual_element(&rows.types, &rows.slots, element)
+        {
+            summary.sizing = super::sizing::Obligation::Parameter(slot);
+        }
+        Ok(summary)
     }
     /// A pattern row carries no region. Only its structural form is checked
     /// here; every consumer re-proves the constraint against its own base.
@@ -176,7 +190,7 @@ impl Builder<'_, '_> {
         ) {
             return Err("source array element requires a sized type");
         }
-        let child = self.child(element, work)?;
+        let child = self.collection_element(element, work)?;
         let usize_row = |ty: g::TypeRef| {
             matches!(
                 rows.types.get(ty.0 as usize),

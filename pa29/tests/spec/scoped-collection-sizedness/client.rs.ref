@@ -1,0 +1,86 @@
+global @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.0 : obj<12x4> [storage=readonly] = {
+  u32 1
+  u32 2
+  u32 3
+}
+global @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.1 : obj<8x4> [storage=readonly] = {
+  u32 1
+  u32 2
+}
+global @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.2 : obj<4x4> [storage=readonly] = {
+  u32 1
+}
+function @inherited_slice() -> u32 {
+  slot $s0 : obj<12x4>
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store u32 1, $s0
+    %t0 = addr $s0
+    %t1 = index u8 %t0, 4
+    store u32 2, %t1
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    store u32 3, %t3
+    %t4 = addr @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.0
+    store ptr %t4, $s1
+    %t5 = load ptr $s1
+    store ptr %t5, $s2
+    %t6 = addr $s2
+    %t7 = index u8 %t6, 8
+    store i64 3, %t7
+    %t8 = addr $s2
+    %t9 = call u32 @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$9_496e68657269746564$5_736c696365$.i3(%t8)
+    return u32 %t9
+}
+function @inherited_array() -> u32 {
+  slot $s0 : obj<8x4>
+  slot $s1 : ptr
+  block ^b0:
+    store u32 1, $s0
+    %t0 = addr $s0
+    %t1 = index u8 %t0, 4
+    store u32 2, %t1
+    %t2 = addr @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.1
+    store ptr %t2, $s1
+    %t3 = load ptr $s1
+    %t4 = call u32 @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$9_496e68657269746564$5_6172726179$.i4(%t3)
+    return u32 %t4
+}
+function @scoped_slice() -> u32 {
+  slot $s0 : obj<4x4>
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
+  block ^b0:
+    store u32 1, $s0
+    %t0 = addr @rgc$6_636c69656e74$36_73636f7065645f636f6c6c656374696f6e5f73697a65646e6573735f636f6e73756d6572$internal$rg.data.2
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    store ptr %t1, $s2
+    %t2 = addr $s2
+    %t3 = index u8 %t2, 8
+    store i64 1, %t3
+    %t4 = addr $s2
+    %t5 = call u32 @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$6_53636f706564$5_736c696365$.i5(%t4)
+    return u32 %t5
+}
+function @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$9_496e68657269746564$5_736c696365$.i3(%p0 : ptr) -> u32 {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    return u32 23
+}
+function @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$9_496e68657269746564$5_6172726179$.i4(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u32 37
+}
+function @rgc$4_62617365$27_73636f7065645f636f6c6c656374696f6e5f73697a65646e657373$f$6_53636f706564$5_736c696365$.i5(%p0 : ptr) -> u32 {
+  slot $s0 : obj<16x8>
+  block ^b0:
+    %t0 = addr $s0
+    copyobj 16x8 %p0, %t0
+    return u32 61
+}

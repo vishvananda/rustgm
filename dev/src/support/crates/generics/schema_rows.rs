@@ -163,6 +163,24 @@ pub enum ParameterKind {
         ty: TypeRef,
     },
 }
+
+/// A collection element whose size must come from its actual declaration.
+pub(crate) fn contextual_element(
+    types: &[Type],
+    slots: &[ParameterSlot],
+    element: TypeRef,
+) -> Option<SlotRef> {
+    let Type::Parameter(slot) = *types.get(element.0 as usize)? else {
+        return None;
+    };
+    matches!(
+        slots.get(slot.0 as usize)?.kind,
+        ParameterKind::Type {
+            sized: TypeSizing::MaybeUnsized
+        }
+    )
+    .then_some(slot)
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ParameterScope {
     pub owner: DeclarationRef,

@@ -1,0 +1,8 @@
+{
+  "provider": "provider.rs",
+  "inputs": [
+    "client.rs",
+    "observe.c"
+  ],
+  "native_values": [23, 37, 61]
+}

@@ -658,7 +658,13 @@ impl<M: Storage> Worklist<M> {
                 return self.pattern(port, store, base, constraint, budget);
             }
             s::Type::Array { element, length } => {
-                array(port, store, self.child(element)?, length, budget)?
+                let element = self.collection_element(
+                    port.rows(),
+                    store,
+                    element,
+                    "source array element requires a sized type",
+                )?;
+                array(port, store, element, length, budget)?
             }
             s::Type::Function(signature) => {
                 signature_shapes::check(port.rows(), None, signature)?;
@@ -702,6 +708,25 @@ impl<M: Storage> Worklist<M> {
     }
 }
 impl<M: Storage> Worklist<M> {
+    fn collection_element(
+        &self,
+        rows: s::ValidatedView<'_>,
+        store: &Store,
+        wire: g::TypeRef,
+        unsized_error: &'static str,
+    ) -> Result<TypeId, Error> {
+        let element = self.child(wire)?;
+        if store.is_sized(element) == Some(true)
+            || rows.descriptor().profile().declaration_policies()
+                && s::contextual_element(&rows.types, &rows.slots, wire).is_some()
+        {
+            // A contextual parameter's Sized premise was checked at each
+            // actual root. Its canonical key keeps the declared parameter.
+            return Ok(element);
+        }
+        Err(error(unsized_error))
+    }
+
     /// A reference, raw pointer or slice over one completed child. Only a
     /// reference has a region.
     fn indirect<'rows, B: Budget, P: Port<'rows, B>>(
@@ -728,15 +753,12 @@ impl<M: Storage> Worklist<M> {
                 mutable,
                 pointee: self.child(pointee)?,
             },
-            s::Type::Slice(element) => {
-                // The element's sizedness comes from this consumer's own
-                // structural facts, never from the wire.
-                let element = self.child(element)?;
-                if store.is_sized(element) != Some(true) {
-                    return Err(error("source slice element requires a sized type"));
-                }
-                Kind::Slice(element)
-            }
+            s::Type::Slice(element) => Kind::Slice(self.collection_element(
+                port.rows(),
+                store,
+                element,
+                "source slice element requires a sized type",
+            )?),
             _ => return Err(error("source type row is not an indirect recipe")),
         }))
     }
@@ -1117,9 +1139,8 @@ pub(super) fn const_variant(
     .map(Argument::Const)
 }
 
-/// Version thirteen: an array over its completed element, whose sizedness
-/// comes from this consumer's own structural facts, never from the wire. A
-/// value length is a canonical usize and folds to `Kind::Array`; a slot length
+/// An array over its completed element. A value length is a canonical
+/// usize and folds to `Kind::Array`; a slot length
 /// is this consumer's own usize const argument, which the store folds again
 /// when the slot is concrete.
 fn array<'rows, B: Budget, P: Port<'rows, B>>(
@@ -1130,9 +1151,6 @@ fn array<'rows, B: Budget, P: Port<'rows, B>>(
     budget: &mut B,
 ) -> Result<Kind, Error> {
     budget.charge(1)?;
-    if store.is_sized(element) != Some(true) {
-        return Err(error("source array element requires a sized type"));
-    }
     let rows = port.rows();
     let term = rows
         .array_lengths()

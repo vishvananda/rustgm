@@ -233,7 +233,9 @@
     "tests/spec/associated-call-results/provider.rs",
     "tests/spec/associated-call-results/client.rs",
     "tests/spec/nested-required-methods/provider.rs",
-    "tests/spec/nested-required-methods/client.rs"
+    "tests/spec/nested-required-methods/client.rs",
+    "tests/spec/scoped-collection-sizedness/provider.rs",
+    "tests/spec/scoped-collection-sizedness/client.rs"
   ],
   "cases": [
     {
@@ -7849,6 +7851,45 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/nested-required-methods/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/scoped-collection-sizedness/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "scoped_collection_sizedness_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/scoped-collection-sizedness/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "scoped_collection_sizedness",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/scoped-collection-sizedness/observe.c"
       }
     }
   ]

@@ -16,7 +16,8 @@ impl Types {
         ty: g::TypeRef,
         work: &mut Work,
     ) -> Result<(), &'static str> {
-        Self::check(headers, context, self.summary(ty, work)?, work)
+        let summary = self.summary(ty, work)?;
+        self.check_at(headers, context, ty.0 as usize, summary, work)
     }
     pub(in super::super) fn const_parameter_root(
         &self,
@@ -66,7 +67,7 @@ impl Types {
         {
             return Err("source type default uses its own or a later generic parameter");
         }
-        Self::check(headers, context, summary, work)
+        self.check_at(headers, context, value.0 as usize, summary, work)
     }
 
     pub(in super::super) fn function_application(
@@ -80,12 +81,8 @@ impl Types {
         if application.0 as usize >= self.function_count {
             return Err("source function use crosses its typed application namespace");
         }
-        Self::check(
-            headers,
-            context,
-            self.summaries[self.type_count + application.0 as usize],
-            work,
-        )
+        let index = self.type_count + application.0 as usize;
+        self.check_at(headers, context, index, self.summaries[index], work)
     }
     pub(in super::super) fn trait_application(
         &self,
@@ -98,12 +95,8 @@ impl Types {
         if application.0 as usize >= headers.rows().trait_applications.len() {
             return Err("source trait use crosses its typed application namespace");
         }
-        Self::check(
-            headers,
-            context,
-            self.summaries[self.type_count + self.function_count + application.0 as usize],
-            work,
-        )
+        let index = self.type_count + self.function_count + application.0 as usize;
+        self.check_at(headers, context, index, self.summaries[index], work)
     }
     pub(in super::super) fn alias_root(
         &self,
@@ -115,13 +108,14 @@ impl Types {
         if summary.parameter.is_none() {
             return Err("source alias recipe does not use its declared type formal");
         }
-        Self::check(
+        self.check_at(
             headers,
             Context {
                 owner: alias.declaration,
                 frame: None,
                 body: None,
             },
+            alias.target.0 as usize,
             summary,
             work,
         )
@@ -190,6 +184,18 @@ impl Types {
             work,
         )?;
         Self::check(headers, context, summary, work)
+    }
+
+    fn check_at(
+        &self,
+        headers: &HeaderIndex<'_>,
+        context: Context,
+        index: usize,
+        summary: Summary,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        Self::check(headers, context, summary, work)?;
+        self.check_sizing(headers, context.owner, index, work)
     }
     fn check(
         headers: &HeaderIndex<'_>,

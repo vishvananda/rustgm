@@ -7,6 +7,8 @@ mod node_rows;
 mod queries;
 #[path = "type_domains/row_edges.rs"]
 mod row_edges;
+#[path = "type_domains/collection_sizedness.rs"]
+mod sizing;
 use super::{HeaderIndex, HeaderRef, Work, binder_domains::BinderIndex};
 use crate::support::{
     crates::{
@@ -31,6 +33,7 @@ struct Summary {
     bound: Option<BoundUse>,
     has_function: bool,
     has_item: bool,
+    sizing: sizing::Obligation,
 }
 pub(super) struct Types {
     summaries: Vec<Summary>,
@@ -323,6 +326,7 @@ impl Builder<'_, '_> {
         }
         left.has_function |= right.has_function;
         left.has_item |= right.has_item;
+        left.sizing = left.sizing.union(right.sizing);
         Ok(left)
     }
 }
