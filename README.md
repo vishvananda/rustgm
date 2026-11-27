@@ -132,7 +132,7 @@ binary hashes before use, writes only under this repository, and never
 rebuilds or edits CPPGM. A local build of the same commit has different
 bytes: using one needs an explicit reviewed lock update and backend
 validation, not a silent repin. The
-[backend lock](backend.lock.json) pins CPPGM v0.10.3 and its LowIR library
+[backend lock](backend.lock.json) pins CPPGM v0.12.0 and its LowIR library
 ABI 5. The [v0.9.3 checkpoint](docs/backend-current-checkpoint.md) records the
 previous pin and its measurements.
 

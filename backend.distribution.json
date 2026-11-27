@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "backend_lock_sha256": "7f19763ba2963963589aa60a10d17933f79224a9b9f9275f60c8364c48bce908",
-  "url": "https://github.com/vishvananda/cppgm/releases/download/v0.10.3/cppgm-v0.10.3-linux-x86_64.tar.gz",
-  "sha256": "000bc5ac9c0a3c24c22e57534c84bed00c69fa9116ce3e05528b79ef7e4dd99a",
-  "prefix": "cppgm-v0.10.3-linux-x86_64"
+  "backend_lock_sha256": "7bca4d7fd93a061364999b53146af359141aaf03738c30c278664c6c920e852f",
+  "url": "https://github.com/vishvananda/cppgm/releases/download/v0.12.0/cppgm-v0.12.0-linux-x86_64.tar.gz",
+  "sha256": "3f4101e48f2a0c91598ba15291f97008190b0bf3a75740bf25af25c3c3078d7b",
+  "prefix": "cppgm-v0.12.0-linux-x86_64"
 }

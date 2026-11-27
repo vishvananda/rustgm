@@ -204,7 +204,7 @@ source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
 
 The external LowIR serialization is an authorized temporary backend boundary.
 The [backend lock](backend.lock.json) pins all three CPPGM tools to
-release v0.10.3 (7bc2ee420). Its object profile also records the optional
+release v0.12.0 (c37fb6f9d). Its object profile also records the optional
 `assembly` capability. Rust `asm!` remains fenced until PA41 lowers checked
 assembly bodies to it. The lock also records the release's in-process LowIR
 library, at interface version 5, as an optional capability
