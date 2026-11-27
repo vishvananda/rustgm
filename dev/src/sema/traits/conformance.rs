@@ -67,6 +67,7 @@ pub(in crate::sema) fn check(
 pub(in crate::sema) fn check_written_signature(
     facts: &mut Declarations,
     method: Method,
+    definitions: &Definitions,
 ) -> Result<Obligations, &'static str> {
     let environment = facts
         .generics
@@ -80,7 +81,15 @@ pub(in crate::sema) fn check_written_signature(
         Some(environment),
         &mut proof,
         method.written_signature,
-        |_, _| Ok(None),
+        |facts, request| {
+            if request.alias.associated().is_some() {
+                // The enclosing impl's checked result is available before its
+                // members finish. Its full trait selection may still be open.
+                definitions.resolve(facts, request)
+            } else {
+                Ok(None)
+            }
+        },
     )?;
     if normalized != method.signature {
         return Err("written override does not normalize to its executable signature");

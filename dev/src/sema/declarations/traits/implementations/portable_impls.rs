@@ -287,7 +287,7 @@ impl Checker<'_> {
             let actual =
                 crate::sema::traits::conformance::Method::imported(&mut self.facts, actual)
                     .map_err(Error::unlocated)?;
-            self.validate_imported_written_override(actual)?;
+            self.validate_imported_written_override(actual, &definitions)?;
             crate::sema::traits::conformance::check_methods(
                 &mut self.facts,
                 owner,
@@ -303,13 +303,17 @@ impl Checker<'_> {
     fn validate_imported_written_override(
         &mut self,
         method: crate::sema::traits::conformance::Method,
+        definitions: &crate::sema::traits::conformance::Definitions,
     ) -> Result<(), Error> {
         if method.signature == method.written_signature {
             return Ok(());
         }
-        let evidence =
-            crate::sema::traits::conformance::check_written_signature(&mut self.facts, method)
-                .map_err(Error::unlocated)?;
+        let evidence = crate::sema::traits::conformance::check_written_signature(
+            &mut self.facts,
+            method,
+            definitions,
+        )
+        .map_err(Error::unlocated)?;
         if evidence.is_empty() {
             return Ok(());
         }

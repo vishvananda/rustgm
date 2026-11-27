@@ -235,7 +235,10 @@
     "tests/spec/nested-required-methods/provider.rs",
     "tests/spec/nested-required-methods/client.rs",
     "tests/spec/scoped-collection-sizedness/provider.rs",
-    "tests/spec/scoped-collection-sizedness/client.rs"
+    "tests/spec/scoped-collection-sizedness/client.rs",
+    "tests/spec/written-associated-result/provider.rs",
+    "tests/spec/written-associated-result/client.rs",
+    "tests/spec/written-associated-result/reject-bound.rs"
   ],
   "cases": [
     {
@@ -7890,6 +7893,79 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/scoped-collection-sizedness/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/written-associated-result/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "written_associated_result_client"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/written-associated-result/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "written_associated_result",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/written-associated-result/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/written-associated-result/reject-bound.rs",
+      "exit_status": 1,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "written_associated_result_reject"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/written-associated-result/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "written_associated_result",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
       }
     }
   ]

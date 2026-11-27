@@ -1,0 +1,10 @@
+{
+  "provider": "provider.rs",
+  "inputs": ["client.rs", "reject-bound.rs", "observe.c"],
+  "native_values": [37, 73],
+  "rejected": {
+    "path": "reject-bound.rs",
+    "rustc": "E0277",
+    "reason": "The imported Read impl requires ReverseSearcher for the selected Pattern::Searcher."
+  }
+}
