@@ -1,0 +1,12 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c", "wrong-owner.rs"],
+  "features": ["decl_macro", "staged_api", "auto_traits"],
+  "attributes": ["unstable(feature=\"role_fixture\", issue=\"none\")"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "43\n",
+  "restricted_client": {
+    "path": "wrong-owner.rs",
+    "rustc": "may only be used on a free function",
+    "rustgm": "test attribute requires a function owner"
+  }
+}

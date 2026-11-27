@@ -159,6 +159,14 @@ impl<S: Sources> Engine<'_, S> {
             && !role.context_free()
             && !role.imported_delegation()
             && !self.imported_source_eager(definition, role)
+            && !(role == super::Builtin::Test
+                && super::transported_macros::source_builtin(
+                    &self.loader.package,
+                    &self.paths.state.facts,
+                    definition,
+                    role,
+                )
+                .is_some())
             && !super::derive_lists::supported_role(
                 role,
                 &self.loader.package,

@@ -155,6 +155,21 @@ impl Removal {
             if header.builtin != Some(Builtin::Test) {
                 return Err(error("removed Test function source role changed"));
             }
+        } else if super::transported_macros::imported(&report.resolution, removal.definition)
+            .is_some()
+        {
+            if super::transported_macros::source_builtin(
+                &report.package,
+                &report.resolution,
+                removal.definition,
+                Builtin::Test,
+            )
+            .is_none()
+            {
+                return Err(error(
+                    "removed Test function has no actual imported source role",
+                ));
+            }
         } else if report.package.uses_source_bindings() || definition.header.is_some() {
             return Err(error("removed Test function has no actual source role"));
         }

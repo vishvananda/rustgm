@@ -108,6 +108,7 @@ def main():
                                  "source-macro-module-aliases", "source-formatting-transport",
                                  "source-canonical-trait-headers", "source-derive-permissions",
                                  "source-associated-constant-default",
+                                 "source-imported-test-removal",
                                  *ASSEMBLY_CASES))
     parser.add_argument("--app", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)
