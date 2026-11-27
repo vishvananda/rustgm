@@ -168,8 +168,21 @@ impl Checker<'_> {
             return Ok(());
         }
         let mut trait_proofs = crate::support::hash::HashMap::default();
+        let mut imported_inputs = crate::support::hash::HashMap::default();
         for index in 0..self.facts.destructors.implementations().len() {
-            if let Some(proof) = self.validate_drop_traits(index)? {
+            let implementation = &self.facts.destructors.implementations()[index];
+            if implementation.source.source().is_none() {
+                let (owner, method, site) = (
+                    implementation.self_definition,
+                    implementation.method,
+                    implementation.source,
+                );
+                let clauses = coverage::imported_inputs(&mut self.facts, owner, method)
+                    .map_err(|e| coverage::imported_error(&self.facts, site, e))?;
+                imported_inputs.insert(index, clauses);
+            }
+            let imported = imported_inputs.get(&index).map_or(&[][..], Vec::as_slice);
+            if let Some(proof) = self.validate_drop_traits(index, imported)? {
                 trait_proofs.insert(index, proof);
             }
         }
@@ -179,14 +192,12 @@ impl Checker<'_> {
         // only each nominal's identity instance was prepared with its fields.
         for index in 0..self.facts.destructors.implementations().len() {
             let implementation = &self.facts.destructors.implementations()[index];
-            let Some(key) = implementation.source.source() else {
-                continue;
-            };
+            let site = implementation.source;
             self.facts
                 .lifetimes
                 .nominal_requirements
                 .prepare(&mut self.facts.types, implementation.target)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| self.destructor_error(site, e))?;
         }
         let mut queries = Queries::new(
             &self.facts.types,
@@ -194,17 +205,15 @@ impl Checker<'_> {
             &self.facts.lifetimes.callables,
         );
         for (index, implementation) in self.facts.destructors.implementations().iter().enumerate() {
-            let Some(key) = implementation.source.source() else {
-                continue;
-            };
+            let error = |message: &str| self.destructor_error(implementation.source, message);
             let Some(Type::Adt(_, arguments)) = self.facts.types.kind(implementation.target) else {
-                return Err(self.error(key, "missing nominal Drop target"));
+                return Err(error("missing nominal Drop target"));
             };
             let arguments = self
                 .facts
                 .types
                 .arguments(arguments)
-                .ok_or_else(|| self.error(key, "missing Drop target arguments"))?
+                .ok_or_else(|| error("missing Drop target arguments"))?
                 .filter_map(|argument| {
                     if let crate::types::arguments::Argument::Lifetime(region) = argument {
                         Some(region)
@@ -215,7 +224,18 @@ impl Checker<'_> {
                 .collect::<Vec<_>>();
             let assumptions = queries
                 .symbolic_requirements(implementation.target)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(error)?;
+            let local = implementation
+                .source
+                .source()
+                .map(|_| implementation.method);
+            let source_inputs = local.into_iter().flat_map(|method| {
+                self.facts
+                    .generics
+                    .predicates_in_scope(method)
+                    .map(|p| p.value)
+            });
+            let imported = imported_inputs.get(&index).into_iter().flatten().copied();
             crate::sema::destructors::check_bounds(
                 crate::sema::destructors::LifetimeContract {
                     parameters: implementation.parameters,
@@ -224,14 +244,22 @@ impl Checker<'_> {
                 &arguments,
                 &assumptions,
                 &self.facts.types,
-                self.facts
-                    .generics
-                    .predicates_in_scope(implementation.method)
-                    .map(|p| p.value),
+                source_inputs.chain(imported),
                 trait_proofs.get(&index),
             )
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| error(&e))?;
         }
         Ok(())
+    }
+
+    fn destructor_error(
+        &self,
+        site: crate::resolve::body_origin::ProofSite,
+        message: impl Into<String>,
+    ) -> Error {
+        if let Some(key) = site.source() {
+            return self.error(key, message);
+        }
+        coverage::imported_error(&self.facts, site, message)
     }
 }

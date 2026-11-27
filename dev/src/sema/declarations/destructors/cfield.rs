@@ -24,21 +24,20 @@ impl Checker<'_> {
         {
             return Ok(None);
         }
-        let key = contract.source;
         let (types, work) = {
             let mut fields = self
                 .facts
                 .aggregates
                 .semantic_fields(&self.facts.types, target)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| contract.error(self, e))?;
             let mut types = Vec::new();
             while let Some(ty) = fields
                 .next(&mut self.facts.types)
-                .map_err(|e| self.error(key, e))?
+                .map_err(|e| contract.error(self, e))?
             {
                 fields
                     .reserve(&mut types, 1)
-                    .map_err(|e| self.error(key, e))?;
+                    .map_err(|e| contract.error(self, e))?;
                 types.push(ty);
             }
             (types, fields.work())
@@ -52,15 +51,15 @@ impl Checker<'_> {
             .facts
             .source_bindings
             .as_deref()
-            .ok_or_else(|| self.error(key, "const Drop field catalog disappeared"))?;
+            .ok_or_else(|| contract.error(self, "const Drop field catalog disappeared"))?;
         catalog
             .validated_role(LangItem::Drop)
-            .map_err(|e| self.error(key, e))?
-            .ok_or_else(|| self.error(key, "const Drop field validation lost actual Drop"))?;
+            .map_err(|e| contract.error(self, e))?
+            .ok_or_else(|| contract.error(self, "const Drop field validation lost actual Drop"))?;
         let role = catalog
             .validated_role(LangItem::Destruct)
-            .map_err(|e| self.error(key, e))?
-            .ok_or_else(|| self.error(key, "const Drop fields require actual Destruct"))?;
+            .map_err(|e| contract.error(self, e))?
+            .ok_or_else(|| contract.error(self, "const Drop fields require actual Destruct"))?;
         let application = self
             .facts
             .types
@@ -68,7 +67,7 @@ impl Checker<'_> {
                 item: ItemId(role.definition.0),
                 arguments: GenericArgs::EMPTY,
             })
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| contract.error(self, e))?;
         let environment = self
             .facts
             .generics
@@ -90,8 +89,8 @@ impl Checker<'_> {
                         .next()
                         .is_some()))
         {
-            return Err(self.error(
-                key,
+            return Err(contract.error(
+                self,
                 "const Drop fields require the original completed impl environment",
             ));
         }
@@ -104,10 +103,14 @@ impl Checker<'_> {
             };
             if !proof
                 .prove(&mut self.facts, requirement)
-                .map_err(|e| self.error(key, e))?
+                .map_err(|e| contract.error(self, e))?
             {
-                return Err(self.error(key,"const Drop declaration field requires const Destruct in its actual impl environment"));
+                return Err(contract.error(self,"const Drop declaration field requires const Destruct in its actual impl environment"));
             }
+        }
+        if contract.source.source().is_none() {
+            crate::sema::crates::pay_source_headers(&mut self.facts, proof.own_work(), 0)
+                .map_err(|e| contract.error(self, e))?;
         }
         Ok(proof.take_trait_proof())
     }

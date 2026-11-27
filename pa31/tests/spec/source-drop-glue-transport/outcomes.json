@@ -21,6 +21,14 @@
       "client": "parameters-client.rs",
       "observer": "parameters-observer.c",
       "stdout": "41\n42\n"
+    },
+    {
+      "name": "provider-captured-lifetimes",
+      "provider": "captured-provider.rs",
+      "provider_features": ["const_destruct"],
+      "client": "captured-client.rs",
+      "observer": "captured-observer.c",
+      "stdout": "37 61\n"
     }
   ],
   "old_profile": "source Drop operation transport requires version fourteen",

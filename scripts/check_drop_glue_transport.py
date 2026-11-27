@@ -102,7 +102,10 @@ def private_wrapper(check, source, client, observer, contract, rustc, run_candid
 def provider_owned(check, source, contract, rustc, run_candidate):
     owned = Check(check.app, check.folder / contract["name"])
     provider = owned.folder / "provider.rs"
-    provider.write_bytes(source.read_bytes() + b"\n" + (FIXTURE / contract["provider"]).read_bytes())
+    features = ", ".join(contract.get("provider_features", ()))
+    prefix = f"#![feature({features})]\n".encode() if features else b""
+    provider.write_bytes(prefix + source.read_bytes() + b"\n"
+                         + (FIXTURE / contract["provider"]).read_bytes())
     consumer = FIXTURE / contract["client"]
     observer = owned.folder / "observer.o"
     owned.run("cc-observer", ["cc", "-c", FIXTURE / contract["observer"], "-o", observer],

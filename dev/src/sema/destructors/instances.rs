@@ -39,57 +39,46 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
         .copied()
         .flatten()
         .ok_or("missing destructor function item")?;
-    // Lifetime-only methods retain the existing universally checked concrete body.
-    if !facts.generics.has_parameters(method) {
+    let callable = ItemId(method.0);
+    let registered = facts.lifetimes.callables.registration(callable);
+    if !facts.generics.has_parameters(method)
+        && registered.is_none_or(|(template, types)| template.parameters == 0 && types.is_empty())
+    {
         return Instance::new(&facts.types, definition).map(Some);
     }
-    if facts.lifetimes.callables.get(ItemId(method.0)).is_none() {
+    if registered.is_none() {
         publish(facts, method)?;
     }
+    let (template, parameters) = facts
+        .lifetimes
+        .callables
+        .registration(callable)
+        .ok_or("missing destructor callable")?;
+    let regions = instance_regions(facts, method, arguments, template.parameters)?;
     let mut substitution = Bound::joint(&facts.types, item, arguments)?;
-    let mut actual = facts
-        .types
-        .arguments(arguments)
-        .ok_or("invalid destructor target arguments")?
-        .filter(|a| matches!(a, Argument::Lifetime(_)))
-        .collect::<Vec<_>>();
     let formals = facts
         .types
         .arguments(inverse)
         .ok_or("missing destructor coverage arguments")?
         .filter(|a| !matches!(a, Argument::Lifetime(_)))
         .collect::<Vec<_>>();
+    if parameters.len() != formals.len() {
+        return Err("destructor coverage has different parameter arity");
+    }
+    let mut actual = regions
+        .iter()
+        .copied()
+        .map(Argument::Lifetime)
+        .collect::<Vec<_>>();
     for formal in formals {
         actual.push(substitution.apply_argument(&mut facts.types, formal)?);
     }
     let arguments = facts.types.intern_arguments(&actual)?;
-    let parameters = facts.generics.parameter_ids(&facts.types, owner)?;
-    let early = actual
-        .iter()
-        .take_while(|a| matches!(a, Argument::Lifetime(_)))
-        .count();
-    if parameters.len() != actual.len() - early {
-        return Err("destructor coverage has different parameter arity");
-    }
     let bindings = parameters
-        .into_iter()
-        .zip(actual[early..].iter().copied())
-        .collect::<Vec<_>>();
-    let regions = actual[..early]
         .iter()
-        .filter_map(|a| {
-            if let Argument::Lifetime(region) = a {
-                Some(*region)
-            } else {
-                None
-            }
-        })
-        .collect();
-    let template = facts
-        .lifetimes
-        .callables
-        .get(ItemId(method.0))
-        .ok_or("missing destructor callable")?;
+        .copied()
+        .zip(actual[regions.len()..].iter().copied())
+        .collect::<Vec<_>>();
     let signature = Bound::parameters_captured(&facts.types, &bindings, regions)?
         .apply(&mut facts.types, template.signature)?;
     let selected = facts.types.intern(Kind::FunctionItem {
@@ -106,6 +95,51 @@ pub fn select(facts: &mut Declarations, target: TypeId) -> Result<Option<Instanc
     )?;
     facts.destructors.instances.insert(target, instance);
     Ok(Some(instance))
+}
+
+fn instance_regions(
+    facts: &Declarations,
+    method: DefId,
+    arguments: GenericArgs,
+    captures: u32,
+) -> Result<Vec<RegionId>, &'static str> {
+    let nominal = facts
+        .types
+        .arguments(arguments)
+        .ok_or("invalid destructor target arguments")?
+        .filter_map(|argument| match argument {
+            Argument::Lifetime(region) => Some(region),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    if facts.source_bindings.is_none() {
+        // The legacy cleanup template is already in nominal order.
+        return if nominal.len() == captures as usize {
+            Ok(nominal)
+        } else {
+            Err("destructor callable has different lifetime arity")
+        };
+    }
+    let implementation = facts
+        .destructors
+        .method(method)
+        .ok_or("missing destructor implementation")?;
+    let regions = &implementation.coverage.regions;
+    if regions.len() != captures as usize {
+        return Err("destructor callable has different lifetime arity");
+    }
+    regions
+        .iter()
+        .map(|region| {
+            let Some((0, index)) = region.bound_parts() else {
+                return Err("invalid destructor capture mapping");
+            };
+            nominal
+                .get(usize::from(index))
+                .copied()
+                .ok_or("destructor callable capture has no nominal argument")
+        })
+        .collect()
 }
 
 /// Select the actual provided `Drop::drop` body for a pin-only implementation.

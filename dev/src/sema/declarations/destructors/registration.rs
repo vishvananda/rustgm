@@ -1,4 +1,4 @@
-//! Ordinary imported impl headers supply checked destructor coverage.
+//! Imported impl headers supply the destructor's exact declaration contract.
 use crate::{
     resolve::{body_origin::BodyOrigin, model::DefId},
     sema::{
@@ -12,11 +12,7 @@ use crate::{
         GenericArgs, ItemId, Kind, TypeId, aggregate,
         arguments::Argument,
         callable::Convention,
-        parameters::{
-            ParameterKind,
-            clauses::Clause,
-            predicates::{Bound, Predicate},
-        },
+        parameters::{ParameterKind, predicates::Predicate},
     },
 };
 
@@ -82,15 +78,25 @@ fn prepare(
     let OwnerKind::ImportedImpl(id) = owner.kind else {
         return Err(WIDER);
     };
-    let effect = facts
-        .associated
-        .imported_implementation(&facts.types, owner, predicate)?;
-    if effect != (false, ImplPolarity::Positive) {
+    let (constant, polarity) =
+        facts
+            .associated
+            .imported_implementation(&facts.types, owner, predicate)?;
+    if polarity != ImplPolarity::Positive {
         return Err(WIDER);
     }
-    let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
+    let Some((application, constness)) = predicate.bound.trait_parts() else {
         return Err(WIDER);
     };
+    if constness
+        != if constant {
+            Constness::Const
+        } else {
+            Constness::Ordinary
+        }
+    {
+        return Err(WIDER);
+    }
     let application = facts.types.trait_application(application).ok_or(WIDER)?;
     if application.item.0 != drop.0
         || facts
@@ -119,9 +125,10 @@ fn prepare(
         return Err(WIDER);
     }
     let schema = facts.associated.schema(definition).ok_or(WIDER)?;
-    if schema.self_type != target || schema.captures != 0 || !schema.bounds.is_empty() {
+    if schema.self_type != target {
         return Err(WIDER);
     }
+    let captures = schema.captures;
     let [method] = facts.associated.owner_members(owner_id).ok_or(WIDER)? else {
         return Err(WIDER);
     };
@@ -132,21 +139,33 @@ fn prepare(
     };
     if actual.declaration.source().is_some()
         || origins.declaration_artifact(method)? != Some(provider)
-        || facts.is_const_function(method)
-        || actual.universals != 1
+        || facts.is_const_function(method) != constant
+        || captures.checked_add(1) != Some(actual.universals)
     {
         return Err(WIDER);
     }
-    receiver(facts, actual.signature, target)?;
-    let coverage = coverage(facts, definition, method, item, arguments)?;
+    receiver(facts, actual.signature, target, captures)?;
+    let bound_count = schema.bounds.len();
+    crate::sema::crates::pay_source_headers(
+        facts,
+        bound_count,
+        bound_count.saturating_mul(size_of::<crate::types::outlives::Pair>()),
+    )?;
+    let bounds = facts
+        .associated
+        .schema(definition)
+        .ok_or(WIDER)?
+        .bounds
+        .clone();
+    let coverage = coverage(facts, definition, method, item, arguments, captures)?;
     Ok(Implementation {
         source: body.root_site(),
         self_definition: definition,
         method,
         target,
         item,
-        parameters: 0,
-        bounds: Vec::new(),
+        parameters: captures,
+        bounds,
         coverage,
     })
 }
@@ -157,6 +176,7 @@ fn coverage(
     method: DefId,
     item: ItemId,
     arguments: GenericArgs,
+    captures: u32,
 ) -> Result<crate::sema::destructors::Coverage, &'static str> {
     if declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), method)?.len()
         != 0
@@ -173,9 +193,10 @@ fn coverage(
         .parameters
         .get(&implementation)
         .map_or(0, Vec::len);
+    let count = count.saturating_add(captures as usize);
     let bytes = count.saturating_mul(8 * size_of::<Argument>());
     crate::sema::crates::pay_source_headers(facts, count.saturating_mul(8), bytes)?;
-    let coverage = super::coverage::target(facts, implementation, item, arguments, 0)?;
+    let coverage = super::coverage::target(facts, implementation, item, arguments, captures)?;
     let formals = facts
         .generics
         .parameters
@@ -183,91 +204,41 @@ fn coverage(
         .map_or(&[][..], Vec::as_slice);
     let mappings = facts.types.arguments(coverage.arguments).ok_or(WIDER)?;
     for (formal, actual) in formals.iter().zip(mappings) {
+        if matches!(
+            (formal.argument, actual),
+            (Argument::Lifetime(_), Argument::Lifetime(_))
+        ) {
+            continue;
+        }
         let kind = |argument| {
-            let Argument::Type(ty) = argument else {
-                return None;
-            };
-            let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
-                return None;
-            };
-            facts.types.parameter(id).map(|parameter| parameter.kind)
+            let id = crate::sema::generics::parameter_id(&facts.types, argument)?;
+            facts
+                .types
+                .parameter(id)
+                .map(|parameter| parameter.kind)
+                .ok_or(WIDER)
         };
-        let expected = kind(formal.argument);
-        if !matches!(expected, Some(ParameterKind::Type { .. })) || kind(actual) != expected {
-            return Err("provider Drop type formals changed their nominal kinds or sizing");
+        let expected = kind(formal.argument)?;
+        let actual = kind(actual)?;
+        if !matches!(
+            (expected, actual),
+            (ParameterKind::Type { .. }, ParameterKind::Type { .. })
+        ) && actual != expected
+        {
+            return Err("provider Drop formals changed their nominal kinds");
         }
     }
-    sizing_premises(facts, implementation, item, coverage.arguments)?;
     Ok(coverage)
 }
 
-fn sizing_premises(
-    facts: &mut Declarations,
-    implementation: DefId,
-    item: ItemId,
-    coverage: GenericArgs,
+fn receiver(
+    facts: &Declarations,
+    signature: TypeId,
+    target: TypeId,
+    captures: u32,
 ) -> Result<(), &'static str> {
-    let inputs = |facts: &Declarations, owner| {
-        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), owner)
-            .map(declaration_inputs::Inputs::len)
-    };
-    let (required, nominal) = (
-        inputs(facts, implementation)?,
-        inputs(facts, DefId(item.0))?,
-    );
-    if required == 0 {
-        return Ok(());
-    }
-    crate::sema::crates::pay_source_headers(
-        facts,
-        required.saturating_add(nominal).saturating_mul(4),
-        retained::new_map::<Clause, ()>(nominal),
-    )?;
-    let catalog = facts.source_bindings.as_deref().ok_or(WIDER)?;
-    let nominal =
-        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), DefId(item.0))?
-            .iter()
-            .map(|input| input.value)
-            .collect::<crate::support::hash::HashSet<_>>();
-    let required =
-        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), implementation)?;
-    for input in required.iter() {
-        let Clause::Predicate(Predicate { ty, bound }) = input.value else {
-            return Err(WIDER);
-        };
-        let sizing_bound = match bound {
-            Bound::Sized => true,
-            Bound::Trait(id) => {
-                let application = facts.types.trait_application(id).ok_or(WIDER)?;
-                application.arguments == GenericArgs::EMPTY
-                    && catalog.sizing_kind(DefId(application.item.0))?.is_some()
-            }
-            _ => false,
-        };
-        let Some(Kind::Parameter(index)) = facts.types.kind(ty) else {
-            return Err(WIDER);
-        };
-        let parameter = facts.types.parameter(index).ok_or(WIDER)?;
-        let Some(Argument::Type(ty)) = facts
-            .types
-            .arguments(coverage)
-            .and_then(|mut arguments| arguments.nth(parameter.index as usize))
-        else {
-            return Err(WIDER);
-        };
-        if !sizing_bound
-            || parameter.owner.0 != implementation.0
-            || !nominal.contains(&Clause::Predicate(Predicate { ty, bound }))
-        {
-            return Err("provider Drop implementation adds a requirement to its nominal type");
-        }
-    }
-    Ok(())
-}
-
-fn receiver(facts: &Declarations, signature: TypeId, target: TypeId) -> Result<(), &'static str> {
     let Some(Kind::Function {
-        bound_regions: 1,
+        bound_regions,
         parameters,
         result: TypeId::UNIT,
         unsafe_: false,
@@ -276,6 +247,10 @@ fn receiver(facts: &Declarations, signature: TypeId, target: TypeId) -> Result<(
     else {
         return Err(WIDER);
     };
+    let receiver_slot = u16::try_from(captures).map_err(|_| WIDER)?;
+    if captures.checked_add(1) != Some(bound_regions) {
+        return Err(WIDER);
+    }
     let Some([receiver]) = facts.types.list(parameters) else {
         return Err(WIDER);
     };
@@ -285,7 +260,7 @@ fn receiver(facts: &Declarations, signature: TypeId, target: TypeId) -> Result<(
         *receiver
     };
     if !matches!(facts.types.kind(receiver), Some(Kind::Reference { mutable: true, referent, region })
-        if referent == target && region.bound_parts() == Some((0, 0)))
+        if referent == target && region.bound_parts() == Some((0, receiver_slot)))
     {
         return Err(WIDER);
     }

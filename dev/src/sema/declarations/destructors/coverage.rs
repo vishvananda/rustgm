@@ -6,7 +6,9 @@ use crate::types::{
     arguments::{Argument, ConstKind},
 };
 
+use crate::resolve::body_origin::ProofSite;
 use crate::sema::destructors::Coverage;
+use crate::types::parameters::clauses::Clause;
 
 #[cfg(test)]
 #[path = "../../../../tests/invariants/binder_drop_bounds.rs"]
@@ -17,8 +19,32 @@ pub(super) struct NominalContract {
     pub owner: DefId,
     pub scope: DefId,
     pub item: ItemId,
-    pub source: crate::resolve::unit::NodeKey,
+    pub source: ProofSite,
     pub parameters: u32,
+}
+
+impl NominalContract {
+    pub(super) fn error(self, checker: &Checker<'_>, message: impl Into<String>) -> super::Error {
+        checker.destructor_error(self.source, message)
+    }
+}
+
+pub(super) fn imported_error(
+    facts: &crate::sema::model::Declarations,
+    site: ProofSite,
+    message: impl Into<String>,
+) -> super::Error {
+    let Some(catalog) = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.origin_catalog())
+    else {
+        return super::Error::unlocated("provider destructor lost its actual diagnostic catalog");
+    };
+    match catalog.diagnostic(site) {
+        Ok(location) => super::Error::imported(location, message),
+        Err(error) => super::Error::unlocated(error),
+    }
 }
 
 pub(super) fn target(
@@ -142,18 +168,17 @@ impl Checker<'_> {
     pub(super) fn validate_drop_traits(
         &mut self,
         index: usize,
+        imported_inputs: &[Clause],
     ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         let implementation = &self.facts.destructors.implementations()[index];
-        let Some(source) = implementation.source.source() else {
-            return Ok(None);
-        };
+        let source = implementation.source;
         if self
             .facts
             .derives
             .get(&implementation.item)
             .is_some_and(|properties| properties.properties().copy)
         {
-            return Err(self.error(source, "a type cannot implement both Copy and Drop"));
+            return Err(self.destructor_error(source, "a type cannot implement both Copy and Drop"));
         }
         let contract = NominalContract {
             owner: implementation.self_definition,
@@ -163,13 +188,11 @@ impl Checker<'_> {
             parameters: implementation.parameters,
         };
         let target = implementation.target;
-        let mut proof = self.validate_destructor_traits(contract)?;
+        let mut proof = self.validate_destructor_traits(contract, imported_inputs)?;
         let first = proof.as_ref().map_or(1, |proof| proof.regions.end);
         if let Some(fields) = self.validate_const_drop_fields(&contract, target, first)? {
             if let Some(proof) = &mut proof {
-                proof
-                    .extend(fields)
-                    .map_err(|e| self.error(contract.source, e))?;
+                proof.extend(fields).map_err(|e| contract.error(self, e))?;
             } else {
                 proof = Some(fields);
             }
@@ -180,42 +203,50 @@ impl Checker<'_> {
     pub(super) fn validate_destructor_traits(
         &mut self,
         contract: NominalContract,
+        imported_inputs: &[Clause],
     ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         use crate::types::parameters::{
             ParameterKind,
-            clauses::Clause,
             predicates::{Bound, Predicate},
         };
         let NominalContract {
             owner,
             scope,
             item,
-            source: key,
             parameters: count,
+            ..
         } = contract;
         let coverage = self
             .facts
             .destructors
             .coverage(owner, item)
-            .ok_or_else(|| self.error(key, "missing registered destructor coverage"))?;
+            .ok_or_else(|| contract.error(self, "missing registered destructor coverage"))?;
         let mut substitution = crate::types::substitute::Bound::joint_captured(
             &self.facts.types,
             ItemId(owner.0),
             coverage.arguments,
             coverage.regions.clone(),
         )
-        .map_err(|e| self.error(key, e))?;
+        .map_err(|e| contract.error(self, e))?;
         // A binder-scoped bound, such as `F: FnOnce(T)`, stays quantified;
         // only its region-free body is read here, never proved flat.
         let mut requirements = Vec::new();
-        for predicate in self.facts.generics.predicates_in_scope(scope) {
-            let body = match predicate.value {
+        let imported = contract.source.source().is_none();
+        let local = (!imported).then_some(scope);
+        let source_inputs = local.into_iter().flat_map(|scope| {
+            self.facts
+                .generics
+                .predicates_in_scope(scope)
+                .map(|p| p.value)
+        });
+        for clause in source_inputs.chain(imported_inputs.iter().copied()) {
+            let body = match clause {
                 Clause::ForAll(id) => self.facts.types.quantified(id).map(|value| value.predicate),
-                clause => Some(clause.ordinary().map_err(|e| self.error(key, e))?),
+                clause => Some(clause.ordinary().map_err(|e| contract.error(self, e))?),
             }
-            .ok_or_else(|| self.error(key, "invalid quantified Drop requirement"))?;
+            .ok_or_else(|| contract.error(self, "invalid quantified Drop requirement"))?;
             if !matches!(body.bound, Bound::Outlives(_)) {
-                requirements.push(predicate.value);
+                requirements.push(clause);
             }
         }
         for parameter in self.facts.generics.parameters_in_scope(owner) {
@@ -243,25 +274,31 @@ impl Checker<'_> {
         for requirement in requirements {
             let requirement = if constant {
                 ordinary_trait(&mut self.facts.types, requirement)
-                    .map_err(|e| self.error(key, e))?
+                    .map_err(|e| contract.error(self, e))?
             } else {
                 requirement
             };
             let requirement = substitution
                 .clause(&mut self.facts.types, requirement)
-                .map_err(|e| self.error(key, e))?;
+                .map_err(|e| contract.error(self, e))?;
             if !proof
                 .prove_clause(&mut self.facts, requirement)
-                .map_err(|e| self.error(key, e))?
+                .map_err(|e| contract.error(self, e))?
             {
-                return Err(self.error(key, "Drop impl adds type requirements to its nominal type"));
+                return Err(
+                    contract.error(self, "Drop impl adds type requirements to its nominal type")
+                );
             }
+        }
+        if imported {
+            crate::sema::crates::pay_source_headers(&mut self.facts, proof.own_work(), 0)
+                .map_err(|e| contract.error(self, e))?;
         }
         let Some(mut obligations) = proof.take_trait_proof() else {
             return Ok(None);
         };
         self.restore_drop_proof(&contract, &mut obligations)
-            .map_err(|e| self.error(key, e))?;
+            .map_err(|e| contract.error(self, e))?;
         Ok(Some(obligations))
     }
 }
@@ -282,11 +319,12 @@ impl Checker<'_> {
                 .associated
                 .owner(owner)
                 .and_then(|id| self.facts.associated.get(id))
-                .is_some_and(|owner| {
-                    matches!(
-                        owner.kind,
-                        crate::sema::associated::OwnerKind::Impl { constant: true, .. }
-                    )
+                .is_some_and(|owner| match owner.kind {
+                    crate::sema::associated::OwnerKind::Impl { constant, .. } => constant,
+                    crate::sema::associated::OwnerKind::ImportedImpl(_) => {
+                        self.facts.is_const_function(scope)
+                    }
+                    _ => false,
                 })
     }
     /// Coverage proves in nominal coordinates; the Drop graph retains impl coordinates.
@@ -350,6 +388,29 @@ impl Checker<'_> {
         }
         Ok(())
     }
+}
+
+pub(super) fn imported_inputs(
+    facts: &mut crate::sema::model::Declarations,
+    owner: DefId,
+    method: DefId,
+) -> Result<Vec<Clause>, &'static str> {
+    use crate::sema::{crates::pay_source_headers, declaration_inputs};
+    let inputs = |facts: &crate::sema::model::Declarations, definition| {
+        declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)
+            .map(declaration_inputs::Inputs::len)
+    };
+    let count = inputs(facts, owner)?.saturating_add(inputs(facts, method)?);
+    pay_source_headers(facts, count, count.saturating_mul(2 * size_of::<Clause>()))?;
+    let mut result = Vec::with_capacity(count);
+    for definition in [owner, method] {
+        result.extend(
+            declaration_inputs::declared_own(&facts.generics, facts.crates.as_deref(), definition)?
+                .iter()
+                .map(|input| input.value),
+        );
+    }
+    Ok(result)
 }
 
 /// A const Drop impl's `[const]` bound is checked against its nominal type as

@@ -36,7 +36,7 @@ pub(super) enum State {
 /// One canonical store and append-only completed definitions, with a fixed set
 /// of destructor declarations. Reattaching does not redo completed queries.
 pub struct Cache {
-    pub(super) methods: HashMap<ItemId, (DefId, TypeId)>,
+    pub(super) methods: HashMap<ItemId, (DefId, TypeId, bool)>,
     pub(super) needs: NeedsDrop,
     pub(super) states: HashMap<Key, State>,
     pub(super) storage: Recipes,
@@ -52,13 +52,20 @@ impl Cache {
     pub fn new(methods: &[Method]) -> Result<Self, &'static str> {
         let retained = methods
             .len()
-            .checked_mul(2 * (size_of::<(ItemId, DefId, TypeId)>() + size_of::<ItemId>()))
+            .checked_mul(2 * (size_of::<(ItemId, (DefId, TypeId, bool))>() + size_of::<ItemId>()))
             .filter(|n| *n <= 64_000_000)
             .ok_or("destruction methods exceed 64 MB budget")?;
         let mut selected = HashMap::default();
         for method in methods {
             if selected
-                .insert(method.item, (method.function, method.signature))
+                .insert(
+                    method.item,
+                    (
+                        method.function,
+                        method.signature,
+                        method.has_early_lifetimes,
+                    ),
+                )
                 .is_some()
             {
                 return Err("duplicate destructor recipe method");

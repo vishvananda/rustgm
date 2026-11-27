@@ -142,13 +142,16 @@ impl Checker<'_> {
         let mut proofs = crate::support::hash::HashMap::default();
         for &(owner, item) in &owners {
             let (source, schema) = self.async_destructor_schema(owner)?;
-            if let Some(proof) = self.validate_destructor_traits(NominalContract {
-                owner,
-                scope: owner,
-                item,
-                source,
-                parameters: schema.captures,
-            })? {
+            if let Some(proof) = self.validate_destructor_traits(
+                NominalContract {
+                    owner,
+                    scope: owner,
+                    item,
+                    source: source.into(),
+                    parameters: schema.captures,
+                },
+                &[],
+            )? {
                 proofs.insert(owner, proof);
             }
         }

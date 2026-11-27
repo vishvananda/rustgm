@@ -19,6 +19,7 @@ pub struct Method {
     pub target: TypeId,
     pub signature: TypeId,
     pub captures: u32,
+    pub(crate) has_early_lifetimes: bool,
     pub source: ProofSite,
 }
 #[derive(Clone, Copy, Debug)]
@@ -133,6 +134,11 @@ pub(crate) fn method(
         target: implementation.target,
         signature,
         captures: implementation.parameters,
+        has_early_lifetimes: facts
+            .lifetimes
+            .callables
+            .get(ItemId(function.0))
+            .is_some_and(|template| template.parameters != 0),
         source: implementation.source,
     })
 }
