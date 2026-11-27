@@ -20,7 +20,7 @@ const _: [(); 40] = [(); size_of::<s::ParameterSlot>()];
 // Opaque result applications and declarations add two more cold Vecs.
 // Non-tracked body caller sites live out of line in one Option<Box<...>>.
 // Source closures and specialization parents each use an optional boxed column.
-const _: [(); 616] = [(); size_of::<s::ColdColumns>()];
+const _: [(); 640] = [(); size_of::<s::ColdColumns>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
