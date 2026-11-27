@@ -8,7 +8,6 @@
 //! has no projection term but that subject, so it is normal for the same
 //! reason. Projection-bearing supertrait arguments, binder changes and other
 //! subjects stay uncertified: each would need its own normalization proof.
-use super::Predicate;
 use crate::support::hash::HashSet;
 use crate::types::{
     Store, TypeId,
@@ -47,7 +46,7 @@ fn shape(store: &Store, clause: Clause) -> Result<Option<Shape>, &'static str> {
 pub(in crate::sema) fn inherited(
     store: &Store,
     normal: &[Clause],
-    elaborated: &[Predicate],
+    elaborated: impl IntoIterator<Item = Clause>,
 ) -> Result<Vec<Clause>, &'static str> {
     let mut subjects = HashSet::default();
     for &clause in normal {
@@ -56,11 +55,11 @@ pub(in crate::sema) fn inherited(
         }
     }
     let mut inherited = Vec::new();
-    for predicate in elaborated {
-        if let Some((subject, false)) = shape(store, predicate.value)?
+    for clause in elaborated {
+        if let Some((subject, false)) = shape(store, clause)?
             && subjects.contains(&subject)
         {
-            inherited.push(predicate.value);
+            inherited.push(clause);
         }
     }
     Ok(inherited)

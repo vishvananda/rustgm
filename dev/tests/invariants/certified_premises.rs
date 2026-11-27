@@ -403,12 +403,12 @@ fn elaborated_premises_inherit_only_a_certified_subjects_certificate() -> TestRe
     let keyed = f.premise(searcher, 12, &[Argument::Type(key)])?;
     let other_subject = f.premise(key, 11, &[])?;
     let rebound = f.quantified(11)?;
-    let elaborated = sourced(&[reverse, keyed, other_subject, rebound]);
-    assert_eq!(inherited(&f.store, &[declared], &elaborated)?, [reverse]);
-    assert!(inherited(&f.store, &[], &elaborated)?.is_empty());
+    let elaborated = [reverse, keyed, other_subject, rebound];
+    assert_eq!(inherited(&f.store, &[declared], elaborated)?, [reverse]);
+    assert!(inherited(&f.store, &[], elaborated)?.is_empty());
     // A quantified certified bound passes on to a premise under the same binder.
     let quantified = f.quantified(10)?;
-    assert_eq!(inherited(&f.store, &[quantified], &elaborated)?, [rebound]);
+    assert_eq!(inherited(&f.store, &[quantified], elaborated)?, [rebound]);
     Ok(())
 }
 

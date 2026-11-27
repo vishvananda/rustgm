@@ -468,7 +468,11 @@ impl Generics {
             if let Some(pay) = pay {
                 pay(normal.len().saturating_add(elaborated.len()), 0)?;
             }
-            inherited = elaborated_certificates::inherited(store, normal, elaborated)?;
+            inherited = elaborated_certificates::inherited(
+                store,
+                normal,
+                elaborated.iter().map(|predicate| predicate.value),
+            )?;
         }
         if let Some(pay) = pay {
             let growth = crate::support::retained::Growth::map::<

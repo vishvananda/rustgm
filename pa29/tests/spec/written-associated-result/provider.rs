@@ -1,5 +1,6 @@
 pub trait Searcher<'a> {}
 pub trait ReverseSearcher<'a>: Searcher<'a> {}
+pub trait DoubleEndedSearcher<'a>: ReverseSearcher<'a> {}
 
 pub trait Pattern: Sized {
     type Searcher<'a>: Searcher<'a>;
@@ -34,7 +35,7 @@ pub trait DoubleEnded: Read {
 
 impl<'a, P> DoubleEnded for Cursor<'a, P>
 where
-    P: Pattern<Searcher<'a>: ReverseSearcher<'a>>,
+    P: Pattern<Searcher<'a>: DoubleEndedSearcher<'a>>,
 {
     fn previous(&self) -> &'a u8 {
         self.0
@@ -43,6 +44,7 @@ where
 
 impl<'a> Searcher<'a> for &'a u8 {}
 impl<'a> ReverseSearcher<'a> for &'a u8 {}
+impl<'a> DoubleEndedSearcher<'a> for &'a u8 {}
 
 impl Pattern for u8 {
     type Searcher<'a> = &'a u8;

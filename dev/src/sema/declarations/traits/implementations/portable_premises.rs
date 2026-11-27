@@ -3,8 +3,9 @@ use super::{Checker, DefId, Error};
 use crate::{
     sema::{
         callee_premises::Inputs,
-        crates::{pay_source_headers, source_header_payments},
+        crates::{charge_source_header_query, pay_source_headers, source_header_payments},
         declaration_inputs,
+        generics::elaborated_certificates,
         model::Declarations,
         nominals::Proof,
     },
@@ -57,6 +58,7 @@ impl Checker<'_> {
         if let Some(evidence) = proof.take_trait_proof() {
             self.prove_imported_premise_regions(owner, &evidence)?;
         }
+        normal.extend(inherited_premises(&self.facts, owner, &normal)?);
         let budget =
             source_header_payments(self.facts.crates.as_deref_mut()).map_err(Error::unlocated)?;
         let result = environment
@@ -91,6 +93,29 @@ impl Checker<'_> {
             .map_err(|error| Error::unlocated(error.to_string()))?;
         Ok(())
     }
+}
+
+fn inherited_premises(
+    facts: &Declarations,
+    owner: DefId,
+    normal: &[Clause],
+) -> Result<Vec<Clause>, Error> {
+    let linkage = facts.crates.as_deref();
+    let declared = declaration_inputs::declared_own(&facts.generics, linkage, owner)
+        .map_err(Error::unlocated)?
+        .len();
+    let all =
+        declaration_inputs::own_view(&facts.generics, linkage, owner).map_err(Error::unlocated)?;
+    if all.len() == declared {
+        return Ok(Vec::new());
+    }
+    charge_source_header_query(facts, normal.len().saturating_add(all.len()))?;
+    elaborated_certificates::inherited(
+        &facts.types,
+        normal,
+        all.iter().skip(declared).map(|input| input.value),
+    )
+    .map_err(Error::unlocated)
 }
 
 fn projected_inputs(facts: &Declarations, owner: DefId) -> Result<Vec<Candidate>, &'static str> {
