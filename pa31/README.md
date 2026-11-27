@@ -58,7 +58,12 @@ actual source signatures and selected bodies.
 
 - For an intrinsic call, check declaration authority, the selected typed
   operation, and its safety and const rules. The operation's producer and
-  the scope that may call it are separate facts.
+  the scope that may call it are separate facts. Resolve language items,
+  declared intrinsics (including SIMD intrinsics, `const_eval_select`, and
+  direct intrinsics that also carry Rust fallback bodies), sizing fallbacks
+  (`Sized`/`MetaSized`/`PointeeSized`), and compiler-synthesized shims
+  (tuple/closure/function `Clone`, `FnPtr`, and drop glue) through the same
+  role and intrinsic lookup whether the declaration is local or imported.
 - Bind the actual callable traits, tuple elements, and associated result
   before implementing dependent callable intrinsics. Preserve tuple
   spreading and the selected normal or const invocation path. Pass
@@ -82,7 +87,13 @@ actual source signatures and selected bodies.
   methods and associated types through the provider's checked impls.
   Preserve both specialization-trait policies on their defining trait
   headers. Check the client's feature request when it supplies a new
-  implementation of an imported always-applicable trait.
+  implementation of an imported always-applicable trait. When instantiating an
+  imported generic body, evaluate its internal unstable features and edition
+  rules under its defining provider's permissions rather than the client's
+  feature list. Because an untracked trait method (such as `Into::into`,
+  `Mul::mul`, or `BitXor::bitxor`) can dispatch to a `#[track_caller]`
+  implementation in the provider, retain caller-site locations on symbolic and
+  overloaded trait calls whenever `Location` is available.
 
 ## Check your implementation
 

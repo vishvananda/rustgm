@@ -26,9 +26,10 @@ consume the original `core` crate.
   types and variant declarations. A fresh client can cast an eligible
   imported enum directly to an integer. Preserve checked cast eligibility,
   field privacy, canonical type identities, and use-site obligations.
-- Validate metadata before using it. Preserve dependency identities and fail
-  clearly on missing or incompatible metadata. Use deterministic artifact
-  and LowIR output. Each provider retains its private executable instances.
+- Validate artifact headers, versions, dependency identities, and table bounds
+  before using metadata. Preserve dependency identities and fail clearly on
+  missing, truncated, or incompatible metadata. Use deterministic artifact and
+  LowIR output. Each provider retains its private executable instances.
 - A direct `--extern ALIAS=FILE` adds a visible alias and makes the artifact
   available. `--dependency-metadata FILE` supplies a transitive artifact while
   leaving its name out of the client's extern prelude. Native linking still
@@ -38,18 +39,41 @@ consume the original `core` crate.
 
 Serialize the checked typed body templates a client may need to instantiate
 or evaluate, including the declarations, types, constants and private
-dependencies those bodies refer to. Use a shared, versioned representation
-for these facts. Give references stable identities and remap them into the
-fresh client's own tables when it reads the artifact. Preserve binders,
-obligations and the defining context needed to check the bodies. Nested items
-keep their lexical owners even when the provider has already evaluated an
-enclosing constant or static initializer. Their names stay outside the crate's
-published namespace.
+dependencies those bodies refer to. Serialize the compiler's own typed IR
+through one shared, versioned representation rather than maintaining a parallel
+metadata-only IR. Give every declaration, closure, anonymous or inline `const`
+block, and body a stable `(crate, ordinal)` identity and remap those identities
+into the fresh client's tables. Nested items keep their lexical owners even
+when the provider has already evaluated an enclosing constant or static
+initializer, while their names stay outside the crate's published namespace.
 
-Validate an artifact before admitting it. Use the ordinary compiler pipeline
-to instantiate an imported body and check obligations that depend on the
-client's use. The client has the artifact and the provider's native output.
-It can instantiate the body without reopening the provider's Rust source.
+Design the artifact and reader so separate compilation scales to `core`:
+
+- **Decode lazily on demand.** Separate lightweight export and header tables
+  from indexed body, closure, inline-constant, and impl payloads so a consumer
+  only decodes and remaps items demanded by name resolution, trait selection,
+  constant evaluation, or monomorphization.
+- **Trust producer-proved templates on read.** Validate wire framing, version
+  and target compatibility, dependency crate identities, and index bounds when
+  admitting an artifact. Do not re-run the provider's borrow, region, loan,
+  exhaustiveness, coherence, or template body proofs on every import; put deep
+  artifact re-verification behind an opt-in self-check mode for testing. Run
+  only client-dependent checks (use-site nominal where-clauses, visibility and
+  stability, concrete dispatch, and drop elaboration) when instantiating a
+  demanded body.
+- **Keep post-resolution logic source-independent.** Key `TypeId` identities,
+  constant evaluation, intrinsic recognition, compiler shims, and lowering off
+  uniform local-or-imported item identities rather than local AST nodes. The
+  client has the artifact and the provider's native output and instantiates
+  bodies without reopening the provider's Rust source.
+- **Carry the full generic and callable frame.** Record early-bound versus
+  late-bound lifetimes and distinguish impl- or trait-captured lifetimes from a
+  method's own lifetimes so concrete dispatch reconstructs method arguments
+  accurately. Preserve const parameter types and defaults, calling conventions
+  (`Rust`, `rust-call`, `C`, `C-unwind`, `unadjusted`), `#[track_caller]`
+  policies, and field templates needed to normalize associated-type projections
+  on concrete aggregates without forcing uninstantiated types behind raw
+  pointers or references.
 
 When an imported function declares legacy const argument positions, a direct
 call without explicit generic arguments evaluates the marked operands as

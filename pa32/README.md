@@ -73,17 +73,23 @@ Resolve selected calls against the real source definitions.
 ## Tool surface
 
 Build every target Rust unit with RustGM and pass LowIR to CPPGM for native
-code generation. Produce complete `core` metadata and linkable objects.
-The sysroot identities and artifacts must be reproducible. Share completed
-dependency and proof work across the graph.
+code generation. Produce complete `core` metadata and linkable objects, and
+build `compiler_builtins` against `core` so linked `no_std` executables have
+their runtime math and memory helpers. The sysroot identities and artifacts
+must be reproducible. Load imported `core` metadata lazily on demand and trust
+producer-proved templates so separate consumers pay only for the items they
+actually instantiate. Share completed dependency and proof work across the
+graph.
 
 ## Check your implementation
 
-Compile separate consumers against the resulting metadata and objects.
-Exercise real `Option` and `Result` methods, slices, iteration, formatting,
-conversions, constant operations, pointer and layout APIs, and trait
-selection. Check rejected bindings and invalid type or ownership uses as
-well. Link and run the executable consumers. A successful build includes
+Compile separate consumers against the resulting `core` metadata and objects
+together with `compiler_builtins`. Exercise real `Option` and `Result` methods,
+slices, iteration, formatting, conversions, constant operations, pointer and
+layout APIs, and trait selection. Run a broad set of consumers together to
+group missing metadata or lowering paths by root cause rather than fixing one
+consumer at a time. Check rejected bindings and invalid type or ownership uses
+as well. Link and run the executable consumers. A successful build includes
 the full crate and independently compiled consumers.
 
 Build `alloc` in [PA33](../pa33/README.md) once `core` and its consumers
