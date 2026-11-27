@@ -117,6 +117,7 @@ pub(in crate::sema) fn inputs(
     member: DefId,
     fold: &mut crate::types::substitute::Bound,
 ) -> Result<Requirements, &'static str> {
+    let sized = crate::sema::nominals::sized_bound(facts)?;
     let family = facts.associated.families.get(&member);
     let templates = match family {
         Some(family) => family
@@ -142,16 +143,7 @@ pub(in crate::sema) fn inputs(
             facts.types.parameter(id).map(|p| p.kind),
             Some(ParameterKind::Type { sized: true })
         ) {
-            clauses.push(
-                fold.clause(
-                    &mut facts.types,
-                    Predicate {
-                        ty,
-                        bound: Bound::Sized,
-                    }
-                    .into(),
-                )?,
-            );
+            clauses.push(fold.clause(&mut facts.types, Predicate { ty, bound: sized }.into())?);
         }
     }
     for &clause in templates {

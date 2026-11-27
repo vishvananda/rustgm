@@ -320,10 +320,13 @@ impl Checker<'_> {
         for (source, ty, principal) in std::mem::take(&mut self.object_syntax.uses) {
             self.validate_object(source, ty, principal, &mut queries, &mut checked)?;
         }
-        if self.facts.crates.is_some() && self.facts.types.has_dynamic_shapes() {
+        if crate::support::sealed::self_check()
+            && self.facts.crates.is_some()
+            && self.facts.types.has_dynamic_shapes()
+        {
             self.validate_imported_objects(&mut queries, &mut checked)?;
         }
-        Ok(())
+        self.census_annotations()
     }
 
     fn validate_imported_objects(
@@ -353,7 +356,9 @@ impl Checker<'_> {
                 .dynamic_shape(shape)
                 .ok_or_else(|| self.error(source, "imported object has no actual bounds"))?;
             if let Some(principal) = actual.principal {
-                self.validate_object(source, ty, DefId(principal.0), queries, checked)?;
+                let owner = DefId(principal.0);
+                let result = self.validate_object(source, ty, owner, queries, checked);
+                self.census_imported(owner, result)?;
             }
         }
         Ok(())

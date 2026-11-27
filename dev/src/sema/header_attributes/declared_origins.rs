@@ -439,7 +439,10 @@ pub(in crate::sema) fn bind_definition(
     legacy_indices::bind(report, facts, definition, declaration)
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    if report.package.source_core().is_some() || report.package.bootstrap_metadata() {
+    if report.package.source_core().is_some()
+        || report.package.source_client().is_some()
+        || report.package.bootstrap_metadata()
+    {
         ledger(facts, 0)?.local.complete = true;
     }
     if let Some(headers) = facts

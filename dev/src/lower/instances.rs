@@ -348,6 +348,19 @@ pub fn build_source_library_profile(
             "source publication profile requires its actual SourceCore provider".into(),
         ));
     }
+    let mut preparation = OrdinaryPreparation { report };
+    let construction = if body::transported_originals::lazy_source_originals(report) {
+        Construction::Imported(&mut preparation)
+    } else if matches!(
+        profile,
+        SourcePublication::CompilerOperations
+            | SourcePublication::ModuleBodyOperations
+            | SourcePublication::BootstrapModuleBodies
+    ) {
+        Construction::CompilerOperations
+    } else {
+        Construction::Complete
+    };
     inspect_staged(
         report,
         facts,
@@ -418,16 +431,7 @@ pub fn build_source_library_profile(
             let interface = published_interface(report, facts, source, base, profile)?;
             Ok((program, with_crate_attributes(report, interface)?))
         },
-        if matches!(
-            profile,
-            SourcePublication::CompilerOperations
-                | SourcePublication::ModuleBodyOperations
-                | SourcePublication::BootstrapModuleBodies
-        ) {
-            Construction::CompilerOperations
-        } else {
-            Construction::Complete
-        },
+        construction,
     )?
 }
 
@@ -588,7 +592,12 @@ fn inspect_selected<R>(
         super::roots::Selected<'_>,
     ) -> R,
 ) -> Result<R, Error> {
-    let construction = Construction::ordinary(facts);
+    let mut preparation = OrdinaryPreparation { report };
+    let construction = if body::transported_originals::lazy_source_originals(report) {
+        Construction::Imported(&mut preparation)
+    } else {
+        Construction::ordinary(facts)
+    };
     inspect_staged(
         report,
         facts,
@@ -601,6 +610,82 @@ fn inspect_selected<R>(
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
         construction,
     )
+}
+
+struct OrdinaryPreparation<'a> {
+    report: &'a Report,
+}
+
+impl crate::sema::dispatch::Preparation for OrdinaryPreparation<'_> {
+    fn with_original(
+        &mut self,
+        facts: &mut Declarations,
+        definition: DefId,
+        consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        crate::sema::crates::prepare_source_original(self.report, facts, definition, 0, 0)?;
+        let mut steps = 0;
+        let result = {
+            let view = crate::sema::crates::source_original(facts, definition, &mut steps)
+                .map_err(|e| self.report.body_optional_error(None, e))?
+                .ok_or_else(|| {
+                    self.report.body_optional_error(
+                        None,
+                        "selected original has no authenticated current data view",
+                    )
+                })?;
+            consume(facts, &view)
+        };
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        result
+    }
+    fn with_closure(
+        &mut self,
+        facts: &mut Declarations,
+        identity: crate::types::closure::ClosureId,
+        consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        crate::sema::crates::prepare_source_closure_original(self.report, facts, identity, 0, 0)?;
+        let mut steps = 0;
+        let result = {
+            let view = crate::sema::crates::source_closure_original(facts, identity, &mut steps)
+                .map_err(|e| self.report.body_optional_error(None, e))?
+                .ok_or_else(|| {
+                    self.report.body_optional_error(
+                        None,
+                        "selected closure original has no authenticated current data view",
+                    )
+                })?;
+            consume(facts, &view)
+        };
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        result
+    }
+    fn copy_declarations(&mut self, _facts: &mut Declarations) -> Result<(), Error> {
+        Ok(())
+    }
+    fn prepay(
+        &mut self,
+        facts: &mut Declarations,
+        work: usize,
+        _bytes: usize,
+    ) -> Result<(), Error> {
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+        Ok(())
+    }
+    fn prepare(
+        &mut self,
+        _facts: &mut Declarations,
+        _dependency: crate::sema::dispatch::PreparationDependency,
+    ) -> Result<(), Error> {
+        Ok(())
+    }
 }
 
 fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), Error> {
@@ -714,7 +799,9 @@ fn inspect_staged<S, R>(
     let (templates, contexts, inputs) =
         prepare_template_inputs(report, facts, &mut prepared, selection)?;
     let templates = std::rc::Rc::new(templates);
-    if let Some(context) = &prepared.constants {
+    if !matches!(construction, Construction::Imported(_))
+        && let Some(context) = &prepared.constants
+    {
         context
             .templates(std::rc::Rc::clone(&templates))
             .map_err(|e| diagnostic(report, None, e.into()))?;

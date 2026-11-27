@@ -271,6 +271,9 @@ fn forged_guard_rows_reject_in_fresh_consumers() -> Result {
         let path = packet.folder.join(format!("{name}.rgcrate"));
         std::fs::write(&path, wire)?;
         let mut consumer = packet.consumer(&client, name, &path, &packet.owner());
+        if name == "skip-test" {
+            consumer.arg("--self-check");
+        }
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     // Sound relabels. The swap makes the guarded arm unreachable, so it never

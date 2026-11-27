@@ -35,9 +35,15 @@ impl Imports {
     ) -> Result<crate::syntax::token_tree::Span, Error> {
         use crate::{expand::stream::OriginKind, syntax::ast::Kind};
         let ast = &package.unit(site.file).configured.ast;
-        let span = ast.node(site.node).span;
+        let mut node = match ast.node(site.node).kind {
+            Kind::Call { callee, .. } => callee,
+            Kind::MethodCall { name, .. } => return Ok(name),
+            Kind::GenericMethodCall { method, .. } => method,
+            _ => site.node,
+        };
+        let span = ast.node(node).span;
         if !matches!(
-            ast.node(site.node).kind,
+            ast.node(node).kind,
             Kind::Path { .. } | Kind::Applied { .. }
         ) {
             return Ok(span);
@@ -57,7 +63,6 @@ impl Imports {
         if !matches!(origin.kind, OriginKind::Synthetic(_)) || span.end <= origin.generated.end {
             return Ok(span);
         }
-        let mut node = site.node;
         loop {
             self.charge(1, 0)?;
             match ast.node(node).kind {
@@ -69,9 +74,13 @@ impl Imports {
                 }
                 Kind::Applied { base, .. } => node = base,
                 Kind::Name(name, _) => {
-                    return Ok(crate::syntax::token_tree::Span {
-                        start: span.start,
-                        end: name.end,
+                    return Ok(if name.end <= origin.generated.end {
+                        crate::syntax::token_tree::Span {
+                            start: span.start,
+                            end: name.end,
+                        }
+                    } else {
+                        name
                     });
                 }
                 _ => return Ok(span),

@@ -68,9 +68,14 @@ impl Graph {
                 rows.constants()[index as usize].body,
                 s::ConstantBody::Original(_)
             ))
-        } else {
+        } else if let Some(s::HeaderRef::Function(index)) = rows.header(row)? {
             catalog.validate_declaration(declaration, definition, DefKind::Function)?;
-            Ok(true)
+            Ok(matches!(
+                rows.functions[index as usize].body,
+                s::FunctionBody::Original(_)
+            ))
+        } else {
+            Ok(false)
         }
     }
     pub(in crate::sema::crates::typed_headers) fn source_original<'a>(

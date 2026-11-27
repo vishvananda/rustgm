@@ -291,7 +291,8 @@ fn body_environment(
                 work,
                 allocation: Allocation::default(),
             };
-            let environment = ContractParts::private_empty(actual).build(facts, &mut accounting)?;
+            let environment =
+                ContractParts::private_empty(actual).build(facts, None, &mut accounting)?;
             if Arc::ptr_eq(&environment, &scope.environment) || !environment.is_neutral() {
                 return Err(error(
                     "empty Contract substituted its declaration environment",

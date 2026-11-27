@@ -141,7 +141,9 @@ pub(in crate::sema) fn source_index(
 pub(in crate::sema) fn index_available(facts: &Declarations) -> bool {
     facts.source_bindings.as_deref().is_some_and(|catalog| {
         catalog
-            .language(crate::support::bindings::LangItem::Index)
+            .role(crate::support::bindings::LangItem::Index)
+            .ok()
+            .flatten()
             .is_some()
     })
 }

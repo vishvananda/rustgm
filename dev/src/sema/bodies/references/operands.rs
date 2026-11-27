@@ -107,8 +107,10 @@ impl Checker<'_> {
             Some(Constructor::Adt(..) | Constructor::AdtArgs(..) | Constructor::Tuple) => {
                 let ty = match self.state.infer.resolved(&mut self.facts.types, expected) {
                     Ok(ty) => Some(ty),
-                    Err(crate::types::infer::Error::Unresolved) => None,
-                    Err(crate::types::infer::Error::Normalization) if !coerce_value => None,
+                    Err(
+                        crate::types::infer::Error::Unresolved
+                        | crate::types::infer::Error::Normalization,
+                    ) => None,
                     Err(e) => return Err(self.error(node, e)),
                 };
                 // Provisional nominal sizes cannot decide physical metadata.

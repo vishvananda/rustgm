@@ -12,10 +12,36 @@ pub(crate) fn demand(
     definition: DefId,
     service: &mut dyn Preparation,
 ) -> Result<Original, Error> {
+    demand_with(report, facts, service, |service, facts, consume| {
+        service.with_original(facts, definition, consume)
+    })
+}
+
+pub(crate) fn demand_closure(
+    report: &Report,
+    facts: &mut Declarations,
+    identity: crate::types::closure::ClosureId,
+    service: &mut dyn Preparation,
+) -> Result<Original, Error> {
+    demand_with(report, facts, service, |service, facts, consume| {
+        service.with_closure(facts, identity, consume)
+    })
+}
+
+fn demand_with(
+    report: &Report,
+    facts: &mut Declarations,
+    service: &mut dyn Preparation,
+    mut access: impl FnMut(
+        &mut dyn Preparation,
+        &mut Declarations,
+        &mut dyn FnMut(&Declarations, &crate::sema::crates::SourceOriginal<'_>) -> Result<(), Error>,
+    ) -> Result<(), Error>,
+) -> Result<Original, Error> {
     let mut work = ImportedOriginals::default();
     let mut allocation = 0;
     let mut reads = false;
-    let preflight = service.with_original(facts, definition, &mut |_, view| {
+    let preflight = access(service, facts, &mut |_, view| {
         work.charge(view.raw().values.len().saturating_add(1))
             .map_err(Error::unlocated)?;
         reads = view.raw().values.iter().any(|value| {
@@ -42,7 +68,7 @@ pub(crate) fn demand(
     }
     let before = work.steps;
     let mut decoded = None;
-    let result = service.with_original(facts, definition, &mut |facts, view| {
+    let result = access(service, facts, &mut |facts, view| {
         let source = view.source().map_err(Error::unlocated)?;
         let body =
             rebuilt_operations::build(view, &mut work).map_err(|e| report.body_error(source, e))?;
@@ -75,7 +101,26 @@ pub(crate) fn demand(
         Error::unlocated("selected original producer omitted its actual raw result")
     })?;
     let mut scratch = crate::body::promote::Scratch::default();
-    decoded_bodies::finish(report, facts, &mut scratch, body, contract, environment)
+    let mut original = decoded_bodies::finish(
+        report,
+        facts,
+        &mut scratch,
+        body,
+        contract,
+        environment,
+        Some(service),
+    )?;
+    let source = original.template.body.source;
+    if facts
+        .inline_constants
+        .as_deref()
+        .is_some_and(|inline| inline.has_children_origin(source))
+    {
+        decoded_bodies::complete_inline_children(report, facts, &mut scratch, source)?;
+        crate::body::instantiate::close_inline_operands(facts, &mut original.template.body)
+            .map_err(|e| report.body_error(source, e))?;
+    }
+    Ok(original)
 }
 
 pub(crate) fn validate(

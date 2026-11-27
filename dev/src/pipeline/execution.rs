@@ -148,10 +148,45 @@ struct Session {
     state: Option<const_eval::State>,
     waiting: Option<Requirement>,
 }
+#[derive(Default)]
+struct DemandedOriginals {
+    declarations: HashMap<DefId, Rc<body::transported_originals::Original>>,
+    closures: HashMap<crate::types::closure::ClosureId, Rc<body::transported_originals::Original>>,
+    anonymous: HashMap<
+        crate::resolve::body_origin::ImportedBodyId,
+        Rc<body::transported_originals::Original>,
+    >,
+}
+
+pub(super) enum ImportedOriginal {
+    Declaration(Rc<body::transported_originals::ImportedOriginals>, DefId),
+    Closure(
+        Rc<body::transported_originals::ImportedOriginals>,
+        crate::types::closure::ClosureId,
+    ),
+    Anonymous(
+        Rc<body::transported_originals::ImportedOriginals>,
+        crate::resolve::body_origin::ImportedBodyId,
+    ),
+    Demanded(Rc<body::transported_originals::Original>),
+}
+
+impl ImportedOriginal {
+    pub(super) fn row(&self) -> Option<&body::transported_originals::Original> {
+        match self {
+            Self::Declaration(rows, definition) => rows.get(*definition),
+            Self::Closure(rows, identity) => rows.closure(*identity),
+            Self::Anonymous(rows, body) => rows.anonymous(*body),
+            Self::Demanded(row) => Some(row.as_ref()),
+        }
+    }
+}
+
 type InitializerTemplates = HashMap<DefId, (Template, Contract)>;
 #[derive(Default)]
 pub(super) struct Engine {
     imported: Option<Rc<body::transported_originals::ImportedOriginals>>,
+    demanded_imported: Option<Box<DemandedOriginals>>,
     catalog: Catalog,
     const_calls: Option<Box<const_eval::use_inputs::Inputs>>,
     values: values::Scratch,
@@ -184,8 +219,10 @@ impl Engine {
         facts: &mut Declarations,
         prepared: &mut Prepared,
     ) -> Result<(), Error> {
-        self.ensure_imported_originals(report, facts)?;
-        prepared.imported = self.imported.as_ref().map(Rc::clone);
+        if !body::transported_originals::lazy_source_originals(report) {
+            self.ensure_imported_originals(report, facts)?;
+            prepared.imported = self.imported.as_ref().map(Rc::clone);
+        }
         self.transfer_components(report, facts, prepared)?;
         for (key, body) in std::mem::take(&mut self.concrete) {
             if prepared.concrete.contains_key(&key) {
@@ -781,9 +818,17 @@ impl Engine {
         if !self.catalog.functions.contains_key(&instance) {
             return Ok(false);
         }
-        if let Some(originals) = &self.imported
-            && let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
-            && let Some(row) = originals.get(DefId(item.0))
+        if let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+            && let Some(row) = self
+                .imported
+                .as_deref()
+                .and_then(|originals| originals.get(DefId(item.0)))
+                .or_else(|| {
+                    self.demanded_imported
+                        .as_deref()
+                        .and_then(|originals| originals.declarations.get(&DefId(item.0)))
+                        .map(Rc::as_ref)
+                })
         {
             let header = facts
                 .function_header(DefId(item.0))
@@ -946,30 +991,120 @@ impl Engine {
                     purpose: ProofPurpose::Original,
                 },
             )?;
-            if let Owner::Closure {
-                identity,
-                execution: Some(_),
-                ..
-            } = body.owner
-            {
-                let (steps, conditions) = borrow::templates::collect_closure_conditions(
-                    &facts.types,
-                    &facts.lifetimes.nominal_requirements,
-                    &facts.lifetimes.callables,
-                    identity,
-                    contract.as_ref(),
-                    regions.output.as_ref(),
-                )
-                .map_err(|e| report.body_error(body.source, e))?;
-                facts.body_work.canonical_steps =
-                    facts.body_work.canonical_steps.saturating_add(steps);
-                facts
-                    .closures
-                    .retain_conditions(identity, body.source, conditions.as_ref())
-                    .map_err(|e| report.body_error(body.source, e))?;
-            }
+            retain_imported_closure_conditions(report, facts, body, contract.as_ref(), regions)?;
         }
         Ok(())
+    }
+    pub(super) fn imported_original(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        target: body::transported_originals::SourceTarget,
+    ) -> Result<Option<ImportedOriginal>, Error> {
+        use body::transported_originals::SourceTarget;
+        if body::transported_originals::lazy_source_originals(report) {
+            if let Some(demanded) = self.demanded_imported.as_deref() {
+                let cached = match target {
+                    SourceTarget::Declaration(def) => demanded.declarations.get(&def),
+                    SourceTarget::Closure(id) => demanded.closures.get(&id),
+                    SourceTarget::Anonymous(id) => demanded.anonymous.get(&id),
+                };
+                if let Some(row) = cached {
+                    return Ok(Some(ImportedOriginal::Demanded(Rc::clone(row))));
+                }
+            }
+            if !is_source_target(report, facts, target)? {
+                return Ok(None);
+            }
+            let row = body::transported_originals::demand_source_target(
+                report,
+                facts,
+                target,
+                &mut self.promotions,
+            )?;
+            self.prove_single_imported_original(report, facts, &row)?;
+            let row = Rc::new(row);
+            let demanded = self.demanded_imported.get_or_insert_with(Default::default);
+            match target {
+                SourceTarget::Declaration(def) => {
+                    demanded.declarations.insert(def, Rc::clone(&row));
+                }
+                SourceTarget::Closure(id) => {
+                    demanded.closures.insert(id, Rc::clone(&row));
+                }
+                SourceTarget::Anonymous(id) => {
+                    demanded.anonymous.insert(id, Rc::clone(&row));
+                }
+            }
+            return Ok(Some(ImportedOriginal::Demanded(row)));
+        }
+        self.ensure_imported_originals(report, facts)?;
+        let Some(originals) = self.imported.as_ref().map(Rc::clone) else {
+            return Ok(None);
+        };
+        Ok(Some(match target {
+            SourceTarget::Declaration(def) => ImportedOriginal::Declaration(originals, def),
+            SourceTarget::Closure(id) => ImportedOriginal::Closure(originals, id),
+            SourceTarget::Anonymous(id) => ImportedOriginal::Anonymous(originals, id),
+        }))
+    }
+    fn prove_single_imported_original(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        row: &body::transported_originals::Original,
+    ) -> Result<(), Error> {
+        let body = &row.template().body;
+        let source = body.source;
+        crate::borrow::storage::validate(body).map_err(|e| report.body_error(e.node, e.message))?;
+        let mut contract =
+            super::original_contexts::Original::prepare_imported(facts, body, row.contract())
+                .map_err(|e| report.body_error(source, e))?;
+        body::transported_originals::prove_original_calls(
+            facts,
+            body,
+            &mut contract,
+            &row.template().environment,
+        )
+        .map_err(|e| report.body_error(source, e))?;
+        let proof = body::transported_originals::prove_original_types(
+            facts,
+            body,
+            &contract,
+            &row.template().environment,
+        )
+        .map_err(|e| report.body_error(source, e))?;
+        contract.proofs.extend(proof);
+        contract
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(|e| report.body_error(source, e))?;
+        let mut queries = crate::types::outlives::Queries::new(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        let mut regions = borrow::regions::check_one_imported(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut queries,
+            &contract,
+            body,
+        )
+        .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
+        let mut contract = std::borrow::Cow::Owned(contract);
+        self.prove_loans(
+            report,
+            facts,
+            body,
+            &row.template().destruction,
+            &mut LoanInput {
+                parameters: &row.template().environment,
+                contract: &mut contract,
+                regions: &mut regions,
+                purpose: ProofPurpose::Original,
+            },
+        )?;
+        retain_imported_closure_conditions(report, facts, body, contract.as_ref(), &regions)
     }
     fn imported_function(
         &mut self,
@@ -993,11 +1128,16 @@ impl Engine {
         }
         // Identifying an imported declaration needs no defining environment.
         // Its actual body producer constructs and proves that environment here.
-        self.ensure_imported_originals(report, facts)?;
-        let originals = self.imported.as_ref().map(Rc::clone).ok_or_else(|| {
-            report.body_optional_error(None, "imported function lacks its proved original set")
-        })?;
-        let row = originals.get(definition).ok_or_else(|| {
+        let original = self
+            .imported_original(
+                report,
+                facts,
+                body::transported_originals::SourceTarget::Declaration(definition),
+            )?
+            .ok_or_else(|| {
+                report.body_optional_error(None, "imported function lacks its proved original set")
+            })?;
+        let row = original.row().ok_or_else(|| {
             report.body_optional_error(None, "imported function has no exact original row")
         })?;
         super::original_contexts::Original::validate_parts_charged(
@@ -1292,4 +1432,57 @@ impl Engine {
         super::cdrop::one(report, facts, body, destruction, input, loans)
             .map_err(|e| report.body_error(source, e))
     }
+}
+
+fn is_source_target(
+    report: &Report,
+    facts: &mut Declarations,
+    target: body::transported_originals::SourceTarget,
+) -> Result<bool, Error> {
+    use body::transported_originals::SourceTarget;
+    let mut steps = 0;
+    let found = match target {
+        SourceTarget::Declaration(def) => {
+            crate::sema::crates::is_source_original(facts, def, &mut steps)
+        }
+        SourceTarget::Closure(id) => {
+            crate::sema::crates::is_source_closure_original(facts, id, &mut steps)
+        }
+        SourceTarget::Anonymous(id) => {
+            crate::sema::crates::is_source_anonymous_original(facts, id, &mut steps)
+        }
+    };
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    found.map_err(|e| report.body_optional_error(None, e))
+}
+
+fn retain_imported_closure_conditions(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &Contract,
+    regions: &borrow::regions::Body,
+) -> Result<(), Error> {
+    if let Owner::Closure {
+        identity,
+        execution: Some(_),
+        ..
+    } = body.owner
+    {
+        let (steps, conditions) = borrow::templates::collect_closure_conditions(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+            identity,
+            contract,
+            regions.output.as_ref(),
+        )
+        .map_err(|e| report.body_error(body.source, e))?;
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        facts
+            .closures
+            .retain_conditions(identity, body.source, conditions.as_ref())
+            .map_err(|e| report.body_error(body.source, e))?;
+    }
+    Ok(())
 }

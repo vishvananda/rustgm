@@ -123,61 +123,118 @@ pub fn templates(
         })
         .collect::<Vec<_>>();
     for (definition, signature, variant) in selected {
-        let declaration = facts.members.variants[variant.0 as usize];
-        let owner = DefId(declaration.owner.0);
-        let source = anchor(report, declaration)?;
-        // A bring-up list entry at a constructor withholds its function body;
-        // every use of that constructor as a function value then fails.
-        if crate::body::bringup::stub(report, source) {
-            continue;
-        }
-        let error = |message| report.body_error(source, message);
-        let environment = match environments.entry(owner) {
-            std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),
-            std::collections::hash_map::Entry::Vacant(entry) => Arc::clone(
-                entry.insert(Arc::new(
-                    facts
-                        .source_parameter_environment(report, source, owner)
-                        .map_err(error)?,
-                )),
-            ),
-        };
-        let Some(Type::Function { result, .. }) = facts.types.kind(signature) else {
-            return Err(error("missing constructor signature"));
-        };
-        facts
-            .aggregates
-            .prepare(&mut facts.types, result)
-            .map_err(error)?;
-        let mut scoped = query.scoped(Arc::clone(&environment));
-        let body = build(
+        if let Some((template, contract)) = build_template(
             report,
             facts,
+            &query,
+            &mut environments,
             definition,
             signature,
             variant,
-            Some(&mut scoped),
-        )?;
-        let destruction =
-            crate::body::drops::requirements(facts, &body, &mut scoped).map_err(error)?;
-        let mut contract =
-            crate::body::regions::constructor(facts, definition, declaration, source, signature)
-                .map_err(error)?;
-        if facts.uses_source_copy() {
-            // Constructor parameters have the nominal's declared trait
-            // requirements, shared by CFG construction and the body proof.
-            let mut builtins = BuiltinRequirements::empty();
-            builtins.environment = Some(Arc::clone(&environment));
-            contract.builtins = Some(Arc::new(builtins));
+        )? {
+            contracts.push(contract);
+            templates.bodies.push(template);
         }
-        contracts.push(contract);
-        templates.bodies.push(Template {
+    }
+    Ok(())
+}
+
+pub(crate) fn single_template(
+    report: &Report,
+    facts: &mut Declarations,
+    definition: DefId,
+    variant: VariantId,
+) -> Result<Option<(Template, Contract)>, Error> {
+    let Some(Type::FunctionItem {
+        item, signature, ..
+    }) = facts
+        .definitions
+        .get(definition.0 as usize)
+        .copied()
+        .flatten()
+        .and_then(|ty| facts.types.kind(ty))
+    else {
+        return Ok(None);
+    };
+    if item.0 != definition.0 {
+        return Ok(None);
+    }
+    let query = NeedsDrop::new(facts.destructors.implementations().iter().map(|i| i.item));
+    let mut environments = HashMap::default();
+    build_template(
+        report,
+        facts,
+        &query,
+        &mut environments,
+        definition,
+        signature,
+        variant,
+    )
+}
+
+fn build_template(
+    report: &Report,
+    facts: &mut Declarations,
+    query: &NeedsDrop,
+    environments: &mut HashMap<DefId, Arc<crate::types::parameters::environment::Environment>>,
+    definition: DefId,
+    signature: TypeId,
+    variant: VariantId,
+) -> Result<Option<(Template, Contract)>, Error> {
+    let declaration = facts.members.variants[variant.0 as usize];
+    let owner = DefId(declaration.owner.0);
+    let source = anchor(report, declaration)?;
+    // A bring-up list entry at a constructor withholds its function body;
+    // every use of that constructor as a function value then fails.
+    if crate::body::bringup::stub(report, source) {
+        return Ok(None);
+    }
+    let error = |message| report.body_error(source, message);
+    let environment = match environments.entry(owner) {
+        std::collections::hash_map::Entry::Occupied(entry) => Arc::clone(entry.get()),
+        std::collections::hash_map::Entry::Vacant(entry) => Arc::clone(
+            entry.insert(Arc::new(
+                facts
+                    .source_parameter_environment(report, source, owner)
+                    .map_err(error)?,
+            )),
+        ),
+    };
+    let Some(Type::Function { result, .. }) = facts.types.kind(signature) else {
+        return Err(error("missing constructor signature"));
+    };
+    facts
+        .aggregates
+        .prepare(&mut facts.types, result)
+        .map_err(error)?;
+    let mut scoped = query.scoped(Arc::clone(&environment));
+    let body = build(
+        report,
+        facts,
+        definition,
+        signature,
+        variant,
+        Some(&mut scoped),
+    )?;
+    let destruction = crate::body::drops::requirements(facts, &body, &mut scoped).map_err(error)?;
+    let mut contract =
+        crate::body::regions::constructor(facts, definition, declaration, source, signature)
+            .map_err(error)?;
+    if facts.uses_source_copy() {
+        // Constructor parameters have the nominal's declared trait
+        // requirements, shared by CFG construction and the body proof.
+        let mut builtins = BuiltinRequirements::empty();
+        builtins.environment = Some(Arc::clone(&environment));
+        contract.builtins = Some(Arc::new(builtins));
+    }
+    Ok(Some((
+        Template {
             body,
             destruction,
             environment,
-        });
-    }
-    Ok(())
+        },
+        contract,
+    )))
 }
 
 fn build(

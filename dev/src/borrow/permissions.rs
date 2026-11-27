@@ -32,6 +32,9 @@ pub(super) fn check<S: BuildHasher>(
             ))
         })
         .transpose()?;
+    if proof.source.source().is_none() && !crate::support::sealed::self_check() {
+        return Ok(parameters);
+    }
     let mut copies = parameters
         .as_ref()
         .map_or_else(Copies::default, |e| Copies::in_environment(Arc::clone(e)));

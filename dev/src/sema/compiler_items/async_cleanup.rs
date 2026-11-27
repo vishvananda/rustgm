@@ -60,7 +60,7 @@ pub(in crate::sema) fn operation(
         ));
     }
     let function = facts
-        .function_header(member)
+        .declaration_header(member)
         .map_err(error)?
         .ok_or_else(|| error("demanded AsyncDrop first member is not an actual function"))?;
     if facts.is_const_function(member)

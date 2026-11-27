@@ -631,13 +631,15 @@ impl Checker<'_> {
         }
         let plan =
             crate::sema::crates::imported_member_plan(&mut self.facts, definition, predicate)?;
-        let environment =
-            self.imported_receiver_environment(definition, predicate, plan.as_ref())?;
-        let environment = self.reprove_imported_premises(definition, environment)?;
-        if let Some(plan) = &plan {
-            self.check_imported_members(definition, predicate, plan, &environment)?;
+        if crate::support::sealed::self_check() {
+            let environment =
+                self.imported_receiver_environment(definition, predicate, plan.as_ref())?;
+            let environment = self.reprove_imported_premises(definition, environment)?;
+            if let Some(plan) = &plan {
+                self.check_imported_members(definition, predicate, plan, &environment)?;
+            }
+            self.validate_imported_requirements(definition, predicate, environment)?;
         }
-        self.validate_imported_requirements(definition, predicate, environment)?;
         let members = plan.map(|plan| plan.members).unwrap_or_default();
         self.facts
             .generics
@@ -759,21 +761,25 @@ impl Checker<'_> {
             .associated
             .imported_automatic_implementation(&self.facts.types, owner, predicate)
             .map_err(Error::unlocated)?;
-        self.validate_imported_automatic_domain(definition, predicate.ty)?;
-        if negative {
-            self.validate_imported_negative_header(definition, predicate)?;
-        } else {
-            let environment = self
-                .facts
-                .generics
-                .environments
-                .get(&definition)
-                .cloned()
-                .ok_or_else(|| {
-                    Error::unlocated("imported impl lacks its complete actual input environment")
-                })?;
-            let environment = self.reprove_imported_premises(definition, environment)?;
-            self.validate_imported_requirements(definition, predicate, environment)?;
+        if crate::support::sealed::self_check() {
+            self.validate_imported_automatic_domain(definition, predicate.ty)?;
+            if negative {
+                self.validate_imported_negative_header(definition, predicate)?;
+            } else {
+                let environment = self
+                    .facts
+                    .generics
+                    .environments
+                    .get(&definition)
+                    .cloned()
+                    .ok_or_else(|| {
+                        Error::unlocated(
+                            "imported impl lacks its complete actual input environment",
+                        )
+                    })?;
+                let environment = self.reprove_imported_premises(definition, environment)?;
+                self.validate_imported_requirements(definition, predicate, environment)?;
+            }
         }
         self.facts
             .generics

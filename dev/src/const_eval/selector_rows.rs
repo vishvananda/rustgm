@@ -86,10 +86,7 @@ pub(super) fn push(
         return Ok(());
     }
     *work = work.saturating_add(1);
-    if facts
-        .function_header(definition)?
-        .is_none_or(|header| header.declaration.source().is_none())
-    {
+    if facts.declaration_header(definition)?.is_none() {
         return Ok(());
     }
     let Some(Kind::Tuple(parameters)) = facts.types.kind(selection.types[0]) else {
@@ -237,9 +234,7 @@ impl Opening {
             || facts.associated.owner(definition).is_some()
             || catalog.intrinsic_kind(definition)?.is_some()
             || catalog.requires_const_payment(definition)?
-            || facts
-                .function_header(definition)?
-                .is_none_or(|header| header.declaration.source().is_none())
+            || facts.declaration_header(definition)?.is_none()
         {
             return Err(
                 "reference selector requires its ordinary source const function declaration",

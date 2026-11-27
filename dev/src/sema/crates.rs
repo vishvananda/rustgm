@@ -88,6 +88,7 @@ pub struct Linkage {
     promotions: Option<Box<promotions::Registry>>,
     pending_relocations: Option<Box<statics::Pending>>,
     import_work: ImportWork,
+    pub(in crate::sema) imported_body_features: bool,
 }
 #[derive(Clone, Copy)]
 pub(in crate::sema) enum ImportedStorage {

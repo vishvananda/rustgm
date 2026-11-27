@@ -43,7 +43,7 @@ impl Dependencies {
                     value
                 };
                 if !forwards_caller {
-                    let site = body.syntax_site(statement.source)?;
+                    let site = body.source.proof_site(statement.source)?;
                     arithmetic_guards::prepare_location(report, facts, site)?;
                 }
             }

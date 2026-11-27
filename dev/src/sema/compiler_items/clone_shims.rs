@@ -1,6 +1,6 @@
 //! The language's own `Clone` for tuples, closures and functions is a compiler shim.
 use crate::{
-    resolve::{model::DefId, unit::NodeKey},
+    resolve::{body_origin::DeclarationOrigin, model::DefId},
     sema::model::Declarations,
     support::{bindings::LangItem, constness::Constness},
     types::{
@@ -35,18 +35,21 @@ pub(in crate::sema) fn application(
     let Some((id, Constness::Ordinary)) = predicate.bound.trait_parts() else {
         return Ok(false);
     };
-    let Some(owner) = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::Clone))
-    else {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(false);
+    };
+    let Some(owner) = catalog.role(LangItem::Clone)? else {
         return Ok(false);
     };
     let application = facts
         .types
         .trait_application(id)
         .ok_or("invalid source Clone application")?;
-    Ok(application.item.0 == owner.definition.0 && provided(&facts.types, predicate.ty))
+    if application.item.0 != owner.definition.0 || !provided(&facts.types, predicate.ty) {
+        return Ok(false);
+    }
+    catalog.validated_role(LangItem::Clone)?;
+    Ok(true)
 }
 
 /// Exact canonical `clone` data for a compiler shim, never an ordinary impl body.
@@ -54,7 +57,7 @@ pub(in crate::sema) fn application(
 pub(crate) struct Shim {
     pub instance: Instance,
     pub definition: DefId,
-    pub source: NodeKey,
+    pub origin: DeclarationOrigin,
     pub signature: TypeId,
     pub subject: TypeId,
 }
@@ -113,18 +116,16 @@ impl Shim {
 }
 
 /// The actual declared `clone` member and its `Clone` owner, both validated.
-fn member(
-    facts: &Declarations,
-) -> Result<Option<crate::resolve::bindings::Declaration>, &'static str> {
+fn member(facts: &Declarations) -> Result<Option<super::Role>, &'static str> {
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    let Some(member) = catalog.language(LangItem::CloneFn) else {
+    let Some(member) = catalog.role(LangItem::CloneFn)? else {
         return Ok(None);
     };
-    catalog.validated_language(LangItem::CloneFn)?;
+    catalog.validated_role(LangItem::CloneFn)?;
     let owner = catalog
-        .validated_language(LangItem::Clone)?
+        .validated_role(LangItem::Clone)?
         .ok_or("source Clone shim requires its completed actual Clone owner")?;
     if member.parent != Some(owner.definition)
         || facts.associated.trait_owner(member.definition) != Some(owner.definition)
@@ -146,10 +147,11 @@ pub(crate) fn shim(
     else {
         return Ok(None);
     };
-    if facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.language(LangItem::CloneFn))
+    let Some(catalog) = facts.source_bindings.as_deref() else {
+        return Ok(None);
+    };
+    if catalog
+        .role(LangItem::CloneFn)?
         .is_none_or(|member| member.definition.0 != item.0)
     {
         return Ok(None);
@@ -171,9 +173,9 @@ pub(crate) fn shim(
     }
     let member = member(facts)?.ok_or("source Clone shim lost its actual declaration")?;
     let function = facts
-        .function_header(member.definition)?
+        .declaration_header(member.definition)?
         .ok_or("source Clone shim lost its actual header")?;
-    if function.declaration.source() != Some(member.origin) || function.body.is_some() {
+    if function.declaration != member.origin || function.body.is_some() {
         return Err("source Clone shim changed its required actual declaration");
     }
     let original = facts
@@ -193,7 +195,7 @@ pub(crate) fn shim(
     Ok(Some(Shim {
         instance,
         definition: member.definition,
-        source: member.origin,
+        origin: member.origin,
         signature,
         subject,
     }))
@@ -244,7 +246,7 @@ pub(in crate::sema) fn select(
     let declared = member(facts)?.ok_or("source Clone shim requires its actual declaration")?;
     if declared.definition.0 != item.0 {
         let provided = facts
-            .function_header(DefId(item.0))?
+            .declaration_header(DefId(item.0))?
             .is_some_and(|function| function.body.is_some());
         return if provided {
             Ok(selected)

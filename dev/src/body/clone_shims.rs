@@ -44,7 +44,11 @@ struct Interface {
     members: Option<Vec<TypeId>>,
 }
 
-fn interface(facts: &mut Declarations, selected: Shim) -> Result<Interface, &'static str> {
+fn interface(
+    facts: &mut Declarations,
+    selected: Shim,
+    source: super::ir::NodeKey,
+) -> Result<Interface, &'static str> {
     let inputs = selected.inputs(facts)?;
     let subject = inputs.subject;
     let region = RegionId::bound(0, 0)?;
@@ -65,7 +69,7 @@ fn interface(facts: &mut Declarations, selected: Shim) -> Result<Interface, &'st
         facts,
         selected.definition,
         selected.definition,
-        selected.source,
+        source,
         signature,
     )?;
     if !input.type_assumptions.is_empty() {
@@ -83,18 +87,39 @@ fn interface(facts: &mut Declarations, selected: Shim) -> Result<Interface, &'st
     })
 }
 
+#[cfg(test)]
 pub(crate) fn build(
     report: &Report,
     facts: &mut Declarations,
     selected: Shim,
 ) -> Result<(Body, Contract), Error> {
-    let error = |message| report.body_error(selected.source, message);
+    build_at(report, facts, selected, None)
+}
+
+pub(crate) fn build_at(
+    report: &Report,
+    facts: &mut Declarations,
+    selected: Shim,
+    demand: Option<super::ir::ProofSite>,
+) -> Result<(Body, Contract), Error> {
+    let source = selected
+        .origin
+        .source()
+        .or_else(|| demand.and_then(super::ir::ProofSite::source))
+        .unwrap_or_else(|| {
+            let file = crate::resolve::unit::FileId(0);
+            super::ir::NodeKey {
+                file,
+                node: report.package.unit(file).configured.ast.root,
+            }
+        });
+    let error = |message| report.body_error(source, message);
     let Interface {
         mut input,
         receiver,
         subject,
         members,
-    } = interface(facts, selected).map_err(error)?;
+    } = interface(facts, selected, source).map_err(error)?;
     for ty in [receiver, subject] {
         facts
             .aggregates
@@ -107,12 +132,12 @@ pub(crate) fn build(
             signature: selected.signature,
             execution: input.signature.filter(|&ty| ty != selected.signature),
         },
-        selected.source,
+        source,
         subject,
     );
     body.instance = Some(selected.instance);
     body.storage = Some(super::storage::Facts::new(super::scopes::Facts::synthetic(
-        selected.source.node,
+        source.node,
     )));
     let parameter = local(&mut body, receiver, LocalKind::Parameter(0), false).map_err(error)?;
     let kind = ProjectionKind::Dereference {
@@ -132,7 +157,7 @@ pub(crate) fn build(
     super::build::factory_owned_values(facts, &mut body, &mut needed).map_err(error)?;
     if members.is_some() {
         super::dispatch::resolve(facts, &mut body, &mut input)
-            .map_err(|message| report.body_error(selected.source, message))?;
+            .map_err(|message| report.body_error(source, message))?;
     }
     validate(facts, selected, &body, &input).map_err(error)?;
     super::instantiate::prepare_signature(facts, body.owner).map_err(error)?;
@@ -220,14 +245,24 @@ pub(crate) fn validate(
     if shim(facts, selected.instance)? != Some(selected) {
         return Err("Clone shim differs from its actual canonical source method");
     }
-    let expected = interface(facts, selected)?;
+    let source = body
+        .source
+        .source()
+        .ok_or("generated Clone shim requires its local diagnostic anchor")?;
+    if selected
+        .origin
+        .source()
+        .is_some_and(|origin| origin != source)
+    {
+        return Err("Clone shim differs from its actual canonical source method");
+    }
+    let expected = interface(facts, selected, source)?;
     let execution = expected
         .input
         .signature
         .filter(|&ty| ty != selected.signature);
     if body.instance != Some(selected.instance)
         || body.key() != BodyKey::Declaration(selected.definition)
-        || body.source != selected.source.into()
         || body.result != expected.subject
         || !matches!(body.owner, Owner::Function {definition,signature,execution:actual} if definition==selected.definition && signature==selected.signature && actual==execution)
     {

@@ -142,6 +142,18 @@ pub(super) fn normalize_with_owner(
     body: &mut Body,
     contract: &mut Contract,
     comparison: Option<(TypeId, TypeId)>,
+    owner: Option<&mut super::allocated_owners::Operation>,
+) -> Result<u32, &'static str> {
+    facts.in_imported_body(body.source.source().is_none(), |facts| {
+        normalize_with_owner_inner(facts, body, contract, comparison, owner)
+    })
+}
+
+fn normalize_with_owner_inner(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    comparison: Option<(TypeId, TypeId)>,
     mut owner: Option<&mut super::allocated_owners::Operation>,
 ) -> Result<u32, &'static str> {
     body.require_value_reborrow_context(&facts.types)?;

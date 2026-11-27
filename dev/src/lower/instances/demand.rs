@@ -406,8 +406,9 @@ impl Budget {
         templates: &Checked<'_>,
         program: &mut proof::Builder,
         selected: crate::sema::compiler_items::clone_shims::Shim,
+        source: crate::body::ir::ProofSite,
     ) -> Result<(usize, BodyKey), Error> {
-        let (body, input) = body::clone_shims::build(report, facts, selected)?;
+        let (body, input) = body::clone_shims::build_at(report, facts, selected, Some(source))?;
         let family = body.key();
         self.enter(family, &body, &input)
             .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
@@ -553,10 +554,15 @@ fn materialize(
         deferral: crate::body::bringup::Deferral::new(crate::support::bringup::Stage::Instances),
     };
     while let Some(action) = traversal.work.pop() {
-        if let Work::Enter(instance, _, _) = &action
+        let demand_instance = match &action {
+            Work::Enter(instance, _, _) => Some(*instance),
+            Work::Adapter(entry, _, _) => Some(entry.instance()),
+            Work::Future(_, _, _) | Work::FutureDrop(_, _) | Work::Leave(_) => None,
+        };
+        if let Some(instance) = demand_instance
             && let Some(service) = preparation.as_deref_mut()
         {
-            templates.demand(report, facts, &mut traversal.program, *instance, service)?;
+            templates.demand(report, facts, &mut traversal.program, instance, service)?;
         }
         // Demanded work pays the demand budget, never lowering's account.
         let (stepped, charged) = facts.pay_demand_traversal(|facts| {
@@ -828,9 +834,14 @@ impl Traversal<'_> {
             if self.instances.contains_key(&instance) {
                 return Ok(());
             }
-            let (index, family) =
-                self.budget
-                    .clone_factory(report, facts, templates, &mut self.program, selected)?;
+            let (index, family) = self.budget.clone_factory(
+                report,
+                facts,
+                templates,
+                &mut self.program,
+                selected,
+                source,
+            )?;
             self.instances.insert(instance, index);
             self.budget
                 .push_work(facts, &mut self.work, Work::Leave(family))

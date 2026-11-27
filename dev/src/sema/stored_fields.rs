@@ -80,25 +80,59 @@ pub(crate) fn prepare_premise_free(
     root: TypeId,
     work: &mut usize,
 ) -> Result<(), String> {
+    prepare_premise_free_with(facts, root, work, None)
+}
+
+pub(crate) fn prepare_premise_free_with(
+    facts: &mut Declarations,
+    root: TypeId,
+    work: &mut usize,
+    preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
+) -> Result<(), String> {
+    prepare_with_policy(facts, root, work, preparation, true)
+}
+
+/// Prepare normalized storage for a body-local concrete type whose lifetime
+/// obligations belong to its enclosing body contract rather than a closed scope.
+pub(crate) fn prepare_body_storage_with(
+    facts: &mut Declarations,
+    root: TypeId,
+    work: &mut usize,
+    preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
+) -> Result<(), String> {
+    prepare_with_policy(facts, root, work, preparation, false)
+}
+
+fn prepare_with_policy(
+    facts: &mut Declarations,
+    root: TypeId,
+    work: &mut usize,
+    preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
+    close_regions: bool,
+) -> Result<(), String> {
     let before = facts.stored_field_work().steps;
     let mut proof = Obligations::new(facts.body_regions.probe_frontier()?);
     let mut session = super::projections::concrete(&mut proof, ScopeId::ROOT)?;
-    let mut preparation = Preparation::default();
-    let result = preparation.prepare_query(
+    let mut entry = Preparation::default();
+    let result = entry.prepare_query_with(
         facts,
         Query::with(graph::Build::premise_free(root)),
         &mut session,
+        preparation,
     );
     *work = work.saturating_add(
         facts
             .stored_field_work()
             .steps
             .saturating_sub(before)
-            .saturating_add(preparation.steps())
+            .saturating_add(entry.steps())
             .saturating_add(session.nested_work()),
     );
     drop(session);
     result?;
+    if !close_regions {
+        return Ok(());
+    }
     super::discharge::closed(
         facts,
         &proof,
@@ -146,15 +180,33 @@ impl Preparation {
     fn prepare_query(
         &mut self,
         facts: &mut Declarations,
+        query: Query,
+        session: &mut Concrete<'_>,
+    ) -> Result<(), &'static str> {
+        self.prepare_query_with(facts, query, session, None)
+    }
+    fn prepare_query_with(
+        &mut self,
+        facts: &mut Declarations,
         mut query: Query,
         session: &mut Concrete<'_>,
+        mut preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
     ) -> Result<(), &'static str> {
         loop {
             match self.advance(facts, &mut query)? {
                 Progress::Complete => return Ok(()),
                 Progress::Nominal(_) => return Err("missing aggregate field template"),
                 Progress::Normalize(raw) => {
-                    let (normal, steps) = session.normalize(facts, raw)?;
+                    let (normal, steps) = if let Some(service) = preparation.as_deref_mut() {
+                        session.normalize_ready(facts, raw, None, &mut |facts, dependency| {
+                            service
+                                .prepare(facts, dependency)
+                                .map_err(|_| "storage projection preparation failed")?;
+                            Ok(true)
+                        })?
+                    } else {
+                        session.normalize(facts, raw)?
+                    };
                     self.normalized(facts, &mut query, normal, steps)?;
                 }
             }

@@ -295,7 +295,6 @@ impl<'a, 'b> Expected<'a, 'b> {
                     .descriptor()
                     .profile()
                     .declaration_policies()
-                    && self.sized == Bound::Sized
                     && self.facts.types.is_sized(ty) == Some(true)
                 {
                     return Ok(None);
@@ -351,7 +350,9 @@ pub(super) fn build(
     super::non_type_calls::check(facts, view, body, &mut work.steps)?;
     super::safety_requests::check(facts, view, body, work)?;
     super::encoded_assembly::check(facts, view, body, work)?;
-    view.check_const_policies(&mut work.steps)?;
+    if crate::support::sealed::self_check() {
+        view.check_const_policies(&mut work.steps)?;
+    }
     let expected = Expected::new(view, facts, &mut work.steps)?;
     let record = view.inputs();
     let parameters = view.type_parameters(&facts.types, &mut work.steps)?;

@@ -78,7 +78,9 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
-    let context = crates.context(matches!(mode, Mode::Lowir))?;
+    let artifact =
+        matches!(mode, Mode::Lowir) || (crates.source_client.is_some() && crates.census.is_some());
+    let context = crates.context(artifact)?;
     if matches!(mode, Mode::Lowir)
         && let rustgm::support::bindings::Mode::SourceClient { provider } = &context.mode
         && context.dependencies.as_ref().is_some_and(|inventory| {

@@ -220,7 +220,7 @@ pub(super) fn original_function_context(
         .get(item)
         .ok_or("anonymous original callable lost its lifetime header")?;
     let function = facts
-        .function_header(owner)?
+        .declaration_header(owner)?
         .ok_or("anonymous original callable has no real function")?;
     let origin = instance
         .origin(facts)

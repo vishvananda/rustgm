@@ -98,7 +98,7 @@ pub(super) fn defining(
     }
     work.charge(2)?;
     let header = facts
-        .function_header(definition)?
+        .declaration_header(definition)?
         .ok_or("provided defining function header is pending")?;
     if execution.is_some() || header.signature != signature || header.body != Some(body.source) {
         return Err("provided defining body changed its exact original signature or source");
@@ -129,7 +129,7 @@ pub(super) fn prepare<'a>(
     };
     work.charge(2)?;
     let header = facts
-        .function_header(definition)?
+        .declaration_header(definition)?
         .ok_or("const member defining body requires its completed function header")?;
     if header.signature != signature || header.body != Some(body.source) {
         return Err("const member defining body changed its exact original header");
@@ -538,15 +538,9 @@ fn place_result(
         .source_bindings
         .as_deref()
         .ok_or("const borrowed place lacks its actual source catalog")?;
-    let mutable = if catalog
-        .language(roles[0])
-        .is_some_and(|d| d.definition == owner)
-    {
+    let mutable = if catalog.role_definition(roles[0])? == Some(owner) {
         false
-    } else if catalog
-        .language(roles[1])
-        .is_some_and(|d| d.definition == owner)
-    {
+    } else if catalog.role_definition(roles[1])? == Some(owner) {
         true
     } else {
         return Err("const borrowed place belongs to another actual language trait");

@@ -140,6 +140,9 @@ fn forged_call_operators_and_older_wires_reject_in_fresh_consumers() -> Result {
         std::fs::write(&path, wire)?;
         let source = packet.fixture(client);
         let mut consumer = packet.consumer(&source, name, &path, &packet.owner());
+        if matches!(name, "once-as-fn" | "once-as-mut" | "mut-as-once") {
+            consumer.arg("--self-check");
+        }
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     // The stricter immediate receiver is a different valid body; the

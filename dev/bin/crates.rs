@@ -263,15 +263,18 @@ impl Options {
             return Err("--census-progress requires --census-output".into());
         }
         if self.census.is_some()
-            && (self.source_core.is_none()
+            && ((self.source_core.is_none() && self.source_client.is_none())
                 || !matches!(mode, "--emit-types" | "--emit-semantics")
                 || count
                 || output.is_some())
         {
             return Err("--census-output requires --source-core with --emit-types or --emit-semantics, without -o or counting".into());
         }
+        let client_census = self.source_client.is_some()
+            && self.census.is_some()
+            && matches!(mode, "--emit-types" | "--emit-semantics");
         if self.source_client.is_some() {
-            if mode != "--emit-lowir" {
+            if mode != "--emit-lowir" && !client_census {
                 return Err("--source-client requires --emit-lowir".into());
             }
             self.bindings_mode()?;
@@ -280,7 +283,7 @@ impl Options {
             || self.disambiguator.is_some()
             || self.metadata.is_some()
             || self.dependency_count() != 0;
-        if enabled && mode != "--emit-lowir" && self.source_core.is_none() {
+        if enabled && mode != "--emit-lowir" && self.source_core.is_none() && !client_census {
             return Err("crate artifact options require --emit-lowir".into());
         }
         if self.source_core.is_some() {

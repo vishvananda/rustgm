@@ -44,6 +44,14 @@ impl Checker<'_> {
             Some(callable) => callable,
             None => self.source_call_callable(node, solved)?,
         };
+        if let Some(TypeKind::FunctionItem { item, .. }) = self.facts.types.kind(callable) {
+            crate::resolve::stability::check_imported_api(
+                self.report,
+                self.key(node),
+                DefId(item.0),
+                false,
+            )?;
+        }
         self.check_const_library_target(node, owner, callable, allowances)
     }
 
@@ -155,7 +163,6 @@ impl Checker<'_> {
             };
         };
         let target = DefId(item.0);
-        crate::resolve::stability::check_imported_api(self.report, self.key(node), target, false)?;
         if self.callee_use_effect()? != crate::support::constness::Constness::Ordinary {
             self.check_const_panic_payload(node, target, signature)?;
             crate::resolve::stability::check_imported_api(

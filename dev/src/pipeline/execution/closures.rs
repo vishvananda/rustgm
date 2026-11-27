@@ -94,18 +94,19 @@ impl Engine {
         identity: crate::types::closure::ClosureId,
         origin: crate::body::ir::BodyOrigin,
     ) -> Result<(), Error> {
-        self.ensure_imported_originals(report, facts)?;
-        let originals = self
-            .imported
-            .as_ref()
-            .map(std::rc::Rc::clone)
+        let original = self
+            .imported_original(
+                report,
+                facts,
+                body::transported_originals::SourceTarget::Closure(identity),
+            )?
             .ok_or_else(|| {
                 report.body_error(
                     origin,
                     "imported const closure lacks its proved original set",
                 )
             })?;
-        let row = originals.closure(identity).ok_or_else(|| {
+        let row = original.row().ok_or_else(|| {
             report.body_error(origin, "imported const closure has no exact original row")
         })?;
         super::super::original_contexts::Original::validate_parts_charged(

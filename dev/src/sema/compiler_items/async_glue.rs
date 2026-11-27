@@ -30,7 +30,7 @@ pub(super) fn complete(
         .get(declaration.definition.0 as usize)
         .ok_or_else(|| error("async drop helper lost its declaration identity"))?;
     let header = facts
-        .function_header(declaration.definition)
+        .declaration_header(declaration.definition)
         .map_err(error)?
         .ok_or_else(|| error("async drop helper lacks its actual function header"))?;
     if declaration.parent.is_some()

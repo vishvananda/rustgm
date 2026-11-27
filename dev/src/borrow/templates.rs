@@ -5,7 +5,7 @@ pub(crate) use staged::{Batch, InitialRow};
 mod owners;
 #[path = "templates/suspended.rs"]
 mod retained;
-pub(crate) use retained::{Append, Retained};
+pub(crate) use retained::Retained;
 mod permission_sources;
 mod preconditions;
 use super::{Environment, Error, loans, regions};

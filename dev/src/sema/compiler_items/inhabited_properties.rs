@@ -77,7 +77,7 @@ pub(crate) fn prepare(
         .as_deref()
         .ok_or("runtime layout requires its source catalog")?;
     catalog.require_provider_report(report)?;
-    if origin.source().is_none() {
+    if origin.source().is_none() && !catalog.uses_imported_roles() {
         return Err("runtime layout requires its actual source body");
     }
     let existing = catalog.runtime_layout(instance);

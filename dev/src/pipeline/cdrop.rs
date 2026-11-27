@@ -75,6 +75,47 @@ pub(super) fn one<'body>(
     input: &mut super::execution::LoanInput<'_, '_>,
     verifier: &mut Verifier,
 ) -> Result<Checked<'body>> {
+    one_with(report, facts, body, destruction, input, verifier, false).map(|(checked, _)| checked)
+}
+
+pub(crate) fn selected(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    template: &body::templates::Template,
+    prepared: &Contract,
+    regions: &mut regions::Body,
+    custom: &[ItemId],
+    allow_nested_imported: bool,
+) -> Result<borrow::loans::Analysis> {
+    let mut verifier = Verifier::new(custom)?;
+    let mut contract = std::borrow::Cow::Borrowed(prepared);
+    let mut input = super::execution::LoanInput {
+        parameters: &template.environment,
+        contract: &mut contract,
+        regions,
+        purpose: super::execution::ProofPurpose::Original,
+    };
+    let (_, analysis) = one_with(
+        report,
+        facts,
+        &template.body,
+        &template.destruction,
+        &mut input,
+        &mut verifier,
+        allow_nested_imported,
+    )?;
+    analysis.ok_or_else(|| "selected template loan proof returned no analysis".into())
+}
+
+fn one_with<'body>(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    body: &'body Body,
+    destruction: &body::drops::Requirements,
+    input: &mut super::execution::LoanInput<'_, '_>,
+    verifier: &mut Verifier,
+    allow_nested_imported: bool,
+) -> Result<(Checked<'body>, Option<borrow::loans::Analysis>)> {
     let super::execution::LoanInput {
         parameters,
         contract,
@@ -102,7 +143,7 @@ pub(super) fn one<'body>(
                 &|ty, field| body::drops::nominal_position(facts, ty, field),
             )
         })
-        .map(|_| Checked::new(body, *purpose, regions))
+        .map(|analysis| (Checked::new(body, *purpose, regions), Some(analysis)))
         .map_err(|e| e.message);
     }
     facts.types.arena_identity();
@@ -124,14 +165,15 @@ pub(super) fn one<'body>(
         if let Some(questions) = initial.questions(&mut facts.types, &facts.aggregates)? {
             let answers =
                 body::defining_cleanups::qualify(facts, body, contract.to_mut(), questions)?;
-            **regions = recheck(facts, body, contract)?;
+            **regions = recheck_with(facts, body, contract, allow_nested_imported)?;
             with_environment(facts, &mut copies, |environment| {
                 verifier.accept_qualification(environment, &mut initial, regions, &answers)
             })?;
         }
     }
     if *purpose == super::execution::ProofPurpose::Code {
-        return concrete::one(report, facts, initial, input, verifier, &mut copies);
+        return concrete::one(report, facts, initial, input, verifier, &mut copies)
+            .map(|checked| (checked, None));
     }
     let mut plan = with_environment(facts, &mut copies, |environment| {
         verifier.select_initial(
@@ -146,8 +188,15 @@ pub(super) fn one<'body>(
         )
     })
     .map_err(|e| e.message)?;
-    let eligible = eligibility(report, facts, &mut plan, contract, regions)?;
-    with_environment(facts, &mut copies, |environment| {
+    let eligible = eligibility_with(
+        report,
+        facts,
+        &mut plan,
+        contract,
+        regions,
+        allow_nested_imported,
+    )?;
+    let analysis = with_environment(facts, &mut copies, |environment| {
         if eligible {
             verifier.finish(environment, plan, regions)
         } else {
@@ -155,7 +204,7 @@ pub(super) fn one<'body>(
         }
     })
     .map_err(|e| e.message)?;
-    Ok(Checked::new(body, *purpose, regions))
+    Ok((Checked::new(body, *purpose, regions), Some(analysis)))
 }
 fn eligibility<P: borrow::loans::templates::Payload>(
     report: &crate::resolve::expansion::Report,
@@ -163,6 +212,16 @@ fn eligibility<P: borrow::loans::templates::Payload>(
     plan: &mut borrow::loans::templates::Prepared<'_, P>,
     contract: &mut std::borrow::Cow<'_, Contract>,
     regions: &mut regions::Body,
+) -> Result<bool> {
+    eligibility_with(report, facts, plan, contract, regions, false)
+}
+fn eligibility_with<P: borrow::loans::templates::Payload>(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    plan: &mut borrow::loans::templates::Prepared<'_, P>,
+    contract: &mut std::borrow::Cow<'_, Contract>,
+    regions: &mut regions::Body,
+    allow_nested_imported: bool,
 ) -> Result<bool> {
     plan.resolve_selected(&mut facts.types, &facts.aggregates)?;
     let precise = precise_live_drops(report, facts)?;
@@ -177,7 +236,7 @@ fn eligibility<P: borrow::loans::templates::Payload>(
             precise,
             active,
         )?;
-        *regions = recheck(facts, plan.body(), contract)?;
+        *regions = recheck_with(facts, plan.body(), contract, allow_nested_imported)?;
     }
     Ok(eligible)
 }
@@ -190,13 +249,16 @@ pub(crate) fn templates<'a>(
     custom: &[ItemId],
 ) -> std::result::Result<(borrow::templates::Checked<'a>, Vec<Contract>), borrow::Error> {
     let required = facts.source_bindings.is_some()
-        && templates
+        && (templates
             .iter()
             .chain(&contexts.bodies.bodies)
             .any(|template| {
                 template.body.const_context
                     && !borrow::loans::templates::no_cleanup(&template.destruction)
-            });
+            })
+            || inputs
+                .iter()
+                .any(Contract::requires_defining_cleanup_preparation));
     let mut copies = Copies::default();
     if !required {
         let contracts = Contracts {
@@ -364,19 +426,37 @@ pub(super) fn recheck(
     body: &Body,
     contract: &Contract,
 ) -> Result<regions::Body> {
+    recheck_with(facts, body, contract, false)
+}
+fn recheck_with(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &Contract,
+    allow_nested_imported: bool,
+) -> Result<regions::Body> {
     contract.prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)?;
     let mut queries = crate::types::outlives::Queries::new(
         &facts.types,
         &facts.lifetimes.nominal_requirements,
         &facts.lifetimes.callables,
     );
-    regions::check_one(
-        &facts.types,
-        &facts.lifetimes.variances,
-        &mut queries,
-        contract,
-        body,
-    )
+    if allow_nested_imported {
+        regions::check_one_imported(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut queries,
+            contract,
+            body,
+        )
+    } else {
+        regions::check_one(
+            &facts.types,
+            &facts.lifetimes.variances,
+            &mut queries,
+            contract,
+            body,
+        )
+    }
     .map_err(|e| e.message)
 }
 fn with_environment<T>(

@@ -14,13 +14,19 @@ impl Checker<'_> {
             .facts
             .family_outlives()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
-        let predicates = self
-            .facts
-            .generics
-            .predicates
-            .iter()
-            .filter(|(owner, _)| self.facts.aggregates.get(ItemId(owner.0)).is_some())
-            .flat_map(|(owner, predicates)| predicates.iter().map(|p| (ItemId(owner.0), p.value)));
+        let mut predicates = Vec::new();
+        for definition in &self.facts.aggregates {
+            let owner = DefId(definition.item.0);
+            if let Some(local) = self.facts.generics.predicates.get(&owner) {
+                predicates.extend(local.iter().map(|p| (definition.item, p.value)));
+            } else if let Ok(inputs) = crate::sema::declaration_inputs::own_view(
+                &self.facts.generics,
+                self.facts.crates.as_deref(),
+                owner,
+            ) {
+                predicates.extend(inputs.iter().map(|p| (definition.item, p.value)));
+            }
+        }
         let mut bounds = Bounds::infer_with_inputs(
             &mut self.facts.types,
             &self.facts.aggregates,

@@ -32,12 +32,11 @@ impl Arguments {
             .associated
             .schema(owner)
             .ok_or("requested trait has no Self schema")?;
-        if application.item != ItemId(owner.0) || schema.captures != 0 {
-            return Err(
-                "requested method changed its trait or requires inherited lifetime mapping",
-            );
+        if application.item != ItemId(owner.0) {
+            return Err("requested method changed its trait");
         }
         let self_type = schema.self_type;
+        let trait_captures = schema.captures as usize;
         let template = facts
             .lifetimes
             .callables
@@ -48,10 +47,20 @@ impl Arguments {
             .callables
             .generic_parameters(ItemId(member.0))
             .ok_or("requested method lost its complete formal order")?;
-        if template.parameters as usize != self.regions.len() {
+        let source_captures = facts
+            .lifetimes
+            .functions
+            .get(&self.method)
+            .map_or(0, |scheme| scheme.captures as usize);
+        let own_regions = self
+            .regions
+            .get(source_captures..)
+            .ok_or("selected method lost its own early lifetime suffix")?;
+        let early = trait_captures.saturating_add(own_regions.len());
+        if template.parameters as usize != early {
             return Err("requested method changed its complete early lifetime arity");
         }
-        let count = self.regions.len().saturating_add(parameters.len());
+        let count = early.saturating_add(parameters.len());
         pay(
             count.saturating_add(self.bindings.len()),
             Growth::vector::<Argument>(0, 0, count).bytes,
@@ -68,7 +77,16 @@ impl Arguments {
             .count();
         let offset = self.bindings.len().saturating_sub(own);
         let mut arguments = Vec::with_capacity(count);
-        arguments.extend(self.regions.iter().copied().map(Argument::Lifetime));
+        if trait_captures != 0 {
+            trait_lifetime_arguments(
+                facts,
+                owner,
+                application.arguments,
+                trait_captures,
+                &mut arguments,
+            )?;
+        }
+        arguments.extend(own_regions.iter().copied().map(Argument::Lifetime));
         for &id in parameters {
             pay(8, 0)?;
             let parameter = facts
@@ -81,27 +99,35 @@ impl Arguments {
                 } else if parameter.owner == ItemId(owner.0) {
                     trait_argument(facts, owner, id, parameter.index, application.arguments)?
                 } else if parameter.owner == ItemId(member.0) {
-                    let (actual, value) = *self
-                        .bindings
-                        .get(offset.saturating_add(parameter.index as usize))
-                        .ok_or("selected method lost its own formal suffix")?;
-                    let actual = facts
-                        .types
-                        .parameter(actual)
-                        .ok_or("selected method lost its own formal")?;
-                    if actual.owner != ItemId(self.method.0)
-                        || actual.index != parameter.index
-                        || actual.kind != parameter.kind
-                    {
-                        return Err("selected and requested own method formals do not correspond");
-                    }
-                    value
+                    self.own_method_argument(facts, offset, parameter)?
                 } else {
                     return Err("requested method has a foreign inherited formal owner");
                 },
             );
         }
         instantiate_paid(facts, member, &arguments, pay)
+    }
+    fn own_method_argument(
+        &self,
+        facts: &Declarations,
+        offset: usize,
+        parameter: crate::types::parameters::Parameter,
+    ) -> Result<Argument, &'static str> {
+        let (actual, value) = *self
+            .bindings
+            .get(offset.saturating_add(parameter.index as usize))
+            .ok_or("selected method lost its own formal suffix")?;
+        let actual = facts
+            .types
+            .parameter(actual)
+            .ok_or("selected method lost its own formal")?;
+        if actual.owner != ItemId(self.method.0)
+            || actual.index != parameter.index
+            || actual.kind != parameter.kind
+        {
+            return Err("selected and requested own method formals do not correspond");
+        }
+        Ok(value)
     }
     pub(in crate::sema::dispatch) fn new_paid(
         facts: &Declarations,
@@ -193,6 +219,40 @@ impl Arguments {
         instantiate_paid(facts, method, &arguments, pay)
     }
 }
+fn trait_lifetime_arguments(
+    facts: &Declarations,
+    owner: DefId,
+    actuals: GenericArgs,
+    expected: usize,
+    out: &mut Vec<Argument>,
+) -> Result<(), &'static str> {
+    let trait_formals = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .ok_or("requested trait lost its actual written formals")?;
+    let actuals: Vec<_> = facts
+        .types
+        .arguments(actuals)
+        .ok_or("requested trait lost its complete actual arguments")?
+        .collect();
+    if trait_formals.len() != actuals.len() {
+        return Err("requested trait argument count changed");
+    }
+    for (formal, actual) in trait_formals.iter().zip(actuals) {
+        if matches!(formal.argument, Argument::Lifetime(_)) {
+            let Argument::Lifetime(_) = actual else {
+                return Err("requested trait lifetime argument is not a lifetime");
+            };
+            out.push(actual);
+        }
+    }
+    if out.len() != expected {
+        return Err("requested trait captured lifetime count changed");
+    }
+    Ok(())
+}
+
 fn trait_argument(
     facts: &Declarations,
     owner: DefId,
@@ -206,8 +266,7 @@ fn trait_argument(
         .get(&owner)
         .and_then(|parameters| parameters.get(index as usize))
         .ok_or("requested trait lost its actual written formal")?;
-    if !matches!(formal.argument, Argument::Type(ty) if facts.types.kind(ty) == Some(Kind::Parameter(id)))
-    {
+    if crate::sema::generics::parameter_id(&facts.types, formal.argument).ok() != Some(id) {
         return Err("requested trait changed its actual formal identity or kind");
     }
     facts

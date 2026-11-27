@@ -78,6 +78,17 @@ pub(crate) fn qualify<'body>(
     contract: &mut Contract,
     questions: &[TypeId],
 ) -> Result<Qualification<'body>, String> {
+    facts.in_imported_body(body.source.source().is_none(), |facts| {
+        qualify_inner(facts, body, contract, questions)
+    })
+}
+
+fn qualify_inner<'body>(
+    facts: &mut Declarations,
+    body: &'body Body,
+    contract: &mut Contract,
+    questions: &[TypeId],
+) -> Result<Qualification<'body>, String> {
     let bytes = questions
         .len()
         .checked_mul(
@@ -97,7 +108,6 @@ pub(crate) fn qualify<'body>(
         .as_deref()
         .ok_or("const qualification requires its actual source catalog")?
         .require_source_destructors_prepared()?;
-    let environment = std::sync::Arc::clone(&prepared.environment);
     let mut needed = copies::query(
         facts,
         body,
@@ -148,38 +158,54 @@ pub(crate) fn qualify<'body>(
         }
     }
     if !selected.is_empty() {
-        let first = crate::body::dispatch::copy_frontier(facts, contract)?;
-        // Value qualification in a const function uses its actual conditional
-        // caller law. This is not the owner's const execution effect.
-        let qualifier_effect = crate::support::constness::Constness::Conditional;
-        let goals = proofs::goals(facts, &selected, prepared.role, qualifier_effect, &mut work)?;
-        let (decisions, proof) = crate::sema::compiler_items::decide_cleanup_requirements(
+        decide_selected(
             facts,
-            Some(std::sync::Arc::clone(&environment)),
-            contract.universals,
-            first,
-            &goals,
+            body,
+            contract,
+            &mut prepared,
+            (&selected, &indices),
+            &mut values,
+            &mut work,
         )?;
-        let effect = prepared.effect();
-        for (&decision, &index) in decisions.iter().zip(&indices) {
-            if decision == Decision::Proven {
-                let (ty, bad) = &mut values[index];
-                *bad = Qualif::Destruct;
-                if effect == qualifier_effect {
-                    prepared.claims.select(
-                        &mut facts.types,
-                        *ty,
-                        Purpose::Whole,
-                        effect,
-                        &mut work,
-                    )?;
-                }
-            }
-        }
-        proofs::retain_proof(body, contract, &prepared, proof, &mut work)?;
     }
     proofs::publish(facts, contract, prepared, work)?;
     Ok(Qualification::published(facts, body, contract, values)?)
+}
+
+fn decide_selected(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    prepared: &mut super::Prepared,
+    (selected, indices): (&[(TypeId, Purpose)], &[usize]),
+    values: &mut [(TypeId, Qualif)],
+    work: &mut Work,
+) -> Result<(), String> {
+    let first = crate::body::dispatch::copy_frontier(facts, contract)?;
+    // Value qualification in a const function uses its actual conditional
+    // caller law. This is not the owner's const execution effect.
+    let qualifier_effect = crate::support::constness::Constness::Conditional;
+    let goals = proofs::goals(facts, selected, prepared.role, qualifier_effect, work)?;
+    let (decisions, proof) = crate::sema::compiler_items::decide_cleanup_requirements(
+        facts,
+        Some(std::sync::Arc::clone(&prepared.environment)),
+        contract.universals,
+        first,
+        &goals,
+    )?;
+    let effect = prepared.effect();
+    for (&decision, &index) in decisions.iter().zip(indices) {
+        if decision == Decision::Proven {
+            let (ty, bad) = &mut values[index];
+            *bad = Qualif::Destruct;
+            if effect == qualifier_effect {
+                prepared
+                    .claims
+                    .select(&mut facts.types, *ty, Purpose::Whole, effect, work)?;
+            }
+        }
+    }
+    proofs::retain_proof(body, contract, prepared, proof, work)
 }
 
 #[cfg(test)]

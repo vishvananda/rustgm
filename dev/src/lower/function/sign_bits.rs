@@ -39,7 +39,57 @@ impl Lower<'_, '_, '_> {
         if magnitude.ty != scalar || sign.is_some_and(|value| value.ty != scalar) {
             return Err("source floating sign operands differ from their native representation");
         }
+        if matches!(
+            name,
+            "minimum_number_nsz_f32"
+                | "minimum_number_nsz_f64"
+                | "maximum_number_nsz_f32"
+                | "maximum_number_nsz_f64"
+        ) {
+            let right = sign.ok_or("source floating minmax requires two operands")?;
+            let minimum = name.starts_with("minimum_");
+            return self
+                .float_minmax(magnitude, right, minimum)
+                .map(Selected::Runtime);
+        }
         self.float_sign_bits(magnitude, sign).map(Selected::Runtime)
+    }
+
+    fn float_minmax(
+        &mut self,
+        left: Value,
+        right: Value,
+        minimum: bool,
+    ) -> Result<Value, &'static str> {
+        use crate::lowir::{program::Terminator, vocabulary::Predicate};
+        let slot = Operand::Slot(self.builder.slot(left.ty)?);
+        let right_nan = self.builder.compare(Predicate::Ne, right, right)?;
+        let ordered = self.builder.compare(
+            if minimum {
+                Predicate::Lt
+            } else {
+                Predicate::Gt
+            },
+            left,
+            right,
+        )?;
+        let choose_left = self.builder.binary(Binary::Or, right_nan, ordered)?;
+        let take_left = self.builder.block()?;
+        let take_right = self.builder.block()?;
+        let join = self.builder.block()?;
+        self.builder.terminate(Terminator::Branch {
+            condition: choose_left.operand,
+            yes: take_left,
+            no: take_right,
+        })?;
+        self.builder.enter(take_left)?;
+        self.builder.store(left, slot)?;
+        self.builder.terminate(Terminator::Jump(join))?;
+        self.builder.enter(take_right)?;
+        self.builder.store(right, slot)?;
+        self.builder.terminate(Terminator::Jump(join))?;
+        self.builder.enter(join)?;
+        self.builder.load(left.ty, slot)
     }
 
     fn float_sign_bits(
@@ -81,8 +131,14 @@ fn shape(
     let (scalar, arity) = match (name, types.kind(result)) {
         ("fabs", Some(Kind::Primitive(Primitive::F32))) => (Type::F32, 1),
         ("fabs", Some(Kind::Primitive(Primitive::F64))) => (Type::F64, 1),
-        ("copysignf32", Some(Kind::Primitive(Primitive::F32))) => (Type::F32, 2),
-        ("copysignf64", Some(Kind::Primitive(Primitive::F64))) => (Type::F64, 2),
+        (
+            "copysignf32" | "minimum_number_nsz_f32" | "maximum_number_nsz_f32",
+            Some(Kind::Primitive(Primitive::F32)),
+        ) => (Type::F32, 2),
+        (
+            "copysignf64" | "minimum_number_nsz_f64" | "maximum_number_nsz_f64",
+            Some(Kind::Primitive(Primitive::F64)),
+        ) => (Type::F64, 2),
         _ => return Err("source floating sign operation requires f32 or f64"),
     };
     let Some(Kind::FunctionItem {

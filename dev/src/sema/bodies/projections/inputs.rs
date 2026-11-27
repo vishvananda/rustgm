@@ -41,7 +41,10 @@ impl Checker<'_> {
         if !resolved && query.input_normalizations {
             resolved = match self.state.infer.resolved(&mut self.facts.types, term) {
                 Ok(_) => true,
-                Err(crate::types::infer::Error::Unresolved) => false,
+                Err(
+                    crate::types::infer::Error::Unresolved
+                    | crate::types::infer::Error::Normalization,
+                ) => false,
                 Err(error) => return Err(self.error(node, error)),
             };
         }

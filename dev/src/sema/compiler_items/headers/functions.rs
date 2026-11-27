@@ -126,7 +126,7 @@ pub(in crate::sema::compiler_items) fn inherent(
         ));
     }
     let function = facts
-        .function_header(declaration.definition)
+        .declaration_header(declaration.definition)
         .map_err(error)?
         .ok_or_else(|| error("source inherent constructor lacks its actual callable header"))?;
     if function.declaration.source() != Some(declaration.origin)

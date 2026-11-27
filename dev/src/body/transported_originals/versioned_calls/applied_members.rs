@@ -1,11 +1,49 @@
 //! Actual v9 selected operands retain full goals in their exact original scope.
 use super::{
-    Applied, Body, Declarations, ImportedOriginals, Index, Kind, Rvalue, SourceOriginal, s,
+    Applied, Body, Declarations, ImportedOriginals, Index, Kind, Member, Rvalue, SourceOriginal, s,
 };
-use crate::{support::constness::Constness, types::ItemId};
+use crate::{
+    support::{constness::Constness, crates::owner_catalog::DeclarationRef},
+    types::ItemId,
+};
 
 pub(super) fn prepare(
     index: &Index<'_>,
+    view: &SourceOriginal<'_>,
+    facts: &Declarations,
+    body: &Body,
+    work: &mut ImportedOriginals,
+) -> Result<Vec<Option<Applied>>, &'static str> {
+    prepare_with(
+        index.rows,
+        |target| Ok(index.members.get(&target).copied()),
+        view,
+        facts,
+        body,
+        work,
+    )
+}
+
+pub(super) fn prepare_single(
+    view: &SourceOriginal<'_>,
+    facts: &Declarations,
+    body: &Body,
+    work: &mut ImportedOriginals,
+) -> Result<Vec<Option<Applied>>, &'static str> {
+    let rows = view.rows();
+    prepare_with(
+        rows,
+        |target| super::lookup_member(rows, target),
+        view,
+        facts,
+        body,
+        work,
+    )
+}
+
+fn prepare_with(
+    rows: s::ValidatedView<'_>,
+    lookup: impl Fn(DeclarationRef) -> Result<Option<Member>, &'static str>,
     view: &SourceOriginal<'_>,
     facts: &Declarations,
     body: &Body,
@@ -20,12 +58,12 @@ pub(super) fn prepare(
         let s::ValueKind::Function(application) = raw.kind else {
             continue;
         };
-        let target = index.rows.function_applications[application.0 as usize].declaration;
+        let target = rows.function_applications[application.0 as usize].declaration;
         if target.artifact.0 != 0 {
             continue;
         }
         let target = target.declaration;
-        let Some(member) = index.members.get(&target) else {
+        let Some(member) = lookup(target)? else {
             continue;
         };
         if pending.is_empty() {
@@ -33,11 +71,11 @@ pub(super) fn prepare(
             pending.resize(body.values.len(), None);
         }
         work.charge(6)?;
-        let Some(s::HeaderRef::Function(header)) = index.rows.header(target)? else {
+        let Some(s::HeaderRef::Function(header)) = rows.header(target)? else {
             return Err("applied source member lost its actual function header");
         };
         let definition = view.declaration(target, &mut work.steps)?;
-        if index.rows.functions[header as usize].parent != Some(member.owner)
+        if rows.functions[header as usize].parent != Some(member.owner)
             || !matches!(value.kind, Rvalue::Function(actual) if actual == definition)
             || !matches!(facts.types.kind(value.ty), Some(Kind::FunctionItem { item, .. }) if item == ItemId(definition.0))
         {

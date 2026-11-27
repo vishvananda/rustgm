@@ -184,7 +184,7 @@ where
         self.nested as usize
     }
 
-    fn normalize_ready(
+    pub(crate) fn normalize_ready(
         &mut self,
         facts: &mut Declarations,
         ty: TypeId,

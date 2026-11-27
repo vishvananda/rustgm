@@ -7,7 +7,7 @@ pub(in crate::sema) fn select_prepared(
     context: &mut Context,
     goal: &crate::types::infer::predicates::Predicate,
     caller: &selection::Caller<'_>,
-    preparation: &mut dyn crate::sema::dispatch::Preparation,
+    preparation: &mut (dyn crate::sema::dispatch::Preparation + '_),
 ) -> Result<selection::Selection, crate::sema::dispatch::Failure> {
     use selection::{OwnedCaller, Progress};
     preparation

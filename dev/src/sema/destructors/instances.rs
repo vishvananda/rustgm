@@ -236,7 +236,7 @@ pub(crate) fn cleanup_method(
     owner: DefId,
 ) -> Result<DefId, &'static str> {
     let signature = facts
-        .function_header(method)?
+        .declaration_header(method)?
         .ok_or("destructor method header is pending")?
         .signature;
     let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {
@@ -281,7 +281,7 @@ fn provided_member(
         }
         implemented |= selected == Some(actual);
         let signature = facts
-            .function_header(member)?
+            .declaration_header(member)?
             .ok_or("Drop member signature is pending")?
             .signature;
         let Some(Kind::Function { parameters, .. }) = facts.types.kind(signature) else {

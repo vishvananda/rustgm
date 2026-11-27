@@ -10,8 +10,9 @@ fn prepare(
     facts: &mut Declarations,
     body: &Body,
     contract: &mut Contract,
-) -> std::result::Result<(), &'static str> {
-    super::prepare(facts, body, contract, None)
+) -> std::result::Result<(), String> {
+    super::prepare(facts, body, contract, None, None)
+        .map_err(crate::sema::dispatch::Failure::message)
 }
 
 fn debt_template(
@@ -248,7 +249,7 @@ fn body_trait_transfer_failure_preserves_successful_prefix_and_charges_work() ->
         let before = facts.body_work.canonical_steps;
         assert_eq!(
             prepare(&mut facts, &template.body, &mut contract),
-            Err("body trait requirement is not proved")
+            Err("body trait requirement is not proved".into())
         );
         assert!(facts.body_work.canonical_steps > before);
         assert!(Arc::ptr_eq(

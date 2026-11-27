@@ -267,31 +267,15 @@ impl Engine {
             templates.bodies.push(row.template);
             contracts.push(row.contract);
         }
-        let contracts = crate::body::regions::Contracts {
-            bodies: contracts,
-            callables: &facts.lifetimes.callables,
-            nominal_requirements: &facts.lifetimes.nominal_requirements,
-        };
+        let contexts = crate::borrow::templates::Contexts::default();
         let custom = facts
             .destructors
             .implementations()
             .iter()
             .map(|i| i.item)
             .collect::<Vec<_>>();
-        let mut copies = crate::types::copy::Copies::default();
-        let checked = crate::borrow::templates::verify(
-            &mut crate::borrow::Environment {
-                types: &facts.types,
-                definitions: &facts.aggregates,
-                derives: &facts.derives,
-                source_copy: facts.uses_source_copy(),
-                copies: &mut copies,
-            },
-            &facts.lifetimes.variances,
-            &contracts,
-            &templates,
-            &custom,
-            |ty, field| body::drops::nominal_position(facts, ty, field),
+        let (checked, inputs) = crate::pipeline::cdrop::templates(
+            report, facts, contracts, &templates, &contexts, &custom,
         )
         .map_err(|e| {
             report.body_error(
@@ -299,7 +283,6 @@ impl Engine {
                 e.message,
             )
         })?;
-        let inputs = contracts.bodies;
         super::defining_heads::close_component(report, facts, &templates, &checked)?;
         drop(checked);
         self.publish_component(facts, templates, inputs, retained)

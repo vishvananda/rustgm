@@ -545,6 +545,33 @@ pub struct Declarations {
     pub functions: Vec<Function>,
 }
 impl Declarations {
+    /// Whether the active proof or dispatch step is running inside an imported
+    /// original body whose defining crate already validated its unstable features.
+    pub(in crate::sema) fn in_imported_body_scope(&self) -> bool {
+        self.crates
+            .as_deref()
+            .is_some_and(|crates| crates.imported_body_features)
+    }
+    /// Run a proof or dispatch step inside an imported original body whose
+    /// defining crate already validated its own crate-level unstable features.
+    pub(crate) fn in_imported_body<R>(
+        &mut self,
+        imported: bool,
+        run: impl FnOnce(&mut Self) -> R,
+    ) -> R {
+        let previous = self
+            .crates
+            .as_deref()
+            .is_some_and(|crates| crates.imported_body_features);
+        if imported && let Some(crates) = self.crates.as_deref_mut() {
+            crates.imported_body_features = true;
+        }
+        let result = run(self);
+        if let Some(crates) = self.crates.as_deref_mut() {
+            crates.imported_body_features = previous;
+        }
+        result
+    }
     /// Borrow checking must require body-local source Copy evidence in this mode.
     /// This policy is not itself evidence that any type implements Copy.
     #[must_use]

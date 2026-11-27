@@ -190,7 +190,9 @@ fn ordering_identity(
     let declaration = facts
         .source_bindings
         .as_deref()
-        .and_then(|c| c.language(LangItem::Ordering))
+        .map(|c| c.role(LangItem::Ordering))
+        .transpose()?
+        .flatten()
         .ok_or("three_way_compare requires its actual Ordering language declaration")?;
     let Some(Kind::Adt(item, arguments)) = facts.types.kind(output) else {
         return Err("three_way_compare result is not its actual Ordering nominal");
@@ -264,32 +266,43 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if kind != SourceIntrinsic::ThreeWayCompare {
+                return Ok(None);
+            }
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err("imported three_way_compare body/call provenance is not transported");
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 64)
+                .map_err(|_| "three_way_compare exceeds its existing source work budget")?;
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|i| facts.functions.get(*i))
+                .ok_or("three_way_compare completed declaration is missing")?;
+            if function.signature != original
+                || function.node != declaration.origin
+                || declaration.parent.is_some()
+            {
+                return Err("three_way_compare completed source header changed");
+            }
+            validate(facts, *function)?;
+        } else if let Some(imported) = self.imported_declared_intrinsic(definition) {
+            if imported.kind != SourceIntrinsic::ThreeWayCompare {
+                return Ok(None);
+            }
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported three_way_compare lost its canonical declaration")?;
+            if actual.declaration != imported.origin || actual.signature != imported.signature {
+                return Err("imported three_way_compare completed declaration changed");
+            }
+        } else {
             return Ok(None);
-        };
-        if kind != SourceIntrinsic::ThreeWayCompare {
-            return Ok(None);
         }
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("imported three_way_compare body/call provenance is not transported");
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 64)
-            .map_err(|_| "three_way_compare exceeds its existing source work budget")?;
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|i| facts.functions.get(*i))
-            .ok_or("three_way_compare completed declaration is missing")?;
-        if function.signature != original
-            || function.node != declaration.origin
-            || declaration.parent.is_some()
-        {
-            return Err("three_way_compare completed source header changed");
-        }
-        validate(facts, *function)?;
-        self.validated_language(LangItem::Copy)?
+        self.validated_role(LangItem::Copy)?
             .ok_or("three_way_compare requires its completed actual Copy header")?;
         let mut args = facts
             .types
@@ -321,6 +334,15 @@ impl Catalog {
         selected: &ThreeWaySelection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if let Some(imported) = self.imported_declared_intrinsic(selected.definition) {
+            if imported.kind != SourceIntrinsic::ThreeWayCompare {
+                return Err("imported three_way_compare lost its actual declaration record");
+            }
+            if ordering(facts, selected.output)? != selected.variants {
+                return Err("Ordering actual variant identities changed");
+            }
+            return Ok(());
+        }
         let Some((declaration, SourceIntrinsic::ThreeWayCompare, _)) =
             self.intrinsic_record(selected.definition)?
         else {

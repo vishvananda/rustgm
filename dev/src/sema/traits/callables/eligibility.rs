@@ -138,7 +138,7 @@ fn function_item(
         return Err("const callable lost its function item".into());
     };
     let definition = DefId(item.0);
-    let Some(header) = facts.function_header(definition)? else {
+    let Some(header) = facts.declaration_header(definition)? else {
         return Ok(Eligibility::Pending);
     };
     if header.declaration.source().is_none() && facts.associated.owner(definition).is_some() {

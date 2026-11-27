@@ -1,13 +1,17 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod callsite_coordinates;
 mod decoded_bodies;
+pub(crate) use decoded_bodies::{Target as SourceTarget, demand_target as demand_source_target};
 mod encoded_assembly;
 mod encoded_literals;
 mod encoded_texts;
 mod external_call_premises;
 #[path = "transported_originals/reconstruction.rs"]
 mod selected_original;
-pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};
+pub(crate) use selected_original::{
+    demand as demand_selected, demand_closure as demand_selected_closure,
+    validate as validate_selected,
+};
 mod interface_goals;
 mod invocations;
 mod non_type_calls;
@@ -33,11 +37,17 @@ use crate::{
     support::{crates, hash::HashMap},
 };
 use std::rc::Rc;
+pub(crate) use versioned_calls::{
+    prepare_single as collect_versioned_calls, prove_single as prove_versioned_calls,
+};
 pub(crate) struct Original {
     template: Template,
     contract: Contract,
 }
 impl Original {
+    pub(crate) const fn from_parts(template: Template, contract: Contract) -> Self {
+        Self { template, contract }
+    }
     pub(crate) fn template(&self) -> &Template {
         &self.template
     }
@@ -326,6 +336,42 @@ pub(crate) fn prove_original_types(
     });
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
     prove_types(facts, body, contract, environment, calls?)
+}
+
+pub(crate) fn prove_original_calls(
+    facts: &mut Declarations,
+    body: &crate::body::ir::Body,
+    contract: &mut Contract,
+    environment: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+) -> Result<(), String> {
+    let mut work = 0;
+    let pending = source_view(facts, body, &mut work).and_then(|view| {
+        view.map(|view| collect_versioned_calls(facts, &view, body, &mut work))
+            .transpose()
+    });
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
+    if let Some(pending) = pending? {
+        prove_versioned_calls(facts, Arc::clone(environment), &pending, body, contract)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn lazy_source_originals(report: &Report) -> bool {
+    !crate::support::sealed::self_check()
+        && report.package.source_client().is_some()
+        && report.resolution.crates.as_deref().is_some_and(|imported| {
+            let mut has_source = false;
+            for artifact in imported.dependencies().artifacts() {
+                if let Some(payload) = artifact.generic_payload() {
+                    if matches!(payload.view(), crates::generics::PayloadView::Source(_)) {
+                        has_source = true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            has_source
+        })
 }
 
 pub(crate) fn build(

@@ -161,17 +161,24 @@ impl Checker<'_> {
             .map_err(|e| self.error(source, e))
     }
     pub(super) fn complete_imported_destructors(&self) -> Result<(), Error> {
+        if !crate::support::sealed::self_check() {
+            return Ok(());
+        }
         registration::complete(&self.facts).map_err(Error::unlocated)
     }
     pub(super) fn validate_destructors(&mut self) -> Result<(), Error> {
         if self.facts.destructors.implementations().is_empty() {
             return Ok(());
         }
+        let self_check = crate::support::sealed::self_check();
         let mut trait_proofs = crate::support::hash::HashMap::default();
         let mut imported_inputs = crate::support::hash::HashMap::default();
         for index in 0..self.facts.destructors.implementations().len() {
             let implementation = &self.facts.destructors.implementations()[index];
             if implementation.source.source().is_none() {
+                if !self_check {
+                    continue;
+                }
                 let (owner, method, site) = (
                     implementation.self_definition,
                     implementation.method,
@@ -205,6 +212,9 @@ impl Checker<'_> {
             &self.facts.lifetimes.callables,
         );
         for (index, implementation) in self.facts.destructors.implementations().iter().enumerate() {
+            if !self_check && implementation.source.source().is_none() {
+                continue;
+            }
             let error = |message: &str| self.destructor_error(implementation.source, message);
             let Some(Type::Adt(_, arguments)) = self.facts.types.kind(implementation.target) else {
                 return Err(error("missing nominal Drop target"));

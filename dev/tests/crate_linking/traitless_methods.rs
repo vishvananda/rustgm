@@ -301,6 +301,9 @@ fn late_region_originals_reprove_their_declared_results() -> Result {
         let path = packet.folder.join(format!("{name}.rgcrate"));
         std::fs::write(&path, claim(offsets)?)?;
         let mut consumer = packet.consumer(&client, name, &path, &packet.owner());
+        if name == "claimed-result" {
+            consumer.arg("--self-check");
+        }
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     Ok(())

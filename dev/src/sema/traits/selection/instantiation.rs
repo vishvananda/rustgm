@@ -66,6 +66,7 @@ pub(super) fn instantiate(
         };
         outlives.push((a, b));
     }
+    let sized = crate::sema::nominals::sized_bound(facts)?;
     let formals = facts
         .generics
         .parameters
@@ -90,10 +91,7 @@ pub(super) fn instantiate(
                 Some(ParameterKind::Type { sized: true })
             )
         {
-            predicates.push(Predicate {
-                ty,
-                bound: Bound::Sized,
-            });
+            predicates.push(Predicate { ty, bound: sized });
         }
     }
     let mut determined = Determined::new(predicate, end);

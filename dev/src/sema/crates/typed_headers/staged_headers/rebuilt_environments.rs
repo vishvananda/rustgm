@@ -187,25 +187,28 @@ impl EmptyContract {
 /// Construction parts carry no body, caller, well-formedness or proof permission.
 pub(in crate::sema::crates::typed_headers) struct ContractParts {
     parameters: Vec<(ParameterId, Abilities)>,
+    constants: Vec<ParameterId>,
     clauses: Vec<Clause>,
 }
 impl ContractParts {
     pub(in crate::sema::crates::typed_headers) fn private_empty(_actual: EmptyContract) -> Self {
         Self {
             parameters: Vec::new(),
+            constants: Vec::new(),
             clauses: Vec::new(),
         }
     }
     pub(in crate::sema::crates::typed_headers) fn build(
         self,
         facts: &Declarations,
+        profile: Option<s::Profile>,
         budget: &mut impl super::environments::Accounting,
     ) -> Result<Arc<crate::types::parameters::environment::Environment>, Error> {
         super::environments::prepare(
             facts,
             None,
-            (&self.parameters, &[]),
-            (&self.clauses, None),
+            (&self.parameters, &self.constants),
+            (&self.clauses, profile),
             (0, 0),
             0,
             budget,
@@ -298,7 +301,14 @@ pub(super) fn complete(
             s::EnvironmentOrigin::Declaration(actual) if actual == row => {
                 Arc::clone(&scope.environment)
             }
-            s::EnvironmentOrigin::Contract => from_contract(graph, facts, scope, inputs, budget)?,
+            s::EnvironmentOrigin::Contract => from_contract(
+                context.descriptor.profile(),
+                graph,
+                facts,
+                scope,
+                inputs,
+                budget,
+            )?,
             _ => {
                 return Err(error(
                     "source original environment origin requires its wider explicit profile",
@@ -316,13 +326,18 @@ pub(super) fn complete(
 }
 
 fn from_contract(
+    profile: s::Profile,
     graph: &mapped_source::Graph,
     facts: &Declarations,
     scope: &Scope,
     inputs: &s::BodyInputs,
     budget: &mut Headers,
 ) -> Result<Arc<crate::types::parameters::environment::Environment>, Error> {
-    ContractParts::ordinary(graph, facts, scope, inputs, budget)?.build(facts, budget)
+    ContractParts::ordinary(graph, facts, scope, inputs, budget)?.build(
+        facts,
+        Some(profile),
+        budget,
+    )
 }
 impl ContractParts {
     pub(in crate::sema::crates::typed_headers) fn original(
@@ -349,7 +364,9 @@ impl ContractParts {
             inputs
                 .parameters
                 .len()
-                .saturating_mul(size_of::<(ParameterId, Abilities)>())
+                .saturating_mul(
+                    size_of::<(ParameterId, Abilities)>().saturating_add(size_of::<ParameterId>()),
+                )
                 .saturating_add(
                     inputs
                         .type_assumptions
@@ -358,18 +375,27 @@ impl ContractParts {
                 ),
         )?;
         let mut parameters = Vec::with_capacity(inputs.parameters.len());
+        let mut constants = Vec::new();
         for &slot in &inputs.parameters {
-            // As in source Copy reproof, only type formals have abilities.
-            // Const and lifetime slots retain their checked body bindings.
-            let Argument::Type(ty) = graph.slot(slot)? else {
-                continue;
-            };
-            let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
-                return Err(error(
-                    "ordinary Contract lost its actual rigid original formal",
-                ));
-            };
-            parameters.push((id, Abilities::default()));
+            match graph.slot(slot)? {
+                Argument::Type(ty) => {
+                    let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
+                        return Err(error(
+                            "ordinary Contract lost its actual rigid original formal",
+                        ));
+                    };
+                    parameters.push((id, Abilities::default()));
+                }
+                Argument::Const(constant) => {
+                    let id = crate::sema::generics::parameter_id(
+                        &facts.types,
+                        Argument::Const(constant),
+                    )
+                    .map_err(error)?;
+                    constants.push(id);
+                }
+                Argument::Lifetime(_) => {}
+            }
         }
         let mut clauses = Vec::with_capacity(inputs.type_assumptions.len());
         for input in &inputs.type_assumptions {
@@ -379,6 +405,7 @@ impl ContractParts {
         }
         Ok(Self {
             parameters,
+            constants,
             clauses,
         })
     }
@@ -438,6 +465,7 @@ impl ContractParts {
         // constructing an environment; unsupported inputs never borrow scope assumptions.
         Ok(Self {
             parameters,
+            constants: Vec::new(),
             clauses,
         })
     }

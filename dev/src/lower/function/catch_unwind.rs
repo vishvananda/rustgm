@@ -19,10 +19,7 @@ pub(in crate::lower) fn checked_catch_unwind(
     value: &ir::Value,
     target: TypeId,
 ) -> Result<CatchUnwind, &'static str> {
-    if !crate::resolve::package::Package::target_aborts_panics()
-        || body.const_context
-        || body.source.source().is_none()
-    {
+    if !crate::resolve::package::Package::target_aborts_panics() || body.const_context {
         return Err("source catch_unwind requires its actual abort-profile runtime call");
     }
     let ir::Rvalue::Call {

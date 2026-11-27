@@ -146,7 +146,7 @@ fn binding_uses_aliases(
     // alias view only when it exactly matches the parent binding's type.
     match parent.infer.resolved(&mut facts.types, binding) {
         Ok(actual) => Ok(actual == free),
-        Err(infer::Error::Unresolved) => Ok(false),
+        Err(infer::Error::Unresolved | infer::Error::Normalization) => Ok(false),
         Err(error) => Err(error.to_string()),
     }
 }

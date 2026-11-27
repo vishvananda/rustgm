@@ -129,15 +129,16 @@ impl Engine {
                 (built?, environment)
             }
             crate::resolve::body_origin::BodyOrigin::Imported(imported_origin) => {
-                self.ensure_imported_originals(report, facts)?;
-                let originals =
-                    self.imported
-                        .as_ref()
-                        .map(std::rc::Rc::clone)
-                        .ok_or_else(|| {
-                            report.body_error(origin, "imported anonymous constant lacks originals")
-                        })?;
-                let row = originals.anonymous(imported_origin.id()).ok_or_else(|| {
+                let original = self
+                    .imported_original(
+                        report,
+                        facts,
+                        body::transported_originals::SourceTarget::Anonymous(imported_origin.id()),
+                    )?
+                    .ok_or_else(|| {
+                        report.body_error(origin, "imported anonymous constant lacks originals")
+                    })?;
+                let row = original.row().ok_or_else(|| {
                     report.body_error(origin, "imported anonymous constant has no original row")
                 })?;
                 super::super::original_contexts::Original::validate_parts_charged(

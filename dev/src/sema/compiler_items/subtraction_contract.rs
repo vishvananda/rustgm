@@ -320,7 +320,7 @@ impl Catalog {
                 return Err("source subtraction changed its actual declaration");
             }
             validate(facts, *function, kind)?;
-            self.validated_language(LangItem::Copy)?
+            self.validated_role(LangItem::Copy)?
                 .ok_or("source subtraction requires its completed actual Copy header")?;
             return Ok(Some(kind));
         }

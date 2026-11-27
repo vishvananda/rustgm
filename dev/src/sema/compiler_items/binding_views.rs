@@ -275,6 +275,10 @@ impl Catalog {
         }
     }
 
+    pub(crate) fn role_definition(&self, role: LangItem) -> Result<Option<DefId>, &'static str> {
+        Ok(self.role(role)?.map(|role| role.definition))
+    }
+
     pub(in crate::sema) fn imported_member_named(
         &self,
         origin: DeclarationOrigin,

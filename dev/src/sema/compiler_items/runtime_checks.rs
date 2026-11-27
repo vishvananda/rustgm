@@ -113,13 +113,46 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, expected)) = self.intrinsic_record(definition)? else {
+        if let Some((declaration, kind, expected)) = self.intrinsic_record(definition)? {
+            if !is_operation(kind) {
+                return Ok(None);
+            }
+            if signature != expected
+                || facts
+                    .types
+                    .arguments(arguments)
+                    .is_none_or(|a| a.len() != 0)
+            {
+                return Err(
+                    "selected source ub_checks changed its complete signature or arguments",
+                );
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&i| facts.functions.get(i))
+                .ok_or("source ub_checks has no completed declaration")?;
+            if function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != expected
+            {
+                return Err("source ub_checks completed declaration changed");
+            }
+            validate(facts, *function)?;
+            return Ok(Some(RuntimeCheckSelection {
+                definition,
+                signature,
+                fallback: !is_overflow(kind) && function.body.is_some(),
+                overflow: is_overflow(kind),
+            }));
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
             return Ok(None);
         };
-        if !is_operation(kind) {
+        if !is_operation(imported.kind) {
             return Ok(None);
         }
-        if signature != expected
+        if signature != imported.signature
             || facts
                 .types
                 .arguments(arguments)
@@ -127,23 +160,20 @@ impl Catalog {
         {
             return Err("selected source ub_checks changed its complete signature or arguments");
         }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source ub_checks has no completed declaration")?;
-        if function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != expected
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported ub_checks lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || !facts.is_const_function(definition)
         {
-            return Err("source ub_checks completed declaration changed");
+            return Err("imported ub_checks changed its canonical declaration");
         }
-        validate(facts, *function)?;
         Ok(Some(RuntimeCheckSelection {
             definition,
             signature,
-            fallback: !is_overflow(kind) && function.body.is_some(),
-            overflow: is_overflow(kind),
+            fallback: !is_overflow(imported.kind) && imported.source_fallback,
+            overflow: is_overflow(imported.kind),
         }))
     }
 
@@ -153,7 +183,7 @@ impl Catalog {
         origin: BodyOrigin,
     ) -> Result<(RuntimeCheckBinding, RuntimeCheckConfig), &'static str> {
         if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            && !matches!(self.bindings, super::binding_views::Bindings::Imported(_))
         {
             return Err("imported runtime-check operations require transported policy provenance");
         }

@@ -24,10 +24,46 @@ pub(super) fn select_using(
     predicate: Predicate,
     caller: selection::Caller<'_>,
     availability: Availability,
-    preparation: Option<&mut dyn super::Preparation>,
+    mut preparation: Option<&mut (dyn super::Preparation + '_)>,
 ) -> Result<(Target, Obligations, bool), super::Failure> {
-    let evidence =
-        select_source_using(facts, context, predicate, caller, availability, preparation)?;
+    let first_region = caller.first_region;
+    let retain_sized = caller.retain_sized;
+    let nesting = caller.nesting;
+    let placeholders = caller.placeholders;
+    let evidence = select_source_using(
+        facts,
+        context,
+        predicate,
+        caller,
+        availability,
+        preparation.as_deref_mut(),
+    )?;
+    let evidence = if matches!(evidence.source, selection::Source::Implementation { .. }) {
+        evidence
+    } else {
+        let empty = super::Assumptions::default();
+        let concrete = selection::Caller {
+            assumptions: &empty,
+            environment: None,
+            first_region,
+            retain_sized,
+            nesting,
+            placeholders,
+        };
+        if let Ok(resolved) = select_source_using(
+            facts,
+            context,
+            predicate,
+            concrete,
+            availability,
+            preparation,
+        ) && matches!(resolved.source, selection::Source::Implementation { .. })
+        {
+            resolved
+        } else {
+            return Err("concrete dispatch cannot use a symbolic assumption".into());
+        }
+    };
     let selection::Source::Implementation { owner, arguments } = evidence.source else {
         return Err("concrete dispatch cannot use a symbolic assumption".into());
     };
@@ -44,7 +80,7 @@ pub(super) fn select_source_using(
     predicate: Predicate,
     caller: selection::Caller<'_>,
     availability: Availability,
-    preparation: Option<&mut dyn super::Preparation>,
+    preparation: Option<&mut (dyn super::Preparation + '_)>,
 ) -> Result<selection::Evidence, super::Failure> {
     let before = context.region_equalities.len();
     let mut substitution =

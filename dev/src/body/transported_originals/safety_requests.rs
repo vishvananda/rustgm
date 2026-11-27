@@ -179,7 +179,7 @@ fn caller_context(
         false
     } else if let Some(signature) = view.signature() {
         let defining_header = facts
-            .function_header(view.definition())?
+            .declaration_header(view.definition())?
             .ok_or("source call safety lost its actual installed caller header")?;
         if defining_header.signature != signature || defining_header.body != Some(body.source) {
             return Err("source call safety changed its actual defining body/header");

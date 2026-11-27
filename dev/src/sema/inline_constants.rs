@@ -70,6 +70,7 @@ pub struct RootFacts {
 struct ImportedInline {
     by_body: HashMap<ImportedBodyId, Id>,
     owners: HashSet<ImportedBodyId>,
+    children: HashMap<ImportedBodyId, Vec<ImportedBodyId>>,
 }
 
 /// This table exists only for crates containing inline bodies. Each source is
@@ -259,6 +260,11 @@ impl Registry {
         let imported = self.imported.get_or_insert_with(Default::default);
         imported.by_body.insert(body_origin.id(), id);
         imported.owners.insert(parent_id.id());
+        imported
+            .children
+            .entry(parent_id.id())
+            .or_default()
+            .push(body_origin.id());
         self.indexed += 1;
         if result.is_some() {
             self.publications += 1;
@@ -361,6 +367,30 @@ impl Registry {
                     .is_some_and(|table| table.owners.contains(&body.id()))
             }
         }
+    }
+
+    #[must_use]
+    pub(crate) fn uncompleted_imported_children(&self, origin: BodyOrigin) -> Vec<ImportedBodyId> {
+        let BodyOrigin::Imported(body) = origin else {
+            return Vec::new();
+        };
+        let Some(imported) = self.imported.as_deref() else {
+            return Vec::new();
+        };
+        let Some(children) = imported.children.get(&body.id()) else {
+            return Vec::new();
+        };
+        children
+            .iter()
+            .copied()
+            .filter(|child| {
+                imported
+                    .by_body
+                    .get(child)
+                    .and_then(|id| self.bodies.get(id.0 as usize))
+                    .is_some_and(|entry| entry.result.is_none())
+            })
+            .collect()
     }
     #[must_use]
     pub(crate) fn at(&self, index: usize) -> Option<&Body> {

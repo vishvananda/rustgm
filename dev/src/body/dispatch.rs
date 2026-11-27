@@ -118,6 +118,19 @@ fn resolve_using(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
+    original: Option<originals::Parameters>,
+    scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    facts.in_imported_body(body.source.source().is_none(), |facts| {
+        resolve_using_inner(facts, body, contract, original, scope, preparation)
+    })
+}
+
+fn resolve_using_inner(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
     mut original: Option<originals::Parameters>,
     mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
@@ -155,28 +168,16 @@ fn resolve_using(
         {
             continue;
         }
-        if let Rvalue::AssociatedConstant(instance) = value.kind
-            && crate::sema::values::execution::BodyCaller::needed(facts, instance, value.ty)?
-        {
-            let witness = caller
-                .as_mut()
-                .ok_or("missing body source caller")?
-                .prepare(facts, &mut dispatcher, instance, value.ty)?;
-            value.kind = match witness {
-                crate::sema::values::execution::PreparedConstant::Selected(selected) => {
-                    facts.constant_targets.insert(instance, selected);
-                    Rvalue::AssociatedConstant(selected)
-                }
-                crate::sema::values::execution::PreparedConstant::Source(source) => {
-                    Rvalue::SourceAssociated(source)
-                }
-            };
+        if let Rvalue::AssociatedConstant(instance) = value.kind {
+            value.kind = resolve_constant(
+                facts,
+                &mut dispatcher,
+                caller.as_mut(),
+                body.source.source().is_some(),
+                instance,
+                value.ty,
+            )?;
             continue;
-        }
-        if let Rvalue::AssociatedConstant(instance) = &mut value.kind {
-            let selected = dispatcher.constant(facts, *instance)?;
-            facts.constant_targets.insert(*instance, selected);
-            *instance = selected;
         }
         if let Rvalue::Function(id) = value.kind
             && facts.associated.trait_owner(id).is_some()
@@ -225,6 +226,40 @@ fn resolve_using(
 /// Call operators read their receivers after the selected items are folded;
 /// each selected member's proof joins this body's dispatch proof. A reference
 /// whose call forwards to its nominal referent executes the referent's member.
+fn resolve_constant(
+    facts: &mut Declarations,
+    dispatcher: &mut crate::sema::dispatch::Dispatcher,
+    caller: Option<&mut crate::sema::values::execution::BodyCaller<'_>>,
+    is_source: bool,
+    instance: crate::sema::values::Instance,
+    ty: crate::types::TypeId,
+) -> Result<Rvalue, String> {
+    if is_source && crate::sema::values::execution::BodyCaller::needed(facts, instance, ty)? {
+        let witness = caller
+            .ok_or("missing body source caller")?
+            .prepare(facts, dispatcher, instance, ty)?;
+        return Ok(match witness {
+            crate::sema::values::execution::PreparedConstant::Selected(selected) => {
+                facts.constant_targets.insert(instance, selected);
+                Rvalue::AssociatedConstant(selected)
+            }
+            crate::sema::values::execution::PreparedConstant::Source(source) => {
+                Rvalue::SourceAssociated(source)
+            }
+        });
+    }
+    let mut selected = dispatcher.constant(facts, instance)?;
+    if !is_source && !facts.types.arguments_are_concrete(selected.arguments)? {
+        let mut erase = Bound::vtable();
+        let candidate = selected.substitute(&mut facts.types, &mut erase)?;
+        if facts.types.arguments_are_concrete(candidate.arguments)? {
+            selected = candidate;
+        }
+    }
+    facts.constant_targets.insert(instance, selected);
+    Ok(Rvalue::AssociatedConstant(selected))
+}
+
 fn select_members(
     facts: &mut Declarations,
     dispatcher: &mut crate::sema::dispatch::Dispatcher,

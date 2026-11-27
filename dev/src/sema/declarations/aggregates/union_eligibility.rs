@@ -99,7 +99,10 @@ impl Checker<'_> {
         &mut self,
     ) -> Result<(), Error> {
         let facts = &mut self.facts;
-        if !facts.aggregates.has_unions() || self.report.package.source_client().is_none() {
+        if !crate::support::sealed::self_check()
+            || !facts.aggregates.has_unions()
+            || self.report.package.source_client().is_none()
+        {
             return Ok(());
         }
         let count = facts.aggregates.iter().len();
@@ -119,9 +122,10 @@ impl Checker<'_> {
                 .then_some(owner)
         }));
         for owner in rows {
-            self.validate_imported_union(owner)?;
+            let result = self.validate_imported_union(owner);
+            self.census_imported(owner, result)?;
         }
-        Ok(())
+        self.census_annotations()
     }
 }
 

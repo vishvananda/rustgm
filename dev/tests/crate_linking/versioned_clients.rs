@@ -911,7 +911,7 @@ pub fn symbolic_premise_value<T: Part<u8>>() -> u8 { T::PART }
     let lowir = folder.join("unused.lowir");
     std::fs::write(&metadata, packet)?;
     let output = source_client(&source, &metadata, &lowir)
-        .arg("--crate-type=lib")
+        .args(["--crate-type=lib", "--self-check"])
         .output()?;
     std::fs::write(folder.join("missing-premise.stderr"), &output.stderr)?;
     let error = String::from_utf8(output.stderr)?;

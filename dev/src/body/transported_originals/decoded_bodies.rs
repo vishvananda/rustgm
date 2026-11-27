@@ -109,10 +109,105 @@ pub(super) struct PendingBody {
 }
 
 #[derive(Clone, Copy)]
-enum Target {
+pub(crate) enum Target {
     Declaration(crate::resolve::model::DefId),
     Closure(crate::types::closure::ClosureId),
     Anonymous(crate::resolve::body_origin::ImportedBodyId),
+}
+
+pub(crate) fn demand_target(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    target: Target,
+    scratch: &mut promote::Scratch,
+) -> Result<Original, Error> {
+    let mut work = ImportedOriginals::default();
+    match target {
+        Target::Declaration(definition) => {
+            crate::sema::crates::prepare_source_original(report, facts, definition, 0, 0)?;
+        }
+        Target::Closure(identity) => {
+            crate::sema::crates::prepare_source_closure_original(report, facts, identity, 0, 0)?;
+        }
+        Target::Anonymous(body_id) => {
+            crate::sema::crates::prepare_source_anonymous_original(report, facts, body_id, 0, 0)?;
+        }
+    }
+    let (rebuilt, contract, environment) = {
+        let view = match target {
+            Target::Declaration(definition) => {
+                crate::sema::crates::source_original(facts, definition, &mut work.steps)
+            }
+            Target::Closure(identity) => {
+                crate::sema::crates::source_closure_original(facts, identity, &mut work.steps)
+            }
+            Target::Anonymous(body_id) => {
+                crate::sema::crates::source_anonymous_original(facts, body_id, &mut work.steps)
+            }
+        }
+        .map_err(|e| report.body_optional_error(None, e))?
+        .ok_or_else(|| {
+            report.body_optional_error(
+                None,
+                "source provided original has no authenticated current data view",
+            )
+        })?;
+        let source = view
+            .source()
+            .map_err(|e| report.body_optional_error(None, e))?;
+        let body = rebuilt_operations::build(&view, &mut work)
+            .map_err(|e| report.body_error(source, e))?;
+        let (contract, quantified_assumptions) =
+            rebuilt_inputs::build(facts, &view, &body, &mut work)
+                .map_err(|e| report.body_error(source, e))?;
+        let texts = super::encoded_texts::copy(&view, &mut work)
+            .map_err(|e| report.body_error(source, e))?;
+        let caller_sites = super::callsite_coordinates::copy(&view, &mut work)
+            .map_err(|e| report.body_error(source, e))?;
+        (
+            PendingBody {
+                body,
+                texts,
+                caller_sites,
+                quantified_assumptions,
+            },
+            contract,
+            Arc::clone(
+                view.environment()
+                    .map_err(|e| report.body_error(source, e))?,
+            ),
+        )
+    };
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work.steps);
+    let mut original = finish(report, facts, scratch, rebuilt, contract, environment, None)?;
+    let source = original.template.body.source;
+    if facts
+        .inline_constants
+        .as_deref()
+        .is_some_and(|inline| inline.has_children_origin(source))
+    {
+        complete_inline_children(report, facts, scratch, source)?;
+        crate::body::instantiate::close_inline_operands(facts, &mut original.template.body)
+            .map_err(|e| report.body_error(source, e))?;
+    }
+    Ok(original)
+}
+
+pub(super) fn complete_inline_children(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    scratch: &mut promote::Scratch,
+    source: crate::body::ir::BodyOrigin,
+) -> Result<(), Error> {
+    let pending = facts
+        .inline_constants
+        .as_deref()
+        .map(|inline| inline.uncompleted_imported_children(source))
+        .unwrap_or_default();
+    for child in pending {
+        let _ = demand_target(report, facts, Target::Anonymous(child), scratch)?;
+    }
+    Ok(())
 }
 
 fn prepare_target(
@@ -252,7 +347,7 @@ fn build(
     .map_err(|e| report.body_error(rebuilt.body.source, e))?;
     super::external_call_premises::check(facts, &dependency_inputs, &contract, work)
         .map_err(|e| report.body_error(rebuilt.body.source, e))?;
-    finish(report, facts, scratch, rebuilt, contract, environment)
+    finish(report, facts, scratch, rebuilt, contract, environment, None)
 }
 pub(super) fn finish(
     report: &crate::resolve::expansion::Report,
@@ -261,6 +356,7 @@ pub(super) fn finish(
     rebuilt: PendingBody,
     mut contract: crate::body::regions::Contract,
     environment: Arc<crate::types::parameters::environment::Environment>,
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<Original, Error> {
     let PendingBody {
         mut body,
@@ -289,9 +385,12 @@ pub(super) fn finish(
         .map_err(|error| report.body_error(source, error))?;
     super::callsite_coordinates::intern(report, facts, &mut body, caller_sites)
         .map_err(|error| report.body_error(source, error))?;
-    super::untupled_calls::check(facts, &body, &contract, &environment)
-        .map_err(|error| report.body_error(source, error))?;
-    super::variant_facts::check(facts, &body).map_err(|error| report.body_error(source, error))?;
+    if crate::support::sealed::self_check() {
+        super::untupled_calls::check(facts, &body, &contract, &environment)
+            .map_err(|error| report.body_error(source, error))?;
+        super::variant_facts::check(facts, &body)
+            .map_err(|error| report.body_error(source, error))?;
+    }
     // A called imported constructor needs its consumer-synthesized template,
     // exactly as a local generic constructor reference requests one. The scan
     // is canonical body work: one step per rebuilt value.
@@ -309,7 +408,7 @@ pub(super) fn finish(
                 .insert(crate::types::ItemId(definition.0));
         }
     }
-    super::remapped_field_types::prepare_storage(facts, &body)
+    super::remapped_field_types::prepare_storage(facts, &body, preparation)
         .map_err(|error| report.body_error(source, error))?;
     let needed = crate::types::destruction::NeedsDrop::new(
         facts.destructors.implementations().iter().map(|i| i.item),

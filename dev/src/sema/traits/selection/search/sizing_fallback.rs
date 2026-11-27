@@ -146,7 +146,8 @@ impl Search<'_> {
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let valid = if shape.sized {
+        let assumed_sized = self.assumed_source_sized(facts, frame, kind, goal.ty)?;
+        let valid = if shape.sized || assumed_sized {
             true
         } else {
             match facts
@@ -211,13 +212,47 @@ impl Search<'_> {
         if !valid {
             return Ok(Some(Action::Complete(Decision::Absent)));
         }
-        let sized = kind == LangItem::Sized || shape.sized;
+        let sized = kind == LangItem::Sized || shape.sized || assumed_sized;
         match kind {
             LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized => {
                 self.complete_source_sizing(facts, frame, goal, (sized, false))
             }
             _ => Err("invalid source sizing fallback kind".into()),
         }
+    }
+    fn assumed_source_sized(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        kind: LangItem,
+        ty: crate::types::TypeId,
+    ) -> Result<bool, String> {
+        if kind != LangItem::MetaSized || frame.sources == super::frames::Sources::Implementations {
+            return Ok(false);
+        }
+        let crate::types::parameters::predicates::Bound::Trait(sized) =
+            crate::sema::nominals::sized_bound(facts)?
+        else {
+            return Ok(false);
+        };
+        let Some(environment) = self.caller.environment else {
+            return Ok(false);
+        };
+        if environment.has_trait_opening() {
+            return self
+                .caller
+                .assumptions
+                .mapped_exact_member(
+                    &mut facts.types,
+                    &mut frame.inputs.context,
+                    Predicate {
+                        ty,
+                        bound: crate::types::parameters::predicates::Bound::Trait(sized),
+                    },
+                )
+                .map_err(inference);
+        }
+        Ok(environment.assumes_trait(ty, sized))
     }
     /// A `MetaSized` premise is retained like a Sized debt, so its node is
     /// never debt-free and never pays an equality-only negative.

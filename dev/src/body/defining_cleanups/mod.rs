@@ -313,7 +313,7 @@ fn active_definition(
     default: bool,
 ) -> Result<Option<Definition>, &'static str> {
     let header = facts
-        .function_header(definition)?
+        .declaration_header(definition)?
         .ok_or("defining cleanup function header is pending")?;
     if header.body.is_none() {
         return Ok(None);

@@ -29,6 +29,9 @@ pub(crate) fn prove(
     environment: &Arc<Environment>,
     calls: Vec<super::remapped_call_results::CallResult>,
 ) -> Result<Option<Proof>, &'static str> {
+    if !crate::support::sealed::self_check() {
+        return Ok(None);
+    }
     let mut goals = Vec::new();
     facts.body_work.canonical_steps = facts
         .body_work
@@ -111,6 +114,7 @@ fn aggregate_goals(
     } else {
         0
     };
+    facts.aggregates.instantiate_storage(&mut facts.types, ty)?;
     let declared = facts
         .aggregates
         .raw_shape(&facts.types, ty)?
@@ -138,7 +142,7 @@ fn aggregate_goals(
 }
 
 fn field_type(
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     projection: &Projection,
     field: crate::sema::members::FieldId,
@@ -155,6 +159,9 @@ fn field_type(
     }
     facts
         .aggregates
+        .instantiate_storage(&mut facts.types, base)?;
+    facts
+        .aggregates
         .raw_shape(&facts.types, base)?
         .variant(identity.variant as usize)
         .and_then(|variant| facts.types.list(variant.fields))
@@ -165,9 +172,19 @@ fn field_type(
 
 /// A freshly rebuilt body needs actual storage before inspecting drops and
 /// promotion. Its fields can contain projections absent from the nominal type.
-pub(super) fn prepare_storage(facts: &mut Declarations, body: &Body) -> Result<(), String> {
+pub(super) fn prepare_storage(
+    facts: &mut Declarations,
+    body: &Body,
+    mut preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
+) -> Result<(), String> {
     let mut work = 0;
-    let mut prepare = |ty| prepare_type(facts, ty, &mut work);
+    let mut seen = crate::support::hash::HashSet::default();
+    let mut prepare = |ty| {
+        if !seen.insert(ty) {
+            return Ok(ty);
+        }
+        prepare_type(facts, ty, &mut work, preparation.as_deref_mut())
+    };
     let result = (|| {
         for ty in std::iter::once(body.result)
             .chain(body.locals.iter().map(|local| local.ty))
@@ -187,15 +204,30 @@ pub(super) fn prepare_storage(facts: &mut Declarations, body: &Body) -> Result<(
     result
 }
 
-fn prepare_type(facts: &mut Declarations, ty: TypeId, work: &mut usize) -> Result<TypeId, String> {
-    if matches!(facts.types.kind(ty), Some(Kind::Adt(..))) {
-        facts.aggregates.prepare(&mut facts.types, ty)?;
-        if facts.aggregates.has_projected_fields(ty)
-            && facts.types.contains_parameters(ty) == Some(false)
-            && facts.aggregates.shape(&facts.types, ty).is_err()
-        {
-            crate::sema::stored_fields::prepare_premise_free(facts, ty, work)?;
-        }
+fn prepare_type(
+    facts: &mut Declarations,
+    ty: TypeId,
+    work: &mut usize,
+    preparation: Option<&mut (dyn crate::sema::dispatch::Preparation + '_)>,
+) -> Result<TypeId, String> {
+    facts.aggregates.prepare(&mut facts.types, ty)?;
+    if facts.types.contains_projections(ty) == Some(true)
+        || !facts.aggregates.has_projected_templates()
+        || facts
+            .stored_fields
+            .as_ref()
+            .is_some_and(|registry| registry.contains_projection(ty).is_some())
+    {
+        return Ok(ty);
+    }
+    if facts.types.contains_parameters(ty) == Some(false) {
+        facts.in_imported_body(true, |facts| {
+            crate::sema::stored_fields::prepare_body_storage_with(facts, ty, work, preparation)
+        })?;
+    } else {
+        let _ = facts.in_imported_body(true, |facts| {
+            crate::sema::stored_fields::prepare_premise_free_with(facts, ty, work, preparation)
+        });
     }
     Ok(ty)
 }

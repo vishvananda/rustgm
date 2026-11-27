@@ -12,7 +12,7 @@ impl Reader<'_> {
 
     pub(crate) fn arithmetic_guard_location(
         self,
-        site: crate::resolve::unit::NodeKey,
+        site: crate::resolve::body_origin::ProofSite,
     ) -> Option<super::LocationId> {
         self.facts.source_bindings.as_deref()?.guard_location(site)
     }
@@ -39,7 +39,15 @@ impl Reader<'_> {
             return Ok(None);
         };
         let name = identity.name();
-        if name == crate::sema::compiler_items::swap_contract::NAME {
+        if name == crate::sema::compiler_items::swap_contract::NAME
+            || matches!(
+                name,
+                "minimum_number_nsz_f32"
+                    | "minimum_number_nsz_f64"
+                    | "maximum_number_nsz_f32"
+                    | "maximum_number_nsz_f64"
+            )
+        {
             return Ok(Some(name));
         }
         if bit_counts::named(name).is_some_and(bit_counts::Operation::is_rotation)

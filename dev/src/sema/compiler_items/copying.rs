@@ -160,9 +160,61 @@ pub(crate) fn prove_body_requirements(
     first: u32,
     goals: impl Iterator<Item = Predicate>,
 ) -> Result<Obligations, &'static str> {
+    prove_requirements(
+        facts,
+        environment,
+        universals,
+        first,
+        goals,
+        |state, facts, goal| match goal.bound {
+            crate::types::parameters::predicates::Bound::Trait(_) => {
+                state.prove(facts, goal, false)
+            }
+            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
+                state.prove_equality(facts, goal, false)
+            }
+            _ => Err("body trait requirement has an unsupported effect or kind"),
+        },
+    )
+}
+
+pub(crate) fn prove_body_requirements_prepared(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    universals: u32,
+    first: u32,
+    goals: impl Iterator<Item = Predicate>,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<Obligations, crate::sema::dispatch::Failure> {
+    prove_requirements(
+        facts,
+        environment,
+        universals,
+        first,
+        goals,
+        |state, facts, goal| match goal.bound {
+            crate::types::parameters::predicates::Bound::Trait(_) => {
+                state.prove_prepared(facts, goal, preparation)
+            }
+            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
+                state.prove_equality(facts, goal, false).map_err(Into::into)
+            }
+            _ => Err("body trait requirement has an unsupported effect or kind".into()),
+        },
+    )
+}
+
+fn prove_requirements<E: From<&'static str>>(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    universals: u32,
+    first: u32,
+    goals: impl Iterator<Item = Predicate>,
+    mut prove: impl FnMut(&mut State, &mut Declarations, Predicate) -> Result<bool, E>,
+) -> Result<Obligations, E> {
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     if goals.size_hint().0 > crate::support::crates::MAX_COMPONENTS {
-        return Err("body trait requirement work budget exceeded");
+        return Err("body trait requirement work budget exceeded".into());
     }
     let mut state = State::body(facts, environment, universals, first)?;
     facts.body_work.canonical_steps = facts
@@ -172,24 +224,16 @@ pub(crate) fn prove_body_requirements(
     for (index, goal) in goals.enumerate() {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
         if index >= crate::support::crates::MAX_COMPONENTS {
-            return Err("body trait requirement work budget exceeded");
+            return Err("body trait requirement work budget exceeded".into());
         }
         let before = state.selection_steps();
-        let selected = match goal.bound {
-            crate::types::parameters::predicates::Bound::Trait(_) => {
-                state.prove(facts, goal, false)
-            }
-            crate::types::parameters::predicates::Bound::ProjectionEqual(_) => {
-                state.prove_equality(facts, goal, false)
-            }
-            _ => return Err("body trait requirement has an unsupported effect or kind"),
-        };
+        let selected = prove(&mut state, facts, goal);
         facts.body_work.canonical_steps = facts
             .body_work
             .canonical_steps
             .saturating_add(state.selection_steps().saturating_sub(before));
         if !selected? {
-            return Err("body trait requirement is not proved");
+            return Err("body trait requirement is not proved".into());
         }
     }
     Ok(state.finish())

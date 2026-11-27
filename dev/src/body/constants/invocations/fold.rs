@@ -28,24 +28,55 @@ pub(super) fn check(
     work: &mut Work,
 ) -> Result<bool, &'static str> {
     work.charge(10)?;
-    let Owner::Function {
-        definition,
-        signature: current,
-        execution,
-    } = body.owner
-    else {
-        return Ok(false);
-    };
-    if !facts.imported_iterator_fold(definition)? {
-        return imported_const_fn(
+    match body.owner {
+        Owner::Function {
+            definition,
+            signature: current,
+            execution,
+        } => {
+            if !facts.imported_iterator_fold(definition)? {
+                return imported_const_fn(
+                    report,
+                    facts,
+                    body,
+                    statement,
+                    (definition, current, execution),
+                    work,
+                );
+            }
+            imported_iterator_fold(
+                report,
+                facts,
+                body,
+                statement,
+                (definition, current, execution),
+                work,
+            )
+        }
+        Owner::Closure {
+            identity,
+            signature: current,
+            execution,
+        } => imported_const_closure(
             report,
             facts,
             body,
             statement,
-            (definition, current, execution),
+            (identity, current, execution),
             work,
-        );
+        ),
+        _ => Ok(false),
     }
+}
+
+fn imported_iterator_fold(
+    report: Option<&Report>,
+    facts: &Declarations,
+    body: &Body,
+    statement: &Statement,
+    (definition, current, execution): (crate::resolve::model::DefId, TypeId, Option<TypeId>),
+    work: &mut Work,
+) -> Result<bool, &'static str> {
     if !body.const_context {
         return Err("imported const invocation requires its actual const body context");
     }
@@ -89,6 +120,9 @@ pub(super) fn check(
         return Err("imported const invocation lost its actual accumulator result");
     }
     let (inputs, _) = operands(facts, body, statement, (*callback, *accumulator), work)?;
+    if !crate::support::sealed::self_check() {
+        return Ok(true);
+    }
     let callable = crate::sema::compiler_items::callable_role(facts, CallTrait::FnMut)?;
     for clause in view.environment()?.trait_clauses()? {
         work.charge(3)?;
@@ -272,8 +306,50 @@ fn imported_const_fn(
     if execution.is_some() {
         return Err("imported const invocation changed its original function owner");
     }
+    if !crate::support::sealed::self_check() {
+        return Ok(true);
+    }
     check_callable_premise(facts, view.environment()?, subject, kind, inputs, work)?;
     Ok(true)
+}
+
+fn imported_const_closure(
+    report: Option<&Report>,
+    facts: &Declarations,
+    body: &Body,
+    statement: &Statement,
+    (identity, current, execution): (crate::types::closure::ClosureId, TypeId, Option<TypeId>),
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    if !body.const_context {
+        return Ok(false);
+    }
+    work.charge(4)?;
+    if facts.closures.origin(identity) != Some(body.source) {
+        return Err("imported const closure invocation changed its defining body");
+    }
+    body.source.proof_site(statement.source)?;
+    let (kind, signature, subject, _) = general_operands(facts, body, statement, work)?;
+    if let Some(instance) = body.instance {
+        if execution.is_none()
+            || !matches!(
+                facts.types.kind(instance.ty()),
+                Some(Kind::Closure {
+                    identity: actual,
+                    signature: actual_signature,
+                    ..
+                }) if actual == identity && actual_signature == current
+            )
+        {
+            return Err("imported const closure invocation changed its actual instance");
+        }
+        check_concrete_callback(report, facts, subject, (kind, signature), work)?;
+        return Ok(true);
+    }
+    if !crate::support::sealed::self_check() {
+        return Ok(true);
+    }
+    Ok(false)
 }
 
 fn general_operands<'a>(
@@ -355,11 +431,24 @@ fn general_operands<'a>(
 fn check_concrete_callback(
     report: Option<&Report>,
     facts: &Declarations,
-    callback: TypeId,
+    mut callback: TypeId,
     (kind, signature): (CallTrait, TypeId),
     work: &mut Work,
 ) -> Result<(), &'static str> {
     work.charge(8)?;
+    for _ in 0..16 {
+        let Some(Kind::Reference {
+            referent, mutable, ..
+        }) = facts.types.kind(callback)
+        else {
+            break;
+        };
+        if !mutable && kind != CallTrait::Fn {
+            break;
+        }
+        work.charge(1)?;
+        callback = referent;
+    }
     match facts.types.kind(callback) {
         Some(Kind::Closure {
             identity,

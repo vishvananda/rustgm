@@ -35,7 +35,6 @@ pub(in crate::lower) fn checked(
     };
     let inputs = [boxed, stored];
     if body.const_context
-        || body.source.source().is_none()
         || value.ty != selected.boxed
         || inputs
             .iter()

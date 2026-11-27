@@ -97,33 +97,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        let Some(operation) = self.validate_simd_origin(facts, definition, origin)? else {
             return Ok(None);
         };
-        let Some(operation) = SimdOperation::of(kind) else {
-            return Ok(None);
-        };
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
-            .map_err(|_| "source SIMD selection work budget exhausted")?;
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("source SIMD intrinsic provenance requires its wider transport profile");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
-            .ok_or("source SIMD intrinsic requires its completed actual function")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-            || function.body.is_some()
-            || !facts.is_const_function(definition)
-        {
-            return Err("source SIMD intrinsic requires its own bodyless const declaration");
-        }
         let Some(Kind::Function {
             bound_regions: 0,
             parameters,
@@ -167,5 +143,60 @@ impl Catalog {
             inputs,
             output: result,
         }))
+    }
+    fn validate_simd_origin(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<Option<SimdOperation>, &'static str> {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            let Some(operation) = SimdOperation::of(kind) else {
+                return Ok(None);
+            };
+            crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+                .map_err(|_| "source SIMD selection work budget exhausted")?;
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err(
+                    "source SIMD intrinsic provenance requires its wider transport profile",
+                );
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .ok_or("source SIMD intrinsic requires its completed actual function")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+                || function.body.is_some()
+                || !facts.is_const_function(definition)
+            {
+                return Err("source SIMD intrinsic requires its own bodyless const declaration");
+            }
+            return Ok(Some(operation));
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
+            return Ok(None);
+        };
+        let Some(operation) = SimdOperation::of(imported.kind) else {
+            return Ok(None);
+        };
+        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+            .map_err(|_| "source SIMD selection work budget exhausted")?;
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported SIMD intrinsic lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || actual.body.is_some()
+            || !facts.is_const_function(definition)
+        {
+            return Err("imported SIMD intrinsic changed its canonical declaration");
+        }
+        Ok(Some(operation))
     }
 }

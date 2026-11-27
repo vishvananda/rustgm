@@ -240,7 +240,7 @@ fn require_method(
     pinned: bool,
 ) -> Result<(), &'static str> {
     let method = facts
-        .function_header(member)?
+        .declaration_header(member)?
         .ok_or("source Drop method header is pending")?;
     let source = method
         .declaration

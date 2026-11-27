@@ -58,7 +58,7 @@ impl Checker<'_> {
         }
         let signature = match self.state.infer.resolved(&mut self.facts.types, term) {
             Ok(signature) => Signature::Known(self.alias_type(node, signature)?),
-            Err(infer::Error::Unresolved) => {
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => {
                 Signature::Inferred(self.alias_inferred_type(node, term)?)
             }
             Err(error) => return Err(self.error(node, error)),

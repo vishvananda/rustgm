@@ -170,6 +170,19 @@ fn prepare_using(
     body: &Body,
     contract: &mut Contract,
     scope: Option<&materialized::InstanceScope>,
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+    future: Option<&super::coroutines::Permit>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    facts.in_imported_body(body.source.source().is_none(), |facts| {
+        prepare_using_inner(facts, body, contract, scope, preparation, future)
+    })
+}
+
+fn prepare_using_inner(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    scope: Option<&materialized::InstanceScope>,
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
     future: Option<&super::coroutines::Permit>,
 ) -> Result<(), crate::sema::dispatch::Failure> {
@@ -271,7 +284,7 @@ fn prepare_using(
         )));
     }
     super::defining_cleanups::prepare(facts, body, contract)?;
-    debt_transfer::prepare(facts, body, contract, scope).map_err(Into::into)
+    debt_transfer::prepare(facts, body, contract, scope, preparation)
 }
 
 fn read_requirements(

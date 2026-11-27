@@ -33,7 +33,6 @@ pub(in crate::lower) fn checked(
         .get(arguments.start as usize..arguments.end as usize)
         .ok_or("source typed swap lost its evaluated inputs")?;
     if body.const_context
-        || body.source.source().is_none()
         || value.ty != TypeId::UNIT
         || inputs.len() != 2
         || inputs.iter().any(|id| {

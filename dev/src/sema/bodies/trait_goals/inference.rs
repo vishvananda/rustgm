@@ -476,7 +476,10 @@ impl Checker<'_> {
         for (scope, root) in roots {
             match self.state.infer.resolved(&mut self.facts.types, root) {
                 Ok(_) => {}
-                Err(crate::types::infer::Error::Unresolved) => {
+                Err(
+                    crate::types::infer::Error::Unresolved
+                    | crate::types::infer::Error::Normalization,
+                ) => {
                     self.defer_normalization(node, scope, root)?;
                 }
                 Err(error) => return Err(self.error(node, error)),

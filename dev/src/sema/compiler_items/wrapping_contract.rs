@@ -142,30 +142,41 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if kind != SourceIntrinsic::ArithOffset {
+                return Ok(None);
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+                .map_err(|_| "source arith_offset selection work budget exhausted")?;
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err("source arith_offset operation provenance is not transported");
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&i| facts.functions.get(i))
+                .ok_or("source arith_offset has no completed declaration")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+            {
+                return Err("source arith_offset completed declaration changed");
+            }
+        } else if let Some(imported) = self.imported_declared_intrinsic(definition) {
+            if imported.kind != SourceIntrinsic::ArithOffset {
+                return Ok(None);
+            }
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported arith_offset lost its canonical declaration")?;
+            if actual.declaration != imported.origin || actual.signature != imported.signature {
+                return Err("imported arith_offset completed declaration changed");
+            }
+        } else {
             return Ok(None);
-        };
-        if kind != SourceIntrinsic::ArithOffset {
-            return Ok(None);
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
-            .map_err(|_| "source arith_offset selection work budget exhausted")?;
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("source arith_offset operation provenance is not transported");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source arith_offset has no completed declaration")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-        {
-            return Err("source arith_offset completed declaration changed");
         }
         let mut args = facts
             .types
@@ -204,6 +215,12 @@ impl Catalog {
         selected: &WrappingOffsetSelection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if let Some(imported) = self.imported_declared_intrinsic(selected.definition) {
+            if imported.kind != SourceIntrinsic::ArithOffset {
+                return Err("imported arith_offset lost its attributed declaration");
+            }
+            return Ok(());
+        }
         let Some((declaration, SourceIntrinsic::ArithOffset, _)) =
             self.intrinsic_record(selected.definition)?
         else {

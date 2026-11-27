@@ -30,16 +30,17 @@ pub(super) fn prepare<'a>(
             value.kind = Rvalue::AssociatedConstant(source.input(facts)?);
         }
     }
-    let source_path = body
-        .values
-        .iter()
-        .map(|value| match value.kind {
-            Rvalue::AssociatedConstant(instance) => {
-                crate::sema::values::execution::BodyCaller::needed(facts, instance, value.ty)
-            }
-            _ => Ok(false),
-        })
-        .try_fold(false, |needed, next| next.map(|next| needed || next))?;
+    let source_path = body.source.source().is_some()
+        && body
+            .values
+            .iter()
+            .map(|value| match value.kind {
+                Rvalue::AssociatedConstant(instance) => {
+                    crate::sema::values::execution::BodyCaller::needed(facts, instance, value.ty)
+                }
+                _ => Ok(false),
+            })
+            .try_fold(false, |needed, next| next.map(|next| needed || next))?;
     if source_path && (contract.key != body.key() || contract.source != body.source) {
         return Err("source dispatch contract belongs to another body".into());
     }

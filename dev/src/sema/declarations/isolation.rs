@@ -162,6 +162,66 @@ impl Checker<'_> {
             _ => Err(error),
         }
     }
+    /// Record an imported-item check failure with its provider coordinate in
+    /// census mode, deduplicating identical records; ordinary checking keeps
+    /// the original error untouched.
+    pub(super) fn census_imported(
+        &mut self,
+        owner: DefId,
+        result: Result<(), Error>,
+    ) -> Result<(), Error> {
+        let Err(error) = result else {
+            return Ok(());
+        };
+        if self.census.is_none() || census::exhausts_budget(&error.message) {
+            return Err(error);
+        }
+        let enriched = self.imported_census_error(owner, &error);
+        if let Some(ledger) = self.census.as_deref_mut() {
+            let location = census::Location::of(&enriched);
+            let duplicate = ledger.annotations.iter().any(|existing| {
+                census::Location::of(existing) == location && existing.message == enriched.message
+            });
+            if !duplicate {
+                ledger.annotations.push(enriched);
+            }
+        }
+        Ok(())
+    }
+    fn imported_census_error(&self, owner: DefId, error: &Error) -> Error {
+        let mut message = format!(
+            "{} (def {}): {}",
+            census::describe(self.report, owner),
+            owner.0,
+            error.message
+        );
+        if let Some(rest) = error.message.split("definition ").nth(1)
+            && let Some(digits) = rest.split(':').next()
+            && let Ok(member) = digits.parse::<u32>()
+        {
+            use std::fmt::Write as _;
+            let _ = write!(
+                message,
+                " [{}]",
+                census::describe(self.report, DefId(member))
+            );
+        }
+        let diagnostic = self
+            .facts
+            .crates
+            .as_deref()
+            .and_then(|linkage| linkage.origin_catalog())
+            .and_then(|catalog| {
+                let id = catalog.declaration_if_imported(owner).ok()??;
+                let site = catalog.declaration_site(id, 0).ok()?;
+                let proof = catalog.declaration_proof_site(id, site).ok()?;
+                catalog.diagnostic(proof).ok()
+            });
+        match diagnostic {
+            Some(location) => Error::imported(location, message),
+            None => Error::unlocated(message),
+        }
+    }
     /// The first failed annotation still ends the pass; the rest follow it.
     pub(super) fn census_annotations(&mut self) -> Result<(), Error> {
         match self.census.as_deref_mut() {

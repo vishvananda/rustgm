@@ -298,6 +298,7 @@ fn written_override_cannot_change_the_executable_signature() -> Result {
         let name = format!("forged-written-result-{index}");
         let forged = with_id(&bytes, start + 129, u32::try_from(receiver_base)?);
         let mut consumer = packet.forged(&name, forged, "client")?;
+        consumer.arg("--self-check");
         packet.rejected(
             &name,
             &mut consumer,

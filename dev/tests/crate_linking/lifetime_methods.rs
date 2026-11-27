@@ -282,6 +282,9 @@ fn forged_captured_method_rows_reject_in_fresh_consumers() -> Result {
         let metadata = packet.folder.join(format!("{name}.rgcrate"));
         std::fs::write(&metadata, wire)?;
         let mut consumer = packet.consumer(&user, name, &metadata, &packet.owner());
+        if name == "claimed-result" {
+            consumer.arg("--self-check");
+        }
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     for length in 0..bytes.len() {

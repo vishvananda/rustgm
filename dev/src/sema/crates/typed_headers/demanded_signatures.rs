@@ -122,10 +122,9 @@ fn admitted(rows: s::ValidatedView<'_>, raw: g::Signature, declared: bool) -> bo
     !raw.variadic
         && (raw.convention == g::Convention::Rust
             || (raw.convention == g::Convention::C && profile.definitions())
-            || (raw.convention == g::Convention::RustCall && declared && profile.body_nodes())
-            || (raw.convention == g::Convention::Unadjusted
-                && declared
-                && profile.declaration_policies()))
+            || (raw.convention == g::Convention::RustCall
+                && ((declared && profile.body_nodes()) || profile.declaration_policies()))
+            || (raw.convention == g::Convention::Unadjusted && profile.declaration_policies()))
 }
 /// Shape conversion only. Callers authenticate profile/owner before interning.
 pub(super) fn convention(raw: g::Signature) -> Result<Convention, &'static str> {

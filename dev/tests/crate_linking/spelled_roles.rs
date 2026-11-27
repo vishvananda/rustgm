@@ -141,7 +141,7 @@ fn forged_role_rows_and_older_wires_reject_in_fresh_consumers() -> Result {
         (
             "missing-declaration",
             with_id(&bytes, role + 19, 0xffff_fff0),
-            "source header query has an unknown declaration",
+            "source role binding names an unknown declaration",
         ),
         (
             "division",

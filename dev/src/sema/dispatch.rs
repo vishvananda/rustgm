@@ -52,6 +52,19 @@ pub(crate) trait Preparation {
             &crate::sema::crates::SourceOriginal<'_>,
         ) -> Result<(), crate::resolve::package::Error>,
     ) -> Result<(), crate::resolve::package::Error>;
+    fn with_closure(
+        &mut self,
+        _facts: &mut Declarations,
+        _identity: crate::types::closure::ClosureId,
+        _consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), crate::resolve::package::Error>,
+    ) -> Result<(), crate::resolve::package::Error> {
+        Err(crate::resolve::package::Error::unlocated(
+            "selected closure original requires its actual producer",
+        ))
+    }
     fn copy_declarations(
         &mut self,
         facts: &mut Declarations,

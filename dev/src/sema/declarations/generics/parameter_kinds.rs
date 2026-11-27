@@ -64,7 +64,8 @@ impl Checker<'_> {
             .package
             .requested_aggregate_const_parameters()
             .map_err(Error::unlocated)?;
-        let imported = self.report.package.source_client().is_some();
+        let imported =
+            crate::support::sealed::self_check() && self.report.package.source_client().is_some();
         if !local && !imported {
             return Ok(());
         }
@@ -111,7 +112,7 @@ impl Checker<'_> {
                 let Some(key) =
                     self.report.resolution.definitions[parameter.binding.0 as usize].node
                 else {
-                    if !matches!(self.facts.types.kind(ty), Some(Type::Primitive(_))) {
+                    if imported && !matches!(self.facts.types.kind(ty), Some(Type::Primitive(_))) {
                         self.validate_imported_const_parameter(owner, parameter.binding, ty)?;
                     }
                     continue;

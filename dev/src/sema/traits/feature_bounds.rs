@@ -97,6 +97,12 @@ impl Declarations {
         pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<bool, &'static str> {
         pay(1, 0)?;
+        if self.in_imported_body_scope() {
+            if self.types.feature_name(id).is_none() {
+                return Err("feature query changed its actual type arena");
+            }
+            return Ok(true);
+        }
         self.generics
             .traits
             .as_ref()

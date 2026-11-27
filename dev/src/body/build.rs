@@ -5,8 +5,10 @@ mod assembly;
 mod closures;
 mod conditions;
 mod constructors;
-pub(crate) use constructors::prepare_concrete as prepare_constructors;
 pub(super) use constructors::{finish_factory, finish_factory_block};
+pub(crate) use constructors::{
+    prepare_concrete as prepare_constructors, single_template as constructor_template,
+};
 pub(in crate::body) use drops::factory_values as factory_owned_values;
 mod adjusted;
 #[path = "build/site_inputs.rs"]

@@ -10,7 +10,8 @@ pub(super) fn prepare(
     body: &Body,
     contract: &mut Contract,
     scope: Option<&super::materialized::InstanceScope>,
-) -> Result<(), &'static str> {
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
     let Some(pending) = contract.builtins.as_deref() else {
         return Ok(());
     };
@@ -19,7 +20,7 @@ pub(super) fn prepare(
         .canonical_steps
         .saturating_add(pending.predicates.len());
     if pending.predicates.len() > crate::support::crates::MAX_COMPONENTS {
-        return Err("body trait requirement storage budget exceeded");
+        return Err("body trait requirement storage budget exceeded".into());
     }
     if !pending.predicates.iter().any(|&(_, goal)| ordinary(goal)) {
         return Ok(());
@@ -28,7 +29,7 @@ pub(super) fn prepare(
         || contract.source != body.source
         || contract.signature != body.owner.signatures().map(|(_, owned)| owned)
     {
-        return Err("body trait requirements belong to another body or signature");
+        return Err("body trait requirements belong to another body or signature".into());
     }
     if let Some(instance) = body.instance {
         scope
@@ -62,23 +63,38 @@ pub(super) fn prepare(
             _ => false,
         };
         if !valid {
-            return Err("body trait requirements belong to another callable instance");
+            return Err("body trait requirements belong to another callable instance".into());
         }
     }
-    let first = crate::body::dispatch::copy_frontier(facts, contract)?;
-    let proof = crate::sema::compiler_items::prove_body_requirements(
-        facts,
-        pending.environment.clone(),
-        contract.universals,
-        first,
-        pending
+    if body.source.source().is_some() || crate::support::sealed::self_check() {
+        let first = crate::body::dispatch::copy_frontier(facts, contract)?;
+        let environment = pending.environment.clone();
+        let goals = pending
             .predicates
             .iter()
-            .filter_map(|&(_, goal)| ordinary(goal).then_some(goal)),
-    )?;
-    // Neither failed selection nor a successful prefix changes the pending set.
-    // Keep every returned debt in the same receiving body's lifetime proof.
-    contract.proofs.push(Proof::new(body.source, proof));
+            .filter_map(|&(_, goal)| ordinary(goal).then_some(goal));
+        let proof = if let Some(service) = preparation {
+            crate::sema::compiler_items::prove_body_requirements_prepared(
+                facts,
+                environment,
+                contract.universals,
+                first,
+                goals,
+                service,
+            )?
+        } else {
+            crate::sema::compiler_items::prove_body_requirements(
+                facts,
+                environment,
+                contract.universals,
+                first,
+                goals,
+            )?
+        };
+        // Neither failed selection nor a successful prefix changes the pending set.
+        // Keep every returned debt in the same receiving body's lifetime proof.
+        contract.proofs.push(Proof::new(body.source, proof));
+    }
     let pending = contract
         .builtins
         .as_mut()

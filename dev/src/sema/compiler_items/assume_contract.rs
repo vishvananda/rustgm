@@ -46,31 +46,45 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if !is_assumption(kind) {
+                return Ok(None);
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 12)
+                .map_err(|_| "source assume selection work budget exhausted")?;
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err("source assume provenance requires its wider transport profile");
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .ok_or("source assume requires its completed actual function")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+                || signature != original
+            {
+                return Err("source assume completed declaration changed");
+            }
+        } else if let Some(imported) = self.imported_declared_intrinsic(definition) {
+            if !is_assumption(imported.kind) {
+                return Ok(None);
+            }
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported assume lost its canonical declaration")?;
+            if actual.declaration != imported.origin
+                || actual.signature != imported.signature
+                || signature != imported.signature
+            {
+                return Err("imported assume completed declaration changed");
+            }
+        } else {
             return Ok(None);
-        };
-        if !is_assumption(kind) {
-            return Ok(None);
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 12)
-            .map_err(|_| "source assume selection work budget exhausted")?;
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("source assume provenance requires its wider transport profile");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
-            .ok_or("source assume requires its completed actual function")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-            || signature != original
-        {
-            return Err("source assume completed declaration changed");
         }
         if facts
             .types
@@ -116,6 +130,12 @@ impl Catalog {
         selected: &AssumeSelection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if let Some(imported) = self.imported_declared_intrinsic(selected.definition) {
+            if !is_assumption(imported.kind) || !facts.is_const_function(selected.definition) {
+                return Err("imported assume requires its actual completed const declaration");
+            }
+            return Ok(());
+        }
         let Some((declaration, kind, _)) = self.intrinsic_record(selected.definition)? else {
             return Err("source assume lost its attributed declaration");
         };

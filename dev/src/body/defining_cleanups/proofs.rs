@@ -65,20 +65,22 @@ pub(crate) fn select(
     }
     let first = crate::body::dispatch::copy_frontier(facts, contract)?;
     let goals = goals(facts, &selected.values, role, effect, &mut work)?;
-    let proof = crate::sema::compiler_items::prove_cleanup_requirements(
-        facts,
-        Some(environment),
-        contract.universals,
-        first,
-        &goals,
-        |absent| {
-            crate::body::bringup::unproven(
-                crate::support::bringup::Stage::Destruction,
-                body.source,
-                absent,
-            )
-        },
-    )?;
+    let proof = facts.in_imported_body(body.source.source().is_none(), |facts| {
+        crate::sema::compiler_items::prove_cleanup_requirements(
+            facts,
+            Some(environment),
+            contract.universals,
+            first,
+            &goals,
+            |absent| {
+                crate::body::bringup::unproven(
+                    crate::support::bringup::Stage::Destruction,
+                    body.source,
+                    absent,
+                )
+            },
+        )
+    })?;
     for &(ty, purpose) in &selected.values {
         prepared
             .claims

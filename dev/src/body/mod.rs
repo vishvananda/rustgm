@@ -42,7 +42,7 @@ pub(crate) mod vararg;
 pub use build::build;
 pub use build::concrete as build_concrete;
 pub use build::templates;
-pub(crate) use build::{concrete_selected, prepare_constructors};
+pub(crate) use build::{concrete_selected, constructor_template, prepare_constructors};
 
 /// Construction scope, never a body/call permission. Pending originals still lack proof.
 #[derive(Clone, Copy, Default)]

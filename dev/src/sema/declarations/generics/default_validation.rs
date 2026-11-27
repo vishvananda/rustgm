@@ -46,7 +46,7 @@ impl Checker<'_> {
     pub(in crate::sema::declarations) fn validate_imported_parameter_defaults(
         &mut self,
     ) -> Result<(), Error> {
-        if self.report.package.source_client().is_none() {
+        if !crate::support::sealed::self_check() || self.report.package.source_client().is_none() {
             return Ok(());
         }
         let count = self.facts.generics.parameters.len();
@@ -90,11 +90,15 @@ impl Checker<'_> {
         }
         owners.sort_unstable_by_key(|owner| owner.0);
         for owner in owners {
-            let (universals, mut proof) = self.imported_parameter_proof(owner)?;
-            self.prove_parameter_defaults(owner, None, &mut proof)?;
-            self.finish_imported_parameter_proof(owner, universals, &mut proof)?;
+            let result =
+                self.imported_parameter_proof(owner)
+                    .and_then(|(universals, mut proof)| {
+                        self.prove_parameter_defaults(owner, None, &mut proof)?;
+                        self.finish_imported_parameter_proof(owner, universals, &mut proof)
+                    });
+            self.census_imported(owner, result)?;
         }
-        Ok(())
+        self.census_annotations()
     }
 
     fn prove_parameter_defaults(

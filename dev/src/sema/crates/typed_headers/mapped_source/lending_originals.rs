@@ -261,12 +261,13 @@ fn nested_environment(
             default_environment(facts, owner, trait_owner, work, allocation)
         }
         s::EnvironmentOrigin::Contract => {
+            let profile = graph.descriptor(&graph.origins).map_err(error)?.profile();
             let mut observed = Observed {
                 work,
                 allocation: Allocation::default(),
             };
             let result = ContractParts::original(graph, facts, domain, inputs, &mut observed)?
-                .build(facts, &mut observed);
+                .build(facts, Some(profile), &mut observed);
             allocation.include(observed.allocation);
             result
         }
@@ -386,12 +387,13 @@ fn environment(
                     "ordinary Contract acquired an unconstructed environment",
                 ));
             }
+            let profile = graph.descriptor(&graph.origins).map_err(error)?.profile();
             let mut observed = Observed {
                 work,
                 allocation: Allocation::default(),
             };
             let result = ContractParts::original(graph, facts, domain, inputs, &mut observed)?
-                .build(facts, &mut observed);
+                .build(facts, Some(profile), &mut observed);
             allocation.include(observed.allocation);
             result
         }

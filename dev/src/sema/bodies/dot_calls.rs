@@ -289,6 +289,13 @@ impl Checker<'_> {
                             match self.facts.no_implicit_autorefs(self.report, method)? {
                                 crate::sema::header_attributes::ContractKnowledge::KnownPresent(()) => true,
                                 crate::sema::header_attributes::ContractKnowledge::KnownAbsent => false,
+                                crate::sema::header_attributes::ContractKnowledge::Unknown
+                                    if self.report.resolution.definitions[method.0 as usize]
+                                        .node
+                                        .is_none() =>
+                                {
+                                    false
+                                }
                                 crate::sema::header_attributes::ContractKnowledge::Unknown => return Err(self.error(call,
                                     "source raw-pointer receiver lacks its actual diagnostic contract")),
                             }

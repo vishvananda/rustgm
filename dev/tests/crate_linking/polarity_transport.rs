@@ -297,6 +297,7 @@ fn forged_auto_impls_reject_in_fresh_consumers() -> Result {
         ),
     ] {
         let mut consumer = packet.forged(name, changed, "explicit-send")?;
+        consumer.arg("--self-check");
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     let mut honest = packet.forged("honest", bytes.clone(), "explicit-send")?;

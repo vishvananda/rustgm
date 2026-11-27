@@ -106,7 +106,7 @@ impl Guards<'_, '_> {
         let location = self
             .context
             .constants
-            .arithmetic_guard_location(body.syntax_site(site)?)
+            .arithmetic_guard_location(body.source.proof_site(site)?)
             .ok_or("source panic guard lacks its prepared caller location")?;
         let global = self.context.caller_location_global(location)?;
         builder.address(Operand::Global(global))

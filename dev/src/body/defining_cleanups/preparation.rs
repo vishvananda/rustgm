@@ -248,17 +248,12 @@ pub(super) fn completed_environment(
     actual: Definition,
     work: &mut Work,
 ) -> Result<Option<Arc<crate::types::parameters::environment::Environment>>, &'static str> {
-    if actual.source.source().is_none()
-        && matches!(
-            actual.context,
-            crate::sema::function_context::FunctionContext::ConstTraitDefault { .. }
-        )
-    {
+    if actual.source.source().is_none() {
         let original = crate::sema::crates::source_original(facts, id, &mut work.steps)?
-            .ok_or("imported defining cleanup lost its actual default body")?;
+            .ok_or("imported defining cleanup lost its actual imported body")?;
         work.charge(0)?;
         if original.source()? != actual.source {
-            return Err("imported defining cleanup changed its actual default body");
+            return Err("imported defining cleanup changed its actual imported body");
         }
         return Ok(Some(Arc::clone(original.environment()?)));
     }
@@ -312,7 +307,7 @@ fn clear_instance(
         };
         let instance = body.instance.ok_or("missing defining cleanup instance")?;
         let header = facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("defining cleanup instance header is pending")?;
         if required.key() != crate::body::ir::BodyKey::Declaration(definition)
             || required.source != body.source

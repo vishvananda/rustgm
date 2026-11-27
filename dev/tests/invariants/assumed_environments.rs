@@ -427,7 +427,7 @@ fn contract_opponents() -> Result {
         allocation: Allocation::default(),
     };
     assert!(crate::sema::crates::typed_headers::staged_headers::rebuilt_environments::ContractParts::private_empty(seal)
-        .build(&session.facts, &mut accounting).is_err());
+        .build(&session.facts, None, &mut accounting).is_err());
     assert_eq!(accounting.allocation.bytes, 0);
     assert!(work.peak > crate::support::crates::MAX_BYTES);
     let mut work = ReservationWork::default();

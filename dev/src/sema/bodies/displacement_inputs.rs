@@ -37,7 +37,10 @@ impl Checker<'_> {
             .facts
             .source_bindings
             .as_deref()
-            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::OffsetOf))
+            .map(|catalog| catalog.role(crate::support::bindings::LangItem::OffsetOf))
+            .transpose()
+            .map_err(|e| self.error(node, e))?
+            .flatten()
             .ok_or_else(|| {
                 self.error(
                     node,
@@ -45,7 +48,12 @@ impl Checker<'_> {
                 )
             })?
             .definition;
-        if !self.facts.function_indices.contains_key(&target) {
+        if self
+            .facts
+            .declaration_header(target)
+            .map_err(|e| self.error(node, e))?
+            .is_none()
+        {
             return Ok(Some(super::Requirement::Definition(target)));
         }
         Ok(None)
@@ -94,7 +102,10 @@ impl Checker<'_> {
             .facts
             .source_bindings
             .as_deref()
-            .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::OffsetOf))
+            .map(|catalog| catalog.role(crate::support::bindings::LangItem::OffsetOf))
+            .transpose()
+            .map_err(|e| self.error(node, e))?
+            .flatten()
             .ok_or_else(|| {
                 self.error(
                     node,

@@ -65,52 +65,90 @@ impl Original {
     ) -> Result<Contract, crate::resolve::package::Error> {
         use crate::resolve::package::Error;
         let body = &original.template().body;
-        let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
-            return Err(Error::unlocated(
-                "selected original requires its actual function owner",
-            ));
-        };
         let mut steps = 0;
         let mut calls = Vec::new();
-        let validated = preparation.with_original(facts, definition, &mut |facts, view| {
-            use crate::body::transported_originals::{collect_call_results, validate_selected};
-            validate_selected(facts, view, original, &mut steps).map_err(Error::unlocated)?;
+        let mut pending_calls = None;
+        let mut collect = |facts: &Declarations, view: &crate::sema::crates::SourceOriginal<'_>| {
+            use crate::body::transported_originals::{
+                collect_call_results, collect_versioned_calls, validate_selected,
+            };
+            if crate::support::sealed::self_check() {
+                validate_selected(facts, view, original, &mut steps).map_err(Error::unlocated)?;
+            }
             calls =
                 collect_call_results(facts, view, body, &mut steps).map_err(Error::unlocated)?;
+            pending_calls = Some(
+                collect_versioned_calls(facts, view, body, &mut steps).map_err(Error::unlocated)?,
+            );
             Ok(())
-        });
+        };
+        let validated = match body.owner {
+            Owner::Function { definition, .. } => {
+                preparation.with_original(facts, definition, &mut collect)
+            }
+            Owner::Closure { identity, .. } => {
+                preparation.with_closure(facts, identity, &mut collect)
+            }
+            _ => {
+                return Err(Error::unlocated(
+                    "selected original requires its actual function or closure owner",
+                ));
+            }
+        };
         let charged = preparation.prepay(facts, steps, 0);
         validated.and(charged)?;
         let raw = original.contract();
         preparation.prepay(facts, 1, raw.retained_bytes())?;
         let mut prepared = raw.clone();
-        crate::body::copy_requirements::prepare_original_selected(
-            facts,
-            body,
-            &mut prepared,
-            preparation,
-        )
-        .map_err(|failure| match failure {
-            crate::sema::dispatch::Failure::Invalid(message) => Error::unlocated(message),
-            crate::sema::dispatch::Failure::Preparation(error) => error,
-        })?;
-        let before = facts.body_work.canonical_steps;
-        let proof = crate::body::transported_originals::prove_types(
-            facts,
-            body,
-            &prepared,
-            &original.template().environment,
-            calls,
-        );
-        let charged = preparation.prepay(
-            facts,
-            facts.body_work.canonical_steps.saturating_sub(before),
-            0,
-        );
-        let proof = proof.map_err(Error::unlocated);
-        prepared
-            .proofs
-            .extend(proof.and_then(|proof| charged.map(|()| proof))?);
+        facts.in_imported_body(
+            body.source.source().is_none(),
+            |facts| -> Result<(), Error> {
+                crate::body::copy_requirements::prepare_original_selected(
+                    facts,
+                    body,
+                    &mut prepared,
+                    preparation,
+                )
+                .map_err(|failure| match failure {
+                    crate::sema::dispatch::Failure::Invalid(message) => Error::unlocated(message),
+                    crate::sema::dispatch::Failure::Preparation(error) => error,
+                })?;
+                if let Some(pending) = pending_calls {
+                    let before = facts.body_work.canonical_steps;
+                    let proved = crate::body::transported_originals::prove_versioned_calls(
+                        facts,
+                        Arc::clone(&original.template().environment),
+                        &pending,
+                        body,
+                        &mut prepared,
+                    );
+                    let charged = preparation.prepay(
+                        facts,
+                        facts.body_work.canonical_steps.saturating_sub(before),
+                        0,
+                    );
+                    proved.map_err(Error::unlocated).and(charged)?;
+                }
+                let before = facts.body_work.canonical_steps;
+                let proof = crate::body::transported_originals::prove_types(
+                    facts,
+                    body,
+                    &prepared,
+                    &original.template().environment,
+                    calls,
+                );
+                let charged = preparation.prepay(
+                    facts,
+                    facts.body_work.canonical_steps.saturating_sub(before),
+                    0,
+                );
+                let proof = proof.map_err(Error::unlocated);
+                prepared
+                    .proofs
+                    .extend(proof.and_then(|proof| charged.map(|()| proof))?);
+                Ok(())
+            },
+        )?;
         prepared
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(Error::unlocated)?;
@@ -280,7 +318,7 @@ impl Original {
         {
             return Err("compiler cleanup operation cannot acquire an authored Function Original");
         }
-        Ok(facts.function_header(definition)?.is_some_and(|header| {
+        Ok(facts.declaration_header(definition)?.is_some_and(|header| {
             header.body == Some(body.source)
                 && header.signature == signature
                 && contract.signature == Some(signature)

@@ -136,17 +136,24 @@ impl Engine {
         if let Some(source) = imported_constant_initializer(report, facts, instance.definition)
             .map_err(Error::unlocated)?
         {
-            self.ensure_imported_originals(report, facts)?;
-            let row = self
-                .imported
-                .as_deref()
-                .and_then(|rows| rows.get(instance.definition))
+            let original = self
+                .imported_original(
+                    report,
+                    facts,
+                    body::transported_originals::SourceTarget::Declaration(instance.definition),
+                )?
                 .ok_or_else(|| {
                     report.body_error(
                         source,
                         "selected initializer has no proved imported original",
                     )
                 })?;
+            let row = original.row().ok_or_else(|| {
+                report.body_error(
+                    source,
+                    "selected initializer has no proved imported original",
+                )
+            })?;
             if row.template().body.source != source {
                 return Err(
                     report.body_error(source, "selected initializer changed its imported original")

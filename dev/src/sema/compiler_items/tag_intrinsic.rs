@@ -208,6 +208,60 @@ fn selected_signature(
 }
 
 impl Catalog {
+    pub(super) fn discriminant_header(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: Option<BodyOrigin>,
+    ) -> Result<bool, &'static str> {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if kind != SourceIntrinsic::DiscriminantValue {
+                return Ok(false);
+            }
+            if origin.is_some_and(|origin| origin.source().is_none())
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err(
+                    "imported discriminant intrinsic operation provenance is not transported",
+                );
+            }
+            if origin.is_some() {
+                crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+                    .map_err(|_| "source discriminant call exceeds its existing work budget")?;
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|i| facts.functions.get(*i))
+                .ok_or("source discriminant lacks its completed declaration")?;
+            if function.signature != original
+                || function.node != declaration.origin
+                || declaration.parent.is_some()
+            {
+                return Err("source discriminant completed header changed");
+            }
+            validate(facts, *function)?;
+            return Ok(true);
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
+            return Ok(false);
+        };
+        if imported.kind != SourceIntrinsic::DiscriminantValue {
+            return Ok(false);
+        }
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported discriminant lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || actual.body.is_some()
+            || !facts.is_const_function(definition)
+        {
+            return Err("imported discriminant changed its canonical declaration");
+        }
+        Ok(true)
+    }
+
     pub(crate) fn discriminant_selection(
         &self,
         facts: &Declarations,
@@ -223,31 +277,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
-            return Ok(None);
-        };
-        if kind != SourceIntrinsic::DiscriminantValue {
+        if !self.discriminant_header(facts, definition, Some(origin))? {
             return Ok(None);
         }
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("imported discriminant intrinsic operation provenance is not transported");
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
-            .map_err(|_| "source discriminant call exceeds its existing work budget")?;
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|i| facts.functions.get(*i))
-            .ok_or("source discriminant lacks its completed declaration")?;
-        if function.signature != original
-            || function.node != declaration.origin
-            || declaration.parent.is_some()
-        {
-            return Err("source discriminant completed header changed");
-        }
-        validate(facts, *function)?;
         let input = instance_input(&facts.types, arguments)?;
         let owner = self
             .traits
@@ -291,7 +323,20 @@ impl Catalog {
         let Some((declaration, SourceIntrinsic::DiscriminantValue, _)) =
             self.intrinsic_record(selected.definition)?
         else {
-            return Err("source discriminant intrinsic declaration changed");
+            let Some(imported) = self.imported_declared_intrinsic(selected.definition) else {
+                return Err("source discriminant intrinsic declaration changed");
+            };
+            if imported.kind != SourceIntrinsic::DiscriminantValue
+                || !facts.is_const_function(selected.definition)
+                || facts
+                    .declaration_header(selected.definition)?
+                    .is_none_or(|actual| {
+                        actual.declaration != imported.origin || actual.body.is_some()
+                    })
+            {
+                return Err("imported discriminant changed its canonical declaration");
+            }
+            return Ok(());
         };
         let current = facts
             .header_attribute_contracts(report, selected.definition)

@@ -2,7 +2,6 @@
 use super::{Catalog, Declarations, DiscriminantSelection, Kind, TypeId};
 use crate::{
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
-    support::bindings::SourceIntrinsic,
     types::{Store, arguments::Argument, callable::Convention},
 };
 
@@ -101,20 +100,9 @@ impl Catalog {
             return Err("source discriminant opening lost its full FunctionItem");
         };
         let definition = DefId(item.0);
-        let Some((declaration, SourceIntrinsic::DiscriminantValue, original)) =
-            self.intrinsic_record(definition)?
-        else {
+        if !self.discriminant_header(facts, definition, None)? {
             return Err("source discriminant opening has no validated intrinsic declaration");
-        };
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|i| facts.functions.get(*i))
-            .ok_or("source discriminant opening lost its actual function")?;
-        if function.signature != original || function.node != declaration.origin {
-            return Err("source discriminant opening changed its source declaration");
         }
-        super::validate(facts, *function)?;
         let mut args = facts
             .types
             .arguments(arguments)

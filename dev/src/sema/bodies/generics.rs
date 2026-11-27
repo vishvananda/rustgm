@@ -259,7 +259,9 @@ impl Checker<'_> {
             {
                 return Ok(term);
             }
-            Err(infer::Error::Unresolved) => self.alias_inferred_mapped(node, term, mapping),
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => {
+                self.alias_inferred_mapped(node, term, mapping)
+            }
             Err(e) => Err(self.error(node, e)),
         }?;
         if self.state.projections.active() && transformed != term {

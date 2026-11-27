@@ -168,6 +168,17 @@ impl Obligations {
     ) -> Result<(), String> {
         self.require_sources(constraints, queries, source, 1)
     }
+    /// Register owned existential variables without adding their relation constraints.
+    /// # Errors
+    /// Rejects invalid variables and exhausted lifetime proof resources.
+    pub fn declare_owned_regions(&self, constraints: &mut Constraints<'_>) -> Result<(), String> {
+        for id in self.owned_regions().flatten() {
+            constraints
+                .variable(RegionId(id))
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
     /// Require this proof using a contiguous range of diagnostic source IDs.
     /// Slot zero is the fallback; labelled blocks use their caller-owned slot.
     /// # Errors

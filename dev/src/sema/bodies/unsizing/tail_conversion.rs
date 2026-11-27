@@ -248,7 +248,10 @@ impl Checker<'_> {
         for (slot, term) in resolved.iter_mut().zip([pair.0, pair.1]) {
             *slot = match self.state.infer.resolved(&mut self.facts.types, term) {
                 Ok(ty) => Some(ty),
-                Err(crate::types::infer::Error::Unresolved) => None,
+                Err(
+                    crate::types::infer::Error::Unresolved
+                    | crate::types::infer::Error::Normalization,
+                ) => None,
                 Err(error) => return Err(self.error(node, error)),
             };
         }

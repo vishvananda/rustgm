@@ -136,6 +136,58 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
     Ok(())
 }
 impl Catalog {
+    fn raw_parts_header(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        origin: BodyOrigin,
+    ) -> Result<bool, &'static str> {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if kind != SourceIntrinsic::AggregateRawPtr {
+                return Ok(false);
+            }
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err(
+                    "imported aggregate_raw_ptr requires transported source operation provenance",
+                );
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&i| facts.functions.get(i))
+                .ok_or("source aggregate_raw_ptr has no completed declaration")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+            {
+                return Err("source aggregate_raw_ptr completed declaration changed");
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+                .map_err(|_| "source aggregate_raw_ptr query budget exhausted")?;
+            validate(facts, *function)?;
+            return Ok(true);
+        }
+        let Some(imported) = self.imported_declared_intrinsic(definition) else {
+            return Ok(false);
+        };
+        if imported.kind != SourceIntrinsic::AggregateRawPtr {
+            return Ok(false);
+        }
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported aggregate_raw_ptr lost its canonical declaration")?;
+        if actual.declaration != imported.origin
+            || actual.signature != imported.signature
+            || actual.body.is_some()
+            || !facts.is_const_function(definition)
+        {
+            return Err("imported aggregate_raw_ptr changed its canonical declaration");
+        }
+        Ok(true)
+    }
     pub(crate) fn raw_parts_selection(
         &self,
         facts: &Declarations,
@@ -151,34 +203,9 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
-            return Ok(None);
-        };
-        if kind != SourceIntrinsic::AggregateRawPtr {
+        if !self.raw_parts_header(facts, definition, origin)? {
             return Ok(None);
         }
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err(
-                "imported aggregate_raw_ptr requires transported source operation provenance",
-            );
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&i| facts.functions.get(i))
-            .ok_or("source aggregate_raw_ptr has no completed declaration")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-        {
-            return Err("source aggregate_raw_ptr completed declaration changed");
-        }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
-            .map_err(|_| "source aggregate_raw_ptr query budget exhausted")?;
-        validate(facts, *function)?;
         let mut actual = facts
             .types
             .arguments(arguments)
@@ -224,7 +251,7 @@ impl Catalog {
             return Err("source aggregate_raw_ptr requires actual raw result and data pointers");
         }
         for role in [LangItem::PointeeTrait, LangItem::MetadataType] {
-            self.validated_language(role)?
+            self.validated_role(role)?
                 .ok_or("source aggregate_raw_ptr metadata role is incomplete")?;
         }
         Ok(Some(RawPartsSelection {
@@ -247,7 +274,20 @@ impl Catalog {
         let Some((declaration, SourceIntrinsic::AggregateRawPtr, _)) =
             self.intrinsic_record(selected.definition)?
         else {
-            return Err("source aggregate_raw_ptr lost its actual intrinsic declaration");
+            let Some(imported) = self.imported_declared_intrinsic(selected.definition) else {
+                return Err("source aggregate_raw_ptr lost its actual intrinsic declaration");
+            };
+            if imported.kind != SourceIntrinsic::AggregateRawPtr
+                || !facts.is_const_function(selected.definition)
+                || facts
+                    .declaration_header(selected.definition)?
+                    .is_none_or(|actual| {
+                        actual.declaration != imported.origin || actual.body.is_some()
+                    })
+            {
+                return Err("imported aggregate_raw_ptr changed its canonical declaration");
+            }
+            return Ok(());
         };
         let header = facts
             .header_attribute_contracts(report, selected.definition)

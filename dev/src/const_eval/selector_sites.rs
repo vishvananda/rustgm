@@ -296,10 +296,8 @@ fn caller(
             anonymous_caller(facts, catalog, inputs, code, site, reference)?;
         }
         crate::body::ir::Owner::Function { definition, .. } => {
-            let function = facts
-                .function_indices
-                .get(&definition)
-                .and_then(|&i| facts.functions.get(i))
+            let header = facts
+                .declaration_header(definition)?
                 .ok_or("source selector caller has no actual function declaration")?;
             let (public, owned) = code
                 .owner
@@ -324,8 +322,14 @@ fn caller(
             let Some(Kind::Function { result, .. }) = facts.types.kind(owned) else {
                 return Err("source selector caller lost its opened execution signature");
             };
+            let expected_source = header.body.or_else(|| {
+                header
+                    .declaration
+                    .source()
+                    .map(crate::body::ir::BodyOrigin::Source)
+            });
             if !facts.is_const_function(definition)
-                || code.source.source() != Some(function.body.unwrap_or(function.node))
+                || expected_source != Some(code.source)
                 || result != code.result
             {
                 return Err("source selector caller changed its defining source/result");
@@ -339,7 +343,7 @@ fn caller(
                     );
                 }
             } else if catalog.definitions.get(&definition) != Some(&index)
-                || public != function.signature
+                || public != header.signature
                 || facts.generics.has_parameters(definition)
             {
                 return Err("source selector caller changed its original signature/index");
@@ -511,12 +515,9 @@ fn callback_signature(
     {
         return Err("source const_eval_select lifetime-bearing callback entry is not implemented");
     }
-    let header = facts
-        .function_header(crate::resolve::model::DefId(item.0))?
+    let _header = facts
+        .declaration_header(crate::resolve::model::DefId(item.0))?
         .ok_or("source selector F declaration is pending")?;
-    if header.declaration.source().is_none() {
-        return Err("source const_eval_select imported callback eligibility is not implemented");
-    }
     if reference.is_none() {
         let shifted = facts
             .types

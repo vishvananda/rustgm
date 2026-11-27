@@ -1,7 +1,7 @@
 //! Generated arithmetic and bounds guards select checked source panic functions.
 use super::{Catalog, inhabited_properties::Plans};
 use crate::{
-    resolve::{expansion::Report, unit::NodeKey},
+    resolve::{body_origin::ProofSite, expansion::Report},
     sema::{
         model::Declarations,
         values::{Evaluator, Failure, LocationId},
@@ -20,7 +20,7 @@ pub(crate) struct Route {
 #[derive(Default)]
 pub(super) struct Routes {
     targets: HashMap<LangItem, Route>,
-    locations: HashMap<NodeKey, LocationId>,
+    locations: HashMap<ProofSite, LocationId>,
 }
 
 impl Catalog {
@@ -32,7 +32,7 @@ impl Catalog {
         self.arithmetic_guards()?.targets.get(&role).copied()
     }
 
-    pub(crate) fn guard_location(&self, site: NodeKey) -> Option<LocationId> {
+    pub(crate) fn guard_location(&self, site: ProofSite) -> Option<LocationId> {
         self.arithmetic_guards()?.locations.get(&site).copied()
     }
 }
@@ -137,7 +137,7 @@ pub(crate) fn prepare(
 pub(crate) fn prepare_location(
     report: &Report,
     facts: &mut Declarations,
-    site: NodeKey,
+    site: ProofSite,
 ) -> Result<(), String> {
     let routes = facts
         .source_bindings
@@ -147,12 +147,20 @@ pub(crate) fn prepare_location(
     if routes.locations.contains_key(&site) {
         return Ok(());
     }
-    let growth =
-        Growth::map::<NodeKey, LocationId>(routes.locations.len(), routes.locations.capacity(), 1);
+    let growth = Growth::map::<ProofSite, LocationId>(
+        routes.locations.len(),
+        routes.locations.capacity(),
+        1,
+    );
     pay_route(report, facts, growth.work.saturating_add(1), growth.bytes)?;
-    let location = Evaluator::new(report, facts)
-        .prepare_source_location(site)
-        .map_err(Failure::message)?;
+    let location = match site {
+        ProofSite::Source(key) => Evaluator::new(report, facts)
+            .prepare_source_location(key)
+            .map_err(Failure::message)?,
+        ProofSite::Imported(_) => Evaluator::new(report, facts)
+            .prepare_caller_location("<imported>", 1, 1)
+            .map_err(Failure::message)?,
+    };
     let locations = &mut facts
         .source_bindings
         .as_deref_mut()

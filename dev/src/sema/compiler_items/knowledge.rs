@@ -47,7 +47,12 @@ impl Catalog {
         origin: BodyOrigin,
     ) -> Result<Option<Selection>, &'static str> {
         let selected = self.knowledge_instance(facts, instance)?;
-        if selected.is_some() && origin.source().is_none() {
+        if let Some(ref choice) = selected
+            && origin.source().is_none()
+            && self
+                .imported_declared_intrinsic(choice.definition)
+                .is_none()
+        {
             return Err("source value knowledge caller provenance is not transported");
         }
         Ok(selected)
@@ -60,6 +65,13 @@ impl Catalog {
         let Some(selected) = self.knowledge_instance(facts, instance)? else {
             return Ok(false);
         };
+        if let Some(imported) = self.imported_declared_intrinsic(selected.definition) {
+            return if is_operation(imported.kind) {
+                Ok(true)
+            } else {
+                Err("imported value knowledge changed its intrinsic identity")
+            };
+        }
         let function = facts
             .function_indices
             .get(&selected.definition)
@@ -84,43 +96,54 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            if !is_operation(kind) {
+                return Ok(None);
+            }
+            crate::sema::header_attributes::charge_source_contract_query(facts, 32)
+                .map_err(|_| "source value knowledge selection work exhausted")?;
+            if matches!(self.bindings, super::binding_views::Bindings::Imported(_)) {
+                return Err("source value knowledge declaration provenance is not transported");
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .ok_or("source value knowledge requires its completed actual function")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+            {
+                return Err("source value knowledge completed declaration changed");
+            }
+            let parameters = facts
+                .generics
+                .parameters
+                .get(&definition)
+                .ok_or("source value knowledge lost its own type formal")?;
+            let [parameter] = parameters.as_slice() else {
+                return Err("source value knowledge requires its single type formal");
+            };
+            let Argument::Type(formal) = parameter.argument else {
+                return Err("source value knowledge changed its actual type formal");
+            };
+            super::compare_intrinsic::copy_premise(facts, definition, formal, self)
+                .map_err(|_| "source value knowledge requires its actual ordinary Copy premise")?;
+        } else if let Some(imported) = self.imported_declared_intrinsic(definition) {
+            if !is_operation(imported.kind) {
+                return Ok(None);
+            }
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported value knowledge lost its canonical declaration")?;
+            if actual.declaration != imported.origin || actual.signature != imported.signature {
+                return Err("imported value knowledge completed declaration changed");
+            }
+        } else {
             return Ok(None);
-        };
-        if !is_operation(kind) {
-            return Ok(None);
         }
-        crate::sema::header_attributes::charge_source_contract_query(facts, 32)
-            .map_err(|_| "source value knowledge selection work exhausted")?;
-        if matches!(self.bindings, super::binding_views::Bindings::Imported(_)) {
-            return Err("source value knowledge declaration provenance is not transported");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
-            .ok_or("source value knowledge requires its completed actual function")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-        {
-            return Err("source value knowledge completed declaration changed");
-        }
-        let parameters = facts
-            .generics
-            .parameters
-            .get(&definition)
-            .ok_or("source value knowledge lost its own type formal")?;
-        let [parameter] = parameters.as_slice() else {
-            return Err("source value knowledge requires its single type formal");
-        };
-        let Argument::Type(formal) = parameter.argument else {
-            return Err("source value knowledge changed its actual type formal");
-        };
-        super::compare_intrinsic::copy_premise(facts, definition, formal, self)
-            .map_err(|_| "source value knowledge requires its actual ordinary Copy premise")?;
-        self.validated_language(LangItem::Copy)?
+        self.validated_role(LangItem::Copy)?
             .ok_or("source value knowledge requires its completed actual Copy header")?;
         let input = knowledge_input(facts, arguments, signature)?;
         Ok(Some(Selection {
@@ -136,6 +159,14 @@ impl Catalog {
         selected: &Selection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
+        if let Some(imported) = self.imported_declared_intrinsic(selected.definition) {
+            if !is_operation(imported.kind) || !facts.is_const_function(selected.definition) {
+                return Err(
+                    "imported value knowledge requires its actual completed const declaration",
+                );
+            }
+            return Ok(());
+        }
         let Some((declaration, kind, _)) = self.intrinsic_record(selected.definition)? else {
             return Err("source value knowledge lost its attributed declaration");
         };

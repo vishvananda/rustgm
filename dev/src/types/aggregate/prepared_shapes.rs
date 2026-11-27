@@ -87,6 +87,9 @@ impl Definitions {
                     return Err("external enum batch changed its actual destination owner");
                 }
                 staged.insert(row.item, Kind::Enum, row.repr, &row.variants)?;
+                for variant in &row.variants {
+                    staged.index_field_projections(types, variant.fields)?;
+                }
                 if let Some(policy) = row.nullable {
                     staged.register_nullable_enum(types, row.item, policy, None)?;
                 }
@@ -262,6 +265,7 @@ fn stage_structs(
                 SharedMutation::Ordinary
             },
         )?;
+        staged.index_field_projections(types, fields)?;
         match policy {
             ImportedPolicy::Union => staged.suppress_field_destruction(item)?,
             ImportedPolicy::SuppressDestruction => staged.suppress_destruction(item)?,
@@ -302,6 +306,7 @@ impl Ready<'_> {
     pub(crate) fn install(self) {
         let target = self.destination;
         target.unions |= self.rows.has_unions();
+        target.projected_templates |= self.rows.projected_templates;
         if self.rows.has_indirect_arguments() {
             target.argument_policy = super::ArgumentPassing::Indirect;
         }

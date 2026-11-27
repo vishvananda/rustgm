@@ -135,12 +135,20 @@ impl Calls {
         // The sealed body maps the exact request target, signature and effect
         // to this operation. Its conditional Self goal is proved here against
         // this consumer's own defining environment before instance dispatch.
+        let exact_owner = if crate::support::sealed::self_check() {
+            facts.imported_conditional_member_trait(definition)? == Some(self.owner)
+                && facts.conditional_member_request(definition, arguments, &mut |steps| {
+                    work.charge(steps)
+                })? == self.premise
+        } else {
+            !facts.nonconst_trait_member(definition)?
+                && facts
+                    .imported_conditional_member_trait(definition)?
+                    .is_some()
+        };
         if body.source != self.body
             || !matches!(target.kind, Rvalue::Function(actual) if actual == definition)
-            || facts.imported_conditional_member_trait(definition)? != Some(self.owner)
-            || facts.conditional_member_request(definition, arguments, &mut |steps| {
-                work.charge(steps)
-            })? != self.premise
+            || !exact_owner
         {
             return Err("imported provided call changed its actual member or conditional Self");
         }
@@ -195,6 +203,16 @@ fn check_instance_owner(facts: &Declarations, body: &Body) -> Result<(), &'stati
                 return Err(
                     "imported provided constant changed its authenticated original initializer",
                 );
+            }
+        }
+        Owner::Closure { identity, .. } => {
+            if !body.const_context || facts.closures.origin(identity) != Some(body.source) {
+                return Err("imported provided closure changed its authenticated original body");
+            }
+        }
+        Owner::AnonymousConstant => {
+            if !body.const_context {
+                return Err("imported provided anonymous constant lost its const context");
             }
         }
         _ => return Err("imported provided instance lost its callable owner"),

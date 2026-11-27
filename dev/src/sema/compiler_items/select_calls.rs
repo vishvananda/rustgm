@@ -125,28 +125,43 @@ fn inputs(facts: &Declarations, instance: Instance) -> Result<Option<Select>, &'
         return Ok(None);
     };
     let definition = DefId(item.0);
-    let Some((entry, kind, original)) = catalog.intrinsic_record(definition)? else {
-        return Ok(None);
-    };
-    if kind != SourceIntrinsic::ConstEvalSelect {
+    if let Some((entry, kind, original)) = catalog.intrinsic_record(definition)? {
+        if kind != SourceIntrinsic::ConstEvalSelect {
+            return Ok(None);
+        }
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&i| facts.functions.get(i))
+            .ok_or("source selector has no actual function declaration")?;
+        if function.definition != definition
+            || function.node != entry.origin
+            || function.signature != original
+        {
+            return Err("source selector declaration changed its exact source/signature identity");
+        }
+    } else if let Some(imported) = catalog.imported_declared_intrinsic(definition) {
+        if imported.kind != SourceIntrinsic::ConstEvalSelect {
+            return Ok(None);
+        }
+        let actual = facts
+            .declaration_header(definition)?
+            .ok_or("imported selector has no actual canonical declaration")?;
+        if actual.declaration != imported.origin || actual.signature != imported.signature {
+            return Err(
+                "imported selector declaration changed its exact source/signature identity",
+            );
+        }
+    } else {
         return Ok(None);
     }
     for role in [LangItem::Tuple, LangItem::FnOnce, LangItem::FnOnceOutput] {
-        if catalog.validated_language(role)?.is_none() {
+        if catalog.validated_role(role)?.is_none() {
             return Err("source selector requires completed actual callable roles");
         }
     }
     catalog.require_source_destructors_prepared()?;
-    let function = facts
-        .function_indices
-        .get(&definition)
-        .and_then(|&i| facts.functions.get(i))
-        .ok_or("source selector has no actual function declaration")?;
-    if function.definition != definition
-        || function.node != entry.origin
-        || function.signature != original
-        || !facts.is_const_function(definition)
-    {
+    if !facts.is_const_function(definition) {
         return Err("source selector declaration changed its exact source/signature identity");
     }
     let mut args = facts

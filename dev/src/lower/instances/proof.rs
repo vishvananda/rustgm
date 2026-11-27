@@ -75,13 +75,14 @@ impl<'a> Original<'a> {
         &self,
         facts: &Declarations,
         body: &Body,
+        input: &Contract,
         cleanup: bool,
     ) -> Option<&'a crate::resolve::expansion::Report> {
         let Self::Ordinary(report) = self else {
             return None;
         };
         (facts.source_bindings.is_some()
-            && body.const_context
+            && (body.const_context || input.requires_defining_cleanup_preparation())
             && body.instance.is_none()
             && matches!(
                 body.owner,
@@ -149,6 +150,27 @@ impl Builder {
         original: crate::body::transported_originals::Original,
         prepared: &Contract,
     ) -> Result<templates::Retained, crate::resolve::package::Error> {
+        self.append_template_with(report, facts, retained, original, prepared, false)
+    }
+    pub(super) fn append_synthesized_template(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        retained: templates::Retained,
+        original: crate::body::transported_originals::Original,
+        prepared: &Contract,
+    ) -> Result<templates::Retained, crate::resolve::package::Error> {
+        self.append_template_with(report, facts, retained, original, prepared, true)
+    }
+    fn append_template_with(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        retained: templates::Retained,
+        original: crate::body::transported_originals::Original,
+        prepared: &Contract,
+        synthesized: bool,
+    ) -> Result<templates::Retained, crate::resolve::package::Error> {
         let custom = facts
             .destructors
             .implementations()
@@ -160,26 +182,46 @@ impl Builder {
             &facts.lifetimes.nominal_requirements,
             &facts.lifetimes.callables,
         );
-        let mut copies = crate::types::copy::Copies::default();
-        let mut environment = borrow::Environment {
-            types: &facts.types,
-            definitions: &facts.aggregates,
-            derives: &facts.derives,
-            source_copy: facts.uses_source_copy(),
-            copies: &mut copies,
+        let regions = if synthesized {
+            borrow::regions::check_one(
+                &facts.types,
+                &facts.lifetimes.variances,
+                &mut queries,
+                prepared,
+                &original.template().body,
+            )
+        } else {
+            borrow::regions::check_one_imported(
+                &facts.types,
+                &facts.lifetimes.variances,
+                &mut queries,
+                prepared,
+                &original.template().body,
+            )
         };
-        let result = retained.append(
-            original,
-            prepared,
-            &mut templates::Append {
-                environment: &mut environment,
-                variances: &facts.lifetimes.variances,
-                queries: &mut queries,
-                custom: &custom,
-                position: |ty, field| crate::body::drops::nominal_position(facts, ty, field),
-            },
-        );
         self.queries = queries.into_cache();
+        let mut regions = regions.map_err(|e| super::diagnostic(report, e.source, e.message))?;
+        let loans = crate::pipeline::cdrop::selected(
+            report,
+            facts,
+            original.template(),
+            prepared,
+            &mut regions,
+            &custom,
+            !synthesized,
+        )
+        .map_err(|message| {
+            super::diagnostic(
+                report,
+                Some(original.template().body.source.into()),
+                message,
+            )
+        })?;
+        let result = if synthesized {
+            retained.append_synthesized(original, prepared, &facts.types, regions, loans)
+        } else {
+            retained.append(original, prepared, &facts.types, regions, loans)
+        };
         result.map_err(|e| super::diagnostic(report, e.node, e.message))
     }
     pub(super) fn append_original<C: super::staged_originals::Collect>(
@@ -873,7 +915,8 @@ impl Builder {
                 message: message.into(),
             })?;
         let contract = self.regions(facts, &body, input)?;
-        if let Some(report) = original.defining_report(facts, &body, self.recipes.is_some()) {
+        if let Some(report) = original.defining_report(facts, &body, input, self.recipes.is_some())
+        {
             let mut proof = crate::pipeline::cdrop::ordinary(
                 report,
                 facts,

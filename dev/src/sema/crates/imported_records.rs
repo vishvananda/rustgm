@@ -136,6 +136,10 @@ fn publish(
             }],
         )
         .map_err(error)?;
+    facts
+        .aggregates
+        .index_field_projections(&facts.types, fields)
+        .map_err(error)?;
     facts.generics.nominal_contracts.insert(owner);
     let linkage = facts.crates.get_or_insert_default();
     linkage.imported_records.insert(owner);

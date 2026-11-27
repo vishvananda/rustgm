@@ -479,7 +479,7 @@ impl Search<'_> {
         self.language_result(facts, frame)
     }
     fn start(&mut self, facts: &mut Declarations, frame: &mut Frame) -> Result<Action, String> {
-        Self::source_sizing_kind(facts, &frame.goal)?;
+        let sizing = Self::source_sizing_kind(facts, &frame.goal)?;
         let unsizing = Self::source_unsizing_kind(facts, &frame.goal)?;
         frame.started = true;
         frame.cycles = self.query.cycles;
@@ -496,7 +496,13 @@ impl Search<'_> {
                 self.complete_builtin(facts, frame)
             };
         }
-        let assumed = if frame.sources == frames::Sources::Implementations {
+        let structural_sized = sizing.is_some()
+            && frame
+                .inputs
+                .context
+                .resolved(&mut facts.types, frame.goal.subject())
+                .is_ok_and(|ty| facts.types.is_sized(ty) == Some(true));
+        let assumed = if frame.sources == frames::Sources::Implementations || structural_sized {
             Ok(None)
         } else {
             self.assume(facts, frame)

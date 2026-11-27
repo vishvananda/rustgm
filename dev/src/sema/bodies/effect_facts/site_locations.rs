@@ -168,7 +168,21 @@ impl Checker<'_> {
                 crate::sema::dispatch::selected_definition(self.facts, source, callable)
                     .map_err(|error| self.error(node, error))?
             else {
-                return Ok(false);
+                if self.facts.associated.trait_owner(definition).is_none() {
+                    return Ok(false);
+                }
+                let has_location = self
+                    .facts
+                    .source_bindings
+                    .as_deref()
+                    .map(|catalog| {
+                        catalog.validated_role(crate::support::bindings::LangItem::PanicLocation)
+                    })
+                    .transpose()
+                    .map_err(|error| self.error(node, error))?
+                    .flatten()
+                    .is_some();
+                return Ok(has_location);
             };
             return self
                 .facts

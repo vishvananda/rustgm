@@ -38,10 +38,15 @@ impl Lower<'_, '_, '_> {
             return self.forget_value(signature, inputs, element, result);
         }
         let (pointer, stored) = match (name, inputs) {
-            ("read_via_copy", &[pointer]) if element == result => (pointer, None),
-            ("write_via_move", &[pointer, stored])
-                if result == TypeId::UNIT && self.input_type(stored)? == element =>
+            ("read_via_copy" | "volatile_load" | "unaligned_volatile_load", &[pointer])
+                if element == result =>
             {
+                (pointer, None)
+            }
+            (
+                "write_via_move" | "volatile_store" | "unaligned_volatile_store",
+                &[pointer, stored],
+            ) if result == TypeId::UNIT && self.input_type(stored)? == element => {
                 (pointer, Some(stored))
             }
             _ => return Err("source memory move requires its exact evaluated inputs and result"),
@@ -73,10 +78,52 @@ impl Lower<'_, '_, '_> {
         if pointer.ty != Type::Ptr {
             return Err("source memory move requires a native thin pointer");
         }
+        let align = if matches!(name, "unaligned_volatile_load" | "unaligned_volatile_store") {
+            1
+        } else {
+            self.context.layout(element)?.align
+        };
         let address = Address {
             operand: pointer.operand,
-            align: self.context.layout(element)?.align,
+            align,
         };
+        if matches!(
+            name,
+            "volatile_load"
+                | "volatile_store"
+                | "unaligned_volatile_load"
+                | "unaligned_volatile_store"
+        ) {
+            return self.volatile_memory(address, stored, element);
+        }
+        if let Some(value) = stored {
+            self.write(Some(address), self.value(value)?, element)?;
+            Ok(Selected::Unit)
+        } else {
+            self.loaded(address, element)
+        }
+    }
+
+    fn volatile_memory(
+        &mut self,
+        address: Address,
+        stored: Option<ir::ValueId>,
+        element: TypeId,
+    ) -> Result<Selected, &'static str> {
+        if let Representation::Scalar(scalar) = self.context.representation(element)?
+            && scalar != Type::Void
+            && self.context.layout(element)?.size == u64::from(scalar.bits() / 8)
+        {
+            return if let Some(value) = stored {
+                let value = self.value(value)?.runtime()?;
+                self.builder.volatile_store(value, address.operand)?;
+                Ok(Selected::Unit)
+            } else {
+                self.builder
+                    .volatile_load(scalar, address.operand)
+                    .map(Selected::Runtime)
+            };
+        }
         if let Some(value) = stored {
             self.write(Some(address), self.value(value)?, element)?;
             Ok(Selected::Unit)

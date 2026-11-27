@@ -22,7 +22,7 @@ pub(in crate::sema) fn available(facts: &Declarations) -> bool {
     facts
         .source_bindings
         .as_deref()
-        .is_some_and(|catalog| catalog.language(LangItem::Deref).is_some())
+        .is_some_and(|catalog| catalog.role(LangItem::Deref).ok().flatten().is_some())
 }
 
 /// Discovery authenticates the actual projection, without selecting an unused
@@ -40,17 +40,17 @@ pub(in crate::sema) fn target(
         .ok_or_else(|| error("field discovery lacks its actual source catalog"))?;
     catalog.require_provider_report(report).map_err(error)?;
     let base = catalog
-        .validated_language(LangItem::Deref)
+        .validated_role(LangItem::Deref)
         .map_err(error)?
         .ok_or_else(|| error("field discovery lacks its completed actual Deref"))?;
     let target = catalog
-        .validated_language(LangItem::DerefTarget)
+        .validated_role(LangItem::DerefTarget)
         .map_err(error)?
         .ok_or_else(|| error("field discovery lacks its completed actual Target"))?;
-    super::headers::Trait::source(report, facts, base)
-        .map_err(error)?
-        .canonical_inputs(facts)
-        .map_err(error)?;
+    let mut steps = 0;
+    let header = super::headers::Trait::current(report, facts, base, &mut steps).map_err(error)?;
+    crate::sema::header_attributes::charge_source_contract_query(facts, steps)?;
+    header.canonical_inputs(facts).map_err(error)?;
     let item = crate::types::ItemId(target.definition.0);
     if target.parent != Some(base.definition)
         || facts
@@ -83,15 +83,15 @@ pub(in crate::sema) fn query(
         LangItem::Deref
     };
     let declaration = catalog
-        .validated_language(role)
+        .validated_role(role)
         .map_err(error)?
         .ok_or_else(|| error("source dereference lacks its completed actual trait"))?;
     let base = catalog
-        .validated_language(LangItem::Deref)
+        .validated_role(LangItem::Deref)
         .map_err(error)?
         .ok_or_else(|| error("source dereference lacks its completed actual Deref"))?;
     let target = catalog
-        .validated_language(LangItem::DerefTarget)
+        .validated_role(LangItem::DerefTarget)
         .map_err(error)?
         .ok_or_else(|| error("source dereference lacks its completed actual Target"))?;
     if target.parent != Some(base.definition) {
@@ -99,9 +99,14 @@ pub(in crate::sema) fn query(
             "source dereference Target belongs to another actual trait",
         ));
     }
-    let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
+    let mut steps = 0;
+    let header =
+        super::headers::Trait::current(report, facts, declaration, &mut steps).map_err(error)?;
     header.canonical_inputs(facts).map_err(error)?;
-    crate::sema::header_attributes::charge_source_contract_query(facts, 8 + header.members.len())?;
+    crate::sema::header_attributes::charge_source_contract_query(
+        facts,
+        8 + steps + header.members.len(),
+    )?;
     let method = deref_method(report, &header, mutable).map_err(error)?;
     let signature = method_signature(
         facts,
@@ -245,7 +250,7 @@ fn method_signature(
     mutable: bool,
 ) -> Result<TypeId, &'static str> {
     let header = facts
-        .function_header(method)?
+        .declaration_header(method)?
         .ok_or("source dereference method has no prepared header")?;
     let Some(Kind::Function {
         bound_regions,

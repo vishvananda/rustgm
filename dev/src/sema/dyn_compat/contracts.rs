@@ -176,9 +176,31 @@ fn sized(facts: &Declarations, item: DefId, self_type: TypeId) -> Result<bool, E
     let Some(environment) = facts.generics.body_environment(item) else {
         return Ok(false);
     };
-    environment
+    if environment
         .matching_sized(&facts.types, self_type, 0, &mut None)
-        .map_err(Error::from)
+        .map_err(Error::from)?
+    {
+        return Ok(true);
+    }
+    let Some(role) = facts
+        .source_bindings
+        .as_deref()
+        .map(|catalog| catalog.validated_role(crate::support::bindings::LangItem::Sized))
+        .transpose()
+        .map_err(Error::from)?
+        .flatten()
+    else {
+        return Ok(false);
+    };
+    let Some(Bound::Trait(application)) = facts
+        .generics
+        .trait_self_bounds
+        .get(&role.definition)
+        .map(|predicate| predicate.bound)
+    else {
+        return Ok(false);
+    };
+    Ok(environment.assumes_trait(self_type, application))
 }
 fn reject(definition: DefId, rule: Rule) -> Error {
     Error::Incompatible { definition, rule }

@@ -82,7 +82,8 @@ impl Checker<'_> {
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             let Some(source) = source else {
-                self.imported_conformance(owner, predicate)?;
+                let result = self.imported_conformance(owner, predicate);
+                self.census_imported(owner, result)?;
                 continue;
             };
             if let Some(ledger) = self.census.as_deref_mut() {
@@ -105,6 +106,7 @@ impl Checker<'_> {
                 &mut steps,
             )?;
         }
+        self.census_annotations()?;
         self.finish_constant_contracts()?;
         self.finish_iteration_contracts()?;
         if let Some(selected) = self.selected.as_deref_mut() {
@@ -272,6 +274,11 @@ impl Checker<'_> {
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
+        if !crate::support::sealed::self_check()
+            && self.same_imported_artifact(first.1, second.1)?
+        {
+            return Ok(());
+        }
         if self.reservation_pair(key, [first.1, second.1], steps)? {
             return Ok(());
         }
@@ -318,6 +325,24 @@ impl Checker<'_> {
             ));
         }
         Ok(())
+    }
+
+    fn same_imported_artifact(&self, first: DefId, second: DefId) -> Result<bool, Error> {
+        let Some(catalog) = self
+            .facts
+            .crates
+            .as_deref()
+            .and_then(|linkage| linkage.origin_catalog())
+        else {
+            return Ok(false);
+        };
+        let first = catalog
+            .declaration_artifact(first)
+            .map_err(Error::unlocated)?;
+        let second = catalog
+            .declaration_artifact(second)
+            .map_err(Error::unlocated)?;
+        Ok(first.is_some() && first == second)
     }
 
     pub(super) fn implementation_error(

@@ -47,7 +47,7 @@ pub(super) fn validate_member(
             return Err("source fn_ptr_addr is absent from its retained trait members");
         }
         let function = facts
-            .function_header(declaration.definition)?
+            .declaration_header(declaration.definition)?
             .ok_or("source fn_ptr_addr has no prepared signature")?;
         if function.declaration.source() != Some(declaration.origin) || function.body.is_some() {
             return Err("source fn_ptr_addr changed its required declaration identity");

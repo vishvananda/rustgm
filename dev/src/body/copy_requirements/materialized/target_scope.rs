@@ -26,7 +26,7 @@ impl Selected {
                 },
             ) => {
                 let header = facts
-                    .function_header(definition)?
+                    .declaration_header(definition)?
                     .ok_or("instance trait scope lost its original function header")?;
                 if header.signature != signature || header.universals != contract.universals {
                     return Err(
@@ -69,7 +69,7 @@ impl Selected {
             _ => return Err("trait instance scope requires its actual original owner"),
         };
         if facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .is_none_or(|header| header.body != Some(body.source))
         {
             return Err("instance source scope changed its actual function body");
@@ -114,7 +114,7 @@ impl Selected {
                     || signatures.0 != signatures.1
                     || !matches!(body.owner, Owner::AsyncApplication { identity: owner, future: actual, signature } if owner == identity && actual == future && signature == signatures.1)
                     || facts
-                        .function_header(definition)?
+                        .declaration_header(definition)?
                         .is_none_or(|header| header.body != Some(original.source))
                 {
                     return Err(
@@ -213,7 +213,7 @@ pub(super) fn owner(
         _ => return Err("nonalias trait scope requires its actual function owner"),
     };
     if facts
-        .function_header(definition)?
+        .declaration_header(definition)?
         .is_none_or(|header| header.body != Some(source))
     {
         return Err("instance source scope changed its actual original header");

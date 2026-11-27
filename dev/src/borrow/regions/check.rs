@@ -163,6 +163,28 @@ pub(crate) fn check_one(
     input: &Contract,
     cfg: &crate::body::ir::Body,
 ) -> Result<Body, Error> {
+    check_one_with(types, variances, queries, input, cfg, false)
+}
+
+/// Prove one imported original body whose enclosing parent was proved by its publisher.
+pub(crate) fn check_one_imported(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: &crate::body::ir::Body,
+) -> Result<Body, Error> {
+    check_one_with(types, variances, queries, input, cfg, true)
+}
+
+fn check_one_with(
+    types: &Store,
+    variances: &Variances,
+    queries: &mut Queries<'_>,
+    input: &Contract,
+    cfg: &crate::body::ir::Body,
+    allow_nested_imported: bool,
+) -> Result<Body, Error> {
     if input.key != cfg.key() || input.source != cfg.source {
         return Err(Error {
             source: Some(cfg.source.into()),
@@ -170,7 +192,7 @@ pub(crate) fn check_one(
         });
     }
     let result = body(types, variances, queries, input, Some(cfg), &[])?;
-    if result.needs_parent() {
+    if result.needs_parent() && !(allow_nested_imported && cfg.source.source().is_none()) {
         return Err(Error {
             source: Some(input.source.into()),
             message: "nested output requires its checked parent contract".into(),
@@ -295,11 +317,12 @@ pub(super) fn body(
             }) if omitted.len() < 64
                 && !omitted.contains(&index)
                 && UNPROVEN.contains(&error.message.as_str())
-                && crate::body::bringup::unproven_site(
-                    crate::support::bringup::Stage::Lifetimes,
-                    error.source,
-                    &error.message,
-                ) =>
+                && ((input.source.source().is_none() && !crate::support::sealed::self_check())
+                    || crate::body::bringup::unproven_site(
+                        crate::support::bringup::Stage::Lifetimes,
+                        error.source,
+                        &error.message,
+                    )) =>
             {
                 omitted.push(index);
             }
@@ -541,8 +564,13 @@ fn quantified(
         let count = u32::try_from(sources.len())
             .map_err(|_| error("too many lifetime proof sources".into()))?;
         first = sources.end;
-        // An attempt leaves out the whole evidence that a left-out source names.
+        // An attempt leaves out the whole evidence that a left-out source names,
+        // while keeping its owned region variables declared for liveness/loans.
         if omitted.iter().any(|source| sources.contains(source)) {
+            evidence
+                .proof
+                .declare_owned_regions(constraints)
+                .map_err(error)?;
             continue;
         }
         evidence

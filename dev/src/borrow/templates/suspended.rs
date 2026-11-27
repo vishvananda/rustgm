@@ -2,14 +2,6 @@
 use super::{Checked, Error, State, Templates};
 use std::rc::Rc;
 
-pub(crate) struct Append<'a, 'query, S: std::hash::BuildHasher, F> {
-    pub environment: &'a mut crate::borrow::Environment<'query, S>,
-    pub variances: &'a crate::types::variance::Variances,
-    pub queries: &'a mut crate::types::outlives::Queries<'query>,
-    pub custom: &'a [crate::types::ItemId],
-    pub position: F,
-}
-
 pub(crate) struct Retained {
     templates: Rc<Templates>,
     state: Option<State>,
@@ -89,18 +81,35 @@ impl Retained {
         Ok(growth)
     }
     /// Consume the owner on failure; earlier rows are never replayed or exposed partially.
-    pub(crate) fn append<S: std::hash::BuildHasher, F>(
+    pub(crate) fn append(
+        self,
+        original: crate::body::transported_originals::Original,
+        prepared: &super::Contract,
+        types: &crate::types::Store,
+        regions: crate::borrow::regions::Body,
+        loans: crate::borrow::loans::Analysis,
+    ) -> Result<Self, Error> {
+        self.append_with(original, prepared, types, regions, loans, false)
+    }
+    pub(crate) fn append_synthesized(
+        self,
+        original: crate::body::transported_originals::Original,
+        prepared: &super::Contract,
+        types: &crate::types::Store,
+        regions: crate::borrow::regions::Body,
+        loans: crate::borrow::loans::Analysis,
+    ) -> Result<Self, Error> {
+        self.append_with(original, prepared, types, regions, loans, true)
+    }
+    fn append_with(
         mut self,
         original: crate::body::transported_originals::Original,
         prepared: &super::Contract,
-        checks: &mut Append<'_, '_, S, F>,
-    ) -> Result<Self, Error>
-    where
-        F: Fn(
-            crate::types::TypeId,
-            crate::body::drops::MemberQuery,
-        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
-    {
+        types: &crate::types::Store,
+        regions: crate::borrow::regions::Body,
+        loans: crate::borrow::loans::Analysis,
+        allow_source: bool,
+    ) -> Result<Self, Error> {
         let templates = Rc::get_mut(&mut self.templates).ok_or_else(|| {
             error("selected original append requires its uniquely owned checked templates")
         })?;
@@ -109,17 +118,18 @@ impl Retained {
             .state
             .as_mut()
             .ok_or_else(|| error("retained proof storage is already borrowed"))?;
-        state
-            .require_current_store(checks.environment.types)
-            .map_err(error)?;
+        state.require_current_store(types).map_err(error)?;
         let template = original.template();
         let raw = original.contract();
-        if template.body.source.source().is_some()
+        if (!allow_source && template.body.source.source().is_some())
             || template.body.instance.is_some()
             || prepared.key != raw.key
             || prepared.source != raw.source
             || prepared.signature != raw.signature
             || prepared.universals != raw.universals
+            || regions.key != template.body.key()
+            || regions.source != template.body.source
+            || regions.instance != template.body.instance
         {
             return Err(error(
                 "selected original proof changed its actual immutable input identity",
@@ -133,27 +143,6 @@ impl Retained {
             &mut state.anonymous,
         )?;
         crate::borrow::loans::templates::validate(template).map_err(error)?;
-        let regions = crate::borrow::regions::check_one(
-            checks.environment.types,
-            checks.variances,
-            checks.queries,
-            prepared,
-            &template.body,
-        )
-        .map_err(|failure| Error {
-            node: failure.source,
-            message: failure.message,
-        })?;
-        let mut verifier =
-            crate::borrow::loans::templates::Verifier::new(checks.custom).map_err(error)?;
-        let loans = verifier.body(
-            checks.environment,
-            &template.body,
-            &template.destruction,
-            &template.environment,
-            &regions,
-            &checks.position,
-        )?;
         let raw = raw.clone();
         templates.append_original(original).map_err(error)?;
         state.contracts.push(raw);

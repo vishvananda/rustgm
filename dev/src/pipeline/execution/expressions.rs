@@ -183,15 +183,16 @@ impl Engine {
         let BodyOrigin::Imported(imported_origin) = origin else {
             return Err(report.body_error(origin, "imported expression requires imported origin"));
         };
-        self.ensure_imported_originals(report, facts)?;
-        let originals = self
-            .imported
-            .as_ref()
-            .map(std::rc::Rc::clone)
+        let original = self
+            .imported_original(
+                report,
+                facts,
+                body::transported_originals::SourceTarget::Anonymous(imported_origin.id()),
+            )?
             .ok_or_else(|| {
                 report.body_error(origin, "imported inline constant lacks proved originals")
             })?;
-        let row = originals.anonymous(imported_origin.id()).ok_or_else(|| {
+        let row = original.row().ok_or_else(|| {
             report.body_error(origin, "imported inline constant has no exact original row")
         })?;
         super::super::original_contexts::Original::validate_parts_charged(

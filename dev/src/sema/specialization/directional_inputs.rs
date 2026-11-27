@@ -10,10 +10,7 @@ use crate::{
         arguments::Argument as Canonical,
         infer::{self, Context, Instantiation, arguments::Argument, predicates::Predicate as Goal},
         parameters::{
-            ParameterId,
-            clauses::Clause,
-            environment::Environment,
-            predicates::{Bound, Predicate},
+            ParameterId, clauses::Clause, environment::Environment, predicates::Predicate,
         },
         substitute,
     },
@@ -279,6 +276,7 @@ fn parent_goals(
         )?;
         requirements.push(requirement);
     }
+    let sized = crate::sema::nominals::sized_bound(facts)?;
     let mut goals = Vec::with_capacity(requirements.len().saturating_add(parent_bindings.len()));
     for &(id, _) in parent_bindings {
         if matches!(
@@ -290,10 +288,7 @@ fn parent_goals(
                 context
                     .instantiate_predicate(
                         &mut facts.types,
-                        Predicate {
-                            ty,
-                            bound: Bound::Sized,
-                        },
+                        Predicate { ty, bound: sized },
                         parent_substitution,
                     )
                     .map_err(|error| error.to_string())?,

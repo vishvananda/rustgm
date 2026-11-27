@@ -64,35 +64,48 @@ impl<'a> Spelling<'a> {
         self.text(identity.map_or("", |identity| identity.name()));
         self.text(identity.map_or("", |identity| identity.disambiguator()));
     }
-    /// A declaration of this crate. One that another crate's artifact supplied
-    /// has a different number in its own crate, so it is refused.
     fn item(&mut self, item: ItemId) -> Result<(), &'static str> {
-        let imported = self
+        if let Some(catalog) = self
             .facts
             .crates
             .as_deref()
             .and_then(crate::sema::crates::Linkage::origin_catalog)
-            .map(|catalog| catalog.declaration_if_imported(DefId(item.0)))
-            .transpose()?
-            .flatten();
-        if imported.is_some() {
-            return Err("type identity of another crate's declaration is not implemented");
+            && let Some(imported) = catalog.declaration_if_imported(DefId(item.0))?
+        {
+            let (provider, row, _) = catalog.declaration_coordinate(imported)?;
+            self.tag(b'x')?;
+            self.text(provider.name());
+            self.text(provider.disambiguator());
+            self.word(row.0);
+            return Ok(());
         }
         self.owner();
         self.word(item.0);
         Ok(())
     }
     fn closure(&mut self, identity: ClosureId) -> Result<(), &'static str> {
-        let source = self
-            .facts
-            .closures
-            .identity(identity)
-            .ok_or("type identity of a closure without its source body is not implemented")?
-            .source;
-        self.owner();
-        self.word(source.file.0);
-        self.word(source.node.get());
-        Ok(())
+        if let Some(body) = self.facts.closures.identity(identity) {
+            self.owner();
+            self.word(body.source.file.0);
+            self.word(body.source.node.get());
+            return Ok(());
+        }
+        if let Some(crate::resolve::body_origin::BodyOrigin::Imported(imported)) =
+            self.facts.closures.origin(identity)
+            && let Some(catalog) = self
+                .facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::origin_catalog)
+        {
+            let (provider, row, _) = catalog.coordinate(imported.id())?;
+            self.tag(b'X')?;
+            self.text(provider.name());
+            self.text(provider.disambiguator());
+            self.word(row.0);
+            return Ok(());
+        }
+        Err("type identity of a closure without its source body is not implemented")
     }
     /// A lifetime of an open binder is its binder's distance and its order of
     /// first use there. Every other lifetime is free in this type and erased:

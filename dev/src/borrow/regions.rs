@@ -17,4 +17,4 @@ pub use check::{
 };
 
 pub(crate) use check::paid_inline;
-pub(crate) use check::{check_nested_bodies, check_one, check_original_child};
+pub(crate) use check::{check_nested_bodies, check_one, check_one_imported, check_original_child};

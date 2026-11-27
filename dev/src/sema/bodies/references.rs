@@ -510,12 +510,16 @@ impl Checker<'_> {
         // solves any hole. This is the existing charged, memoized DAG query.
         let actual = match self.state.infer.resolved(&mut self.facts.types, actual) {
             Ok(ty) => ty,
-            Err(crate::types::infer::Error::Unresolved) => return Ok(false),
+            Err(
+                crate::types::infer::Error::Unresolved | crate::types::infer::Error::Normalization,
+            ) => return Ok(false),
             Err(error) => return Err(self.error(node, error)),
         };
         match self.state.infer.resolved(&mut self.facts.types, expected) {
             Ok(expected) => Ok(actual == expected),
-            Err(crate::types::infer::Error::Unresolved) => Ok(false),
+            Err(
+                crate::types::infer::Error::Unresolved | crate::types::infer::Error::Normalization,
+            ) => Ok(false),
             Err(error) => Err(self.error(node, error)),
         }
     }

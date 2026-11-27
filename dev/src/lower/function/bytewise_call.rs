@@ -27,10 +27,7 @@ pub(in crate::lower) fn checked(
     else {
         return Err("source raw equality requires its checked direct Call");
     };
-    if body.const_context
-        || body.source.source().is_none()
-        || value.ty != TypeId::primitive(Primitive::Bool)
-    {
+    if body.const_context || value.ty != TypeId::primitive(Primitive::Bool) {
         return Err("source raw equality requires its actual runtime Call");
     }
     let (element, expected) = bytewise::checked_type(facts, target, signature)?;

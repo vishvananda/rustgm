@@ -39,6 +39,14 @@ pub(crate) fn strict_bodiless_intrinsic(name: &str) -> bool {
             | "fabs"
             | "copysignf32"
             | "copysignf64"
+            | "minimum_number_nsz_f32"
+            | "minimum_number_nsz_f64"
+            | "maximum_number_nsz_f32"
+            | "maximum_number_nsz_f64"
+            | "volatile_load"
+            | "volatile_store"
+            | "unaligned_volatile_load"
+            | "unaligned_volatile_store"
     ) || super::bit_counts::named(name).is_some_and(|op| !op.is_rotation())
         || crate::support::word_operation::Update::intrinsic(name).is_some()
         || crate::support::intrinsics::Intrinsic::source_transfer(name).is_some()
@@ -429,21 +437,38 @@ impl Catalog {
         };
         let definition = DefId(item.0);
         let Some(entry) = self.intrinsics.get(&definition) else {
-            let Some((operation, header)) = self.imported_intrinsic(definition) else {
+            if let Some((operation, header)) = self.imported_intrinsic(definition) {
+                let kind = operation.kind();
+                if !matches!(kind, SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf) {
+                    return Ok(None);
+                }
+                if signature != header.signature {
+                    return Err("imported layout intrinsic changed its actual opened signature");
+                }
+                return Ok(Some(Selected {
+                    definition,
+                    element: layout_element(&facts.types, arguments, kind)?,
+                    kind,
+                    fallback: false,
+                }));
+            }
+            let Some(imported) = self.imported_declared_intrinsic(definition) else {
                 return Ok(None);
             };
-            let kind = operation.kind();
-            if !matches!(kind, SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf) {
+            if !matches!(
+                imported.kind,
+                SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf | SourceIntrinsic::NeedsDrop
+            ) {
                 return Ok(None);
             }
-            if signature != header.signature {
+            if signature != imported.signature {
                 return Err("imported layout intrinsic changed its actual opened signature");
             }
             return Ok(Some(Selected {
                 definition,
-                element: layout_element(&facts.types, arguments, kind)?,
-                kind,
-                fallback: false,
+                element: layout_element(&facts.types, arguments, imported.kind)?,
+                kind: imported.kind,
+                fallback: imported.source_fallback,
             }));
         };
         let original = entry

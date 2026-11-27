@@ -21,7 +21,7 @@ mod applied_members;
 #[path = "../../../tests/invariants/envelope_payments.rs"]
 mod tests;
 #[derive(Clone, Copy)]
-struct Member {
+pub(super) struct Member {
     owner: DeclarationRef,
     declaration: DeclarationRef,
     subject: g::TypeRef,
@@ -32,19 +32,19 @@ pub(super) struct Index<'a> {
     bytes: usize,
 }
 #[derive(Clone, Copy)]
-pub(super) struct Primitive {
+pub(crate) struct Primitive {
     member: DefId,
     subject: TypeId,
     signature: TypeId,
     selected: TypeId,
 }
 #[derive(Clone, Copy)]
-pub(super) struct Applied {
+pub(crate) struct Applied {
     member: DefId,
     selected: TypeId,
     recorded: Option<crate::types::parameters::predicates::Predicate>,
 }
-pub(super) enum Pending {
+pub(crate) enum Pending {
     Primitive(Vec<Primitive>),
     Applied {
         rows: Vec<Option<Applied>>,
@@ -215,7 +215,7 @@ impl<'a> Index<'a> {
             }
             let definition = view.declaration(member.declaration, &mut work.steps)?;
             let signature = facts
-                .function_header(definition)?
+                .declaration_header(definition)?
                 .ok_or("selected method lacks its installed trait header")?
                 .signature;
             if !matches!(value.kind, Rvalue::Function(_))
@@ -233,6 +233,127 @@ impl<'a> Index<'a> {
         Ok(Pending::Primitive(pending))
     }
 }
+pub(super) fn lookup_member(
+    rows: s::ValidatedView<'_>,
+    target: DeclarationRef,
+) -> Result<Option<Member>, &'static str> {
+    let Some(s::HeaderRef::Function(h)) = rows.header(target)? else {
+        return Ok(None);
+    };
+    let Some(owner) = rows.functions[h as usize].parent else {
+        return Ok(None);
+    };
+    let Some(s::HeaderRef::Implementation(impl_idx)) = rows.header(owner)? else {
+        return Ok(None);
+    };
+    let header = &rows.implementations[impl_idx as usize];
+    if header.trait_application.is_none() {
+        return Ok(None);
+    }
+    let specializes = rows
+        .cold()
+        .specialization
+        .as_deref()
+        .is_some_and(|graph| graph.parent(header.self_definition).is_some());
+    for link in header.members.slice(&rows.member_links)? {
+        if outside_implementation(rows, link, specializes)? {
+            continue;
+        }
+        if link.implementation == Some(target) {
+            let Some(expected) = link.trait_member else {
+                return Err("v4 selected methods require actual override/member links");
+            };
+            if expected.artifact != s::ArtifactRef(0) {
+                return Err("selected source member has a foreign or repeated actual owner");
+            }
+            return Ok(Some(Member {
+                owner: header.self_definition,
+                declaration: expected.declaration,
+                subject: header.self_type,
+            }));
+        }
+    }
+    Ok(None)
+}
+
+pub(crate) fn prepare_single(
+    facts: &Declarations,
+    view: &SourceOriginal<'_>,
+    body: &Body,
+    steps: &mut usize,
+) -> Result<Pending, &'static str> {
+    let rows = view.rows();
+    if !rows.descriptor().profile().feature_predicates() {
+        return Ok(Pending::Primitive(Vec::new()));
+    }
+    let mut work = ImportedOriginals::default();
+    let result = if rows.descriptor().profile().conversion_roles() {
+        applied_members::prepare_single(view, facts, body, &mut work).map(|applied| {
+            Pending::Applied {
+                rows: applied,
+                normalize_projections: rows.descriptor().profile().declaration_policies(),
+            }
+        })
+    } else {
+        let mut pending = Vec::new();
+        for (record, value) in view.raw().values.iter().zip(&body.values) {
+            work.charge(1)?;
+            let s::ValueKind::Function(reference) = record.kind else {
+                continue;
+            };
+            let target = rows.function_applications[reference.0 as usize]
+                .declaration
+                .declaration;
+            let Some(member) = lookup_member(rows, target)? else {
+                continue;
+            };
+            let definition = view.declaration(member.declaration, &mut work.steps)?;
+            let signature = facts
+                .declaration_header(definition)?
+                .ok_or("selected method lacks its installed trait header")?
+                .signature;
+            pending.push(Primitive {
+                member: definition,
+                subject: view.ty(member.subject, &mut work.steps)?,
+                signature,
+                selected: value.ty,
+            });
+        }
+        Ok(Pending::Primitive(pending))
+    };
+    *steps = steps.saturating_add(work.steps);
+    result
+}
+
+pub(crate) fn prove_single(
+    facts: &mut Declarations,
+    environment: Arc<Environment>,
+    pending: &Pending,
+    body: &Body,
+    contract: &mut crate::body::regions::Contract,
+) -> Result<(), String> {
+    if pending.is_empty() || !crate::support::sealed::self_check() {
+        return Ok(());
+    }
+    let mut work = ImportedOriginals::default();
+    let allowance = super::decoded_bodies::Allowance {
+        header_work: 0,
+        header_bytes: 0,
+        templates: crates::MAX_BYTES,
+    };
+    let result = prove(
+        facts,
+        environment,
+        pending,
+        body,
+        contract,
+        &mut work,
+        &allowance,
+    );
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work.steps);
+    result
+}
+
 pub(super) fn allocation(values: usize, conversions: bool) -> usize {
     values.saturating_mul(
         4 * if conversions {
@@ -251,7 +372,7 @@ pub(super) fn prove(
     work: &mut ImportedOriginals,
     allowance: &super::decoded_bodies::Allowance,
 ) -> Result<(), String> {
-    if pending.is_empty() {
+    if pending.is_empty() || !crate::support::sealed::self_check() {
         return Ok(());
     }
     paying(work, allowance, |pay| {

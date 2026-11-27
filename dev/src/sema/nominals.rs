@@ -12,6 +12,7 @@ use crate::types::{
         predicates::{Bound, Predicate},
     },
 };
+pub(in crate::sema) use requirements::sized_bound;
 pub(super) use requirements::{
     FormationRequirements, Requirements, formation_requirements_counted, immediate,
     pending_contracts, requirements, requirements_inside,
@@ -466,8 +467,27 @@ impl Proof {
                         Bound::Clone => "nominal type argument must implement Clone",
                         Bound::Sized => "nominal type argument must be sized",
                         Bound::Auto(_) => "nominal type argument must implement its auto trait",
-                        Bound::Trait(_) | Bound::ConstTrait(_) | Bound::MaybeConstTrait(_) => {
-                            "nominal type argument must implement its declared trait"
+                        Bound::Trait(id) | Bound::ConstTrait(id) | Bound::MaybeConstTrait(id) => {
+                            let is_sized = facts
+                                .source_bindings
+                                .as_deref()
+                                .and_then(|catalog| {
+                                    catalog
+                                        .role(crate::support::bindings::LangItem::Sized)
+                                        .ok()
+                                        .flatten()
+                                })
+                                .is_some_and(|role| {
+                                    facts
+                                        .types
+                                        .trait_application(id)
+                                        .is_some_and(|app| app.item.0 == role.definition.0)
+                                });
+                            if is_sized {
+                                "nominal type argument must be sized"
+                            } else {
+                                "nominal type argument must implement its declared trait"
+                            }
                         }
                         Bound::Outlives(_) => "nominal type argument must outlive its bound",
                         Bound::ProjectionEqual(_) => {

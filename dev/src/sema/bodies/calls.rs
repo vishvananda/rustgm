@@ -270,12 +270,12 @@ impl Checker<'_> {
     ) -> Result<TermId, Error> {
         match self.state.infer.resolved(&mut self.facts.types, expected) {
             Ok(_) => return Ok(actual),
-            Err(infer::Error::Unresolved) => {}
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => {}
             Err(e) => return Err(self.error(node, e)),
         }
         let ty = match self.state.infer.resolved(&mut self.facts.types, actual) {
             Ok(ty) => ty,
-            Err(infer::Error::Unresolved) => return Ok(actual),
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => return Ok(actual),
             Err(e) => return Err(self.error(node, e)),
         };
         if self.facts.types.contains_late_callables(ty) != Some(true) {
@@ -435,7 +435,7 @@ impl Checker<'_> {
         } else {
             let ty = match self.state.infer.resolved(&mut self.facts.types, root) {
                 Ok(ty) => ty,
-                Err(infer::Error::Unresolved)
+                Err(infer::Error::Unresolved | infer::Error::Normalization)
                     if bound_regions == 0
                         && !self
                             .state
@@ -447,7 +447,9 @@ impl Checker<'_> {
                 }
                 // Even an empty binder can enclose outer lifetime references.
                 // Open it before checking arguments without solving type holes.
-                Err(infer::Error::Unresolved) => return self.instantiate_call_term(node, term),
+                Err(infer::Error::Unresolved | infer::Error::Normalization) => {
+                    return self.instantiate_call_term(node, term);
+                }
                 Err(error) => return Err(self.error(node, error)),
             };
             self.state.call_types.signatures.insert(root, ty);
@@ -541,7 +543,7 @@ impl Checker<'_> {
         };
         let expected = match self.state.infer.resolved(&mut self.facts.types, expected) {
             Ok(ty) => ty,
-            Err(infer::Error::Unresolved) => return Ok(Vec::new()),
+            Err(infer::Error::Unresolved | infer::Error::Normalization) => return Ok(Vec::new()),
             Err(error) => return Err(self.error(node, error)),
         };
         let candidates = crate::types::callable::late_result::candidates(

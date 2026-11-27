@@ -214,9 +214,13 @@ fn declaration_conditions(
     mut conditions: Conditions,
 ) -> Result<Option<Conditions>, &'static str> {
     let mut mapped = Vec::new();
-    let mut scope = ScopeConditions::new(&facts.generics, owner);
-    for predicate in facts.generics.predicates_in_scope(owner) {
-        if let Clause::UnstableFeature(id) = predicate.value {
+    let clauses: Vec<Clause> =
+        crate::sema::declaration_inputs::all(&facts.generics, facts.crates.as_deref(), owner)?
+            .map(|input| input.value)
+            .collect();
+    let mut scope = ScopeConditions::new(&clauses);
+    for &clause in &clauses {
+        if let Clause::UnstableFeature(id) = clause {
             let work = std::cell::Cell::new(0_usize);
             let proven =
                 facts.prove_feature(id, caller.environment.map(Arc::as_ref), &|steps, _| {
@@ -230,7 +234,6 @@ fn declaration_conditions(
             }
             continue;
         }
-        let clause = predicate.value;
         if let Some(goal) =
             super::lookup_goals::quantified(&mut facts.types, context, clause, substitution)?
         {
@@ -290,17 +293,15 @@ fn declaration_conditions(
 /// callable's implied `MetaSized`. Such a condition is skipped; the flat clause
 /// keeps its own position.
 struct ScopeConditions<'a> {
-    generics: &'a crate::sema::generics::Generics,
-    owner: DefId,
+    clauses: &'a [Clause],
     /// The scope's flat clauses, collected by its first read from an empty binder.
     flat: Option<crate::support::hash::HashSet<Predicate>>,
 }
 
 impl<'a> ScopeConditions<'a> {
-    const fn new(generics: &'a crate::sema::generics::Generics, owner: DefId) -> Self {
+    const fn new(clauses: &'a [Clause]) -> Self {
         Self {
-            generics,
-            owner,
+            clauses,
             flat: None,
         }
     }
@@ -334,13 +335,14 @@ impl<'a> ScopeConditions<'a> {
         let conditional = matches!(written.bound, Bound::MaybeConstTrait(_));
         let mut steps = 0_usize;
         let twin = if conditional {
-            self.generics
-                .predicates_in_scope(self.owner)
-                .take_while(|earlier| {
+            self.clauses
+                .iter()
+                .copied()
+                .take_while(|&earlier| {
                     steps += 1;
-                    earlier.value != clause
+                    earlier != clause
                 })
-                .any(|earlier| lookup_condition(store, earlier.value) == Ok(predicate))
+                .any(|earlier| lookup_condition(store, earlier) == Ok(predicate))
         } else if matches!(predicate.bound, Bound::Trait(_)) {
             steps = mapped.len();
             mapped.contains(&predicate)
@@ -350,14 +352,15 @@ impl<'a> ScopeConditions<'a> {
         work.canonical_steps = work.canonical_steps.saturating_add(steps);
         #[cfg(test)]
         crate::sema::copy_trace::record(|| {
-            let (size, maybe) = self.generics.predicates_in_scope(self.owner).fold(
-                (0_usize, 0_usize),
-                |(size, maybe), located| {
-                    let bound = lookup_condition(store, located.value).map(|p| p.bound);
-                    let found = matches!(bound, Ok(Bound::MaybeConstTrait(_)));
-                    (size + 1, maybe + usize::from(found))
-                },
-            );
+            let (size, maybe) =
+                self.clauses
+                    .iter()
+                    .copied()
+                    .fold((0_usize, 0_usize), |(size, maybe), clause| {
+                        let bound = lookup_condition(store, clause).map(|p| p.bound);
+                        let found = matches!(bound, Ok(Bound::MaybeConstTrait(_)));
+                        (size + 1, maybe + usize::from(found))
+                    });
             format!(
                 "supertrait-lookup scope={size} conditional={maybe} charge={steps} kept={} {predicate:?}",
                 !twin
@@ -385,14 +388,15 @@ impl<'a> ScopeConditions<'a> {
         if !matches!(clause, Clause::ForAll(_)) {
             return Ok(Some(predicate));
         }
-        let (generics, owner) = (self.generics, self.owner);
+        let clauses = self.clauses;
         let mut steps = 1_usize;
         let flat = self.flat.get_or_insert_with(|| {
-            generics
-                .predicates_in_scope(owner)
-                .filter_map(|located| {
+            clauses
+                .iter()
+                .copied()
+                .filter_map(|clause| {
                     steps += 1;
-                    match located.value {
+                    match clause {
                         Clause::Predicate(ordinary) => Some(ordinary),
                         Clause::ForAll(_) | Clause::UnstableFeature(_) => None,
                     }
@@ -403,7 +407,7 @@ impl<'a> ScopeConditions<'a> {
         let duplicate = flat.contains(&predicate);
         #[cfg(test)]
         crate::sema::copy_trace::record(|| {
-            let scope = generics.predicates_in_scope(owner).count();
+            let scope = clauses.len();
             format!(
                 "empty-binder-lookup scope={scope} charge={steps} kept={} {predicate:?}",
                 !duplicate

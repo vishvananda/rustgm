@@ -8,11 +8,7 @@ use crate::{
         GenericArgs, Kind,
         arguments::Argument,
         outlives::Pair,
-        parameters::{
-            ParameterKind,
-            clauses::Clause,
-            predicates::{Bound, Predicate},
-        },
+        parameters::{ParameterKind, clauses::Clause, predicates::Predicate},
         substitute,
     },
 };
@@ -78,6 +74,7 @@ pub(super) fn defining(
         };
         result.outlives.push((longer, shorter));
     }
+    let sized = crate::sema::nominals::sized_bound(facts)?;
     for &id in &ids {
         if matches!(
             facts.types.parameter(id).map(|value| value.kind),
@@ -86,11 +83,7 @@ pub(super) fn defining(
             let ty = facts.types.intern(Kind::Parameter(id))?;
             push(
                 &mut result.clauses,
-                Predicate {
-                    ty,
-                    bound: Bound::Sized,
-                }
-                .into(),
+                Predicate { ty, bound: sized }.into(),
                 budget,
             )?;
         }

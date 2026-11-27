@@ -204,6 +204,12 @@ fn forged_enum_headers_tests_and_downcasts_reject_in_fresh_consumers() -> Result
         std::fs::write(&path, wire)?;
         let source = packet.fixture(client);
         let mut consumer = packet.consumer(&source, name, &path, &packet.owner());
+        if matches!(
+            name,
+            "repeated-test" | "repeated-payload-test" | "swapped-tests"
+        ) {
+            consumer.arg("--self-check");
+        }
         packet.rejected(name, &mut consumer, diagnostic)?;
     }
     for end in 0..bytes.len() {

@@ -39,7 +39,9 @@ pub(crate) fn is_runtime_assertion(facts: &Declarations, kind: SourceIntrinsic) 
         && (crate::support::bringup::selected().is_none()
             || facts.source_bindings.as_deref().is_some_and(|catalog| {
                 catalog
-                    .language(crate::support::bindings::LangItem::PanicNounwind)
+                    .role(crate::support::bindings::LangItem::PanicNounwind)
+                    .ok()
+                    .flatten()
                     .is_some()
             }))
 }
@@ -103,32 +105,48 @@ impl Catalog {
             return Ok(None);
         };
         let definition = DefId(item.0);
-        let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
+        let fill = if let Some((declaration, kind, original)) = self.intrinsic_record(definition)? {
+            let Some(fill) = selected(kind) else {
+                return Ok(None);
+            };
+            crate::sema::header_attributes::charge_source_contract_query(facts, 16)
+                .map_err(|_| "source zeroing selection work budget exhausted")?;
+            if origin.source().is_none()
+                || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
+            {
+                return Err("source zeroing provenance requires its wider transport profile");
+            }
+            let function = facts
+                .function_indices
+                .get(&definition)
+                .and_then(|&index| facts.functions.get(index))
+                .ok_or("source zeroing requires its completed actual function")?;
+            if declaration.parent.is_some()
+                || function.definition != definition
+                || function.node != declaration.origin
+                || function.signature != original
+                || function.body.is_some()
+            {
+                return Err("source zeroing requires its own bodyless declaration");
+            }
+            fill
+        } else if let Some(imported) = self.imported_declared_intrinsic(definition) {
+            let Some(fill) = selected(imported.kind) else {
+                return Ok(None);
+            };
+            let actual = facts
+                .declaration_header(definition)?
+                .ok_or("imported zeroing lost its canonical declaration")?;
+            if actual.declaration != imported.origin
+                || actual.signature != imported.signature
+                || actual.body.is_some()
+            {
+                return Err("imported zeroing requires its own bodyless declaration");
+            }
+            fill
+        } else {
             return Ok(None);
         };
-        let Some(fill) = selected(kind) else {
-            return Ok(None);
-        };
-        crate::sema::header_attributes::charge_source_contract_query(facts, 16)
-            .map_err(|_| "source zeroing selection work budget exhausted")?;
-        if origin.source().is_none()
-            || matches!(self.bindings, super::binding_views::Bindings::Imported(_))
-        {
-            return Err("source zeroing provenance requires its wider transport profile");
-        }
-        let function = facts
-            .function_indices
-            .get(&definition)
-            .and_then(|&index| facts.functions.get(index))
-            .ok_or("source zeroing requires its completed actual function")?;
-        if declaration.parent.is_some()
-            || function.definition != definition
-            || function.node != declaration.origin
-            || function.signature != original
-            || function.body.is_some()
-        {
-            return Err("source zeroing requires its own bodyless declaration");
-        }
         let mut args = facts
             .types
             .arguments(arguments)
@@ -174,7 +192,11 @@ impl Catalog {
         selection: &Selection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
-        let Some((_, kind, _)) = self.intrinsic_record(selection.definition)? else {
+        let kind = if let Some((_, kind, _)) = self.intrinsic_record(selection.definition)? {
+            kind
+        } else if let Some(imported) = self.imported_declared_intrinsic(selection.definition) {
+            imported.kind
+        } else {
             return Err("source zeroing lost its attributed declaration");
         };
         let fill = matches!(selection.operation, Operation::Fill(_));

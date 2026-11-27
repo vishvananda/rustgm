@@ -579,6 +579,28 @@ fn arguments_work<const CHARGED: bool>(
     }
     Ok(())
 }
+pub(in crate::sema) fn sized_bound(facts: &mut Declarations) -> Result<Bound, &'static str> {
+    let Some(role) = facts
+        .source_bindings
+        .as_deref()
+        .map(|catalog| catalog.validated_role(crate::support::bindings::LangItem::Sized))
+        .transpose()?
+        .flatten()
+    else {
+        return Ok(Bound::Sized);
+    };
+    if let Some(predicate) = facts.generics.trait_self_bounds.get(&role.definition) {
+        return Ok(predicate.bound);
+    }
+    let application = facts
+        .types
+        .intern_trait_application(crate::types::traits::Application {
+            item: ItemId(role.definition.0),
+            arguments: GenericArgs::EMPTY,
+        })?;
+    Ok(Bound::Trait(application))
+}
+
 fn instance<const CHARGED: bool>(
     facts: &mut Declarations,
     item: ItemId,
@@ -593,6 +615,7 @@ fn instance<const CHARGED: bool>(
     if !facts.generics.nominal_contracts.contains(&owner) {
         return Err("nominal declaration requirements are not complete");
     }
+    let bound = sized_bound(facts)?;
     if let Some(parameters) = facts.generics.parameters.get(&owner) {
         let actual = facts
             .types
@@ -614,13 +637,7 @@ fn instance<const CHARGED: bool>(
                     Some(ParameterKind::Type { sized: true })
                 ) {
                     reserve::<_, CHARGED>(output, 1, charge)?;
-                    output.push(
-                        Predicate {
-                            ty,
-                            bound: Bound::Sized,
-                        }
-                        .into(),
-                    );
+                    output.push(Predicate { ty, bound }.into());
                 }
             }
         }
@@ -759,13 +776,10 @@ fn structural_clauses<const CHARGED: bool>(
                 crate::types::length::Length::of(&facts.types, ty)?;
             }
             if requires_sized_edge(kind, 0, 0, element) {
+                let bound = sized_bound(facts)?;
                 checked.append_predicate::<CHARGED>(
                     &mut facts.types,
-                    Predicate {
-                        ty: element,
-                        bound: Bound::Sized,
-                    }
-                    .into(),
+                    Predicate { ty: element, bound }.into(),
                     depth,
                     predicates,
                     unique,
@@ -785,13 +799,10 @@ fn structural_clauses<const CHARGED: bool>(
                 }
                 let child = facts.types.list(list).ok_or("missing formation tuple")?[index];
                 if requires_sized_edge(kind, index, count, child) {
+                    let bound = sized_bound(facts)?;
                     checked.append_predicate::<CHARGED>(
                         &mut facts.types,
-                        Predicate {
-                            ty: child,
-                            bound: Bound::Sized,
-                        }
-                        .into(),
+                        Predicate { ty: child, bound }.into(),
                         depth,
                         predicates,
                         unique,
