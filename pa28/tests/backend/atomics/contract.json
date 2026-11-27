@@ -2,20 +2,20 @@
   "schema": 1,
   "compiler_head": "13df7b2a40191662b07a348aef64374333f38611",
   "rustc_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
-  "backend_commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+  "backend_commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
   "backend_lock": {
     "schema": 1,
     "repository": "https://github.com/vishvananda/cppgm",
-    "release": "v0.10.3",
-    "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+    "release": "v0.12.0",
+    "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
     "target": "x86_64-linux",
     "sha256": {
-      "lowir": "5003bafeaf9169d139ba6f5ed20397ce3b73d1ac718455cb31da10c21eb3178b",
-      "lowir2native": "5122ce74470562f457d0c406f198938c96de9c52428ffdd88b06b0b41cc416f1"
+      "lowir": "df495f16acaccec71250feb1f8e862dc2767b595520060e913d63a51cb185ce9",
+      "lowir2native": "7bddbb9c7ddebc848a9551eda12a2f6b594cf3fd8c881312f3f2f10163eb67cb"
     },
     "optional": {
       "object": {
-        "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+        "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
         "target": "x86_64-linux",
         "object_format": "elf64-x86-64",
         "capabilities": [
@@ -23,61 +23,61 @@
           "assembly"
         ],
         "sha256": {
-          "cppgm": "75f883d56f5fc8427d87b80458b6e398bf2d3973e26769e6cacda298d2284464"
+          "cppgm": "3e464fc6b13f6cb64a15ef907294642e5ff4ede2e582fb94d40fa48bbb42749c"
         }
       },
       "library": {
-        "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+        "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
         "target": "x86_64-linux",
         "abi_version": 5,
         "sha256": {
-          "ir_symbol_model.h": "dc8f62387f431a2a2372ee59a3d44fdac9851192c1aac0bd855e6f48a3d46d80",
-          "lowir_c_vocabulary.h": "c0f515c865cc72b96258ea2d393ac345ddbc47c01d45611563378acec67e2db4",
-          "lowir_interface.h": "ccc1e067b04daea2215508516f611b9dd6b583358a352bba0b3bbffb80d64e85",
-          "lowir_local_model.h": "a63eac0ea953445bc072f713c1e15a5e7026b7a3780454cc17d03f032c77cd36",
-          "lowir_model.h": "b5d82b2d1391f5842b4492a6ccac7d3d2b17328aed72068a119c24b7b1b41c59",
-          "lowir_records.h": "60f1d822476bd3b9bc38d9441ddb943e3f5bef2e97ab0891a5280154f0dc1910",
-          "libcppgm_lowir.a": "d82f3ec0286564a5a9e96284c6c2e1173fb26f7ece92704d9b90cfcf94856b6b",
-          "libcppgm_lowir.so": "634d2f2b98c8021ceab8bb73e689b22fe9f7606ff02f9b3f641a5b6ac64a3faa"
+          "ir_symbol_model.h": "57f173eaa1ddba0ed03507d21eddd7b23889f829ee43586f5ff7bd562ab45f82",
+          "lowir_c_vocabulary.h": "7936b9b5b623ea130be4633f027415d1ea4828bbb83b2269e953a8328c044c57",
+          "lowir_interface.h": "962efdb24e6d443ef89cdadeb899bdb3ba9eac91811d19be74814b59f6ef532b",
+          "lowir_local_model.h": "c86e297feb696a680fb5a71cd660a616dbdcd35f2240b7940aa24b51ab76fa0b",
+          "lowir_model.h": "481c561c31bb346a6598e750b4f7e11e7fbab1083121fa48f717cd97353f0dca",
+          "lowir_records.h": "2510c117cadadaec532c0e6265c41296377e1811d85e8b7e889aafdcfcd543a0",
+          "libcppgm_lowir.a": "7839efc5b0018b10ba44dbf4d89d031879083dc14d5f4b2822e4d448d1034823",
+          "libcppgm_lowir.so": "689628046ae12e37d3ca142b130cdfd1180409d0f85312370f46158e491f0ab5"
         }
       }
     }
   },
   "sources": [
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/lowir_model.h",
-      "sha256": "b5d82b2d1391f5842b4492a6ccac7d3d2b17328aed72068a119c24b7b1b41c59"
+      "sha256": "481c561c31bb346a6598e750b4f7e11e7fbab1083121fa48f717cd97353f0dca"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/lowir/instruction.h",
       "sha256": "2e30941cb73c98a9b6591ebd9bb8b58c9f7ba7cd08ef7f598d3ba3cb2abed689"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/lowir/text_parser_body.cpp",
-      "sha256": "eab6630715d040a1fc6f350830327aca7faf526446e8145d7e7b7735466b8755"
+      "sha256": "e8b2918cc1b211e84ab42f84a8b8c9dec39fcb9123551b016de34616672e0b39"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/lowir/validator.cpp",
-      "sha256": "645701a66bc0749441147ddaefee6a3990f3345c78d2a7c48774c5d16e3c5199"
+      "sha256": "8df35b67578c69dc59e4a62632e690b3578c381bc952198def46c6c619406a7a"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/native/select/emit_memory.cpp",
-      "sha256": "f45083e02d46a7c8d83ce3725183460cfa30d64e4a6806dfa6c5c04feea05f06"
+      "sha256": "61d8b581911ac54c3f025d5295ddff3aea55c94c73e9c781e024dfe1c8b26507"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "dev/src/lower/intrinsic_lowering.cpp",
-      "sha256": "fb39b14598c92e3fb68e592a89e83416a4ab7e6dc7ae74981c638d53c1ff31bf"
+      "sha256": "dd5ce7041a509fd6164e267c1a22562b3a63e5de5041ec88a65d3a8824b5890c"
     },
     {
-      "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "commit": "c37fb6f9de8fa22d3ae66364951928f39bbd5e25",
       "path": "pa8/lowir.md",
-      "sha256": "689fd051b4c1384907725007230f14d9a78e14b03cb0243ea4c49b246c4b51aa"
+      "sha256": "3f154f3487432822da65ffb8583706ea4bda8c7fdfc90574231473e33fd87b9b"
     }
   ],
   "cases": [
@@ -959,6 +959,86 @@
   "attribution": "Original RustGM maintainer inputs; frozen CPPGM vocabulary, see README.md and repository NOTICE. No upstream source copied.",
   "coverage": "Backend encoding, deterministic uncontended native arithmetic and independent pinned-Rust source outcomes. No RustGM frontend binding or concurrency claim.",
   "previous_backend_evidence": [
+    {
+      "backend_commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+      "backend_lock": {
+        "schema": 1,
+        "repository": "https://github.com/vishvananda/cppgm",
+        "release": "v0.10.3",
+        "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+        "target": "x86_64-linux",
+        "sha256": {
+          "lowir": "5003bafeaf9169d139ba6f5ed20397ce3b73d1ac718455cb31da10c21eb3178b",
+          "lowir2native": "5122ce74470562f457d0c406f198938c96de9c52428ffdd88b06b0b41cc416f1"
+        },
+        "optional": {
+          "object": {
+            "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+            "target": "x86_64-linux",
+            "object_format": "elf64-x86-64",
+            "capabilities": [
+              "lowir-to-object",
+              "assembly"
+            ],
+            "sha256": {
+              "cppgm": "75f883d56f5fc8427d87b80458b6e398bf2d3973e26769e6cacda298d2284464"
+            }
+          },
+          "library": {
+            "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+            "target": "x86_64-linux",
+            "abi_version": 5,
+            "sha256": {
+              "ir_symbol_model.h": "dc8f62387f431a2a2372ee59a3d44fdac9851192c1aac0bd855e6f48a3d46d80",
+              "lowir_c_vocabulary.h": "c0f515c865cc72b96258ea2d393ac345ddbc47c01d45611563378acec67e2db4",
+              "lowir_interface.h": "ccc1e067b04daea2215508516f611b9dd6b583358a352bba0b3bbffb80d64e85",
+              "lowir_local_model.h": "a63eac0ea953445bc072f713c1e15a5e7026b7a3780454cc17d03f032c77cd36",
+              "lowir_model.h": "b5d82b2d1391f5842b4492a6ccac7d3d2b17328aed72068a119c24b7b1b41c59",
+              "lowir_records.h": "60f1d822476bd3b9bc38d9441ddb943e3f5bef2e97ab0891a5280154f0dc1910",
+              "libcppgm_lowir.a": "d82f3ec0286564a5a9e96284c6c2e1173fb26f7ece92704d9b90cfcf94856b6b",
+              "libcppgm_lowir.so": "634d2f2b98c8021ceab8bb73e689b22fe9f7606ff02f9b3f641a5b6ac64a3faa"
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/lowir_model.h",
+          "sha256": "b5d82b2d1391f5842b4492a6ccac7d3d2b17328aed72068a119c24b7b1b41c59"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/lowir/instruction.h",
+          "sha256": "2e30941cb73c98a9b6591ebd9bb8b58c9f7ba7cd08ef7f598d3ba3cb2abed689"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/lowir/text_parser_body.cpp",
+          "sha256": "eab6630715d040a1fc6f350830327aca7faf526446e8145d7e7b7735466b8755"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/lowir/validator.cpp",
+          "sha256": "645701a66bc0749441147ddaefee6a3990f3345c78d2a7c48774c5d16e3c5199"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/native/select/emit_memory.cpp",
+          "sha256": "f45083e02d46a7c8d83ce3725183460cfa30d64e4a6806dfa6c5c04feea05f06"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "dev/src/lower/intrinsic_lowering.cpp",
+          "sha256": "fb39b14598c92e3fb68e592a89e83416a4ab7e6dc7ae74981c638d53c1ff31bf"
+        },
+        {
+          "commit": "7bc2ee42070147be1668ff16a16841c6e02b47e3",
+          "path": "pa8/lowir.md",
+          "sha256": "689fd051b4c1384907725007230f14d9a78e14b03cb0243ea4c49b246c4b51aa"
+        }
+      ]
+    },
     {
       "backend_commit": "41e06a23e91609dbf050866ef3a7de4848cf17ed",
       "backend_lock": {
