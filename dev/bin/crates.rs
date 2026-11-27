@@ -541,7 +541,7 @@ impl Options {
         Ok(rustgm::resolve::bindings::Context {
             crate_name: self.name.clone(),
             current: self.identity()?,
-            dependencies: self.dependencies()?,
+            dependencies: self.dependencies(&mode)?,
             mode,
             artifacts,
         })
@@ -581,10 +581,23 @@ impl Options {
             Ok(rustgm::support::bindings::Mode::Bootstrap)
         }
     }
-    pub fn dependencies(&self) -> Result<Option<Arc<Dependencies>>, String> {
+    fn dependencies(
+        &self,
+        mode: &rustgm::support::bindings::Mode,
+    ) -> Result<Option<Arc<Dependencies>>, String> {
         if self.dependency_count() == 0 {
             return Ok(None);
         }
+        // Source graphs can contain the complete pinned standard-library
+        // metadata. Use the shared artifact ceiling for their aggregate input.
+        let (limit, overflow) = if matches!(mode, rustgm::support::bindings::Mode::Bootstrap) {
+            (16_000_000, "crate artifacts exceed 16 MB input budget")
+        } else {
+            (
+                crates::MAX_ARTIFACT_BYTES,
+                "crate artifacts exceed source metadata input budget",
+            )
+        };
         let mut paths = HashMap::default();
         let mut artifacts = Vec::new();
         let mut aliases = Vec::new();
@@ -605,7 +618,7 @@ impl Options {
             let identity = if let Some(identity) = paths.get(&path) {
                 CrateIdentity::clone(identity)
             } else {
-                let remaining = 16_000_000usize.saturating_sub(total);
+                let remaining = limit.saturating_sub(total);
                 let mut bytes = Vec::new();
                 fs::File::open(&path)
                     .map_err(|error| error.to_string())?
@@ -616,7 +629,7 @@ impl Options {
                     .read_to_end(&mut bytes)
                     .map_err(|error| error.to_string())?;
                 if bytes.len() > remaining {
-                    return Err("crate artifacts exceed 16 MB input budget".into());
+                    return Err(overflow.into());
                 }
                 total += bytes.len();
                 if bytes.starts_with(BINARY_METADATA_MAGIC.as_bytes()) {

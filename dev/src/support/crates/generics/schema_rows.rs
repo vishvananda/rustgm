@@ -75,6 +75,7 @@ pub use descriptor::{
 pub(crate) use descriptor::{
     ExportBinding, HeaderModifierColumns, HeaderModifierPolicy, HeaderModifierRecord,
     NamespaceColumns, ProvidedContractRows, UnpublishedNamespace, callable_path, nested_original,
+    nested_required_method,
 };
 pub use inputs::*;
 pub(crate) use scopes::{ConstFormalType, const_formal_type, const_parameter_type, const_value};

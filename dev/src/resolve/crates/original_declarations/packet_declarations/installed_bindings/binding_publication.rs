@@ -68,6 +68,7 @@ pub(super) fn prepare(
             work.charge(1)?;
             if (rows.descriptor().profile().declaration_policies()
                 && (s::nested_original(&rows.declarations, header).is_some()
+                    || s::nested_required_method(&rows.declarations, header)
                     || private_weak_import(rows, header, work)?))
                 || header.parent.is_some_and(|parent| {
                     matches!(
@@ -76,8 +77,8 @@ pub(super) fn prepare(
                     )
                 })
             {
-                // A private callable keeps its actual declaration coordinate.
-                // Its original or exact foreign record supplies linkage.
+                // Local callables keep declaration coordinates. Originals,
+                // foreign records and selected impls supply their linkage.
                 continue;
             }
         }

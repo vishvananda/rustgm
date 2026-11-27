@@ -181,6 +181,11 @@ fn selected_symbol(
     use crate::support::crates::generics::source as s;
     work.charge(4)?;
     let rows = context.descriptor.rows();
+    if context.descriptor.profile().declaration_policies()
+        && s::nested_required_method(&rows.declarations, raw)
+    {
+        return Ok(None);
+    }
     if let Some(parent) = raw.parent
         && let Some(s::HeaderRef::Implementation(index)) = rows.header(parent).map_err(error)?
     {

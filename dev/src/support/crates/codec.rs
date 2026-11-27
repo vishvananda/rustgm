@@ -49,7 +49,7 @@ pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let flags = interface.loader_flags();
     if !flags.is_empty() {
         if bytes.len().saturating_add(2) > MAX_BYTES {
-            return Err("metadata artifact exceeds 16 MB budget");
+            return Err("metadata artifact exceeds its storage budget");
         }
         bytes.splice(HEADER..HEADER, [LOADER_FLAGS, flags.bits()]);
     }
@@ -140,7 +140,7 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
 }
 fn decode_with_retained(bytes: &[u8], retained: usize) -> Result<Interface, &'static str> {
     if bytes.len() > MAX_BYTES || retained > MAX_BYTES {
-        return Err("metadata artifact exceeds 16 MB budget");
+        return Err("metadata artifact exceeds its storage budget");
     }
     let mut input = if retained == 0 {
         Reader::new(bytes)

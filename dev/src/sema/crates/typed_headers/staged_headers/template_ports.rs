@@ -388,11 +388,13 @@ fn symbol(
             .checked_ilog2()
             .unwrap_or(0) as usize,
     )?;
-    if context
-        .descriptor
-        .rows()
-        .exact_callable(declaration)
-        .is_some()
+    let rows = context.descriptor.rows();
+    if rows.exact_callable(declaration).is_some() {
+        return Ok(None);
+    }
+    if context.descriptor.profile().declaration_policies()
+        && let Some(s::HeaderRef::Function(index)) = rows.header(declaration).map_err(error)?
+        && s::nested_required_method(&rows.declarations, &rows.functions[index as usize])
     {
         return Ok(None);
     }

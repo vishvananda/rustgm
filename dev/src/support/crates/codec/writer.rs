@@ -33,7 +33,7 @@ impl Writer {
             .checked_add(bytes.len())
             .is_none_or(|length| length > MAX_BYTES)
         {
-            return Err("metadata artifact exceeds 16 MB budget");
+            return Err("metadata artifact exceeds its storage budget");
         }
         self.bytes.extend_from_slice(bytes);
         Ok(())

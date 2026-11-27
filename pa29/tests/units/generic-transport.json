@@ -231,7 +231,9 @@
     "tests/spec/normalized-field-construction/provider.rs",
     "tests/spec/normalized-field-construction/client.rs",
     "tests/spec/associated-call-results/provider.rs",
-    "tests/spec/associated-call-results/client.rs"
+    "tests/spec/associated-call-results/client.rs",
+    "tests/spec/nested-required-methods/provider.rs",
+    "tests/spec/nested-required-methods/client.rs"
   ],
   "cases": [
     {
@@ -7808,6 +7810,45 @@
         "kind": "execute",
         "outcome": "pass",
         "driver": "tests/spec/associated-call-results/observe.c"
+      }
+    },
+    {
+      "path": "tests/spec/nested-required-methods/client.rs",
+      "exit_status": 0,
+      "input": "file",
+      "work_units": [
+        "generic-transport"
+      ],
+      "features": [
+        "pa29.generic-transport"
+      ],
+      "library": {
+        "crate_name": "client",
+        "disambiguator": "nested_required_methods_consumer"
+      },
+      "crates": [
+        {
+          "name": "base",
+          "path": "tests/spec/nested-required-methods/provider.rs",
+          "crate_name": "base",
+          "disambiguator": "nested_required_methods",
+          "externs": {},
+          "source_profile": "bootstrap-bodies-v15",
+          "cap_lints": "allow"
+        }
+      ],
+      "externs": {
+        "base": "base"
+      },
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass",
+        "driver": "tests/spec/nested-required-methods/observe.c"
       }
     }
   ]

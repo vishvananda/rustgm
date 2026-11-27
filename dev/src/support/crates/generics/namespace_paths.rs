@@ -9,10 +9,8 @@ pub(crate) fn nested_function(
 ) -> Option<&Declaration> {
     let declaration = declarations.get(definition.0 as usize)?;
     let parent = declarations.get(declaration.definition.parent?.0 as usize)?;
-    (declaration.definition.kind == DefinitionKind::Function
-        && (parent.definition.kind == DefinitionKind::Function
-            || parent.definition.kind.initializer_scope()))
-    .then_some(declaration)
+    (declaration.definition.kind == DefinitionKind::Function && body_scope(parent.definition.kind))
+        .then_some(declaration)
 }
 
 /// A private body original is addressed by its body and declaration slots.
@@ -26,6 +24,28 @@ pub(crate) fn nested_original(
     let declaration = nested_function(declarations, header.declaration)?;
     (!declaration.public && header.parent.is_none() && header.scope == header.declaration)
         .then_some(body)
+}
+
+/// A required method of a body-local trait has a declaration coordinate;
+/// dispatch obtains executable code from the selected implementation.
+pub(crate) fn nested_required_method(
+    declarations: &[Declaration],
+    header: &FunctionHeader,
+) -> bool {
+    if !matches!(header.body, FunctionBody::Absent) {
+        return false;
+    }
+    header
+        .parent
+        .and_then(|parent| declarations.get(parent.0 as usize))
+        .filter(|parent| parent.definition.kind == DefinitionKind::Trait)
+        .and_then(|parent| parent.definition.parent)
+        .and_then(|parent| declarations.get(parent.0 as usize))
+        .is_some_and(|parent| body_scope(parent.definition.kind))
+}
+
+fn body_scope(kind: DefinitionKind) -> bool {
+    kind == DefinitionKind::Function || kind.initializer_scope()
 }
 
 pub(crate) struct CallablePath<'a> {

@@ -32,6 +32,8 @@ pub use scalar_value::{Constant, ScalarValue};
 pub use type_graph::{Abi, Lifetime, Signature, TypeGraph, TypeNode, TypeRef};
 
 pub(crate) const MAX_BYTES: usize = 1 << 30;
+/// The encoded artifact byte ceiling, shared by the loader and the codec.
+pub const MAX_ARTIFACT_BYTES: usize = MAX_BYTES;
 pub(crate) const MAX_FUNCTIONS: usize = 1_048_576;
 pub(crate) const MAX_DEPENDENCIES: usize = 1024;
 pub(crate) const MAX_COMPONENTS: usize = 67_108_864;

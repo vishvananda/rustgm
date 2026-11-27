@@ -32,7 +32,7 @@ use crate::support::{
     edition::Edition,
     retained,
 };
-pub(crate) use callable_paths::{callable_path, nested_original};
+pub(crate) use callable_paths::{callable_path, nested_original, nested_required_method};
 pub use columns::{Columns, ValidatedView};
 pub use module_contracts::{
     BindingSource, ImplementationDomain, ModuleBindingRow, ModuleContractRows, ModuleContractView,
