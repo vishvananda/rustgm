@@ -1,0 +1,10 @@
+{
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "observe.c"
+  ],
+  "foundation": "pa31/tests/spec/source-enum-role-transport/provider.rs",
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "stdout": "57\n"
+}

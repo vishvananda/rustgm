@@ -338,6 +338,10 @@ fn trait_headers(
                 check_nominal_role(facts, catalog, declaration, role, steps)?;
                 complete.insert(role);
             }
+            role if super::canonical_header_only(role) => {
+                Trait::current(report, facts, declaration, steps)?.canonical_inputs(facts)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
