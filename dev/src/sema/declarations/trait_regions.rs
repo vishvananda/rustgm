@@ -229,13 +229,12 @@ impl Checker<'_> {
                 constraints.assume_well_formed(queries, ty)?;
             }
         }
-        constraints.assume_outlives_clauses(
-            queries,
-            self.facts
-                .generics
-                .predicates_in_scope(owner)
-                .map(|p| p.value),
+        let inputs = crate::sema::declaration_inputs::all(
+            &self.facts.generics,
+            self.facts.crates.as_deref(),
+            owner,
         )?;
+        constraints.assume_outlives_clauses(queries, inputs.map(|input| input.value))?;
         Ok(constraints)
     }
 

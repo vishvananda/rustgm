@@ -1,0 +1,10 @@
+{
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "inputs": ["provider.rs", "client.rs", "escape.rs", "observe.c"],
+  "stdout": "40\n",
+  "restricted_client": {
+    "path": "escape.rs",
+    "rustc": "cannot return reference to function parameter",
+    "rustgm": "does not outlive"
+  }
+}
