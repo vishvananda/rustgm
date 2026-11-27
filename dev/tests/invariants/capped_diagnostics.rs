@@ -17,7 +17,7 @@ impl Sources for NoFiles {
 }
 fn fixture(name: &str) -> Result<String> {
     Ok(crate::test_source::fixture(&format!(
-        "pa40/tests/spec/lint-cap-allow/{name}.rs"
+        "pa41/tests/spec/lint-cap-allow/{name}.rs"
     ))?)
 }
 fn resolved(source: &str, cap: LintCap, source_mode: bool) -> Result<Report> {
@@ -168,7 +168,7 @@ fn capped_replacement_hints_still_require_the_actual_language_feature() -> Resul
         "macro-allowance",
     ] {
         let source = crate::test_source::fixture(&format!(
-            "pa40/tests/spec/deprecation-suggestion/{name}.rs"
+            "pa41/tests/spec/deprecation-suggestion/{name}.rs"
         ))?;
         let result = match resolved(&source, LintCap::Allow, false) {
             Ok(report) => crate::pipeline::analyze_source(&report)
@@ -349,7 +349,7 @@ fn capped_macro_deprecation_work_is_linear_in_headers_and_calls() -> Result {
 fn capped_macro_calls_keep_expectations_pending_and_strict_events_real() -> Result {
     for name in ["macro-invocation", "macro-reexport"] {
         let source =
-            crate::test_source::fixture(&format!("pa40/tests/spec/lint-expectations/{name}.rs"))?;
+            crate::test_source::fixture(&format!("pa41/tests/spec/lint-expectations/{name}.rs"))?;
         let capped = resolved(&source, LintCap::Allow, false)?;
         assert!(capped.macro_deprecation_warnings()?.is_empty());
         let analysis = crate::pipeline::analyze_source(&capped)?;

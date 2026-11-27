@@ -7,7 +7,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> Result<String> {
     Ok(std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa40/tests/spec/lint-cap-allow")
+            .join("../pa41/tests/spec/lint-cap-allow")
             .join(format!("{name}.rs")),
     )?)
 }
@@ -92,7 +92,7 @@ fn capped_source_headers_and_warning_only_lowir_keep_actual_semantic_inputs() ->
     assert!(!source.stdout.is_empty() && source.stderr.is_empty());
     let warning = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa40/tests/spec/lint-expectations/unreachable-warning.rs"),
+            .join("../pa41/tests/spec/lint-expectations/unreachable-warning.rs"),
     )?;
     let strict = run("--emit-lowir", &warning, &[])?;
     let capped = run("--emit-lowir", &warning, &["--cap-lints=allow"])?;
@@ -103,7 +103,7 @@ fn capped_source_headers_and_warning_only_lowir_keep_actual_semantic_inputs() ->
     for name in ["macro-invocation", "macro-reexport"] {
         let source = std::fs::read_to_string(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../pa40/tests/spec/lint-expectations")
+                .join("../pa41/tests/spec/lint-expectations")
                 .join(format!("{name}.rs")),
         )?;
         let strict = run("--emit-lowir", &source, &[])?;

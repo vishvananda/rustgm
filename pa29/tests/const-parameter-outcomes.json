@@ -142,7 +142,7 @@
  "byte_identity": "existing version-thirteen providers published by the K baseline (M candidate) and the K candidate CLI produce identical packets: spec/transparent-records/provider.rs, spec/panic-attributes/provider.rs and spec/macro-contexts/provider.rs",
  "width": "s::Type, s::Argument, s::ParameterKind and s::ParameterSlot keep their sizes; only the cold box gains the dense consts column, whose length equals the number of const terms read",
  "stream_witness": {
-  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "source": "pa42/tests/spec/asm-native/native.rs before `// Authored observers`",
   "before": "source const parameters are outside the initial source profile",
   "after": "source nominal representation requires its wider complete contract"
  }

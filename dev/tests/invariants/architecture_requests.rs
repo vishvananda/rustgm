@@ -33,7 +33,7 @@ fn report(source: &str, edition: Edition) -> Result<Report> {
 #[test]
 fn request_family_preserves_selected_target_safety_and_original_body_checks() -> Result {
     let inventory =
-        crate::test_source::fixture("pa41/tests/spec/architecture-requests/cases-v1.tsv")?;
+        crate::test_source::fixture("pa42/tests/spec/architecture-requests/cases-v1.tsv")?;
     let mut count = 0;
     let mut mismatches = Vec::new();
     for row in inventory.lines() {
@@ -67,7 +67,7 @@ fn request_family_preserves_selected_target_safety_and_original_body_checks() ->
 #[test]
 fn foreign_requests_retain_no_cpu_permissions_or_ordinary_binding_owner() -> Result {
     let source =
-        crate::test_source::fixture("pa41/tests/spec/architecture-requests/all-foreign.rs")?;
+        crate::test_source::fixture("pa42/tests/spec/architecture-requests/all-foreign.rs")?;
     let ordinary = report(&source, Edition::Rust2024)?;
     assert!(!ordinary.package.uses_source_bindings());
     assert!(ordinary.package.macro_context()?.is_none());

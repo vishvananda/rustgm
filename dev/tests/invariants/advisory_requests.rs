@@ -38,7 +38,7 @@ fn report(source: &str, config: &Config, provider: bool) -> Result<Report> {
 }
 #[test]
 fn advisory_requests_preserve_independent_source_outcomes_and_strict_boundaries() -> Result {
-    let cases = crate::test_source::fixture("pa40/tests/spec/advisory-requests/cases-v2.tsv")?;
+    let cases = crate::test_source::fixture("pa41/tests/spec/advisory-requests/cases-v2.tsv")?;
     let mut count = 0;
     for row in cases.lines() {
         let columns: Vec<_> = row.split('\t').collect();

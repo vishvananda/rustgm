@@ -29,7 +29,7 @@ fn expanded(source: &str, cap: LintCap) -> TestResult<Report> {
     )?)
 }
 fn source() -> std::io::Result<String> {
-    crate::test_source::fixture("pa40/tests/spec/hidden-glob-reexports/warning.rs")
+    crate::test_source::fixture("pa41/tests/spec/hidden-glob-reexports/warning.rs")
 }
 fn root(report: &Report) -> NodeKey {
     NodeKey {

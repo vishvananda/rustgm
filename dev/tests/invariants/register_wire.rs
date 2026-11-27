@@ -7,7 +7,7 @@ use crate::{lower::instances::SourcePublication, support::initial_assembly as pr
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 type Row<T> = std::result::Result<T, &'static str>;
 
-const PROVIDER: &str = "pa41/tests/spec/asm-transport/provider.rs";
+const PROVIDER: &str = "pa42/tests/spec/asm-transport/provider.rs";
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 
 /// The provider's own `store` original: one instruction, one template, one

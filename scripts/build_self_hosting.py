@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze and compile one strict PA45 source graph without metadata artifacts."""
+"""Freeze and compile one strict PA37 source graph without metadata artifacts."""
 import argparse
 import json
 from pathlib import Path, PurePosixPath

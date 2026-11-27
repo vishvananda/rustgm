@@ -315,9 +315,9 @@ continues. One run then sizes the transport work, which decision 4 needs.
 | PA25–PA31 | Publish the two implemented units (`simd-abi`, `provided-profile`). Release the partial units that the demand list reaches as the ladder exercises them. Close each assignment at its published manifest plus deferred list under decision 5. |
 | PA32, PA33, PA36 (core, alloc, std) and PA34, PA35 | Fall out of M1–M4. Their unit exits currently require separately compiled artifacts, so they share decision 4. |
 | PA29 `generic-transport` | Resized by the export census. If kept, replace per-family admission with one generic encoding of the declaration model. |
-| PA37–PA43 (proc-macro host, derives, unwinding, edition and target closure, async) | Independent and unstarted. Schedule after M5 when lanes are free; none blocks self-hosting. |
-| PA44 acceptance | Last. |
-| PA45 | Steps 1–8 above. |
+| PA38–PA44 (proc-macro host, derives, unwinding, edition and target closure, async) | Independent and unstarted. Schedule after M5 when lanes are free; none blocks self-hosting. |
+| PA45 acceptance | Last. |
+| PA37 | Steps 1–8 above. |
 
 ### Risks
 

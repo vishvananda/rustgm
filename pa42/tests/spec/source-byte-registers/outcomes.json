@@ -1,0 +1,96 @@
+{
+  "foundation": "pa42/tests/spec/asm-native/native.rs",
+  "prefix_marker": "#[repr(simd)]",
+  "inputs": [
+    "provider.rs",
+    "client.rs",
+    "observe.c"
+  ],
+  "stdout": "bittest 32/64 passed\n",
+  "required_lowir": [
+    "operand u8",
+    "use 1 0 32 0",
+    "setc",
+    "btl",
+    "btq",
+    "btsl",
+    "btsq",
+    "btrl",
+    "btrq",
+    "btcl",
+    "btcq"
+  ],
+  "older_profile": "inline assembly pure option is outside the initial assembly profile",
+  "originals": [
+    {
+      "path": "pa42/tests/upstream/rust/x86_bt.rs",
+      "start": 399,
+      "end": 523,
+      "sha256": "a274ec67449760e90766725e1e9e59da8c816af8e103472e04beb1c3df85fc80",
+      "marker": "// ORIGINAL_bt_macro_x86 END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_bt.rs",
+      "start": 702,
+      "end": 1067,
+      "sha256": "ff37d69413fac40e82ca420a68e71840823ddbfd622ccf792ff518a61a3ae90d",
+      "marker": "// ORIGINAL__bittest END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_bt.rs",
+      "start": 1278,
+      "end": 1633,
+      "sha256": "7981d4313a2134f4d547704e44a83e4aaf8113ce7027c3f536a59eda3d6bc622",
+      "marker": "// ORIGINAL__bittestandset END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_bt.rs",
+      "start": 1849,
+      "end": 2206,
+      "sha256": "f64f685c52e0e871ad4ab7455dbcdd853bec437d91072ff2765bda51a9976653",
+      "marker": "// ORIGINAL__bittestandreset END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_bt.rs",
+      "start": 2421,
+      "end": 2783,
+      "sha256": "485dad2e6411ed794110ee834d3f95f9a79d2d51d026e018728276aa11d94452",
+      "marker": "// ORIGINAL__bittestandcomplement END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_64_bt.rs",
+      "start": 397,
+      "end": 519,
+      "sha256": "4c9c69e3b27eeda1adfe2b5bc410eb06c05c813d3fb18d61979067cc1747a25a",
+      "marker": "// ORIGINAL_bt_macro_x86_64 END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_64_bt.rs",
+      "start": 700,
+      "end": 1067,
+      "sha256": "0e2451e51e6903355be9bb4d4d7ea41045d43981f05a57588029bfa987741a8d",
+      "marker": "// ORIGINAL__bittest64 END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_64_bt.rs",
+      "start": 1280,
+      "end": 1637,
+      "sha256": "132e604f524a6e62b164f3223dfd541348830cfa453e3190188c1bc94fd815e6",
+      "marker": "// ORIGINAL__bittestandset64 END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_64_bt.rs",
+      "start": 1855,
+      "end": 2214,
+      "sha256": "f38749dad1d311d42ee374e13152051748350c4f82387f0752502fd6f6b027e0",
+      "marker": "// ORIGINAL__bittestandreset64 END"
+    },
+    {
+      "path": "pa42/tests/upstream/rust/x86_64_bt.rs",
+      "start": 2431,
+      "end": 2795,
+      "sha256": "f4e86787134c0369799224a527d707b26fec30723057b46d4560aaddc4aba91b",
+      "marker": "// ORIGINAL__bittestandcomplement64 END"
+    }
+  ]
+}

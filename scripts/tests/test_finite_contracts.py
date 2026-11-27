@@ -17,14 +17,14 @@ import finite_contracts
 
 
 class Tree:
-    """PA25 closed at one released unit; PA31 planned with nothing released; PA44 carrying the rest."""
+    """PA25 closed at one released unit; PA31 planned with nothing released; PA45 carrying the rest."""
 
     def __init__(self, directory):
         self.root = Path(directory)
         for folder in ("docs", "dev", "pa25/tests/machine", "pa25/tests/units", "pa25/tests/later",
-                       "pa31/tests", "pa44/tests"):
+                       "pa31/tests", "pa45/tests"):
             (self.root / folder).mkdir(parents=True)
-        for stage in ("pa25", "pa31", "pa44"):
+        for stage in ("pa25", "pa31", "pa45"):
             for name in ("README.md", "Makefile", "tests/README.md"):
                 (self.root / stage / name).write_text("fixture")
         for name in ("docs/proof.md", "docs/release.md"):
@@ -34,11 +34,11 @@ class Tree:
         self.stages = [
             {"path": "pa25", "number": 25, "status": "implemented", "mode": "--emit-types",
              "release_evidence": ["docs/release.md"],
-             "contract": {"kind": "finite", "carried_by": "pa44",
+             "contract": {"kind": "finite", "carried_by": "pa45",
                           "deferred_units": ["const-memory", "source-runtime"],
                           "deferred_requirements": ["25.2", "25.3"]}},
             {"path": "pa31", "number": 31, "status": "planned", "mode": "--emit-types"},
-            {"path": "pa44", "number": 44, "status": "planned", "mode": "--emit-types",
+            {"path": "pa45", "number": 45, "status": "planned", "mode": "--emit-types",
              "carries": {"pa25": {"units": ["const-memory", "source-runtime"], "requirements": ["25.2", "25.3"]}}}]
         common = {"scope": "finite profile", "exit": "real evidence", "depends_on": [], "requirements": []}
         partial = {**common, "implementation": "partial", "publication": "unpublished"}
@@ -49,7 +49,7 @@ class Tree:
              "manifest": "pa25/tests/units/const-machine.json"},
             {**partial, "id": "const-memory", "owner": "pa25", "requirements": ["25.2"]},
             {**partial, "id": "source-runtime", "owner": "pa31", "requirements": ["25.3"]},
-            {**partial, "id": "frontend-acceptance", "owner": "pa44", "implementation": "missing",
+            {**partial, "id": "frontend-acceptance", "owner": "pa45", "implementation": "missing",
              "depends_on": ["const-machine", "const-memory", "source-runtime"]}]
         row = {"pa": 25, "source": [], "tests": [], "evidence": []}
         self.rows = [
@@ -103,7 +103,7 @@ class Closure(unittest.TestCase):
 
         def close_unreleased(tree):
             tree.stages[1].update(status="implemented", release_evidence=["docs/release.md"], contract={
-                "kind": "finite", "carried_by": "pa44", "deferred_units": ["source-runtime"],
+                "kind": "finite", "carried_by": "pa45", "deferred_units": ["source-runtime"],
                 "deferred_requirements": []})
             tree.stages[2]["carries"]["pa31"] = {"units": ["source-runtime"], "requirements": []}
         self.rejects("finite contract has no released unit: pa31", close_unreleased)
@@ -134,14 +134,14 @@ class Closure(unittest.TestCase):
     def test_every_deferred_unit_and_row_is_carried(self):
         def uncarry(key, value):
             return lambda tree: tree.stages[2]["carries"]["pa25"][key].remove(value)
-        self.rejects(r"deferred work is not carried: pa25 -> pa44: \['const-memory'\]",
+        self.rejects(r"deferred work is not carried: pa25 -> pa45: \['const-memory'\]",
                      uncarry("units", "const-memory"))
-        self.rejects(r"deferred work is not carried: pa25 -> pa44: \['25.3'\]", uncarry("requirements", "25.3"))
-        self.rejects(r"deferred work is not carried: pa25 -> pa44: \['const-memory', 'source-runtime', '25.2', '25.3'\]",
+        self.rejects(r"deferred work is not carried: pa25 -> pa45: \['25.3'\]", uncarry("requirements", "25.3"))
+        self.rejects(r"deferred work is not carried: pa25 -> pa45: \['const-memory', 'source-runtime', '25.2', '25.3'\]",
                      lambda tree: tree.stages[2].pop("carries"))
-        self.rejects(r"carrier holds work the finite contract does not defer: pa25 -> pa44: \['25.1'\]",
+        self.rejects(r"carrier holds work the finite contract does not defer: pa25 -> pa45: \['25.1'\]",
                      lambda tree: tree.stages[2]["carries"]["pa25"]["requirements"].append("25.1"))
-        self.rejects(r"carrier does not depend on deferred units: pa44: \['source-runtime'\]",
+        self.rejects(r"carrier does not depend on deferred units: pa45: \['source-runtime'\]",
                      lambda tree: tree.units[3]["depends_on"].remove("source-runtime"))
 
     def test_the_carrier_owes_its_whole_handout_and_only_deferred_work(self):
@@ -159,8 +159,8 @@ class Closure(unittest.TestCase):
         def carrier_first(tree):
             defer_again(tree)
             tree.stages.reverse()
-        self.rejects("a carrier cannot defer its own work: pa44", carrier_first)
-        self.rejects("carrier holds work no finite contract deferred to it: pa44: pa31",
+        self.rejects("a carrier cannot defer its own work: pa45", carrier_first)
+        self.rejects("carrier holds work no finite contract deferred to it: pa45: pa31",
                      lambda tree: tree.stages[2]["carries"].update(pa31={"units": [], "requirements": []}))
         self.rejects("carrier holds work no finite contract deferred to it: pa31: pa25",
                      lambda tree: tree.stages[1].update(carries=tree.stages[2]["carries"]))
@@ -169,7 +169,7 @@ class Closure(unittest.TestCase):
         def complete_carrier(tree):
             tree.stages[2].update(status="implemented", release_evidence=["docs/release.md"])
             tree.units[3].update(implementation="implemented", implementation_evidence=["docs/proof.md"])
-        self.rejects("whole PA completion has unpublished work: pa44", complete_carrier)
+        self.rejects("whole PA completion has unpublished work: pa45", complete_carrier)
 
     def test_only_a_closed_assignment_declares_a_finite_contract(self):
         self.rejects("finite contract on an assignment that is not closed: pa25",
@@ -188,7 +188,7 @@ class Manifest(unittest.TestCase):
             stages, loaded = assignment_metadata.collect(tree.root)
             self.assertEqual([(stage["path"], len(found)) for stage, _, found in loaded], [("pa25", 2)])
             # The planned assignments still fail explicitly.
-            for planned in ("pa31", "pa44"):
+            for planned in ("pa31", "pa45"):
                 with self.assertRaisesRegex(ValueError, "planned assignment"):
                     course.load_cases(tree.root, planned)
 

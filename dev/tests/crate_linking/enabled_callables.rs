@@ -6,13 +6,13 @@
 //! unsafe inherent method carries its row as a free function does.
 use super::fresh_packets::{Packet, Result, inner, unique};
 use rustgm::support::crates;
-const SPEC: &str = "pa41/tests/spec/target-feature-transport";
+const SPEC: &str = "pa42/tests/spec/target-feature-transport";
 const NOMINALS: &str = "pa29/tests/spec/source-nominals";
-const NATIVE: &str = "pa41/tests/spec/asm-native";
+const NATIVE: &str = "pa42/tests/spec/asm-native";
 const GROUP: &str = "target-feature-transport";
 const PROFILE: &str = "module-bodies-v13";
 const OLDER: [&str; 2] = ["module-branches-v12", "module-nominals-v10"];
-/// Frozen outcomes from `pa41/tests/target-feature-transport-outcomes.json`.
+/// Frozen outcomes from `pa42/tests/target-feature-transport-outcomes.json`.
 const WIDER: &str =
     "source named/foreign/target-feature function metadata requires its wider profile";
 const FORM: &str = "source target-feature function form requires its wider profile";

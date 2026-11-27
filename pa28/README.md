@@ -4,7 +4,7 @@ Extend the typed places and safety checks from [PA27](../pa27/README.md)
 with memory intrinsics, volatile access, and `AtomicU32`. Use Rust 1.98.0,
 edition 2024, on Linux x86-64 with checked arithmetic and aborting panics.
 The [PA28 manifest](tests/manifest.json) defines the memory and atomic
-kernels. PA44 carries the broader intrinsic families and symbolic transport
+kernels. PA45 carries the broader intrinsic families and symbolic transport
 requirements.
 
 ## Memory operations

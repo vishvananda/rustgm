@@ -2,7 +2,7 @@
 
 Build on [PA21](../pa21/README.md) to support dynamically sized storage
 tails and their pointer metadata. Use Rust 1.98.0, edition 2024, on
-Linux x86-64. PA34 adds edition 2021 and PA40 covers the remaining editions.
+Linux x86-64. PA34 adds edition 2021 and PA41 covers the remaining editions.
 
 ## Required implementation
 

@@ -169,7 +169,7 @@
     "predictions-v1.json"
   ],
   "required_unqualified": [
-    "Original register_tool statements and request-bearing Source inputs: PA40; no candidate pass claim",
+    "Original register_tool statements and request-bearing Source inputs: PA41; no candidate pass claim",
     "Broader marked const-trait/comptime profiles, imported executable permission, TypeId/vtable and displaced function/byte literal symbolic profiles, complete module/wire closure remain required"
   ],
   "sources": {

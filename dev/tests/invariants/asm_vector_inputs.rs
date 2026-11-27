@@ -18,7 +18,7 @@ pub(super) fn foundation() -> Result<String> {
     Ok(text)
 }
 fn vector_source(name: &str) -> Result<String> {
-    fixture_source(&format!("pa41/tests/spec/asm-vectors/{name}.rs"))
+    fixture_source(&format!("pa42/tests/spec/asm-vectors/{name}.rs"))
 }
 /// A std-form fixture on the `no_core` foundation: its crate attributes and
 /// `asm` import are dropped and a derived `V` Clone/Copy becomes explicit.
@@ -74,9 +74,9 @@ fn numeric_widths_and_nonvectors_keep_register_type_rules() -> Result {
     prove(&vector_source("explicit")?)?;
     // rustc accepts a ymm operand under the body's own `avx`. It types here
     // and stops at the initial assembly profile when its body is lowered.
-    let ymm = crate::support::initial_assembly::YMM;
+    let comment = crate::support::initial_assembly::COMMENT;
     match super::ymm::check(&vector_source("ymm-body-feature")?, "f")? {
-        (Ok(()), Err(error)) if error.to_string().contains(ymm) => Ok(()),
+        (Ok(()), Err(error)) if error.to_string().contains(comment) => Ok(()),
         outcome => Err(format!("ymm-body-feature: {outcome:?}").into()),
     }
 }
@@ -102,7 +102,7 @@ fn vector_outputs_and_inputs_retain_place_copy_and_initialization_obligations() 
 }
 #[test]
 fn real_stream_body_keeps_simd_types_proofs_and_lowers_its_declared_template() -> Result {
-    let reducer = crate::test_source::fixture("pa41/tests/spec/asm-frontend/stream-ps.rs")?;
+    let reducer = crate::test_source::fixture("pa42/tests/spec/asm-frontend/stream-ps.rs")?;
     let original = reducer
         .split("#[inline]")
         .nth(1)
@@ -179,7 +179,7 @@ fn real_stream_body_keeps_simd_types_proofs_and_lowers_its_declared_template() -
     let mut bytes = Vec::new();
     crate::lowir::writer::write(&program, &mut bytes)?;
     let lowir = String::from_utf8(bytes)?;
-    let declared = crate::test_source::fixture("pa41/tests/spec/asm-native/stream-template.lowir")?;
+    let declared = crate::test_source::fixture("pa42/tests/spec/asm-native/stream-template.lowir")?;
     assert!(lowir.starts_with(&declared), "{lowir}");
     assert_eq!(lowir.matches("assembly @").count(), 1);
     assert_eq!(lowir.matches("    asm @asm0(").count(), 1);

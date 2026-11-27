@@ -1,55 +1,47 @@
-# RustGM Programming Assignment 41 — Target features and assembly
+# RustGM Programming Assignment 41 — Editions and attributes
 
 The graded suite for this assignment is pending.
 
-Implement the typed target-feature, vector layout, and assembly rules
-for the course's Linux x86-64 target. Use the pinned CPPGM backend and
-its verified capabilities. Complete the core prerequisite below before
-[PA32](../pa32/README.md). The broader work can follow the bootstrap.
+Complete Rust 2015, 2018, 2021, and 2024 behavior beyond the subset used
+by [PA34](../pa34/README.md)'s selected crate graph. Extend the typed
+attribute checks and diagnostic policies from [PA31](../pa31/README.md).
+Features already required by an earlier library build belong to that
+build's prerequisites.
 
-## Required core prerequisite
+## Edition behavior
 
-Use [PA31](../pa31/README.md)'s source binding and feature rules to
-identify the assembly builtin. Reuse [PA27](../pa27/README.md)'s unsafe
-place checks and [PA28](../pa28/README.md)'s typed memory and intrinsic
-effects. The original `_mm_stream_ps` exercises the first end-to-end path.
-Preserve its generated template, pointer register, real 128-bit vector
-operand, `nostack`, and `preserves_flags` options.
+Retain the edition of the source and each relevant macro token.
+Apply edition-dependent rules to parsing, paths and preludes, fragment
+matching, captures, and temporary destruction scopes. Check mixed-edition
+macro and crate boundaries using the edition at the deciding location.
 
-1. Retain the parsed template, operands, modifiers, and source spans
-   through expansion. Check register and operand types, option
-   combinations, initialized inputs, writable outputs, unsafe permission,
-   and actual target features.
-2. Preserve left-to-right operand evaluation and left-to-right output
-   writes after the assembly effect. Retain memory, flags, clobbers, and
-   divergence in the typed CFG. Const and symbol operands keep their
-   constant and relocation identities.
-3. Implement the required SIMD storage, ABI, and lane checks for the
-   actual substituted type. Keep the vector operand in its selected
-   register class and enforce call compatibility.
-4. Emit the required non-temporal store through the backend. Link the
-   original function and check every input bit, the target storage,
-   surrounding sentinels, and the emitted instruction. A source body
-   exported to a consumer retains the checked operand and target facts.
+## Attributes and diagnostics
 
-## Broader target closure
+Validate the placement, form, owner, and required permissions of retained
+attributes. Separate documentation and advisory metadata from attributes
+that change semantic eligibility. For example, a primitive documentation
+label describes an item and leaves the type namespace and body checks
+unchanged.
 
-Complete the target configurations, operand and modifier forms, explicit
-register aliases, ABI clobbers, labels, symbols, global and naked assembly,
-and unwind restrictions required by the selected profile. Check active
-features and target-specific declarations against real target facts.
-Architecture-specific feature requests and backend capability queries
-do not change the configured target.
+Extend [PA31's source library diagnostics](../pa31/README.md#source-declarations)
+to the remaining attribute and edition cases. Carry scoped lint levels and
+expectations through expansion, imports, and checked bodies. Associate
+deprecation and visibility events with their actual source or import.
+Report unmet expectations after their scope has completed.
+A lint cap can suppress optional diagnostics.
+Hard errors and semantic checks still apply.
 
 ## Tool surface
 
-Compile through the typed LowIR pipeline and link against the pinned
-backend. Report an unavailable backend operation separately from an invalid
-Rust assembly invocation.
+Use the compiler's edition option and the crate graph's per-crate
+configuration. Use the existing typed inspection and LowIR modes to
+compare edition-dependent results. The pinned Rust Reference describes
+[attributes](../doc/rust-reference/src/attributes.md).
 
 ## Check your implementation
 
-Exercise side effects, aliased outputs, uninitialized inputs, divergence,
-feature restrictions, constants, symbols, and ordinary code without
-assembly. Observe executable results and instruction selection. Use an
-independently compiled caller when checking the C ABI.
+Use paired programs that differ only in edition or attribute placement.
+Cover capture, drop scope, macro fragments, inherited lint levels,
+and expected diagnostics. Check cases with disabled syntax, imported
+bindings, and actual macro allowances. Run executable examples when the
+edition changes evaluation or destruction behavior.

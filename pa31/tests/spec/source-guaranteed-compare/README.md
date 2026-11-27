@@ -55,7 +55,7 @@ The candidate's authored Source feature profile is separately frozen in
 `predictions-source-profile-v1.json`: 35 sources / 70 matching metadata and
 object observations plus both native observers. It omits both unused authored
 registration declaration and feature request. All earlier original requests and
-failure receipts remain unchanged PA40 requirements. The original intrinsic
+failure receipts remain unchanged PA41 requirements. The original intrinsic
 function is still complete and byte-identical. The owning public Rust tests use
 this declared support profile; they do not count the request-bearing cases as
 candidate successes. `predictions-storage-v1.json` separately freezes one-past

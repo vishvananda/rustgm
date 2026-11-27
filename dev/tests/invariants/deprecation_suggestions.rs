@@ -4,7 +4,7 @@ use crate::{pipeline, support::diagnostics::WarningCode};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
-        "pa40/tests/spec/deprecation-suggestion/{name}.rs"
+        "pa41/tests/spec/deprecation-suggestion/{name}.rs"
     ))?)
 }
 

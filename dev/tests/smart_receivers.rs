@@ -24,7 +24,7 @@ fn program(source: &str) -> TestResult<rustgm::lowir::program::Program> {
 fn genuine_receiver_chains_preserve_complete_self_arguments_and_source_traits() -> TestResult {
     let mut count = 0;
     let mut failures = Vec::new();
-    for line in test_source::fixture("pa43/tests/spec/pin-receivers/cases.tsv")?.lines() {
+    for line in test_source::fixture("pa44/tests/spec/pin-receivers/cases.tsv")?.lines() {
         let (path, status) = line.split_once('\t').ok_or("case columns")?;
         let result = program(&test_source::fixture(path)?);
         let failure = match (status, result) {
@@ -51,7 +51,7 @@ fn genuine_receiver_chains_preserve_complete_self_arguments_and_source_traits() 
 
 #[test]
 fn proven_source_pin_receivers_execute_the_actual_methods() -> TestResult {
-    let source = test_source::fixture("pa43/tests/spec/pin-receivers/native-receiver.rs")?;
+    let source = test_source::fixture("pa44/tests/spec/pin-receivers/native-receiver.rs")?;
     let program = program(&source)?;
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/parallel/deref-source-v1/receiver-native");

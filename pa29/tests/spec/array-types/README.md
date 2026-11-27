@@ -14,7 +14,7 @@ packets, and the repository NOTICE applies to them. The array-type section
 after them is authored:
 
 - `impl<T: Copy, const N: usize> Clone for [T; N]` and `Copy for [T; N]`,
-  as `../../../../pa41/tests/spec/asm-native/native.rs` declares them;
+  as `../../../../pa42/tests/spec/asm-native/native.rs` declares them;
 - `keep`, `empty`, `copied` and `store` over `[u8; 4]` and `[u8; 0]`: whole
   values in signatures, a copy out of `*a` and a store to `*p`;
 - the generic `pass<T, const N: usize>`;

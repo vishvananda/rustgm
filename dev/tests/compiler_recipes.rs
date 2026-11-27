@@ -15,7 +15,7 @@ use std::{path::Path, sync::Arc};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> Result<String> {
     Ok(source::fixture(&format!(
-        "pa43/tests/spec/deferred-compiler-op/{name}.rs"
+        "pa44/tests/spec/deferred-compiler-op/{name}.rs"
     ))?)
 }
 fn exported(name: &str) -> Result<crates::Interface> {
@@ -394,7 +394,7 @@ fn cli_provider(folder: &Path, name: &str) -> Result<std::process::Output> {
         .arg(folder.join(format!("{name}.rgm")))
         .arg("-o")
         .arg(folder.join(format!("{name}.lowir")))
-        .arg(root.join(format!("pa43/tests/spec/deferred-compiler-op/{name}.rs")))
+        .arg(root.join(format!("pa44/tests/spec/deferred-compiler-op/{name}.rs")))
         .output()?)
 }
 

@@ -27,7 +27,7 @@ is `23` followed by LF and exit zero. A recognized header, an associated-type
 normalization or a successful metadata emission alone does not qualify execution.
 The manual, generic, ordinary and loan observers likewise require their unchanged
 source bodies. Async closure lending, generated async state/poll/drop, suspension,
-capture cleanup and authenticated metadata remain required by PA42/43/29.
+capture cleanup and authenticated metadata remain required by PA44/44/29.
 
 These are maintainer specification fixtures for planned assignments. They do not
 activate an empty assignment or replace the cumulative course text oracles.

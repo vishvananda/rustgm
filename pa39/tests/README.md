@@ -2,7 +2,7 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-Required families: cleanup after panic; double panic; C-unwind; abort boundaries.
+Required families: derive output; attribute order; punctuation jointness; delimiter-none groups; serde_derive integration.
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).

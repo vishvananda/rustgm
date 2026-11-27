@@ -43,11 +43,11 @@ fn ordinary_literal_named_and_block_array_fields_preserve_real_clone_execution()
 #[test]
 fn actual_simd_header_clone_copy_keeps_feature_and_scalar_semantics() -> TestResult {
     produce(
-        "pa41/tests/spec/stdarch-array-derives/source-native.rs",
+        "pa42/tests/spec/stdarch-array-derives/source-native.rs",
         "simd_array_derivation",
         "derive-array-fields-v1/candidate/simd",
     )?;
-    let source = test_source::fixture("pa41/tests/spec/stdarch-array-derives/missing-feature.rs")?;
+    let source = test_source::fixture("pa42/tests/spec/stdarch-array-derives/missing-feature.rs")?;
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     let result = test_source::source_provider_config(&source, "simd_array_negative", &config)

@@ -3,7 +3,7 @@
 //! chain and matches it against the outer receiver, as core's `poll` needs.
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-const PACKET: &str = "pa43/tests/spec/pinned-method-calls";
+const PACKET: &str = "pa44/tests/spec/pinned-method-calls";
 const REJECTED: [(&str, &str); 3] = [
     ("missing.rs", "no inherent method with this name"),
     (

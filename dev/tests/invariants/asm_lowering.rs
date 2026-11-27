@@ -5,7 +5,7 @@ use super::vectors::{fixture_source, foundation};
 use crate::{lower::instances::SourcePublication, pipeline, resolve::model::DefId};
 use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-const SPEC: &str = "pa41/tests/spec/asm-native";
+const SPEC: &str = "pa42/tests/spec/asm-native";
 /// The provider function whose `LowIR` the control demands.
 pub(super) fn root(
     report: &crate::resolve::expansion::Report,

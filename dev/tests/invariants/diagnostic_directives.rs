@@ -29,7 +29,7 @@ fn report(source: &str, config: &Config) -> Result<Report> {
 }
 #[test]
 fn capped_directives_match_independent_edition_outcomes() -> Result {
-    let cases = crate::test_source::fixture("pa40/tests/spec/diagnostic-directives/cases-v4.tsv")?;
+    let cases = crate::test_source::fixture("pa41/tests/spec/diagnostic-directives/cases-v4.tsv")?;
     let mut count = 0;
     for row in cases.lines() {
         let columns: Vec<_> = row.split('\t').collect();
@@ -62,7 +62,7 @@ fn capped_directives_match_independent_edition_outcomes() -> Result {
 fn uncapped_directives_validate_and_capped_tables_stay_cold() -> Result {
     for name in ["const-valid", "macro-valid"] {
         let source = crate::test_source::fixture(&format!(
-            "pa40/tests/spec/diagnostic-directives/{name}.rs"
+            "pa41/tests/spec/diagnostic-directives/{name}.rs"
         ))?;
         let strict = report(&source, &Config::default())?;
         let facts = crate::sema::declarations::analyze(&strict)?;
@@ -109,7 +109,7 @@ fn attribute_lexical_validity_is_separate_from_suffix_policy() -> Result {
 fn inactive_diagnostic_directives_preserve_strict_compilation() -> Result {
     for name in ["const-missing-feature", "macro-missing-feature"] {
         let source = crate::test_source::fixture(&format!(
-            "pa40/tests/spec/diagnostic-directives/{name}.rs"
+            "pa41/tests/spec/diagnostic-directives/{name}.rs"
         ))?;
         let report = report(&source, &Config::default())?;
         let facts = crate::sema::declarations::analyze(&report)?;

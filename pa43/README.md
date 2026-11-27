@@ -1,44 +1,41 @@
-# RustGM Programming Assignment 43 — Async ownership
+# RustGM Programming Assignment 43 — Async lowering
 
 The graded suite for this assignment is pending.
 
-Extend [PA42](../pa42/README.md)'s suspension state machines with borrowed
-storage, pinning, cancellation, and async destruction. Reuse the ownership
-and loan checks from PA14–PA17 and the applicable pointer validity rules
-from PA27.
+Use [PA31](../pa31/README.md)'s actual source callable and coroutine
+declarations to lower async functions, async blocks, and generated
+coroutines. Use the ordinary typed body, ownership, and trait machinery
+from earlier assignments.
 
-## Ownership across suspension
+## Required implementation
 
-Prove the lifetime and place of each retained borrow. Preserve captured
-storage at the required address when the future is pinned. Check reborrows,
-receiver selection, `Unpin` requirements, and projection legality. Keep
-storage and cleanup obligations valid at each suspension, resumption, and
-exit. Include self-referential state, async closures, and async trait
-methods.
+Build a state machine with a stable identity for each generated body.
+Determine which values must survive a suspension. Preserve required
+locals and their initialization state across suspension and resumption.
+Use the selected future and poll contracts for readiness, pending state,
+and completion.
 
-## Cancellation and destruction
+Compiler-generated coroutines preserve their resume input, yielded item,
+and returned value, with the actual `Coroutine` associated items and
+`CoroutineState` variants. Preserve the authored body of a `gen` block.
+Its `Iterator` and `FusedIterator` behavior must follow the selected
+implementation and exhaustion state. Ordinary manual implementations
+retain their own typed bodies and call semantics.
 
-Use the actual source `AsyncDrop` declarations and checked Pin receiver.
-Implement the compiler-generated operation for `async_drop_in_place`.
-Retain its suspension and cleanup behavior, including recursive cleanup
-of owned fields. Source placeholders and declaration metadata alone
-supply no generated state machine.
-
-Destroy only the initialized values owned by the suspended or completed
-state. Preserve source cleanup order and the exclusion between Copy and
-destruction. Use [PA29](../pa29/README.md)'s typed artifact boundary for
-imported operations and the source and body transport needed to execute
-them.
+Keep generated state, source declarations, and manual implementations
+distinct. Transfer checked generated bodies through validated metadata
+when a consumer is in another crate. [PA44](../pa44/README.md) adds loans
+across suspension, pinning, cancellation, and destruction.
 
 ## Tool surface
 
-Use the existing LowIR and crate-build interfaces. Lower the checked
-state machines, poll calls, and cleanup paths for the pinned backend.
+Use the existing LowIR and crate-build interfaces. Retain the source body,
+state transitions, and checked operations through lowering. Run the
+generated state machine with the pinned backend.
 
 ## Check your implementation
 
-Cancel at each suspension state and observe the actual cleanup order.
-Test completion, self-reference validity, moved captures, and recursive
-async destruction. Include a separate consumer of an imported async
-operation. Run native controls to check the selected constructor,
-polling, and cleanup behavior.
+Exercise pending and ready polls, stored locals, repeated suspension,
+and resumption after a yield. Test manual resume effects separately
+from generated transitions. Observe exact yielded and returned values,
+and check exhaustion on later iterator calls.

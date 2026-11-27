@@ -200,7 +200,7 @@ class CourseUnits(unittest.TestCase):
 
     def test_unit_feature_ownership_and_explicit_dependency_control_admission(self):
         for changes in ({"work_units": []}, {"work_units": ["raw-validity"]},
-                        {"features": ["pa42.async"]}, {"work_units": ["unsafe-places", "unknown"]}):
+                        {"features": ["pa43.async"]}, {"work_units": ["unsafe-places", "unknown"]}):
             with self.subTest(changes=changes), tempfile.TemporaryDirectory() as name:
                 root, manifest = self.fixture(name)
                 manifest["cases"][0].update(changes)

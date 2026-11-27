@@ -1409,7 +1409,7 @@ shift/product controls. Hash replay binds3963 sources and the predeclared packet
 remain required independently of the successful in-memory native programs.
 
 
-The [mixed PA43 metadata packet](docs/parallel/body-operations-v14.md) combines
+The [mixed PA44 metadata packet](docs/parallel/body-operations-v14.md) combines
 predeclared original helper and ordinary body-node inputs. Six exact focused tests
 and two actual native Rust/C programs pass, with current source/fixture hash
 replay,315 harness and upstream checks. Static escape is rejected by actual

@@ -5,7 +5,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn caps_preserve_retained_attribute_debt_and_compact_records() -> Result {
     use crate::{expand::config::Config, support::diagnostics::LintCap};
     let source =
-        crate::test_source::fixture("pa40/tests/spec/lint-cap-allow/source-unknown-expect.rs")?;
+        crate::test_source::fixture("pa41/tests/spec/lint-cap-allow/source-unknown-expect.rs")?;
     let mut config = Config::default();
     config.set_lint_cap(LintCap::Allow);
     let mut report = crate::test_source::source_provider_config(&source, "cap_storage", &config)?;

@@ -4,7 +4,7 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn report() -> TestResult<crate::resolve::expansion::Report> {
     Ok(crate::test_source::resolve(
         &crate::test_source::fixture(
-            "pa40/tests/spec/ineffective-unstable-impl/bound-matching.rs",
+            "pa41/tests/spec/ineffective-unstable-impl/bound-matching.rs",
         )?,
         true,
     )?)
@@ -145,7 +145,7 @@ fn annotation_storage_and_work_follow_actual_impl_width() -> TestResult {
         assert!(facts.warnings().next().is_none());
         // A safety row is one lint policy, pinned above, and its completion.
         // Rows exist only where lint attributes change policy.
-        assert_eq!(facts.retained_policy_rows().2, 196);
+        assert_eq!(facts.retained_policy_rows().2, 276);
         assert!(producer.work().steps < 30_000 * (width + 1));
         assert!(producer.work().bytes < 30_000 * (width + 1));
         observations.push((producer.work().steps, producer.work().bytes));
@@ -272,7 +272,7 @@ fn feature_name_validation_prepays_attempted_bytes_before_retention() -> TestRes
 #[test]
 fn combined_bounds_authenticate_each_effect_and_its_name_partition() -> TestResult {
     let source =
-        crate::test_source::fixture("pa40/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
+        crate::test_source::fixture("pa41/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
     let mut report = crate::test_source::resolve(&source, true)?;
     let mut producer = report
         .attribute_effects
@@ -372,7 +372,7 @@ fn combined_bounds_authenticate_each_effect_and_its_name_partition() -> TestResu
 #[test]
 fn effect_record_growth_is_paid_before_names_or_effects_are_retained() -> TestResult {
     let source =
-        crate::test_source::fixture("pa40/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
+        crate::test_source::fixture("pa41/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
     let report = crate::test_source::resolve(&source, true)?;
     let producer = report.lint_producer().ok_or("actual producer")?;
     let (&key, row) = producer

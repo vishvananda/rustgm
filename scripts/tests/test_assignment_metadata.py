@@ -132,7 +132,7 @@ class AssignmentMetadata(unittest.TestCase):
             (root / "assignment-plan.json").write_text(json.dumps({"schema": 1, "units": units}))
             (root / "docs/assignment-requirements.json").write_text('{"rows": []}')
             self.assertEqual(len(collect(root)[1]), 1)
-            case["features"] = ["pa42.async"]
+            case["features"] = ["pa43.async"]
             (root / "pa1/tests/manifest.json").write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, "future-stage feature"):
                 collect(root)

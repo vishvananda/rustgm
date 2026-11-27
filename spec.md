@@ -91,11 +91,11 @@ body to bypass an unavailable predecessor.
 
 Target Rust 1.98.0, first edition 2024, on Linux x86-64. Freeze language release,
 Unicode tables, edition, target, panic mode and overflow-check mode in each
-relevant test manifest. PA34 adds the Rust 2021 crate profile; PA40 closes the
+relevant test manifest. PA34 adds the Rust 2021 crate profile; PA41 closes the
 remaining editions. Original std's legacy-edition dependencies (cfg-if 2018,
 rustc-demangle 2015) bring forward exactly the edition rules they exercise,
 each with independent controls; every other 2015/2018 rule stays rejected by
-name until PA40. PA31–PA36 require original upstream core, alloc and std,
+name until PA41. PA31–PA36 require original upstream core, alloc and std,
 with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
@@ -105,7 +105,7 @@ Pinned foreign-architecture requests have no consumers on x86-64 and need no
 ordinary binding owner or library instability rows. Keep their explicit known
 set separate from selected-target attribute validity, genuine x86 gate bits,
 body requirements, cfg truth and instruction support. Unknown spellings still
-fail. The [architecture-request packet](pa41/tests/spec/architecture-requests/README.md)
+fail. The [architecture-request packet](pa42/tests/spec/architecture-requests/README.md)
 checks source opposition and ordinary native/configuration equivalence.
 
 Use the shared typed `support::edition::Edition` and select each rule's defining
@@ -205,7 +205,7 @@ source image -> Rust lexer -> token-tree/parser/expansion/resolution worklist
 The external LowIR serialization is an authorized temporary backend boundary.
 The [backend lock](backend.lock.json) pins all three CPPGM tools to
 release v0.12.0 (c37fb6f9d). Its object profile also records the optional
-`assembly` capability. Rust `asm!` remains fenced until PA41 lowers checked
+`assembly` capability. Rust `asm!` remains fenced until PA42 lowers checked
 assembly bodies to it. The lock also records the release's in-process LowIR
 library, at interface version 5, as an optional capability
 with its own handshake. The optional crate `dev/backend-bridge`, outside the
@@ -297,7 +297,7 @@ parsed module share duplicate state; use a sparse prepaid draft scoped to the
 existing owner walk, then discard it. The retained AST already owns the original
 label. It grants no primitive type, language item, layout, body/const/unsafe or
 privacy permission and needs no semantic metadata fence. The
-[PA40 documentation-label packet](pa40/tests/spec/primitive-documentation/README.md)
+[PA41 documentation-label packet](pa41/tests/spec/primitive-documentation/README.md)
 records source, native and original-core evidence separately from whole attribute
 closure and original library artifacts.
 
@@ -2179,7 +2179,7 @@ Preserve the source function/word/internal-feature checks and execute the real
 ordinary body. The marker grants no intrinsic identity, const eligibility or
 unsafe permission, and does not change an ordinary function-pointer type. No
 extra body/node field or per-call scan is needed in the current abort profile.
-PA39 still requires actual unwind boundaries, cleanup and transport. The
+PA40 still requires actual unwind boundaries, cleanup and transport. The
 [ordinary nounwind checkpoint](docs/pa31-ordinary-nounwind-checkpoint.md) retains
 the original unlikely source and the separate real ColdPath dependency.
 
@@ -2757,7 +2757,7 @@ unsafe, API and CTFE checks. Unknown optional expectations may remain witnessed
 debt under the explicit cap, never fulfilled or evidence of strict completion.
 Capped source observations require separate manifests recording the effective
 cap and cannot close an uncapped library goal. Other cap levels remain required.
-The [const/macro diagnostic packet](pa40/tests/spec/diagnostic-directives/README.md)
+The [const/macro diagnostic packet](pa41/tests/spec/diagnostic-directives/README.md)
 recognizes diagnostic-only requests without installing semantic capabilities.
 Check textual literal validity from retained attribute forests, including disabled
 owners and nested configuration input; keep optional suffix policy separate from
@@ -2770,14 +2770,14 @@ than qualified. Without the actual crate feature, ignore diagnostic metadata in
 strict compilation too; internal macro allowances do not enable these handlers.
 Keep this diagnostic-only request state separate from semantic permissions.
 Documentation options have distinct hard feature and token-origin cfg gates.
-The [documentation packet](pa40/tests/spec/documentation-gates/README.md) uses the
+The [documentation packet](pa41/tests/spec/documentation-gates/README.md) uses the
 syntax-owned cfg grammar and a flat occurrence collector shared with expansion.
 Metadata validation performs no configuration lookup and cannot remove program
 owners. Preserve malformed-predicate and literal failures independently of caps;
 cache crate gate queries only within the shared owner walk, retaining each actual
 macro occurrence's permission. Broader documentation diagnostics/output and
 imported metadata remain required.
-The [advisory request packet](pa40/tests/spec/advisory-requests/README.md) recognizes
+The [advisory request packet](pa41/tests/spec/advisory-requests/README.md) recognizes
 intra_doc_pointers and strict_provenance_lints without operation permissions or
 binding-mode changes. Rustdoc pointer-link resolution does not create program
 bindings; optional provenance casts retain their existing legality and unsafe
@@ -6444,7 +6444,7 @@ instance proof and storage accounting consume the same owner and revalidate
 effect/output identities. Const eligibility and demanded execution reject
 assembly; const and symbol operands need their own real value/relocation facts.
 An absent body codec or backend capability diagnoses at that boundary. Never
-replace assembly with Unit or ordinary stores. PA41 owns broader closure, but
+replace assembly with Unit or ordinary stores. PA42 owns broader closure, but
 the selected upstream target's required slice must work by PA32. See the
 [assembly checkpoint](docs/source-inline-assembly-checkpoint.md) for implemented
 scope, every-Body cost and remaining SIMD, transport and emission requirements.
@@ -6501,7 +6501,7 @@ name-value decimal string, unsafe wrapper and hard duplicate rules. Zero is a
 valid limit; a pending generic declaration need not have an instantiated layout.
 Compare the actual substituted lane count only for repr(simd), preserving ordinary
 struct layout and all independent lane/element rules. Old metadata must reject
-unencoded limits rather than lose them. The [PA41 lane-limit packet](pa41/tests/spec/simd-lane-limit/README.md)
+unencoded limits rather than lose them. The [PA42 lane-limit packet](pa42/tests/spec/simd-lane-limit/README.md)
 retains real source-provider, original-library-path and imported requirements.
 
 Do not infer vector shape from a source name, add a parallel type cache, or
@@ -7924,7 +7924,7 @@ Use the shared LowIR model contract; serialized text is an output view. The
 temporary backend adapter accepts LowIR only, validates it with CPPGM and then
 builds native code. No oracle object or reference function may replace a failed
 Rust compilation. General assembly and target intrinsics require an explicit
-capability review before their first required workload and broad closure at PA41;
+capability review before their first required workload and broad closure at PA42;
 the initial backend is not assumed complete. A required backend extension is
 separately reviewed work, not implicit authorization to change CPPGM.
 

@@ -77,7 +77,7 @@
     "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea"
   },
   "required": [
-    "panic-unwind and C-unwind semantics/boundary enforcement/transport in PA39",
+    "panic-unwind and C-unwind semantics/boundary enforcement/transport in PA40",
     "original unlikely with genuine ColdPath body and full RangeSub source graph",
     "all original core/alloc/std artifacts"
   ],

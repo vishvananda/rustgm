@@ -427,7 +427,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "const-memory",
           "const-callables",
@@ -463,7 +463,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "hook-closure",
           "format-derive",
@@ -500,7 +500,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "raw-validity",
           "const-memory"
@@ -532,7 +532,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "intrinsic-closure",
           "const-memory",
@@ -567,7 +567,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "value-metadata",
           "provided-profile",
@@ -601,7 +601,7 @@
       ],
       "contract": {
         "kind": "finite",
-        "carried_by": "pa44",
+        "carried_by": "pa45",
         "deferred_units": [
           "ffi-closure",
           "value-metadata",
@@ -709,6 +709,21 @@
     {
       "number": 37,
       "path": "pa37",
+      "title": "Reproducible self-hosting",
+      "mode": "--emit-lowir",
+      "status": "planned",
+      "scope": "RustGM built by RustGM through CPPGM: stage 1 passes the PA1-PA24 oracles, stage 2 is byte-identical to stage 1, strict mode with zero bring-up records",
+      "test_families": [
+        "stage 1 against the PA1-PA24 oracles",
+        "stage 1 against stage 2 byte identity",
+        "strict build with zero bring-up records",
+        "reproducible inputs and deterministic output",
+        "bounded build resources"
+      ]
+    },
+    {
+      "number": 38,
+      "path": "pa38",
       "title": "Procedural macro host",
       "mode": "--emit-expanded",
       "status": "planned",
@@ -721,8 +736,8 @@
       ]
     },
     {
-      "number": 38,
-      "path": "pa38",
+      "number": 39,
+      "path": "pa39",
       "title": "Derive and attribute macros",
       "mode": "--emit-expanded",
       "status": "planned",
@@ -736,8 +751,8 @@
       ]
     },
     {
-      "number": 39,
-      "path": "pa39",
+      "number": 40,
+      "path": "pa40",
       "title": "Panic and unwinding",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -750,8 +765,8 @@
       ]
     },
     {
-      "number": 40,
-      "path": "pa40",
+      "number": 41,
+      "path": "pa41",
       "title": "Edition and attribute closure",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -764,8 +779,8 @@
       ]
     },
     {
-      "number": 41,
-      "path": "pa41",
+      "number": 42,
+      "path": "pa42",
       "title": "Target-specific closure",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -777,8 +792,8 @@
       ]
     },
     {
-      "number": 42,
-      "path": "pa42",
+      "number": 43,
+      "path": "pa43",
       "title": "Async lowering",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -791,8 +806,8 @@
       ]
     },
     {
-      "number": 43,
-      "path": "pa43",
+      "number": 44,
+      "path": "pa44",
       "title": "Async ownership",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -805,8 +820,8 @@
       ]
     },
     {
-      "number": 44,
-      "path": "pa44",
+      "number": 45,
+      "path": "pa45",
       "title": "Frontend acceptance",
       "mode": "--emit-lowir",
       "status": "planned",
@@ -906,21 +921,6 @@
           ]
         }
       }
-    },
-    {
-      "number": 45,
-      "path": "pa45",
-      "title": "Reproducible self-hosting",
-      "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "RustGM built by RustGM through CPPGM: stage 1 passes the PA1-PA24 oracles, stage 2 is byte-identical to stage 1, strict mode with zero bring-up records",
-      "test_families": [
-        "stage 1 against the PA1-PA24 oracles",
-        "stage 1 against stage 2 byte identity",
-        "strict build with zero bring-up records",
-        "reproducible inputs and deterministic output",
-        "bounded build resources"
-      ]
     }
   ]
 }

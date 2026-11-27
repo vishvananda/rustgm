@@ -72,7 +72,7 @@ actual source signatures and selected bodies.
   primitive and aggregate helpers, and builtin-backed derives and
   formatting. Reuse selected trait and associated item proofs.
 - Establish the panic-abort entry and handler path using real library
-  declarations and executed bodies. PA39 adds unwinding.
+  declarations and executed bodies. PA40 adds unwinding.
 - Preserve the relevant declaration, feature, and body facts when importing
   checked metadata. PA29 introduces declaration artifacts. Preserve the order
   and ownership of type alias requirements, including dependent associated

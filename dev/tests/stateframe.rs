@@ -24,7 +24,7 @@ fn ordinary_opaque_results_do_not_request_authored_future_preparation() -> Resul
 
 #[test]
 fn mixed_future_and_ordinary_results_publish_only_actual_checked_batch_families() -> Result {
-    let mut text = source::fixture("pa43/tests/spec/future-runtime-v1/construction-source.rs")?;
+    let mut text = source::fixture("pa44/tests/spec/future-runtime-v1/construction-source.rs")?;
     text.push_str("\nfn ordinary()->impl Copy{3u8}\n");
     let report = source::source_provider(&text, "mixed_future_results")?;
     let rustgm::pipeline::Analysis {
@@ -52,11 +52,11 @@ fn marker(
 
 #[test]
 fn actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output() -> Result {
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let (_, authored) = text
         .split_once("pub async fn scalar")
         .ok_or("authored declarations")?;
-    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/shape-companion.rs")?;
+    let companion = source::fixture("pa44/tests/spec/future-runtime-v1/shape-companion.rs")?;
     assert_eq!(format!("pub async fn scalar{authored}"), companion);
     let report = source::source_provider(&text, "authored_shapes")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
@@ -149,7 +149,7 @@ fn actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_outpu
 
 #[test]
 fn complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery() -> Result {
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "generic_shapes")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let function = facts
@@ -220,7 +220,7 @@ fn complete_generic_applications_reuse_one_identity_and_reject_argument_kind_for
 #[test]
 fn authored_async_originals_keep_their_real_output_through_region_and_loan_checks() -> Result {
     use rustgm::body;
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "deferred_originals")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -275,7 +275,7 @@ fn authored_async_originals_keep_their_real_output_through_region_and_loan_check
 #[test]
 fn generic_future_templates_defer_unknown_capture_layout_until_real_application() -> Result {
     use rustgm::types::arguments::Argument;
-    let text = source::fixture("pa43/tests/spec/deferred-compiler-op/unmarked.rs")?;
+    let text = source::fixture("pa44/tests/spec/deferred-compiler-op/unmarked.rs")?;
     let report = source::source_provider(&text, "generic_future_storage")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let function = facts
@@ -369,7 +369,7 @@ fn generic_future_templates_defer_unknown_capture_layout_until_real_application(
 #[test]
 fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames() -> Result {
     use rustgm::{body, types::arguments::Argument};
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "selected_async")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -441,7 +441,7 @@ fn selected_future_applications_use_actual_checked_bodies_and_complete_capture_f
 #[test]
 fn selected_future_applications_revalidate_store_and_warm_publication() -> Result {
     use rustgm::{body, types::arguments::Argument};
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "selected_authentication")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -499,8 +499,8 @@ fn selected_future_applications_revalidate_store_and_warm_publication() -> Resul
 #[test]
 fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements() -> Result {
     use types::arguments::Argument;
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/formation-source.rs")?;
-    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/formation-companion.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/formation-source.rs")?;
+    let companion = source::fixture("pa44/tests/spec/future-runtime-v1/formation-companion.rs")?;
     assert!(text.ends_with(&companion));
     let report = source::source_provider(&text, "future_formation")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
@@ -557,8 +557,8 @@ fn future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirement
 #[test]
 fn selected_future_bounds_consume_genuine_future_and_actual_output_equality() -> Result {
     use types::arguments::Argument;
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/selection-source.rs")?;
-    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/selection-companion.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/selection-source.rs")?;
+    let companion = source::fixture("pa44/tests/spec/future-runtime-v1/selection-companion.rs")?;
     assert!(text.ends_with(&companion));
     let report = source::source_provider(&text, "future_output_selection")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
@@ -594,7 +594,7 @@ fn selected_future_bounds_consume_genuine_future_and_actual_output_equality() ->
 
 #[test]
 fn authored_async_by_value_unsized_input_cannot_publish_sized_future_storage() -> Result {
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/unsized-source.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/unsized-source.rs")?;
     let report = source::source_provider(&text, "unsized_async_input")?;
     let error = sema::declarations::analyze(&report)
         .and_then(|facts| sema::bodies::analyze(&report, facts))
@@ -613,9 +613,9 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
         body::ir::Rvalue,
         types::{arguments::Argument, instance::Instance},
     };
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
     let companion =
-        source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs")?;
+        source::fixture("pa44/tests/spec/future-runtime-v1/poll-consumer-companion.rs")?;
     let authored = companion.split_once('\n').ok_or("companion foundation")?.1;
     assert!(text.ends_with(authored));
     let report = source::source_provider(&text, "actual_poll_consumer")?;
@@ -690,9 +690,9 @@ fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_sign
 
 #[test]
 fn unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output() -> Result {
-    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/construction-companion.rs")?;
+    let companion = source::fixture("pa44/tests/spec/future-runtime-v1/construction-companion.rs")?;
     for file in ["construction-source.rs", "dropbyte.rs"] {
-        let text = source::fixture(&format!("pa43/tests/spec/future-runtime-v1/{file}"))?;
+        let text = source::fixture(&format!("pa44/tests/spec/future-runtime-v1/{file}"))?;
         assert!(text.ends_with(&companion));
         let mut report = source::source_provider(&text, "unpolled_constructor")?;
         let rustgm::pipeline::Analysis {
@@ -745,7 +745,7 @@ fn unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output() 
             "deferred source loop executed as constructor"
         );
     }
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/construction-wrong-source.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/construction-wrong-source.rs")?;
     let report = source::source_provider(&text, "wrong_deferred_output")?;
     let error = rustgm::pipeline::analyze_source(&report)
         .err()
@@ -760,9 +760,9 @@ fn unpolled_constructor_and_drop_defer_divergent_body_and_check_unused_output() 
 
 #[test]
 fn ordinary_borrowed_moves_cannot_use_generated_state_copy_permission() -> Result {
-    let valid = source::fixture("pa43/tests/spec/future-runtime-v1/dropowned.rs")?;
+    let valid = source::fixture("pa44/tests/spec/future-runtime-v1/dropowned.rs")?;
     ordinary_program(&valid, "ordinary_owned_move")?;
-    let invalid = source::fixture("pa43/tests/spec/future-runtime-v1/dropmove.rs")?;
+    let invalid = source::fixture("pa44/tests/spec/future-runtime-v1/dropmove.rs")?;
     let error = ordinary_program(&invalid, "ordinary_borrowed_move")
         .err()
         .ok_or("ordinary borrowed move acquired compiler state permission")?
@@ -788,8 +788,8 @@ fn ordinary_program(text: &str, name: &str) -> Result<rustgm::lowir::program::Pr
 
 #[test]
 fn actual_required_poll_keeps_checked_source_output_and_completed_drop() -> Result {
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/pollready-source.rs")?;
-    let companion = source::fixture("pa43/tests/spec/future-runtime-v1/pollready-companion.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/pollready-source.rs")?;
+    let companion = source::fixture("pa44/tests/spec/future-runtime-v1/pollready-companion.rs")?;
     let (_, authored) = text
         .split_once("pub async fn value")
         .ok_or("actual async declaration")?;
@@ -869,10 +869,10 @@ fn actual_required_poll_keeps_checked_source_output_and_completed_drop() -> Resu
 
 #[test]
 fn compiler_poll_state_copy_requires_no_user_u8_copy_and_grants_no_borrowed_move() -> Result {
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/pollbyte-source.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/pollbyte-source.rs")?;
     ordinary_program(&text, "poll_without_byte_copy")?;
     for (file, valid) in [("pollbyte-owned.rs", true), ("pollbyte-borrow.rs", false)] {
-        let text = source::fixture(&format!("pa43/tests/spec/future-runtime-v1/{file}"))?;
+        let text = source::fixture(&format!("pa44/tests/spec/future-runtime-v1/{file}"))?;
         let report = source::source_provider(&text, "ordinary_byte_ownership")?;
         let rustgm::pipeline::Analysis {
             mut facts,
@@ -899,7 +899,7 @@ fn compiler_poll_state_copy_requires_no_user_u8_copy_and_grants_no_borrowed_move
 #[test]
 fn future_drop_recipes_keep_full_applications_and_own_capture_cleanup() -> Result {
     use rustgm::body::drops::glue::{Catalog, Method, Recipe, Shape};
-    let text = source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = source::source_provider(&text, "future_drop_data")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let function = facts

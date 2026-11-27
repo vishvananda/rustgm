@@ -4,8 +4,8 @@
   "owning_assignments": {
     "PA31": "authenticated source builtin attribute identity, declaration availability, feature/stability ownership",
     "PA8": "shared parsed attribute/token provenance and macro namespace lookup",
-    "PA38": "actual item replacement, activity/type checking, generated differentiated function and execution",
-    "PA37": "foreign procedural macro host; not implied by compiler builtin declaration"
+    "PA39": "actual item replacement, activity/type checking, generated differentiated function and execution",
+    "PA38": "foreign procedural macro host; not implied by compiler builtin declaration"
   },
   "editions": [
     2021,
@@ -482,7 +482,7 @@
   ],
   "candidate_scope": "Real authenticated local2021/24 attribute declarations; all actual attribute execution explicitly unsupported. Current scoped root integration is a separate dependency. No foreign export or feature grants.",
   "full_execution_obligations": {
-    "status": "Required future PA38/PA31 contract, not measured or counted by this corpus",
+    "status": "Required future PA39/PA31 contract, not measured or counted by this corpus",
     "original_positive": "tests/ui/autodiff/macro_hygiene.rs",
     "required_toolchain": [
       "Enzyme",

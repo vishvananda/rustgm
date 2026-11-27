@@ -34,7 +34,7 @@ I/O or environment dependency is an explicit provider input at the driver bounda
 See [Macros by example](../doc/rust-reference/src/macros-by-example.md) in the pinned Rust Reference.
 
 Source diagnostic attribute values also use this worklist. PA31 owns their
-source-provider authority and exact identity data; PA40 owns complete attribute
+source-provider authority and exact identity data; PA41 owns complete attribute
 form closure. Retain the original attribute and one demanded expression root,
 including opaque forwarding. Resolve actual macro definitions and aliases in
 the proper module scope. An external-module declaration keeps its source file

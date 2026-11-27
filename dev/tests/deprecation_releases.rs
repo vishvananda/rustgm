@@ -5,7 +5,7 @@ use rustgm::{
     support::diagnostics::{LintCap, WarningCode},
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-const ROOT: &str = "pa40/tests/spec/future-deprecation";
+const ROOT: &str = "pa41/tests/spec/future-deprecation";
 fn report(name: &str, cap: bool) -> Result<rustgm::resolve::expansion::Report> {
     let mut config = Config::default();
     if cap {

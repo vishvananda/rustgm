@@ -14,7 +14,7 @@ fn scalar_poll_executes_source_without_user_copy_and_rejects_completed_reentry()
         ("pollrepeat", "poll-repeat-observer.c", ""),
     ] {
         let text = source::fixture(&format!(
-            "pa43/tests/spec/future-runtime-v1/{name}-source.rs"
+            "pa44/tests/spec/future-runtime-v1/{name}-source.rs"
         ))?;
         let report = source::source_provider(&text, "scalar_poll_native")?;
         let pipeline::Analysis {
@@ -35,7 +35,7 @@ fn scalar_poll_executes_source_without_user_copy_and_rejects_completed_reentry()
             &folder,
             name,
             &program,
-            &source::fixture(&format!("pa43/tests/spec/future-runtime-v1/{observer}"))?,
+            &source::fixture(&format!("pa44/tests/spec/future-runtime-v1/{observer}"))?,
             expected,
         )?;
     }

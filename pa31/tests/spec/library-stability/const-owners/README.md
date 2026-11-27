@@ -1,6 +1,6 @@
 # Const API policy owners
 
-PA31 owns the actual declaration policy and PA40 its target/attribute closure;
+PA31 owns the actual declaration policy and PA41 its target/attribute closure;
 PA25 and ordinary trait/body checking retain const-call permission. The primary
 Rust 1.98.0 revision88d9e12ae178fab0fb5cc050a94da85685d449ea sources are
 compiler/rustc_attr_parsing/src/attributes/stability.rs and

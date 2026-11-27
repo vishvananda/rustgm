@@ -263,7 +263,7 @@ validity implementations. Full derive generation, generic custom auto traits,
 coercion/dispatch consumers and metadata remain required. The unchanged original
 core frontier advances to ResumeTy; this does not release PA31.
 Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
-and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
+and Linux x86-64. PA34 adds Rust 2021; PA41 closes the remaining editions.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
 implementation priority, source pins and the migration of unreleased numbers.
 
@@ -276,7 +276,7 @@ of PA31 is released yet, so nothing here is graded.
 Not released: `source-declarations` and `source-runtime` are partial.
 
 Deferred and unclaimed fixtures are not waived. Everything the self-hosting
-corpus needs stays required through PA32–PA36, PA44 and PA45. The whole
+corpus needs stays required through PA32–PA37 and PA45. The whole
 assignment stays planned and fails explicitly until every unit above and every
 unit named by its requirement rows is released and a nonempty
 `tests/manifest.json` is published with its references.
@@ -327,13 +327,13 @@ standard typed address shim with38 complete source outcomes and native Rust
 equality. Address conversion does not invoke the pointer and preserves actual
 ABI/safety and higher-ranked/scoped lifetime contracts. Broader demanded method
 profiles, const and metadata remain required. Original core now stops at the
-real AsyncDrop declaration; see PA42/43's source-signature/destruction boundary.
+real AsyncDrop declaration; see PA44/44's source-signature/destruction boundary.
 
 The [FusedIterator source packet](tests/spec/fused-iterator/README.md) retains the
 actual pinned marker source and ordinary Iterator/Item implementation proof.
 Language-role completion grants no blanket implementation or generated body;
 genuine gen coroutine state/exhaustion and authenticated transport remain separate
-PA42/43/29 requirements. This finite source contract does not release this PA.
+PA44/44/29 requirements. This finite source contract does not release this PA.
 
 The [Pin source packet](tests/spec/pin-source/README.md) qualifies an actual
 prerequisite: nominal identity and ordinary `new_unchecked` source bodies retain
@@ -628,13 +628,13 @@ and upstream compiler ICEs must not be mislabeled as language rejections. See
 the [pinned callable evidence](../docs/library-bootstrap-inventory.md#callable-selection-followup).
 
 Establish the minimal panic-abort entry/runtime boundary and no_core declaration
-packages. Keep general unwinding at PA39. Host/build configuration lives outside
+packages. Keep general unwinding at PA40. Host/build configuration lives outside
 the frontend library; no environment reads enter semantic hot paths.
 
 Ordinary `rustc_nounwind` functions use their real source bodies and the checked
 abort/non-unwinding ABI profile. Preserve actual word/internal-feature, const
 and unsafe checks; the marker grants no intrinsic or callable permission. The
-[finite checkpoint](../docs/pa31-ordinary-nounwind-checkpoint.md) leaves PA39's
+[finite checkpoint](../docs/pa31-ordinary-nounwind-checkpoint.md) leaves PA40's
 unwind boundaries and the original unlikely/ColdPath graph explicit.
 
 The [MIR-inline restriction](tests/spec/source-no-mir-inline/README.md)
@@ -895,7 +895,7 @@ Accept unused legal alternate declarations according to pinned Rust; compiler
 consumers require the exact selected schema and full arguments at demand. Ordinary
 enum construction, projection, trait selection and manual native resume calls use
 the existing typed producers. Generated coroutine input/yield/return/state belongs
-to PA42, and captured loans, Pin, cancellation/drop to PA43; no role supplies those
+to PA43, and captured loans, Pin, cancellation/drop to PA44; no role supplies those
 operations or a blanket implementation. Preserve the complete original coroutine
 module and independent wrong-owner/shape/argument/lifetime opponents when closing
 this source prerequisite.

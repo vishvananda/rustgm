@@ -6,7 +6,7 @@ use std::{
     process::Command,
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-const SPEC: &str = "pa41/tests/spec/asm-native";
+const SPEC: &str = "pa42/tests/spec/asm-native";
 /// Declared in the fixture contract: one template per invocation in each
 /// emitted body, five with `nostack, preserves_flags` and one default.
 const TEMPLATES: usize = 6;

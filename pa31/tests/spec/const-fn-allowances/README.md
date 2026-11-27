@@ -1,6 +1,6 @@
 # Exact const-function feature allowances
 
-This planned PA31 source packet also exercises PA25 const API effects, PA40
+This planned PA31 source packet also exercises PA25 const API effects, PA41
 attribute forms and PA29 imported body authority. It does not activate a PA.
 
 `contract.json` freezes32 independently checked source outcomes;

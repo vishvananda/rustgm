@@ -2,11 +2,15 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-Required families: host/target split; token transport; isolation; expansion failures.
+Required families: stage 1 against the PA1–PA24 oracles; stage 1 against stage 2
+byte identity; strict build with zero bring-up records; reproducible inputs and
+deterministic output; bounded build resources.
 
-Follow the [owning brief](../README.md) and
-[library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
-Declare independent outcomes before creating text references. Register every
-input in a nonempty `manifest.json` when the stage is ready for activation;
-no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
-configuration/build provenance and linked native output evidence.
+Follow the [owning brief](../README.md) and the
+[self-hosting plan](../../docs/self-hosting-plan.md).
+Declare independent outcomes before any stage runs. Register every input in a
+nonempty `manifest.json` when the stage is ready for activation; no undiscovered
+fixtures or empty-suite success. This assignment adds no oracle of its own for
+PA1–PA24: stage 1 is checked against the committed ones. Preserve upstream
+checksums, configuration/build provenance and the recorded hashes of both
+stages.

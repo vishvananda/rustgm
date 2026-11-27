@@ -18,6 +18,6 @@ output; metadata and native receipts retain their separate scopes.
 No candidate acceptance or generated-coroutine implementation is claimed by this
 reference packet. The complete pinned ops/coroutine.rs module, original source
 outcomes, full generic/associated/lifetime opponents and native consumers remain
-required. PA42 owns generated input/yield/return/suspension/resumption; PA43 owns
+required. PA43 owns generated input/yield/return/suspension/resumption; PA44 owns
 capture/Pin/loans/cancellation/drop; PA29 owns authenticated transport. An enum
 role or ordinary manual implementation supplies none of those permissions.

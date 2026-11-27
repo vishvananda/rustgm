@@ -31,7 +31,7 @@ LOWIR = frozenset({"--emit-lowir"})
 TYPED = LOWIR | {"--emit-types", "--emit-body-ir", "--emit-layouts", "--emit-patterns",
                  "--emit-ownership", "--emit-regions", "--emit-loans", "--emit-semantics",
                  "--emit-trait-semantics", "--emit-generic-semantics", "--emit-constants"}
-ASYNC = Rule("async lowering", 42, LOWIR)
+ASYNC = Rule("async lowering", 43, LOWIR)
 SOURCE_RULES = {
     "macro_definition": Rule("macro matching and expansion", 7,
                              TYPED | {"--emit-expanded", "--emit-expanded-crate"}),
@@ -47,7 +47,7 @@ ORACLE_RULES = (
      Rule("atomic operations", 28, LOWIR)),
     (re.compile(rb"^    (?:%\w+ = )?(va_(?:start|arg|copy|end))\b"),
      Rule("C variadics", 30, LOWIR)),
-    (re.compile(rb"^(assembly) @asm\d+ intel\b"), Rule("inline assembly", 41, LOWIR)),
+    (re.compile(rb"^(assembly) @asm\d+ intel\b"), Rule("inline assembly", 42, LOWIR)),
 )
 FEATURE_OWNER = re.compile(r"pa([1-9][0-9]*)\..+")
 PA_PATH = re.compile(r"pa[1-9][0-9]*")

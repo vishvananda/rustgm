@@ -27,7 +27,7 @@ fn unfinished_nested_function_cannot_finalize_its_parents_expectation() -> Resul
         ),
     ] {
         let source =
-            crate::test_source::fixture(&format!("pa40/tests/spec/lint-expectations/{name}.rs"))?;
+            crate::test_source::fixture(&format!("pa41/tests/spec/lint-expectations/{name}.rs"))?;
         let report = crate::test_source::resolve(&source, true)?;
         let parent = definition(&report, "checked")?;
         let child = definition(&report, "nested")?;
@@ -89,10 +89,10 @@ fn descendant_completion_is_one_paid_census_across_expectations_and_unrelated_bo
             facts.finalize_lints(&report, true)?;
             let paid = producer.work().steps - before;
             let declarations = report.resolution.definitions.len();
-            // An unchecked body reads its policy's 20 lint expectation slots,
+            // An unchecked body reads its policy's 29 lint expectation slots,
             // two steps each, and its definition once; source-owner work is
             // separate from the one shared declaration census.
-            let member_bound = 2 * 20 + 1;
+            let member_bound = 2 * 29 + 1;
             let bound = member_bound * declarations + 32 * parents + 128;
             assert!(
                 paid <= bound,
@@ -119,7 +119,7 @@ fn descendant_completion_is_one_paid_census_across_expectations_and_unrelated_bo
 #[test]
 fn failed_completion_payment_retains_attempted_work_without_finalization() -> Result {
     let source = crate::test_source::fixture(
-        "pa40/tests/spec/lint-expectations/selected-nested-unfulfilled.rs",
+        "pa41/tests/spec/lint-expectations/selected-nested-unfulfilled.rs",
     )?;
     let report = crate::test_source::resolve(&source, true)?;
     let parent = definition(&report, "checked")?;

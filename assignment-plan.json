@@ -343,7 +343,7 @@
     },
     {
       "id": "simd-abi",
-      "owner": "pa41",
+      "owner": "pa42",
       "title": "Nominal SIMD copy layout and C128 ABI",
       "implementation": "implemented",
       "publication": "unpublished",
@@ -359,7 +359,7 @@
     },
     {
       "id": "target-features",
-      "owner": "pa41",
+      "owner": "pa42",
       "title": "Typed target features and call permissions",
       "implementation": "partial",
       "publication": "unpublished",
@@ -372,7 +372,7 @@
     },
     {
       "id": "assembly",
-      "owner": "pa41",
+      "owner": "pa42",
       "title": "Required core assembly path",
       "implementation": "partial",
       "publication": "unpublished",
@@ -583,8 +583,21 @@
       "exit": "Build original std and execute std-facing and default-feature serde_json consumers."
     },
     {
-      "id": "proc-host",
+      "id": "self-hosting",
       "owner": "pa37",
+      "title": "Reproducible self-hosting",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "std-artifact"
+      ],
+      "scope": "RustGM and its dependency crates built by RustGM through CPPGM on original core, alloc and std in the abort profile. Procedural macros, unwinding and async are not prerequisites.",
+      "requirements": [],
+      "exit": "Stage 1 passes the committed PA1-PA24 oracles through RUSTGM_TEST_APP; stage 2 output is byte-identical to stage 1; strict mode reports zero bring-up records."
+    },
+    {
+      "id": "proc-host",
+      "owner": "pa38",
       "title": "Procedural macro host",
       "implementation": "missing",
       "publication": "unpublished",
@@ -598,7 +611,7 @@
     },
     {
       "id": "proc-derive",
-      "owner": "pa38",
+      "owner": "pa39",
       "title": "Original derives and attribute macros",
       "implementation": "missing",
       "publication": "unpublished",
@@ -612,7 +625,7 @@
     },
     {
       "id": "unwind",
-      "owner": "pa39",
+      "owner": "pa40",
       "title": "Unwinding and C-unwind",
       "implementation": "missing",
       "publication": "unpublished",
@@ -626,7 +639,7 @@
     },
     {
       "id": "edition-closure",
-      "owner": "pa40",
+      "owner": "pa41",
       "title": "Remaining edition and attribute closure",
       "implementation": "missing",
       "publication": "unpublished",
@@ -640,7 +653,7 @@
     },
     {
       "id": "target-closure",
-      "owner": "pa41",
+      "owner": "pa42",
       "title": "Remaining target and assembly closure",
       "implementation": "partial",
       "publication": "unpublished",
@@ -649,13 +662,13 @@
         "ffi-closure",
         "intrinsic-closure"
       ],
-      "scope": "All remaining PA41 forms: broader lanes/widths/registers/labels/symbols/clobbers/global/naked assembly and target/unwind contracts.",
+      "scope": "All remaining PA42 forms: broader lanes/widths/registers/labels/symbols/clobbers/global/naked assembly and target/unwind contracts.",
       "requirements": [],
       "exit": "Close full selected-target census and explicit unsupported-capability policy; no waiver of an active required library path."
     },
     {
       "id": "async",
-      "owner": "pa42",
+      "owner": "pa43",
       "title": "Async lowering",
       "implementation": "missing",
       "publication": "unpublished",
@@ -669,7 +682,7 @@
     },
     {
       "id": "async-ownership",
-      "owner": "pa43",
+      "owner": "pa44",
       "title": "Async ownership and pinning",
       "implementation": "missing",
       "publication": "unpublished",
@@ -683,7 +696,7 @@
     },
     {
       "id": "frontend-acceptance",
-      "owner": "pa44",
+      "owner": "pa45",
       "title": "Complete frontend acceptance",
       "implementation": "missing",
       "publication": "unpublished",
@@ -728,19 +741,6 @@
       "scope": "All retained assignment requirements, whole-library/crate graphs, debug locations, deterministic outputs and scaling.",
       "requirements": [],
       "exit": "Full assignment closure, independent/source/native/debug/architecture/Clippy and performance release qualification."
-    },
-    {
-      "id": "self-hosting",
-      "owner": "pa45",
-      "title": "Reproducible self-hosting",
-      "implementation": "missing",
-      "publication": "unpublished",
-      "depends_on": [
-        "std-artifact"
-      ],
-      "scope": "RustGM and its dependency crates built by RustGM through CPPGM on original core, alloc and std in the abort profile. Procedural macros, unwinding and async are not prerequisites.",
-      "requirements": [],
-      "exit": "Stage 1 passes the committed PA1-PA24 oracles through RUSTGM_TEST_APP; stage 2 output is byte-identical to stage 1; strict mode reports zero bring-up records."
     }
   ]
 }

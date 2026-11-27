@@ -16,7 +16,7 @@ use crate::{
 };
 use std::fmt::Write as _;
 
-const PROVIDER: &str = "pa41/tests/spec/asm-transport/provider.rs";
+const PROVIDER: &str = "pa42/tests/spec/asm-transport/provider.rs";
 const MARKER: &str = "// Authored asm transport section.\n";
 const MALFORMED: &str = "source assembly placeholder is malformed";
 const COUNTS: [usize; 3] = [8, 16, 32];
@@ -415,7 +415,7 @@ fn integer_outputs_keep_exact_effect_place_type_and_version_boundaries() -> Resu
 fn fixed_provider() -> Result<crates::Interface> {
     let foundation = crate::test_source::fixture(PROVIDER)?;
     let (foundation, _) = foundation.split_once(MARKER).ok_or("assembly foundation")?;
-    let original = crate::test_source::fixture("pa41/tests/upstream/rust/cpuid.rs")?;
+    let original = crate::test_source::fixture("pa42/tests/upstream/rust/cpuid.rs")?;
     let structure = original
         .find("pub struct CpuidResult")
         .ok_or("original result")?;
@@ -428,10 +428,10 @@ fn fixed_provider() -> Result<crates::Interface> {
             .find("    let eax;")
             .ok_or("output declarations")?;
     let tail_end = tail + original[tail..].find("\n}").ok_or("query end")? + 2;
-    let sse2 = crate::test_source::fixture("pa41/tests/upstream/rust/sse2.rs")?;
+    let sse2 = crate::test_source::fixture("pa42/tests/upstream/rust/sse2.rs")?;
     let store = sse2.find("pub unsafe fn _mm_stream_si32").ok_or("store")?;
     let store_end = store + sse2[store..].find("\n}").ok_or("store end")? + 2;
-    let body = crate::test_source::fixture("pa41/tests/spec/source-fixed-registers/provider.rs")?
+    let body = crate::test_source::fixture("pa42/tests/spec/source-fixed-registers/provider.rs")?
         .replace("// ORIGINAL_RESULT", &original[structure..structure_end])
         .replace("// ORIGINAL_CPUID_TAIL", &original[tail..tail_end])
         .replace("// ORIGINAL_STREAM_SI32", &sse2[store..store_end]);
@@ -573,9 +573,9 @@ fn fixed_registers_keep_their_width_alias_and_view_in_fresh_rows() -> Result {
 }
 
 fn memory_provider() -> Result<crates::Interface> {
-    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let foundation = crate::test_source::fixture("pa42/tests/spec/asm-native/native.rs")?;
     let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
-    let original = crate::test_source::fixture("pa41/tests/upstream/rust/sse41.rs")?;
+    let original = crate::test_source::fixture("pa42/tests/upstream/rust/sse41.rs")?;
     let function = original
         .find("pub unsafe fn _mm_stream_load_si128")
         .ok_or("load")?;
@@ -583,7 +583,7 @@ fn memory_provider() -> Result<crates::Interface> {
         .rfind("#[inline]")
         .ok_or("load header")?;
     let end = function + original[function..].find("\n}").ok_or("load end")? + 2;
-    let body = crate::test_source::fixture("pa41/tests/spec/source-memory-assembly/provider.rs")?
+    let body = crate::test_source::fixture("pa42/tests/spec/source-memory-assembly/provider.rs")?
         .replace("// ORIGINAL_LOAD", &original[start..end]);
     exported_profile(
         &format!("#![feature(auto_traits)]\n{foundation}{body}"),
@@ -646,10 +646,10 @@ fn pure_vector_outputs_require_their_exact_memory_and_result_contract() -> Resul
 }
 
 fn wide_provider() -> Result<crates::Interface> {
-    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let foundation = crate::test_source::fixture("pa42/tests/spec/asm-native/native.rs")?;
     let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
     let mut body =
-        crate::test_source::fixture("pa41/tests/spec/source-wide-registers/provider.rs")?;
+        crate::test_source::fixture("pa42/tests/spec/source-wide-registers/provider.rs")?;
     let files: [(&str, &[&str]); 3] = [
         (
             "avx.rs",
@@ -671,7 +671,7 @@ fn wide_provider() -> Result<crates::Interface> {
         ),
     ];
     for (file, names) in files {
-        let original = crate::test_source::fixture(&format!("pa41/tests/upstream/rust/{file}"))?;
+        let original = crate::test_source::fixture(&format!("pa42/tests/upstream/rust/{file}"))?;
         for name in names {
             let at = original
                 .find(&format!("pub unsafe fn {name}("))

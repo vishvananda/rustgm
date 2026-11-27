@@ -11,7 +11,7 @@ fn analyze(path: &str) -> TestResult<rustgm::sema::model::Declarations> {
 
 #[test]
 fn source_async_calls_prove_output_and_keep_opaque_argument_identity() -> TestResult {
-    let manifest = test_source::fixture("pa42/tests/spec/async-signatures/cases.tsv")?;
+    let manifest = test_source::fixture("pa43/tests/spec/async-signatures/cases.tsv")?;
     let mut count = 0;
     let mut failures = Vec::new();
     for line in manifest.lines() {
@@ -46,7 +46,7 @@ fn source_async_calls_prove_output_and_keep_opaque_argument_identity() -> TestRe
 
 #[test]
 fn async_body_output_is_checked_without_inventing_future_storage() -> TestResult {
-    let source = test_source::fixture("pa42/tests/spec/async-signatures/scalar.rs")?;
+    let source = test_source::fixture("pa43/tests/spec/async-signatures/scalar.rs")?;
     let report = test_source::source_provider(&source, "async_representation")?;
     let analysis = pipeline::analyze_source(&report)?;
     let facts = analysis.facts;
@@ -88,7 +88,7 @@ fn async_body_output_is_checked_without_inventing_future_storage() -> TestResult
 
 #[test]
 fn trait_async_method_keeps_a_required_declaration_and_source_projection_consumer() -> TestResult {
-    let source = test_source::fixture("pa42/tests/spec/async-signatures/trait-method.rs")?;
+    let source = test_source::fixture("pa43/tests/spec/async-signatures/trait-method.rs")?;
     let report = test_source::source_provider(&source, "async_trait")?;
     let facts = sema::declarations::analyze(&report)?;
     let method = facts
@@ -136,7 +136,7 @@ fn trait_async_method_keeps_a_required_declaration_and_source_projection_consume
 
 #[test]
 fn async_cfg_demand_retains_a_distinct_deferred_original() -> TestResult {
-    let source = test_source::fixture("pa42/tests/spec/async-signatures/scalar.rs")?;
+    let source = test_source::fixture("pa43/tests/spec/async-signatures/scalar.rs")?;
     let report = test_source::source_provider(&source, "async_cfg")?;
     let analysis = pipeline::analyze_source(&report)?;
     let facts = analysis.facts;
@@ -198,7 +198,7 @@ fn source_async_capture_arguments_reuse_lifetime_type_and_const_coordinates() ->
         ("generic", "t"),
         ("const-capture", "c"),
     ] {
-        let facts = analyze(&format!("pa42/tests/spec/async-signatures/{name}.rs"))?;
+        let facts = analyze(&format!("pa43/tests/spec/async-signatures/{name}.rs"))?;
         let mut found = false;
         for declaration in facts.opaques.declarations.values() {
             let Some(Kind::Opaque(_, arguments)) = facts.types.kind(declaration.application) else {
@@ -225,7 +225,7 @@ fn source_async_capture_arguments_reuse_lifetime_type_and_const_coordinates() ->
 
 #[test]
 fn independent_companions_preserve_each_authored_body_byte_for_byte() -> TestResult {
-    let manifest = test_source::fixture("pa42/tests/spec/async-signatures/cases.tsv")?;
+    let manifest = test_source::fixture("pa43/tests/spec/async-signatures/cases.tsv")?;
     for line in manifest.lines() {
         let (path, _) = line.split_once('\t').ok_or("two case columns")?;
         let source = test_source::fixture(path)?;
@@ -236,7 +236,7 @@ fn independent_companions_preserve_each_authored_body_byte_for_byte() -> TestRes
             .to_str()
             .ok_or("fixture UTF-8")?;
         let oracle = test_source::fixture(&format!(
-            "pa42/tests/spec/async-signatures/independent/{name}"
+            "pa43/tests/spec/async-signatures/independent/{name}"
         ))?;
         let (_, oracle_body) = oracle
             .split_once("use core::future::Future;\n")
@@ -248,7 +248,7 @@ fn independent_companions_preserve_each_authored_body_byte_for_byte() -> TestRes
 
 #[test]
 fn nested_authored_opaque_output_infers_without_inventing_future_storage() -> TestResult {
-    let source = test_source::fixture("pa42/tests/spec/async-signatures/nested-output.rs")?;
+    let source = test_source::fixture("pa43/tests/spec/async-signatures/nested-output.rs")?;
     let report = test_source::source_provider(&source, "async_nested")?;
     let facts = pipeline::analyze_source(&report)?.facts;
     let function = facts
@@ -287,7 +287,7 @@ fn nested_authored_opaque_output_infers_without_inventing_future_storage() -> Te
 #[test]
 fn required_unsized_output_declarations_preserve_the_actual_source_schema() -> TestResult {
     let manifest =
-        test_source::fixture("pa42/tests/spec/async-signatures/reviewed-sized-cases.tsv")?;
+        test_source::fixture("pa43/tests/spec/async-signatures/reviewed-sized-cases.tsv")?;
     let mut count = 0;
     for line in manifest.lines() {
         let (path, status) = line.split_once('\t').ok_or("two case columns")?;
@@ -321,7 +321,7 @@ fn required_unsized_output_declarations_preserve_the_actual_source_schema() -> T
 #[test]
 fn source_pin_and_async_signatures_require_real_receiver_proof() -> TestResult {
     let mut count = 0;
-    for line in test_source::fixture("pa43/tests/spec/pin-async-signatures/cases.tsv")?.lines() {
+    for line in test_source::fixture("pa44/tests/spec/pin-async-signatures/cases.tsv")?.lines() {
         let (path, status) = line.split_once('\t').ok_or("case columns")?;
         match (status, analyze(path)) {
             ("0", Ok(facts)) => {

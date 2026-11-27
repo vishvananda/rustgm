@@ -7,7 +7,7 @@ Linux x86-64 with checked arithmetic and aborting panics.
 
 [The PA30 manifest](tests/manifest.json) covers the local C ABI, foreign
 imports, exact linkage, exported storage, callbacks, and calls with
-variadic arguments. PA44 carries the broader foreign representation and
+variadic arguments. PA45 carries the broader foreign representation and
 cross-crate metadata contracts.
 
 ## Callable signatures and safety

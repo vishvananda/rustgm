@@ -7,7 +7,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn async_source_roles_and_nominal_coverage_match_frozen_outcomes() -> TestResult {
     let mut count = 0;
     let mut failures = Vec::new();
-    let expectations = test_source::fixture("pa43/tests/spec/async-destructors/causes.tsv")?;
+    let expectations = test_source::fixture("pa44/tests/spec/async-destructors/causes.tsv")?;
     let mut causes = std::collections::HashMap::new();
     for line in expectations.lines() {
         let (path, rest) = line.split_once('\t').ok_or("cause path column")?;
@@ -16,7 +16,7 @@ fn async_source_roles_and_nominal_coverage_match_frozen_outcomes() -> TestResult
     }
     for manifest in [
         "pa31/tests/spec/async-drop-source/cases.tsv",
-        "pa43/tests/spec/async-destructors/cases.tsv",
+        "pa44/tests/spec/async-destructors/cases.tsv",
     ] {
         for line in test_source::fixture(manifest)?.lines() {
             let (path, status) = line.split_once('\t').ok_or("two case columns")?;
@@ -61,7 +61,7 @@ fn async_source_roles_and_nominal_coverage_match_frozen_outcomes() -> TestResult
 
 #[test]
 fn independent_async_companions_preserve_real_authored_bodies() -> TestResult {
-    let manifest = test_source::fixture("pa43/tests/spec/async-destructors/oracle.tsv")?;
+    let manifest = test_source::fixture("pa44/tests/spec/async-destructors/oracle.tsv")?;
     let mut count = 0;
     for line in manifest.lines() {
         let (path, _) = line.split_once('\t').ok_or("two oracle columns")?;
@@ -70,7 +70,7 @@ fn independent_async_companions_preserve_real_authored_bodies() -> TestResult {
             .ok_or("fixture name")?
             .to_str()
             .ok_or("fixture UTF-8")?;
-        let source = test_source::fixture(&format!("pa43/tests/spec/async-destructors/{name}"))?;
+        let source = test_source::fixture(&format!("pa44/tests/spec/async-destructors/{name}"))?;
         let (_, body) = source
             .split_once(
                 "#[lang=\"async_drop\"]pub trait Actual{async fn drop(self:Pin<&mut Self>);}\n",
@@ -89,7 +89,7 @@ fn independent_async_companions_preserve_real_authored_bodies() -> TestResult {
 
 #[test]
 fn async_family_reuses_nominal_coverage_without_sync_method_registration() -> TestResult {
-    let source = test_source::fixture("pa43/tests/spec/async-destructors/actual-generic.rs")?;
+    let source = test_source::fixture("pa44/tests/spec/async-destructors/actual-generic.rs")?;
     let report = test_source::source_provider(&source, "async_family")?;
     let analysis = pipeline::analyze_source(&report)?;
     let facts = analysis.facts;

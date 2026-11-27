@@ -3,7 +3,7 @@ use super::*;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
-        "pa40/tests/spec/ineffective-unstable-impl/{name}.rs"
+        "pa41/tests/spec/ineffective-unstable-impl/{name}.rs"
     ))?)
 }
 #[test]

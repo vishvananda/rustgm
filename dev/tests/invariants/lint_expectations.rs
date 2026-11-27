@@ -115,7 +115,7 @@ fn completed_scope_and_repeated_report_sessions_are_independent() -> TestResult 
 fn fixture(name: &str) -> std::io::Result<String> {
     std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa40/tests/spec/lint-expectations")
+            .join("../pa41/tests/spec/lint-expectations")
             .join(name),
     )
 }

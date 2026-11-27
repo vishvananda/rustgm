@@ -151,7 +151,7 @@ fn zeros_reject_real_contract_owners_without_granting_language_permissions() -> 
     let args: Vec<_> = values.iter().map(String::as_str).collect();
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
     let unsafe_source =
-        std::fs::read_to_string(root.join("pa40/tests/spec/lint-cap-allow/hard-unsafe.rs"))?;
+        std::fs::read_to_string(root.join("pa41/tests/spec/lint-cap-allow/hard-unsafe.rs"))?;
     for source in [fixture("hard-type")?, unsafe_source] {
         let default = run(&source, "--emit-lowir", &[])?;
         let explicit = run(&source, "--emit-lowir", &args)?;

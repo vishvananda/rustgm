@@ -78,7 +78,7 @@ parameters and nested items. An attribute set is enabled only if all its cfg
 facts are true. PA5 attaches these facts to parsed constructs and omits disabled
 constructs from subsequent semantic work. Do not guess item boundaries by
 searching for braces or semicolons. PA7/PA8 own macro matching and expansion;
-PA40 closes the complete attribute/edition semantics.
+PA41 closes the complete attribute/edition semantics.
 
 ## Text contract
 

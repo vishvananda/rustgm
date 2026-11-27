@@ -138,7 +138,7 @@ class AssignmentPlan(unittest.TestCase):
         stage = {"path": "pa26", "number": 26}
         units = {"hooks": {"owner": "pa26", "depends_on": ["source"]},
                  "source": {"owner": "pa31", "depends_on": []},
-                 "async": {"owner": "pa42", "depends_on": []}}
+                 "async": {"owner": "pa43", "depends_on": []}}
         case = {"path": "tests/hooks.rs", "work_units": ["hooks"]}
         self.assertEqual(fixture_owners(stage, case, units, []), {"pa26", "pa31"})
         for selection in (["source"], ["async"], ["missing"], [], "hooks", ["hooks", "hooks"]):

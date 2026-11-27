@@ -6,7 +6,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn actual_future_output_rejects_foreign_full_projection_inputs_on_cold_and_warm_reads() -> Result {
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/selection-source.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/selection-source.rs")?;
     let report = test_source::source_provider(&text, "future_output_provenance")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -77,7 +77,7 @@ fn actual_future_output_rejects_foreign_full_projection_inputs_on_cold_and_warm_
 fn output_schema_requires_actual_bounds_and_completed_own_family_after_warm_selection() -> Result {
     use crate::sema::associated::Family;
     use crate::types::parameters::predicates::{Bound as PredicateBound, Predicate};
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/selection-source.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/selection-source.rs")?;
     let report = test_source::source_provider(&text, "future_schema_provenance")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -172,7 +172,7 @@ fn selected_poll() -> Result<(Declarations, FutureMethod)> {
         body::ir::Rvalue,
         types::{arguments::Argument, instance::Instance},
     };
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
     let report = test_source::source_provider(&text, "poll_descriptor_provenance")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;

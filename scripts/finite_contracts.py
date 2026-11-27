@@ -3,7 +3,7 @@
 
 An assignment declares one in assignments.json:
 
-    "contract": {"kind": "finite", "carried_by": "pa44",
+    "contract": {"kind": "finite", "carried_by": "pa45",
                  "deferred_units": [...], "deferred_requirements": [...]}
 
 It is complete when at least one of its units is released, its tests/manifest.json is

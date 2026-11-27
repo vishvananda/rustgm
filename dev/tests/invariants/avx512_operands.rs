@@ -4,11 +4,9 @@
 //! 32 and 64 bits. Vector widths count `f16` lanes. The initial assembly
 //! profile still rejects both classes before native lowering or export.
 use super::Result;
-use crate::support::initial_assembly::{COMMENT, KREG, OUTPUT, YMM, ZMM};
+use crate::support::initial_assembly::{COMMENT, MODIFIER, ZMM};
 use std::fmt::Write as _;
-/// The `pure` option's profile text.
-const PURE: &str = "inline assembly pure option is outside the initial assembly profile";
-const PACKET: &str = "pa41/tests/spec/asm-avx512";
+const PACKET: &str = "pa42/tests/spec/asm-avx512";
 /// rustc's typing rejections, each with this checker's reason.
 const REJECTED: [(&str, &str); 11] = [
     ("zmm-no-avx512", "requires the avx512f target feature"),
@@ -26,23 +24,23 @@ const REJECTED: [(&str, &str); 11] = [
 /// Accepted forms and the profile text that stops their lowering: options
 /// come first, then each operand's output and class in order, and comments
 /// last.
-const ACCEPTED: [(&str, &str); 15] = [
-    ("stream-ps512", ZMM),
-    ("mask-load-ss", PURE),
-    ("mask-load-sh", PURE),
-    ("mask-store-sh", KREG),
-    ("zmm-i64x8", ZMM),
-    ("zmm-i32x4", ZMM),
-    ("zmm-f32x8", ZMM),
-    ("zmm-scalar-f64", ZMM),
-    ("zmm-modifier-y", ZMM),
-    ("zmm-output", OUTPUT),
-    ("kreg-u16", KREG),
-    ("kreg-u64-bw", KREG),
-    ("kreg-fp16-implies", KREG),
+const ACCEPTED: [(&str, Option<&str>); 15] = [
+    ("stream-ps512", None),
+    ("mask-load-ss", None),
+    ("mask-load-sh", None),
+    ("mask-store-sh", None),
+    ("zmm-i64x8", Some(COMMENT)),
+    ("zmm-i32x4", Some(COMMENT)),
+    ("zmm-f32x8", Some(COMMENT)),
+    ("zmm-scalar-f64", Some(ZMM)),
+    ("zmm-modifier-y", Some(MODIFIER)),
+    ("zmm-output", Some(COMMENT)),
+    ("kreg-u16", Some(COMMENT)),
+    ("kreg-u64-bw", Some(COMMENT)),
+    ("kreg-fp16-implies", Some(COMMENT)),
     // Its eight `f16` lanes pass the class; its `/* */` reaches the comment fence.
-    ("xmm-f16x8", COMMENT),
-    ("ymm-f16x16", YMM),
+    ("xmm-f16x8", Some(COMMENT)),
+    ("ymm-f16x16", Some(COMMENT)),
 ];
 
 /// A std-form case after `prefix`: crate attributes and the `asm` import are
@@ -108,9 +106,13 @@ fn avx512_operands_type_like_rustc_and_stop_at_the_assembly_profile() -> Result 
         }
     }
     for (name, profile) in ACCEPTED {
-        match super::ymm::check(&case_source(name)?, &entry(name)?)? {
-            (Ok(()), Err(error)) if error.to_string().contains(profile) => {}
-            outcome => failures.push(format!("{name}: {outcome:?}")),
+        match (
+            super::ymm::check(&case_source(name)?, &entry(name)?)?,
+            profile,
+        ) {
+            ((Ok(()), Ok(())), None) => {}
+            ((Ok(()), Err(error)), Some(profile)) if error.to_string().contains(profile) => {}
+            (outcome, _) => failures.push(format!("{name}: {outcome:?}")),
         }
     }
     // Module-body export applies the same profile, so no published body

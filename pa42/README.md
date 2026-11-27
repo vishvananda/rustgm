@@ -1,41 +1,55 @@
-# RustGM Programming Assignment 42 — Async lowering
+# RustGM Programming Assignment 42 — Target features and assembly
 
 The graded suite for this assignment is pending.
 
-Use [PA31](../pa31/README.md)'s actual source callable and coroutine
-declarations to lower async functions, async blocks, and generated
-coroutines. Use the ordinary typed body, ownership, and trait machinery
-from earlier assignments.
+Implement the typed target-feature, vector layout, and assembly rules
+for the course's Linux x86-64 target. Use the pinned CPPGM backend and
+its verified capabilities. Complete the core prerequisite below before
+[PA32](../pa32/README.md). The broader work can follow the bootstrap.
 
-## Required implementation
+## Required core prerequisite
 
-Build a state machine with a stable identity for each generated body.
-Determine which values must survive a suspension. Preserve required
-locals and their initialization state across suspension and resumption.
-Use the selected future and poll contracts for readiness, pending state,
-and completion.
+Use [PA31](../pa31/README.md)'s source binding and feature rules to
+identify the assembly builtin. Reuse [PA27](../pa27/README.md)'s unsafe
+place checks and [PA28](../pa28/README.md)'s typed memory and intrinsic
+effects. The original `_mm_stream_ps` exercises the first end-to-end path.
+Preserve its generated template, pointer register, real 128-bit vector
+operand, `nostack`, and `preserves_flags` options.
 
-Compiler-generated coroutines preserve their resume input, yielded item,
-and returned value, with the actual `Coroutine` associated items and
-`CoroutineState` variants. Preserve the authored body of a `gen` block.
-Its `Iterator` and `FusedIterator` behavior must follow the selected
-implementation and exhaustion state. Ordinary manual implementations
-retain their own typed bodies and call semantics.
+1. Retain the parsed template, operands, modifiers, and source spans
+   through expansion. Check register and operand types, option
+   combinations, initialized inputs, writable outputs, unsafe permission,
+   and actual target features.
+2. Preserve left-to-right operand evaluation and left-to-right output
+   writes after the assembly effect. Retain memory, flags, clobbers, and
+   divergence in the typed CFG. Const and symbol operands keep their
+   constant and relocation identities.
+3. Implement the required SIMD storage, ABI, and lane checks for the
+   actual substituted type. Keep the vector operand in its selected
+   register class and enforce call compatibility.
+4. Emit the required non-temporal store through the backend. Link the
+   original function and check every input bit, the target storage,
+   surrounding sentinels, and the emitted instruction. A source body
+   exported to a consumer retains the checked operand and target facts.
 
-Keep generated state, source declarations, and manual implementations
-distinct. Transfer checked generated bodies through validated metadata
-when a consumer is in another crate. [PA43](../pa43/README.md) adds loans
-across suspension, pinning, cancellation, and destruction.
+## Broader target closure
+
+Complete the target configurations, operand and modifier forms, explicit
+register aliases, ABI clobbers, labels, symbols, global and naked assembly,
+and unwind restrictions required by the selected profile. Check active
+features and target-specific declarations against real target facts.
+Architecture-specific feature requests and backend capability queries
+do not change the configured target.
 
 ## Tool surface
 
-Use the existing LowIR and crate-build interfaces. Retain the source body,
-state transitions, and checked operations through lowering. Run the
-generated state machine with the pinned backend.
+Compile through the typed LowIR pipeline and link against the pinned
+backend. Report an unavailable backend operation separately from an invalid
+Rust assembly invocation.
 
 ## Check your implementation
 
-Exercise pending and ready polls, stored locals, repeated suspension,
-and resumption after a yield. Test manual resume effects separately
-from generated transitions. Observe exact yielded and returned values,
-and check exhaustion on later iterator calls.
+Exercise side effects, aliased outputs, uninitialized inputs, divergence,
+feature restrictions, constants, symbols, and ordinary code without
+assembly. Observe executable results and instruction selection. Use an
+independently compiled caller when checking the C ABI.

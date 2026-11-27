@@ -37,7 +37,7 @@ evaluating checked constant bodies, and inspecting the resulting values.
   recursion and loops with iterative frame/step bookkeeping. Reject an
   evaluation that exceeds a limit with a diagnostic.
 
-PA44 carries the broader constant-memory and callable requirements, including
+PA45 carries the broader constant-memory and callable requirements, including
 general symbolic allocation graphs, const closures, and wider source-library
 integration.
 

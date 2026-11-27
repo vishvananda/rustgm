@@ -254,7 +254,7 @@ fn pending_payload_is_paid_once_for_the_actual_selected_splice() -> TestResult {
 #[test]
 fn original_stdarch_types_macro_has_a_real_captured_array_literal() -> TestResult {
     let source =
-        crate::test_source::fixture("pa41/tests/spec/stdarch-array-derives/macro-input.rs")?;
+        crate::test_source::fixture("pa42/tests/spec/stdarch-array-derives/macro-input.rs")?;
     let (stream, _registry, parsed) = super::macro_tests::transcribed(&source)?;
     let whole = parsed.ast.node(parsed.ast.root).span;
     let mut ast = crate::syntax::ast::Ast::default();

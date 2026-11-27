@@ -39,4 +39,4 @@ the same inputs and compare artifacts. Record whole-library compile time
 and memory. The `alloc`-only graph in [PA35](../pa35/README.md) remains a
 separate check.
 
-After the library bootstrap, complete the [PA45 self-hosting milestone](../pa45/README.md).
+After the library bootstrap, complete the [PA37 self-hosting milestone](../pa37/README.md).

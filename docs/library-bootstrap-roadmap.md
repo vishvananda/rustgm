@@ -289,3 +289,8 @@ The former optional PA39/PA40/PA41 become required PA32/PA33/PA34–PA36. The op
 self-hosting idea moves from PA42 to PA45. Historical checkpoint records and the
 vendored CPPGM LowIR specification retain their original numbers; current
 handouts, assignments.json and ROADMAP.md use the new ownership.
+
+In the 2026-11-27 student-track alignment, self-hosting moved from PA45 to PA37
+and the follow-on assignments shifted from PA37–PA44 to PA38–PA45 so maintainer
+and student PA numbers are identical without export-time renumbering. Historical
+checkpoint records retain their original numbers.

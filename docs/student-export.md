@@ -1,15 +1,15 @@
 # RustGM student export
 
 The initial release for `rustgm-assignments` includes PA1–PA37, ending
-with self-hosting. The exporter assigns student PA37 to maintainer PA45.
-Maintainer PA37–PA44 appear as student PA38–PA45 in the follow-on track.
-Existing fixture ownership and qualification records use the maintainer
-numbers. The [course order](../student/README.md#course-order) explains
-which parts of crate building and target support precede `core`.
+with self-hosting at PA37. PA38–PA45 are the follow-on track (procedural
+macros, unwinding, remaining edition/target/async closure, and final
+frontend acceptance). Maintainer and student PA numbers match directly,
+with no renumbering during export. The [course order](../student/README.md#course-order)
+explains which parts of crate building and target support precede `core`.
 
 PA32–PA36 require separate sysroot artifacts and fresh consumers. Qualify
 the required source diagnostics and metadata before releasing those
-assignments. Student PA37 then rebuilds the compiler and its dependencies
+assignments. PA37 then rebuilds the compiler and its dependencies
 in a single whole-graph compilation session per stage.
 
 Build a preview from a committed revision to review all of the handouts

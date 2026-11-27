@@ -5,7 +5,7 @@
 use super::Result;
 use crate::pipeline;
 use std::fmt::Write as _;
-const PACKET: &str = "pa41/tests/spec/asm-ymm";
+const PACKET: &str = "pa42/tests/spec/asm-ymm";
 /// rustc's typing rejections, each with this checker's reason.
 const REJECTED: [(&str, &str); 6] = [
     ("scalar-u8", "incompatible with register class"),
@@ -17,18 +17,20 @@ const REJECTED: [(&str, &str); 6] = [
 ];
 /// Accepted forms and the profile text that stops their lowering: an output
 /// operand is checked before its class.
-const ACCEPTED: [(&str, &str); 10] = [
-    ("stream-ps", YMM),
-    ("stream-pd", YMM),
-    ("stream-si256", YMM),
-    ("vector-i32x4", YMM),
-    ("vector-i16x16", YMM),
-    ("scalar-f64", YMM),
-    ("scalar-u32", YMM),
-    ("avx2-implies", YMM),
-    ("modifier-x", YMM),
-    ("output", crate::support::initial_assembly::OUTPUT),
+const ACCEPTED: [(&str, Option<&str>); 10] = [
+    ("stream-ps", None),
+    ("stream-pd", None),
+    ("stream-si256", None),
+    ("vector-i32x4", Some(COMMENT)),
+    ("vector-i16x16", Some(COMMENT)),
+    ("scalar-f64", Some(YMM)),
+    ("scalar-u32", Some(YMM)),
+    ("avx2-implies", Some(COMMENT)),
+    ("modifier-x", Some(MODIFIER)),
+    ("output", Some(COMMENT)),
 ];
+const COMMENT: &str = crate::support::initial_assembly::COMMENT;
+const MODIFIER: &str = crate::support::initial_assembly::MODIFIER;
 const YMM: &str = crate::support::initial_assembly::YMM;
 
 /// A core stream store after `prefix`: its crate attribute and `arch`
@@ -121,9 +123,10 @@ fn ymm_operands_type_like_rustc_and_stop_at_the_assembly_profile() -> Result {
         }
     }
     for (name, profile) in ACCEPTED {
-        match check(&case_source(name)?, &entry(name))? {
-            (Ok(()), Err(error)) if error.to_string().contains(profile) => {}
-            outcome => failures.push(format!("{name}: {outcome:?}")),
+        match (check(&case_source(name)?, &entry(name))?, profile) {
+            ((Ok(()), Ok(())), None) => {}
+            ((Ok(()), Err(error)), Some(profile)) if error.to_string().contains(profile) => {}
+            (outcome, _) => failures.push(format!("{name}: {outcome:?}")),
         }
     }
     // Module-body export applies the same profile, so no published body

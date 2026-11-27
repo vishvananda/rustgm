@@ -5,7 +5,6 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import re
 import subprocess
 import sys
 import tarfile
@@ -41,41 +40,15 @@ def git_json(commit, name):
     return json.loads(git("show", f"{commit}:{name}"))
 
 
-def student_number(number):
-    if number == 45:
-        return 37
-    if 37 <= number < 45:
-        return number + 1
-    return number
-
-
-def student_labels(text):
-    return re.sub(r"\b(pa|PA|Assignment )(3[7-9]|4[0-5])\b",
-                  lambda match: f"{match[1]}{student_number(int(match[2]))}", text)
-
-
-def student_path(path):
-    stage, slash, suffix = path.partition("/")
-    return f"{student_labels(stage)}{slash}{suffix}"
-
-
 def student_stage(stage):
-    row = {key: value for key, value in stage.items() if key != "release_evidence"}
-    row["number"] = student_number(row["number"])
-    row["path"] = student_path(row["path"])
-    if "contract" in row:
-        contract = row["contract"]
-        row["contract"] = {**contract, "carried_by": student_path(contract["carried_by"])}
-    if "carries" in row:
-        row["carries"] = {student_path(key): value for key, value in row["carries"].items()}
-    return row
+    return {key: value for key, value in stage.items() if key != "release_evidence"}
 
 
 def selection(assignments, through):
     through = through or "pa37"
-    stages = sorted(assignments["stages"], key=lambda stage: student_number(stage["number"]))
+    stages = sorted(assignments["stages"], key=lambda stage: stage["number"])
     for index, stage in enumerate(stages):
-        if student_path(stage["path"]) == through:
+        if stage["path"] == through:
             return stages[:index + 1]
     raise ValueError(f"unknown student assignment: {through}")
 
@@ -96,8 +69,7 @@ def fixture_files(stage, manifest):
 def extract(commit, stages, public, handout_paths, tree):
     overlays = {f"student/{path}": path for path in STUDENT_FILES}
     overlays["student/assignment.mk"] = "scripts/student-assignment.mk"
-    wanted = {**{path: student_path(path) for path in public}, **overlays}
-    handouts = {"student/README.md", *handout_paths, *(f"{stage}/README.md" for stage in stages)}
+    wanted = {**{path: path for path in public}, **overlays}
     fixture_roots = {(stage, "tests") for stage in stages}
     command = ["git", "-C", str(ROOT), "archive", commit, "--", *stages, "doc",
                "scripts", "student", "shared", "third_party"]
@@ -111,10 +83,7 @@ def extract(commit, stages, public, handout_paths, tree):
                 output = tree / wanted.pop(entry.name)
                 output.parent.mkdir(parents=True, exist_ok=True)
                 if entry.isfile():
-                    data = archive.extractfile(entry).read()
-                    if entry.name in handouts:
-                        data = student_labels(data.decode("utf-8")).encode("utf-8")
-                    output.write_bytes(data)
+                    output.write_bytes(archive.extractfile(entry).read())
                     output.chmod(entry.mode & 0o777)
                 elif entry.issym() and tuple(entry.name.split("/", 2)[:2]) in fixture_roots:
                     output.symlink_to(entry.linkname)
@@ -161,7 +130,7 @@ def export(revision, through, destination, *, include_pending=False):
     selected = selection(assignments, through)
     pending = [entry["path"] for entry in selected if entry["status"] == "planned"]
     if pending and not include_pending:
-        raise ValueError(f"grading suites are pending for {', '.join(map(student_path, pending))}")
+        raise ValueError(f"grading suites are pending for {', '.join(pending)}")
     stages = [entry["path"] for entry in selected if entry["status"] in ("implemented", "implemented-draft")]
     if len(stages) + len(pending) != len(selected):
         raise ValueError("unknown assignment status in export selection")
@@ -171,33 +140,28 @@ def export(revision, through, destination, *, include_pending=False):
     for stage in stages:
         public.update(fixture_files(stage, git_json(commit, f"{stage}/tests/manifest.json")))
     sources = git_json(commit, "third_party/sources.json")
-    sources["files"] = [
-        {**entry, "destination": student_path(entry["destination"])}
-        for entry in sources["files"] if entry["destination"] in public
-    ]
+    sources["files"] = [entry for entry in sources["files"] if entry["destination"] in public]
     assignments["stages"] = [student_stage(entry) for entry in selected]
-    student_stages = list(map(student_path, stages))
-    student_pending = list(map(student_path, pending))
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".rustgm-export-", dir=destination.parent) as scratch:
         tree = Path(scratch) / "tree"
         extract(commit, stages, public, handout_paths, tree)
         write_json(tree / "assignments.json", assignments)
         write_json(tree / "third_party/sources.json", sources)
-        for stage in student_stages:
+        for stage in stages:
             (tree / stage / "Makefile").write_text("include ../scripts/student-assignment.mk\n", encoding="utf-8")
-        counts = validate(tree, student_stages, map(student_path, public))
+        counts = validate(tree, stages, public)
         write_json(tree / "export.json", {
             "schema": 1,
             "source_commit": commit,
             "backend_lock_sha256": hashlib.sha256((tree / "backend.lock.json").read_bytes()).hexdigest(),
             "cases": counts,
-            "handouts_only": student_pending,
+            "handouts_only": pending,
         })
         tree.rename(destination)
     print(f"Exported {len(selected)} handouts and {sum(counts.values())} cases from {commit[:12]} to {destination}")
-    if student_pending:
-        print(f"Handouts with grading suites pending: {', '.join(student_pending)}")
+    if pending:
+        print(f"Handouts with grading suites pending: {', '.join(pending)}")
 
 
 def main():

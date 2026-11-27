@@ -16,7 +16,7 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const _: [(); 112] = [(); size_of::<Contract>()];
 fn input(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
-        "pa41/tests/spec/target-features/{name}.rs"
+        "pa42/tests/spec/target-features/{name}.rs"
     ))?)
 }
 fn analyze(source: &str) -> TestResult<(Report, Analysis)> {

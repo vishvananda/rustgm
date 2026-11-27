@@ -6,7 +6,7 @@ use crate::{
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!(
-        "pa41/tests/spec/simd-lane-limit/{name}.rs"
+        "pa42/tests/spec/simd-lane-limit/{name}.rs"
     ))?)
 }
 fn analyze(source: &str) -> TestResult<(crate::resolve::expansion::Report, pipeline::Analysis)> {

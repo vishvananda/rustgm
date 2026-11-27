@@ -15,7 +15,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn actual_poll_permit_rejects_forged_state_edges_members_and_foreign_store() -> Result {
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/pollready-source.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/pollready-source.rs")?;
     let report = test_source::source_provider(&text, "poll_permit_graph")?;
     let pipeline::Analysis {
         mut facts,

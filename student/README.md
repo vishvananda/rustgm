@@ -30,12 +30,12 @@ Test reports are written to `obj/tests/`. Set
 3. Build `alloc` in PA33, extend the crate-build driver in PA34, then run
    PA35's core-only and allocation-dependent upstream checks. Build `std`
    in PA36.
-4. Complete **self-hosting (PA45)** using that library profile. Stage 1 runs
+4. Complete **self-hosting (PA37)** using that library profile. Stage 1 runs
    the earlier assignment suites and stage 2 must reproduce stage 1.
 
-The initial track ends at PA45. Procedural macros, unwinding, the remaining
-edition and target work, and async are a separate track. PA44 integrates
-the broader course profile after those features.
+The initial track ends at PA37. Procedural macros, unwinding, the remaining
+edition and target work, and async are a separate follow-on track (PA38–PA44).
+PA45 integrates the broader course profile after those features.
 
 Each exported assignment folder has a `README.md`. Available suites have
 a test manifest and a `make test` target in their PA directory. A preview

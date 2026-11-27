@@ -252,5 +252,5 @@
     "source-native-changed-v2-builtin-tool-source-profile.rs": "guaranteed 99 99 1\n"
   },
   "profile": "Same pinned compiler argv/env; no_core supported feature profile omits unused register_tool request/declaration while preserving complete intrinsic function",
-  "source_request_gap": "Original register_tool-bearing v1/v2 inputs remain required PA40 setup, not counted as candidate passes"
+  "source_request_gap": "Original register_tool-bearing v1/v2 inputs remain required PA41 setup, not counted as candidate passes"
 }

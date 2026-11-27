@@ -153,7 +153,7 @@
     }
   },
   "native_expected": "23 23 47 59\n",
-  "candidate_profile": "cap-lints=allow; default uncapped full-source doc diagnostics remain Rust-positive PA40 required work",
+  "candidate_profile": "cap-lints=allow; default uncapped full-source doc diagnostics remain Rust-positive PA41 required work",
   "reference_profiles": [
     "uncapped reference-v2 all21 and native passed",
     "cap-lints=allow independently pending reference-v3 before candidate"

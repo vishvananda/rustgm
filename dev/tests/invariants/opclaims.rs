@@ -21,13 +21,13 @@ use std::sync::Arc;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn artifact() -> Result<crates::Interface> {
     module_packets::exported_profile(
-        &crate::test_source::fixture("pa43/tests/spec/deferred-compiler-op/provider.rs")?,
+        &crate::test_source::fixture("pa44/tests/spec/deferred-compiler-op/provider.rs")?,
         SourcePublication::CompilerOperations,
         "symbolic_contracts",
     )
 }
 fn fresh(bytes: &[u8]) -> Result<Declarations> {
-    let source = crate::test_source::fixture("pa43/tests/spec/deferred-compiler-op/consumer.rs")?
+    let source = crate::test_source::fixture("pa44/tests/spec/deferred-compiler-op/consumer.rs")?
         .replace("minicore", "base");
     let mut facts = crate::source_packets::client_analysis(crates::decode(bytes)?, &source)?
         .1

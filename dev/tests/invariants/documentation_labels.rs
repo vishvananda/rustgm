@@ -4,7 +4,7 @@ use crate::{pipeline, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!(
-        "pa40/tests/spec/primitive-documentation/{name}.rs"
+        "pa41/tests/spec/primitive-documentation/{name}.rs"
     ))?)
 }
 fn analyze(source: &str) -> TestResult<(Report, pipeline::Analysis)> {

@@ -61,7 +61,7 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
         .collect();
     assert_eq!(assembly_calls.len(), 1);
     assert_eq!(assembly_calls[0].parser_calls, 1);
-    let reducer = crate::test_source::fixture("pa41/tests/spec/asm-frontend/stream-ps.rs")?;
+    let reducer = crate::test_source::fixture("pa42/tests/spec/asm-frontend/stream-ps.rs")?;
     let mut actual = source("")?;
     // Crate attributes remain at the actual crate root, before source declarations.
     actual = actual.replacen("#![feature(", "#![feature(decl_macro,staged_api,", 1);
@@ -138,20 +138,12 @@ fn scalar_inputs_and_outputs_reach_real_original_proof_then_profile_fence() -> R
     let prepared = std::mem::take(&mut analysis.prepared);
     crate::lower::instances::inspect_prepared(&report, &mut analysis.facts, prepared, |_, _| ())?;
     let mut analysis = crate::pipeline::analyze_source(&report)?;
-    let error = crate::lower::instances::build_prepared(
+    crate::lower::instances::build_prepared(
         &report,
         &mut analysis.facts,
         entry,
         analysis.prepared,
-    )
-    .err()
-    .ok_or("unsupported asm form silently lowered")?;
-    assert!(
-        error
-            .to_string()
-            .contains("inline assembly pure option is outside the initial assembly profile"),
-        "{error}"
-    );
+    )?;
     operand_evaluation_order()?;
     output_order_and_divergence()?;
     Ok(())
@@ -442,7 +434,7 @@ fn asm_storage_and_width_growth_remain_cold_and_body_owned() -> Result {
 fn discarded_inout_writes_stay_distinct_from_read_only_inputs() -> Result {
     for name in ["discarded-pointer", "discarded-fixed"] {
         let input = crate::test_source::fixture(&format!(
-            "pa41/tests/spec/source-fixed-registers/{name}.rs"
+            "pa42/tests/spec/source-fixed-registers/{name}.rs"
         ))?;
         let text = format!("{}{}", vectors::foundation()?, input.replace("<T>", ""));
         let report = crate::test_source::source_provider(&text, "discarded_asm")?;

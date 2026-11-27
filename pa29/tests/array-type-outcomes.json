@@ -172,12 +172,12 @@
  "old_readers": {
   "pre_t_reader": "the T baseline (fence candidate 3960ec90) consuming the T provider packet rejects it with `unknown source function type recipe`: the type table precedes the arguments and the nominal headers"
  },
- "byte_identity": "the T baseline and the T candidate publish identical version-thirteen packets for spec/transparent-records, spec/panic-attributes, spec/macro-contexts, spec/const-parameters, spec/pointer-slices and spec/named-constants providers, pa41 spec/asm-transport/provider.rs and the native.rs prelude before `#[repr(simd)]`",
- "flip_survey": "every pa29 and pa41 provider with a provider.rs, exported by the baseline and the candidate under version 13, and each of its clients: no accepted packet changes a byte, and every reject-to-accept flip is listed by name before integration",
+ "byte_identity": "the T baseline and the T candidate publish identical version-thirteen packets for spec/transparent-records, spec/panic-attributes, spec/macro-contexts, spec/const-parameters, spec/pointer-slices and spec/named-constants providers, pa42 spec/asm-transport/provider.rs and the native.rs prelude before `#[repr(simd)]`",
+ "flip_survey": "every pa29 and pa42 provider with a provider.rs, exported by the baseline and the candidate under version 13, and each of its clients: no accepted packet changes a byte, and every reject-to-accept flip is listed by name before integration",
  "width": "s::Type stays 20 B and the port-plan Node 20 B; ColdColumns gains the one array_lengths Vec (+24 B), pinned with the existing size asserts; each tag-14 row read reserves size_of::<ConstTerm>()",
  "scaling": "generated providers of the foundation plus 6, 24 and 96 functions `pub fn aNNN(a: [u8; NNN]) -> [u8; NNN] { a }` (three-digit names and lengths): packet bytes grow by the same amount per function, and a fresh client that names no function emits identical LowIR for all three",
  "stream_witness": {
-  "source": "pa41/tests/spec/asm-native/native.rs before `// Authored observers`",
+  "source": "pa42/tests/spec/asm-native/native.rs before `// Authored observers`",
   "before_and_after": "source nominal representation requires its wider complete contract"
  },
  "oracle": {

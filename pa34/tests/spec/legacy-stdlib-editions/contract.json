@@ -1,6 +1,6 @@
 {
   "state": "predicted before independent metadata observation; target frontend editions remain required",
-  "owner": "PA34 selected std graph; PA40 broader edition closure",
+  "owner": "PA34 selected std graph; PA41 broader edition closure",
   "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "profile": {
     "target": "x86_64-unknown-linux-gnu",

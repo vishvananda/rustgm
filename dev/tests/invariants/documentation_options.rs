@@ -30,7 +30,7 @@ fn report(source: &str, config: &Config) -> Result<Report> {
 #[test]
 fn documentation_gates_match_independent_source_and_macro_outcomes() -> Result {
     assert_eq!(size_of::<super::Features>(), 16);
-    let cases = crate::test_source::fixture("pa40/tests/spec/documentation-gates/cases-v2.tsv")?;
+    let cases = crate::test_source::fixture("pa41/tests/spec/documentation-gates/cases-v2.tsv")?;
     let mut count = 0;
     for row in cases.lines() {
         let columns: Vec<_> = row.split('\t').collect();
@@ -142,7 +142,7 @@ fn repeated_documentation_headers_share_paid_macro_allowance_work() -> Result {
 fn uncapped_valid_documentation_options_preserve_the_independent_outcomes() -> Result {
     for name in ["cfg-false", "cfg-auto-hide", "notable-trait"] {
         let source =
-            crate::test_source::fixture(&format!("pa40/tests/spec/documentation-gates/{name}.rs"))?;
+            crate::test_source::fixture(&format!("pa41/tests/spec/documentation-gates/{name}.rs"))?;
         let report = report(&source, &Config::default())?;
         let facts = crate::sema::declarations::analyze(&report)?;
         assert!(facts.warnings().next().is_none(), "{name}");

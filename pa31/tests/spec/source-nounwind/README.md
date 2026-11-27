@@ -14,6 +14,6 @@ boundary outside the currently supported ABI profile; it is not a Rust rejection
 `upstream-unlikely.rs` preserves the actual pinned source interval, with full
 file/interval hashes in the contract. It is context rather than a replacement
 body: compiling that unchanged original also needs its genuine ColdPath
-intrinsic/fallback. PA39 still requires panic-unwind modes, personalities,
+intrinsic/fallback. PA40 still requires panic-unwind modes, personalities,
 cleanup, foreign-exception boundaries and semantic transport. No original crate
 or whole assignment is completed by these finite controls.

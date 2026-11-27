@@ -1,7 +1,7 @@
 # Pinned source intrinsic declarations
 
 PA28 owns intrinsic header and operation contracts, PA31 source authority and
-PA41 target-specific semantics. PA29 must transport actual compiler contracts.
+PA42 target-specific semantics. PA29 must transport actual compiler contracts.
 The raw pinned compiler has315 names, of which19 have existing dedicated contracts.
 The296 additional declarations share100 distinct type/safety profiles. The
 source inventory is not a cfg-active count or evidence of operation support.

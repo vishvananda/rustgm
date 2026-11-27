@@ -1231,83 +1231,83 @@
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/eflags.rs",
-      "destination": "pa41/tests/upstream/rust/eflags.rs",
+      "destination": "pa42/tests/upstream/rust/eflags.rs",
       "sha256": "9662f8eaabf031a5c941ea3e9473bd781115fb2581c7e0c38d8e8ae18beb92d9",
       "adaptation": "none; original bytes retained; x86-64 function bodies are inserted verbatim into the no_core fixture",
       "oracle": "source-integer-assembly/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/cpuid.rs",
-      "destination": "pa41/tests/upstream/rust/cpuid.rs",
+      "destination": "pa42/tests/upstream/rust/cpuid.rs",
       "sha256": "7061c9caa88fe5ddeff983f94cb921c921f948f85bd483c56fd62001136747c3",
       "adaptation": "none; original bytes retained; declaration and complete active tail are inserted verbatim into an authored generic wrapper",
       "oracle": "source-fixed-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/sse2.rs",
-      "destination": "pa41/tests/upstream/rust/sse2.rs",
+      "destination": "pa42/tests/upstream/rust/sse2.rs",
       "sha256": "d156dbd31cc547034e7950cc169943e9ec69bfc3e74911f0529d6fca3030c7a5",
       "adaptation": "none; original bytes retained; complete _mm_stream_si32 declaration and body inserted verbatim into a source provider",
       "oracle": "source-fixed-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/sse41.rs",
-      "destination": "pa41/tests/upstream/rust/sse41.rs",
+      "destination": "pa42/tests/upstream/rust/sse41.rs",
       "sha256": "cf570ce5b07bf529bbf7e7759701a52a09e0ad119108ed58c600886e7f651647",
       "adaptation": "none; original bytes retained; complete _mm_stream_load_si128 declaration and body inserted verbatim into a source provider",
       "oracle": "source-memory-assembly/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/avx.rs",
-      "destination": "pa41/tests/upstream/rust/avx.rs",
+      "destination": "pa42/tests/upstream/rust/avx.rs",
       "sha256": "c50244e9e20413e5044d101b5ba63792dd730afcb31c0338f213092c69968e00",
       "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
       "oracle": "source-wide-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/avx2.rs",
-      "destination": "pa41/tests/upstream/rust/avx2.rs",
+      "destination": "pa42/tests/upstream/rust/avx2.rs",
       "sha256": "658c474f8b9a798c190095562504727e1a4ece787dd6798b85a3bcbfacb6b172",
       "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
       "oracle": "source-wide-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/avx512f.rs",
-      "destination": "pa41/tests/upstream/rust/avx512f.rs",
+      "destination": "pa42/tests/upstream/rust/avx512f.rs",
       "sha256": "4af745549c5b2767a496732d06fd8325b1ad46705f648aebc0656a330e0e28c1",
       "adaptation": "none; original bytes retained; selected complete streaming functions inserted verbatim into source-wide-registers",
       "oracle": "source-wide-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86/bt.rs",
-      "destination": "pa41/tests/upstream/rust/x86_bt.rs",
+      "destination": "pa42/tests/upstream/rust/x86_bt.rs",
       "sha256": "af67a510f27a4db2f62658d055e004f390429bd1e1a23c273796ac8bf586777a",
       "adaptation": "none; the original 64-bit pointer macro and four functions are used verbatim",
       "oracle": "source-byte-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     },
     {
       "repository": "rust",
       "path": "library/stdarch/crates/core_arch/src/x86_64/bt.rs",
-      "destination": "pa41/tests/upstream/rust/x86_64_bt.rs",
+      "destination": "pa42/tests/upstream/rust/x86_64_bt.rs",
       "sha256": "5be7e08dc0b9eb3227790e33731b8052ca901790692f5dc76a3a2bd657c6ed72",
       "adaptation": "none; the original 64-bit pointer macro and four functions are used verbatim",
       "oracle": "source-byte-registers/outcomes.json",
-      "owning_assignment": "pa41"
+      "owning_assignment": "pa42"
     }
   ]
 }

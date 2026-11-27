@@ -6,7 +6,7 @@ from [PA16](../pa16/README.md), and closure captures from
 2024, on Linux x86-64 with checked arithmetic and aborting panics.
 
 [The PA27 manifest](tests/manifest.json) covers unsafe permissions, raw and
-packed places, static storage, and runtime unions. PA44 carries the broader
+packed places, static storage, and runtime unions. PA45 carries the broader
 constant pointer and byte provenance, interior mutation, and wide-value
 validity requirements.
 

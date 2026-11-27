@@ -249,7 +249,7 @@ fn deprecated_declarations_cannot_be_silently_exported_without_their_contract()
 -> Result<(), Box<dyn std::error::Error>> {
     let source = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa40/tests/spec/lint-expectations/deprecated-export.rs"),
+            .join("../pa41/tests/spec/lint-expectations/deprecated-export.rs"),
     )?;
     let Err(error) = compile(&source, "deprecated") else {
         return Err("deprecated declaration exported without contract".into());

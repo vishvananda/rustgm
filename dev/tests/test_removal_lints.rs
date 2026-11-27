@@ -191,7 +191,7 @@ fn removed_owner_completion_keeps_direct_and_parent_expectations_in_their_actual
         ),
     ] {
         let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join(format!("../pa40/tests/spec/lint-expectations/{name}.rs"));
+            .join(format!("../pa41/tests/spec/lint-expectations/{name}.rs"));
         let source = std::fs::read_to_string(path)?;
         let (report, facts) = crate::attribute_contracts::analyze(&source)?;
         assert!(

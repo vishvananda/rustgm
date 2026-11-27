@@ -1,40 +1,44 @@
-# RustGM Programming Assignment 44 — Frontend acceptance
+# RustGM Programming Assignment 44 — Async ownership
 
 The graded suite for this assignment is pending.
 
-Qualify the complete configured Rust 1.98.0 frontend for Linux x86-64.
-Exercise combinations of language features through checked LowIR, native
-execution, and cross-crate artifacts. The work carries the broader
-requirements deferred by the focused PA25–PA30 assignments.
+Extend [PA43](../pa43/README.md)'s suspension state machines with borrowed
+storage, pinning, cancellation, and async destruction. Reuse the ownership
+and loan checks from PA14–PA17 and the applicable pointer validity rules
+from PA27.
 
-## Carried requirements
+## Ownership across suspension
 
-| Earlier assignment | Features to exercise here |
-| --- | --- |
-| PA25 | Named, generic, and associated initializers, const calls and closures, constant patterns and lengths, symbolic storage and provenance, and slice and unsized constant values |
-| PA26 | Source-bound operators and iteration, question-mark and residual control flow, built-in derives, formatting, and panic hooks |
-| PA27 | Constant raw accesses, typed validity over byte-backed values, interior mutation, and raw slices and reconstructed wide values |
-| PA28 | The remaining intrinsic, atomic, volatile, and numeric operations, symbolic fragment transport, and actual source layout and transmute calls |
-| PA29 | Complete interface and value artifacts, generic and provided bodies, source attribute policies, and proof-aware executable transport |
-| PA30 | Foreign signatures, storage, arrays, and variadic metadata, opaque foreign types, and the supported representation and ABI rules |
+Prove the lifetime and place of each retained borrow. Preserve captured
+storage at the required address when the future is pinned. Check reborrows,
+receiver selection, `Unpin` requirements, and projection legality. Keep
+storage and cleanup obligations valid at each suspension, resumption, and
+exit. Include self-referential state, async closures, and async trait
+methods.
 
-Check combinations of these features with editions, macros, ownership,
-unwinding, and async behavior from the other assignments. Include
-deterministic source and debug locations and compare both information
-retained in artifacts and behavior after importing them.
+## Cancellation and destruction
+
+Use the actual source `AsyncDrop` declarations and checked Pin receiver.
+Implement the compiler-generated operation for `async_drop_in_place`.
+Retain its suspension and cleanup behavior, including recursive cleanup
+of owned fields. Source placeholders and declaration metadata alone
+supply no generated state machine.
+
+Destroy only the initialized values owned by the suspended or completed
+state. Preserve source cleanup order and the exclusion between Copy and
+destruction. Use [PA29](../pa29/README.md)'s typed artifact boundary for
+imported operations and the source and body transport needed to execute
+them.
 
 ## Tool surface
 
-Run the full selected crate-build and LowIR pipeline. Build original
-`core`, `alloc`, `std`, and the required upstream crate graphs.
-Compile each selected target Rust unit with RustGM and link it through
-the pinned CPPGM backend.
+Use the existing LowIR and crate-build interfaces. Lower the checked
+state machines, poll calls, and cleanup paths for the pinned backend.
 
 ## Check your implementation
 
-Run the preceding assignment suites and compile and execute complete
-upstream consumers. Compare repeat builds and artifact round trips.
-Exercise cross-feature failures and check their diagnostics. Measure
-time, memory, and scaling on complete graphs as well as focused inputs.
-This is the final integration assignment. Use the earlier
-[PA45 self-hosting milestone](../pa45/README.md) for the separate strict reproduction check.
+Cancel at each suspension state and observe the actual cleanup order.
+Test completion, self-reference validity, moved captures, and recursive
+async destruction. Include a separate consumer of an imported async
+operation. Run native controls to check the selected constructor,
+polling, and cleanup behavior.

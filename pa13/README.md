@@ -2,7 +2,7 @@
 
 Build on [PA12](../pa12/README.md) to select pattern bindings, check
 exhaustiveness and usefulness, and lower owned patterns. Use Rust 1.98.0,
-edition 2024, on Linux x86-64. PA34 adds edition 2021 and PA40 covers the
+edition 2024, on Linux x86-64. PA34 adds edition 2021 and PA41 covers the
 remaining editions.
 
 ## Command-line interface

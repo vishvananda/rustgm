@@ -188,7 +188,7 @@
     "expected": "every export and client is accepted; packet bytes grow exactly affinely in N (fixed-length names); the client's LowIR grows at most linearly (third difference at most five times the second, or 64)"
   },
   "flip_survey": {
-    "control": "the base pin against the candidate: every pa29 and pa41 module-bodies provider exported under module-nominals-v10, module-branches-v12 and module-bodies-v13 and every fixture client of each, compared by status, stderr, LowIR and packet bytes; plus every committed .rs fixture containing a record variant compiled as a single-crate library (--emit-lowir --crate-type=lib)",
+    "control": "the base pin against the candidate: every pa29 and pa42 module-bodies provider exported under module-nominals-v10, module-branches-v12 and module-bodies-v13 and every fixture client of each, compared by status, stderr, LowIR and packet bytes; plus every committed .rs fixture containing a record variant compiled as a single-crate library (--emit-lowir --crate-type=lib)",
     "expected": "only spec/record-variants is new; among existing inputs exactly one flips, R2's record-variant opponent (above); pa29/tests/spec/non-exhaustive-local/same-crate-variants.rs and every other single-crate record-variant fixture keep every status, stderr and LowIR byte; every other status, stderr, LowIR and packet byte is unchanged"
   },
   "native": {

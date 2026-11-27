@@ -122,7 +122,7 @@ def main():
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     check = Check(args.app, args.out)
-    fixture_root = ROOT / "pa41/tests/spec" if args.case in ASSEMBLY_CASES else FIXTURES
+    fixture_root = ROOT / "pa42/tests/spec" if args.case in ASSEMBLY_CASES else FIXTURES
     fixture = fixture_root / args.case
     contract = json.loads((fixture / "outcomes.json").read_text())
     disambiguator = args.case.replace("-", "_")

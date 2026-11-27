@@ -42,7 +42,7 @@ fn report(source: &str, config: &Config, provider: bool) -> Result<Report> {
 }
 #[test]
 fn reliability_queries_preserve_pinned_feature_and_macro_origin_outcomes() -> Result {
-    let cases = crate::test_source::fixture("pa41/tests/spec/float-reliability-cfg/cases-v2.tsv")?;
+    let cases = crate::test_source::fixture("pa42/tests/spec/float-reliability-cfg/cases-v2.tsv")?;
     let mut count = 0;
     for row in cases.lines() {
         let columns: Vec<_> = row.split('\t').collect();

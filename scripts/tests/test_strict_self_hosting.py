@@ -1,4 +1,4 @@
-"""The PA45 whole-graph procedure keeps frozen inputs and a strict stage chain."""
+"""The PA37 whole-graph procedure keeps frozen inputs and a strict stage chain."""
 import json
 from pathlib import Path
 import sys

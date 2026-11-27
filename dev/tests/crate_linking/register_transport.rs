@@ -7,11 +7,11 @@
 //! rejected at decode.
 use super::fresh_packets::{Packet, Result, inner, spliced, unique};
 use rustgm::support::crates;
-const SPEC: &str = "pa41/tests/spec/asm-transport";
+const SPEC: &str = "pa42/tests/spec/asm-transport";
 const GROUP: &str = "asm-transport";
 const PROFILE: &str = "module-bodies-v13";
 const MARKER: &str = "// Authored asm transport section.\n";
-/// Frozen outcomes from `pa41/tests/asm-transport-outcomes.json`.
+/// Frozen outcomes from `pa42/tests/asm-transport-outcomes.json`.
 const ACCEPTED: [&str; 2] = ["stored", "tagged"];
 const REJECTED: [(&str, &str); 2] = [
     (
@@ -72,7 +72,7 @@ fn unwritten(path: &std::path::Path) -> Result<bool> {
 fn control(packet: &Packet, label: &str) -> Result<std::path::PathBuf> {
     let provider = std::fs::read_to_string(packet.fixture("provider"))?;
     let foundation = provider.split(MARKER).next().ok_or("foundation")?;
-    let path = format!("pa41/tests/spec/asm-native/opponents/{label}.rs");
+    let path = format!("pa42/tests/spec/asm-native/opponents/{label}.rs");
     let opponent = std::fs::read_to_string(packet.root.join(path))?;
     let lines: Vec<&str> = opponent
         .lines()
@@ -123,7 +123,7 @@ fn assembly_packets_export_and_fresh_consumers_rebuild_their_payloads() -> Resul
 #[test]
 fn forms_outside_the_profile_keep_their_lowering_texts_at_export() -> Result {
     let packet = Packet::new(GROUP, SPEC, "asm-controls", "provider")?;
-    let native = packet.root.join("pa41/tests/spec/asm-native");
+    let native = packet.root.join("pa42/tests/spec/asm-native");
     let table = std::fs::read_to_string(native.join("opponents.tsv"))?;
     for label in CONTROLS {
         let path = format!("opponents/{label}.rs");

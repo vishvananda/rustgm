@@ -119,17 +119,17 @@
   "simd-abi": {
    "note": "Nominal repr(simd) layout, gates and the C128 copy ABI. The tables are hypotheses frozen before observation, so the probe decides which hold; version 1 (predictions.json) is superseded by version 2 and was never executed. The C observers are standalone mains over a Rust library, which a course case cannot declare.",
    "tables": [
-    {"table": "tests/spec/source-simd/predictions-v2.json", "shape": "hypotheses", "feature": "pa41.simd-layout",
+    {"table": "tests/spec/source-simd/predictions-v2.json", "shape": "hypotheses", "feature": "pa42.simd-layout",
      "feature_environment": {"RUSTC_BOOTSTRAP": "1"},
      "skip_rows": {"generic-bool.rs": "Superseded: followup-predictions.json re-declares this source as an accepted object, frozen after the E0077 metadata hypothesis was contradicted."}},
     {"table": "tests/spec/source-simd/followup-predictions.json", "rows": "metadata", "shape": "hypotheses",
-     "feature": "pa41.simd-gate", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}},
+     "feature": "pa42.simd-gate", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}},
     {"table": "tests/spec/source-simd/followup-predictions.json", "rows": "objects", "shape": "hypotheses",
-     "feature": "pa41.simd-demand", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}},
+     "feature": "pa42.simd-demand", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}},
     {"table": "tests/spec/source-simd/demand-predictions.json", "rows": "objects", "shape": "hypotheses",
-     "feature": "pa41.simd-demand", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}}
+     "feature": "pa42.simd-demand", "feature_environment": {"RUSTC_BOOTSTRAP": "1"}}
    ],
-   "entry_free": {"crate_name": "simd_fixture", "disambiguator": "pa41"},
+   "entry_free": {"crate_name": "simd_fixture", "disambiguator": "pa42"},
    "review": {
     "tests/spec/source-simd/wide-pointer.rs": "Rust rejects it with E0077, and so does the candidate, but for the wrong reason: `unresolved value name` (the ordinary resolver supplies no std::mem::size_of, as in align-corrected.rs)",
     "tests/spec/source-simd/generic-product-demand.rs": "Rust rejects the demanded product lane, and so does the candidate, but for the wrong reason: `unresolved value name` (the ordinary resolver supplies no std::mem::size_of, as in generic-scalar-demand.rs)"

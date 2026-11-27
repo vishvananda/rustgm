@@ -93,7 +93,7 @@ assignments.json. The other PA1–PA20 stages retain implemented-draft; the
 lists what each record lacks. PA25–PA30 are closed at their finite contracts:
 each manifest is the union of its released unit manifests, and the unreleased
 units and requirement rows it defers are carried by
-[PA44](pa44/MAINTAINER.md#carried-requirements). PA31–PA45 remain planned as whole
+[PA45](pa45/MAINTAINER.md#carried-requirements). PA31–PA45 remain planned as whole
 assignments. No planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
@@ -493,28 +493,28 @@ release record):
 | [34](pa34/README.md) | Edition and crate build integration | planned |
 | [35](pa35/README.md) | Upstream crate acceptance | planned |
 | [36](pa36/README.md) | Std and platform bootstrap | planned |
-| [37](pa37/README.md) | Procedural macro host | planned |
-| [38](pa38/README.md) | Derive and attribute macros | planned |
-| [39](pa39/README.md) | Panic and unwinding | planned |
-| [40](pa40/README.md) | Edition and attribute closure | planned |
-| [41](pa41/README.md) | Target-specific closure | planned |
-| [42](pa42/README.md) | Async lowering | planned |
-| [43](pa43/README.md) | Async ownership | planned |
-| [44](pa44/README.md) | Frontend acceptance | planned |
-| [45](pa45/README.md) | Reproducible self-hosting | planned |
+| [37](pa37/README.md) | Reproducible self-hosting | planned |
+| [38](pa38/README.md) | Procedural macro host | planned |
+| [39](pa39/README.md) | Derive and attribute macros | planned |
+| [40](pa40/README.md) | Panic and unwinding | planned |
+| [41](pa41/README.md) | Edition and attribute closure | planned |
+| [42](pa42/README.md) | Target-specific closure | planned |
+| [43](pa43/README.md) | Async lowering | planned |
+| [44](pa44/README.md) | Async ownership | planned |
+| [45](pa45/README.md) | Frontend acceptance | planned |
 
 The goal remains all assignment requirements needed to build original pinned
 core, alloc and std and execute independent real-crate consumers. Actual active
 source determines required language/runtime/target capabilities; a later number
 never excuses a failed library path. Full unwinding and async remain separate
-from the initial abort-profile graph. PA45 reproducible self-hosting is the
+from the initial abort-profile graph. PA37 reproducible self-hosting is the
 required milestone after the library bootstrap. CPPGM is the explicit LowIR
 backend. Backend extensions require separate reviewed capability work.
 
 The strict whole-source graph now builds and links a native RustGM with zero
 bring-up records. The linked stage 1 passes every committed PA1–PA24 oracle.
 Stage 2 reproduces the LowIR, native link manifest and linked compiler byte for
-byte. The [PA45 procedure](pa45/MAINTAINER.md#tool-surface) records the ordered graph
+byte. The [PA37 procedure](pa37/MAINTAINER.md#tool-surface) records the ordered graph
 and qualification commands for independent review.
 
 The [overflow/automatic/CI checkpoint](docs/parallel/overflow-auto-ci-main-join.md)

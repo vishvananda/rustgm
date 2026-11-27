@@ -1,7 +1,7 @@
 {
   "state": "Frozen independent predictions ONLY; no reference/candidate execution or observed next-blocker claim",
   "pin": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64 edition2024",
-  "owner": "PA31 source declarations; PA42/43 future suspension diagnostics; ordinary PA15/19/23/26 ownership retained",
+  "owner": "PA31 source declarations; PA44/44 future suspension diagnostics; ordinary PA15/19/23/26 ownership retained",
   "primary": {
     "compiler/rustc_attr_parsing/src/attributes/must_not_suspend.rs:5-33": {
       "file_sha256": "24a82ab29226416be40a957ba87abb066fd5b49128534d0e4212d3379ce48ed2",
@@ -283,7 +283,7 @@
     "Actual Struct/Enum/Union/Trait targets only; active repeated attributes are hard errors including differing reasons",
     "Advisory affects suspension warning only, never drop order/Copy/Send/Unpin/unsafe/mutation or borrow permission"
   ],
-  "required": "Actual PA42/43 suspension liveness, reasons, allow/warn/deny/expect and imported advisory transport remain Required; no async dependency or fake suspend execution is hidden in this PA31 declaration packet. Future owning tests must retain guard-across-await warning, scoped-before-await opposite and real cancellation/drop/borrow semantics. Whole original Ref/RefMut algorithms and artifacts remain required.",
+  "required": "Actual PA44/44 suspension liveness, reasons, allow/warn/deny/expect and imported advisory transport remain Required; no async dependency or fake suspend execution is hidden in this PA31 declaration packet. Future owning tests must retain guard-across-await warning, scoped-before-await opposite and real cancellation/drop/borrow semantics. Whole original Ref/RefMut algorithms and artifacts remain required.",
   "future_qualification": {
     "source": "Exact type/trait source identity/owner/effect/reason/feature; changed Store/source/owner and failed payment controls",
     "ownership": "Real source Drop must execute with original scope; unused annotation never grants Copy/Send/unsafe/borrow permissions",

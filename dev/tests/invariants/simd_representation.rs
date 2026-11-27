@@ -40,7 +40,7 @@ fn nominal(
 }
 fn input(name: &str) -> TestResult<String> {
     Ok(crate::test_source::fixture(&format!(
-        "pa41/tests/spec/source-simd/{name}.rs"
+        "pa42/tests/spec/source-simd/{name}.rs"
     ))?)
 }
 #[test]

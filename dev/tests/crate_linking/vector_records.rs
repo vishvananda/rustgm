@@ -7,12 +7,12 @@
 use super::fresh_packets::{Packet, Result, inner};
 use super::newtype_records::header_row;
 use rustgm::support::crates;
-const SPEC: &str = "pa41/tests/spec/simd-transport";
+const SPEC: &str = "pa42/tests/spec/simd-transport";
 const NOMINALS: &str = "pa29/tests/spec/source-nominals";
 const GROUP: &str = "simd-transport";
 const PROFILE: &str = "module-bodies-v13";
 const OLDER: [&str; 2] = ["module-branches-v12", "module-nominals-v10"];
-/// Frozen outcomes from `pa41/tests/simd-transport-outcomes.json`.
+/// Frozen outcomes from `pa42/tests/simd-transport-outcomes.json`.
 const DECLARATION: &str = "source declaration kind is outside the initial source profile";
 const WIDER: &str = "source nominal representation requires its wider complete contract";
 const GENERIC: &str = "source generic SIMD record requires its wider complete contract";

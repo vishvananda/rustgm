@@ -4,7 +4,7 @@ type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> std::io::Result<String> {
     std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../pa40/tests/spec/hidden-glob-reexports")
+            .join("../pa41/tests/spec/hidden-glob-reexports")
             .join(format!("{name}.rs")),
     )
 }

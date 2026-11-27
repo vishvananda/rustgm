@@ -2,7 +2,7 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
-Required families: derive output; attribute order; punctuation jointness; delimiter-none groups; serde_derive integration.
+Required families: host/target split; token transport; isolation; expansion failures.
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).

@@ -6,7 +6,7 @@ use rustgm::{
     pipeline,
     support::crates::{self, generics::source as s},
 };
-const SPEC: &str = "pa43/tests/spec/body-operations";
+const SPEC: &str = "pa44/tests/spec/body-operations";
 const PROFILE: &str = "module-body-operations-v14";
 fn interface(name: &str) -> Result<(crates::Interface, [usize; 2])> {
     let text = source::fixture(&format!("{SPEC}/{name}.rs"))?;
@@ -182,7 +182,7 @@ fn ordinary_node_body_executes_from_mixed_metadata_in_a_fresh_cli() -> Result {
     Ok(())
 }
 
-const DECLARATIONS: &str = "pa43/tests/spec/mixed-declarations";
+const DECLARATIONS: &str = "pa44/tests/spec/mixed-declarations";
 const FAMILIES: [&str; 4] = [
     "struct-constructors",
     "enum-match",
@@ -226,7 +226,7 @@ fn helper_conditions(bytes: &[u8]) -> Result {
         },
     ) = crate::compiler_recipes::client_source(
         crates::decode(bytes)?,
-        source::fixture("pa43/tests/spec/body-operations/lifetime-consumer.rs")?,
+        source::fixture("pa44/tests/spec/body-operations/lifetime-consumer.rs")?,
     )?;
     let error =
         rustgm::lower::instances::inspect_prepared(&report, &mut facts, prepared, |_, _| ())

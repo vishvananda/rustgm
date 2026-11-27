@@ -4,7 +4,7 @@ This draft owns the LIB-112 source declaration and its required cross-edition
 consumers. PA31 supplies original trait/attribute authority; PA19 supplies method
 selection; PA34 supplies the editions required by the real library graph; PA33
 supplies genuine Box identity/storage. Broader attribute and edition closure
-remains in PA40, and metadata transport belongs to PA29. This packet does not
+remains in PA41, and metadata transport belongs to PA29. This packet does not
 activate an assignment or declare the whole policy implemented.
 
 The pinned parser accepts a single nonempty parenthesized list of `array` and

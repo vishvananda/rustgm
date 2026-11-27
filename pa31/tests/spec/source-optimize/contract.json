@@ -1,7 +1,7 @@
 {
   "state": "declared required outcomes before independent reference execution; PA31/40 planned",
   "pin": "Rust 1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
-  "owner": "PA31 source annotation, PA40 attribute closure, PA29 imported optimizer intent",
+  "owner": "PA31 source annotation, PA41 attribute closure, PA29 imported optimizer intent",
   "cases": {
     "alias.rs": {
       "sha256": "3cf54ffd6ce980f463830514ceb38147f94f2d5a50fb49181695c8106895276b",

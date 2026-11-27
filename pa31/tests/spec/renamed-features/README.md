@@ -1,6 +1,6 @@
 # Renamed unstable library features
 
-PA31 source policy owns old_name syntax and library-feature identity. PA40 owns
+PA31 source policy owns old_name syntax and library-feature identity. PA41 owns
 its hard request diagnostic; PA29 owns authenticated relationship metadata.
 These are required compilation rules, independent of deferred advisory lints.
 PA31 remains planned, and original core/alloc/std artifacts remain required.

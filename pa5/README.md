@@ -81,7 +81,7 @@ Support outer attributes on items, fields, variants, function and closure parame
 parameters, local declarations, match arms and the expression positions covered by the
 fixtures. Inner attributes attach to the crate, inline module, associated-item
 body or block that owns them. Attribute placement and builtin semantics beyond
-this draft's cases are completed at PA40.
+this draft's cases are completed at PA41.
 
 Syntax captures attributes without depending on expansion. Expansion visits
 owners from the root, evaluates their cfg/cfg_attr facts and records an active
@@ -205,7 +205,7 @@ lists and captured groups build, walk and drop iteratively.
 
 PA6 loads external modules, interns normalized identifiers, and resolves
 names. PA7 and PA8 match and expand macros. PA9 onward checks types and
-semantic validity. PA11 begins lowering Rust to LowIR. PA40 covers the
+semantic validity. PA11 begins lowering Rust to LowIR. PA41 covers the
 remaining edition and attribute behavior.
 
 ## Run the tests

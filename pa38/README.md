@@ -1,34 +1,35 @@
-# RustGM Programming Assignment 38 — Derive and attribute macros
+# RustGM Programming Assignment 38 — Procedural macro host
 
 The graded suite for this assignment is pending.
 
-Extend the [PA37 host interface](../pa37/README.md) to expand procedural
-derives and attribute macros. Use ordinary typed expansion and name
-resolution for their output.
+Extend [PA34](../pa34/README.md)'s host and target build split to run
+procedural macros. Build against the [standard-library profile](../pa36/README.md)
+and use the pinned host toolchain for host macro crates. RustGM compiles
+the target crates.
 
 ## Required implementation
 
-Apply attribute macros in source order, replacing the attributed item
-with the selected macro's output. Register permitted derive helper
-attributes and append the items emitted by derives. Preserve nested
-expansion order, source provenance, delimiter-none groups, and punctuation
-jointness across host token conversions.
+Identify the macro's defining crate and exported entry. Run the macro
+through the host boundary and transfer typed token streams with delimiter,
+spelling, span, and hygiene facts. Preserve the input's source origins and
+associate generated tokens with their expansion. Feed returned tokens into
+the ordinary expansion pipeline.
 
-Build the original `serde_derive` host crate and its locked dependencies.
-Compile a target application that uses its real `Serialize` and
-`Deserialize` expansions. Use the host/target separation from
-[PA34](../pa34/README.md) and the runtime environment from
-[PA36](../pa36/README.md).
+Isolate host macro execution from frontend state. Convert host load failures,
+failed execution, or invalid output into diagnostics with the invocation
+location. Preserve the selected host, target, and dependency identities
+in the build graph.
 
 ## Tool surface
 
-Use the expansion inspection mode for token and item replacement checks.
-Use the crate build and LowIR pipeline to build, link, and run the
-complete application.
+Use the crate-build interface to build the host macro and pass the selected
+artifact to the target compilation. Use the expansion view to inspect the
+invocation and its output. The pinned Rust Reference describes
+[procedural macros](../doc/rust-reference/src/procedural-macros.md).
 
 ## Check your implementation
 
-Exercise helper attribute lookup, order-sensitive replacements, nested
-derives, joint punctuation, and groups without delimiters. Run native
-serialization and deserialization round trips with the original macro
-output and the selected Serde dependency graph.
+Test token and span round trips with a small macro crate. Check nested
+groups, retained source locations, and failure diagnostics. Build and
+run a target program using the generated syntax. [PA39](../pa39/README.md)
+adds derive and attribute expansion on top of this host boundary.

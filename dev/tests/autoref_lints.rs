@@ -4,10 +4,10 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn raw_field_lint_warn_expect_allow_and_caps_use_the_actual_lexical_policy() -> Result {
-    let manifest = source::fixture("pa40/tests/spec/source-field-autorefs/cases.tsv")?;
+    let manifest = source::fixture("pa41/tests/spec/source-field-autorefs/cases.tsv")?;
     for line in manifest.lines() {
         let (name, status) = line.split_once('\t').ok_or("autoref case columns")?;
-        let text = source::fixture(&format!("pa40/tests/spec/source-field-autorefs/{name}"))?;
+        let text = source::fixture(&format!("pa41/tests/spec/source-field-autorefs/{name}"))?;
         let result = source::source_provider(&text, "raw_policy").and_then(|report| {
             rustgm::pipeline::analyze_source(&report)
                 .map(|_| ())
@@ -30,7 +30,7 @@ fn raw_field_lint_warn_expect_allow_and_caps_use_the_actual_lexical_policy() -> 
         ("raw-allow", false),
         ("raw-expect", false),
     ] {
-        let text = source::fixture(&format!("pa40/tests/spec/source-field-autorefs/{name}.rs"))?;
+        let text = source::fixture(&format!("pa41/tests/spec/source-field-autorefs/{name}.rs"))?;
         let report = source::source_provider(&text, "raw_field_lint")?;
         let analysis = rustgm::pipeline::analyze_source(&report)?;
         assert_eq!(

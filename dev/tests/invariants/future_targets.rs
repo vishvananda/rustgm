@@ -5,7 +5,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn helper_target_requires_actual_report_closed_arguments_and_registration() -> Result {
-    let source = test_source::fixture("pa43/tests/spec/async-drop-helper/reified.rs")?;
+    let source = test_source::fixture("pa44/tests/spec/async-drop-helper/reified.rs")?;
     let report = test_source::source_provider(&source, "async_target")?;
     let mut facts = pipeline::analyze_source(&report)?.facts;
     let definition = facts
@@ -54,7 +54,7 @@ fn helper_target_requires_actual_report_closed_arguments_and_registration() -> R
 
 #[test]
 fn unused_static_receiver_cannot_authorize_general_async_cleanup_borrows() -> Result {
-    let source = test_source::fixture("pa43/tests/spec/async-destructors/unused-static.rs")?;
+    let source = test_source::fixture("pa44/tests/spec/async-destructors/unused-static.rs")?;
     let report = test_source::source_provider(&source, "static_async_receiver")?;
     let facts = pipeline::analyze_source(&report)?.facts;
     let error = crate::sema::compiler_items::async_cleanup::operation(&report, &facts)

@@ -45,6 +45,6 @@ SourceCore CLI library publication still rejects unimplemented macro/semantic
 name provenance metadata; that required artifact success remains open. The
 observer does not qualify such a library or an independent imported Rust client.
 
-PA8 owns expansion, PA31 owns source diagnostic identity, PA40 owns full
+PA8 owns expansion, PA31 owns source diagnostic identity, PA41 owns full
 attribute consumers and PA29 owns imported authority. This packet does not
 activate a whole planned assignment or establish a core/alloc/std artifact.

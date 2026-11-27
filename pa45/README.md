@@ -1,60 +1,40 @@
-# RustGM Programming Assignment 45 — Reproducible self-hosting
+# RustGM Programming Assignment 45 — Frontend acceptance
 
-**Self-hosting demonstrated.** The strict whole-graph build passed the
-PA1–PA24 suites and reproduced the executable with zero bring-up records
-using CPPGM v0.9.3. The student grading suite is pending.
+The graded suite for this assignment is pending.
 
-Build your completed RustGM compiler with RustGM, then repeat the build
-using that compiler. Use the Rust 1.98.0 Linux x86-64 panic-abort profile.
-Complete this milestone after [PA36's library bootstrap](../pa36/README.md).
-Use the original `core`, `alloc`, and `std` sources and the compiler's
-actual target dependencies. The selected graph uses the panic-abort
-profile. This completes the initial track. The remaining procedural
-macro, unwind, edition, target, and async work follows in PA37–PA43.
-PA44 integrates the broader frontend profile.
+Qualify the complete configured Rust 1.98.0 frontend for Linux x86-64.
+Exercise combinations of language features through checked LowIR, native
+execution, and cross-crate artifacts. The work carries the broader
+requirements deferred by the focused PA25–PA30 assignments.
 
-## Required result
+## Carried requirements
 
-| Stage | Build |
+| Earlier assignment | Features to exercise here |
 | --- | --- |
-| 0 | Build your completed RustGM once with the pinned Rust toolchain. |
-| 1 | Use stage 0 to compile the entire source graph and link the resulting LowIR with CPPGM. |
-| 2 | Use stage 1 to compile the same graph, then link it with the same backend and linker settings. |
+| PA25 | Named, generic, and associated initializers, const calls and closures, constant patterns and lengths, symbolic storage and provenance, and slice and unsized constant values |
+| PA26 | Source-bound operators and iteration, question-mark and residual control flow, built-in derives, formatting, and panic hooks |
+| PA27 | Constant raw accesses, typed validity over byte-backed values, interior mutation, and raw slices and reconstructed wide values |
+| PA28 | The remaining intrinsic, atomic, volatile, and numeric operations, symbolic fragment transport, and actual source layout and transmute calls |
+| PA29 | Complete interface and value artifacts, generic and provided bodies, source attribute policies, and proof-aware executable transport |
+| PA30 | Foreign signatures, storage, arrays, and variadic metadata, opaque foreign types, and the supported representation and ABI rules |
 
-Each self-hosted stage is one strict whole-graph build. Keep each crate's
-identity, edition, configuration, and dependencies while passing them
-through the same compilation session. Use CPPGM for LowIR-to-native
-generation. RustGM implements each Rust frontend phase.
-
-Freeze the source inventory, configuration, compiler and linker identities,
-and backend lock before the builds. Reuse the same source bytes, graph
-order, options, and backend optimization level in both stages. Use the
-original library sources and the compiler's real dependencies. Prevent
-timestamps, machine paths, or unordered traversal from changing artifacts.
+Check combinations of these features with editions, macros, ownership,
+unwinding, and async behavior from the other assignments. Include
+deterministic source and debug locations and compare both information
+retained in artifacts and behavior after importing them.
 
 ## Tool surface
 
-Record each stage's LowIR, native link manifest, and linked executable.
-Report the strict checks and artifact hashes. The checked graph must have
-zero bring-up records, unresolved obligations, and waivers, and must
-emit no trapping stubs.
+Run the full selected crate-build and LowIR pipeline. Build original
+`core`, `alloc`, `std`, and the required upstream crate graphs.
+Compile each selected target Rust unit with RustGM and link it through
+the pinned CPPGM backend.
 
 ## Check your implementation
 
-Use the stage 1 executable as the compiler under test for every PA1–PA24
-suite. For example, the commands below use a compiler linked at `obj/stage1/native/rustgm`.
-
-```sh
-stage1="$PWD/obj/stage1/native/rustgm"
-result=0
-for number in $(seq 1 24); do
-    make -C "pa$number" test RUSTGM_TEST_APP="$stage1" || result=1
-done
-test "$result" -eq 0
-```
-
-Compare stage 1 and stage 2 LowIR and native link manifests byte for byte
-before the second native link. Compare the final linked executables byte
-for byte as well. Keep evidence of source and tool identities with both
-outputs. Check that a differing input or a nonzero bring-up record causes
-the validation to fail. Record build time and peak memory for each stage.
+Run the preceding assignment suites and compile and execute complete
+upstream consumers. Compare repeat builds and artifact round trips.
+Exercise cross-feature failures and check their diagnostics. Measure
+time, memory, and scaling on complete graphs as well as focused inputs.
+This is the final integration assignment. Use the earlier
+[PA37 self-hosting milestone](../pa37/README.md) for the separate strict reproduction check.

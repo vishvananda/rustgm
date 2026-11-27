@@ -1,6 +1,6 @@
 # Source optimization intent
 
-PA31 owns source declaration authority; PA40 closes the full attribute profile,
+PA31 owns source declaration authority; PA41 closes the full attribute profile,
 and PA29 owns authenticated imported intent. All three remain planned.
 
 `contract.json` freezes 49 source cases and outcomes before reference execution.

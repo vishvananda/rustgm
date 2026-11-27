@@ -11,7 +11,7 @@ implicitly generated raw-pointer borrow.
 The initial raw-explicit positive prediction was disproved by pinned Rust's
 deny-default dangerous_implicit_autorefs diagnostic. Its unchanged source and
 corrected negative are retained, with original prediction/diagnostic receipts.
-Advanced lexical allow/warn/expect/forbid/cap controls live in owning PA40's
+Advanced lexical allow/warn/expect/forbid/cap controls live in owning PA41's
 source-field-autorefs packet. No deny result is counted through an unsupported
 producer/profile fence.
 

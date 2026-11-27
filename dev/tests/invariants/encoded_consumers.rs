@@ -227,18 +227,18 @@ fn encoded_calls_reject_real_wrong_type_arity_trait_and_dead_borrow() -> Result 
 #[test]
 fn wider_register_body_uses_its_owner_features_even_for_a_stronger_caller() -> Result {
     use crate::support::crates::generics::{self as g, source as s};
-    let foundation = crate::test_source::fixture("pa41/tests/spec/asm-native/native.rs")?;
+    let foundation = crate::test_source::fixture("pa42/tests/spec/asm-native/native.rs")?;
     let (foundation, _) = foundation.split_once("#[repr(simd)]").ok_or("foundation")?;
     // These authored companions do not call the original streaming functions:
     // their unsubstituted original markers are comments in this isolated test.
-    let body = crate::test_source::fixture("pa41/tests/spec/source-wide-registers/provider.rs")?;
+    let body = crate::test_source::fixture("pa42/tests/spec/source-wide-registers/provider.rs")?;
     let artifact = module_packets::exported_profile(
         &format!("#![feature(auto_traits)]\n{foundation}{body}"),
         SourcePublication::ModuleBodyOperations,
         "wide_owner",
     )?;
     let source =
-        crate::test_source::fixture("pa41/tests/spec/source-wide-registers/forged_client.rs")?;
+        crate::test_source::fixture("pa42/tests/spec/source-wide-registers/forged_client.rs")?;
     let program =
         crate::source_packets::client(crates::decode(&crates::encode(&artifact)?)?, &source)?;
     assert!(program.assembly_templates().is_some());

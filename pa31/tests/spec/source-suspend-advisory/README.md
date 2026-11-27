@@ -23,7 +23,7 @@ synthetic drop body or made-up Send implementation.
 PA31 declaration validation reuses the configured-owner pass and typed actual
 nominal/trait identities with paid parsing/current source checks. Actual
 await liveness, allow/warn/deny/expect emission, cancellation/borrow/drop behavior
-and imported advisory intent remain required in PA42/43 and PA29. They are not
+and imported advisory intent remain required in PA44/44 and PA29. They are not
 hidden dependencies of a PA31 source-header positive. Existing diagnostics keep
 their actual policy. Original Ref/RefMut source intervals/full file hashes are
 recorded in contract.json; whole original algorithms and artifacts remain required.

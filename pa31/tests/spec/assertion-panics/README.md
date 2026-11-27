@@ -2,7 +2,7 @@
 
 PA31 owns authenticated ordinary headers for six direct panic hooks and the22
 existing panic_const identities. PA11/12 retain their checked-abort baseline;
-actual source formatting/const/runtime, PA29 transport and PA39 unwind remain
+actual source formatting/const/runtime, PA29 transport and PA40 unwind remain
 separate requirements. No source header supplies their executable permission.
 
 predictions.json preserves the first independently frozen packet. Reviewed

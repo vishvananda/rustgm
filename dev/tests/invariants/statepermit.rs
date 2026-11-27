@@ -12,7 +12,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn drop_permit_authenticates_the_full_generated_state_graph_and_current_arena() -> Result {
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/construction-source.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/construction-source.rs")?;
     let report = test_source::source_provider(&text, "drop_permit")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;
@@ -85,7 +85,7 @@ fn drop_permit_authenticates_the_full_generated_state_graph_and_current_arena() 
 
 #[test]
 fn nonempty_actual_capture_families_cannot_use_the_empty_state_drop_profile() -> Result {
-    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/source-shape.rs")?;
+    let text = test_source::fixture("pa44/tests/spec/future-runtime-v1/source-shape.rs")?;
     let report = test_source::source_provider(&text, "captured_drop_profile")?;
     let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
     let (templates, inputs) = checks::prepare(&report, &mut facts)?;

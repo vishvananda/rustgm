@@ -2,7 +2,7 @@
 
 PA31 owns the direct rustc_default_body_unstable declaration and feature identity.
 PA26/PA29 own actual default/override selection and authenticated provided-body
-transport; PA25 retains const-call rules and PA39 retains real destruction.
+transport; PA25 retains const-call rules and PA40 retains real destruction.
 PA31 remains planned. Recognizing a marker is not an original library artifact.
 
 Contract-v3 freezes 48 programs against Rust 1.98.0 revision

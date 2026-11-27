@@ -1,6 +1,6 @@
 {
   "state": "qualified general source declaration-kind join; builtin invocation availability remains independent",
-  "owner": "PA31 original builtin claim authority; PA7/8 scoped macro mechanisms; PA42/43 eventual coroutine invocation",
+  "owner": "PA31 original builtin claim authority; PA7/8 scoped macro mechanisms; PA44/44 eventual coroutine invocation",
   "origin": {
     "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
     "path": "library/core/src/iter/sources/generator.rs",

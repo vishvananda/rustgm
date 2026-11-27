@@ -17,7 +17,7 @@ const _: [(); 24] = [(); size_of::<s::DeclaredFeatures>()];
 
 const BODIES: s::Profile = s::Profile::Source2024ModuleBodies;
 const BRANCHES: s::Profile = s::Profile::Source2024ModuleBranches;
-const SPEC: &str = "pa41/tests/spec/target-feature-transport";
+const SPEC: &str = "pa42/tests/spec/target-feature-transport";
 const VERSION: &str = "source target-feature rows require the version-thirteen header profile";
 const UNKNOWN: &str = "unknown source target feature";
 const CANONICAL: &str = "non-canonical source target-feature set";
@@ -122,7 +122,7 @@ fn pointer_lint_and_must_use_flags_share_the_diagnostic_byte() -> Result {
         );
         assert_eq!(read(&bytes, BODIES), Err("invalid source boolean"));
         let mut unknown = bytes;
-        unknown[8] |= 16;
+        unknown[8] |= 32;
         assert_eq!(
             read(&unknown, s::Profile::Source2024ModuleBodyOperations),
             Err("invalid source boolean")
@@ -434,6 +434,7 @@ fn lowir(interface: crates::Interface, client: &str) -> Result<String> {
 
 #[test]
 fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let genuine = provider(&fixture("provider")?)?;
     let call = fixture("call")?;
     let second = only(&genuine, "second")?;
@@ -502,6 +503,7 @@ fn forged_feature_rows_reject_on_the_consumers_installed_header() -> Result {
 /// the guarded-methods item (`enabled_callables.rs`, mover M2).
 #[test]
 fn forged_rows_on_inherent_functions_pass_the_member_check_and_fail_as_safe() -> Result {
+    let _check = crate::support::sealed::SelfCheck::hold();
     let lane = "pub struct Lane;\nimpl Lane {\n    pub fn get(value: u32) -> u32 { value }\n}\n";
     let genuine = provider(&format!("{}{lane}", fixture("provider")?))?;
     let interface = forged(&genuine, only(&genuine, "get")?, |row| {

@@ -239,12 +239,12 @@
     "M2": {
       "provider": "obj/parallel/associated-unsafe/gen/m2-inherent.rs",
       "provider_sha256": "5f50acc9c2cc3121f4f3134b3fda94cf3d7065deefecf5854f104621394f6874",
-      "client": "pa41/tests/spec/target-feature-transport/inherent.rs",
+      "client": "pa42/tests/spec/target-feature-transport/inherent.rs",
       "client_sha256": "44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b",
       "rustc_status": 0,
       "before": "target-feature-transport export_controls.inherent (enabled_callables.rs OPPONENTS \"inherent\"): `source nonordinary callable effect/safety/convention requires a wider profile`",
       "after": "exported with bit 3 [sse] on Lane::get; F's existing packets stay byte-identical",
-      "M2a": "inherent.rs (sha256 44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b) returns to pa41 against this provider: accepted, native exit 42",
+      "M2a": "inherent.rs (sha256 44239d92e9d51a76aa97b5f2010f7b45f85e8da687ba9a4616cb98da60272b2b) returns to pa42 against this provider: accepted, native exit 42",
       "oracle_flags": "F's: provider rlib+obj with -Ccodegen-units=1, client obj"
     },
     "M3": {
@@ -344,7 +344,7 @@
       "expected": "no mapping is blocked; retained bytes, observed bytes and visits equal the twins'; the header-step excess grows at most linearly"
     },
     {
-      "control": "flip survey: tools-identity.sh, the post-join base pin against the candidate, over every pa29 and pa41 spec provider and client and every R1, R2, (ii), F, const-method and impl-region-method generated provider under versions 10, 12 and 13, pa31 source-module-compatibility under its own profile, and this item's new inputs",
+      "control": "flip survey: tools-identity.sh, the post-join base pin against the candidate, over every pa29 and pa42 spec provider and client and every R1, R2, (ii), F, const-method and impl-region-method generated provider under versions 10, 12 and 13, pa31 source-module-compatibility under its own profile, and this item's new inputs",
       "expected": "among existing inputs only M1-M4 move, under version 13; every other status and stderr is unchanged and every existing packet is byte-identical"
     }
   ],

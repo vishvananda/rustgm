@@ -65,7 +65,7 @@ repository with pinned reference tools. It has not been built yet.
   with 467 text-oracle cases, 311 native executions, two code-generation controls
   and ten entry-free library object controls.
 - PA25–PA30 are closed at finite contracts: 2,078 text-oracle cases published
-  by their released components, with everything else deferred to PA44.
+  by their released components, with everything else deferred to PA45.
 - PA31–PA45 have buildout briefs and Makefiles. Their suites and implementation
   are not complete; invoking an unbuilt assignment fails explicitly.
 

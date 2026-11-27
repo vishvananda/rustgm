@@ -34,7 +34,7 @@ observations exposed over-eager diagnostic/language coupling and missing generic
 factory result context; see the maintainer checkpoint/evidence for their status.
 No fixture is a generated-coroutine, whole-assignment or original-library artifact
 completion claim. PA31 owns the original identities/bodies, PA26 the derives,
-PA18 the generic context, PA42 generated state and PA43 capture/cleanup.
+PA18 the generic context, PA43 generated state and PA44 capture/cleanup.
 
 The separately frozen result-coercion control keeps an explicitly written
 Pin<&[u8;2]> input and its genuine CoerceUnsized result to Pin<&[u8]>. A generic

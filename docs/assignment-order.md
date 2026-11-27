@@ -9,7 +9,7 @@ PA25–PA30 contract families, including every known missing/unsupported positiv
 The owning handouts remain the full assignment contracts. No requirement is
 deleted, converted to an expected Rust rejection or waived by this change.
 
-The 2026-10-28 compilation-first refinement defers broader PA40 diagnostic parity
+The 2026-10-28 compilation-first refinement defers broader PA41 diagnostic parity
 unless it blocks a real compilation path. Lint-level syntax and existing semantics
 remain required. Explicit capped bring-up and final strict qualification have
 separate evidence; the [execution plan](library-bootstrap-acceleration.md)
@@ -21,7 +21,7 @@ The old cumulative chain introduced false dependencies. PA25's symbolic pointer
 CTFE requires PA27/28 memory semantics, while runtime unsafe/atomic operations
 do not require CTFE. Source operators/intrinsics need PA31 identities, but PA31
 previously depended on the same operations through all prior assignments.
-Core at PA32 needs PA34 editions/build support and PA41 SIMD/target/assembly.
+Core at PA32 needs PA34 editions/build support and PA42 SIMD/target/assembly.
 Moving entire PAs earlier would preserve these cycles.
 
 Split the responsibilities into explicit phase units instead:
@@ -54,9 +54,9 @@ and fresh instance proof, not which invalid source is ignored.
 
 The 2026-11-04 unchanged-core probe makes that boundary concrete: after genuine
 FnPtr evidence/address lowering it reaches actual AsyncDrop in
-`core/src/future/async_drop.rs`. PA31 source identity and PA42 async-signature/
+`core/src/future/async_drop.rs`. PA31 source identity and PA43 async-signature/
 future formation are prerequisites for this source even in the abort profile;
-PA43/26 retain actual Pin/destructor consumers and PA29 their transport. Broader
+PA44/26 retain actual Pin/destructor consumers and PA29 their transport. Broader
 async release need not precede all core work, but neither its later PA number
 nor an empty placeholder body permits skipping an active source contract.
 LIB-154 records this dependency; the unit graph is not being marked complete.
@@ -105,7 +105,7 @@ reviewed. "Test handout" is the stage's `tests/README.md`.
 | 2 | none; buildout handoff only | 139 | 142 | A release record; the qualification is in the buildout handoff. The handout carries an unqualified wide floating extension |
 | 3 | none; buildout handoff only | 88 | 93 | A release record; the qualification is in the buildout handoff |
 | 4 | none; buildout handoff only | 181 | 200 | A release record; the qualification is in the buildout handoff |
-| 5 | none; buildout handoff only | 213 | 231 | A release record; the qualification is in the buildout handoff. The handout defers attribute placement beyond its cases to PA40 |
+| 5 | none; buildout handoff only | 213 | 231 | A release record; the qualification is in the buildout handoff. The handout defers attribute placement beyond its cases to PA41 |
 | 6 | [pa6-validation](pa6-validation.md) | 153 | 259 | The module-versus-primitive lookup regression named above has no closing record |
 | 7 | [pa7-validation](pa7-validation.md) | 181 | 183 | Nothing: qualified, status change pending review |
 | 8 | [pa8-validation](pa8-validation.md) | 87 | 126 | The test handout still says 87 |
@@ -135,7 +135,7 @@ atomic/intrinsic families; body/policy transport; and broader FFI representation
 remain explicit requirements. Closing cannot remove them: every unreleased unit
 and every requirement row a released unit does not cover is on the assignment's
 deferred list in `assignments.json` and is carried by
-[PA44](../pa44/MAINTAINER.md#carried-requirements). PA31 has no released unit and
+[PA45](../pa45/MAINTAINER.md#carried-requirements). PA31 has no released unit and
 stays planned.
 
 `implementation=implemented` on a work unit means its named finite profile has
@@ -171,7 +171,7 @@ resource policy stays three guarded jobs, unchanged150GiB reserve, one heavy
 job per worktree, bounded output and five-minute development checks. A component
 release does not activate a planned parent assignment; it joins a parent closed
 at a finite contract when that parent's manifest is recomposed. Every unpublished
-unit that PA25–PA30 own or their requirement rows name is deferred to PA44.
+unit that PA25–PA30 own or their requirement rows name is deferred to PA45.
 Each unit's exact finite scope, predecessor IDs and executable exit are in
 assignment-plan.json.
 
@@ -192,9 +192,9 @@ assignment-plan.json.
 | 13 | PA26 | Source operators, iteration and library hook closure (`hook-closure`) | partial | unpublished |
 | 14 | PA26 | Built-in derives, formatting and panic consumers (`format-derive`) | partial | unpublished |
 | 15 | PA28 | Source intrinsic and atomic family closure (`intrinsic-closure`) | partial | unpublished |
-| 16 | PA41 | Nominal SIMD copy layout and C128 ABI (`simd-abi`) | implemented | unpublished |
-| 17 | PA41 | Typed target features and call permissions (`target-features`) | partial | unpublished |
-| 18 | PA41 | Required core assembly path (`assembly`) | partial | unpublished |
+| 16 | PA42 | Nominal SIMD copy layout and C128 ABI (`simd-abi`) | implemented | unpublished |
+| 17 | PA42 | Typed target features and call permissions (`target-features`) | partial | unpublished |
+| 18 | PA42 | Required core assembly path (`assembly`) | partial | unpublished |
 | 19 | PA30 | Foreign representation and callable closure (`ffi-closure`) | partial | unpublished |
 | 20 | PA29 | Completed constant and foreign value metadata (`value-metadata`) | partial | unpublished |
 | 21 | PA29 | Provided-body public artifact profile (`provided-profile`) | implemented | unpublished |
@@ -206,20 +206,20 @@ assignment-plan.json.
 | 27 | PA33 | Original alloc and allocator/runtime consumers (`alloc-artifact`) | missing | unpublished |
 | 28 | PA35 | Original alloc-only serde_json graph (`alloc-crates`) | missing | unpublished |
 | 29 | PA36 | Original std and platform consumers (`std-artifact`) | missing | unpublished |
-| 30 | PA37 | Procedural macro host (`proc-host`) | missing | unpublished |
-| 31 | PA38 | Original derives and attribute macros (`proc-derive`) | missing | unpublished |
-| 32 | PA39 | Unwinding and C-unwind (`unwind`) | missing | unpublished |
-| 33 | PA40 | Remaining edition and attribute closure (`edition-closure`) | missing | unpublished |
-| 34 | PA41 | Remaining target and assembly closure (`target-closure`) | partial | unpublished |
-| 35 | PA42 | Async lowering (`async`) | missing | unpublished |
-| 36 | PA43 | Async ownership and pinning (`async-ownership`) | missing | unpublished |
-| 37 | PA44 | Complete frontend acceptance (`frontend-acceptance`) | missing | unpublished |
-| 38 | PA45 | Reproducible self-hosting (`self-hosting`) | missing | unpublished |
+| 30 | PA37 | Reproducible self-hosting (`self-hosting`) | missing | unpublished |
+| 31 | PA38 | Procedural macro host (`proc-host`) | missing | unpublished |
+| 32 | PA39 | Original derives and attribute macros (`proc-derive`) | missing | unpublished |
+| 33 | PA40 | Unwinding and C-unwind (`unwind`) | missing | unpublished |
+| 34 | PA41 | Remaining edition and attribute closure (`edition-closure`) | missing | unpublished |
+| 35 | PA42 | Remaining target and assembly closure (`target-closure`) | partial | unpublished |
+| 36 | PA43 | Async lowering (`async`) | missing | unpublished |
+| 37 | PA44 | Async ownership and pinning (`async-ownership`) | missing | unpublished |
+| 38 | PA45 | Complete frontend acceptance (`frontend-acceptance`) | missing | unpublished |
 
 A fixture can declare `work_units` selecting its actual owning unit(s). Feature
 owners are then checked against those units' transitive prerequisite graph and
 the active PA1–PA24 foundation. Thus a source-hook fixture can explicitly depend
-on PA31 declaration binding without an unrelated PA42 async exemption. Undeclared
+on PA31 declaration binding without an unrelated PA43 async exemption. Undeclared
 legacy cases retain the existing numeric placement rule. This changes scheduling
 and fixture validation, never semantic feature or execution permission.
 

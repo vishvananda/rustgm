@@ -19,5 +19,5 @@ supertrait obligations must be proved. A role declaration supplies no blanket
 implementation, runtime body or fused behavior assertion. The pinned compiler's
 builtin relation applies specifically to genuine gen coroutines. General gen
 state, suspension, exhaustion, cancellation and authenticated transport remain
-required by PA42/43/29. These specification fixtures do not activate a planned PA
+required by PA44/44/29. These specification fixtures do not activate a planned PA
 or replace the cumulative course text oracles.

@@ -1,4 +1,4 @@
-"""PA45 requires independent strict builds and equality of every artifact."""
+"""PA37 requires independent strict builds and equality of every artifact."""
 import json
 from pathlib import Path
 import sys

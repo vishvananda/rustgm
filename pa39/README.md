@@ -1,36 +1,34 @@
-# RustGM Programming Assignment 39 — Panic and unwinding
+# RustGM Programming Assignment 39 — Derive and attribute macros
 
 The graded suite for this assignment is pending.
 
-Extend [PA36](../pa36/README.md)'s panic-abort profile with unwinding.
-Reuse [PA17](../pa17/README.md)'s cleanup plans and
-[PA30](../pa30/README.md)'s foreign-call rules.
+Extend the [PA38 host interface](../pa38/README.md) to expand procedural
+derives and attribute macros. Use ordinary typed expansion and name
+resolution for their output.
 
 ## Required implementation
 
-Retain the selected panic strategy and callable unwind policy during
-checking and lowering. In unwind mode, execute required cleanup on
-exceptional paths. Run each required destructor exactly once and preserve
-the original cleanup ordering. Handle a second panic during unwinding
-according to the selected runtime. Keep the existing abort behavior
-available.
+Apply attribute macros in source order, replacing the attributed item
+with the selected macro's output. Register permitted derive helper
+attributes and append the items emitted by derives. Preserve nested
+expansion order, source provenance, delimiter-none groups, and punctuation
+jointness across host token conversions.
 
-Use the declared runtime, personality, and cleanup representation.
-Implement `C-unwind` interoperability and enforce the selected caller
-and callee's unwind boundary. Extend [PA32's `ffi_unwind_calls` check](../pa32/README.md#diagnostics-used-by-core)
-to foreign calls that can propagate an unwind through their enclosing
-function. Check the required lowering and runtime capabilities with the
-pinned CPPGM backend.
+Build the original `serde_derive` host crate and its locked dependencies.
+Compile a target application that uses its real `Serialize` and
+`Deserialize` expansions. Use the host/target separation from
+[PA34](../pa34/README.md) and the runtime environment from
+[PA36](../pa36/README.md).
 
 ## Tool surface
 
-Select the panic profile as part of the crate build. Preserve its identity
-in the callable and link information. Link and run the completed
-unwinding programs through the configured runtime.
+Use the expansion inspection mode for token and item replacement checks.
+Use the crate build and LowIR pipeline to build, link, and run the
+complete application.
 
 ## Check your implementation
 
-Test a panic with ownership cleanup, a destructor that panics during
-unwinding, propagation across a permitted C-unwind boundary, and
-abort-mode execution. Observe the destructor sequence in the running
-program as well as its termination.
+Exercise helper attribute lookup, order-sensitive replacements, nested
+derives, joint punctuation, and groups without delimiters. Run native
+serialization and deserialization round trips with the original macro
+output and the selected Serde dependency graph.

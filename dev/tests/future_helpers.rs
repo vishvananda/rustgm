@@ -5,7 +5,7 @@ type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
 fn actual_helper_calls_keep_source_typing_and_never_publish_placeholder_cfg() -> Result {
-    let cases = test_source::fixture("pa43/tests/spec/async-drop-helper/cases.tsv")?;
+    let cases = test_source::fixture("pa44/tests/spec/async-drop-helper/cases.tsv")?;
     let mut count = 0;
     for line in cases.lines() {
         let [path, status, boundary]: [_; 3] = line
@@ -60,7 +60,7 @@ fn actual_helper_calls_keep_source_typing_and_never_publish_placeholder_cfg() ->
 
 #[test]
 fn independent_helper_companions_keep_the_actual_authored_bodies() -> Result {
-    let cases = test_source::fixture("pa43/tests/spec/async-drop-helper/cases.tsv")?;
+    let cases = test_source::fixture("pa44/tests/spec/async-drop-helper/cases.tsv")?;
     let mut count = 0;
     for line in cases.lines() {
         let path = line.split('\t').next().ok_or("helper fixture path")?;
@@ -77,7 +77,7 @@ fn independent_helper_companions_keep_the_actual_authored_bodies() -> Result {
             .strip_prefix("#[lang=\"async_drop_in_place\"]\n")
             .ok_or("actual source helper role")?;
         let companion =
-            test_source::fixture(&format!("pa43/tests/spec/async-drop-helper/oracle/{name}"))?;
+            test_source::fixture(&format!("pa44/tests/spec/async-drop-helper/oracle/{name}"))?;
         let (_, oracle) = companion
             .split_once("use core::future::Future;\n")
             .ok_or("independent core foundation")?;

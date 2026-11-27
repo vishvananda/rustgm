@@ -109,7 +109,7 @@ tools as they behave today; they change together with the tools.
   test only when it needs in-process access. Harness suites and the private
   unit binary run at checkpoints and integration, not on every edit.
 - Do not add strict metadata-transport fixes until the export census sizes
-  that work. PA45 is a strict whole-graph build; see its handout.
+  that work. PA37 is a strict whole-graph build; see its handout.
 - One qualification per batch by cause. Receipts stay under `obj/`: do not
   narrate them in documents and do not make record-only commits. The handoff
   and roadmap change at milestones.

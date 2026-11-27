@@ -1,47 +1,36 @@
-# RustGM Programming Assignment 40 — Editions and attributes
+# RustGM Programming Assignment 40 — Panic and unwinding
 
 The graded suite for this assignment is pending.
 
-Complete Rust 2015, 2018, 2021, and 2024 behavior beyond the subset used
-by [PA34](../pa34/README.md)'s selected crate graph. Extend the typed
-attribute checks and diagnostic policies from [PA31](../pa31/README.md).
-Features already required by an earlier library build belong to that
-build's prerequisites.
+Extend [PA36](../pa36/README.md)'s panic-abort profile with unwinding.
+Reuse [PA17](../pa17/README.md)'s cleanup plans and
+[PA30](../pa30/README.md)'s foreign-call rules.
 
-## Edition behavior
+## Required implementation
 
-Retain the edition of the source and each relevant macro token.
-Apply edition-dependent rules to parsing, paths and preludes, fragment
-matching, captures, and temporary destruction scopes. Check mixed-edition
-macro and crate boundaries using the edition at the deciding location.
+Retain the selected panic strategy and callable unwind policy during
+checking and lowering. In unwind mode, execute required cleanup on
+exceptional paths. Run each required destructor exactly once and preserve
+the original cleanup ordering. Handle a second panic during unwinding
+according to the selected runtime. Keep the existing abort behavior
+available.
 
-## Attributes and diagnostics
-
-Validate the placement, form, owner, and required permissions of retained
-attributes. Separate documentation and advisory metadata from attributes
-that change semantic eligibility. For example, a primitive documentation
-label describes an item and leaves the type namespace and body checks
-unchanged.
-
-Extend [PA31's source library diagnostics](../pa31/README.md#source-declarations)
-to the remaining attribute and edition cases. Carry scoped lint levels and
-expectations through expansion, imports, and checked bodies. Associate
-deprecation and visibility events with their actual source or import.
-Report unmet expectations after their scope has completed.
-A lint cap can suppress optional diagnostics.
-Hard errors and semantic checks still apply.
+Use the declared runtime, personality, and cleanup representation.
+Implement `C-unwind` interoperability and enforce the selected caller
+and callee's unwind boundary. Extend [PA32's `ffi_unwind_calls` check](../pa32/README.md#diagnostics-used-by-core)
+to foreign calls that can propagate an unwind through their enclosing
+function. Check the required lowering and runtime capabilities with the
+pinned CPPGM backend.
 
 ## Tool surface
 
-Use the compiler's edition option and the crate graph's per-crate
-configuration. Use the existing typed inspection and LowIR modes to
-compare edition-dependent results. The pinned Rust Reference describes
-[attributes](../doc/rust-reference/src/attributes.md).
+Select the panic profile as part of the crate build. Preserve its identity
+in the callable and link information. Link and run the completed
+unwinding programs through the configured runtime.
 
 ## Check your implementation
 
-Use paired programs that differ only in edition or attribute placement.
-Cover capture, drop scope, macro fragments, inherited lint levels,
-and expected diagnostics. Check cases with disabled syntax, imported
-bindings, and actual macro allowances. Run executable examples when the
-edition changes evaluation or destruction behavior.
+Test a panic with ownership cleanup, a destructor that panics during
+unwinding, propagation across a permitted C-unwind boundary, and
+abort-mode execution. Observe the destructor sequence in the running
+program as well as its termination.

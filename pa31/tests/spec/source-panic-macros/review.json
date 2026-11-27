@@ -86,7 +86,7 @@
       "2024"
     ],
     "not_supported": [
-      "2018 candidate profile (PA40 prerequisite)",
+      "2018 candidate profile (PA41 prerequisite)",
       "foreign macro transport and defining-crate relocation (LIB007 prerequisite)",
       "original std SourceClient role authorization",
       "other internal allowance features",

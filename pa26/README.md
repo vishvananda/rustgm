@@ -4,7 +4,7 @@ Extend [PA24](../pa24/README.md) and [PA25](../pa25/README.md) with operators,
 indexing, library values, and iteration. Use Rust 1.98.0, edition 2024, on
 Linux x86-64 with checked arithmetic and aborting panics. The
 [PA26 manifest](tests/manifest.json) covers the operator and iteration kernels
-below. PA44 carries the broader question-mark, derive, formatting, and
+below. PA45 carries the broader question-mark, derive, formatting, and
 library hook requirements.
 
 ## Operators and indexing
