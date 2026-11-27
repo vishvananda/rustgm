@@ -1,0 +1,11 @@
+{
+  "features": ["auto_traits"],
+  "prefix_marker": "#[lang=\"tuple_trait\"]",
+  "inputs": ["provider.rs", "client.rs", "dynamic.rs", "observe.c"],
+  "stdout": "61\n",
+  "restricted_client": {
+    "path": "dynamic.rs",
+    "rustc": "is not dyn compatible",
+    "rustgm": "trait is not dyn compatible"
+  }
+}

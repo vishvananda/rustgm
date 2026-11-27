@@ -114,6 +114,7 @@ impl Graph {
                 | s::TraitFlags::UNSAFE
                 | s::TraitFlags::CONST
                 | s::TraitFlags::MARKER
+                | s::TraitFlags::DYN_INCOMPATIBLE
                 | s::TraitFlags::SPECIALIZATION
                 | s::TraitFlags::UNSAFE_SPECIALIZATION
         } else if descriptor.profile().body_nodes() {
