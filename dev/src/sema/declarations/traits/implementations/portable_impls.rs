@@ -228,6 +228,7 @@ impl Checker<'_> {
         owner: DefId,
         predicate: Predicate,
         plan: &crate::sema::crates::ImportedMemberPlan,
+        environment: &crate::types::parameters::environment::Environment,
     ) -> Result<(), Error> {
         plan.require(&self.facts, owner, predicate)
             .map_err(Error::unlocated)?;
@@ -295,6 +296,7 @@ impl Checker<'_> {
                 expected,
                 actual,
                 &definitions,
+                Some(environment),
             )
             .map_err(Error::unlocated)?;
         }
@@ -552,7 +554,6 @@ impl Checker<'_> {
         predicate: Predicate,
         environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
     ) -> Result<(), Error> {
-        let environment = self.reprove_imported_premises(definition, environment)?;
         let mut proof = self.declaration_proof(definition, Some(environment));
         let requirements = super::impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(Error::unlocated)?;
@@ -632,8 +633,9 @@ impl Checker<'_> {
             crate::sema::crates::imported_member_plan(&mut self.facts, definition, predicate)?;
         let environment =
             self.imported_receiver_environment(definition, predicate, plan.as_ref())?;
+        let environment = self.reprove_imported_premises(definition, environment)?;
         if let Some(plan) = &plan {
-            self.check_imported_members(definition, predicate, plan)?;
+            self.check_imported_members(definition, predicate, plan, &environment)?;
         }
         self.validate_imported_requirements(definition, predicate, environment)?;
         let members = plan.map(|plan| plan.members).unwrap_or_default();
@@ -770,6 +772,7 @@ impl Checker<'_> {
                 .ok_or_else(|| {
                     Error::unlocated("imported impl lacks its complete actual input environment")
                 })?;
+            let environment = self.reprove_imported_premises(definition, environment)?;
             self.validate_imported_requirements(definition, predicate, environment)?;
         }
         self.facts

@@ -59,7 +59,7 @@ pub(in crate::sema) fn check(
 ) -> Result<(), String> {
     let expected = Method::source(facts, expected);
     let actual = Method::source(facts, actual);
-    check_methods(facts, owner, predicate, expected, actual, definitions)
+    check_methods(facts, owner, predicate, expected, actual, definitions, None)
 }
 
 /// Only the actual defining premises can connect the written override to its
@@ -104,8 +104,16 @@ pub(in crate::sema) fn check_methods(
     expected: Method,
     actual: Method,
     definitions: &Definitions,
+    recovered_premises: Option<&Environment>,
 ) -> Result<(), String> {
-    let mut contract = mapping::contract(facts, owner, predicate, expected, actual)?;
+    let mut contract = mapping::contract(
+        facts,
+        owner,
+        predicate,
+        expected,
+        actual,
+        recovered_premises,
+    )?;
     let first = contract
         .variables
         .iter()

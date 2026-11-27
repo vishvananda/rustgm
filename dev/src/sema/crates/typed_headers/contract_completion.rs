@@ -172,6 +172,7 @@ impl SelectedConsumer<'_> {
                 expected,
                 actual,
                 &definitions,
+                None,
             )
             .map_err(Error::unlocated)?;
         }

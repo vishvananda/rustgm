@@ -252,6 +252,7 @@ impl Checker<'_> {
             expected,
             actual_method,
             definitions,
+            None,
         )
         .map_err(|e| self.error(actual.node, e))?;
         crate::sema::header_attributes::inherit_tracking(

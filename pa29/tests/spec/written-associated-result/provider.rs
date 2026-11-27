@@ -28,6 +28,19 @@ pub trait Fused: Read {}
 
 impl<'a, P> Fused for Cursor<'a, P> where P: Pattern<Searcher<'a>: ReverseSearcher<'a>> {}
 
+pub trait DoubleEnded: Read {
+    fn previous(&self) -> Self::Item;
+}
+
+impl<'a, P> DoubleEnded for Cursor<'a, P>
+where
+    P: Pattern<Searcher<'a>: ReverseSearcher<'a>>,
+{
+    fn previous(&self) -> &'a u8 {
+        self.0
+    }
+}
+
 impl<'a> Searcher<'a> for &'a u8 {}
 impl<'a> ReverseSearcher<'a> for &'a u8 {}
 

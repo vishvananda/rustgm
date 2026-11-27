@@ -197,6 +197,7 @@ pub(super) fn contract(
     predicate: Predicate,
     expected: Method,
     actual: Method,
+    recovered_premises: Option<&Environment>,
 ) -> Result<Contract, String> {
     let method_parameters = paired_parameters(facts, expected.definition, actual.definition)?;
     let expected_regions = scheme(facts, expected)?;
@@ -234,7 +235,7 @@ pub(super) fn contract(
         .collect();
     let (mut environment, parameters) = environment(&facts.types, &scope, &assumptions)?;
     let own = assumptions.len().saturating_sub(method_bounds);
-    carry_certificates(facts, owner, own, &mut environment)?;
+    carry_certificates(facts, owner, own, &mut environment, recovered_premises)?;
     let mut assumed_regions = pairs(
         &mut facts.types,
         &mut folders.expected,
@@ -355,14 +356,12 @@ fn carry_certificates(
     owner: DefId,
     own: usize,
     environment: &mut Environment,
+    recovered_premises: Option<&Environment>,
 ) -> Result<(), &'static str> {
     let mut steps = 0;
-    let carried = carried_certificates(
-        facts.generics.environments.get(&owner).map(Arc::as_ref),
-        own,
-        environment,
-        &mut steps,
-    );
+    let owner_environment =
+        recovered_premises.or_else(|| facts.generics.environments.get(&owner).map(Arc::as_ref));
+    let carried = carried_certificates(owner_environment, own, environment, &mut steps);
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
     // The contract formed this environment itself, so it is unshared.
     environment.certify_normal_premises(&facts.types, &carried?)
