@@ -152,12 +152,58 @@ impl Checker<'_> {
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(id, environment);
         let shape = proof.check(&mut self.facts, ty).map_err(Error::unlocated)?;
-        if !shape.well_formed || (matches!(body, ConstantBody::Original(_)) && !shape.sized) {
+        if !shape.well_formed
+            || (matches!(body, ConstantBody::Original(_))
+                && !shape.sized
+                && !self.prove_source_sized(&mut proof, ty)?)
+        {
             return Err(Error::unlocated(
                 "associated constant declaration type must be well-formed",
             ));
         }
         self.constant_type_constraints(id, ty, proof.take_trait_proof())
+            .map_err(Error::unlocated)
+    }
+
+    /// Imported declaration inputs retain the actual Sized supertrait graph.
+    fn prove_source_sized(
+        &mut self,
+        proof: &mut crate::sema::nominals::Proof,
+        ty: crate::types::TypeId,
+    ) -> Result<bool, Error> {
+        use crate::{
+            support::bindings::LangItem,
+            types::{
+                ItemId,
+                parameters::predicates::{Bound, Predicate},
+                traits::Application,
+            },
+        };
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(false);
+        };
+        let Some(role) = catalog
+            .validated_role(LangItem::Sized)
+            .map_err(Error::unlocated)?
+        else {
+            return Ok(false);
+        };
+        let application = self
+            .facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(role.definition.0),
+                arguments: GenericArgs::EMPTY,
+            })
+            .map_err(Error::unlocated)?;
+        proof
+            .prove(
+                &mut self.facts,
+                Predicate {
+                    ty,
+                    bound: Bound::Trait(application),
+                },
+            )
             .map_err(Error::unlocated)
     }
 

@@ -1,0 +1,6 @@
+{
+  "inputs": ["provider.rs", "client.rs", "observe.c"],
+  "foundation": "pa29/tests/spec/struct-constructors/provider.rs",
+  "prefix_marker": "// Oracle-only shim: rustc's drop elaboration",
+  "stdout": "47\n"
+}
