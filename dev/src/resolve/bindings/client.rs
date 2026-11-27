@@ -123,11 +123,13 @@ pub(super) fn prepare(
     let macros = features.macros();
     let artifact = &dependencies.artifacts()[provider_index as usize];
     let mut derive_lists = false;
-    let mut formatter = false;
+    let mut source_eager = false;
     if let Some(table) = artifact.macros() {
         for row in table.builtins() {
             match row.identity() {
-                "format_args" | "const_format_args" | "format_args_nl" => formatter = true,
+                "asm" | "format_args" | "const_format_args" | "format_args_nl" => {
+                    source_eager = true;
+                }
                 "derive" | "derive_const" => derive_lists = true,
                 _ => {}
             }
@@ -136,7 +138,7 @@ pub(super) fn prepare(
     derive_lists &= artifact
         .source_descriptor()
         .is_some_and(|source| source.profile().declaration_policies());
-    let allowances = if formatter || derive_lists || super::policy::imports_allowances(context) {
+    let allowances = if source_eager || derive_lists || super::policy::imports_allowances(context) {
         Some(super::LocalMacros::new(
             unit,
             features.clone(),

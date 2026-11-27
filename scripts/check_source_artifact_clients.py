@@ -15,7 +15,7 @@ from crate_qualification import Check
 FOUNDATION = "pa31/tests/spec/source-enum-role-transport/provider.rs"
 ASSEMBLY_CASES = (
     "source-integer-assembly", "source-fixed-registers", "source-memory-assembly",
-    "source-wide-registers", "source-byte-registers",
+    "source-wide-registers", "source-byte-registers", "source-imported-assembly",
 )
 
 

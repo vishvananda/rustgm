@@ -272,10 +272,14 @@ impl super::Report {
             expand::marks::ExpansionId,
             resolve::{bindings::panic_contracts, package::Error},
         };
-        self.package
-            .source_core()
-            .ok_or_else(|| Error::at(key.file, 0, "assembly requires its actual source provider"))?
-            .macros
+        let payer = self
+            .package
+            .source_contract_payer()
+            .map_err(|message| Error::at(key.file, 0, message))?
+            .ok_or_else(|| {
+                Error::at(key.file, 0, "assembly requires its actual source provider")
+            })?;
+        payer
             .charge(1, 0)
             .map_err(|message| Error::at(key.file, 0, message))?;
         let (context, span) = self.assembly_context(key)?;
@@ -301,8 +305,17 @@ impl super::Report {
         {
             return Err(fail("assembly invocation changed its actual source role"));
         }
-        let source = self
-            .package
+        if super::transported_macros::source_builtin(
+            &self.package,
+            &self.resolution,
+            frame.definition,
+            Builtin::Asm,
+        )
+        .is_some()
+        {
+            return payer.charge(steps, bytes).map_err(fail);
+        }
+        self.package
             .source_core()
             .ok_or_else(|| fail("assembly requires its actual source provider"))?;
         let published = panic_contracts::published(
@@ -316,7 +329,7 @@ impl super::Report {
         if published.builtin != Some(Builtin::Asm) {
             return Err(fail("assembly declaration has another published role"));
         }
-        source.macros.charge(steps, bytes).map_err(fail)
+        payer.charge(steps, bytes).map_err(fail)
     }
     fn assembly_context(
         &self,

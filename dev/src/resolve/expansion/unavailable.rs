@@ -154,12 +154,11 @@ impl<S: Sources> Engine<'_, S> {
                 role.unavailable_message(),
             ));
         }
-        if let Some(imported) =
-            super::transported_macros::imported(&self.paths.state.facts, definition)
+        if super::transported_macros::imported(&self.paths.state.facts, definition).is_some()
             && let Body::Builtin(role) = actual.body
             && !role.context_free()
             && !role.imported_delegation()
-            && !self.imported_formatter(imported, role)
+            && !self.imported_source_eager(definition, role)
             && !super::derive_lists::supported_role(
                 role,
                 &self.loader.package,

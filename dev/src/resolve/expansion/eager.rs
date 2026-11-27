@@ -34,17 +34,15 @@ impl Parent {
 }
 
 impl<S: Sources> Engine<'_, S> {
-    pub(super) fn imported_formatter(
-        &self,
-        imported: &crate::resolve::crates::ImportedMacro,
-        role: Builtin,
-    ) -> bool {
-        role.formatting()
-            && self
-                .loader
-                .package
-                .source_client()
-                .is_some_and(|client| client.owns_builtin_provider(imported.artifact))
+    pub(super) fn imported_source_eager(&self, definition: usize, role: Builtin) -> bool {
+        (role.formatting() || role == Builtin::Asm)
+            && super::transported_macros::source_builtin(
+                &self.loader.package,
+                &self.paths.state.facts,
+                definition,
+                role,
+            )
+            .is_some()
     }
 
     pub(super) fn source_eager_definition(&self, index: usize) -> Result<Builtin, Error> {
@@ -62,9 +60,8 @@ impl<S: Sources> Engine<'_, S> {
                 "source eager builtin changed its actual role",
             ));
         }
-        if let Some(imported) = super::transported_macros::imported(&self.paths.state.facts, index)
-        {
-            return if self.imported_formatter(imported, role) {
+        if super::transported_macros::imported(&self.paths.state.facts, index).is_some() {
+            return if self.imported_source_eager(index, role) {
                 Ok(role)
             } else {
                 Err(Error::unlocated(
@@ -446,7 +443,10 @@ impl<S: Sources> Engine<'_, S> {
             .ast
             .node(node)
             .span;
-        if self.source_eager_definition(definition)? != Builtin::Asm {
+        if self.source_eager_definition(definition)? != Builtin::Asm
+            || (self.loader.package.source_core().is_none()
+                && !self.imported_source_eager(definition, Builtin::Asm))
+        {
             return Err(Error::at(
                 file,
                 original.start,
@@ -477,7 +477,8 @@ impl<S: Sources> Engine<'_, S> {
         }
         self.loader
             .package
-            .source_core()
+            .source_contract_payer()
+            .map_err(|message| Error::at(file, original.start, message))?
             .ok_or_else(|| {
                 Error::at(
                     file,
@@ -485,7 +486,6 @@ impl<S: Sources> Engine<'_, S> {
                     "missing actual source assembly provider",
                 )
             })?
-            .macros
             .charge(
                 bytes.saturating_add(args.end as usize - args.start as usize),
                 bytes
