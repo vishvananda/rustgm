@@ -427,6 +427,13 @@ impl Inputs {
     ) -> Result<bool, String> {
         for goal in &self.traits {
             context.account_work(1).map_err(|e| e.to_string())?;
+            // An imported pair retains the builtin's rigid exclusion even when
+            // its generic arguments are open and the consuming crate is stable.
+            if perspective.packet()
+                && crate::sema::traits::selection::fn_pointer_refutes(facts, context, goal)?
+            {
+                return Ok(true);
+            }
             if !super::absence_closed(facts, context, goal, perspective)? {
                 continue;
             }

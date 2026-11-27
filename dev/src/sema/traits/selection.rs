@@ -45,7 +45,9 @@ pub(in crate::sema) use search::source_object_marker;
 pub(in crate::sema) use search::specialization_layouts;
 pub(in crate::sema) use search::{BodyCopy, copying_predicate, no_drop_predicate};
 pub(in crate::sema) use search::{Conjunction, prove_conjunction};
-pub(in crate::sema) use search::{NegativePremises, may_overlap, may_overlap_with};
+pub(in crate::sema) use search::{
+    NegativePremises, fn_pointer_refutes, may_overlap, may_overlap_with,
+};
 pub(in crate::sema) use search::{
     Pending, Progress, Reuse, begin, begin_borrowed, begin_canonical, begin_canonical_counted,
     begin_declaration_counted, begin_executable_counted, begin_projection,

@@ -56,6 +56,17 @@ pub(in crate::sema) struct NegativePremises<'p> {
     pub placeholders: &'p crate::types::parameters::shape::Placeholders,
     pub assumptions: &'p Assumptions,
 }
+
+/// The validated compiler-owned `FnPtr` domain excludes rigid non-pointer heads.
+pub(in crate::sema) fn fn_pointer_refutes(
+    facts: &Declarations,
+    context: &mut Context,
+    goal: &Goal,
+) -> Result<bool, String> {
+    Ok(Search::source_fn_pointer_goal(facts, goal)?
+        && Search::rigid_non_fn_pointer(facts, context, goal)?)
+}
+
 /// A negative coherence query with `premises` decides a rigid parameter's
 /// sizing only from their Sized and `MetaSized` sets, and proves a negative
 /// impl's trait conditions from their trait clauses. `pay` receives the
@@ -75,10 +86,7 @@ pub(in crate::sema) fn may_overlap_with(
         &[crate::types::TypeId],
     ) -> Result<bool, String>,
 ) -> Result<bool, String> {
-    if mode.negative()
-        && Search::source_fn_pointer_goal(facts, goal)?
-        && Search::rigid_non_fn_pointer(facts, context, goal)?
-    {
+    if mode.negative() && fn_pointer_refutes(facts, context, goal)? {
         // rustc 1.98's builtin `impl !FnPtr for T` for each rigid T that is not
         // a function pointer: a negated where clause with no nested goals.
         return Ok(false);

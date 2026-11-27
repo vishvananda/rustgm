@@ -16,6 +16,11 @@ unsafe extern "C" {
 #[unsafe(no_mangle)]
 pub extern "C" fn observed() -> u8 {
     let pointer = unsafe { provide_pointer() };
+    let reference = &0u8;
+    match (base::Select::selected(&pointer), base::Select::selected(&reference)) {
+        (17, 29) => {}
+        _ => return 0,
+    }
     let address = generic(pointer);
     unsafe { observe_pointer(address) }
 }

@@ -1,7 +1,8 @@
 {
   "features": [
     "staged_api",
-    "auto_traits"
+    "auto_traits",
+    "with_negative_coherence"
   ],
   "attributes": [
     "unstable(feature=\"role_fixture\", issue=\"none\")"

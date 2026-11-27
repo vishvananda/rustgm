@@ -46,7 +46,9 @@ mod reflected_fields;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/refutation_layout.rs"]
 mod refutation_layout;
-pub(in crate::sema) use coherence::{NegativePremises, may_overlap, may_overlap_with};
+pub(in crate::sema) use coherence::{
+    NegativePremises, fn_pointer_refutes, may_overlap, may_overlap_with,
+};
 mod chain;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/dereference_suffixes.rs"]
