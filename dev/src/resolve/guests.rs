@@ -256,10 +256,13 @@ impl Package {
             module.file == key.file && module.root == key.node
         })
     }
-    /// Whether `name` is a crate attribute that a guest root owns at `key`:
-    /// its program selection reads it.
-    pub(crate) fn guest_root_attribute(&self, key: NodeKey, name: &str) -> bool {
-        name == "no_main" && self.guest_root(key)
+    /// Whether this node is a crate root eligible for root-only attributes.
+    pub(crate) fn owns_crate_root(&self, key: NodeKey) -> bool {
+        self.guest_root(key)
+            || self
+                .modules
+                .first()
+                .is_some_and(|root| root.file == key.file && root.root == key.node)
     }
     /// The crate id that a macro defined in `module` gives its `$crate`.
     /// Zero, the using crate's own root, in every session without guests.
@@ -400,6 +403,16 @@ impl Package {
     pub fn program_crate(&self) -> Option<&Member> {
         self.crate_members().last()
     }
+    /// Whether this executable uses the crate's own entry point.
+    /// # Errors
+    /// Propagates a malformed standalone root attribute.
+    pub fn program_no_main(&self) -> Result<bool, &'static str> {
+        if let Some(program) = self.program_crate() {
+            return Ok(program.no_main);
+        }
+        self.any_root_word("no_main")
+    }
+
     /// The crate name that `module_path!` spells for a crate's root module.
     pub(crate) fn root_name(&self, root: ModuleId) -> &str {
         if root == ModuleId(0) {

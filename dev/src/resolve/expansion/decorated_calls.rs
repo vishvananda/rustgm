@@ -230,8 +230,25 @@ impl<S: Sources> Engine<'_, S> {
         ) {
             return Ok(self.loader.package.source_core().is_some());
         }
+        if let Some(word @ ("no_main" | "no_builtins")) = name
+            && self.loader.package.owns_crate_root(owner)
+        {
+            let unit = self.loader.package.unit(owner.file);
+            let actual = unit.configured.effects[effect].attribute.attribute;
+            if input != Input::Empty || actual.unsafe_wrapper {
+                return Err(Error::at(
+                    owner.file,
+                    actual.span.start,
+                    match word {
+                        "no_main" => "no_main requires a word attribute",
+                        _ => "no_builtins requires a word attribute",
+                    },
+                ));
+            }
+            // The fixed LowIR target does not substitute library calls for loops.
+            return Ok(true);
+        }
         Ok(matches!(input, Input::Doc(_))
-            || name.is_some_and(|name| self.loader.package.guest_root_attribute(owner, name))
             || name == Some("default") && self.default_helper(owner, effect)?
             || name.and_then(Consumer::named).is_some()
                 && !(matches!(name, Some("derive" | "derive_const"))

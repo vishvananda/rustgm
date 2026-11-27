@@ -540,11 +540,10 @@ fn emit_lowir(
                 .set_identity(identity)
                 .map_err(|message| failure_message(&facts, message.to_owned()))?;
         }
-        // A `#![no_main]` guest program exports its own C `main`.
         let no_main = report
             .package
-            .program_crate()
-            .is_some_and(|program| program.no_main);
+            .program_no_main()
+            .map_err(|message| failure_message(&facts, message.to_owned()))?;
         let entry = if no_main {
             None
         } else {
