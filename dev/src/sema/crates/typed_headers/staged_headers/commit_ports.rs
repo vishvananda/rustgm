@@ -215,7 +215,7 @@ impl Stage {
         publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
-            if let Some(symbol) = function.symbol {
+            if let super::template_ports::Symbol::Canonical(symbol) = function.symbol {
                 linkage.symbols.insert(function.definition, symbol);
             }
         }

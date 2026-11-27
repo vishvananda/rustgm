@@ -9,7 +9,12 @@ use crate::{
 pub(super) struct Callable {
     pub definition: DefId,
     pub ty: TypeId,
-    pub symbol: Option<String>,
+    pub symbol: Symbol,
+}
+pub(super) enum Symbol {
+    Canonical(String),
+    Exact,
+    Dispatch,
 }
 struct Active {
     owner: DefId,
@@ -376,7 +381,7 @@ fn symbol(
     context: &mapped_source::Context<'_>,
     definition: DefId,
     budget: &mut Headers,
-) -> Result<Option<String>, Error> {
+) -> Result<Symbol, Error> {
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (_, declaration, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     budget.charge(
@@ -390,17 +395,17 @@ fn symbol(
     )?;
     let rows = context.descriptor.rows();
     if rows.exact_callable(declaration).is_some() {
-        return Ok(None);
+        return Ok(Symbol::Exact);
     }
     if context.descriptor.profile().declaration_policies()
         && let Some(s::HeaderRef::Function(index)) = rows.header(declaration).map_err(error)?
         && s::nested_required_method(&rows.declarations, &rows.functions[index as usize])
     {
-        return Ok(None);
+        return Ok(Symbol::Dispatch);
     }
     let symbol = symbol_from(context, definition, budget)?;
     budget.observed.add(symbol.capacity());
-    Ok(Some(symbol))
+    Ok(Symbol::Canonical(symbol))
 }
 pub(in crate::sema::crates::typed_headers) fn symbol_from(
     context: &mapped_source::Context<'_>,

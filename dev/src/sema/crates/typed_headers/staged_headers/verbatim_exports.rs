@@ -1,5 +1,5 @@
 //! Actual catalog coordinates select exact imports without granting body readiness.
-use super::{Declarations, Error, Headers, error, mapped_source};
+use super::{Declarations, Error, Headers, error, mapped_source, template_ports::Symbol};
 use crate::{
     sema::foreign::{PreparedFunctions, Registry},
     syntax::item::Safety,
@@ -18,7 +18,7 @@ pub(super) fn prepare(
     budget.charge(functions.len())?;
     budget.reserve(
         size_of::<crate::sema::foreign::Registry>()
-            + functions.len().saturating_mul(size_of::<(
+            + rows.exact_callables.len().saturating_mul(size_of::<(
                 crate::resolve::model::DefId,
                 crate::types::TypeId,
                 Safety,
@@ -27,7 +27,7 @@ pub(super) fn prepare(
     )?;
     let mut inputs = Vec::with_capacity(rows.exact_callables.len());
     for function in functions {
-        if function.symbol.is_some() {
+        if !matches!(function.symbol, Symbol::Exact) {
             continue;
         }
         budget.charge(12 + rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
