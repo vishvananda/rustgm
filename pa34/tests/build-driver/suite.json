@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "build-driver",
+  "stage": "pa34",
+  "files": [
+    "gen_lib/build.rs",
+    "gen_lib/src/lib.rs",
+    "consumer/src/main.rs"
+  ],
+  "expected_exit": 0
+}

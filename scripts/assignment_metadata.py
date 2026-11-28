@@ -53,10 +53,44 @@ def collect_units(root=ROOT, *, unit=None):
     units, _ = validate_plan(root)
     check_publishers(root)
     selected = [entry for entry in units if entry["id"] == unit] if unit is not None else [
-        entry for entry in units if entry["publication"] == "released"]
+        entry for entry in units if entry["publication"] == "released" and "manifest" in entry]
     if unit is not None and not selected:
         raise ValueError(f"unknown assignment unit: {unit}")
-    return [(entry, *load_cases(root, entry["owner"], unit=entry["id"])) for entry in selected]
+    return [(entry, *load_cases(root, entry["owner"], unit=entry["id"]))
+            for entry in selected if "manifest" in entry]
+
+
+def validate_workload_stage(root, stage):
+    """Validate a released consumers or self-hosting suite manifest."""
+    kind = stage.get("suite_kind", "text")
+    suite_path = root / stage["path"] / "tests/suite.json"
+    if not suite_path.is_file():
+        raise ValueError(f"workload assignment lacks tests/suite.json: {stage['path']}")
+    suite = json.loads(suite_path.read_text())
+    if suite.get("schema") != 1 or suite.get("kind") != kind or suite.get("stage") != stage["path"]:
+        raise ValueError(f"workload suite manifest disagrees with assignments.json: {stage['path']}")
+    if kind == "consumers":
+        import grade_consumers
+        _, outcomes, folder = grade_consumers.load_suite(root, stage["path"])
+        if not outcomes.get("cases"):
+            raise ValueError(f"consumer suite has no cases: {stage['path']}")
+        if lint_rel := suite.get("lint_manifest"):
+            lint_path = checked_path(root, f"{stage['path']}/{lint_rel}")
+            lint_plan = json.loads(lint_path.read_text())
+            if not lint_plan.get("cases"):
+                raise ValueError(f"empty lint manifest: {lint_path}")
+            for case in lint_plan["cases"]:
+                if not (lint_path.parent / case["path"]).is_file():
+                    raise ValueError(f"missing lint fixture: {lint_path.parent / case['path']}")
+        return suite, outcomes["cases"]
+    if kind == "self-hosting":
+        import build_self_hosting
+        config_path = checked_path(root, f"{stage['path']}/{suite['configuration']}")
+        build_self_hosting.source_arguments(json.loads(config_path.read_text()))
+        if not suite.get("strict_zero_bringup") or not suite.get("compare_outputs") or not suite.get("negative_controls"):
+            raise ValueError(f"self-hosting suite manifest is incomplete: {stage['path']}")
+        return suite, []
+    raise ValueError(f"unknown suite_kind: {stage['path']}: {kind}")
 
 
 def collect(root=ROOT):
@@ -64,6 +98,8 @@ def collect(root=ROOT):
     for stage in stages:
         if stage["status"] not in ("planned", "implemented-draft", "implemented"):
             raise ValueError(f"unknown assignment status: {stage['path']}: {stage['status']}")
+        if stage.get("suite_kind", "text") not in ("text", "consumers", "self-hosting"):
+            raise ValueError(f"unknown suite_kind: {stage['path']}: {stage.get('suite_kind')}")
         if stage["status"] == "implemented":
             if not stage.get("release_evidence"):
                 raise ValueError(f"implemented assignment needs release evidence: {stage['path']}")
@@ -75,10 +111,18 @@ def collect(root=ROOT):
         units = {unit["id"]: unit for unit in ordered}
     foundational = {stage["path"] for stage in stages
                     if stage["number"] <= 24 and stage["status"] != "planned"}
-    active = [stage["path"] for stage in stages if stage["status"] != "planned"]
-    configured = re.search(r"^ACTIVE_PAS\s*:=\s*(.*)$", (root / "Makefile").read_text(), re.M)
+    active = [stage["path"] for stage in stages
+              if stage["status"] != "planned" and stage.get("suite_kind", "text") == "text"]
+    makefile = (root / "Makefile").read_text()
+    configured = re.search(r"^ACTIVE_PAS\s*:=\s*(.*)$", makefile, re.M)
     if configured is None or configured[1].split() != active:
         raise ValueError("root report stages disagree with assignments.json")
+    workloads = [stage["path"] for stage in stages
+                 if stage["status"] != "planned" and stage.get("suite_kind", "text") != "text"]
+    if workloads:
+        configured_w = re.search(r"^WORKLOAD_PAS\s*:=\s*(.*)$", makefile, re.M)
+        if configured_w is None or configured_w[1].split() != workloads:
+            raise ValueError("root workload stages disagree with assignments.json")
     loaded = []
     for stage in stages:
         folder = root / stage["path"]
@@ -88,6 +132,9 @@ def collect(root=ROOT):
         if stage["status"] == "planned":
             if (folder / "tests/manifest.json").exists():
                 raise ValueError(f"planned stage has an undeclared executed suite: {folder}")
+            continue
+        if stage.get("suite_kind", "text") != "text":
+            validate_workload_stage(root, stage)
             continue
         manifest, cases = load_cases(root, stage["path"])
         if (manifest["mode"] != stage["mode"]

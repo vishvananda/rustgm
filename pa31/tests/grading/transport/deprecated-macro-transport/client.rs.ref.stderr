@@ -1,0 +1,3 @@
+warning[deprecated]: file 0: 115: use of deprecated macro: prefer the replacement macro
+warning[deprecated]: file 0: 191: use of deprecated macro: prefer the replacement macro
+warning[deprecated]: file 0: 441: use of deprecated declaration: prefer the target replacement

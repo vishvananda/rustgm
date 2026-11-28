@@ -1,0 +1,1 @@
+ERROR: file 0: 159: non-const trait methods cannot be called in const contexts

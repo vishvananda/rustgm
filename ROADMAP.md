@@ -5,8 +5,8 @@ current execution path: a faster validation loop, algorithmic frontend
 performance work taken from the CPPGM port, and self-hosting through a strict
 whole-graph build. It supersedes the execution order of the
 [self-hosting plan](docs/self-hosting-plan.md), whose milestone ladder stands.
-In the [student course order](student/README.md#course-order), PA45 is the
-self-hosting milestone after the library bootstrap and PA44 is final
+In the [student course order](student/README.md#course-order), PA37 is the
+self-hosting milestone after the library bootstrap and PA45 is final
 frontend acceptance.
 
 The [implicit result-field checkpoint](docs/pa20-implicit-result-fields.md)
@@ -90,11 +90,11 @@ PA1–PA24 have active, independently qualified text-oracle suites. PA14 and
 PA21–PA24 are **implemented**, with their completed release evidence recorded in
 assignments.json. The other PA1–PA20 stages retain implemented-draft; the
 [reconciliation table](docs/assignment-order.md#pa1pa20-record-reconciliation)
-lists what each record lacks. PA25–PA30 are closed at their finite contracts:
-each manifest is the union of its released unit manifests, and the unreleased
-units and requirement rows it defers are carried by
-[PA45](pa45/MAINTAINER.md#carried-requirements). PA31–PA45 remain planned as whole
-assignments. No planned or empty suite counts as passing.
+lists what each record lacks. PA25–PA31, PA34, and PA35 are closed at their
+finite contracts, with deferred units and requirement rows carried by
+[PA45](pa45/MAINTAINER.md#carried-requirements). PA32, PA33, PA36, and PA37 are
+**implemented** with active consumer and self-hosting grading suites. PA38–PA45
+remain planned as whole assignments. No planned or empty suite counts as passing.
 
 The [wide constant product checkpoint](docs/pa25-wide-constant-products.md)
 qualifies98 new exact/classified results, real source Mul const calls and native
@@ -454,6 +454,13 @@ release record):
 | `atomic-u32` | 28 | 272 | 2 | [record](docs/pa28-atomic-u32-release.md) |
 | `iteration-kernel` | 26 | 196 | 8 | [record](docs/pa26-iteration-kernel-release.md) |
 | `declarations` | 29 | 30 | 0 | [record](docs/pa29-declarations-release.md) |
+| `source-declarations` | 31 | 41 | 0 | [record](docs/pa31-source-declarations-release.md) |
+| `core-artifact` | 32 | 18 consumers + 2 lints | 0 | [record](docs/pa32-core-bootstrap-release.md) |
+| `alloc-artifact` | 33 | 12 consumers | 0 | [record](docs/pa33-alloc-bootstrap-release.md) |
+| `build-editions` | 34 | 48 + build-driver | 0 | [record](docs/pa34-build-editions-release.md) |
+| `unicode-crates` | 35 | 4 consumers | 0 | [record](docs/pa35-unicode-crates-release.md) |
+| `std-artifact` | 36 | 14 consumers | 0 | [record](docs/pa36-std-bootstrap-release.md) |
+| `self-hosting` | 37 | stage1 + PA1–PA24 + stage2 + 2 controls | 0 | [record](docs/pa37-self-hosting-release.md) |
 
 | PA | Assignment | Status |
 | --- | --- | --- |
@@ -487,13 +494,13 @@ release record):
 | [28](pa28/README.md) | Intrinsics and atomics | implemented (finite contract) |
 | [29](pa29/README.md) | Crates and metadata | implemented (finite contract) |
 | [30](pa30/README.md) | Foreign interfaces | implemented (finite contract) |
-| [31](pa31/README.md) | Compiler/library bindings | planned |
-| [32](pa32/README.md) | Pinned core bootstrap | planned |
-| [33](pa33/README.md) | Allocator and alloc bootstrap | planned |
-| [34](pa34/README.md) | Edition and crate build integration | planned |
-| [35](pa35/README.md) | Upstream crate acceptance | planned |
-| [36](pa36/README.md) | Std and platform bootstrap | planned |
-| [37](pa37/README.md) | Reproducible self-hosting | planned |
+| [31](pa31/README.md) | Compiler/library bindings | implemented (finite contract) |
+| [32](pa32/README.md) | Pinned core bootstrap | implemented |
+| [33](pa33/README.md) | Allocator and alloc bootstrap | implemented |
+| [34](pa34/README.md) | Edition and crate build integration | implemented (finite contract) |
+| [35](pa35/README.md) | Upstream crate acceptance | implemented (finite contract) |
+| [36](pa36/README.md) | Std and platform bootstrap | implemented |
+| [37](pa37/README.md) | Reproducible self-hosting | implemented |
 | [38](pa38/README.md) | Procedural macro host | planned |
 | [39](pa39/README.md) | Derive and attribute macros | planned |
 | [40](pa40/README.md) | Panic and unwinding | planned |

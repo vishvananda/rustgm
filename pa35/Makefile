@@ -1,1 +1,1 @@
-include ../scripts/assignment.mk
+include ../scripts/assignment-consumers.mk

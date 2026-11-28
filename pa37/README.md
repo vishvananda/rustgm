@@ -1,60 +1,76 @@
 # RustGM Programming Assignment 37 — Reproducible self-hosting
 
-**Self-hosting demonstrated.** The strict whole-graph build passed the
-PA1–PA24 suites and reproduced the executable with zero bring-up records
-using CPPGM v0.9.3. The student grading suite is pending.
+Build your completed RustGM compiler with RustGM, verify it on the PA1–PA24
+oracle ladder, then rebuild RustGM using that self-hosted compiler and verify
+that stage 1 and stage 2 match byte for byte.
 
-Build your completed RustGM compiler with RustGM, then repeat the build
-using that compiler. Use the Rust 1.98.0 Linux x86-64 panic-abort profile.
-Complete this milestone after [PA36's library bootstrap](../pa36/README.md).
-Use the original `core`, `alloc`, and `std` sources and the compiler's
-actual target dependencies. The selected graph uses the panic-abort
-profile. This completes the initial track. The remaining procedural
-macro, unwind, edition, target, and async work follows in PA38–PA44.
-PA45 integrates the broader frontend profile.
+Use the Rust 1.98.0 Linux x86-64 panic-abort profile with the original `core`,
+`alloc`, and `std` sources and your compiler's real locked dependencies. This
+completes the initial course track. Procedural macros, unwinding, remaining
+edition/target closure, async, and final frontend acceptance follow in
+PA38–PA45.
 
-## Required result
+## Completion criterion
 
-| Stage | Build |
-| --- | --- |
-| 0 | Build your completed RustGM once with the pinned Rust toolchain. |
-| 1 | Use stage 0 to compile the entire source graph and link the resulting LowIR with CPPGM. |
-| 2 | Use stage 1 to compile the same graph, then link it with the same backend and linker settings. |
-
-Each self-hosted stage is one strict whole-graph build. Keep each crate's
-identity, edition, configuration, and dependencies while passing them
-through the same compilation session. Use CPPGM for LowIR-to-native
-generation. RustGM implements each Rust frontend phase.
-
-Freeze the source inventory, configuration, compiler and linker identities,
-and backend lock before the builds. Reuse the same source bytes, graph
-order, options, and backend optimization level in both stages. Use the
-original library sources and the compiler's real dependencies. Prevent
-timestamps, machine paths, or unordered traversal from changing artifacts.
-
-## Tool surface
-
-Record each stage's LowIR, native link manifest, and linked executable.
-Report the strict checks and artifact hashes. The checked graph must have
-zero bring-up records, unresolved obligations, and waivers, and must
-emit no trapping stubs.
-
-## Check your implementation
-
-Use the stage 1 executable as the compiler under test for every PA1–PA24
-suite. For example, the commands below use a compiler linked at `obj/stage1/native/rustgm`.
+From the repository root (after `make setup-backend` and `make setup-rust-src`):
 
 ```sh
-stage1="$PWD/obj/stage1/native/rustgm"
-result=0
-for number in $(seq 1 24); do
-    make -C "pa$number" test RUSTGM_TEST_APP="$stage1" || result=1
-done
-test "$result" -eq 0
+make inception
 ```
 
-Compare stage 1 and stage 2 LowIR and native link manifests byte for byte
-before the second native link. Compare the final linked executables byte
-for byte as well. Keep evidence of source and tool identities with both
-outputs. Check that a differing input or a nonzero bring-up record causes
-the validation to fail. Record build time and peak memory for each stage.
+or equivalently:
+
+```sh
+make -C pa37 test
+```
+
+The build performs three generations:
+
+| Stage | Built by | Output |
+| --- | --- | --- |
+| 0 (seed) | Pinned Rust 1.98.0 toolchain (`cargo build --release --locked`) | `obj/student/release/rustgm` (maintainer: `obj/rust/release/rustgm`) |
+| 1 (self) | Stage 0 compiling the frozen whole-source graph through CPPGM | `obj/pa37/stage1/native/rustgm` |
+| 2 (inception) | Stage 1 compiling the exact same frozen graph and linker pins | `obj/pa37/stage2/native/rustgm` |
+
+Each self-hosted stage is one strict whole-graph build with **zero bring-up
+records**, zero unproven obligations, zero waivers, and no trapping stubs.
+Stage 1 and stage 2 must match byte for byte on:
+
+- `program.lowir`
+- `program.native-links.json`
+- the linked `rustgm` executable
+
+A passing run also verifies negative controls (a perturbed stage 2 output and
+a nonzero bring-up record both fail) and prints `MATCH rustgm`.
+
+## Work through the ladder
+
+Modeled on CPPGM's PA35 self-hosting ladder, you can build stage 1 once and
+advance through the oracle suites incrementally:
+
+```sh
+make -C pa37 stage0
+make -C pa37 stage1
+make -C pa37 test-through-pa4
+make -C pa37 test-through-pa11
+make -C pa37 test-through-pa24
+make -C pa37 stage2
+make -C pa37 compare
+make -C pa37 negative-controls
+```
+
+You can run any single assignment against stage 1 with `make -C pa37 test-pa12`,
+or extend the ladder all the way through PA30 with `make -C pa37 test-through-pa30`.
+
+## Configuration and reproducibility
+
+- In a student repository, `scripts/pa37_self_host.py` automatically discovers
+  your crate graph from `Cargo.toml` and `Cargo.lock` (resolving your locked
+  dependencies plus `src/lib.rs` if present and `src/main.rs` as `app`). If you
+  need custom crate settings, supply `pa37/student-configuration.json`.
+- Freeze the source inventory, configuration, compiler and linker identities,
+  and backend lock before both stages. Prevent timestamps, machine paths, or
+  unordered traversal from changing emitted LowIR or linked binaries.
+- Pass `PA37_OPT_LEVEL=0` or `PA37_OPT_LEVEL=1` (default `1`) to select the
+  CPPGM object optimization level used identically for both stages.
+- Pass `PA37_WORK=../obj/pa37-experiment` to keep experimental builds separate.

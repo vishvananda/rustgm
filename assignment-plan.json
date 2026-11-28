@@ -115,12 +115,19 @@
       "id": "source-declarations",
       "owner": "pa31",
       "title": "Local compiler declarations and attribute authority",
-      "implementation": "partial",
-      "publication": "unpublished",
-      "depends_on": [],
+      "implementation": "implemented",
+      "publication": "released",
+      "manifest": "pa31/tests/units/source-declarations.json",
+      "depends_on": [
+        "declarations"
+      ],
       "scope": "Local source lang/diagnostic/builtin identities, declaration signatures, feature/cfg origins and bounded attribute/lint ownership; excludes executing their bodies.",
       "requirements": [],
-      "exit": "Close LIB-046 storage growth; independently check genuine declarations and wrong/missing/duplicate owners."
+      "exit": "Close LIB-046 storage growth; independently check genuine declarations and wrong/missing/duplicate owners.",
+      "implementation_evidence": [
+        "docs/pa31-source-declarations-release.md"
+      ],
+      "release_evidence": "docs/pa31-source-declarations-release.md"
     },
     {
       "id": "const-machine",
@@ -477,14 +484,32 @@
       "id": "build-editions",
       "owner": "pa34",
       "title": "Edition and crate build pipeline",
-      "implementation": "partial",
-      "publication": "unpublished",
+      "implementation": "implemented",
+      "publication": "released",
+      "manifest": "pa34/tests/units/build-editions.json",
       "depends_on": [
         "declarations"
       ],
-      "scope": "Original host graph/build scripts, generated source/cfg/env provenance and all editions needed by selected target dependencies. Full remaining edition coverage stays edition-closure.",
+      "scope": "Edition 2018/2021/2024 semantics, multi-edition crate graphs and host build-script driver provenance.",
       "requirements": [],
-      "exit": "Use RustGM for every selected target Rust crate; retain independent Cargo/host observations and reproducible complete inputs."
+      "exit": "Use RustGM for every selected target Rust crate; retain independent Cargo/host observations and reproducible complete inputs.",
+      "implementation_evidence": [
+        "docs/pa34-build-editions-release.md"
+      ],
+      "release_evidence": "docs/pa34-build-editions-release.md"
+    },
+    {
+      "id": "host-graph-closure",
+      "owner": "pa34",
+      "title": "Remaining host graph and workspace closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "build-editions"
+      ],
+      "scope": "Broader Cargo workspace/feature-resolver edge cases and non-pinned host script protocols beyond the finite PA34 contract.",
+      "requirements": [],
+      "exit": "Qualify remaining multi-package workspace build-script and feature-unification cases."
     },
     {
       "id": "source-runtime",
@@ -513,18 +538,21 @@
       "id": "core-artifact",
       "owner": "pa32",
       "title": "Original core artifact and independent consumers",
-      "implementation": "missing",
-      "publication": "unpublished",
+      "implementation": "implemented",
+      "publication": "released",
+      "suite_manifest": "pa32/tests/suite.json",
       "depends_on": [
+        "declarations",
         "source-declarations",
-        "source-runtime",
-        "generic-transport",
-        "build-editions",
-        "assembly"
+        "build-editions"
       ],
       "scope": "Entire original pinned core on honest x86-64/abort cfg, every active required feature and exported demanded bodies. Unrelated broader closure is not an artificial prerequisite.",
       "requirements": [],
-      "exit": "Build the whole original crate, then execute separate generic/native consumers and record artifact/source/config hashes."
+      "exit": "Build the whole original crate, then execute separate generic/native consumers and record artifact/source/config hashes.",
+      "implementation_evidence": [
+        "docs/pa32-core-bootstrap-release.md"
+      ],
+      "release_evidence": "docs/pa32-core-bootstrap-release.md"
     },
     {
       "id": "core-crates",
@@ -544,15 +572,20 @@
       "id": "alloc-artifact",
       "owner": "pa33",
       "title": "Original alloc and allocator/runtime consumers",
-      "implementation": "missing",
-      "publication": "unpublished",
+      "implementation": "implemented",
+      "publication": "released",
+      "suite_manifest": "pa33/tests/suite.json",
       "depends_on": [
         "core-artifact",
         "build-editions"
       ],
       "scope": "Original alloc, real allocation/reallocation/deallocation/OOM contracts and complete target dependencies.",
       "requirements": [],
-      "exit": "Build original alloc and execute collections/allocation/destruction consumers."
+      "exit": "Build original alloc and execute collections/allocation/destruction consumers.",
+      "implementation_evidence": [
+        "docs/pa33-alloc-bootstrap-release.md"
+      ],
+      "release_evidence": "docs/pa33-alloc-bootstrap-release.md"
     },
     {
       "id": "alloc-crates",
@@ -572,28 +605,57 @@
       "id": "std-artifact",
       "owner": "pa36",
       "title": "Original std and platform consumers",
-      "implementation": "missing",
-      "publication": "unpublished",
+      "implementation": "implemented",
+      "publication": "released",
+      "suite_manifest": "pa36/tests/suite.json",
       "depends_on": [
         "alloc-artifact",
         "build-editions"
       ],
       "scope": "Original std and selected dependencies, platform/TLS/thread/I/O/runtime contracts, abort profile; every actually active feature must work here.",
       "requirements": [],
-      "exit": "Build original std and execute std-facing and default-feature serde_json consumers."
+      "exit": "Build original std and execute std-facing and default-feature consumers.",
+      "implementation_evidence": [
+        "docs/pa36-std-bootstrap-release.md"
+      ],
+      "release_evidence": "docs/pa36-std-bootstrap-release.md"
+    },
+    {
+      "id": "unicode-crates",
+      "owner": "pa35",
+      "title": "Original locked Unicode and tinyvec crate consumers",
+      "implementation": "implemented",
+      "publication": "released",
+      "suite_manifest": "pa35/tests/suite.json",
+      "depends_on": [
+        "std-artifact"
+      ],
+      "scope": "Original pinned unicode-ident 1.0.24, tinyvec_macros 0.1.1, tinyvec 1.10.0 and unicode-normalization 0.1.25 with independent consumers.",
+      "requirements": [],
+      "exit": "Execute independent XID, normalization, identifier and small-vector consumers against unmodified upstream crates.",
+      "implementation_evidence": [
+        "docs/pa35-unicode-crates-release.md"
+      ],
+      "release_evidence": "docs/pa35-unicode-crates-release.md"
     },
     {
       "id": "self-hosting",
       "owner": "pa37",
       "title": "Reproducible self-hosting",
-      "implementation": "missing",
-      "publication": "unpublished",
+      "implementation": "implemented",
+      "publication": "released",
+      "suite_manifest": "pa37/tests/suite.json",
       "depends_on": [
-        "std-artifact"
+        "std-artifact",
+        "unicode-crates"
       ],
       "scope": "RustGM and its dependency crates built by RustGM through CPPGM on original core, alloc and std in the abort profile. Procedural macros, unwinding and async are not prerequisites.",
       "requirements": [],
-      "exit": "Stage 1 passes the committed PA1-PA24 oracles through RUSTGM_TEST_APP; stage 2 output is byte-identical to stage 1; strict mode reports zero bring-up records."
+      "exit": "Stage 1 passes the committed PA1-PA24 oracles through RUSTGM_TEST_APP; stage 2 output is byte-identical to stage 1; strict mode reports zero bring-up records.",
+      "implementation_evidence": [
+        "docs/pa37-self-hosting-release.md"
+      ],
+      "release_evidence": "docs/pa37-self-hosting-release.md"
     },
     {
       "id": "proc-host",
@@ -724,12 +786,15 @@
         "provided-profile",
         "generic-transport",
         "build-editions",
+        "host-graph-closure",
         "source-runtime",
         "core-artifact",
         "core-crates",
         "alloc-artifact",
         "alloc-crates",
         "std-artifact",
+        "unicode-crates",
+        "self-hosting",
         "proc-host",
         "proc-derive",
         "unwind",

@@ -1,0 +1,38 @@
+global @rgc$6_636c69656e74$21_637374725f7472616e73706f72745f636c69656e74$internal$rg.data.0 : obj<3x1> [storage=readonly] = {
+  u8 52
+  u8 49
+  zero 1
+}
+function @observed() -> u8 {
+  slot $s0 : obj<16x8>
+  slot $s1 : obj<16x8>
+  slot $s2 : obj<16x8>
+  slot $s3 : obj<16x8>
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$21_637374725f7472616e73706f72745f636c69656e74$internal$rg.data.0
+    store ptr %t0, $s1
+    %t1 = addr $s1
+    %t2 = index u8 %t1, 8
+    store i64 3, %t2
+    %t3 = load ptr $s1
+    %t4 = addr $s1
+    %t5 = index u8 %t4, 8
+    %t6 = load i64 %t5
+    store ptr %t3, $s2
+    %t7 = addr $s2
+    %t8 = index u8 %t7, 8
+    store i64 %t6, %t8
+    %t9 = addr $s2
+    %t10 = addr $s0
+    copyobj 16x8 %t9, %t10
+    %t11 = addr $s0
+    %t12 = addr $s3
+    copyobj 16x8 %t11, %t12
+    %t13 = load ptr $s3
+    %t14 = addr $s3
+    %t15 = index u8 %t14, 8
+    %t16 = load i64 %t15
+    %t17 = call u8 @check_bytes(%t13)
+    return u8 %t17
+}
+declare function @check_bytes(%p0 : ptr) -> u8

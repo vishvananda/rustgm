@@ -1,6 +1,11 @@
 # PA31 fixture ownership
 
-Planned: no graded manifest or generated reference outputs yet.
+Active finite contract (`source-declarations` released; `source-runtime`
+deferred to PA45). `tests/units/source-declarations.json` (composed into
+`tests/manifest.json`) grades 41 cases under `tests/grading/` (9 local
+`#![no_core]`/lint cases and 32 separate-compilation source-provider/client
+cases with 17 silent C `observe.c` native drivers). See
+[pa31-source-declarations-release.md](../../docs/pa31-source-declarations-release.md).
 
 `spec/source-export-census/outcomes.json` declares a source-provider control
 for observing independent declaration, nominal shape, and language-role

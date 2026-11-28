@@ -3,12 +3,18 @@ CARGO ?= cargo
 CXX ?= c++
 export CARGO_TARGET_DIR := $(CURDIR)/obj/student
 
-.PHONY: all setup-backend backend-example test-upstream
+.PHONY: all setup-backend setup-rust-src backend-example test-upstream inception
 all:
 	$(CARGO) build --release --locked
 
 setup-backend:
 	$(PYTHON) scripts/setup_backend.py
+
+setup-rust-src:
+	$(PYTHON) scripts/setup_rust_src.py --with-pa35-crates
+
+inception: all
+	$(MAKE) -C pa37 test
 
 backend-example:
 	@set -eu; \

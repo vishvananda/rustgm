@@ -23,23 +23,26 @@ Test reports are written to `obj/tests/`. Set
 
 1. Work through PA1–PA30 in order. PA29 establishes separate compilation,
    including the shared metadata for generic bodies used by fresh clients.
-2. Complete PA31's source bindings and runtime integration. In PA32, prepare
-   the pinned build, finish the required target support, and use PA29's
-   metadata mechanism to build standalone `core` with independently compiled
-   consumers.
-3. Build `alloc` in PA33, extend the crate-build driver in PA34, then run
-   PA35's core-only and allocation-dependent upstream checks. Build `std`
-   in PA36.
-4. Complete **self-hosting (PA37)** using that library profile. Stage 1 runs
-   the earlier assignment suites and stage 2 must reproduce stage 1.
+2. Complete PA31's source bindings and runtime integration (`make -C pa31 test`).
+   Before running PA32–PA37, install the pinned Rust 1.98.0 library sources
+   and locked PA35 crates once with `make setup-rust-src` (or set
+   `RUSTGM_RUST_SRC` to an existing pinned checkout).
+3. In PA32 (`make -C pa32 test`), build standalone `core` and run all 18
+   independently compiled `no_std` consumers.
+4. Build `alloc` in PA33 (`make -C pa33 test`), complete editions and crate
+   builds in PA34 (`make -C pa34 test`), run the upstream crate consumers
+   (`unicode-ident`, `tinyvec`, `unicode-normalization`) in PA35
+   (`make -C pa35 test`), and build `std` in PA36 (`make -C pa36 test`).
+5. Complete **self-hosting (PA37)** with `make inception` (or `make -C pa37 test`).
+   Stage 1 runs the PA1–PA24 suites (`make -C pa37 test-through-pa24`) and
+   stage 2 must reproduce stage 1 byte for byte (`MATCH rustgm`).
 
 The initial track ends at PA37. Procedural macros, unwinding, the remaining
 edition and target work, and async are a separate follow-on track (PA38–PA44).
 PA45 integrates the broader course profile after those features.
 
-Each exported assignment folder has a `README.md`. Available suites have
-a test manifest and a `make test` target in their PA directory. A preview
-may also contain handouts whose grading suites are pending.
+Every exported assignment folder (PA1–PA37) has a `README.md`, a grading suite
+manifest, and a runnable `make -C paN test` target.
 
 ## CPPGM backend
 

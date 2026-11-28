@@ -1,0 +1,223 @@
+global @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.0 : obj<4x4> [storage=readonly] = {
+  u32 9
+}
+global @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.1 : obj<4x4> [storage=readonly] = {
+  u32 9
+}
+global @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.2 : obj<4x4> [storage=readonly] = {
+  u32 5
+}
+global @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.3 : obj<4x4> [storage=readonly] = {
+  u32 9
+}
+function @observe_const_fixed() -> u32 {
+  block ^b0:
+    return u32 5
+}
+function @observe_const_doubled() -> u32 {
+  block ^b0:
+    return u32 10
+}
+function @observe_const_tag() -> u32 {
+  block ^b0:
+    return u32 11
+}
+function @observe_const_unsafe() -> u32 {
+  block ^b0:
+    return u32 8
+}
+function @observe_const_ref() -> u32 {
+  block ^b0:
+    return u32 7
+}
+function @observe_const_strict() -> u32 {
+  block ^b0:
+    return u32 4
+}
+function @observe_const_twice() -> u32 {
+  block ^b0:
+    return u32 12
+}
+function @observe_dyn_factor() -> u32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.55.i18(%t0, 9)
+    %t1 = addr @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.0
+    %t2 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$9$d$56.i19(%t1)
+    return u32 %t2
+}
+function @observe_dyn_doubled() -> u32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.55.i18(%t0, 9)
+    %t1 = addr @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.1
+    %t2 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$7_646f75626c6564$.i20(%t1)
+    return u32 %t2
+}
+function @observe_fixed_bonus() -> u32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.44.i21(%t0, 5)
+    %t1 = addr @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.2
+    %t2 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$13_72756e74696d655f626f6e7573$.i22(%t1)
+    return u32 %t2
+}
+function @observe_dyn_bonus() -> u32 {
+  slot $s0 : obj<4x4>
+  block ^b0:
+    %t0 = addr $s0
+    call void @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.55.i18(%t0, 9)
+    %t1 = addr @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.data.3
+    %t2 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$13_72756e74696d655f626f6e7573$.i24(%t1)
+    return u32 %t2
+}
+function @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.55.i18(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+function @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$9$d$56.i19(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u32 %t0
+    return u32 %t1
+}
+function @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$7_646f75626c6564$.i20(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  slot $s1 : u32
+  slot $s2 : u32
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$9$d$56.i19(%t0)
+    %t2 = cmp eq u32 %t1, 5
+    %t3 = convert trunc i1 i64 %t2
+    branch %t3, ^b2, ^b3
+  block ^b3:
+    %t4 = cmp eq u32 %t1, 6
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b4, ^b5
+  block ^b5:
+    %t6 = cmp eq u32 %t1, 9
+    %t7 = convert trunc i1 i64 %t6
+    branch %t7, ^b6, ^b7
+  block ^b7:
+    jump ^b8
+  block ^b8:
+    store u32 %t1, $s2
+    %t8 = load u32 $s2
+    store u32 %t8, $s1
+    jump ^b1
+  block ^b6:
+    store u32 18, $s1
+    jump ^b1
+  block ^b4:
+    store u32 12, $s1
+    jump ^b1
+  block ^b2:
+    store u32 10, $s1
+    jump ^b1
+  block ^b1:
+    %t9 = load u32 $s1
+    return u32 %t9
+  block ^b9:
+    unreachable
+}
+function @rgc$6_636c69656e74$28_636f6e73745f74726169745f7472616e73706f72745f636c69656e74$internal$rg.44.i21(%p0 : ptr, %p1 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p1, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    copyobj 4x4 %t1, %p0
+    return void
+}
+function @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$13_72756e74696d655f626f6e7573$.i22(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  slot $s1 : u32
+  slot $s2 : u32
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$6$d$48.i23(%t0)
+    %t2 = cmp eq u32 %t1, 5
+    %t3 = convert trunc i1 i64 %t2
+    branch %t3, ^b2, ^b3
+  block ^b3:
+    %t4 = cmp eq u32 %t1, 9
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b4, ^b5
+  block ^b5:
+    jump ^b6
+  block ^b6:
+    store u32 %t1, $s2
+    %t6 = load u32 $s2
+    store u32 %t6, $s1
+    jump ^b1
+  block ^b4:
+    store u32 109, $s1
+    jump ^b1
+  block ^b2:
+    store u32 105, $s1
+    jump ^b1
+  block ^b1:
+    %t7 = load u32 $s1
+    return u32 %t7
+  block ^b7:
+    unreachable
+}
+function @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$f$5_5363616c65$13_72756e74696d655f626f6e7573$.i24(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  slot $s1 : u32
+  slot $s2 : u32
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = call u32 @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$9$d$56.i19(%t0)
+    %t2 = cmp eq u32 %t1, 5
+    %t3 = convert trunc i1 i64 %t2
+    branch %t3, ^b2, ^b3
+  block ^b3:
+    %t4 = cmp eq u32 %t1, 9
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b4, ^b5
+  block ^b5:
+    jump ^b6
+  block ^b6:
+    store u32 %t1, $s2
+    %t6 = load u32 $s2
+    store u32 %t6, $s1
+    jump ^b1
+  block ^b4:
+    store u32 109, $s1
+    jump ^b1
+  block ^b2:
+    store u32 105, $s1
+    jump ^b1
+  block ^b1:
+    %t7 = load u32 $s1
+    return u32 %t7
+  block ^b7:
+    unreachable
+}
+function @rgc$4_62617365$21_636f6e73745f74726169745f7472616e73706f7274$b$6$d$48.i23(%p0 : ptr) -> u32 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u32 %t0
+    return u32 %t1
+}

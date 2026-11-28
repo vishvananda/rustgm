@@ -32,6 +32,7 @@ def fingerprint(root, digests=None):
               "scripts/course.py", "scripts/course_suites.py", "scripts/reference_batches.py",
               "scripts/check_native.py", "scripts/check_layout.py", "scripts/check_layouts.py", "scripts/check_syntax.py")]
     paths += sorted(root.glob("pa*/tests/manifest.json"))
+    paths += sorted(root.glob("pa*/tests/suite.json"))
     paths += sorted(root.glob("pa*/tests/units/*.json"))
     rows = {row[1]: row[2] for row in digests.tree(root / "dev", suffix=".rs") if row[0] == "file"}
     return {**rows, **{str(path.relative_to(root)): digests.file(path) for path in paths}}

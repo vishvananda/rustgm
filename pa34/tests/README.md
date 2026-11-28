@@ -8,7 +8,15 @@ and separate successor. Candidate/private qualification is pending; ordinary
 PA24 bootstrap and full source-library publication stay separate requirements.
 
 
-Planned: no graded fixtures or generated reference outputs yet.
+Active finite contract (`build-editions` released; `host-graph-closure`
+deferred to PA45). `tests/units/build-editions.json` (composed into
+`tests/manifest.json`) grades 48 Rust 2018/2021/2024 edition cases under
+`tests/grading/`, and `tests/build-driver/` is executed by
+`scripts/grade_pa34_driver.py` (invoked by `make -C pa34 test`) to verify host
+`build.rs` execution, generated `OUT_DIR` source, `cargo::rustc-cfg` /
+`cargo::rustc-env` propagation, mixed 2021/2024 crates, and deterministic
+replay. See
+[pa34-build-editions-release.md](../../docs/pa34-build-editions-release.md).
 
 `spec/removed-library-features/outcomes.json` declares37 metadata-only outcomes
 for the actual std removed-feature payload and its precise Rust1.98 grammar,

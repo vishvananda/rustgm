@@ -148,6 +148,19 @@ async fn later() {}
         cases = {Path(row["path"]).stem: row for row in report["cases"]}
         self.assertEqual(cases["same"]["suggested_pa"], "pa11")
 
+    def test_empty_black_box_barrier_is_distinct_from_inline_assembly(self):
+        self.suite(31, "--emit-lowir", {"barrier": {}, "asm": {}})
+        self.write("pa31/tests/barrier.rs", "fn main() {}")
+        self.write("pa31/tests/barrier.rs.ref",
+                   "assembly @asm0 intel readwrite 1 0 0 1 {\n  operand ptr 0 -1 1 0 0 {\n  }\n}\n")
+        self.write("pa31/tests/asm.rs", "fn main() {}")
+        self.write("pa31/tests/asm.rs.ref",
+                   "assembly @asm0 intel readwrite 0 0 0 0 {\n  text \"nop\"\n}\n")
+        cases = {Path(row["path"]).stem: row for row in self.report()["cases"]}
+        self.assertEqual(cases["barrier"]["status"], "ok")
+        self.assertEqual(cases["asm"]["status"], "early")
+        self.assertEqual(cases["asm"]["early_evidence"][0]["feature"], "inline assembly")
+
     def test_git_inventory_includes_new_sources_and_excludes_ignored_scratch(self):
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         self.write(".gitignore", "*.scratch\n")

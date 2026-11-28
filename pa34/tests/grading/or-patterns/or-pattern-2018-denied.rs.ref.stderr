@@ -1,0 +1,1 @@
+ERROR: file 0: 241: use pat_param for a single alternative in a pre-2021 macro matcher

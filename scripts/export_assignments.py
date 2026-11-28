@@ -25,10 +25,17 @@ PUBLIC_FILES = {
     "scripts/course_suites.py", "scripts/finite_contracts.py", "scripts/reference_batches.py",
     "scripts/storage.py", "scripts/storage_archives.py", "scripts/resource_locks.py",
     "scripts/resource_policy.py", "scripts/resource_runner.py",
+    "scripts/setup_rust_src.py", "scripts/grade_consumers.py", "scripts/grade_pa34_driver.py",
+    "scripts/pa37_self_host.py", "scripts/build_self_hosting.py", "scripts/link_self_hosting.py",
+    "scripts/compare_self_hosting.py", "scripts/stage1_run.py", "scripts/host_inputs.py",
+    "scripts/host_process.py", "scripts/host_build_script.py", "scripts/host_profile.py",
+    "scripts/build_environment.py", "scripts/build_script_output.py", "scripts/build_units.py",
+    "scripts/local_package.py", "scripts/manifest_lints.py", "scripts/package_snapshot.py",
+    "scripts/target_units.py", "scripts/original_core_manifest.json",
 }
 STUDENT_FILES = {
     ".gitignore", "Cargo.toml", "Cargo.lock", "Makefile", "README.md", "src/main.rs",
-    "assignment.mk", "examples/lowir-library/return42.c",
+    "assignment.mk", "assignment-consumers.mk", "examples/lowir-library/return42.c",
 }
 
 
@@ -66,9 +73,48 @@ def fixture_files(stage, manifest):
     return paths
 
 
+def consumer_files(commit, stage):
+    suite = git_json(commit, f"{stage}/tests/suite.json")
+    paths = {f"{stage}/README.md", f"{stage}/tests/suite.json", f"{stage}/{suite['outcomes']}"}
+    outcomes = git_json(commit, f"{stage}/{suite['outcomes']}")
+    for case in outcomes["cases"]:
+        for key in ("path", "stdout"):
+            check_relative_path(case[key], stage)
+            paths.add(f"{stage}/{case[key]}")
+    if lint_rel := suite.get("lint_manifest"):
+        check_relative_path(lint_rel, stage)
+        paths.add(f"{stage}/{lint_rel}")
+        lint_plan = git_json(commit, f"{stage}/{lint_rel}")
+        lint_parent = Path(lint_rel).parent
+        for case in lint_plan["cases"]:
+            rel = (lint_parent / case["path"]).as_posix()
+            check_relative_path(rel, stage)
+            paths.add(f"{stage}/{rel}")
+    return paths
+
+
+def driver_files(commit, stage):
+    suite_rel = f"{stage}/tests/build-driver/suite.json"
+    tracked = set(git("ls-tree", "-rz", "--name-only", commit, "--", suite_rel).decode().split("\0")[:-1])
+    if suite_rel not in tracked:
+        return set()
+    suite = git_json(commit, suite_rel)
+    paths = {suite_rel}
+    for rel in suite["files"]:
+        full = f"{stage}/tests/build-driver/{rel}"
+        check_relative_path(f"tests/build-driver/{rel}", stage)
+        paths.add(full)
+    return paths
+
+
+def self_hosting_files(stage):
+    return {f"{stage}/README.md", f"{stage}/Makefile", f"{stage}/tests/suite.json"}
+
+
 def extract(commit, stages, public, handout_paths, tree):
     overlays = {f"student/{path}": path for path in STUDENT_FILES}
     overlays["student/assignment.mk"] = "scripts/student-assignment.mk"
+    overlays["student/assignment-consumers.mk"] = "scripts/student-assignment-consumers.mk"
     wanted = {**{path: path for path in public}, **overlays}
     fixture_roots = {(stage, "tests") for stage in stages}
     command = ["git", "-C", str(ROOT), "archive", commit, "--", *stages, "doc",
@@ -101,7 +147,8 @@ def write_json(path, data):
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def validate(tree, stages, public):
+def validate(tree, active_entries, public):
+    import grade_consumers
     for name in public:
         path = tree / name
         if path.is_symlink():
@@ -112,13 +159,26 @@ def validate(tree, stages, public):
                 raise ValueError(f"export symlink escapes its assignment fixtures: {name}")
     upstream.verify(tree)
     counts = {}
-    for stage in stages:
-        _, cases = load_cases(tree, stage)
-        for case in cases:
-            oracle = tree / stage / (case["path"] + ".ref.exit_status")
-            if oracle.read_bytes() != f"{case['exit_status']}\n".encode():
-                raise ValueError(f"{oracle.relative_to(tree)} disagrees with its manifest")
-        counts[stage] = len(cases)
+    for entry in active_entries:
+        stage = entry["path"]
+        kind = entry.get("suite_kind", "text")
+        if kind == "text":
+            _, cases = load_cases(tree, stage)
+            for case in cases:
+                oracle = tree / stage / (case["path"] + ".ref.exit_status")
+                if oracle.read_bytes() != f"{case['exit_status']}\n".encode():
+                    raise ValueError(f"{oracle.relative_to(tree)} disagrees with its manifest")
+            counts[stage] = len(cases)
+        elif kind == "consumers":
+            _, outcomes, _ = grade_consumers.load_suite(tree, stage)
+            counts[stage] = len(outcomes["cases"])
+        elif kind == "self-hosting":
+            suite = json.loads((tree / stage / "tests/suite.json").read_text())
+            if suite.get("schema") != 1 or suite.get("kind") != "self-hosting":
+                raise ValueError(f"{stage}: invalid self-hosting suite.json")
+            counts[stage] = len(suite["compare_outputs"]) + len(suite["negative_controls"])
+        else:
+            raise ValueError(f"{stage}: unsupported suite_kind {kind}")
     return counts
 
 
@@ -131,14 +191,29 @@ def export(revision, through, destination, *, include_pending=False):
     pending = [entry["path"] for entry in selected if entry["status"] == "planned"]
     if pending and not include_pending:
         raise ValueError(f"grading suites are pending for {', '.join(pending)}")
-    stages = [entry["path"] for entry in selected if entry["status"] in ("implemented", "implemented-draft")]
+    active_entries = [entry for entry in selected if entry["status"] in ("implemented", "implemented-draft")]
+    stages = [entry["path"] for entry in active_entries]
     if len(stages) + len(pending) != len(selected):
         raise ValueError("unknown assignment status in export selection")
     handout_paths = [f"{stage}/README.md" for stage in pending]
     public = PUBLIC_FILES | set(git("ls-tree", "-rz", "--name-only", commit, "--", "doc").decode().split("\0")[:-1])
     public.update(handout_paths)
-    for stage in stages:
-        public.update(fixture_files(stage, git_json(commit, f"{stage}/tests/manifest.json")))
+    driver_stages = set()
+    for entry in active_entries:
+        stage = entry["path"]
+        kind = entry.get("suite_kind", "text")
+        if kind == "text":
+            public.update(fixture_files(stage, git_json(commit, f"{stage}/tests/manifest.json")))
+            dfiles = driver_files(commit, stage)
+            if dfiles:
+                public.update(dfiles)
+                driver_stages.add(stage)
+        elif kind == "consumers":
+            public.update(consumer_files(commit, stage))
+        elif kind == "self-hosting":
+            public.update(self_hosting_files(stage))
+        else:
+            raise ValueError(f"{stage}: unknown suite_kind {kind}")
     sources = git_json(commit, "third_party/sources.json")
     sources["files"] = [entry for entry in sources["files"] if entry["destination"] in public]
     assignments["stages"] = [student_stage(entry) for entry in selected]
@@ -148,9 +223,27 @@ def export(revision, through, destination, *, include_pending=False):
         extract(commit, stages, public, handout_paths, tree)
         write_json(tree / "assignments.json", assignments)
         write_json(tree / "third_party/sources.json", sources)
-        for stage in stages:
-            (tree / stage / "Makefile").write_text("include ../scripts/student-assignment.mk\n", encoding="utf-8")
-        counts = validate(tree, stages, public)
+        for entry in active_entries:
+            stage = entry["path"]
+            kind = entry.get("suite_kind", "text")
+            if kind == "text":
+                makefile = "include ../scripts/student-assignment.mk\n"
+                if stage in driver_stages:
+                    makefile += (
+                        "\ntest: test-driver\n"
+                        ".PHONY: test-driver\n"
+                        "ifeq ($(origin RUSTGM_TEST_APP),undefined)\n"
+                        "test-driver: all\n"
+                        "endif\n"
+                        "test-driver:\n"
+                        '\t$(PYTHON) "$(ROOT)/scripts/grade_pa34_driver.py" --app "$(abspath $(RUSTGM_TEST_APP))"\n'
+                    )
+                (tree / stage / "Makefile").write_text(makefile, encoding="utf-8")
+            elif kind == "consumers":
+                (tree / stage / "Makefile").write_text(
+                    "include ../scripts/student-assignment-consumers.mk\n", encoding="utf-8"
+                )
+        counts = validate(tree, active_entries, public)
         write_json(tree / "export.json", {
             "schema": 1,
             "source_commit": commit,

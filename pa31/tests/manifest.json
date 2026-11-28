@@ -1,0 +1,1586 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "contract": "finite",
+ "units": [
+  "source-declarations"
+ ],
+ "discovery": [
+  "tests/grading"
+ ],
+ "cases": [
+  {
+   "path": "tests/grading/local/valid-no-core-provider.rs",
+   "source_sha256": "eddddaf24474b1c66f2f8b87cd38de5ee0eef0d17d96efa0b436ceb7a56ed8e4",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": false
+   },
+   "library": {
+    "crate_name": "base",
+    "disambiguator": "pa31_valid_provider"
+   },
+   "source_provider": true,
+   "source_profile": "module-body-operations-v14",
+   "native": {
+    "kind": "object",
+    "reason": "Source provider library crate; verify relocatable object acceptance."
+   }
+  },
+  {
+   "path": "tests/grading/local/duplicate-lang-item.rs",
+   "source_sha256": "89b36ab53dc8949a36a91cadecd0d6e6d0c8f766770296b9490f66d8c4994a97",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": false
+   },
+   "library": {
+    "crate_name": "base",
+    "disambiguator": "pa31_dup_lang"
+   },
+   "source_provider": true
+  },
+  {
+   "path": "tests/grading/local/wrong-lang-kind.rs",
+   "source_sha256": "ae9ed9900d0376e435d16e1cebd9ed1538ebb3ad85ecc0fbd8f6bba845ee0b31",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": false
+   },
+   "library": {
+    "crate_name": "base",
+    "disambiguator": "pa31_wrong_kind"
+   },
+   "source_provider": true
+  },
+  {
+   "path": "tests/grading/local/invalid-unwind-not-auto.rs",
+   "source_sha256": "497ef2fcbfcf301040d4ae53ed4b32d246bcf9ebf097aa7f2939aa961d348954",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": false,
+    "reason": "Diagnostic-item auto-trait validation is enforced by the PA31 source-core binding contract."
+   },
+   "library": {
+    "crate_name": "base",
+    "disambiguator": "pa31_not_auto"
+   },
+   "source_provider": true
+  },
+  {
+   "path": "tests/grading/local/invalid-unwind-lang-claim.rs",
+   "source_sha256": "9df7f0959cbba743f8f44cdc742dd21b9633705391a401b49f961ba2091e200f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": false
+   },
+   "library": {
+    "crate_name": "base",
+    "disambiguator": "pa31_forged_unwind"
+   },
+   "source_provider": true
+  },
+  {
+   "path": "tests/grading/local/unreachable-pub-deny.rs",
+   "source_sha256": "cf432a16a57441ab4533df14c06c4a7dae348b833cfa6ebf67867161df43369a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "lint_pub_deny",
+    "disambiguator": "pa31_pub_deny"
+   }
+  },
+  {
+   "path": "tests/grading/local/unreachable-pub-reexported.rs",
+   "source_sha256": "faf75f479937a2a4e8fbce23020925e57493811bee17d97ea2371909b6ca5fde",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "lint_pub_ok",
+    "disambiguator": "pa31_pub_ok"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library lint acceptance check."
+   }
+  },
+  {
+   "path": "tests/grading/local/missing-docs-deny.rs",
+   "source_sha256": "77dcf0503289935bb797150dc22feccb08d9df8b3d71388c674a4ee628ee0155",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "lint_docs_deny",
+    "disambiguator": "pa31_docs_deny"
+   }
+  },
+  {
+   "path": "tests/grading/local/missing-docs-documented.rs",
+   "source_sha256": "b5b3fc98dd794da905bab34ba55bd1d39ba40e489065fcacf5a5f3c45522bf7e",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": true
+   },
+   "library": {
+    "crate_name": "lint_docs_ok",
+    "disambiguator": "pa31_docs_ok"
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Library lint acceptance check."
+   }
+  },
+  {
+   "path": "tests/grading/transport/unwind-marker-transport/client.rs",
+   "source_sha256": "96d0a76d5fb104d842e2685ff8326463fe9a837de53af05c9b4ae3d7d5846172",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/unwind-marker-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "unwind_marker_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "unwind_marker_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/unwind-marker-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/unwind-marker-transport/reject-unique.rs",
+   "source_sha256": "b55fd6e407f398619a0d40a16fed002e0ef98e9bf8ef560c77e7c36df1ed077b",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/unwind-marker-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "unwind_marker_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "unwind_marker_transport_reject_unique"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/specialization-transport/client.rs",
+   "source_sha256": "dac0e4e41c933c6e7158e58414903512601badffcf4597d1692a68da41c9d112",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/specialization-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "specialization_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "specialization_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/specialization-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/feature-relationships/client.rs",
+   "source_sha256": "7dd5b3644d9bb0b930e94d97a418eaddd72e2ef21461d9502a3e8f64fc56b473",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/feature-relationships/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "feature_relationships",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "feature_relationships_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/feature-relationships/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/feature-relationships/missing.rs",
+   "source_sha256": "945292b79d37c6aed1c43b84b826a8c2f66b829e80e410e2ef19365588f7afcb",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/feature-relationships/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "feature_relationships",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "feature_relationships_missing"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/feature-relationships/reverse.rs",
+   "source_sha256": "2f8ea864c019b0c3ba221a20354b3c7937b10aa92cddda17169052ca18c272fd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/feature-relationships/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "feature_relationships",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "feature_relationships_reverse"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/feature-relationships/old-name.rs",
+   "source_sha256": "c1c392fbba5c7271977263fc656dca111eb94806360fb7b667e910399210f4bd",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/feature-relationships/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "feature_relationships",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "feature_relationships_old_name"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/deprecated-macro-transport/client.rs",
+   "source_sha256": "5c9c0e5bb53b405b792c671c4b6e1abcecb3822c8f4a208ab01960f12182043f",
+   "exit_status": 0,
+   "warnings": [
+    "deprecated"
+   ],
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/deprecated-macro-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "deprecated_macro_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "deprecated_macro_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/deprecated-macro-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/final-method-transport/client.rs",
+   "source_sha256": "bcb66d17b66099a0d8c2aef57cc91d9f5eb799c66119ff3a59e748887494aecc",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/final-method-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "final_method_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow",
+     "rustc_oracle": true
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "final_method_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/final-method-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/final-method-transport/final-override.rs",
+   "source_sha256": "ec9b8e88faccc6970a404d8b35908afeb1edc99c02925694ff68c1a1e619dbf2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/final-method-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "final_method_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow",
+     "rustc_oracle": true
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "final_method_transport_final_override"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/pointer-lint-transport/client.rs",
+   "source_sha256": "9ee2faef60f7427320849312dff2438a4a8bd59cbcf1f314b5cbeb34792c7893",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/pointer-lint-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "pointer_lint_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow",
+     "rustc_oracle": true
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "pointer_lint_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/pointer-lint-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/pointer-lint-transport/wrong-result.rs",
+   "source_sha256": "8eb9947c872269d04c5e9938af951a675182c4e3fce49d8f895cf40fcf0abdd2",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/pointer-lint-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "pointer_lint_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow",
+     "rustc_oracle": true
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "pointer_lint_transport_wrong_result"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/slice-length-transport/client.rs",
+   "source_sha256": "34c956a075f70d53b4ba1b25f187ba93f9d5818139b0fbf1d7ea98ed46db4d9c",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/slice-length-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "slice_length_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "slice_length_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/slice-length-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/slice-length-transport/reject-explicit-impl.rs",
+   "source_sha256": "8e400150e2a02db78db72e71aa6353faec4baca95f6ac8b8456f4841e10a086a",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/slice-length-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "slice_length_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "slice_length_transport_reject_explicit_impl"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/derived-sizing-transport/client.rs",
+   "source_sha256": "9fcfaeaa548e2d1872d179fe61caa16b491030ca409b7308d643df5d6e3765db",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/derived-sizing-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "derived_sizing_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "derived_sizing_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/derived-sizing-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/derived-sizing-transport/reject-slice.rs",
+   "source_sha256": "354d8254300f652dda67779d1e1fe8e59e09146ef594472cbaf0190cfcb14e70",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/derived-sizing-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "derived_sizing_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "derived_sizing_transport_reject_slice"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/enum-policy-and-dyn-inherent/client.rs",
+   "source_sha256": "35482b97e9454127bddb3b629df4baa3753721582e746848d5a342e1810f8da1",
+   "exit_status": 0,
+   "warnings": [
+    "unreachable_patterns"
+   ],
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/enum-policy-and-dyn-inherent/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "enum_policy_and_dyn_inherent",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "enum_policy_and_dyn_inherent_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/enum-policy-and-dyn-inherent/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/enum-policy-and-dyn-inherent/unshared_inherent.rs",
+   "source_sha256": "7bb794e51ca4ab02100c58140246f235abceb302761d2820f40b96d50a4e6845",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/enum-policy-and-dyn-inherent/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "enum_policy_and_dyn_inherent",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "enum_policy_and_dyn_inherent_unshared_inherent"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/caller-site-transport/client.rs",
+   "source_sha256": "7594f6d77fe91434871bc4e655056c55527ddbb8bcd673f545fa174cecb518b7",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/caller-site-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "caller_site_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "caller_site_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/caller-site-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/caller-site-transport/private_helper.rs",
+   "source_sha256": "43239c773e9550aa57979df216b21900a74b0e814ef7357183110456f73f27d8",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/caller-site-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "caller_site_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "caller_site_transport_private_helper"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/range-transport/client.rs",
+   "source_sha256": "baced031a679a305aa3aa122e7e8fa4d96835c722867209df7ccd96d07dd4a4d",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/range-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "range_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "range_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/range-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/cstr-transport/client.rs",
+   "source_sha256": "1bb1e8de38bbb7827ec7bb21b1c37aabe9d2a8f8523cb2d7417e8f33a6bef4d8",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/cstr-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "cstr_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "cstr_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/cstr-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/dynamic-transport/client.rs",
+   "source_sha256": "07fcea8b3c932c65c72a00474febe1c5e1d249b27803a600fac4328a1b348b9f",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/dynamic-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "dynamic_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "dynamic_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/dynamic-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/dynamic-transport/unshared.rs",
+   "source_sha256": "3ab7b9db2dad79c4a426709b48ff3ac1cbd3b256f9ff88a81502f0b743a7f2a5",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/dynamic-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "dynamic_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "dynamic_transport_unshared"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/declared-intrinsic-transport/client.rs",
+   "source_sha256": "34fa3a395c5bb1eca74c53e32566d3df90db70f3a15d873ecc28275d7819b330",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/declared-intrinsic-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "declared_intrinsic_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "declared_intrinsic_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/declared-intrinsic-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/declared-intrinsic-transport/runtime_comptime.rs",
+   "source_sha256": "97b3b8724d65e040ea7e883bf80e44857a4e0f3f0902c24b59bdf9fc25eb4b4f",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/declared-intrinsic-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "declared_intrinsic_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "declared_intrinsic_transport_runtime_comptime"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/const-trait-transport/client.rs",
+   "source_sha256": "09659875078898d72d2ebf5a2792d6b889fef15c72048c8bdf6071d2f4c4d390",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/const-trait-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "const_trait_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "const_trait_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/const-trait-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/const-trait-transport/non_const_in_const.rs",
+   "source_sha256": "1780d9af4da9524c813bd358c9264c9f45e2cc2a7b702f6a577022631e6e2519",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/const-trait-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "const_trait_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "const_trait_transport_non_const_in_const"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/transport/offset-intrinsic-transport/client.rs",
+   "source_sha256": "1bc986674fceedfab3ab8894034264f02186fb288266f6422283cafbecd9d8ba",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/offset-intrinsic-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "offset_intrinsic_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "offset_intrinsic_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/offset-intrinsic-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/promotion-transport/client.rs",
+   "source_sha256": "37bd7823bff62b05693c23faf685c5cdef7b8556b6930861b7d504e98d033f68",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/promotion-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "promotion_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "promotion_transport_client"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass",
+    "driver": "tests/grading/transport/promotion-transport/observe.c"
+   }
+  },
+  {
+   "path": "tests/grading/transport/unwind-marker-transport/forged-foreign-role.rs",
+   "source_sha256": "96d0a76d5fb104d842e2685ff8326463fe9a837de53af05c9b4ae3d7d5846172",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/unwind-marker-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "unwind_marker_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "forged_foreign_role"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "reason": "Metadata forgery/identity mismatch is a RustGM crate-artifact contract check."
+   },
+   "forge": {
+    "provider": "base",
+    "kind": "foreign_role",
+    "tag": 254,
+    "spelling": "ref_unwind_safe_trait"
+   }
+  },
+  {
+   "path": "tests/grading/transport/unwind-marker-transport/client-identity-mismatch.rs",
+   "source_sha256": "96d0a76d5fb104d842e2685ff8326463fe9a837de53af05c9b4ae3d7d5846172",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa31.source-declarations"
+   ],
+   "work_units": [
+    "source-declarations"
+   ],
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "crates": [
+    {
+     "name": "base",
+     "path": "tests/grading/transport/unwind-marker-transport/provider.rs",
+     "crate_name": "base",
+     "disambiguator": "unwind_marker_transport",
+     "externs": {},
+     "source_core": true,
+     "source_profile": "module-body-operations-v14",
+     "cap_lints": "allow"
+    }
+   ],
+   "externs": {
+    "base": "base"
+   },
+   "source_client": "base",
+   "library": {
+    "crate_name": "client",
+    "disambiguator": "client_identity_mismatch"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "reason": "Metadata forgery/identity mismatch is a RustGM crate-artifact contract check."
+   },
+   "source_client_mismatch": true
+  }
+ ]
+}

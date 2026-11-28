@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "kind": "self-hosting",
+  "stage": "pa37",
+  "configuration": "configuration.json",
+  "default_ladder_through": 24,
+  "max_ladder_through": 30,
+  "strict_zero_bringup": true,
+  "compare_outputs": [
+    "program.lowir",
+    "program.native-links.json",
+    "rustgm"
+  ],
+  "negative_controls": [
+    "perturbed-stage2-output",
+    "nonzero-bringup-record"
+  ],
+  "requires_rust_src": true
+}

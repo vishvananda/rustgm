@@ -1,8 +1,10 @@
 # RustGM Programming Assignment 36 — Std and platform bootstrap
 
-The strict self-hosting graph has built the original `std` from source.
-This assignment qualifies its separate artifact and fresh consumers.
-The graded suite is pending.
+Run `make -C pa36 test` to grade the original Rust 1.98.0 `std` crate graph
+in strict mode (zero bring-up records) across all 14 native consumers
+(`pa36/tests/std-consumer-outcomes.json`, covering stdout/stderr, `HashMap`,
+`env::args`, filesystem I/O, stdin, exit codes, TLS/sync, paths/time, panic
+hooks, float math, and threads) plus deterministic LowIR reproducibility.
 
 Build the original Rust 1.98.0 standard library for Linux x86-64 with
 aborting panics. Use [PA32's core](../pa32/README.md) and

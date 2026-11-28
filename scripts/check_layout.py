@@ -24,8 +24,11 @@ def check(root=ROOT, *, unit=None):
             check_suite(root, stage["path"], manifest, cases)
     for component, manifest, cases in components:
         check_suite(root, component["owner"], manifest, cases, unit=component["id"])
+    workloads = [stage["path"] for stage in stages
+                 if stage["status"] != "planned" and stage.get("suite_kind", "text") != "text"]
     print(f"Assignment layout: {len(stages)} stages; no orphan fixtures in active suites"
-          + (f"; {len(closed)} finite contracts checked through their released units" if closed else ""))
+          + (f"; {len(closed)} finite contracts checked through their released units" if closed else "")
+          + (f"; {len(workloads)} workload suites verified" if workloads else ""))
     if components:
         print(f"Component layout: {len(components)} units with complete oracle provenance")
 

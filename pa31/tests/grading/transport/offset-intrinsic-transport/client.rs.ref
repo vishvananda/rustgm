@@ -1,0 +1,8 @@
+function @observed_const() -> i64 {
+  block ^b0:
+    return i64 8
+}
+function @observed_runtime() -> i64 {
+  block ^b0:
+    return i64 16
+}

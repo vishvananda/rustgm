@@ -47,8 +47,10 @@ ORACLE_RULES = (
      Rule("atomic operations", 28, LOWIR)),
     (re.compile(rb"^    (?:%\w+ = )?(va_(?:start|arg|copy|end))\b"),
      Rule("C variadics", 30, LOWIR)),
-    (re.compile(rb"^(assembly) @asm\d+ intel\b"), Rule("inline assembly", 42, LOWIR)),
 )
+ASM_HEADER = re.compile(rb"^assembly @asm\d+ (?:intel|att)\b")
+ASM_PIECE = re.compile(rb"^  (?:text |use )")
+INLINE_ASM_RULE = Rule("inline assembly", 42, LOWIR)
 FEATURE_OWNER = re.compile(r"pa([1-9][0-9]*)\..+")
 PA_PATH = re.compile(r"pa[1-9][0-9]*")
 SOURCE_MODES = frozenset().union(*(rule.modes for rule in SOURCE_RULES.values()))
@@ -84,7 +86,8 @@ def fixture_inventory(root):
 
 def load_cases(root, stages, units, pas):
     manifests = [(stage["path"], f"{stage['path']}/tests/manifest.json") for stage in stages
-                 if stage["path"] in pas and stage["status"] != "planned"]
+                 if stage["path"] in pas and stage["status"] != "planned"
+                 and stage.get("suite_kind", "text") == "text"]
     manifests += [(unit["owner"], unit["manifest"]) for unit in units
                   if unit["owner"] in pas and "manifest" in unit]
     cases = {}
@@ -134,10 +137,21 @@ def source_markers(data):
 
 def oracle_markers(data, path):
     found = {}
+    asm_line = None
     for line, text in enumerate(data.splitlines(), 1):
         for pattern, rule in ORACLE_RULES:
             if pattern.match(text):
                 found.setdefault(rule, Evidence(rule.owner, rule.feature, "oracle", path, line))
+        if ASM_HEADER.match(text):
+            asm_line = line
+        elif asm_line is not None:
+            if ASM_PIECE.match(text):
+                found.setdefault(INLINE_ASM_RULE,
+                                 Evidence(INLINE_ASM_RULE.owner, INLINE_ASM_RULE.feature,
+                                          "oracle", path, asm_line))
+                asm_line = None
+            elif text == b"}":
+                asm_line = None
     return list(found.values())
 
 

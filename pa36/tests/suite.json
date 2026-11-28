@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "consumers",
+  "stage": "pa36",
+  "strategy": "whole-graph-std",
+  "outcomes": "tests/std-consumer-outcomes.json",
+  "programs_dir": "tests/spec/std-consumers",
+  "reproducibility_case": "println",
+  "requires_rust_src": true,
+  "requires_pa35_crates": false
+}

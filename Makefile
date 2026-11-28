@@ -4,11 +4,12 @@ GUARDED = $(PYTHON) scripts/storage.py run --
 export CARGO_INCREMENTAL := 0
 ROOT := $(CURDIR)
 export CARGO_TARGET_DIR := $(ROOT)/obj/rust
-ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17 pa18 pa19 pa20 pa21 pa22 pa23 pa24 pa25 pa26 pa27 pa28 pa29 pa30
+ACTIVE_PAS := pa1 pa2 pa3 pa4 pa5 pa6 pa7 pa8 pa9 pa10 pa11 pa12 pa13 pa14 pa15 pa16 pa17 pa18 pa19 pa20 pa21 pa22 pa23 pa24 pa25 pa26 pa27 pa28 pa29 pa30 pa31 pa34
+WORKLOAD_PAS := pa32 pa33 pa35 pa36 pa37
 RUSTGM_TEST_APP ?= $(ROOT)/dev/rustgm
 REF_TEST_APP ?= $(ROOT)/dev/rustgm-ref
 
-.PHONY: all test test-release test-debug test-debug-invariants test-maintainer test-report ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
+.PHONY: all test test-release test-debug test-debug-invariants test-maintainer test-report test-pa34-driver test-workloads setup-rust-src inception ref-test lint setup-audit audit-rust test-harness test-backend test-native test-maintainer-native test-layouts test-upstream test-rustc perf perf-literals perf-ast perf-crate-ast perf-names perf-expanded perf-expanded-crate perf-types perf-layouts perf-body-ir perf-ownership perf-lowir clean tidy tidy-build check-space
 all:
 	$(PYTHON) scripts/storage.py run --no-prune -- $(CARGO) build --manifest-path dev/Cargo.toml --release --locked
 .PHONY: observe
@@ -57,7 +58,18 @@ test-maintainer: test-backend
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
 	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
-	@echo 'PA25-PA30: closed at their finite contracts; whole PA31-PA45: planned'
+	@echo 'PA25-PA31, PA34, PA35: closed at their finite contracts; PA32, PA33, PA36, PA37: implemented; PA38-PA45: planned'
+setup-rust-src:
+	$(PYTHON) scripts/setup_rust_src.py --with-pa35-crates
+test-pa34-driver: all
+	$(GUARDED) $(PYTHON) scripts/grade_pa34_driver.py --app "$(RUSTGM_TEST_APP)"
+test-workloads: all
+	$(GUARDED) $(PYTHON) scripts/grade_consumers.py pa32 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/grade_consumers.py pa33 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/grade_consumers.py pa35 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/grade_consumers.py pa36 --app "$(RUSTGM_TEST_APP)"
+inception: all
+	$(MAKE) -C pa37 test RUSTGM_STAGE0="$(ROOT)/obj/rust/release/rustgm"
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -121,6 +133,8 @@ test-native: test-maintainer-native
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa28 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa29 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa30 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa31 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_native.py pa34 --app "$(RUSTGM_TEST_APP)"
 test-native-pa%: all
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa$* --app "$(RUSTGM_TEST_APP)"
 test-layouts: all
@@ -159,6 +173,8 @@ test-rustc: all test-layouts
 	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa28 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa29 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa30 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa31 --app "$(RUSTGM_TEST_APP)"
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py pa34 --app "$(RUSTGM_TEST_APP)"
 perf: all
 	$(GUARDED) $(PYTHON) scripts/measure_lexer.py
 perf-literals: all

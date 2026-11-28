@@ -7,29 +7,31 @@ frontend acceptance). Maintainer and student PA numbers match directly,
 with no renumbering during export. The [course order](../student/README.md#course-order)
 explains which parts of crate building and target support precede `core`.
 
-PA32–PA36 require separate sysroot artifacts and fresh consumers. Qualify
-the required source diagnostics and metadata before releasing those
-assignments. PA37 then rebuilds the compiler and its dependencies
-in a single whole-graph compilation session per stage.
+All 37 assignments on the self-hosting track (PA1–PA37) now have active
+grading suites: PA1–PA31 and PA34 use text/native oracle manifests (with PA34
+also running its host `build.rs` driver suite), PA32/PA33/PA35/PA36 run real
+upstream library and crate consumer suites via `scripts/grade_consumers.py`,
+and PA37 runs the reproducible self-hosting gate (`stage0` → `stage1` →
+PA1–PA24 ladder → `stage2` → byte-for-byte compare + negative controls) via
+`scripts/pa37_self_host.py`.
 
-Build a preview from a committed revision to review all of the handouts
-on the self-hosting track.
+Export the complete PA1–PA37 student repository from a committed revision:
 
 ```sh
-python3 scripts/export_assignments.py --self-hosting --include-pending-handouts obj/self-hosting-preview
+python3 scripts/export_assignments.py --self-hosting obj/rustgm-assignments
 ```
 
-Use `--self-hosting` alone for a release candidate. The exporter requires
-a grading manifest for each assignment in that track. The explicit preview
-option includes the README for a planned assignment and records it in
-`export.json` under `handouts_only`. Choose `--through` with a student
-assignment number to produce a prefix. `--through pa37` selects the same
-track as `--self-hosting`.
+`--self-hosting` (equivalent to `--through pa37`) requires every assignment on
+the track to have a grading suite and produces `"handouts_only": []` in
+`export.json`. `--include-pending-handouts` remains available only for
+previewing planned stages beyond PA37 (PA38–PA45). Choose `--through paN` to
+export a prefix.
 
 ```sh
-python3 scripts/export_assignments.py --revision HEAD --through pa11 obj/student-preview
+python3 scripts/export_assignments.py --revision HEAD --self-hosting obj/student-preview
 make -C obj/student-preview
 make -C obj/student-preview setup-backend backend-example
+make -C obj/student-preview setup-rust-src
 make -C obj/student-preview/pa1 test RUSTGM_TEST_APP=/absolute/path/to/rustgm
 ```
 

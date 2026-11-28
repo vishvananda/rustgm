@@ -1,0 +1,1005 @@
+{
+ "schema": 1,
+ "mode": "--emit-lowir",
+ "language": "Rust 1.98.0",
+ "edition": "2024",
+ "target": "x86_64-unknown-linux-gnu",
+ "discovery": [
+  "tests/grading"
+ ],
+ "cases": [
+  {
+   "path": "tests/grading/foreign-editions/plain-block-2021.rs",
+   "source_sha256": "2b811e98ab91d541ce5b268b90ba03fd2caf86021484a3e5e400dc1ca9f8d800",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/plain-block-2024.rs",
+   "source_sha256": "2b811e98ab91d541ce5b268b90ba03fd2caf86021484a3e5e400dc1ca9f8d800",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/unsafe-block-2021.rs",
+   "source_sha256": "9eabde44263f3b60619885218c5183e05ede5cf155179f2e24802015fe72be30",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/unsafe-block-2024.rs",
+   "source_sha256": "9eabde44263f3b60619885218c5183e05ede5cf155179f2e24802015fe72be30",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/safe-member-2021.rs",
+   "source_sha256": "cd5bc5e5f29b70d94046edda90a985797e4723d5196c1bd93a808bd002f14080",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/safe-member-2024.rs",
+   "source_sha256": "cd5bc5e5f29b70d94046edda90a985797e4723d5196c1bd93a808bd002f14080",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/plain-static-2021.rs",
+   "source_sha256": "d187e32d07f8dfbd4a7638ff888ba03c961ade17cea2750d5a4bd14569789238",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/plain-static-2024.rs",
+   "source_sha256": "d187e32d07f8dfbd4a7638ff888ba03c961ade17cea2750d5a4bd14569789238",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/bare-no-mangle-2021.rs",
+   "source_sha256": "9bb010327a0770459ccc961719adf539f1a30d03d61733f72bf82b8c2a9747b8",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/bare-no-mangle-2024.rs",
+   "source_sha256": "9bb010327a0770459ccc961719adf539f1a30d03d61733f72bf82b8c2a9747b8",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/bare-export-name-2021.rs",
+   "source_sha256": "30a0a09ad004d7991cd93192bd4e2571e02606164fcd159ae125c618e7d4b715",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/bare-export-name-2024.rs",
+   "source_sha256": "30a0a09ad004d7991cd93192bd4e2571e02606164fcd159ae125c618e7d4b715",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/wrapped-export-name-2021.rs",
+   "source_sha256": "a1b57f92ccd9fcdc56f6050b02d117a739e5bd899016fb673247bb5cc15ef525",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/foreign-editions/wrapped-export-name-2024.rs",
+   "source_sha256": "a1b57f92ccd9fcdc56f6050b02d117a739e5bd899016fb673247bb5cc15ef525",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/if-failure-2021.rs",
+   "source_sha256": "09cc9f88f2452f690e573ed37c2cee3bdf275efbd86575083f86c9c5e25bf37c",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/if-failure-2024.rs",
+   "source_sha256": "06d10994696dab538b564cbcf6fd416d6e102b2410da4400fcf0ae3896953dc7",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/function-tail-2021.rs",
+   "source_sha256": "d4071dd6375b1f064ff872ee40fbec1a2d68b352dbeb2877a9c7dccf249dfa4e",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/function-tail-2024.rs",
+   "source_sha256": "187ab8ace8f0fdf8c8ec1f1f337004c47f33bc0fc78a03dd6ae66f7610b6f85e",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/macro-tail-2021.rs",
+   "source_sha256": "b18e70a508adbc96a2fac5e04f3a9b2f887d3dca22059444d0c9d15c06b01dfe",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/macro-tail-2024.rs",
+   "source_sha256": "868576997733917b65be48137a946dafd3e7e36b099782d6647f829905f1db1e",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/tail-borrow-2021.rs",
+   "source_sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+   "edition": "2021",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/tail-borrow-2024.rs",
+   "source_sha256": "6bf1e9db0d3320d1e8ffd9411bc1e1c7c65d87aff343d1a3f6663edb413682bd",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/argument-block-2021.rs",
+   "source_sha256": "0b1e15373d9e0e978324ce6687f7a098c7851bba73cea63156a76d0e9c388a6c",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/temporary-editions/argument-block-2024.rs",
+   "source_sha256": "0b1e15373d9e0e978324ce6687f7a098c7851bba73cea63156a76d0e9c388a6c",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/unit-only-2021.rs",
+   "source_sha256": "83009e3b869bc1b2ff3b2f39edad3cb52ee0da8c5fa7276e813e7770d4b277f1",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/unit-only-2024.rs",
+   "source_sha256": "b5d8edbdbebb20154017b2125e023526e344b3079d289ac55ede4b0be9034128",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/never-only-2021.rs",
+   "source_sha256": "61d5e9cf30b3f39d2f133e6df1c813565882d3c82f3c04ac4bb59427480350bf",
+   "edition": "2021",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/never-only-2024.rs",
+   "source_sha256": "4b0633d953dc49769ed8506396d1de84bfe9130be921e9823bff740b4ad4a0ac",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/native-fallback-2021.rs",
+   "source_sha256": "82d669131bc0c081825f48052bfc6b394a350b1317c9246987e8b10cab3a95ef",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/native-fallback-2024.rs",
+   "source_sha256": "64bd6169ed1e7f4acc3b109ad9cf8f9ede3af6a90e7b9ceab6666d22bd4a8a17",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/native-closure-2021.rs",
+   "source_sha256": "40f36a73810888ec814bb671d2719bdc92c6101a57fb23dcec58c3eccfc678a9",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/never-editions/native-closure-2024.rs",
+   "source_sha256": "55bd33470cb067b094990db15887ef4245b0ccf3da8e4a6933ed6f976404e563",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/implicit-hidden-reference-2021.rs",
+   "source_sha256": "2fa0cf3c4b655725b04d4b0b11752b3655c32bd6ce8b4b5a5c5c640dcdcc04d9",
+   "edition": "2021",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/implicit-hidden-reference-2024.rs",
+   "source_sha256": "2fa0cf3c4b655725b04d4b0b11752b3655c32bd6ce8b4b5a5c5c640dcdcc04d9",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/explicit-outlives-reference-2021.rs",
+   "source_sha256": "e9d9a1c81cee0035a2b1990f2a1d48edb41c9d13949b9ab54c0b47656f14a941",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/explicit-outlives-reference-2024.rs",
+   "source_sha256": "e9d9a1c81cee0035a2b1990f2a1d48edb41c9d13949b9ab54c0b47656f14a941",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/explicit-precise-reference-2021.rs",
+   "source_sha256": "ae7943f26f7d5ac4bf718d77df79fd015eb75737adbafd9e5638678c262d2d41",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/opaque-editions/explicit-precise-reference-2024.rs",
+   "source_sha256": "ae7943f26f7d5ac4bf718d77df79fd015eb75737adbafd9e5638678c262d2d41",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/mut-reset-2021.rs",
+   "source_sha256": "7a8b82e3b5119461a84c33caedb5dae03cdcec493e011a8b7f88214bef8515a1",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/mut-reset-2024.rs",
+   "source_sha256": "7a8b82e3b5119461a84c33caedb5dae03cdcec493e011a8b7f88214bef8515a1",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/ref-shared-2021.rs",
+   "source_sha256": "878837dd3c8112dcbb40f5b9cd1433e7ec2a02ecbecfc92ea4914af85bd1fe5e",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/ref-shared-2024.rs",
+   "source_sha256": "878837dd3c8112dcbb40f5b9cd1433e7ec2a02ecbecfc92ea4914af85bd1fe5e",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/ref-mut-2021.rs",
+   "source_sha256": "3b312f3c23e81c9cf72a5586a6397963c3b1a851b09bc67bcfd36df135371df7",
+   "edition": "2021",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  },
+  {
+   "path": "tests/grading/pattern-editions/ref-mut-2024.rs",
+   "source_sha256": "3b312f3c23e81c9cf72a5586a6397963c3b1a851b09bc67bcfd36df135371df7",
+   "edition": "2024",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "rustc": {
+    "kind": "program",
+    "status": 1
+   }
+  },
+  {
+   "path": "tests/grading/or-patterns/or-pattern-2018-ok.rs",
+   "source_sha256": "c809a0c1893c6bc2703eca4865cb37f75fb5128ceca199ddfe7da33f5c6153dd",
+   "edition": "2018",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "library": {
+    "crate_name": "or_pat",
+    "disambiguator": "or_pattern_2018_ok"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": true
+   },
+   "native": {
+    "kind": "object",
+    "reason": "Edition 2018 library lint acceptance."
+   }
+  },
+  {
+   "path": "tests/grading/or-patterns/or-pattern-2018-expected.rs",
+   "source_sha256": "c809a0c1893c6bc2703eca4865cb37f75fb5128ceca199ddfe7da33f5c6153dd",
+   "edition": "2018",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "library": {
+    "crate_name": "or_pat",
+    "disambiguator": "or_pattern_2018_expected"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 0,
+    "default_lints": true
+   },
+   "args": [
+    "--cfg",
+    "lint_expected"
+   ],
+   "native": {
+    "kind": "object",
+    "reason": "Edition 2018 library lint acceptance."
+   }
+  },
+  {
+   "path": "tests/grading/or-patterns/or-pattern-2018-denied.rs",
+   "source_sha256": "c809a0c1893c6bc2703eca4865cb37f75fb5128ceca199ddfe7da33f5c6153dd",
+   "edition": "2018",
+   "exit_status": 1,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "library": {
+    "crate_name": "or_pat",
+    "disambiguator": "or_pattern_2018_denied"
+   },
+   "rustc": {
+    "kind": "library",
+    "status": 1,
+    "default_lints": true
+   },
+   "args": [
+    "--cfg",
+    "lint_denied"
+   ]
+  },
+  {
+   "path": "tests/grading/mixed-crates/consumer_2024.rs",
+   "source_sha256": "093632260210ec0d233206fa93f581d68d26c52d40b8412f575295effe90ca27",
+   "edition": "2024",
+   "exit_status": 0,
+   "input": "file",
+   "features": [
+    "pa34.build-editions"
+   ],
+   "work_units": [
+    "build-editions"
+   ],
+   "crates": [
+    {
+     "name": "legacy",
+     "path": "tests/grading/mixed-crates/legacy_2018.rs",
+     "crate_name": "legacy_2018",
+     "disambiguator": "pa34_legacy_2018",
+     "edition": "2018",
+     "externs": {}
+    },
+    {
+     "name": "mid",
+     "path": "tests/grading/mixed-crates/mid_2021.rs",
+     "crate_name": "mid_2021",
+     "disambiguator": "pa34_mid_2021",
+     "edition": "2021",
+     "externs": {
+      "legacy_alias": "legacy"
+     }
+    }
+   ],
+   "externs": {
+    "renamed_mid": "mid"
+   },
+   "rustc": {
+    "kind": "program",
+    "status": 0
+   },
+   "native": {
+    "outcome": "pass"
+   }
+  }
+ ]
+}

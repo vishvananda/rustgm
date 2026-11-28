@@ -1,0 +1,30 @@
+function @read_direct() -> u8 {
+  block ^b0:
+    return u8 7
+}
+function @read_alias() -> u8 {
+  block ^b0:
+    return u8 7
+}
+function @read_scheduled() -> u8 {
+  block ^b0:
+    return u8 8
+}
+function @read_modern() -> u8 {
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$26_646570726563617465645f6d6163726f5f7472616e73706f7274$f$6_6d6f6465726e$.i5()
+    return u8 %t0
+}
+function @read_legacy() -> u8 {
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$26_646570726563617465645f6d6163726f5f7472616e73706f7274$f$6_6c6567616379$.i6()
+    return u8 %t0
+}
+function @rgc$4_62617365$26_646570726563617465645f6d6163726f5f7472616e73706f7274$f$6_6d6f6465726e$.i5() -> u8 {
+  block ^b0:
+    return u8 9
+}
+function @rgc$4_62617365$26_646570726563617465645f6d6163726f5f7472616e73706f7274$f$6_6c6567616379$.i6() -> u8 {
+  block ^b0:
+    return u8 10
+}

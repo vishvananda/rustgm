@@ -1,6 +1,8 @@
 # RustGM Programming Assignment 31 — Compiler and library bindings
 
-The graded suite for this assignment is pending.
+Run the grading suite with `make -C pa31 test` (finite contract covering
+`source-declarations`: 41 local, attribute/lint, and cross-crate metadata/native
+transport checks).
 
 Connect the compiler's typed language operations to declarations in the
 selected source sysroot. Use the pinned Rust 1.98.0 source for Linux x86-64

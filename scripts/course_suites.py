@@ -101,7 +101,7 @@ def check_publishers(root):
     owners = {unit["owner"] for unit in units}
     parents = {}
     for stage in json.loads((root / "assignments.json").read_text())["stages"]:
-        if stage["path"] in owners and stage["status"] != "planned":
+        if stage["path"] in owners and stage["status"] != "planned" and stage.get("suite_kind", "text") == "text":
             folder = root / stage["path"]
             manifest = json.loads((folder / "tests/manifest.json").read_text())
             parents.update({(folder / case["path"]).resolve(): case_digest(case, manifest["mode"])

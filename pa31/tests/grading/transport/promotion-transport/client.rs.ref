@@ -1,0 +1,25 @@
+global @rgc$6_636c69656e74$26_70726f6d6f74696f6e5f7472616e73706f72745f636c69656e74$internal$rg.data.0 : obj<1x1> [storage=readonly] = {
+  u8 41
+}
+function @observed() -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call ptr @rgc$6_636c69656e74$26_70726f6d6f74696f6e5f7472616e73706f72745f636c69656e74$internal$rg.28()
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = load u8 %t1
+    return u8 %t2
+}
+function @rgc$6_636c69656e74$26_70726f6d6f74696f6e5f7472616e73706f72745f636c69656e74$internal$rg.28() -> ptr {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = call u8 @rgc$4_62617365$19_70726f6d6f74696f6e5f7472616e73706f7274$f$4_776f7264$.i2()
+    %t1 = addr @rgc$6_636c69656e74$26_70726f6d6f74696f6e5f7472616e73706f72745f636c69656e74$internal$rg.data.0
+    store ptr %t1, $s0
+    %t2 = load ptr $s0
+    return ptr %t2
+}
+function @rgc$4_62617365$19_70726f6d6f74696f6e5f7472616e73706f7274$f$4_776f7264$.i2() -> u8 {
+  block ^b0:
+    return u8 41
+}

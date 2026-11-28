@@ -1,0 +1,242 @@
+assembly @asm0 intel readwrite 1 0 0 1 {
+  operand ptr 0 -1 1 0 0 {
+    alternative 1 0 -1 {
+      group (rax:0)
+      group (rcx:0)
+      group (rdx:0)
+      group (rsi:0)
+      group (rdi:0)
+      group (r8:0)
+      group (r9:0)
+      group (r10:0)
+      group (r11:0)
+      group (r12:0)
+      group (r13:0)
+      group (r14:0)
+      group (r15:0)
+    }
+  }
+}
+function @observe_comptime_free() -> u32 {
+  block ^b0:
+    return u32 41
+}
+function @observe_comptime_method() -> u32 {
+  block ^b0:
+    return u32 77
+}
+function @observe_ctpop() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$9_706f705f636f756e74$.i12(45)
+    return u32 %t0
+}
+function @observe_transmute() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$13_7472616e736d7574655f753332$.i13(19)
+    return u32 %t0
+}
+function @observe_black_box() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$11_626c61636b5f626f786564$.i14(23)
+    return u32 %t0
+}
+function @observe_unchecked_sub() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$14_756e636865636b65645f64696666$.i15(30, 11)
+    return u32 %t0
+}
+function @observe_sub_ok() -> u32 {
+  slot $s0 : u32
+  slot $s1 : i1
+  slot $s2 : u32
+  slot $s3 : obj<8x4>
+  block ^b0:
+    %t0 = addr $s3
+    call void @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$13_6f766572666c6f775f64696666$.i16(%t0, 20, 7)
+    %t1 = load u32 $s3
+    store u32 %t1, $s0
+    %t2 = addr $s3
+    %t3 = index u8 %t2, 4
+    %t4 = load i1 %t3
+    store i1 %t4, $s1
+    %t5 = load i1 $s1
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = load u32 $s0
+    store u32 %t6, $s2
+    jump ^b3
+  block ^b1:
+    store u32 100, $s2
+    jump ^b3
+  block ^b3:
+    %t7 = load u32 $s2
+    return u32 %t7
+}
+function @observe_sub_overflow() -> u32 {
+  slot $s0 : u32
+  slot $s1 : i1
+  slot $s2 : u32
+  slot $s3 : obj<8x4>
+  block ^b0:
+    %t0 = addr $s3
+    call void @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$13_6f766572666c6f775f64696666$.i16(%t0, 2, 5)
+    %t1 = load u32 $s3
+    store u32 %t1, $s0
+    %t2 = addr $s3
+    %t3 = index u8 %t2, 4
+    %t4 = load i1 %t3
+    store i1 %t4, $s1
+    %t5 = load i1 $s1
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = load u32 $s0
+    store u32 %t6, $s2
+    jump ^b3
+  block ^b1:
+    store u32 100, $s2
+    jump ^b3
+  block ^b3:
+    %t7 = load u32 $s2
+    return u32 %t7
+}
+function @observe_select() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$11_73656c6563745f68696e74$.i17(1, 55, 66)
+    return u32 %t0
+}
+function @observe_hinted() -> u32 {
+  block ^b0:
+    %t0 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$6_68696e746564$.i19(42)
+    return u32 %t0
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$9_706f705f636f756e74$.i12(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    %t1 = binary ushr u32 %t0, 1
+    %t2 = binary and u32 %t1, 1431655765
+    %t3 = binary and u32 %t0, 1431655765
+    %t4 = binary add u32 %t3, %t2
+    %t5 = binary ushr u32 %t4, 2
+    %t6 = binary and u32 %t5, 858993459
+    %t7 = binary and u32 %t4, 858993459
+    %t8 = binary add u32 %t7, %t6
+    %t9 = binary ushr u32 %t8, 4
+    %t10 = binary and u32 %t9, 252645135
+    %t11 = binary and u32 %t8, 252645135
+    %t12 = binary add u32 %t11, %t10
+    %t13 = binary ushr u32 %t12, 8
+    %t14 = binary and u32 %t13, 16711935
+    %t15 = binary and u32 %t12, 16711935
+    %t16 = binary add u32 %t15, %t14
+    %t17 = binary ushr u32 %t16, 16
+    %t18 = binary and u32 %t17, 65535
+    %t19 = binary and u32 %t16, 65535
+    %t20 = binary add u32 %t19, %t18
+    return u32 %t20
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$13_7472616e736d7574655f753332$.i13(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  slot $s1 : obj<4x4>
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = load u32 $s1
+    return u32 %t1
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$11_626c61636b5f626f786564$.i14(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  slot $s1 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    %t0 = load u32 $s0
+    store u32 %t0, $s1
+    %t1 = addr $s1
+    asm @asm0(%t1)
+    %t2 = load u32 $s1
+    return u32 %t2
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$14_756e636865636b65645f64696666$.i15(%p0 : u32, %p1 : u32) -> u32 {
+  slot $s0 : u32
+  slot $s1 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    store u32 %p1, $s1
+    %t0 = load u32 $s0
+    %t1 = load u32 $s1
+    %t2 = binary sub u32 %t0, %t1
+    return u32 %t2
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$13_6f766572666c6f775f64696666$.i16(%p0 : ptr, %p1 : u32, %p2 : u32) -> void {
+  slot $s0 : u32
+  slot $s1 : u32
+  slot $s2 : obj<8x4>
+  block ^b0:
+    store u32 %p1, $s0
+    store u32 %p2, $s1
+    %t0 = load u32 $s0
+    %t1 = load u32 $s1
+    %t2 = binary sub u32 %t0, %t1
+    %t3 = cmp ult u32 %t0, %t1
+    store u32 %t2, $s2
+    %t4 = addr $s2
+    %t5 = index u8 %t4, 4
+    %t6 = convert trunc i1 i64 %t3
+    store i1 %t6, %t5
+    %t7 = addr $s2
+    copyobj 8x4 %t7, %p0
+    return void
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$11_73656c6563745f68696e74$.i17(%p0 : i1, %p1 : u32, %p2 : u32) -> u32 {
+  slot $s0 : i1
+  slot $s1 : u32
+  slot $s2 : u32
+  block ^b0:
+    store i1 %p0, $s0
+    store u32 %p1, $s1
+    store u32 %p2, $s2
+    %t0 = load i1 $s0
+    %t1 = load u32 $s1
+    %t2 = load u32 $s2
+    %t3 = call u32 @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$20_73656c6563745f756e7072656469637461626c65$.i18(%t0, %t1, %t2)
+    return u32 %t3
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$6_68696e746564$.i19(%p0 : u32) -> u32 {
+  slot $s0 : u32
+  block ^b0:
+    store u32 %p0, $s0
+    call void @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$9_636f6c645f70617468$.i20()
+    %t0 = load u32 $s0
+    return u32 %t0
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$20_73656c6563745f756e7072656469637461626c65$.i18(%p0 : i1, %p1 : u32, %p2 : u32) -> u32 {
+  slot $s0 : i1
+  slot $s1 : u32
+  slot $s2 : u32
+  slot $s3 : u32
+  block ^b0:
+    store i1 %p0, $s0
+    store u32 %p1, $s1
+    store u32 %p2, $s2
+    %t0 = load i1 $s0
+    branch %t0, ^b1, ^b2
+  block ^b2:
+    %t1 = load u32 $s1
+    %t2 = load u32 $s2
+    store u32 %t2, $s3
+    jump ^b3
+  block ^b1:
+    %t3 = load u32 $s2
+    %t4 = load u32 $s1
+    store u32 %t4, $s3
+    jump ^b3
+  block ^b3:
+    %t5 = load u32 $s3
+    return u32 %t5
+}
+function @rgc$4_62617365$28_6465636c617265645f696e7472696e7369635f7472616e73706f7274$f$9_636f6c645f70617468$.i20() -> void {
+  block ^b0:
+    return void
+}

@@ -621,7 +621,7 @@
       "path": "pa31",
       "title": "Compiler/library bindings",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Source-declared lang items, compiler intrinsics and builtins, internal features and sysroot ownership",
       "test_families": [
         "lang-item identity and signatures",
@@ -629,6 +629,17 @@
         "builtin expansion and capability answers",
         "duplicate and forged bindings",
         "panic-abort runtime boundary"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa45",
+        "deferred_units": [
+          "source-runtime"
+        ],
+        "deferred_requirements": []
+      },
+      "release_evidence": [
+        "docs/pa31-source-declarations-release.md"
       ]
     },
     {
@@ -636,7 +647,8 @@
       "path": "pa32",
       "title": "Pinned core bootstrap",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "suite_kind": "consumers",
+      "status": "implemented",
       "scope": "Original pinned upstream core, its required internal language features and independently executed consumers",
       "test_families": [
         "complete core source build",
@@ -644,6 +656,9 @@
         "layout and const trait protocols",
         "slices iterators and formatting",
         "deterministic sysroot metadata"
+      ],
+      "release_evidence": [
+        "docs/pa32-core-bootstrap-release.md"
       ]
     },
     {
@@ -651,7 +666,8 @@
       "path": "pa33",
       "title": "Allocator and alloc bootstrap",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "suite_kind": "consumers",
+      "status": "implemented",
       "scope": "Allocator/runtime contracts and original upstream alloc with real container and destruction behavior",
       "test_families": [
         "allocation and reallocation",
@@ -659,6 +675,9 @@
         "allocation failure",
         "drop and ownership across crates",
         "allocator ABI and symbols"
+      ],
+      "release_evidence": [
+        "docs/pa33-alloc-bootstrap-release.md"
       ]
     },
     {
@@ -666,7 +685,7 @@
       "path": "pa34",
       "title": "Edition and crate build integration",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "status": "implemented",
       "scope": "Rust 2021 and 2024 crate graphs, features, target cfg, build scripts and generated inputs",
       "test_families": [
         "per-crate editions",
@@ -674,6 +693,17 @@
         "host versus target artifacts",
         "build script outputs",
         "reproducible build provenance"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa45",
+        "deferred_units": [
+          "host-graph-closure"
+        ],
+        "deferred_requirements": []
+      },
+      "release_evidence": [
+        "docs/pa34-build-editions-release.md"
       ]
     },
     {
@@ -681,14 +711,27 @@
       "path": "pa35",
       "title": "Upstream crate acceptance",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Original pinned serde_core without defaults and serde_json with alloc, including every selected transitive dependency",
+      "suite_kind": "consumers",
+      "status": "implemented",
+      "scope": "Original pinned upstream crates (unicode-ident, tinyvec_macros, tinyvec, unicode-normalization) with independent consumers; serde_core and serde_json deferred to PA45",
       "test_families": [
         "complete locked dependency graph",
-        "visitor and generic API consumers",
-        "JSON parsing and serialization",
-        "escaping malformed input and round trips",
+        "Unicode XID and normalization consumers",
+        "small-vector inline and heap consumers",
+        "deterministic whole-graph reproducibility",
         "compile time and memory scaling"
+      ],
+      "contract": {
+        "kind": "finite",
+        "carried_by": "pa45",
+        "deferred_units": [
+          "core-crates",
+          "alloc-crates"
+        ],
+        "deferred_requirements": []
+      },
+      "release_evidence": [
+        "docs/pa35-unicode-crates-release.md"
       ]
     },
     {
@@ -696,14 +739,18 @@
       "path": "pa36",
       "title": "Std and platform bootstrap",
       "mode": "--emit-lowir",
-      "status": "planned",
-      "scope": "Original upstream std for the pinned platform and panic-abort profile, with default-std crate consumers",
+      "suite_kind": "consumers",
+      "status": "implemented",
+      "scope": "Original upstream std for the pinned platform and panic-abort profile, with independent platform consumers",
       "test_families": [
         "complete std dependency graph",
         "platform runtime and linkage",
         "thread and TLS behavior",
         "I/O and error consumers",
-        "default-feature serde_json"
+        "panic abort and panic hooks"
+      ],
+      "release_evidence": [
+        "docs/pa36-std-bootstrap-release.md"
       ]
     },
     {
@@ -711,7 +758,8 @@
       "path": "pa37",
       "title": "Reproducible self-hosting",
       "mode": "--emit-lowir",
-      "status": "planned",
+      "suite_kind": "self-hosting",
+      "status": "implemented",
       "scope": "RustGM built by RustGM through CPPGM: stage 1 passes the PA1-PA24 oracles, stage 2 is byte-identical to stage 1, strict mode with zero bring-up records",
       "test_families": [
         "stage 1 against the PA1-PA24 oracles",
@@ -719,6 +767,9 @@
         "strict build with zero bring-up records",
         "reproducible inputs and deterministic output",
         "bounded build resources"
+      ],
+      "release_evidence": [
+        "docs/pa37-self-hosting-release.md"
       ]
     },
     {
@@ -919,6 +970,25 @@
             "30.5",
             "30.6"
           ]
+        },
+        "pa31": {
+          "units": [
+            "source-runtime"
+          ],
+          "requirements": []
+        },
+        "pa34": {
+          "units": [
+            "host-graph-closure"
+          ],
+          "requirements": []
+        },
+        "pa35": {
+          "units": [
+            "core-crates",
+            "alloc-crates"
+          ],
+          "requirements": []
         }
       }
     }

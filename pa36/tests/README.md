@@ -1,20 +1,15 @@
 # PA36 fixture ownership
 
-Planned: no graded fixtures or generated reference outputs yet.
+Active consumer grading suite (`suite_kind: "consumers"`, `std-artifact`
+released). [suite.json](suite.json) is run by
+`scripts/grade_consumers.py pa36` (or `make -C pa36 test`): it compiles and
+executes all 14 `std` consumers in `spec/std-consumers/` against unmodified
+pinned Rust 1.98.0 `core`/`alloc`/`std` and its platform dependencies in strict
+zero-bringup mode, comparing each binary (3 repeats) against pinned `rustc
+1.98.0` `.stdout` oracles declared in `std-consumer-outcomes.json`, and checks
+byte-identical recompilation of `println`. See
+[pa36-std-bootstrap-release.md](../../docs/pa36-std-bootstrap-release.md).
 
-Required families: complete std dependency graph; platform runtime and linkage; thread and TLS behavior; I/O and error consumers; default-feature serde_json.
-
-Follow the [owning brief](../README.md) and
-[library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
-Declare independent outcomes before creating text references. Register every
-input in a nonempty `manifest.json` when the stage is ready for activation;
-no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
-configuration/build provenance and linked native output evidence.
-
-Staged for rung M3 of the [self-hosting plan](../../docs/self-hosting-plan.md),
-not graded while this stage is planned: `spec/std-consumers/` holds 14 std programs.
-`std-consumer-outcomes.json` declares each program's inputs, exit status and standard error;
-`NAME.stdout` beside each source is what pinned rustc prints. Regenerate or
-compare with `scripts/consumer_oracle.py m3` (see the
-[runtime tracker](../../docs/self-hosting-runtime.md)). They are not in a
-manifest, so the stage still fails as planned.
+Regenerate or compare the independent `rustc` stdout oracles with
+`scripts/consumer_oracle.py m3` (see the
+[runtime tracker](../../docs/self-hosting-runtime.md)).

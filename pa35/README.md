@@ -1,36 +1,47 @@
 # RustGM Programming Assignment 35 — Upstream crate acceptance
 
-The graded suite for this assignment is pending.
+Build and execute consumers over real, unmodified upstream crates using
+RustGM's source-built Rust 1.98.0 standard library and the pinned CPPGM
+backend.
 
-Use the [PA34 build graph](../pa34/README.md) to compile original upstream
-packages with RustGM's source-built sysroot. Build separate consumers and
-execute the linked programs against the pinned CPPGM backend.
+## Required upstream crate graph
 
-## Core-only milestone
+This assignment grades the compiler's own locked upstream dependency graph
+for the Rust 1.98.0 Linux x86-64 panic-abort profile:
 
-Once [PA32](../pa32/README.md) produces `core`, build the original
-`itoa` 1.0.18 and `serde_core` 1.0.229 with default features disabled.
-Run consumers that check integer formatting and Serde visitor behavior.
-You can complete this milestone before starting `alloc`.
+- `unicode-ident` `1.0.24` (edition 2021)
+- `tinyvec_macros` `0.1.1` (edition 2018)
+- `tinyvec` `1.10.0` (edition 2018, features `alloc`, `default`, `tinyvec_macros`)
+- `unicode-normalization` `0.1.25` (edition 2018, features `default`, `std`)
 
-## Allocation-dependent milestone
-
-After [PA33](../pa33/README.md) produces `alloc`, build the original
-`serde_json` 1.0.151 with default features disabled and `alloc` enabled.
-Build every selected transitive dependency, including the locked
-`serde_core`, `itoa`, `memchr`, and `zmij` versions. Preserve source
-checksums, feature selections, and actual target configuration.
+Preserve exact upstream source checksums, per-crate editions, feature
+selections, and target configuration without patching crate sources. Broader
+upstream crate graphs (`itoa`, `serde_core`, `serde_json` with `memchr`/`zmij`)
+are deferred to the follow-on acceptance track (PA45).
 
 ## Tool surface
 
-Build the complete selected target graphs through the PA34 driver.
-Use the unchanged sources and the real target configuration. Retain
-dependency identities and the settings needed to reproduce each build.
+Run `make setup-rust-src` once from the repository root to verify and unpack
+the pinned Rust 1.98.0 library sources and the four locked crates (or set
+`RUSTGM_RUST_SRC` and `RUSTGM_CRATE_CACHE` for offline replay).
 
-## Check your implementation
+Build every target crate in strict mode with zero bring-up records, link
+through CPPGM, and verify byte-identical LowIR reproducibility across clean
+builds.
 
-Run consumer checks for parsing and serialization, integer and floating
-boundaries, escaping, malformed input, nesting, and round trips. Complete
-both milestones with their original dependency graphs. Record whole-build
-time and memory and check the result of each executed consumer.
-Procedural Serialize and Deserialize derives belong to the follow-on track.
+## Grading suite
+
+Run the grading suite from the repository root:
+
+```sh
+make -C pa35 test
+```
+
+The suite (`pa35/tests/suite.json` and `pa35/tests/unicode-consumer-outcomes.json`)
+compiles, links, and executes all four rustc-verified consumers three times
+each in a fresh empty directory:
+
+- `xid`: full Unicode scalar sweep of `unicode_ident::is_xid_start` / `is_xid_continue`
+- `normalization`: NFC, NFD, NFKC, NFKD, quick checks, stream-safe, and CJK variants
+- `identifiers`: XID identifier lexing and NFC interning as used in RustGM's lexer
+- `small-vectors`: `tinyvec` `ArrayVec`, `TinyVec`, and `SliceVec` inline-to-heap transitions

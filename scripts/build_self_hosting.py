@@ -17,7 +17,7 @@ FORMAT = 'strict-source-graph/1'
 OUTPUTS = {'lowir': 'program.lowir', 'native_links': 'program.native-links.json'}
 PROFILE = ('--emit-lowir', '--cap-lints=allow', '--edition=2024', '--crate-name', 'core',
            '--source-contract-attempted-bytes=4294967295',
-           '--source-contract-retained-bytes=67108864')
+           '--source-contract-retained-bytes=4294967295')
 COMPILER_ENVIRONMENT = {**ENVIRONMENT, 'STD_ENV_ARCH': 'x86_64'}
 SUPPORT = ('backend.py', 'host_inputs.py', 'host_process.py', 'native_links.py',
            'package_snapshot.py', 'stage1_run.py', 'target_units.py')

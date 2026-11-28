@@ -51,17 +51,29 @@ def validate(root=ROOT, stages=None):
                 raise ValueError(f"missing, cyclic or later dependency: {key}: {dependency}")
         if unit["publication"] not in {"unpublished", "released"}:
             raise ValueError(f"unknown publication state: {key}")
+        if "manifest" in unit and "suite_manifest" in unit:
+            raise ValueError(f"work unit cannot declare both manifest and suite_manifest: {key}")
         if "manifest" in unit:
             if unit["manifest"] != unit_manifest(unit["owner"], key):
                 raise ValueError(f"noncanonical unit manifest: {key}")
             checked_path(root, unit["manifest"])
+        if "suite_manifest" in unit:
+            if unit["suite_manifest"] != f"{unit['owner']}/tests/suite.json":
+                raise ValueError(f"noncanonical workload suite manifest: {key}")
+            checked_path(root, unit["suite_manifest"])
         if unit["publication"] == "released":
             if unit["implementation"] != "implemented":
                 raise ValueError(f"released work unit is incomplete: {key}")
             checked_path(root, unit["release_evidence"])
-            manifest = json.loads(checked_path(root, unit["manifest"]).read_text())
-            if not manifest.get("cases"):
-                raise ValueError(f"released work unit has empty manifest: {key}")
+            if "suite_manifest" in unit:
+                suite = json.loads(checked_path(root, unit["suite_manifest"]).read_text())
+                if (suite.get("schema") != 1 or suite.get("stage") != unit["owner"]
+                        or suite.get("kind") not in ("consumers", "self-hosting")):
+                    raise ValueError(f"released workload suite manifest is malformed: {key}")
+            else:
+                manifest = json.loads(checked_path(root, unit["manifest"]).read_text())
+                if not manifest.get("cases"):
+                    raise ValueError(f"released work unit has empty manifest: {key}")
             if any(units[dependency]["publication"] != "released" for dependency in unit["depends_on"]):
                 raise ValueError(f"released work unit has an unreleased prerequisite: {key}")
         for requirement in unique(unit["requirements"], key):

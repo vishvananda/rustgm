@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "kind": "consumers",
+  "stage": "pa32",
+  "strategy": "standalone-core",
+  "outcomes": "tests/core-consumer-outcomes.json",
+  "programs_dir": "tests/spec/core-consumers",
+  "reproducibility_case": "core",
+  "lint_manifest": "tests/spec/ffi-unwind-lint/cases.json",
+  "requires_rust_src": true,
+  "requires_pa35_crates": false
+}

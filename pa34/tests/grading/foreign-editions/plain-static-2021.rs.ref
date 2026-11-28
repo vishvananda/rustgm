@@ -1,0 +1,27 @@
+global @edition_value : obj<1x1> [storage=readonly] = {
+  u8 7
+}
+function @rg.15() -> void {
+  slot $s0 : u8
+  block ^b0:
+    %t0 = load u8 @edition_value
+    store u8 %t0, $s0
+    %t1 = load u8 $s0
+    %t2 = cmp eq u8 %t1, 7
+    %t3 = convert trunc i1 i64 %t2
+    %t4 = copy u8 %t3
+    %t5 = cmp eq u8 %t4, 0
+    branch %t5, ^b1, ^b2
+  block ^b2:
+    %t6 = binary udiv u8 1, %t4
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+declare function @abort() -> void [return=noreturn]
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.15()
+    return i64 0
+}

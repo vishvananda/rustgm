@@ -1,6 +1,10 @@
 # RustGM Programming Assignment 32 — Pinned core bootstrap
 
-The graded suite for this assignment is pending.
+Run `make setup-rust-src` once from the repository root, then run the grading
+suite with `make -C pa32 test`. It builds standalone `core` twice to verify
+byte-identical reproducibility, checks panic-abort FFI unwind diagnostics, and
+compiles, links through CPPGM, and executes all 18 independent `no_std`
+consumers (`pa32/tests/core-consumer-outcomes.json`).
 
 Build the complete upstream `core` crate for Rust 1.98.0 on Linux x86-64
 with aborting panics. Use the original sources at

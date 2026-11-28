@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from export_assignments import selection, student_stage
+from export_assignments import PUBLIC_FILES, STUDENT_FILES, selection, self_hosting_files, student_stage
 
 
 class ExportAssignments(unittest.TestCase):
@@ -28,6 +28,21 @@ class ExportAssignments(unittest.TestCase):
         self.assertNotIn("release_evidence", exported)
         self.assertEqual(exported["contract"]["carried_by"], "pa45")
         self.assertIn("release_evidence", stage)
+
+    def test_workload_scripts_and_self_hosting_files_are_public(self):
+        for name in (
+            "scripts/setup_rust_src.py",
+            "scripts/grade_consumers.py",
+            "scripts/grade_pa34_driver.py",
+            "scripts/pa37_self_host.py",
+            "scripts/original_core_manifest.json",
+        ):
+            self.assertIn(name, PUBLIC_FILES)
+        self.assertIn("assignment-consumers.mk", STUDENT_FILES)
+        self.assertEqual(
+            self_hosting_files("pa37"),
+            {"pa37/README.md", "pa37/Makefile", "pa37/tests/suite.json"},
+        )
 
 
 if __name__ == "__main__":

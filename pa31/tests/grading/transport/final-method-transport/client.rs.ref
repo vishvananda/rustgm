@@ -1,0 +1,36 @@
+global @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.data.0 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+global @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.data.1 : obj<1x1> [storage=readonly] = {
+  zero 1
+}
+function @observed_final() -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.data.0
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rgc$4_62617365$22_66696e616c5f6d6574686f645f7472616e73706f7274$f$5_53636f7265$5_6669786564$.i3(%t1)
+    return u8 %t2
+}
+function @observed_override() -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    %t0 = addr @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.data.1
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.56(%t1)
+    return u8 %t2
+}
+function @rgc$4_62617365$22_66696e616c5f6d6574686f645f7472616e73706f7274$f$5_53636f7265$5_6669786564$.i3(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 41
+}
+function @rgc$6_636c69656e74$29_66696e616c5f6d6574686f645f7472616e73706f72745f636c69656e74$internal$rg.56(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    return u8 73
+}

@@ -1,6 +1,9 @@
 # RustGM Programming Assignment 34 — Editions and crate builds
 
-The graded suite for this assignment is pending.
+Run the grading suite with `make -C pa34 test` (48 edition and mixed-crate
+cases covering Rust 2018/2021/2024 semantics plus the host `build.rs`
+generated-source, `rustc-cfg`/`rustc-env`, mixed-edition, and replay check in
+`pa34/tests/build-driver/`).
 
 Implement reproducible crate builds for the course's Rust 1.98.0 graph.
 Extend [PA32](../pa32/README.md)'s build preparation to dependency graphs.

@@ -1,8 +1,9 @@
 # RustGM Programming Assignment 33 — Allocator and alloc bootstrap
 
-The strict self-hosting graph has built the original `alloc` from source.
-This assignment qualifies its separate artifact and fresh consumers.
-The graded suite is pending.
+Run `make -C pa33 test` to grade the original Rust 1.98.0 `alloc` crate in
+strict mode (zero bring-up records) across all 12 `no_std` consumers
+(`pa33/tests/alloc-consumer-outcomes.json`), including leak-tracking
+`#[global_allocator]` verification and deterministic LowIR reproducibility.
 
 Build the original Rust 1.98.0 `alloc` crate against the
 [`core` artifact from PA32](../pa32/README.md). Use the same pinned source

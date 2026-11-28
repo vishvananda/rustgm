@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "kind": "consumers",
+  "stage": "pa35",
+  "strategy": "whole-graph-unicode",
+  "outcomes": "tests/unicode-consumer-outcomes.json",
+  "programs_dir": "tests/spec/unicode-consumers",
+  "reproducibility_case": "xid",
+  "requires_rust_src": true,
+  "requires_pa35_crates": true
+}
