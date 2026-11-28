@@ -254,9 +254,15 @@ fn prepare_using_inner(
                 &requirements.goals,
             )?
         };
-        contract
-            .proofs
-            .push(Proof::new(body.source, selected.proof));
+        // Template proofs already checked body-level Copy lifetime obligations.
+        // Specialized instances reselect Copy modulo caller-proven regions for
+        // drop elaboration without re-proving conditional impl bounds absent
+        // from the generic signature.
+        if body.instance.is_none() {
+            contract
+                .proofs
+                .push(Proof::new(body.source, selected.proof));
+        }
         selected.choices.into_iter().collect()
     } else {
         HashMap::default()

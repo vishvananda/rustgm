@@ -329,20 +329,29 @@ impl Declarations {
         {
             return Ok(());
         }
+        if self
+            .stored_fields
+            .as_ref()
+            .and_then(|registry| registry.contains_projection(hidden))
+            .is_some()
+        {
+            preparation.charge(1)?;
+            return Ok(());
+        }
         let first = self.probe_first(preparation, hidden)?;
         let before = self.stored_field_work().steps;
         let mut proof = Obligations::new(first);
         let mut session = crate::sema::projections::concrete(&mut proof, ScopeId::ROOT)?;
-        let mut storage = crate::sema::stored_fields::Preparation::default();
-        let result = storage.prepare(self, hidden, &mut session);
+        let result = crate::sema::stored_fields::populate_concrete(self, hidden, &mut session);
+        let local_steps = result.as_ref().copied().unwrap_or(0);
         preparation.charge(
             self.stored_field_work()
                 .steps
                 .saturating_sub(before)
-                .saturating_add(storage.steps())
+                .saturating_add(local_steps)
                 .saturating_add(session.nested_work()),
         )?;
-        result
+        result.map(|_| ())
     }
     /// A probe's first lifetime identity. Disposable probes start beyond every
     /// numbered unit, but a caller instance's opened lifetimes, which its

@@ -104,6 +104,24 @@ impl Checker<'_> {
         callee: NodeId,
         solved: &Solved,
     ) -> Result<crate::types::TypeId, Error> {
+        if let Some(id) = self.invocation_plan(node)
+            && let Some(super::protocol_control::OpenKind::Invocation {
+                access,
+                complete: true,
+            }) = self
+                .state
+                .call_types
+                .protocol_plans
+                .get(id.index())
+                .filter(|plan| plan.node == node)
+                .map(|plan| plan.kind)
+        {
+            return solved
+                .types
+                .get(access.receiver.0 as usize)
+                .copied()
+                .ok_or_else(|| self.error(node, "caller site lost solved dereferenced callee"));
+        }
         let mut ty = *solved
             .types
             .get(self.term(callee)?.0 as usize)

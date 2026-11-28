@@ -105,6 +105,11 @@ impl Lower<'_, '_, '_> {
                 .source_black_box(ty, signature, arguments, value.ty)
                 .map(Some),
             _ => {
+                if let Some(lowered) =
+                    self.source_float_math(name, ty, signature, arguments, value.ty)?
+                {
+                    return Ok(Some(lowered));
+                }
                 if bit_counts::named(name).is_some()
                     && let Some(lowered) =
                         self.source_bit_count(ty, signature, arguments, value.ty)?

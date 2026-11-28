@@ -203,7 +203,11 @@ impl Lower<'_, '_, '_> {
         let value = match selected {
             Selected::Runtime(value) => value,
             Selected::Object(address) => {
-                if let Representation::ScalarObject(storage) = self.context.representation(ty)? {
+                if matches!(self.context.types.kind(ty), Some(Kind::Dynamic { .. })) {
+                    self.pointer(address)?
+                } else if let Representation::ScalarObject(storage) =
+                    self.context.representation(ty)?
+                {
                     self.builder.load(storage.ty, address.operand)?
                 } else {
                     self.pointer(address)?

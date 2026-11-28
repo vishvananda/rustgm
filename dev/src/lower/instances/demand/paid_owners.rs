@@ -94,7 +94,7 @@ pub(super) fn build<C: Collect>(
     let result: Result<(), Error> = (|| {
         let group = crate::borrow::incremental::CompleteGroup::new(
             staged.iter().map(proof::Staged::paired),
-            (64 * 1024 * 1024_usize).saturating_sub(bytes),
+            (256 * 1024 * 1024_usize).saturating_sub(bytes),
             &mut work,
         )
         .map_err(error)?;
@@ -171,7 +171,7 @@ fn staging_bytes(
                 })
                 .fold(0_usize, usize::saturating_add),
         );
-    if bytes > 64 * 1024 * 1024 || program.bodies.len() > 1_000_000 {
+    if bytes > 256 * 1024 * 1024 || program.bodies.len() > 1_000_000 {
         return Err("conditional parent staging exceeds storage budget");
     }
     Ok(bytes)

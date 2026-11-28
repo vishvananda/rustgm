@@ -92,6 +92,45 @@ pub(crate) fn prepare_premise_free_with(
     prepare_with_policy(facts, root, work, preparation, true)
 }
 
+/// Ensure `root` and every transitive projected field it reaches have their
+/// normalized storage shapes published in the shared registry, without
+/// replaying already-published recipes when the caller drops its lifetime proof.
+pub(crate) fn populate_concrete(
+    facts: &mut Declarations,
+    root: TypeId,
+    session: &mut Concrete<'_>,
+) -> Result<usize, &'static str> {
+    if facts
+        .stored_fields
+        .as_ref()
+        .and_then(|registry| registry.root(root))
+        .is_some()
+    {
+        return Ok(1);
+    }
+    let mut graph = graph::Build::new(root);
+    let mut local_steps = 0_usize;
+    loop {
+        let mut registry = facts.stored_fields.take().unwrap_or_default();
+        let progress = graph.advance(&mut registry, facts);
+        facts.stored_fields = Some(registry);
+        match progress? {
+            graph::Progress::Complete(_) => return Ok(local_steps),
+            graph::Progress::Nominal(_) => return Err("missing aggregate field template"),
+            graph::Progress::Normalize(raw) => {
+                let (normal, steps) = session.normalize(facts, raw)?;
+                local_steps = local_steps.saturating_add(steps);
+                graph.normalized(facts, normal)?;
+                facts
+                    .stored_fields
+                    .as_mut()
+                    .ok_or("missing storage registry")?
+                    .charge(steps)?;
+            }
+        }
+    }
+}
+
 /// Prepare normalized storage for a body-local concrete type whose lifetime
 /// obligations belong to its enclosing body contract rather than a closed scope.
 pub(crate) fn prepare_body_storage_with(

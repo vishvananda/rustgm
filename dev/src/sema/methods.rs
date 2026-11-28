@@ -86,11 +86,21 @@ pub(super) struct Operands {
     /// Deref calls keeps their plan beside its own index selection. Only a
     /// source core that declares `Deref` and `Index` has any.
     pub(super) indexed: HashMap<NodeKey, super::bodies::ProtocolPlanId>,
+    /// A call expression whose callee reaches its callable target through
+    /// Deref calls keeps their plan beside its own invocation selection.
+    pub(super) invoked: HashMap<NodeKey, super::bodies::ProtocolPlanId>,
 }
 impl Methods {
     /// The plan of the Deref calls an index expression's operand takes.
     pub(crate) fn index_operand(&self, node: NodeKey) -> Option<super::bodies::ProtocolPlanId> {
         self.operands.as_deref()?.indexed.get(&node).copied()
+    }
+    /// The plan of the Deref calls a call expression's callee takes.
+    pub(crate) fn invocation_operand(
+        &self,
+        node: NodeKey,
+    ) -> Option<super::bodies::ProtocolPlanId> {
+        self.operands.as_deref()?.invoked.get(&node).copied()
     }
     pub(super) fn retain_comparison_borrow(&mut self, node: NodeKey, ty: TypeId) {
         self.operands.get_or_insert_default().right.insert(node, ty);

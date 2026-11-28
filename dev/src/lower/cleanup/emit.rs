@@ -197,13 +197,32 @@ impl Emitter<'_, '_> {
             ty,
         )?
         .ok_or("box cleanup requires an owned box")?;
+        self.state.work.push(Work::Shell(recipe, base));
+        if self.context.wide_referent(inner)? {
+            let node = self
+                .plan()?
+                .nodes
+                .get(content.0 as usize)
+                .ok_or("invalid selected box content cleanup node")?;
+            let (condition, operation) = (node.condition, node.operation);
+            match operation {
+                Operation::Empty => {}
+                Operation::Glue(content_recipe) => {
+                    self.guard(condition)?;
+                    self.box_content(ty, base, content_recipe)?;
+                }
+                _ => {
+                    return Err("unsized box content requires an empty or whole cleanup node");
+                }
+            }
+            return Ok(());
+        }
         let pointer = self.box_pointer(ty, base)?;
         let data = self.builder.load(Type::Ptr, pointer.operand)?;
         let address = Address {
             operand: data.operand,
             align: self.context.layout(inner)?.align,
         };
-        self.state.work.push(Work::Shell(recipe, base));
         self.state
             .work
             .push(Work::Drop(Target::Selected(content), inner, address));

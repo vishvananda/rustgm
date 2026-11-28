@@ -101,43 +101,7 @@ impl Checker<'_> {
             end,
             first: first.ok_or_else(|| self.error(open.node, "access plan has no first step"))?,
         };
-        let kind = match open.kind {
-            super::super::protocol_control::OpenKind::Coercion { .. } => Kind::Coercion {
-                operand: field.operand,
-                receiver,
-                dereferences: field.dereferences,
-                steps,
-            },
-            super::super::protocol_control::OpenKind::Index { complete: true, .. } => Kind::Index {
-                operand: field.operand,
-                receiver,
-                dereferences: field.dereferences,
-                steps,
-            },
-            super::super::protocol_control::OpenKind::Field(_) => Kind::Field {
-                operand: field.operand,
-                field: field.field.ok_or_else(|| {
-                    self.error(open.node, "field publication lost its selected member")
-                })?,
-                receiver,
-                dereferences: field.dereferences,
-                steps,
-            },
-            super::super::protocol_control::OpenKind::Receiver { call, .. }
-                if field.field.is_none() =>
-            {
-                Kind::Receiver {
-                    operand: field.operand,
-                    receiver,
-                    dereferences: field.dereferences,
-                    steps,
-                    call: call.solved(solved).map_err(|e| self.error(open.node, e))?,
-                }
-            }
-            _ => {
-                return Err(self.error(open.node, "access publication lost its completed protocol"));
-            }
-        };
+        let kind = self.published_access_kind(open, field, solved, receiver, steps)?;
         let plan = Plan {
             node: key,
             source_use,
@@ -146,6 +110,56 @@ impl Checker<'_> {
         protocol_plans::access::check_rows(self.report, self.facts, self.state.body, plan, &rows)?;
         self.commit_field_rows(open.node, existing, plan, rows)?;
         Ok(kind)
+    }
+
+    fn published_access_kind(
+        &self,
+        open: OpenPlan,
+        field: OpenAccess,
+        solved: &Solved,
+        receiver: crate::types::TypeId,
+        steps: Range,
+    ) -> Result<Kind, Error> {
+        use super::super::protocol_control::OpenKind;
+        Ok(match open.kind {
+            OpenKind::Coercion { .. } => Kind::Coercion {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
+            OpenKind::Index { complete: true, .. } => Kind::Index {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
+            OpenKind::Invocation { complete: true, .. } => Kind::Invocation {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
+            OpenKind::Field(_) => Kind::Field {
+                operand: field.operand,
+                field: field.field.ok_or_else(|| {
+                    self.error(open.node, "field publication lost its selected member")
+                })?,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+            },
+            OpenKind::Receiver { call, .. } if field.field.is_none() => Kind::Receiver {
+                operand: field.operand,
+                receiver,
+                dereferences: field.dereferences,
+                steps,
+                call: call.solved(solved).map_err(|e| self.error(open.node, e))?,
+            },
+            _ => {
+                return Err(self.error(open.node, "access publication lost its completed protocol"));
+            }
+        })
     }
 
     /// Replay checks the conversion's own sparse owner, independently of the
@@ -160,6 +174,9 @@ impl Checker<'_> {
             ),
             super::super::protocol_control::OpenKind::Index { .. } => {
                 Some(self.facts.methods.index_operand(self.key(open.node)))
+            }
+            super::super::protocol_control::OpenKind::Invocation { .. } => {
+                Some(self.facts.methods.invocation_operand(self.key(open.node)))
             }
             _ => None,
         };

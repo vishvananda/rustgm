@@ -23,6 +23,17 @@ pub(crate) fn expand<'a, L>(
     }
     let (span, text) = super::string_argument(ast, root, &mut literal)?;
     let text = literal_bytes(&text, newline).map_err(|message| error(span.start, message))?;
+    expand_text(text, constructor, grammar, config)
+}
+pub(crate) fn expand_text(
+    text: String,
+    constructor: NameId,
+    grammar: MacroContext,
+    config: &Config,
+) -> Result<Expansion, LexError> {
+    if !matches!(grammar, MacroContext::Expression | MacroContext::Statements) {
+        return Err(error(0, "formatting requires an expression context"));
+    }
     // Diagnostic image only: syntax is built from owned decoded bytes and is
     // never reparsed. A nonempty range also authenticates an empty literal use.
     let source = format!("{text:?}");

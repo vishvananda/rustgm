@@ -72,7 +72,7 @@ struct Discovered {
     selectors: Vec<crate::body::ir::ValueId>,
     layouts: Vec<crate::body::ir::ValueId>,
     tables: Vec<(TypeId, TypeId)>,
-    captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 2])>,
+    captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 3])>,
     upcasts: Vec<(TypeId, TypeId)>,
     operators: Vec<(TypeId, crate::support::call_traits::CallTrait, TypeId)>,
     futures: Option<Box<FutureDemands>>,

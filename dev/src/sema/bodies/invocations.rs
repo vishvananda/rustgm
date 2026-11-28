@@ -1,5 +1,10 @@
 //! Call syntax selects a receiver permission before argument checking and retains its proof.
-use super::{Checker, Constructor, Error, List, NodeId, TermId};
+use super::{
+    Checker, Constructor, Dependency, Error, Expectation, List, NodeId, TermId, Work,
+    access_paths::{AccessPlanId, OpenAccess, StepRange},
+    deref_coercions::SidePlan,
+    protocol_control::{OpenKind, OpenPlan},
+};
 use crate::{
     sema::{
         invocations::Invocation,
@@ -13,6 +18,12 @@ use crate::{
     },
 };
 
+pub(super) enum Progress {
+    Ready { signature: TermId, callee: TermId },
+    Continue,
+    Wait(Dependency),
+}
+
 pub(super) struct Pending {
     kind: Option<CallTrait>,
     dereferences: u32,
@@ -25,13 +36,34 @@ impl Pending {
     }
 }
 impl Checker<'_> {
+    pub(super) fn invocation_plan(&self, node: NodeId) -> Option<AccessPlanId> {
+        self.state
+            .call_types
+            .access
+            .as_deref()?
+            .invocations
+            .get(&node)
+            .copied()
+    }
+
     pub(super) fn invocation_signature(
         &mut self,
         node: NodeId,
         callee: NodeId,
         arguments: List,
-    ) -> Result<TermId, Error> {
-        let mut subject = self.term(callee)?;
+        expectation: Expectation,
+    ) -> Result<Progress, Error> {
+        let (mut subject, stepped) = if let Some(id) = self.invocation_plan(node) {
+            self.advance_projections(node)?;
+            let subject = self.invocation_plan_receiver(node, id)?;
+            if let Some(dependency) = self.receiver_readiness(node, subject)? {
+                self.state.work.push(Work::CallArguments(node, expectation));
+                return Ok(Progress::Wait(dependency));
+            }
+            (subject, true)
+        } else {
+            (self.term(callee)?, false)
+        };
         let mut dereferences = 0_u32;
         loop {
             self.state
@@ -57,8 +89,11 @@ impl Checker<'_> {
                     None => return Err(self.error(node, "closure call permission is unresolved")),
                 };
                 let signature = self.child(node, subject, 0)?;
-                self.retain_invocation(node, callee, subject, dereferences, Some(kind))?;
-                return self.call_signature(node, signature);
+                self.finish_invocation_target(node, callee, subject, dereferences, Some(kind))?;
+                return Ok(Progress::Ready {
+                    signature: self.call_signature(node, signature)?,
+                    callee: subject,
+                });
             }
 
             let signature = match head {
@@ -69,18 +104,154 @@ impl Checker<'_> {
                 _ => None,
             };
             if let Some(signature) = signature {
-                self.retain_invocation(node, callee, subject, dereferences, None)?;
-                return self.call_signature(node, signature);
+                self.finish_invocation_target(node, callee, subject, dereferences, None)?;
+                return Ok(Progress::Ready {
+                    signature: self.call_signature(node, signature)?,
+                    callee: subject,
+                });
             }
             if head.is_none() {
                 return Err(self.error(node, "call requires a known function type"));
             }
             if let Some((kind, tuple)) = self.select_invocation(node, subject, head)? {
                 let signature = self.invocation_inputs(node, subject, tuple, arguments)?;
-                self.retain_invocation(node, callee, subject, dereferences, Some(kind))?;
-                return Ok(signature);
+                self.finish_invocation_target(node, callee, subject, dereferences, Some(kind))?;
+                return Ok(Progress::Ready {
+                    signature,
+                    callee: subject,
+                });
+            }
+            if crate::sema::compiler_items::dereferencing::available(self.facts)
+                && self.may_dereference_reference(node, subject)?
+            {
+                if dereferences == 0 && !stepped {
+                    self.check_union_receiver(node, callee)?;
+                }
+                let (step, target) = self.discover_field_target(node, subject, dereferences)?;
+                self.extend_invocation_discovery(node, callee, step, target)?;
+                self.state.work.push(Work::CallArguments(node, expectation));
+                return Ok(Progress::Continue);
             }
             return Err(self.error(node, "call requires a known function type"));
+        }
+    }
+
+    fn finish_invocation_target(
+        &mut self,
+        node: NodeId,
+        callee: NodeId,
+        subject: TermId,
+        dereferences: u32,
+        kind: Option<CallTrait>,
+    ) -> Result<(), Error> {
+        let stepped = self.invocation_plan(node);
+        if kind == Some(CallTrait::FnMut) {
+            self.mark_mutable_language_place(callee)?;
+            if stepped.is_some() {
+                self.mark_receiver_mutable(node)?;
+            }
+        }
+        let retain_derefs = if let Some(id) = stepped {
+            self.complete_invocation_discovery(node, id, subject, dereferences)?;
+            0
+        } else {
+            dereferences
+        };
+        self.retain_invocation(node, callee, subject, retain_derefs, kind)
+    }
+
+    fn invocation_plan_receiver(&self, node: NodeId, id: AccessPlanId) -> Result<TermId, Error> {
+        match self
+            .state
+            .call_types
+            .protocol_plans
+            .get(id.index())
+            .filter(|plan| plan.node == node)
+            .map(|plan| plan.kind)
+        {
+            Some(OpenKind::Invocation {
+                access,
+                complete: false,
+            }) => Ok(access.receiver),
+            _ => Err(self.error(node, "call callee discovery lost its actual open plan")),
+        }
+    }
+
+    fn extend_invocation_discovery(
+        &mut self,
+        node: NodeId,
+        operand: NodeId,
+        index: u32,
+        target: TermId,
+    ) -> Result<(), Error> {
+        let end = index
+            .checked_add(1)
+            .ok_or_else(|| self.error(node, "call callee step range overflow"))?;
+        let Some(id) = self.invocation_plan(node) else {
+            let slot = self.retain_try(OpenPlan {
+                node,
+                kind: OpenKind::Invocation {
+                    access: OpenAccess {
+                        operand,
+                        field: None,
+                        receiver: target,
+                        dereferences: 0,
+                        steps: StepRange { start: index, end },
+                        calls: None,
+                    },
+                    complete: false,
+                },
+            })?;
+            let id = AccessPlanId::new(slot).map_err(|e| self.error(node, e))?;
+            return self.retain_side_plan(node, id, SidePlan::Invocation);
+        };
+        match self
+            .state
+            .call_types
+            .protocol_plans
+            .get_mut(id.index())
+            .filter(|plan| plan.node == node)
+            .map(|plan| &mut plan.kind)
+        {
+            Some(OpenKind::Invocation {
+                access,
+                complete: false,
+            }) if access.operand == operand && access.steps.end == index => {
+                access.steps.end = end;
+                access.receiver = target;
+                Ok(())
+            }
+            _ => Err(self.error(
+                node,
+                "call callee discovery changed its source or contiguous steps",
+            )),
+        }
+    }
+
+    fn complete_invocation_discovery(
+        &mut self,
+        node: NodeId,
+        id: AccessPlanId,
+        receiver: TermId,
+        dereferences: u32,
+    ) -> Result<(), Error> {
+        match self
+            .state
+            .call_types
+            .protocol_plans
+            .get_mut(id.index())
+            .filter(|plan| plan.node == node)
+            .map(|plan| &mut plan.kind)
+        {
+            Some(OpenKind::Invocation { access, complete })
+                if !*complete && access.calls.is_none() =>
+            {
+                access.receiver = receiver;
+                access.dereferences = dereferences;
+                *complete = true;
+                Ok(())
+            }
+            _ => Err(self.error(node, "call callee discovery completed twice")),
         }
     }
 
@@ -314,7 +485,7 @@ impl Checker<'_> {
                     .infer
                     .construct(Constructor::Reference { mutable, region }, &[subject])
                     .map_err(|e| self.error(node, e))?;
-                if dereferences == 0 {
+                if dereferences == 0 && self.invocation_plan(node).is_none() {
                     self.state.alignment.borrows.push((node, source));
                 }
                 Some(term)

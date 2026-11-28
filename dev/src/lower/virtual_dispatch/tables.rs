@@ -124,7 +124,11 @@ impl Context<'_> {
                             self.callable_target(callable, slot.method.require_callable()?)?
                         }
                         crate::sema::vtable_plans::Target::Captured(entry) => {
-                            self.demand_captured(entry)?
+                            if entry.requested == crate::support::call_traits::CallTrait::FnOnce {
+                                self.demand_captured_once(concrete, entry)?
+                            } else {
+                                self.demand_captured(entry)?
+                            }
                         }
                         crate::sema::vtable_plans::Target::Forwarded(operator) => {
                             self.object_operator(operator)?

@@ -359,8 +359,10 @@ fn carry_certificates(
     recovered_premises: Option<&Environment>,
 ) -> Result<(), &'static str> {
     let mut steps = 0;
-    let owner_environment =
-        recovered_premises.or_else(|| facts.generics.environments.get(&owner).map(Arc::as_ref));
+    let owner_environment = match recovered_premises {
+        Some(premises) => Some(premises),
+        None => facts.generics.environments.get(&owner).map(Arc::as_ref),
+    };
     let carried = carried_certificates(owner_environment, own, environment, &mut steps);
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
     // The contract formed this environment itself, so it is unshared.

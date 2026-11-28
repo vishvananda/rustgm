@@ -127,6 +127,45 @@ impl Collector<'_> {
         })
     }
 
+    pub(super) fn call(
+        &mut self,
+        checker: &mut Checker<'_>,
+        node: NodeId,
+        callee: NodeId,
+    ) -> Result<(), Error> {
+        if let Some(id) = checker.invocation_plan(node) {
+            let receiver = checker.capture_access_receiver(node, id)?;
+            let usage = match checker.head(node, receiver.borrow)? {
+                Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+                Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+                _ => {
+                    return Err(
+                        checker.error(node, "call capture lost its actual callee receiver borrow")
+                    );
+                }
+            };
+            self.pending.push(Work {
+                node: receiver.operand,
+                usage,
+                dereferences: receiver.dereferences,
+                receiver: Some((node, AccessKind::Invocation)),
+            });
+            return Ok(());
+        }
+        let (kind, dereferences) = self.call_receiver(checker, node, callee)?;
+        self.pending.push(Work {
+            node: callee,
+            usage: match kind {
+                Some(crate::support::call_traits::CallTrait::Fn) => Use::Shared,
+                Some(crate::support::call_traits::CallTrait::FnMut) => Use::Mutable,
+                _ => Use::Value,
+            },
+            dereferences,
+            receiver: Some((node, AccessKind::Invocation)),
+        });
+        Ok(())
+    }
+
     pub(super) fn call_receiver(
         &self,
         checker: &mut Checker<'_>,

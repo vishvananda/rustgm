@@ -29,7 +29,7 @@ impl<S: Sources> Engine<'_, S> {
         };
         let inputs = unit.configured.ast.list(children);
         let [first] = inputs else {
-            return Ok(true);
+            return Ok(self.fold_literal_format(index, root, false)?.is_none());
         };
         let Kind::Literal(literal) = unit.configured.ast.node(*first).kind else {
             return Ok(true);

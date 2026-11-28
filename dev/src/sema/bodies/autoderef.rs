@@ -180,6 +180,7 @@ impl Checker<'_> {
             self.access_plan(node),
             self.coercion_plan(node),
             self.index_plan(node),
+            self.invocation_plan(node),
         ]
         .into_iter()
         .flatten()

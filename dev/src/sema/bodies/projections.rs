@@ -78,6 +78,7 @@ struct Data {
     tasks: HashMap<WatchId, Query>,
     equations: HashMap<EquationId, NodeId>,
     normalizations: HashSet<(ScopeId, TermId)>,
+    normalization_terms: HashSet<TermId>,
     normalization_waiters: HashMap<TermId, HashSet<WatchId>>,
     input_scopes: HashMap<(ScopeId, TermId), ScopeId>,
     normal_forms: HashMap<TypeId, TypeId>,
@@ -93,6 +94,7 @@ impl Default for Data {
             tasks: HashMap::default(),
             equations: HashMap::default(),
             normalizations: HashSet::default(),
+            normalization_terms: HashSet::default(),
             normalization_waiters: HashMap::default(),
             input_scopes: HashMap::default(),
             normal_forms: HashMap::default(),
@@ -286,16 +288,20 @@ impl Checker<'_> {
             })
             .map_err(|e| self.error(node, e))?;
         for (scope, term) in roots {
-            if !self
+            let term = self
+                .state
+                .infer
+                .root(term)
+                .map_err(|e| self.error(node, e))?;
+            let data = self
                 .state
                 .projections
                 .data
-                .get_or_insert_with(Default::default)
-                .normalizations
-                .insert((scope, term))
-            {
+                .get_or_insert_with(Default::default);
+            if !data.normalizations.insert((scope, term)) {
                 continue;
             }
+            data.normalization_terms.insert(term);
             let input = self
                 .state
                 .infer
@@ -329,10 +335,27 @@ impl Checker<'_> {
         right: TermId,
         relation: Relation,
     ) -> Result<(), Error> {
+        self.deferred_equation_in_scope(node, ScopeId::ROOT, left, right, relation)
+    }
+    pub(super) fn deferred_equation_in_scope(
+        &mut self,
+        node: NodeId,
+        scope: ScopeId,
+        left: TermId,
+        right: TermId,
+        relation: Relation,
+    ) -> Result<(), Error> {
+        let mut blocked_terms = Vec::new();
         if let Outcome::Pending(id) = self
             .state
             .infer
-            .equate_deferred(&self.facts.types, left, right, relation)
+            .equate_deferred_blocked(
+                &self.facts.types,
+                left,
+                right,
+                relation,
+                Some(&mut blocked_terms),
+            )
             .map_err(|e| self.equation_error(node, left, right, e))?
         {
             self.state
@@ -341,6 +364,32 @@ impl Checker<'_> {
                 .get_or_insert_with(Default::default)
                 .equations
                 .insert(id, node);
+            self.defer_blocked_normalizations(node, scope, blocked_terms)?;
+        }
+        Ok(())
+    }
+    fn defer_blocked_normalizations(
+        &mut self,
+        node: NodeId,
+        scope: ScopeId,
+        terms: Vec<TermId>,
+    ) -> Result<(), Error> {
+        for term in terms {
+            let root = self
+                .state
+                .infer
+                .root(term)
+                .map_err(|e| self.error(node, e))?;
+            if self
+                .state
+                .projections
+                .data
+                .as_ref()
+                .is_some_and(|data| data.normalization_terms.contains(&root))
+            {
+                continue;
+            }
+            self.defer_normalization(node, scope, root)?;
         }
         Ok(())
     }
@@ -551,15 +600,18 @@ impl Checker<'_> {
                     .and_then(|d| d.equations.get(&id))
                     .copied()
                     .ok_or_else(|| self.error(body, "missing suspended body equation"))?;
+                let mut blocked_terms = Vec::new();
                 let outcome = self
                     .state
                     .infer
-                    .resume_equation(&self.facts.types, id)
+                    .resume_equation_blocked(&self.facts.types, id, Some(&mut blocked_terms))
                     .map_err(|e| self.error(node, e))?;
-                if outcome == Outcome::Complete
-                    && let Some(data) = &mut self.state.projections.data
-                {
-                    data.equations.remove(&id);
+                if outcome == Outcome::Complete {
+                    if let Some(data) = &mut self.state.projections.data {
+                        data.equations.remove(&id);
+                    }
+                } else {
+                    self.defer_blocked_normalizations(node, ScopeId::ROOT, blocked_terms)?;
                 }
                 resumed = true;
             }
@@ -711,10 +763,25 @@ impl Checker<'_> {
                         let Task::Normalize { input, output } = query.task else {
                             return Err(self.error(node, "symbolic result was already published"));
                         };
-                        self.state
+                        if self
+                            .state
                             .infer
-                            .publish_projection(&self.facts.types, output, result)
-                            .map_err(|e| self.error(node, e))?;
+                            .is_projection_root(&self.facts.types, output)
+                            .map_err(|e| self.error(node, e))?
+                        {
+                            self.state
+                                .infer
+                                .publish_projection(&self.facts.types, output, result)
+                                .map_err(|e| self.error(node, e))?;
+                        } else {
+                            self.deferred_equation_in_scope(
+                                node,
+                                query.scope,
+                                output,
+                                result,
+                                Relation::Equality,
+                            )?;
+                        }
                         query.task = Task::Symbolic { input, output };
                         proof
                             .retain_body(self.facts, self.state.body, self.key(node))
@@ -779,7 +846,7 @@ impl Checker<'_> {
             }
         }
         if let Some((input, output)) = published {
-            self.deferred_equation(node, input, output, Relation::Equality)?;
+            self.deferred_equation_in_scope(node, query.scope, input, output, Relation::Equality)?;
         }
         proof
             .retain_body(self.facts, self.state.body, self.key(node))

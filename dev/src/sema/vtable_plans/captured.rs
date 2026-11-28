@@ -19,9 +19,9 @@ pub(crate) struct Captured {
 pub(crate) fn captured_permissions(
     facts: &mut Declarations,
     object: TypeId,
-) -> Result<[bool; 2], &'static str> {
+) -> Result<[bool; 3], &'static str> {
     let (bounds, steps) = object_bounds::get(facts, object)?;
-    let mut permissions = [false; 2];
+    let mut permissions = [false; 3];
     for &clause in &bounds.applications {
         let predicate = object_bounds::graph::quantified_value(&facts.types, clause)?;
         let Some((parent, _)) = predicate.bound.trait_parts() else {
@@ -38,7 +38,8 @@ pub(crate) fn captured_permissions(
         {
             Some(CallTrait::Fn) => permissions[0] = true,
             Some(CallTrait::FnMut) => permissions[1] = true,
-            _ => {}
+            Some(CallTrait::FnOnce) => permissions[2] = true,
+            None => {}
         }
     }
     facts.body_work.canonical_steps += steps + bounds.applications.len();
@@ -48,7 +49,7 @@ pub(crate) fn captured_permissions(
 pub(crate) fn prepare_captured(
     facts: &mut Declarations,
     concrete: TypeId,
-    entries: [Option<Captured>; 2],
+    entries: [Option<Captured>; 3],
 ) -> Result<(), &'static str> {
     // Validate every descriptor before publishing any physical target. Its leaf
     // instance and complete reference Self are intentionally distinct identities.
@@ -64,7 +65,7 @@ pub(crate) fn prepare_captured(
         };
         // A returned `impl Fn` stays the conversion's source Self, while its
         // entries name the closure that stores it.
-        if checked != facts.types.storage_head(concrete)? || entry.requested == CallTrait::FnOnce {
+        if checked != facts.types.storage_head(concrete)? {
             return Err("captured table entry differs from its checked source conversion");
         }
     }
@@ -89,16 +90,17 @@ pub(super) fn target(
     let Method::Callable(kind) = method else {
         return Err("captured callable target has a declared method slot");
     };
-    if kind == CallTrait::FnOnce {
-        return Ok(None);
-    }
-    facts
+    let found = facts
         .objects
         .storage
         .as_ref()
         .and_then(|storage| storage.captured_targets.get(&(concrete, kind)))
         .copied()
-        .map(Target::Captured)
+        .map(Target::Captured);
+    if kind == CallTrait::FnOnce {
+        return Ok(found);
+    }
+    found
         .map(Some)
         .ok_or("captured object target lacks checked conversion entry evidence")
 }

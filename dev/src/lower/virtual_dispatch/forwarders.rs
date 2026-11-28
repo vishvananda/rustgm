@@ -15,6 +15,7 @@ use crate::{
 #[derive(Default)]
 pub(in crate::lower) struct Callables {
     entries: HashMap<(Callable, Option<CallTrait>), SymbolId>,
+    once_entries: HashMap<(TypeId, SymbolId), SymbolId>,
     pub(super) members: HashMap<crate::sema::vtable_plans::Member, SymbolId>,
     calls: HashMap<(ShapeId, u32, u32), SymbolId>,
 }
@@ -132,6 +133,99 @@ impl Context<'_> {
         self.object_callables
             .get_or_insert_with(Default::default)
             .entries
+            .insert(key, symbol);
+        Ok(symbol)
+    }
+
+    /// Adapt a by-value captured `FnOnce` entry to the pointer-receiving vtable slot ABI.
+    pub(in crate::lower) fn demand_captured_once(
+        &mut self,
+        concrete: TypeId,
+        entry: crate::sema::vtable_plans::Captured,
+    ) -> Result<SymbolId, &'static str> {
+        let target = self.demand_captured(entry)?;
+        let load_ty = match self.representation(concrete)? {
+            Representation::Object(_) => return Ok(target),
+            Representation::Scalar(Type::Void) => None,
+            Representation::Scalar(ty) => Some(ty),
+            Representation::ScalarObject(storage) => Some(storage.ty),
+        };
+        let key = (concrete, target);
+        if let Some(&symbol) = self
+            .object_callables
+            .as_ref()
+            .and_then(|s| s.once_entries.get(&key))
+        {
+            return Ok(symbol);
+        }
+        let Some(Kind::Function { result, .. }) = self.types.kind(entry.execution) else {
+            return Err("captured FnOnce entry lacks its execution signature");
+        };
+        let receiver_index = usize::from(matches!(
+            self.representation(result)?,
+            Representation::Object(_)
+        ));
+        let target_sig = self
+            .output
+            .symbols
+            .get(target.0 as usize)
+            .ok_or("missing captured FnOnce target symbol")?
+            .signature;
+        let (target_result, target_noreturn) = {
+            let native = self.output.scalar_signature(target_sig)?;
+            (native.result, native.noreturn)
+        };
+        let mut slot_params = self.output.parameters(target_sig)?.to_vec();
+        if load_ty.is_some() {
+            let slot = slot_params
+                .get_mut(receiver_index)
+                .ok_or("captured FnOnce target lacks its scalar receiver")?;
+            *slot = Type::Ptr;
+        } else {
+            if receiver_index > slot_params.len() {
+                return Err("captured FnOnce target lacks its sret slot");
+            }
+            slot_params.insert(receiver_index, Type::Ptr);
+        }
+        let slot_sig = self
+            .output
+            .signature(&slot_params, target_result, target_noreturn)?;
+        let index = self
+            .object_callables
+            .as_ref()
+            .map_or(0, |s| s.once_entries.len());
+        let symbol = self.output.declare(
+            self.internal_name(format!("rg.callable.once.{index}")),
+            slot_sig,
+            false,
+        )?;
+        let mut builder = Builder::default();
+        let block = builder.block()?;
+        builder.enter(block)?;
+        let mut arguments = parameters(&self.output, slot_sig)?;
+        if let Some(ty) = load_ty {
+            let pointer = *arguments
+                .get(receiver_index)
+                .ok_or("captured FnOnce slot lacks its receiver pointer")?;
+            arguments[receiver_index] = builder.load(ty, pointer.operand)?;
+        } else {
+            arguments.remove(receiver_index);
+        }
+        let value = builder.call(
+            target_sig,
+            target_result,
+            Operand::Symbol(target),
+            &arguments,
+        )?;
+        builder.terminate(if target_noreturn {
+            Terminator::Unreachable
+        } else {
+            Terminator::Return(value)
+        })?;
+        self.output.define(symbol, builder.finish()?)?;
+        self.object_callables
+            .get_or_insert_with(Default::default)
+            .once_entries
             .insert(key, symbol);
         Ok(symbol)
     }

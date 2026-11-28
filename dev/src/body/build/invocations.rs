@@ -64,20 +64,53 @@ impl Builder<'_> {
         callee: NodeId,
     ) -> Result<(), Error> {
         let place = self.pop_place(callee)?;
-        let Some(place) = place.filter(|_| self.current.is_some()) else {
+        let Some(mut place) = place.filter(|_| self.current.is_some()) else {
             return Ok(());
         };
         let selected = self
             .invocation(node)
             .ok_or_else(|| self.error(node, "missing call operator selection"))?;
-        let value = self.receiver_value(
+        let key = NodeKey {
             node,
-            place,
+            ..self.source
+        };
+        let access = if let Some(id) = self.facts.methods.invocation_operand(key) {
+            let plan = crate::sema::protocol_plans::checked(
+                self.report,
+                self.facts,
+                self.source,
+                key,
+                id,
+            )?;
+            if !matches!(
+                plan.kind,
+                crate::sema::protocol_plans::Kind::Invocation { .. }
+            ) {
+                return Err(self.error(node, "call callee received another actual protocol"));
+            }
+            place = self.access_call_place(
+                node,
+                place,
+                plan,
+                crate::sema::closures::AccessKind::Invocation,
+            )?;
+            true
+        } else {
+            false
+        };
+        let dereferences = if access {
+            selected.dereferences
+        } else {
             self.remaining_receiver_dereferences(
                 node,
                 crate::sema::closures::AccessKind::Invocation,
                 selected.dereferences,
-            )?,
+            )?
+        };
+        let value = self.receiver_value(
+            node,
+            place,
+            dereferences,
             selected.borrow,
             selected.receiver,
             crate::body::ir::BorrowKind::TwoPhase,

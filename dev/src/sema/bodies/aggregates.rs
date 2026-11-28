@@ -130,7 +130,13 @@ impl Checker<'_> {
         }
         let unit = self.report.package.unit(self.state.file);
         let element = self.child(node, term, 0)?;
-        if self.head(node, element)?.is_none() {
+        self.advance_projections(node)?;
+        let element_unresolved = match self.state.infer.head(&self.facts.types, element) {
+            Ok(None) => true,
+            Ok(Some(_)) | Err(crate::types::infer::Error::Normalization) => false,
+            Err(error) => return Err(self.error(node, error)),
+        };
+        if element_unresolved {
             let mut common = None;
             for child in unit.configured.ast.list(elements) {
                 if !self.active(*child) {
@@ -157,7 +163,7 @@ impl Checker<'_> {
                 self.state.reference_expected.insert(*child);
             }
             reference_hint |= matches!(
-                self.head(*child, self.term(*child)?)?,
+                self.contextual_head(*child, self.term(*child)?)?,
                 Some(Constructor::Reference { .. })
             );
             self.coerce(*child, element)?;

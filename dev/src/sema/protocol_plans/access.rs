@@ -285,6 +285,10 @@ pub(in crate::sema) fn check_rows(
             matches!(syntax, crate::syntax::ast::Kind::Index { value, .. } if value == operand)
                 && indexed_receiver(facts, plan.node, receiver)
         }
+        super::Kind::Invocation { .. } => {
+            matches!(syntax, crate::syntax::ast::Kind::Call { callee, .. } if callee == operand)
+                && invoked_receiver(facts, plan.node, receiver)
+        }
         super::Kind::Receiver { call, .. } => {
             matches!(syntax,
                 crate::syntax::ast::Kind::MethodCall { receiver, .. }
@@ -405,6 +409,29 @@ fn indexed_receiver(
             .is_some_and(|borrow| {
                 matches!(facts.types.kind(borrow), Some(Kind::Reference { referent, .. }) if referent == receiver)
             }),
+    }
+}
+
+/// The place a call callee's Deref steps reach is the one its invocation reads
+/// or borrows.
+fn invoked_receiver(
+    facts: &super::super::model::Declarations,
+    node: NodeKey,
+    receiver: TypeId,
+) -> bool {
+    let Some(selected) = facts.invocations.get(&node) else {
+        return false;
+    };
+    if selected.dereferences != 0 {
+        return false;
+    }
+    if let Some(borrow) = selected.borrow {
+        matches!(
+            facts.types.kind(borrow),
+            Some(crate::types::Kind::Reference { referent, .. }) if referent == receiver
+        )
+    } else {
+        selected.receiver == receiver
     }
 }
 
@@ -602,9 +629,12 @@ pub(crate) fn conversion_call(
         .get(&node)
         .and_then(|row| row.plan);
     let indexed = facts.methods.index_operand(node);
-    for id in [conversion, indexed].into_iter().flatten() {
+    let invoked = facts.methods.invocation_operand(node);
+    for id in [conversion, indexed, invoked].into_iter().flatten() {
         let plan = id.current(facts, owner, node)?;
-        let (super::Kind::Coercion { steps, .. } | super::Kind::Index { steps, .. }) = plan.kind
+        let (super::Kind::Coercion { steps, .. }
+        | super::Kind::Index { steps, .. }
+        | super::Kind::Invocation { steps, .. }) = plan.kind
         else {
             return Err("reference conversion changed its actual protocol kind");
         };

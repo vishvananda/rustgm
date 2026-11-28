@@ -238,7 +238,7 @@ fn rejected_argument_work_and_storage_do_not_publish_policy_cache() -> TestResul
         .types
         .list(parameters)
         .ok_or("missing parameter list")?[0];
-    for (steps, retained_bytes) in [(4_000_000, 0), (0, 64_000_000)] {
+    for (steps, retained_bytes) in [(4_000_000, 0), (0, 256_000_000)] {
         let mut plans = Plans {
             steps,
             retained_bytes,

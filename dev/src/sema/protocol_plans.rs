@@ -32,6 +32,13 @@ pub(crate) enum Kind {
         dereferences: u32,
         steps: access::Range,
     },
+    /// A call callee's Deref steps; the call itself stays the node's operation.
+    Invocation {
+        operand: NodeId,
+        receiver: TypeId,
+        dereferences: u32,
+        steps: access::Range,
+    },
     Block {
         body: NodeId,
         from_output: Call,
@@ -70,6 +77,9 @@ impl Kind {
         if matches!(self, Self::Index { .. }) {
             return facts.methods.index_operand(node);
         }
+        if matches!(self, Self::Invocation { .. }) {
+            return facts.methods.invocation_operand(node);
+        }
         match facts.node(node)?.operation? {
             super::model::Operation::Field { plan, .. } => plan,
             super::model::Operation::MethodReceiver { plan }
@@ -100,6 +110,12 @@ impl Kind {
                 dereferences,
                 steps,
             }
+            | Self::Invocation {
+                operand,
+                receiver,
+                dereferences,
+                steps,
+            }
             | Self::Receiver {
                 operand,
                 receiver,
@@ -117,6 +133,7 @@ impl Plan {
             Kind::Field { steps, .. }
             | Kind::Coercion { steps, .. }
             | Kind::Index { steps, .. }
+            | Kind::Invocation { steps, .. }
             | Kind::Receiver { steps, .. } => {
                 let count = steps
                     .end
@@ -153,6 +170,7 @@ impl Plan {
                 Kind::Field { steps, .. }
                 | Kind::Coercion { steps, .. }
                 | Kind::Index { steps, .. }
+                | Kind::Invocation { steps, .. }
                 | Kind::Receiver { steps, .. },
                 _,
             ) => {

@@ -9,6 +9,13 @@ use crate::{
     support::retained,
 };
 
+#[derive(Clone, Copy)]
+pub(super) enum SidePlan {
+    Conversion,
+    Index,
+    Invocation,
+}
+
 impl Checker<'_> {
     pub(super) fn coercion_plan(&self, node: NodeId) -> Option<AccessPlanId> {
         self.state
@@ -70,7 +77,7 @@ impl Checker<'_> {
                 kind: OpenKind::Coercion { access, mutable },
             })?;
             let id = AccessPlanId::new(slot).map_err(|e| self.error(node, e))?;
-            self.retain_side_plan(node, id, false)?;
+            self.retain_side_plan(node, id, SidePlan::Conversion)?;
             id
         };
         let access = self.state.call_types.protocol_plans[id.index()]
@@ -211,13 +218,13 @@ impl Checker<'_> {
         .map_err(|e| self.error(node, e))
     }
 
-    /// A conversion or index-operand plan is found by its expression, beside
-    /// that expression's own selected operation.
+    /// A conversion, index-operand, or call-callee plan is found by its
+    /// expression, beside that expression's own selected operation.
     pub(super) fn retain_side_plan(
         &mut self,
         node: NodeId,
         id: AccessPlanId,
-        indexed: bool,
+        kind: SidePlan,
     ) -> Result<(), Error> {
         let rows = self
             .state
@@ -225,10 +232,10 @@ impl Checker<'_> {
             .access
             .as_deref()
             .ok_or_else(|| self.error(node, "reference conversion lost its discovery owner"))?;
-        let plans = if indexed {
-            &rows.indexes
-        } else {
-            &rows.conversions
+        let plans = match kind {
+            SidePlan::Conversion => &rows.conversions,
+            SidePlan::Index => &rows.indexes,
+            SidePlan::Invocation => &rows.invocations,
         };
         let growth =
             retained::Growth::map::<NodeId, AccessPlanId>(plans.len(), plans.capacity(), 1);
@@ -242,10 +249,10 @@ impl Checker<'_> {
         let rows = self.state.call_types.access.as_deref_mut().ok_or_else(|| {
             super::Declarations::error(report, source, "reference conversion owner disappeared")
         })?;
-        let plans = if indexed {
-            &mut rows.indexes
-        } else {
-            &mut rows.conversions
+        let plans = match kind {
+            SidePlan::Conversion => &mut rows.conversions,
+            SidePlan::Index => &mut rows.indexes,
+            SidePlan::Invocation => &mut rows.invocations,
         };
         plans.try_reserve(1).map_err(|_| {
             super::Declarations::error(report, source, "reference conversion allocation failed")

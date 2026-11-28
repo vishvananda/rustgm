@@ -17,14 +17,14 @@ pub(crate) fn terminal_pointee(types: &Store, ty: TypeId) -> Option<TypeId> {
     }
 }
 
-/// Find the array that supplies slice metadata for an already proved unsizing.
-/// Each enclosing struct keeps its owner and contributes its prepared last field.
-pub(crate) fn slice_terminal(
+/// Walk enclosing same-owner structs through their prepared last field to the
+/// terminal unsized pair (slice, trait object, or upcast).
+pub(crate) fn tail_terminal(
     types: &Store,
     aggregates: &Definitions,
     (mut source, mut target): (TypeId, TypeId),
     mut charge: impl FnMut() -> Result<(), &'static str>,
-) -> Result<Option<TypeId>, &'static str> {
+) -> Result<(TypeId, TypeId), &'static str> {
     let tail = |ty| {
         let shape = aggregates.shape(types, ty)?;
         shape
@@ -37,7 +37,6 @@ pub(crate) fn slice_terminal(
     loop {
         charge()?;
         match (types.kind(source), types.kind(target)) {
-            (Some(Kind::Array { .. }), Some(Kind::Slice(_))) => return Ok(Some(source)),
             (Some(Kind::Adt(a, _)), Some(Kind::Adt(b, _)))
                 if a == b
                     && aggregates
@@ -46,9 +45,25 @@ pub(crate) fn slice_terminal(
             {
                 (source, target) = (tail(source)?, tail(target)?);
             }
-            _ => return Ok(None),
+            _ => return Ok((source, target)),
         }
     }
+}
+
+/// Find the array that supplies slice metadata for an already proved unsizing.
+/// Each enclosing struct keeps its owner and contributes its prepared last field.
+pub(crate) fn slice_terminal(
+    types: &Store,
+    aggregates: &Definitions,
+    endpoints: (TypeId, TypeId),
+    charge: impl FnMut() -> Result<(), &'static str>,
+) -> Result<Option<TypeId>, &'static str> {
+    let (source, target) = tail_terminal(types, aggregates, endpoints, charge)?;
+    Ok(matches!(
+        (types.kind(source), types.kind(target)),
+        (Some(Kind::Array { .. }), Some(Kind::Slice(_)))
+    )
+    .then_some(source))
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

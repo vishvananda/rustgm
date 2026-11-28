@@ -86,6 +86,8 @@ pub(super) struct Pending {
     pub conversions: crate::support::hash::HashMap<NodeId, AccessPlanId>,
     /// Index operand plans coexist with the expression's own index selection.
     pub indexes: crate::support::hash::HashMap<NodeId, AccessPlanId>,
+    /// Call callee plans coexist with the expression's own invocation selection.
+    pub invocations: crate::support::hash::HashMap<NodeId, AccessPlanId>,
     /// Current inference roots, keyed by the actual Field source. No type is erased.
     visited: HashSet<(NodeId, TermId)>,
     /// The existing protocol-plan inventory is visited once, including resumes.
@@ -113,6 +115,9 @@ impl Checker<'_> {
                     || matches!(
                         open.kind,
                         super::protocol_control::OpenKind::Index {
+                            complete: false,
+                            ..
+                        } | super::protocol_control::OpenKind::Invocation {
                             complete: false,
                             ..
                         }
@@ -211,6 +216,10 @@ impl Checker<'_> {
             }
             super::protocol_control::OpenKind::Index { complete: true, .. } => {
                 matches!(self.kind(node), crate::syntax::ast::Kind::Index { value, .. } if value == field.operand)
+                    && field.field.is_none()
+            }
+            super::protocol_control::OpenKind::Invocation { complete: true, .. } => {
+                matches!(self.kind(node), crate::syntax::ast::Kind::Call { callee, .. } if callee == field.operand)
                     && field.field.is_none()
             }
             super::protocol_control::OpenKind::Receiver { .. } => {

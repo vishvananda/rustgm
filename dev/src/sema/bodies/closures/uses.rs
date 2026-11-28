@@ -412,17 +412,7 @@ impl Collector<'_> {
             }
             Kind::Call { callee, arguments } => {
                 self.list(checker, arguments);
-                let (kind, dereferences) = self.call_receiver(checker, node, callee)?;
-                self.pending.push(Work {
-                    node: callee,
-                    usage: match kind {
-                        Some(CallTrait::Fn) => Use::Shared,
-                        Some(CallTrait::FnMut) => Use::Mutable,
-                        _ => Use::Value,
-                    },
-                    dereferences,
-                    receiver: Some((node, AccessKind::Invocation)),
-                });
+                self.call(checker, node, callee)?;
             }
             Kind::Tuple(elements) | Kind::Array(elements) => self.list(checker, elements),
             Kind::MethodCall {

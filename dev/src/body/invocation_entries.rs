@@ -155,7 +155,7 @@ impl Entry {
 #[derive(Clone, Default)]
 pub struct Entries {
     values: HashMap<ValueId, Entry>,
-    conversions: HashMap<ValueId, [Option<Entry>; 2]>,
+    conversions: HashMap<ValueId, [Option<Entry>; 3]>,
     members: HashMap<ValueId, tupled::Member>,
     adapters: bool,
 }
@@ -167,7 +167,7 @@ impl Entries {
     pub fn get(&self, value: ValueId) -> Option<Entry> {
         self.values.get(&value).copied()
     }
-    pub(crate) fn conversion(&self, value: ValueId) -> Option<[Option<Entry>; 2]> {
+    pub(crate) fn conversion(&self, value: ValueId) -> Option<[Option<Entry>; 3]> {
         self.conversions.get(&value).copied()
     }
     /// The selected source call-trait member of a call operator on a nominal receiver.

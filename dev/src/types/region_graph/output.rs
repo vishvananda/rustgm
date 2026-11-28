@@ -43,25 +43,47 @@ impl Graph {
             return Err(Error::Identity.into());
         }
         let mut conditions = HashMap::default();
+        let mut indirect = Vec::new();
         let mut solver = Solver::new(&self);
         solver.charge_many(interface.len().saturating_add(longer_only.len()))?;
         solver.propagate(|longer, shorter, source| {
-            if (allowed.contains(&longer)
+            let longer_ok = allowed.contains(&longer)
                 || longer_allowed.contains(&longer)
-                || longer == Region::STATIC)
-                && (allowed.contains(&shorter) || shorter == Region::STATIC)
-            {
+                || longer == Region::STATIC;
+            if longer_ok && (allowed.contains(&shorter) || shorter == Region::STATIC) {
                 conditions
                     .entry((longer, shorter))
                     .and_modify(|previous: &mut u32| {
                         *previous = (*previous).min(source);
                     })
                     .or_insert(source);
+            } else if longer_ok {
+                indirect.push((longer, shorter, source));
             }
             // The complete reproof below still requires private obligations.
             // Existing scalar debts can discharge them through declared bounds.
             Ok(())
         })?;
+        if !indirect.is_empty() {
+            let mut upper_bounds: HashMap<Region, Option<Region>> = HashMap::default();
+            for (longer, shorter, source) in indirect {
+                let upper = if let Some(&cached) = upper_bounds.get(&shorter) {
+                    cached
+                } else {
+                    let found = assumed_upper_bound(&mut solver, interface, shorter)?;
+                    upper_bounds.insert(shorter, found);
+                    found
+                };
+                if let Some(upper) = upper {
+                    conditions
+                        .entry((longer, upper))
+                        .and_modify(|previous: &mut u32| {
+                            *previous = (*previous).min(source);
+                        })
+                        .or_insert(source);
+                }
+            }
+        }
         let prior = solver.steps;
         drop(solver);
         let mut conditions: Vec<_> = conditions
@@ -80,6 +102,50 @@ impl Graph {
             conditions,
         })
     }
+}
+
+/// Unique minimal non-`'static` interface region assumed to outlive `shorter`.
+/// Exporting `longer: upper` lets the caller discharge `longer: shorter` through
+/// the body's own assumption `upper: shorter`, as in `Scope<'scope, 'env: 'scope>`.
+fn assumed_upper_bound(
+    solver: &mut Solver<'_>,
+    interface: &[Region],
+    shorter: Region,
+) -> Result<Option<Region>, Error> {
+    let mut candidates = Vec::new();
+    for &region in interface {
+        if region != Region::STATIC && solver.entails(region, shorter)? {
+            candidates.push(region);
+        }
+    }
+    if candidates.is_empty() {
+        return Ok(None);
+    }
+    let mut minimal = Vec::new();
+    for &candidate in &candidates {
+        let mut is_minimal = true;
+        for &other in &candidates {
+            if candidate != other
+                && solver.entails(candidate, other)?
+                && !solver.entails(other, candidate)?
+            {
+                is_minimal = false;
+                break;
+            }
+        }
+        if is_minimal {
+            minimal.push(candidate);
+        }
+    }
+    let Some(&first) = minimal.first() else {
+        return Ok(None);
+    };
+    for &other in &minimal[1..] {
+        if !solver.entails(first, other)? || !solver.entails(other, first)? {
+            return Ok(None);
+        }
+    }
+    Ok(minimal.into_iter().min_by_key(|region| region.0))
 }
 
 #[cfg(test)]

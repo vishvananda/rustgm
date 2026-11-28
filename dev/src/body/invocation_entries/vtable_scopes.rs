@@ -22,7 +22,7 @@ pub(super) fn select(
     conversion: Conversion,
     count: u32,
     cursor: &mut ProofCursor,
-) -> Result<[Option<Entry>; 2], &'static str> {
+) -> Result<[Option<Entry>; 3], &'static str> {
     let first = cursor.first(facts, caller)?;
     let end = first
         .checked_add(count)

@@ -20,6 +20,11 @@ pub(super) enum OpenKind {
         access: super::access_paths::OpenAccess,
         complete: bool,
     },
+    /// A call callee's Deref steps; `complete` once its callable target is typed.
+    Invocation {
+        access: super::access_paths::OpenAccess,
+        complete: bool,
+    },
     Receiver {
         access: super::access_paths::OpenAccess,
         call: OpenCall,
@@ -78,6 +83,7 @@ impl OpenKind {
             Self::Field(access)
             | Self::ReceiverDiscovery(access)
             | Self::Index { access, .. }
+            | Self::Invocation { access, .. }
             | Self::Receiver { access, .. }
             | Self::Coercion { access, .. } => Some(access),
             _ => None,
@@ -88,6 +94,7 @@ impl OpenKind {
             Self::Field(access)
             | Self::ReceiverDiscovery(access)
             | Self::Index { access, .. }
+            | Self::Invocation { access, .. }
             | Self::Receiver { access, .. }
             | Self::Coercion { access, .. } => Some(access),
             _ => None,
@@ -105,8 +112,13 @@ impl OpenKind {
                 .ok_or("method receiver call count overflow"),
             Self::Index {
                 complete: false, ..
+            }
+            | Self::Invocation {
+                complete: false, ..
             } => Err("index operand discovery is unfinished"),
-            Self::Coercion { access, .. } | Self::Index { access, .. } => access.steps.len(),
+            Self::Coercion { access, .. }
+            | Self::Index { access, .. }
+            | Self::Invocation { access, .. } => access.steps.len(),
             Self::Field(field) => {
                 let count = field.steps.len()?;
                 if count == 0 || field.field.is_none() || field.calls.is_none() {
@@ -132,6 +144,7 @@ impl OpenKind {
             Self::Field(_)
             | Self::ReceiverDiscovery(_)
             | Self::Index { .. }
+            | Self::Invocation { .. }
             | Self::Receiver { .. }
             | Self::Coercion { .. } => {
                 return Err(

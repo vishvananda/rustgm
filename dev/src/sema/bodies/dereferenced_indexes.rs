@@ -156,7 +156,7 @@ impl Checker<'_> {
                 },
             })?;
             let id = AccessPlanId::new(slot).map_err(|e| self.error(node, e))?;
-            return self.retain_side_plan(node, id, true);
+            return self.retain_side_plan(node, id, super::deref_coercions::SidePlan::Index);
         };
         match self
             .state

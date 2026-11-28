@@ -207,7 +207,7 @@ impl Checker<'_> {
             .apply_normalization(&mut self.facts.types, target, ty)
             .map_err(|e| self.error(node, e))?;
         if let Some((input, output)) = published {
-            self.deferred_equation(node, input, output, Relation::Equality)?;
+            self.deferred_equation_in_scope(node, query.scope, input, output, Relation::Equality)?;
         }
         evidence
             .publish(self.facts, self.state.body, self.key(node))

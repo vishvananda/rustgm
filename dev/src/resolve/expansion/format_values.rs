@@ -1,7 +1,90 @@
 //! A literal result is tied to its authenticated formatter declaration and call.
 use super::{Body, Builtin, Engine, Error, NodeId, Report, Sources};
-use crate::{expand::builtin, resolve::unit::NodeKey, syntax::ast::Kind};
+use crate::{
+    expand::builtin,
+    lex::token::Punctuation,
+    literal::{Value, value::IntegerType},
+    resolve::unit::{NodeKey, Unit},
+    support::hash::HashMap,
+    syntax::{ast::Kind, token_tree::error},
+};
+use std::borrow::Cow;
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn fold_literal_format(
+        &self,
+        index: usize,
+        root: NodeId,
+        newline: bool,
+    ) -> Result<Option<String>, Error> {
+        let call = &self.calls[index];
+        let unit = self.loader.package.unit(call.file);
+        let ast = &unit.configured.ast;
+        let Kind::Expansion {
+            children,
+            tail: None,
+        } = ast.node(root).kind
+        else {
+            return Ok(None);
+        };
+        let list = ast.list(children);
+        let Some((&first, tail)) = list.split_first() else {
+            return Ok(None);
+        };
+        if tail.is_empty() {
+            return Ok(None);
+        }
+        let Kind::Literal(template_literal) = ast.node(first).kind else {
+            return Ok(None);
+        };
+        let Value::String(template_bytes) = unit
+            .literal(template_literal)
+            .map_err(|e| Error::at(call.file, e.offset, e.message))?
+        else {
+            return Ok(None);
+        };
+        let Ok(template) = std::str::from_utf8(&template_bytes) else {
+            return Ok(None);
+        };
+        for &entry in tail {
+            let value_node = match ast.node(entry).kind {
+                Kind::Binary {
+                    op: Punctuation::Equal,
+                    right,
+                    ..
+                } => right,
+                _ => entry,
+            };
+            if !matches!(ast.node(value_node).kind, Kind::Literal(_)) {
+                return Ok(None);
+            }
+        }
+        let source = self
+            .loader
+            .package
+            .require_format_contracts()
+            .map_err(|message| call.diagnostic(message))?;
+        source
+            .charge(
+                template.len().saturating_add(tail.len()).saturating_add(1),
+                0,
+            )
+            .map_err(|message| call.diagnostic(message))?;
+        let original = ast.node(call.visit.node).span;
+        let payer = |steps, bytes| {
+            source
+                .charge(steps, bytes)
+                .map_err(|message| error(original.start, message))
+        };
+        let actual =
+            super::argument_bindings::collect(unit, call.file, root, call.capture, &payer)?;
+        let Some(pieces) = collect_literal_pieces(unit, call.file, &actual.values)? else {
+            return Ok(None);
+        };
+        let Some(named) = index_named_arguments(&actual.names) else {
+            return Ok(None);
+        };
+        Ok(render_folded_template(template, &pieces, &named, newline))
+    }
     pub(super) fn format_literal_value(
         &mut self,
         index: usize,
@@ -22,11 +105,18 @@ impl<S: Sources> Engine<'_, S> {
                 .map_err(|message| call.diagnostic(message))?,
         );
         let config = self.loader.package.crate_config(self.config, file).1;
-        let source = self
-            .loader
-            .package
-            .require_format_contracts()
-            .map_err(|message| Error::at(file, 0, message))?;
+        let newline = role == Builtin::FormatArgsNl;
+        if let Some(folded) = self.fold_literal_format(index, root, newline)? {
+            self.charge_literal_expansion(folded.len(), file)?;
+            let constructor = self
+                .loader
+                .package
+                .names
+                .intern("from_str")
+                .map_err(|message| Error::at(file, 0, message))?;
+            return builtin::format_literal::expand_text(folded, constructor, grammar, config)
+                .map_err(|e| Error::at(file, e.offset, e.message));
+        }
         let unit = &self.loader.package.units[file.0 as usize];
         let Kind::Expansion {
             children,
@@ -51,42 +141,177 @@ impl<S: Sources> Engine<'_, S> {
         };
         let value = unit
             .literal(literal)
-            .map_err(|error| Error::at(file, error.offset, error.message))?;
-        let crate::literal::Value::String(bytes) = value else {
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+        let Value::String(bytes) = value else {
             return Err(Error::at(
                 file,
                 0,
                 "formatting requires an actual string literal",
             ));
         };
-        source
-            .charge(
-                bytes.len().saturating_mul(3).saturating_add(1),
-                bytes
-                    .len()
-                    .saturating_add(1)
-                    .saturating_mul(32)
-                    .saturating_add(8 * size_of::<crate::syntax::ast::Node>())
-                    .saturating_add(size_of::<builtin::Expansion>() + 512),
-            )
-            .map_err(|message| Error::at(file, 0, message))?;
+        let byte_len = bytes.len();
+        self.charge_literal_expansion(byte_len, file)?;
         let constructor = self
             .loader
             .package
             .names
             .intern("from_str")
             .map_err(|message| Error::at(file, 0, message))?;
+        let unit = &self.loader.package.units[file.0 as usize];
         builtin::format_literal::expand(
             &unit.configured.ast,
             root,
             |literal| unit.literal(literal),
-            role == Builtin::FormatArgsNl,
+            newline,
             constructor,
             grammar,
             config,
         )
-        .map_err(|error| Error::at(file, error.offset, error.message))
+        .map_err(|e| Error::at(file, e.offset, e.message))
     }
+    fn charge_literal_expansion(&self, len: usize, file: super::FileId) -> Result<(), Error> {
+        self.loader
+            .package
+            .require_format_contracts()
+            .map_err(|message| Error::at(file, 0, message))?
+            .charge(
+                len.saturating_mul(3).saturating_add(1),
+                len.saturating_add(1)
+                    .saturating_mul(32)
+                    .saturating_add(8 * size_of::<crate::syntax::ast::Node>())
+                    .saturating_add(size_of::<builtin::Expansion>() + 512),
+            )
+            .map_err(|message| Error::at(file, 0, message))
+    }
+}
+fn collect_literal_pieces<'a>(
+    unit: &'a Unit,
+    file: super::FileId,
+    values: &[NodeId],
+) -> Result<Option<Vec<Cow<'a, str>>>, Error> {
+    let mut pieces = Vec::with_capacity(values.len());
+    for &node in values {
+        let Kind::Literal(literal) = unit.configured.ast.node(node).kind else {
+            return Ok(None);
+        };
+        match unit
+            .literal(literal)
+            .map_err(|e| Error::at(file, e.offset, e.message))?
+        {
+            Value::String(bytes) => {
+                let Ok(text) = (match bytes {
+                    Cow::Borrowed(slice) => std::str::from_utf8(slice).map(Cow::Borrowed),
+                    Cow::Owned(owned) => String::from_utf8(owned)
+                        .map(Cow::Owned)
+                        .map_err(|e| e.utf8_error()),
+                }) else {
+                    return Ok(None);
+                };
+                pieces.push(text);
+            }
+            Value::Integer(integer) => {
+                let target_type = integer.suffix.unwrap_or(IntegerType::I32);
+                let Ok(materialized) = integer.materialize(target_type, false) else {
+                    return Ok(None);
+                };
+                if materialized.overflow {
+                    return Ok(None);
+                }
+                pieces.push(Cow::Owned(integer.magnitude.to_string()));
+            }
+            _ => return Ok(None),
+        }
+    }
+    Ok(Some(pieces))
+}
+fn index_named_arguments<'a>(names: &'a [Option<Cow<'a, str>>]) -> Option<HashMap<&'a str, usize>> {
+    let mut map = HashMap::default();
+    let mut seen_named = false;
+    for (ordinal, label) in names.iter().enumerate() {
+        if let Some(label) = label {
+            seen_named = true;
+            if map.insert(label.as_ref(), ordinal).is_some() {
+                return None;
+            }
+        } else if seen_named {
+            return None;
+        }
+    }
+    Some(map)
+}
+fn render_folded_template(
+    template: &str,
+    pieces: &[Cow<'_, str>],
+    named: &HashMap<&str, usize>,
+    newline: bool,
+) -> Option<String> {
+    let mut output = String::with_capacity(template.len().saturating_add(usize::from(newline)));
+    let mut used = vec![false; pieces.len()];
+    let mut implicit = 0usize;
+    let mut chars = template.chars();
+    while let Some(character) = chars.next() {
+        match character {
+            '{' => {
+                if chars.clone().next() == Some('{') {
+                    chars.next();
+                    output.push('{');
+                    continue;
+                }
+                let start = chars.as_str();
+                let mut found_end = false;
+                let mut spec_len = 0usize;
+                for inner in chars.by_ref() {
+                    if inner == '}' {
+                        found_end = true;
+                        break;
+                    }
+                    if inner == '{' {
+                        return None;
+                    }
+                    spec_len += inner.len_utf8();
+                }
+                if !found_end {
+                    return None;
+                }
+                let spec = &start[..spec_len];
+                let selector = spec.strip_suffix(':').unwrap_or(spec);
+                if selector.contains(':') {
+                    return None;
+                }
+                let ordinal = if selector.is_empty() {
+                    let current = implicit;
+                    implicit += 1;
+                    current
+                } else if selector.bytes().all(|byte| byte.is_ascii_digit()) {
+                    selector.parse::<usize>().ok()?
+                } else if unicode_normalization::is_nfc(selector) {
+                    *named.get(selector)?
+                } else {
+                    return None;
+                };
+                if ordinal >= pieces.len() {
+                    return None;
+                }
+                used[ordinal] = true;
+                output.push_str(&pieces[ordinal]);
+            }
+            '}' => {
+                if chars.next() == Some('}') {
+                    output.push('}');
+                } else {
+                    return None;
+                }
+            }
+            other => output.push(other),
+        }
+    }
+    if used.iter().any(|&flag| !flag) {
+        return None;
+    }
+    if newline {
+        output.push('\n');
+    }
+    Some(output)
 }
 impl Report {
     /// Charge the cold semantic continuation through the existing resolver-owned

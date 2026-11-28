@@ -370,7 +370,7 @@ fn account_work(steps: &mut usize, work: usize) -> Result<(), &'static str> {
 fn storage(retained: &mut usize, bytes: usize) -> Result<(), &'static str> {
     *retained = retained
         .checked_add(bytes)
-        .filter(|&n| n <= 64_000_000)
+        .filter(|&n| n <= 256_000_000)
         .ok_or("C ABI classification exceeds retained budget")?;
     Ok(())
 }

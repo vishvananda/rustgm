@@ -5,6 +5,7 @@ mod asm_invocations;
 mod assertions;
 mod bit_intrinsics;
 mod boxed_write_call;
+mod math_intrinsics;
 mod sign_bits;
 pub(super) use boxed_write_call::checked as checked_boxed_write;
 mod bulk_memory;
@@ -660,6 +661,23 @@ impl Lower<'_, '_, '_> {
     )]
     fn evaluate(&mut self, id: ir::ValueId) -> Result<Selected, &'static str> {
         let value = &self.body.values[id.0 as usize];
+        if matches!(
+            self.context.types.kind(value.ty),
+            Some(Kind::Dynamic { .. })
+        ) {
+            match value.kind {
+                Rvalue::Read(place) => {
+                    let data = self
+                        .place(place)?
+                        .ok_or("unsized object read has no data pointer")?;
+                    let pointer = self.pointer(data)?;
+                    let metadata = self.metadata(place)?;
+                    return self.wide_pointer(pointer, metadata);
+                }
+                Rvalue::Constrain(operand) => return self.value(operand),
+                _ => {}
+            }
+        }
         let representation = self.context.representation(value.ty)?;
         let ty = representation.result();
         let runtime = match value.kind {

@@ -60,9 +60,13 @@ fn reference_tables_retain_complete_self_and_checked_adapters() -> Result {
                 .and_then(|p| p.first())
                 .copied()
                 .ok_or("no receiver")?;
-            assert!(
-                matches!(facts.types.kind(receiver), Some(Kind::Reference { referent, mutable, .. }) if referent == adapter.receiver() && mutable == (entry.requested == CallTrait::FnMut))
-            );
+            if entry.requested == CallTrait::FnOnce {
+                assert_eq!(receiver, adapter.receiver());
+            } else {
+                assert!(
+                    matches!(facts.types.kind(receiver), Some(Kind::Reference { referent, mutable, .. }) if referent == adapter.receiver() && mutable == (entry.requested == CallTrait::FnMut))
+                );
+            }
             let count = facts
                 .objects
                 .storage
@@ -71,12 +75,14 @@ fn reference_tables_retain_complete_self_and_checked_adapters() -> Result {
                 .captured_targets
                 .len();
             assert!(
-                prepare_captured(&mut facts, entry.instance.ty(), [Some(entry), None]).is_err()
+                prepare_captured(&mut facts, entry.instance.ty(), [Some(entry), None, None])
+                    .is_err()
             );
             let mut changed = entry;
             changed.adapter = None;
             assert!(
-                prepare_captured(&mut facts, adapter.receiver(), [Some(changed), None]).is_err()
+                prepare_captured(&mut facts, adapter.receiver(), [Some(changed), None, None])
+                    .is_err()
             );
             changed = entry;
             changed.requested = if entry.requested == CallTrait::Fn {
@@ -85,7 +91,8 @@ fn reference_tables_retain_complete_self_and_checked_adapters() -> Result {
                 CallTrait::Fn
             };
             assert!(
-                prepare_captured(&mut facts, adapter.receiver(), [Some(changed), None]).is_err()
+                prepare_captured(&mut facts, adapter.receiver(), [Some(changed), None, None])
+                    .is_err()
             );
             assert_eq!(
                 facts

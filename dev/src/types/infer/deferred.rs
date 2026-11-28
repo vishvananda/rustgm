@@ -120,6 +120,15 @@ impl Context {
         Ok(self.is_projection(store, term)? && self.opaque_projection(term).is_none())
     }
 
+    pub(crate) fn is_projection_root(
+        &mut self,
+        store: &Store,
+        term: TermId,
+    ) -> Result<bool, Error> {
+        let root = self.root(term)?;
+        self.is_projection(store, root)
+    }
+
     pub(super) fn is_projection(&self, store: &Store, term: TermId) -> Result<bool, Error> {
         Ok(match self.terms[term.0 as usize].value {
             Value::Known(ty) => match store.kind(ty).ok_or(Error::InvalidIdentity)? {
@@ -162,6 +171,17 @@ impl Context {
         right: TermId,
         relation: Relation,
     ) -> Result<Outcome, Error> {
+        self.equate_deferred_blocked(store, left, right, relation, None)
+    }
+
+    pub(crate) fn equate_deferred_blocked(
+        &mut self,
+        store: &Store,
+        left: TermId,
+        right: TermId,
+        relation: Relation,
+        blocked_terms: Option<&mut Vec<TermId>>,
+    ) -> Result<Outcome, Error> {
         let mut blocked = Vec::new();
         self.unify(
             store,
@@ -187,7 +207,7 @@ impl Context {
             queued: false,
         });
         storage.pending += 1;
-        self.block_equation(store, id, blocked)?;
+        self.block_equation(store, id, blocked, blocked_terms)?;
         Ok(Outcome::Pending(id))
     }
 
@@ -228,9 +248,12 @@ impl Context {
         store: &Store,
         id: EquationId,
         blocked: Vec<(TermId, TermId)>,
+        mut blocked_terms: Option<&mut Vec<TermId>>,
     ) -> Result<(), Error> {
         self.account_work(blocked.len())?;
         for (left, right) in blocked {
+            let left = self.root(left)?;
+            let right = self.root(right)?;
             let first = self.needs_normalization(store, left)?;
             let second = self.needs_normalization(store, right)?;
             let storage = &mut self
@@ -248,9 +271,15 @@ impl Context {
             storage.equations[id.0 as usize].remaining += 1;
             if first {
                 storage.waiting.entry(left).or_default().push(index);
+                if let Some(terms) = blocked_terms.as_deref_mut() {
+                    terms.push(left);
+                }
             }
             if second {
                 storage.waiting.entry(right).or_default().push(index);
+                if let Some(terms) = blocked_terms.as_deref_mut() {
+                    terms.push(right);
+                }
             }
         }
         Ok(())
@@ -262,6 +291,15 @@ impl Context {
     /// # Errors
     /// Rejects completed/invalid tickets, ordinary mismatches and exhausted work.
     pub fn resume_equation(&mut self, store: &Store, id: EquationId) -> Result<Outcome, Error> {
+        self.resume_equation_blocked(store, id, None)
+    }
+
+    pub(crate) fn resume_equation_blocked(
+        &mut self,
+        store: &Store,
+        id: EquationId,
+        blocked_terms: Option<&mut Vec<TermId>>,
+    ) -> Result<Outcome, Error> {
         let storage = &mut self
             .dependencies
             .as_mut()
@@ -296,7 +334,7 @@ impl Context {
                 Some(&mut blocked),
             )?;
         }
-        self.block_equation(store, id, blocked)?;
+        self.block_equation(store, id, blocked, blocked_terms)?;
         let storage = &mut self
             .dependencies
             .as_mut()

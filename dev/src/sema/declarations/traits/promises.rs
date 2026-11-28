@@ -182,7 +182,7 @@ impl Checker<'_> {
             let key = self.report.resolution.definitions[item.0 as usize]
                 .node
                 .or_else(|| self.facts.associated.language_origin(definition));
-            let error = |message| {
+            let error = |message: &'static str| {
                 key.map_or_else(|| Error::unlocated(message), |key| self.error(key, message))
             };
             let predicates = header.inputs.view();

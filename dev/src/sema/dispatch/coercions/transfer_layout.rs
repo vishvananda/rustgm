@@ -5,7 +5,7 @@ use crate::{
     types::{
         ItemId, Kind, TypeId,
         aggregate::{self, MetadataPreparation},
-        unsizing::{CoercionPlan, CoercionSpan, CoercionStep, slice_terminal, terminal_pointee},
+        unsizing::{CoercionPlan, CoercionSpan, CoercionStep, tail_terminal, terminal_pointee},
     },
 };
 
@@ -157,26 +157,7 @@ fn step(
     ) else {
         return Err("nominal changed field lacks its checked physical conversion profile");
     };
-    let heads = (types.kind(a), types.kind(b));
-    if let (Some(Kind::Dynamic { .. }), Some(Kind::Dynamic { .. })) = heads {
-        return Ok(CoercionStep::Upcast {
-            source: a,
-            target: b,
-        });
-    }
-    // The selected `Unsize` proof made `a` a sized implementor of `b`.
-    if let (Some(kind), Some(Kind::Dynamic { .. })) = heads
-        && !matches!(
-            kind,
-            Kind::Dynamic { .. } | Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str)
-        )
-    {
-        return Ok(CoercionStep::Object {
-            concrete: a,
-            object: b,
-        });
-    }
-    if let (Some(Kind::Adt(from, _)), Some(Kind::Adt(to, _))) = heads
+    if let (Some(Kind::Adt(from, _)), Some(Kind::Adt(to, _))) = (types.kind(a), types.kind(b))
         && from == to
     {
         for ty in [a, b] {
@@ -189,9 +170,30 @@ fn step(
             }
         }
     }
-    slice_terminal(&facts.types, &facts.aggregates, (a, b), || {
+    let (leaf_a, leaf_b) = tail_terminal(&facts.types, &facts.aggregates, (a, b), || {
         facts.charge_caller_inputs(1, 0)
-    })?
-    .map(CoercionStep::Slice)
-    .ok_or("nominal pointer terminal requires its wider checked conversion profile")
+    })?;
+    let heads = (facts.types.kind(leaf_a), facts.types.kind(leaf_b));
+    if let (Some(Kind::Dynamic { .. }), Some(Kind::Dynamic { .. })) = heads {
+        return Ok(CoercionStep::Upcast {
+            source: leaf_a,
+            target: leaf_b,
+        });
+    }
+    // The selected `Unsize` proof made `leaf_a` a sized implementor of `leaf_b`.
+    if let (Some(kind), Some(Kind::Dynamic { .. })) = heads
+        && !matches!(
+            kind,
+            Kind::Dynamic { .. } | Kind::Slice(_) | Kind::Primitive(crate::types::Primitive::Str)
+        )
+    {
+        return Ok(CoercionStep::Object {
+            concrete: leaf_a,
+            object: leaf_b,
+        });
+    }
+    if matches!(heads, (Some(Kind::Array { .. }), Some(Kind::Slice(_)))) {
+        return Ok(CoercionStep::Slice(leaf_a));
+    }
+    Err("nominal pointer terminal requires its wider checked conversion profile")
 }

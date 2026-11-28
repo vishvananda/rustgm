@@ -1070,7 +1070,11 @@ impl Checker<'_> {
                         return Ok(Some(dependency));
                     }
                 }
-                Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
+                Work::CallArguments(node, expected) => {
+                    if let Some(dependency) = self.call_arguments(node, expected)? {
+                        return Ok(Some(dependency));
+                    }
+                }
                 work @ Work::RefineCallResult(call) => {
                     if let Some(dependency) = self.refine_call_result(call)? {
                         self.state.work.push(work);
@@ -1752,6 +1756,7 @@ impl Checker<'_> {
                 return Ok(());
             }
             Kind::Call { callee, .. } => {
+                self.prepare_language_receiver(callee)?;
                 self.state.work.push(Work::CallArguments(node, expectation));
                 self.state.work.push(Work::Enter(callee, None));
                 return Ok(());
@@ -2592,34 +2597,54 @@ impl Checker<'_> {
         }
         Ok(None)
     }
-    fn call_arguments(&mut self, node: NodeId, expectation: Expectation) -> Result<(), Error> {
+    fn call_arguments(
+        &mut self,
+        node: NodeId,
+        expectation: Expectation,
+    ) -> Result<Option<Dependency>, Error> {
         let Kind::Call { callee, arguments } = self.kind(node) else {
             return Err(self.error(node, "invalid call work"));
         };
-        let receiver = self.term(callee)?;
-        self.invoked_value_obligations(node, receiver)?;
-        let mut term = receiver;
-        let constructor = matches!(self.head(node, term)?,
-        Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))
-            if self.facts.members.constructor(DefId(item.0)).is_some_and(|variant| {
-                let owner = self.facts.members.variants[variant.0 as usize].owner;
-                self.facts.generics.parameters.contains_key(&DefId(owner.0))
-            }));
-        if matches!(
-            self.head(node, term)?,
-            Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
-        ) {
-            term = self.child(node, term, 0)?;
-        }
-        term = if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
-            self.retain_defining_member(node, callee, receiver)?;
-            self.call_signature_expected(node, term, expectation.hard())?
+        let (term, callable, constructor) = if self.invocation_plan(node).is_some() {
+            match self.invocation_signature(node, callee, arguments, expectation)? {
+                invocations::Progress::Ready { signature, callee } => (signature, callee, false),
+                invocations::Progress::Continue => return Ok(None),
+                invocations::Progress::Wait(dependency) => return Ok(Some(dependency)),
+            }
         } else {
-            self.invocation_signature(node, callee, arguments)?
+            let receiver = self.term(callee)?;
+            self.invoked_value_obligations(node, receiver)?;
+            let mut term = receiver;
+            let constructor = matches!(self.head(node, term)?,
+            Some(Constructor::FunctionItem(item, _) | Constructor::FunctionItemArgs(item, _))
+                if self.facts.members.constructor(DefId(item.0)).is_some_and(|variant| {
+                    let owner = self.facts.members.variants[variant.0 as usize].owner;
+                    self.facts.generics.parameters.contains_key(&DefId(owner.0))
+                }));
+            if matches!(
+                self.head(node, term)?,
+                Some(Constructor::FunctionItem(..) | Constructor::FunctionItemArgs(..))
+            ) {
+                term = self.child(node, term, 0)?;
+            }
+            if matches!(self.head(node, term)?, Some(Constructor::Function { .. })) {
+                self.retain_defining_member(node, callee, receiver)?;
+                let signature = self.call_signature_expected(node, term, expectation.hard())?;
+                (signature, receiver, constructor)
+            } else {
+                match self.invocation_signature(node, callee, arguments, expectation)? {
+                    invocations::Progress::Ready { signature, callee } => {
+                        (signature, callee, constructor)
+                    }
+                    invocations::Progress::Continue => return Ok(None),
+                    invocations::Progress::Wait(dependency) => return Ok(Some(dependency)),
+                }
+            }
         };
-        self.retain_active_call(node, term, receiver)?;
+        self.retain_active_call(node, term, callable)?;
         self.expect_call_result(node, term, expectation, constructor)?;
-        self.schedule_call_arguments(node, term, arguments, 0)
+        self.schedule_call_arguments(node, term, arguments, 0)?;
+        Ok(None)
     }
     fn schedule_call_arguments(
         &mut self,

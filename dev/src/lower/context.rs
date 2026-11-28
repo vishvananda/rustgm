@@ -764,11 +764,20 @@ impl<'a> Context<'a> {
         if matches!(result_type, Representation::Object(_)) {
             native.push(Type::Ptr);
         }
-        for parameter in self
+        for (index, parameter) in self
             .types
             .list(parameters)
             .ok_or("missing parameter list")?
+            .iter()
+            .enumerate()
         {
+            if index == 0
+                && convention == crate::types::callable::Convention::RUST_CALL
+                && matches!(self.types.kind(*parameter), Some(Kind::Dynamic { .. }))
+            {
+                native.push(Type::Ptr);
+                continue;
+            }
             let representation = self.representation(*parameter)?;
             self.require_unadjusted_scalar(convention, *parameter, representation)?;
             if convention.abi == crate::types::callable::Abi::C

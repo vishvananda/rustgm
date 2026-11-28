@@ -75,9 +75,16 @@ impl Flow<'_> {
         if !self.replacements.temporaries.contains_key(&value) {
             return Ok(());
         }
-        if inspect {
+        if inspect
+            && !self
+                .body
+                .promotions
+                .as_ref()
+                .is_some_and(|promotions| promotions.contains(value))
+        {
             // Replacing a pointer does not access its old referent. Borrowing
-            // the temporary's own storage still forbids overwriting that storage.
+            // the temporary's own storage still forbids overwriting that storage,
+            // except when promotion placed it in immutable static storage.
             self.access(
                 state,
                 Place::Temporary(value),

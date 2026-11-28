@@ -22,13 +22,7 @@ impl Checker<'_> {
         let Some(term) = expected else {
             return Ok((None, None));
         };
-        let (term, kind) = if let Some(signature) = self
-            .state
-            .opaque_callables
-            .as_deref()
-            .and_then(|signatures| signatures.get(&term))
-            .copied()
-        {
+        let (term, kind) = if let Some(signature) = self.opaque_callable_signature(node, term)? {
             let kind = self.opaque_closure_kind(node, term)?;
             let term = self.known(node, signature)?;
             (
@@ -70,6 +64,40 @@ impl Checker<'_> {
             }),
             kind,
         ))
+    }
+
+    fn opaque_callable_signature(
+        &mut self,
+        node: NodeId,
+        term: TermId,
+    ) -> Result<Option<TypeId>, Error> {
+        let Some(signatures) = self.state.opaque_callables.as_deref() else {
+            return Ok(None);
+        };
+        if let Some(&signature) = signatures.get(&term) {
+            return Ok(Some(signature));
+        }
+        let target = self
+            .state
+            .infer
+            .root(term)
+            .map_err(|e| self.error(node, e))?;
+        if let Some(&signature) = signatures.get(&target) {
+            return Ok(Some(signature));
+        }
+        for &(_, opaque) in &self.state.opaque_terms {
+            if let Some(&signature) = signatures.get(&opaque)
+                && self
+                    .state
+                    .infer
+                    .root(opaque)
+                    .map_err(|e| self.error(node, e))?
+                    == target
+            {
+                return Ok(Some(signature));
+            }
+        }
+        Ok(None)
     }
 
     /// Index a defining result's callable interface once. This contextual hint

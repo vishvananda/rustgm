@@ -15,7 +15,7 @@ pub(super) struct Conversion {
     concrete: TypeId,
     signature: TypeId,
     region: RegionId,
-    permissions: [bool; 2],
+    permissions: [bool; 3],
 }
 
 pub(super) fn select(
@@ -26,7 +26,7 @@ pub(super) fn select(
     operand: ValueId,
     conversion: unsizing::Conversion<TypeId>,
     proofs: &mut crate::body::instantiate::ProofCursor,
-) -> Result<Option<[Option<Entry>; 2]>, &'static str> {
+) -> Result<Option<[Option<Entry>; 3]>, &'static str> {
     let (concrete, object, nominal_region) = match conversion {
         unsizing::Conversion::Object { concrete, target } => (concrete, target, None),
         unsizing::Conversion::Nominal { source, target } => {
@@ -60,7 +60,13 @@ pub(super) fn select(
     if environment == TypeId::UNIT {
         return Ok(None);
     }
-    let permissions = crate::sema::vtable_plans::captured_permissions(facts, object)?;
+    let mut permissions = crate::sema::vtable_plans::captured_permissions(facts, object)?;
+    if nominal_region.is_none()
+        && let Some(operand_ty) = body.values.get(operand.0 as usize).map(|value| value.ty)
+        && matches!(facts.types.kind(operand_ty), Some(Kind::Reference { .. }))
+    {
+        permissions[2] = false;
+    }
     if !permissions.iter().any(|&required| required) {
         return Ok(None);
     }
@@ -77,10 +83,11 @@ pub(super) fn select(
             .get(operand.0 as usize)
             .ok_or("captured conversion has an invalid input")?
             .ty;
-        let Some(Kind::Reference { region, .. }) = facts.types.kind(ty) else {
-            return Err("captured object entry requires a checked reference conversion");
-        };
-        region
+        match facts.types.kind(ty) {
+            Some(Kind::Reference { region, .. }) => region,
+            Some(Kind::Pointer { .. }) => RegionId::STATIC,
+            _ => return Err("captured object entry requires a checked reference conversion"),
+        }
     };
     if body.source != contract.source {
         return Err("captured conversion differs from its lifetime owner");
@@ -121,21 +128,28 @@ impl Conversion {
         contract: &mut Contract,
         signature: TypeId,
         proofs: &mut crate::body::instantiate::ProofCursor,
-    ) -> Result<[Option<Entry>; 2], &'static str> {
+    ) -> Result<[Option<Entry>; 3], &'static str> {
         let Some(Kind::Function { result, .. }) = facts.types.kind(signature) else {
             return Err("captured object entry lacks its opened signature");
         };
-        let mut entries = [None; 2];
+        let mut entries = [None; 3];
         let source = contract.source;
-        for (index, kind) in [CallTrait::Fn, CallTrait::FnMut].into_iter().enumerate() {
+        for (index, kind) in [CallTrait::Fn, CallTrait::FnMut, CallTrait::FnOnce]
+            .into_iter()
+            .enumerate()
+        {
             if !self.permissions[index] {
                 continue;
             }
-            let receiver = facts.types.intern(Kind::Reference {
-                referent: self.concrete,
-                mutable: kind == CallTrait::FnMut,
-                region: self.region,
-            })?;
+            let receiver = if kind == CallTrait::FnOnce {
+                self.concrete
+            } else {
+                facts.types.intern(Kind::Reference {
+                    referent: self.concrete,
+                    mutable: kind == CallTrait::FnMut,
+                    region: self.region,
+                })?
+            };
             let selected = call_signature(&mut facts.types, receiver, signature, result)?;
             entries[index] = Some(
                 select_execution(facts, contract, source, kind, receiver, selected, proofs)?

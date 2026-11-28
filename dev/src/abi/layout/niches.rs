@@ -51,7 +51,8 @@ impl Budget {
         Ok(())
     }
     fn reserve(&mut self, bytes: usize) -> Result<(), &'static str> {
-        if bytes > 64 * 1024 * 1024 {
+        // Coarse runaway guard sized for whole-graph builds under any `repr(Rust)` layout.
+        if bytes > 256 * 1024 * 1024 {
             self.exhausted = true;
             return Err("nullable layout storage budget exceeded");
         }

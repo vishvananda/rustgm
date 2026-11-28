@@ -5,7 +5,10 @@ use crate::{
     lowir::{program::MemorySpan, vocabulary::Type},
     types::{
         Kind, TypeId,
-        unsizing::{CoercionPlan, CoercionSpan, CoercionStep, slice_terminal, terminal_pointee},
+        unsizing::{
+            CoercionPlan, CoercionSpan, CoercionStep, slice_terminal, tail_terminal,
+            terminal_pointee,
+        },
     },
 };
 
@@ -58,10 +61,10 @@ impl Lower<'_, '_, '_> {
                             self.transfer_slice(span, array, (a, b), &mut steps)?;
                         }
                         CoercionStep::Object { concrete, object } => {
-                            self.transfer_object(span, (concrete, object), a, b)?;
+                            self.transfer_object(span, (concrete, object), (a, b), &mut steps)?;
                         }
                         CoercionStep::Upcast { source, target } => {
-                            self.transfer_upcast(span, (source, target), a, b)?;
+                            self.transfer_upcast(span, (source, target), (a, b), &mut steps)?;
                         }
                         CoercionStep::Nested { source, target } => {
                             if (span.source, span.target) != (source, target) {
@@ -185,12 +188,20 @@ impl Lower<'_, '_, '_> {
         &mut self,
         span: CoercionSpan,
         (from, to): (TypeId, TypeId),
-        source: Address,
-        target: Address,
+        (source, target): (Address, Address),
+        steps: &mut usize,
     ) -> Result<(), &'static str> {
         let pointee = |ty| terminal_pointee(self.context.types, ty);
-        if pointee(span.source) != Some(from)
-            || pointee(span.target) != Some(to)
+        let a = pointee(span.source).ok_or("nominal upcast source is not a pointer")?;
+        let b = pointee(span.target).ok_or("nominal upcast target is not a pointer")?;
+        let leaves = tail_terminal(self.context.types, self.context.aggregates, (a, b), || {
+            *steps += 1;
+            if *steps > 1_000_000 {
+                return Err("nominal runtime conversion work budget exceeded");
+            }
+            Ok(())
+        })?;
+        if leaves != (from, to)
             || self.context.layout(span.source)?.size != 16
             || self.context.layout(span.target)?.size != 16
         {
@@ -214,12 +225,20 @@ impl Lower<'_, '_, '_> {
         &mut self,
         span: CoercionSpan,
         (concrete, object): (TypeId, TypeId),
-        source: Address,
-        target: Address,
+        (source, target): (Address, Address),
+        steps: &mut usize,
     ) -> Result<(), &'static str> {
         let pointee = |ty| terminal_pointee(self.context.types, ty);
-        if pointee(span.source) != Some(concrete)
-            || pointee(span.target) != Some(object)
+        let a = pointee(span.source).ok_or("nominal object source is not a pointer")?;
+        let b = pointee(span.target).ok_or("nominal object target is not a pointer")?;
+        let leaves = tail_terminal(self.context.types, self.context.aggregates, (a, b), || {
+            *steps += 1;
+            if *steps > 1_000_000 {
+                return Err("nominal runtime conversion work budget exceeded");
+            }
+            Ok(())
+        })?;
+        if leaves != (concrete, object)
             || self.context.layout(span.source)?.size != 8
             || self.context.layout(span.target)?.size != 16
         {

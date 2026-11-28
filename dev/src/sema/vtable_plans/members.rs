@@ -24,11 +24,6 @@ pub(super) fn prepare(
     shape: ShapeId,
     parent: ApplicationId,
 ) -> Result<bool, String> {
-    // Owned dyn FnOnce needs a consuming slot and an owned unsized operand.
-    // A borrowed callable plan provides neither.
-    if kind == CallTrait::FnOnce {
-        return Ok(false);
-    }
     let object = facts
         .objects
         .shape(shape)
@@ -55,12 +50,7 @@ pub(super) fn prepare(
     let Some(&[receiver, tuple]) = facts.types.list(parameters) else {
         return Err("explicit callable member requires its receiver and Args tuple".into());
     };
-    let Some(Kind::Reference {
-        referent, mutable, ..
-    }) = facts.types.kind(receiver)
-    else {
-        return Err("explicit callable member requires a reference receiver".into());
-    };
+    let (referent, slot_receiver) = member_receiver(&mut facts.types, kind, receiver)?;
     let storage = facts
         .objects
         .storage
@@ -72,7 +62,7 @@ pub(super) fn prepare(
     storage.charge(storage.erase.steps.saturating_sub(before).saturating_add(1))?;
     let erased_referent =
         super::shapes::runtime_object(storage, &mut facts.types, erased_referent)?;
-    if erased_referent != object || mutable != (kind == CallTrait::FnMut) {
+    if erased_referent != object {
         return Err("explicit callable member differs from its selected receiver".into());
     }
     let application = facts
@@ -94,7 +84,7 @@ pub(super) fn prepare(
         .list(fields)
         .ok_or("missing callable tuple fields")?;
     storage.charge(fields.len())?;
-    let parameters = std::iter::once(receiver)
+    let parameters = std::iter::once(slot_receiver)
         .chain(fields.iter().copied())
         .collect::<Vec<_>>();
     let parameters = facts.types.intern_list(&parameters)?;
@@ -116,4 +106,31 @@ pub(super) fn prepare(
         },
     );
     Ok(true)
+}
+
+fn member_receiver(
+    types: &mut crate::types::Store,
+    kind: CallTrait,
+    receiver: TypeId,
+) -> Result<(TypeId, TypeId), String> {
+    if kind == CallTrait::FnOnce {
+        if !matches!(types.kind(receiver), Some(Kind::Dynamic { .. })) {
+            return Err("owned callable member requires a dynamic object receiver".into());
+        }
+        let pointer = types.intern(Kind::Pointer {
+            mutable: true,
+            pointee: TypeId::UNIT,
+        })?;
+        return Ok((receiver, pointer));
+    }
+    let Some(Kind::Reference {
+        referent, mutable, ..
+    }) = types.kind(receiver)
+    else {
+        return Err("explicit callable member requires a reference receiver".into());
+    };
+    if mutable != (kind == CallTrait::FnMut) {
+        return Err("explicit callable member differs from its selected receiver".into());
+    }
+    Ok((referent, receiver))
 }
